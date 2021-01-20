@@ -82,7 +82,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ERRORMESSAGE_DISABLEASACTIONKEY" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ERRORMESSAGE_DISABLEASACTIONKEY" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Disable can not be an action or a modifier key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -130,7 +130,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";EditKeyboard_SourceHeader" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";EditKeyboard_SourceHeader" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Key:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -179,7 +179,7 @@
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press "Ctrl+C" and get "Alt" only on Microsoft Edge, "Ctrl+C" would be your "Shortcut" column, the key "Alt" would be your "Mapped To" column, and "MSEdge" would be your "Target App" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[たとえば、Microsoft Edge でのみ "Ctrl+C" を押したときに "Alt" として動作させたい場合、"Ctrl+C" が "ショートカット" 列に、"Alt" キーが "マップ先" 列、"MSEdge" が "ターゲット アプリ" 列になります。ターゲット アプリを入力しない場合、それはグローバルに適用されます。名前は、アプリ名ではなく、プロセス名にする必要があります。]]></Val>
+            <Val><![CDATA[たとえば、Microsoft Edge でのみ "Ctrl+C" を押したときに "Alt" として動作させたい場合、"Ctrl+C" が "ショートカット" 列に、"Alt" キーが "マップ先" 列、"MSEdge" が "ターゲット アプリ" 列になります。ターゲット アプリを入力しない場合、グローバルに適用されます。名前は、アプリ名ではなく、プロセス名にする必要があります。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
@@ -232,7 +232,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_ConflictingModifierKey" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_ConflictingModifierKey" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap this key as it conflicts with another remapped key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -277,7 +277,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_MappedToSameKey" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_MappedToSameKey" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap a key to itself]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -286,7 +286,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_MaxShortcutSize" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_MaxShortcutSize" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcuts can only have up to 2 modifier keys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -313,7 +313,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_SameKeyPreviouslyMapped" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_SameKeyPreviouslyMapped" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap a key more than once]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -340,7 +340,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_ShortcutAtleast2Keys" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_ShortcutAtleast2Keys" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcut must have atleast 2 keys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -349,7 +349,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_ShortcutMaxOneActionKey" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_ShortcutMaxOneActionKey" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcut cannot have more than one action key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -367,16 +367,16 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_ShortcutOneActionKey" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_ShortcutOneActionKey" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcut must contain an action key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ショートカットにはアクション キーを含める必要があります]]></Val>
+            <Val><![CDATA[ショートカットにはアクション キーを 1 つ含める必要があります]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_ShortcutStartWithModifier" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_ShortcutStartWithModifier" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcut must start with a modifier key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -385,7 +385,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_WinL" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_WinL" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap from/to Win L]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -451,7 +451,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TypeKey_Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TypeKey_Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Key Pressed:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -460,7 +460,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TypeKey_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TypeKey_Title" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press a key on selected keyboard:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -469,7 +469,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TypeShortcut_Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TypeShortcut_Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keys Pressed:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -478,11 +478,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TypeShortcut_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TypeShortcut_Title" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press the keys in shortcut:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ショートカットのキーを押す:]]></Val>
+            <Val><![CDATA[ショートカットのキーを押してください:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

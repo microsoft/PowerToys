@@ -102,12 +102,11 @@ appx
 appxmanifest
 APSTUDIO
 AQS
-arccot
 arccsc
-arcosh
 arcoth
 arcsch
 arcsec
+arcosh
 ARemapped
 argb
 argc

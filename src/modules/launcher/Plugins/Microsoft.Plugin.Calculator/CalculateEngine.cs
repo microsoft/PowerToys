@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Mages.Core;
 
@@ -10,7 +11,14 @@ namespace Microsoft.Plugin.Calculator
 {
     public class CalculateEngine
     {
-        private readonly Engine _magesEngine = new Engine();
+        private readonly Engine _magesEngine = new Engine(new Configuration
+        {
+            Scope = new Dictionary<string, object>
+            {
+                { "e", Math.E }, // e is not contained in the default mages engine
+            },
+        });
+
         public const int RoundingDigits = 10;
 
         public CalculateResult Interpret(string input)
