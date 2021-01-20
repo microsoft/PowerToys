@@ -38,8 +38,9 @@ Here the options are both inline and allow for an on/off.
 #### 1.4.1: Goals
 
 - Ability to customize action words
-- Ability to add a weight multiplier to increase weighting for individual plugins
 - Ability to disable a plugin
+- ~~Ability to add a weight multiplier to increase weighting for individual plugins.~~
+   - We fixed a bug that reintroduces weighting based on usage and want to validate based on user feedback if this is needed.
 
 #### 1.4.2: Stretch Goals
 
@@ -51,22 +52,22 @@ Here the options are both inline and allow for an on/off.
 - Settings outside what is listed above
 - 3rd party plugin spec
 
+
 ## 2: Scenarios
 
 ### 2.1: Golden path
 
 1. Disable a built-in plugin
-2. Change the weight of a plugin
-3. Change the action keyword of a plugin
-4. Trigger PT Run
-5. New configuration respected
+2. Change the action keyword of a plugin
+3. Trigger PT Run
+4. New configuration respected
 
 ## 3: Key definitions
 
 | Term | Definition |
 |------|------------|
 | Action word | This is the concept inside PowerToys Run where you can directly invoke only that plugin(s) that use that.  An example is doing `=2+2` would only call the calculator plugin.  The UX Screenshot is calling this "Direct activation" below |
-| weight | A multiplier to increase the result value |
+| Weight | A multiplier to increase the result value |
 | PT Run / Run | Shorthand for PowerToys Run launcher |
 
 ## 4: Requirements
@@ -79,7 +80,7 @@ Most plugin information comes from `PowerToys\modules\launcher\Plugins\PLUGIN_FO
 |---|------------|----------|
 | 1 | List of plugins with toggle On / Off | P0 |
 | 2 | When clicked, inline options are displayed | P0 |
-| 3 | When weight multiplier is added, that target plugin's value should be increased | P0 |
+| 3 | ~~When weight multiplier is added, that target plugin's value should be increased~~ Non-goal, waiting for feedback | P0 |
 | 4 | When new settings are applied, PT Run does not have to restart | P2 |
 | 5 | When an error state is hit, the warning will be displayed to user below title for plugin | P0 |
 | 6 | Detect error state when there is no direct activation, no global result and no action word | P0 |
@@ -95,7 +96,7 @@ Most plugin information comes from `PowerToys\modules\launcher\Plugins\PLUGIN_FO
 | 3 | Action word do not have to be unique (This already is supported). | P0 |
 | 4 | Text field for additional action word can be blank. | P0 |
 | 5 | Do not allow action word of * as under the hood this is the global keyword | P1 |
-| 6 | Weight multiplier number box field, 0 to 10 with ability to add in a decimal.  This will need to be tweaked once the multiplier is added in after real world testing. | P1 |
+| 6 | ~~eight multiplier number box field, 0 to 10 with ability to add in a decimal.  This will need to be tweaked once the multiplier is added in after real world testing.~~ Non-goal, waiting for feedback | P1 |
 | 7 | Direct shortcut to execute a single plugin | P2 |
 | 8 | No plugin can have the same direct shortcut | P2 |
 | 9 | Description of plugin is shown when expanded | P1 | 
@@ -132,6 +133,8 @@ Right now with Wox, each plugin defines their action keywords in a json file.  W
 
 - Per-plugin setting
    - This would move the setting for ignoring the file drive warning into Search plugin section
+- Adding in weight per plugin
+- Adding in a 'reset' ability
 - 3rd party plugins
 
 ## 8. Appendix
