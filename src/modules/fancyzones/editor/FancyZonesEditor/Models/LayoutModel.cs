@@ -226,8 +226,7 @@ namespace FancyZonesEditor.Models
         public void Apply()
         {
             MainWindowSettingsModel settings = ((App)App.Current).MainWindowSettings;
-            settings.ResetAppliedModel();
-            IsApplied = true;
+            settings.SetAppliedModel(this);
 
             // update settings
             App.Overlay.CurrentLayoutSettings.ZonesetUuid = Uuid;

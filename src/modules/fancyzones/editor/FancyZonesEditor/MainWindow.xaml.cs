@@ -115,12 +115,7 @@ namespace FancyZonesEditor
 
         private void Select(LayoutModel newSelection)
         {
-            if (App.Overlay.CurrentDataContext is LayoutModel currentSelection)
-            {
-                currentSelection.IsSelected = false;
-            }
-
-            newSelection.IsSelected = true;
+            _settings.SetSelectedModel(newSelection);
             App.Overlay.CurrentDataContext = newSelection;
         }
 
@@ -185,12 +180,11 @@ namespace FancyZonesEditor
 
         private void Apply()
         {
-            ((App)Application.Current).MainWindowSettings.ResetAppliedModel();
-
             var mainEditor = App.Overlay;
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
                 model.Apply();
+                _settings.SetAppliedModel(model);
             }
         }
 
@@ -220,6 +214,8 @@ namespace FancyZonesEditor
 
         private async void EditLayout_Click(object sender, RoutedEventArgs e)
         {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            _settings.SetSelectedModel((LayoutModel)dataContext);
             await EditLayoutDialog.ShowAsync();
         }
 
@@ -231,9 +227,9 @@ namespace FancyZonesEditor
                 return;
             }
 
-            model.IsSelected = false;
-            Hide();
+            _settings.SetSelectedModel(model);
 
+            Hide();
             mainEditor.OpenEditor(model);
         }
 

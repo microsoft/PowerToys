@@ -106,7 +106,7 @@ namespace FancyZonesEditor
                     MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
                     if (settings != null)
                     {
-                        settings.ResetAppliedModel();
+                        settings.SetAppliedModel(null);
                         settings.UpdateDefaultModels();
                     }
 

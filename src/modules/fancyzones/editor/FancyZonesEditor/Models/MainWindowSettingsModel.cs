@@ -155,6 +155,44 @@ namespace FancyZonesEditor
 
         private static CanvasLayoutModel _blankModel = new CanvasLayoutModel(string.Empty, LayoutType.Blank);
 
+        public LayoutModel SelectedModel
+        {
+            get
+            {
+                return _selectedModel;
+            }
+
+            private set
+            {
+                if (_selectedModel != value)
+                {
+                    _selectedModel = value;
+                    FirePropertyChanged(nameof(SelectedModel));
+                }
+            }
+        }
+
+        private LayoutModel _selectedModel = null;
+
+        public LayoutModel AppliedModel
+        {
+            get
+            {
+                return _appliedModel;
+            }
+
+            private set
+            {
+                if (_appliedModel != value)
+                {
+                    _appliedModel = value;
+                    FirePropertyChanged(nameof(AppliedModel));
+                }
+            }
+        }
+
+        private LayoutModel _appliedModel = null;
+
         public static bool IsPredefinedLayout(LayoutModel model)
         {
             return model.Type != LayoutType.Custom;
@@ -162,9 +200,6 @@ namespace FancyZonesEditor
 
         public LayoutModel UpdateSelectedLayoutModel()
         {
-            ResetAppliedModel();
-            ResetSelectedModel();
-
             LayoutModel foundModel = null;
             LayoutSettings currentApplied = App.Overlay.CurrentLayoutSettings;
 
@@ -195,10 +230,10 @@ namespace FancyZonesEditor
                         foundModel = model;
                         foundModel.TemplateZoneCount = currentApplied.ZoneCount;
                         foundModel.SensitivityRadius = currentApplied.SensitivityRadius;
-                        if (foundModel is GridLayoutModel)
+                        if (foundModel is GridLayoutModel grid)
                         {
-                            ((GridLayoutModel)foundModel).ShowSpacing = currentApplied.ShowSpacing;
-                            ((GridLayoutModel)foundModel).Spacing = currentApplied.Spacing;
+                            grid.ShowSpacing = currentApplied.ShowSpacing;
+                            grid.Spacing = currentApplied.Spacing;
                         }
 
                         foundModel.InitTemplateZones();
@@ -212,53 +247,40 @@ namespace FancyZonesEditor
                 foundModel = DefaultModels[4]; // PriorityGrid
             }
 
-            foundModel.IsSelected = true;
-            foundModel.IsApplied = true;
-
+            SetSelectedModel(foundModel);
+            SetAppliedModel(foundModel);
             FirePropertyChanged(nameof(IsCustomLayoutActive));
             return foundModel;
         }
 
-        public void ResetSelectedModel()
+        public void SetSelectedModel(LayoutModel model)
         {
-            foreach (LayoutModel model in CustomModels)
+            if (_selectedModel != null)
             {
-                if (model.IsSelected)
-                {
-                    model.IsSelected = false;
-                    break;
-                }
+                _selectedModel.IsSelected = false;
             }
 
-            foreach (LayoutModel model in DefaultModels)
+            if (model != null)
             {
-                if (model.IsSelected)
-                {
-                    model.IsSelected = false;
-                    break;
-                }
+                model.IsSelected = true;
             }
+
+            SelectedModel = model;
         }
 
-        public void ResetAppliedModel()
+        public void SetAppliedModel(LayoutModel model)
         {
-            foreach (LayoutModel model in CustomModels)
+            if (_appliedModel != null)
             {
-                if (model.IsApplied)
-                {
-                    model.IsApplied = false;
-                    break;
-                }
+                _appliedModel.IsApplied = false;
             }
 
-            foreach (LayoutModel model in DefaultModels)
+            if (model != null)
             {
-                if (model.IsApplied)
-                {
-                    model.IsApplied = false;
-                    break;
-                }
+                model.IsApplied = true;
             }
+
+            AppliedModel = model;
         }
 
         public void UpdateDefaultModels()
