@@ -3,9 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 
-namespace Microsoft.Plugin.Calculator
+namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
     public struct CalculateResult : IEquatable<CalculateResult>
     {

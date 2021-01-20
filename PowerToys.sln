@@ -127,7 +127,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wox.Test", "src\modules\lau
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{4AFC9975-2456-4C70-94A4-84073C1CED93}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Calculator", "src\modules\launcher\Plugins\Microsoft.Plugin.Calculator\Microsoft.Plugin.Calculator.csproj", "{59BD9891-3837-438A-958D-ADC7F91F6F7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Calculator", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.csproj", "{59BD9891-3837-438A-958D-ADC7F91F6F7E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.WindowWalker", "src\modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Microsoft.Plugin.WindowWalker.csproj", "{74F1B9ED-F59C-4FE7-B473-7B453E30837E}"
 EndProject
@@ -233,7 +233,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri.UnitTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.UnitTests", "src\settings-ui\Microsoft.PowerToys.Settings.UI.UnitTests\Microsoft.PowerToys.Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Calculator.UnitTest", "src\modules\launcher\Plugins\Microsoft.Plugin.Calculator.UnitTest\Microsoft.Plugin.Calculator.UnitTest.csproj", "{632BBE62-5421-49EA-835A-7FFA4F499BD6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.csproj", "{632BBE62-5421-49EA-835A-7FFA4F499BD6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Folder.UnitTests\Microsoft.Plugin.Folder.UnitTests.csproj", "{4FA206A5-F69F-4193-BF8F-F6EEB496734C}"
 EndProject

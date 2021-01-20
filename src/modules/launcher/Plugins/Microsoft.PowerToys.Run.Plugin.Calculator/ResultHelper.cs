@@ -8,7 +8,7 @@ using System.Threading;
 using System.Windows;
 using Wox.Plugin;
 
-namespace Microsoft.Plugin.Calculator
+namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
     public static class ResultHelper
     {

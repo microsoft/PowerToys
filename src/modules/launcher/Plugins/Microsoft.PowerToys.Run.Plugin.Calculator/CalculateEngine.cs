@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Mages.Core;
 
-namespace Microsoft.Plugin.Calculator
+namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
     public class CalculateEngine
     {

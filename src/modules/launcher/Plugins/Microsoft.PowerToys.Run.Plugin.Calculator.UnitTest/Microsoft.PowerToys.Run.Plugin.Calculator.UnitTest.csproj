@@ -5,7 +5,7 @@
 
     <IsPackable>false</IsPackable>
     <Platforms>x64</Platforms>
-    <RootNamespace>Microsoft.Plugin.Calculator.UnitTests</RootNamespace>
+    <RootNamespace>Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Plugin.Calculator\Microsoft.Plugin.Calculator.csproj" />
+    <ProjectReference Include="..\Microsoft.PowerToys.Run.Plugin.Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

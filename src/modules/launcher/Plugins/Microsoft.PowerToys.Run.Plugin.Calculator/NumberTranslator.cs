@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Plugin.Calculator
+namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
     /// <summary>
     /// Tries to convert all numbers in a text from one culture format to another.

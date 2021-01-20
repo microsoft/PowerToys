@@ -6,7 +6,7 @@ using System;
 using System.Globalization;
 using NUnit.Framework;
 
-namespace Microsoft.Plugin.Calculator.UnitTests
+namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 {
     [TestFixture]
     public class ExtendedCalculatorParserTests
