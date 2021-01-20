@@ -86,6 +86,7 @@ Most plugin information comes from `PowerToys\modules\launcher\Plugins\PLUGIN_FO
 | 6 | Detect error state when there is no direct activation, no global result and no action word | P0 |
 | 7 | Disable file drive warning checkbox if Search plugin is disabled  | P1 |
 | 8 | Do not have warning appear if Disable file drive warning is enabled and the Search plugin is disabled  | P1 |
+| 9 | List author of plugin (from json file) | P1 |
 
 ### 4.2: Inline Setting requirements
 
@@ -96,7 +97,7 @@ Most plugin information comes from `PowerToys\modules\launcher\Plugins\PLUGIN_FO
 | 3 | Action word do not have to be unique (This already is supported). | P0 |
 | 4 | Text field for additional action word can be blank. | P0 |
 | 5 | Do not allow action word of * as under the hood this is the global keyword | P1 |
-| 6 | ~~eight multiplier number box field, 0 to 10 with ability to add in a decimal.  This will need to be tweaked once the multiplier is added in after real world testing.~~ Non-goal, waiting for feedback | P1 |
+| 6 | ~~Weight multiplier number box field, 0 to 10 with ability to add in a decimal.  This will need to be tweaked once the multiplier is added in after real world testing.~~ Non-goal, waiting for feedback | P1 |
 | 7 | Direct shortcut to execute a single plugin | P2 |
 | 8 | No plugin can have the same direct shortcut | P2 |
 | 9 | Description of plugin is shown when expanded | P1 | 
