@@ -41,9 +41,10 @@ namespace FancyZonesEditor
 
             if (workArea.Height < MinimalForDefaultWrapPanelsHeight || App.Overlay.MultiMonitorMode)
             {
-                SizeToContent = SizeToContent.WidthAndHeight;
                 WrapPanelItemSize = SmallWrapPanelItemSize;
             }
+
+            SizeToContent = SizeToContent.WidthAndHeight;
         }
 
         public void Update()
