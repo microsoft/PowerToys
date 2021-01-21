@@ -474,6 +474,11 @@ namespace FancyZonesEditor
 
         public void ArrangeZones(UIElementCollection zones, int spacing)
         {
+            if (zones.Count == 0)
+            {
+                return;
+            }
+
             int rows = _model.Rows;
             int cols = _model.Columns;
             int[,] cells = _model.CellChildMap;
