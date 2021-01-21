@@ -1,4 +1,4 @@
 #pragma once
 #include <fstream>
 
-int report(std::wostream& os);
+void reportMonitorInfo(const std::filesystem::path& tmpDir);

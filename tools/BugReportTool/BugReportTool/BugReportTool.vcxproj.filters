@@ -10,6 +10,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\deps\cziplib\src\zip.c" />
     <ClCompile Include="ReportMonitorInfo.cpp" />
+    <ClCompile Include="ReportRegistry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ZipTools">
@@ -24,5 +25,6 @@
     <ClInclude Include="..\..\..\deps\cziplib\src\miniz.h" />
     <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
     <ClInclude Include="ReportMonitorInfo.h" />
+    <ClInclude Include="ReportRegistry.h" />
   </ItemGroup>
 </Project>
