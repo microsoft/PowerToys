@@ -332,7 +332,7 @@ namespace FancyZonesEditor
                 }
             }
 
-            zone = new GridZone();
+            zone = new GridZone(Model.ShowSpacing ? Model.Spacing : 0);
             zone.Split += OnSplit;
             zone.MergeDrag += OnMergeDrag;
             zone.MergeComplete += OnMergeComplete;
@@ -383,9 +383,7 @@ namespace FancyZonesEditor
                 return;
             }
 
-            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-
-            int spacing = settings.ShowSpacing ? settings.Spacing : 0;
+            int spacing = model.ShowSpacing ? model.Spacing : 0;
 
             _data.RecalculateZones(spacing, arrangeSize);
             _data.ArrangeZones(Preview.Children, spacing);
@@ -411,10 +409,10 @@ namespace FancyZonesEditor
                 if (_dragHandles.HasSnappedNonAdjacentResizers(resizer))
                 {
                     double spacing = 0;
-                    MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-                    if (settings.ShowSpacing)
+                    GridLayoutModel model = Model;
+                    if (model.ShowSpacing)
                     {
-                        spacing = settings.Spacing;
+                        spacing = model.Spacing;
                     }
 
                     _data.SplitOnDrag(resizer, delta, spacing);

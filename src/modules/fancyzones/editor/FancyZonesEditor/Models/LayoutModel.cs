@@ -39,6 +39,17 @@ namespace FancyZonesEditor.Models
             Type = type;
         }
 
+        protected LayoutModel(LayoutModel other)
+        {
+            _guid = other._guid;
+            _name = other._name;
+            Type = other.Type;
+            _isSelected = other._isSelected;
+            _isApplied = other._isApplied;
+            _sensitivityRadius = other._sensitivityRadius;
+            _zoneCount = other._zoneCount;
+        }
+
         // Name - the display name for this layout model - is also used as the key in the registry
         public string Name
         {
@@ -52,7 +63,7 @@ namespace FancyZonesEditor.Models
                 if (_name != value)
                 {
                     _name = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(Name));
                 }
             }
         }
@@ -93,13 +104,14 @@ namespace FancyZonesEditor.Models
                 if (_isSelected != value)
                 {
                     _isSelected = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(IsSelected));
                 }
             }
         }
 
         private bool _isSelected;
 
+        // IsApplied (not-persisted) - tracks whether or not this LayoutModel is applied in the picker
         public bool IsApplied
         {
             get
@@ -112,12 +124,52 @@ namespace FancyZonesEditor.Models
                 if (_isApplied != value)
                 {
                     _isApplied = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(IsApplied));
                 }
             }
         }
 
         private bool _isApplied;
+
+        public int SensitivityRadius
+        {
+            get
+            {
+                return _sensitivityRadius;
+            }
+
+            set
+            {
+                if (value != _sensitivityRadius)
+                {
+                    _sensitivityRadius = value;
+                    FirePropertyChanged(nameof(SensitivityRadius));
+                }
+            }
+        }
+
+        private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
+
+        // TemplateZoneCount - number of zones selected in the picker window for template layouts
+        public int TemplateZoneCount
+        {
+            get
+            {
+                return _zoneCount;
+            }
+
+            set
+            {
+                if (value != _zoneCount)
+                {
+                    _zoneCount = value;
+                    InitTemplateZones();
+                    FirePropertyChanged(nameof(TemplateZoneCount));
+                }
+            }
+        }
+
+        private int _zoneCount = LayoutSettings.DefaultZoneCount;
 
         // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
@@ -157,9 +209,11 @@ namespace FancyZonesEditor.Models
             {
                 customModels.Add(model);
             }
-
-            App.FancyZonesEditorIO.SerializeZoneSettings();
         }
+
+        // InitTemplateZones
+        // Creates zones based on template zones count
+        public abstract void InitTemplateZones();
 
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract void PersistData();
@@ -169,21 +223,6 @@ namespace FancyZonesEditor.Models
         public void Persist()
         {
             PersistData();
-            Apply();
-        }
-
-        public void Apply()
-        {
-            MainWindowSettingsModel settings = ((App)App.Current).MainWindowSettings;
-            settings.ResetAppliedModel();
-            IsApplied = true;
-
-            // update settings
-            App.Overlay.CurrentLayoutSettings.ZonesetUuid = Uuid;
-            App.Overlay.CurrentLayoutSettings.Type = Type;
-
-            // update temp file
-            App.FancyZonesEditorIO.SerializeZoneSettings();
         }
     }
 }

@@ -6,9 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using FancyZonesEditor.Models;
-using Windows.UI.Xaml.Media;
 
 namespace FancyZonesEditor
 {
@@ -101,14 +99,13 @@ namespace FancyZonesEditor
                         return;
                     }
 
-                    var prevSettings = CurrentLayoutSettings;
                     _currentDesktop = value;
 
                     MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
                     if (settings != null)
                     {
-                        settings.ResetAppliedModel();
-                        settings.UpdateDesktopDependantProperties(prevSettings);
+                        settings.SetAppliedModel(null);
+                        settings.UpdateDefaultModels();
                     }
 
                     Update();
@@ -199,6 +196,30 @@ namespace FancyZonesEditor
             for (int i = 0; i < DesktopsCount; i++)
             {
                 Monitors[i].Window.Show();
+            }
+        }
+
+        public void SaveCurrentLayoutSettings(LayoutModel model)
+        {
+            if (model == null)
+            {
+                return;
+            }
+
+            CurrentLayoutSettings.ZonesetUuid = model.Uuid;
+            CurrentLayoutSettings.Type = model.Type;
+            CurrentLayoutSettings.SensitivityRadius = model.SensitivityRadius;
+            CurrentLayoutSettings.ZoneCount = model.TemplateZoneCount;
+
+            if (model is GridLayoutModel grid)
+            {
+                CurrentLayoutSettings.ShowSpacing = grid.ShowSpacing;
+                CurrentLayoutSettings.Spacing = grid.Spacing;
+            }
+            else
+            {
+                CurrentLayoutSettings.ShowSpacing = false;
+                CurrentLayoutSettings.Spacing = 0;
             }
         }
 
