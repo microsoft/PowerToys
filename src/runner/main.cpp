@@ -138,8 +138,8 @@ int runner(bool isProcessElevated)
         {
             try
             {
-                auto module = load_powertoy(moduleSubdir);
-                modules().emplace(module->get_key(), std::move(module));
+                auto pt_module = load_powertoy(moduleSubdir);
+                modules().emplace(pt_module->get_key(), std::move(pt_module));
             }
             catch (...)
             {

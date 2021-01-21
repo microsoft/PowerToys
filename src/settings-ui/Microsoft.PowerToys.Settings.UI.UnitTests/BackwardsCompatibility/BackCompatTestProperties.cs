@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
                 get
                 {
                     T settingsItem = new T();
-                    _settingsConfig = _settingsUtils.GetSettings<T>(settingsItem.GetModuleName());
+                    _settingsConfig = _settingsUtils.GetSettingsOrDefault<T>(settingsItem.GetModuleName());
                     return _settingsConfig;
                 }
 

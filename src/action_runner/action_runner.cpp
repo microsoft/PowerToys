@@ -16,6 +16,10 @@
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 
+#include <common/SettingsAPI/settings_helpers.h>
+
+#include <common/logger/logger.h>
+
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
 #include <Msi.h>
@@ -172,6 +176,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         return 1;
     }
     std::wstring_view action{ args[1] };
+
+    std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
+    logFilePath.append(LogSettings::actionRunnerLogPath);
+    Logger::init(LogSettings::actionRunnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
     if (action == RUN_NONELEVATED_CMDARG)
     {

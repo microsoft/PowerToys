@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -20,6 +21,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Version = "1";
             Name = ModuleName;
             Properties = new ImageResizerProperties();
+        }
+
+        public ImageResizerSettings(Func<string, string> resourceLoader)
+            : this()
+        {
+            Properties = new ImageResizerProperties(resourceLoader);
         }
 
         public override string ToJsonString()

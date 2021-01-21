@@ -29,7 +29,6 @@ private:
     HANDLE current_connect_pipe_handle = NULL;
     bool closed = false;
     TwoWayPipeMessageIPC::callback_function dispatch_inc_message_function;
-    const DWORD BUFSIZE = 1024;
 
     void send_pipe_message(std::wstring message);
     void consume_output_queue_thread();

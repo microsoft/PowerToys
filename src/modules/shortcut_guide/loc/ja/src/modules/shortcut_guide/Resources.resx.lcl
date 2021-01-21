@@ -104,7 +104,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Windows キーを押したときに、Windows ショートカットを使用してヘルプ オーバーレイを表示します。]]></Val>
+            <Val><![CDATA[Windows キーを押したときに、Windows ショートカットのヘルプ オーバーレイを表示します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

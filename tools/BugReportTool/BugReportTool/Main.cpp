@@ -10,9 +10,10 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/json.h>
 #include <common/utils/timeutil.h>
+#include <common/utils/exec.h>
 
 #include "ReportMonitorInfo.h"
-
+#include "ReportRegistry.h"
 using namespace std;
 using namespace std::filesystem;
 using namespace winrt::Windows::Data::Json;
@@ -24,9 +25,10 @@ map<wstring, vector<wstring>> escapeInfo = {
 
 vector<wstring> filesToDelete = {
     L"PowerToys Run\\Cache",
-    L"PowerToys Run\\Settings\\QueryHistory.json",
     L"PowerRename\\replace-mru.json",
-    L"PowerRename\\search-mru.json"
+    L"PowerRename\\search-mru.json",
+    L"PowerToys Run\\Settings\\UserSelectedRecord.json",
+    L"PowerToys Run\\Settings\\QueryHistory.json"
 };
 
 vector<wstring> getXpathArray(wstring xpath)
@@ -147,27 +149,6 @@ void hideUserPrivateInfo(const filesystem::path& dir)
     }
 }
 
-void reportMonitorInfo(const filesystem::path& tmpDir)
-{
-    auto monitorReportPath = tmpDir;
-    monitorReportPath.append("monitor-report-info.txt");
-
-    try
-    {
-        wofstream monitorReport(monitorReportPath);
-        monitorReport << "GetSystemMetrics = " << GetSystemMetrics(SM_CMONITORS) << '\n';
-        report(monitorReport);
-    }
-    catch (std::exception& ex)
-    {
-        printf("Failed to report monitor info. %s\n", ex.what());
-    }
-    catch (...)
-    {
-        printf("Failed to report monitor info\n");
-    }
-}
-
 void reportWindowsVersion(const filesystem::path& tmpDir)
 {
     auto versionReportPath = tmpDir;
@@ -201,6 +182,28 @@ void reportWindowsVersion(const filesystem::path& tmpDir)
     catch(...)
     {
         printf("Failed to write to %s\n", versionReportPath.string().c_str());
+    }
+}
+
+void reportDotNetInstallationInfo(const filesystem::path& tmpDir)
+{
+    auto dotnetInfoPath = tmpDir;
+    dotnetInfoPath.append("dotnet-installation-info.txt");
+    try
+    {
+        wofstream dotnetReport(dotnetInfoPath);
+        auto dotnetInfo = exec_and_read_output(LR"(dotnet --list-runtimes)");
+        if (!dotnetInfo.has_value())
+        {
+            printf("Failed to get dotnet installation information\n");
+            return;
+        }
+
+        dotnetReport << dotnetInfo.value().c_str();
+    }
+    catch (...)
+    {
+        printf("Failed to report dotnet installation information");
     }
 }
 
@@ -258,6 +261,12 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Write windows version info to the temporary folder
     reportWindowsVersion(tmpDir);
+
+    // Write dotnet installation info to the temporary folder
+    reportDotNetInstallationInfo(tmpDir);
+
+    // Write registry to the temporary folder
+    reportRegistry(tmpDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);

@@ -54,7 +54,7 @@ namespace ColorPicker.Settings
         {
             if (!_loadingColorsHistory)
             {
-                var settings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
+                var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
                 settings.Properties.ColorHistory = ColorHistory.ToList();
                 settings.Save(_settingsUtils);
             }
@@ -98,7 +98,7 @@ namespace ColorPicker.Settings
                                 defaultColorPickerSettings.Save(_settingsUtils);
                             }
 
-                            var settings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
+                            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
                             if (settings != null)
                             {
                                 ChangeCursor.Value = settings.Properties.ChangeCursor;

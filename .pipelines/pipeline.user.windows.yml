@@ -27,7 +27,7 @@ restore:
   commands:
     - !!defaultcommand
       name: 'Restore Power Toys Telemetry'
-      command: '.pipelines\restore-telemetry.cmd'  
+      command: '.pipelines\restore-telemetry.cmd'
     - !!defaultcommand
       name: 'Restore Power Toys'
       command: '.pipelines\restore.cmd'
@@ -103,10 +103,10 @@ build:
             - 'modules\launcher\ManagedCommon.dll'
             - 'modules\launcher\Microsoft.PowerToys.Common.UI.dll'
             - 'modules\launcher\Microsoft.Launcher.dll'
-            - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Microsoft.Plugin.Calculator.dll'
-            - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Wox.Infrastructure.dll'
-            - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Wox.Plugin.dll'
-            - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Telemetry.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Wox.Infrastructure.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Wox.Plugin.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Telemetry.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\Wox.Plugin.dll'
@@ -118,6 +118,8 @@ build:
             - 'modules\launcher\Plugins\Microsoft.Plugin.Program\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Program\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Program\Telemetry.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Microsoft.PowerToys.Run.Plugin.Registry.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\ManagedTelemetry.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Microsoft.Plugin.Shell.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Wox.Plugin.dll'
@@ -131,6 +133,7 @@ build:
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Telemetry.dll'
             - 'modules\launcher\Plugins\Service\Microsoft.PowerToys.Run.Plugin.Service.dll'
+            - 'modules\launcher\Plugins\System\Microsoft.PowerToys.Run.Plugin.System.dll'
             - 'modules\launcher\PowerLauncher.dll'
             - 'modules\launcher\PowerLauncher.exe'
             - 'modules\launcher\PowerLauncher.Telemetry.dll'
@@ -206,23 +209,23 @@ build:
 #          signing_options:
 #            profile: '400'
 
-static_analysis_options:                             
-  binskim_options:  
+static_analysis_options:
+  binskim_options:
     files_to_scan:
       - from: 'installer/packages'
         exclude:
           - 'WiX.*/**/*.dll'
           - 'Wix.*/**/*.exe'
-  moderncop_options:           
+  moderncop_options:
     files_to_scan:
-      - from: 'src'          
-        exclude:                           
+      - from: 'src'
+        exclude:
           - '**/just.config.js'
           - '**/webpack.config.js'
           - '**/webpack.serve.config.js'
-          - '**/dist/bundle.js' 
+          - '**/dist/bundle.js'
   policheck_options:
     files_to_scan:
-      - exclude:                         
+      - exclude:
         - '**/*.lcl'
-        
+

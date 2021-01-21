@@ -38,7 +38,6 @@ AGGREGATABLE
 AHybrid
 Aissue
 akamaihd
-alannt
 ALarger
 alekhyareddy
 alertsolid
@@ -87,6 +86,7 @@ appx
 appxmanifest
 APSTUDIO
 AQS
+arcosh
 ARemapped
 argb
 argc
@@ -98,6 +98,8 @@ arjunbalgovind
 ARPINSTALLLOCATION
 ARPPRODUCTICON
 ARRAYSIZE
+arsinh
+artanh
 Artboard
 asdf
 AShortcut
@@ -118,7 +120,6 @@ atlstr
 attr
 Attribs
 aumid
-AUMID
 AUTHN
 AUTOAPPEND
 autocomplete
@@ -193,6 +194,7 @@ BTNFACE
 Bto
 buf
 BUFSIZE
+bugreport
 Buid
 buildcommand
 buildtools
@@ -222,6 +224,7 @@ CENTERALIGN
 cfg
 changecursor
 Changemove
+charconv
 charset
 chdir
 checkbox
@@ -279,7 +282,6 @@ codeofconduct
 codeql
 codereview
 COINIT
-Colorbrush
 colorconv
 colorhistory
 colorhistorylimit
@@ -468,7 +470,6 @@ DISPINFO
 Displayandhidethedesktop
 DISPLAYCHANGE
 displayname
-DISPLAYNAME
 divyan
 DLACTIVEXCTLS
 DLCONTROL
@@ -655,7 +656,7 @@ ERASEBKGND
 EREOF
 EResize
 eriawan
-ERRORLEVEL
+errc
 errorlevel
 ERRORMESSAGE
 ERRORTITLE
@@ -797,7 +798,6 @@ globalplugins
 globals
 gmx
 google
-gordonwatts
 GPTR
 grayscale
 GText
@@ -847,18 +847,21 @@ hinstance
 hitinfo
 HIWORD
 hk
-HKCR
+HKCC
 HKCU
+HKCR
+HKE
 hkey
 HKL
 HKLM
+HKPD
+HKU
 HLOCAL
 HLSL
 hmenu
 hmodule
 hmon
 hmonitor
-HMONITOR
 HOLDENTER
 HOLDESC
 homljgmgpmcbpjbnjpfijnhipfkiclkd
@@ -976,7 +979,6 @@ IJson
 IList
 ILogon
 IMAGEHLP
-IMAGENAME
 imageresizer
 IMAGERESIZEREXT
 imageresizersettings
@@ -1160,6 +1162,7 @@ Kybd
 LAlt
 lambson
 lamotile
+langword
 Lastdevice
 LASTEXITCODE
 laute
@@ -1196,6 +1199,7 @@ linkid
 Linkmenu
 linq
 LINQTo
+Linux
 listbox
 listview
 llkhf
@@ -1338,7 +1342,6 @@ modulekey
 MONITORINFO
 MONITORINFOEX
 MONITORINFOEXW
-MONITORINFOF
 monitorinfof
 Monthand
 Moq
@@ -1443,6 +1446,7 @@ nielslaute
 NIF
 NLD
 NLog
+NLSTEXT
 NMLVEMPTYMARKUP
 NOACTIVATE
 noactive
@@ -1765,6 +1769,7 @@ REFCLSID
 refcount
 REFIID
 REGCLS
+regedit
 regex
 REGISTERCLASSFAILED
 registrypath
@@ -1803,6 +1808,7 @@ resw
 resx
 returnvalue
 retval
+rexit
 rfind
 rgb
 RGBQUAD
@@ -2004,6 +2010,7 @@ sql
 src
 SRCCOPY
 sre
+sregex
 SResize
 srme
 srre
@@ -2078,7 +2085,6 @@ SVGIn
 svgpreviewhandler
 svgr
 SVGSVG
-SWAPBUTTON
 Switchbetweenvirtualdesktops
 SWP
 swprintf
@@ -2092,6 +2098,7 @@ SYSCOLORCHANGE
 SYSCOMMAND
 SYSDEADCHAR
 SYSICONINDEX
+sysinfo
 SYSKEY
 syskeydown
 syskeyup
@@ -2169,7 +2176,6 @@ toggleright
 toggleswitch
 toolbar
 Toolchain
-Toolset
 toolset
 tooltip
 toolwindow
@@ -2486,7 +2492,6 @@ XOffset
 xpath
 XResource
 xsd
-xsi
 XSmall
 XStr
 XToolset

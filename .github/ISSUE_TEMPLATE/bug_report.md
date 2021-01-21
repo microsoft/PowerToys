@@ -2,7 +2,7 @@
 name: 🐛 Bug report
 about: Report errors or unexpected behavior
 title: ''
-labels: Issue-Bug
+labels: Issue-Bug,Triage-Needed
 assignees: ''
 
 ---
