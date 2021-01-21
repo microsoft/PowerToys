@@ -345,7 +345,7 @@ namespace FancyZonesEditor
             Select(_settings.AppliedModel);
         }
 
-        // EditLayout: Apply changes
+        // EditLayout: Save changes
         private void EditLayoutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             var mainEditor = App.Overlay;
@@ -357,7 +357,7 @@ namespace FancyZonesEditor
             _backup = null;
 
             // update settings
-            if (model.Type == LayoutType.Custom)
+            if (model.Type == LayoutType.Custom || model == _settings.AppliedModel)
             {
                 App.Overlay.SaveLayoutSettings(model);
             }
