@@ -95,7 +95,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
             var subKeysNames = subKeyPath.Split('\\');
             var index = 0;
-            var subKey = baseKey;
+            RegistryKey? subKey = baseKey;
 
             ICollection<RegistryEntry> result;
 
