@@ -34,6 +34,17 @@ namespace FancyZonesEditor.Models
         {
         }
 
+        public CanvasLayoutModel(CanvasLayoutModel other)
+            : base(other)
+        {
+            CanvasRect = new Rect(other.CanvasRect.X, other.CanvasRect.Y, other.CanvasRect.Width, other.CanvasRect.Height);
+
+            foreach (Int32Rect zone in other.Zones)
+            {
+                Zones.Add(zone);
+            }
+        }
+
         // Zones - the list of all zones in this layout, described as independent rectangles
         public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
 
@@ -53,6 +64,28 @@ namespace FancyZonesEditor.Models
             UpdateLayout();
         }
 
+        // InitTemplateZones
+        // Creates zones based on template zones count
+        public override void InitTemplateZones()
+        {
+            Zones.Clear();
+
+            var workingArea = App.Overlay.WorkArea;
+            int topLeftCoordinate = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(100); // TODO: replace magic numbers
+            int width = (int)(workingArea.Width * 0.4);
+            int height = (int)(workingArea.Height * 0.4);
+            Int32Rect focusZoneRect = new Int32Rect(topLeftCoordinate, topLeftCoordinate, width, height);
+            int focusRectXIncrement = (TemplateZoneCount <= 1) ? 0 : (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(50); // TODO: replace magic numbers
+            int focusRectYIncrement = (TemplateZoneCount <= 1) ? 0 : (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(50); // TODO: replace magic numbers
+
+            for (int i = 0; i < TemplateZoneCount; i++)
+            {
+                Zones.Add(focusZoneRect);
+                focusZoneRect.X += focusRectXIncrement;
+                focusZoneRect.Y += focusRectYIncrement;
+            }
+        }
+
         private void UpdateLayout()
         {
             FirePropertyChanged();
@@ -70,6 +103,7 @@ namespace FancyZonesEditor.Models
                 layout.Zones.Add(zone);
             }
 
+            layout.SensitivityRadius = SensitivityRadius;
             return layout;
         }
 
@@ -80,6 +114,8 @@ namespace FancyZonesEditor.Models
             {
                 other.Zones.Add(zone);
             }
+
+            other.SensitivityRadius = SensitivityRadius;
         }
 
         // PersistData

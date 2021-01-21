@@ -5,16 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
-using FancyZonesEditor.ViewModels;
 using ModernWpf.Controls;
-using ModernWpf.Controls.Primitives;
-using Windows.UI.Popups;
 
 namespace FancyZonesEditor
 {
@@ -23,13 +18,12 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class MainWindow : Window
     {
-        // TODO: share the constants b/w C# Editor and FancyZoneLib
-        public const int MaxZones = 40;
         private const int DefaultWrapPanelItemSize = 164;
         private const int SmallWrapPanelItemSize = 164;
         private const int MinimalForDefaultWrapPanelsHeight = 900;
 
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
+        private LayoutModel _backup = null;
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
@@ -67,17 +61,29 @@ namespace FancyZonesEditor
 
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.ZoneCount > 1)
+            var mainEditor = App.Overlay;
+            if (!(mainEditor.CurrentDataContext is LayoutModel model))
             {
-                _settings.ZoneCount--;
+                return;
+            }
+
+            if (model.TemplateZoneCount > 1)
+            {
+                model.TemplateZoneCount--;
             }
         }
 
         private void IncrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.ZoneCount < MaxZones)
+            var mainEditor = App.Overlay;
+            if (!(mainEditor.CurrentDataContext is LayoutModel model))
             {
-                _settings.ZoneCount++;
+                return;
+            }
+
+            if (model.TemplateZoneCount < LayoutSettings.MaxZones)
+            {
+                model.TemplateZoneCount++;
             }
         }
 
@@ -110,12 +116,7 @@ namespace FancyZonesEditor
 
         private void Select(LayoutModel newSelection)
         {
-            if (App.Overlay.CurrentDataContext is LayoutModel currentSelection)
-            {
-                currentSelection.IsSelected = false;
-            }
-
-            newSelection.IsSelected = true;
+            _settings.SetSelectedModel(newSelection);
             App.Overlay.CurrentDataContext = newSelection;
         }
 
@@ -175,22 +176,19 @@ namespace FancyZonesEditor
             model.Name = name + " (" + (++maxCustomIndex) + ')';
 
             model.Persist();
+
+            App.Overlay.SaveCurrentLayoutSettings(model);
             App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
         private void Apply()
         {
-            ((App)Application.Current).MainWindowSettings.ResetAppliedModel();
-
             var mainEditor = App.Overlay;
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
-                model.Apply();
-            }
-
-            if (!mainEditor.MultiMonitorMode)
-            {
-                Close();
+                _settings.SetAppliedModel(model);
+                App.Overlay.SaveCurrentLayoutSettings(model);
+                App.FancyZonesEditorIO.SerializeZoneSettings();
             }
         }
 
@@ -220,6 +218,18 @@ namespace FancyZonesEditor
 
         private async void EditLayout_Click(object sender, RoutedEventArgs e)
         {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            _settings.SetSelectedModel((LayoutModel)dataContext);
+
+            if (_settings.SelectedModel is GridLayoutModel grid)
+            {
+                _backup = new GridLayoutModel(grid);
+            }
+            else if (_settings.SelectedModel is CanvasLayoutModel canvas)
+            {
+                _backup = new CanvasLayoutModel(canvas);
+            }
+
             await EditLayoutDialog.ShowAsync();
         }
 
@@ -231,9 +241,9 @@ namespace FancyZonesEditor
                 return;
             }
 
-            model.IsSelected = false;
-            Hide();
+            _settings.SetSelectedModel(model);
 
+            Hide();
             mainEditor.OpenEditor(model);
         }
 
@@ -267,11 +277,6 @@ namespace FancyZonesEditor
             overlay.CurrentDataContext = MainWindowSettingsModel.BlankModel;
 
             App.FancyZonesEditorIO.SerializeZoneSettings();
-
-            if (!overlay.MultiMonitorMode)
-            {
-                Close();
-            }
         }
 
         private void NewLayoutDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
@@ -330,6 +335,39 @@ namespace FancyZonesEditor
         private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
         {
             monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
+        }
+
+        // EditLayout: Cancel changes
+        private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            // restore model properties from settings
+            _settings.RestoreSelectedModel(_backup);
+            _backup = null;
+
+            Select(_settings.AppliedModel);
+        }
+
+        // EditLayout: Save changes
+        private void EditLayoutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            var mainEditor = App.Overlay;
+            if (!(mainEditor.CurrentDataContext is LayoutModel model))
+            {
+                return;
+            }
+
+            _backup = null;
+
+            // update current settings
+            if (model == _settings.AppliedModel)
+            {
+                App.Overlay.SaveCurrentLayoutSettings(model);
+            }
+
+            App.FancyZonesEditorIO.SerializeZoneSettings();
+
+            // reset selected model
+            Select(_settings.AppliedModel);
         }
     }
 }

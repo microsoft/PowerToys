@@ -39,6 +39,9 @@ namespace NonLocalizable
     const wchar_t RefWidthStr[] = L"ref-width";
     const wchar_t RowsPercentageStr[] = L"rows-percentage";
     const wchar_t RowsStr[] = L"rows";
+    const wchar_t SensitivityRadius[] = L"sensitivity-radius";
+    const wchar_t ShowSpacing[] = L"show-spacing";
+    const wchar_t Spacing[] = L"spacing";
     const wchar_t TypeStr[] = L"type";
     const wchar_t UuidStr[] = L"uuid";
     const wchar_t WidthStr[] = L"width";
@@ -137,6 +140,7 @@ namespace JSONHelpers
             zonesJson.Append(zoneJson);
         }
         infoJson.SetNamedValue(NonLocalizable::ZonesStr, zonesJson);
+        infoJson.SetNamedValue(NonLocalizable::SensitivityRadius, json::value(canvasInfo.sensitivityRadius));
         return infoJson;
     }
 
@@ -161,6 +165,8 @@ namespace JSONHelpers
                 FancyZonesDataTypes::CanvasLayoutInfo::Rect zone{ x, y, width, height };
                 info.zones.push_back(zone);
             }
+
+            info.sensitivityRadius = infoJson.GetNamedNumber(NonLocalizable::SensitivityRadius, DefaultValues::SensitivityRadius);
             return info;
         }
         catch (const winrt::hresult_error&)
@@ -183,6 +189,10 @@ namespace JSONHelpers
             cellChildMapJson.Append(NumVecToJsonArray(gridInfo.m_cellChildMap[i]));
         }
         infoJson.SetNamedValue(NonLocalizable::CellChildMapStr, cellChildMapJson);
+        
+        infoJson.SetNamedValue(NonLocalizable::SensitivityRadius, json::value(gridInfo.m_sensitivityRadius));
+        infoJson.SetNamedValue(NonLocalizable::ShowSpacing, json::value(gridInfo.m_showSpacing));
+        infoJson.SetNamedValue(NonLocalizable::Spacing, json::value(gridInfo.m_spacing));
 
         return infoJson;
     }
@@ -216,6 +226,10 @@ namespace JSONHelpers
                 }
                 info.cellChildMap().push_back(JsonArrayToNumVec(cellsArray));
             }
+
+            info.m_showSpacing = infoJson.GetNamedBoolean(NonLocalizable::ShowSpacing, DefaultValues::ShowSpacing);
+            info.m_spacing = infoJson.GetNamedNumber(NonLocalizable::Spacing, DefaultValues::Spacing);
+            info.m_sensitivityRadius = infoJson.GetNamedNumber(NonLocalizable::SensitivityRadius, DefaultValues::SensitivityRadius);
 
             return info;
         }
