@@ -133,15 +133,19 @@
                       SelectedValuePath="Key" />
             
             <CheckBox x:Uid="ColorPicker_ShowColorName"
-                          IsChecked="{Binding ShowColorName, Mode=TwoWay}"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{Binding IsEnabled}"/>
+                      IsChecked="{Binding ShowColorName, Mode=TwoWay}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{Binding IsEnabled}"/>
+
+            <TextBlock x:Uid="ColorPicker_Editor"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
             
-            <TextBlock Margin="{StaticResource MediumTopMargin}"
-                       x:Name="ColorFormatsListViewLabel"
+            <TextBlock x:Name="ColorFormatsListViewLabel"
                        TextWrapping="WrapWholeWords"
                        x:Uid="ColorPicker_ColorFormatsDescription"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
             <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
                       AllowDrop="True"
                       MaxWidth="466"
@@ -149,7 +153,7 @@
                       AutomationProperties.LabeledBy="{Binding ElementName=ColorFormatsListViewLabel}"
                       CanReorderItems="True"
                       HorizontalAlignment="Left"
-                      Margin="-12,6,0,0">
+                      Margin="-12,12,0,0">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Width="466" Background="Transparent">
