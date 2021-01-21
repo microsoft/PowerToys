@@ -281,7 +281,7 @@ void queryKey(HKEY key, wofstream& stream, int indent = 1)
     LPBYTE value;
 
     // Get the class name and the value count. 
-    retCode = RegQueryInfoKey(key,achClass, &cchClassName, NULL, &cSubKeys, &cbMaxSubKey, &cchMaxClass, &cValues, &cchMaxValue, &cbMaxValueData, NULL, NULL);
+    retCode = RegQueryInfoKeyW(key,achClass, &cchClassName, NULL, &cSubKeys, &cbMaxSubKey, &cchMaxClass, &cValues, &cchMaxValue, &cbMaxValueData, NULL, NULL);
 
     // Values
     if (cValues)
@@ -291,7 +291,7 @@ void queryKey(HKEY key, wofstream& stream, int indent = 1)
             cchValue = 255;
             achValue[0] = '\0';
             value = new BYTE[16383];
-            retCode = RegEnumValue(key, i, achValue, &cchValue, NULL, NULL, value, &cchValue);
+            retCode = RegEnumValueW(key, i, achValue, &cchValue, NULL, NULL, value, &cchValue);
 
             if (retCode == ERROR_SUCCESS)
             {
@@ -323,7 +323,7 @@ void queryKey(HKEY key, wofstream& stream, int indent = 1)
         for (i = 0; i < cSubKeys; ++i)
         {
             cbName = 255;
-            retCode = RegEnumKeyEx(key, i, achKey, &cbName, NULL, NULL, NULL, NULL);
+            retCode = RegEnumKeyExW(key, i, achKey, &cbName, NULL, NULL, NULL, NULL);
             if (retCode == ERROR_SUCCESS)
             {
                 vecKeys.push_back(achKey);
