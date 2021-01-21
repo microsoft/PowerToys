@@ -87,8 +87,6 @@ appxmanifest
 APSTUDIO
 AQS
 arcosh
-arsinh
-artanh
 ARemapped
 argb
 argc
@@ -100,6 +98,8 @@ arjunbalgovind
 ARPINSTALLLOCATION
 ARPPRODUCTICON
 ARRAYSIZE
+arsinh
+artanh
 Artboard
 asdf
 AShortcut
@@ -119,7 +119,6 @@ atlfile
 atlstr
 attr
 Attribs
-AUMID
 aumid
 AUTHN
 AUTOAPPEND
@@ -195,6 +194,7 @@ BTNFACE
 Bto
 buf
 BUFSIZE
+bugreport
 Buid
 buildcommand
 buildtools
@@ -469,7 +469,6 @@ DISPIDAMBIENTDLCONTROL
 DISPINFO
 Displayandhidethedesktop
 DISPLAYCHANGE
-DISPLAYNAME
 displayname
 divyan
 DLACTIVEXCTLS
@@ -862,7 +861,6 @@ HLSL
 hmenu
 hmodule
 hmon
-HMONITOR
 hmonitor
 HOLDENTER
 HOLDESC
@@ -981,7 +979,6 @@ IJson
 IList
 ILogon
 IMAGEHLP
-IMAGENAME
 imageresizer
 IMAGERESIZEREXT
 imageresizersettings
@@ -1852,7 +1849,7 @@ RUNLEVEL
 runsettings
 runtimeclass
 runtimeconfig
-Runtimes
+runtimes
 rv
 rvalue
 rvm
@@ -2492,7 +2489,6 @@ XOffset
 xpath
 XResource
 xsd
-xsi
 XSmall
 XStr
 XToolset
