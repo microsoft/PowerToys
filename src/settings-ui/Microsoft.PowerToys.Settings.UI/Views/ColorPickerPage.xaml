@@ -154,7 +154,7 @@
                       AutomationProperties.LabeledBy="{Binding ElementName=ColorFormatsListViewLabel}"
                       CanReorderItems="True"
                       HorizontalAlignment="Left"
-                      Margin="-12,12,0,0">
+                      Margin="-12,6,0,0">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Width="466" Background="Transparent">
