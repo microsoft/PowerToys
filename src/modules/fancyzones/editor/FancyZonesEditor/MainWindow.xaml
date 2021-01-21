@@ -27,6 +27,7 @@
     <Window.Resources>
 
         <Converters:LayoutModelTypeToVisibilityConverter x:Key="LayoutModelTypeToVisibilityConverter" />
+        <Converters:LayoutTypeCustomToVisibilityConverter x:Key="LayoutTypeCustomToVisibilityConverter" />
 
         <DropShadowEffect x:Key="CardShadow" BlurRadius="6"
                           Opacity="0.24"
@@ -392,6 +393,7 @@
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
                         Height="48"
+                        Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"
                         Style="{StaticResource AccentButtonStyle}">
                     <Button.Content>
                         <StackPanel Orientation="Horizontal">
