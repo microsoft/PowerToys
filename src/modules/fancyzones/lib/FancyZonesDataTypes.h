@@ -78,7 +78,6 @@ namespace FancyZonesDataTypes
 
         inline int rows() const { return m_rows; }
         inline int columns() const { return m_columns; }
-        
         inline const std::vector<int>& rowsPercents() const { return m_rowsPercents; };
         inline const std::vector<int>& columnsPercents() const { return m_columnsPercents; };
         inline const std::vector<std::vector<int>>& cellChildMap() const { return m_cellChildMap; };
