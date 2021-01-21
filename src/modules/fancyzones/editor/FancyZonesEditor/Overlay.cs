@@ -199,7 +199,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public void SaveLayoutSettings(LayoutModel model)
+        public void SaveCurrentLayoutSettings(LayoutModel model)
         {
             if (model == null)
             {
@@ -221,8 +221,6 @@ namespace FancyZonesEditor
                 CurrentLayoutSettings.ShowSpacing = false;
                 CurrentLayoutSettings.Spacing = 0;
             }
-
-            App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
         public void OpenEditor(LayoutModel model)

@@ -177,7 +177,8 @@ namespace FancyZonesEditor
 
             model.Persist();
 
-            App.Overlay.SaveLayoutSettings(model);
+            App.Overlay.SaveCurrentLayoutSettings(model);
+            App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
         private void Apply()
@@ -186,7 +187,8 @@ namespace FancyZonesEditor
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
                 _settings.SetAppliedModel(model);
-                App.Overlay.SaveLayoutSettings(model);
+                App.Overlay.SaveCurrentLayoutSettings(model);
+                App.FancyZonesEditorIO.SerializeZoneSettings();
             }
         }
 
@@ -356,11 +358,13 @@ namespace FancyZonesEditor
 
             _backup = null;
 
-            // update settings
-            if (model.Type == LayoutType.Custom || model == _settings.AppliedModel)
+            // update current settings
+            if (model == _settings.AppliedModel)
             {
-                App.Overlay.SaveLayoutSettings(model);
+                App.Overlay.SaveCurrentLayoutSettings(model);
             }
+
+            App.FancyZonesEditorIO.SerializeZoneSettings();
 
             // reset selected model
             Select(_settings.AppliedModel);
