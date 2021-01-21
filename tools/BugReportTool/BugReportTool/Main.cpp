@@ -13,6 +13,7 @@
 #include <common/utils/exec.h>
 
 #include "ReportMonitorInfo.h"
+#include "ReportRegistry.h"
 using namespace std;
 using namespace std::filesystem;
 using namespace winrt::Windows::Data::Json;
@@ -148,27 +149,6 @@ void hideUserPrivateInfo(const filesystem::path& dir)
     }
 }
 
-void reportMonitorInfo(const filesystem::path& tmpDir)
-{
-    auto monitorReportPath = tmpDir;
-    monitorReportPath.append("monitor-report-info.txt");
-
-    try
-    {
-        wofstream monitorReport(monitorReportPath);
-        monitorReport << "GetSystemMetrics = " << GetSystemMetrics(SM_CMONITORS) << '\n';
-        report(monitorReport);
-    }
-    catch (std::exception& ex)
-    {
-        printf("Failed to report monitor info. %s\n", ex.what());
-    }
-    catch (...)
-    {
-        printf("Failed to report monitor info\n");
-    }
-}
-
 void reportWindowsVersion(const filesystem::path& tmpDir)
 {
     auto versionReportPath = tmpDir;
@@ -284,6 +264,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Write dotnet installation info to the temporary folder
     reportDotNetInstallationInfo(tmpDir);
+
+    // Write registry to the temporary folder
+    reportRegistry(tmpDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
