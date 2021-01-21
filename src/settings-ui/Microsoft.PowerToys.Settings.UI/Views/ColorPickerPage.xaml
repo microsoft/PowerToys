@@ -144,7 +144,8 @@
             <TextBlock x:Name="ColorFormatsListViewLabel"
                        TextWrapping="WrapWholeWords"
                        x:Uid="ColorPicker_ColorFormatsDescription"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Margin="{StaticResource SmallTopMargin}"/>
             
             <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
                       AllowDrop="True"
