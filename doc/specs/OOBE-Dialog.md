@@ -74,7 +74,7 @@ The base of this OOBE dialog was attributed by [Niel’s mock-up](https://github
 |4 | A page should include a link to that PowerToys overview page on Microsoft Docs. | P0 |
 |5 | For applicable PowerToys, include a &quot;Launch&quot; button on the page to allow users to instantiate the PowerToy directly from the OOBE dialog window. | P1 |
 |6 | Include a &quot;Settings&quot; button that deep links to the PowerToy's settings page. | P1 |
-|7 | A page should include a shortlist of relevant settings options that the user can select between to customize their experience. | P1 |
+|7 | A page should include a short-list of relevant settings options that the user can select between to customize their experience. | P1 |
 |8 | Include a &quot;Pro Tips&quot; section on the page that highlights a useful, yet often undiscovered feature for its PowerToy. | P3 |
 
 ### 3.2. Displayed Options
