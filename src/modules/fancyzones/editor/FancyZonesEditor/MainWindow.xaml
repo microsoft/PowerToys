@@ -416,6 +416,7 @@
                            Foreground="{DynamicResource PrimaryForegroundBrush}" />
                 <TextBox Text="{Binding Name}"
                          Margin="0,6,0,0"
+                         IsEnabled="{Binding IsCustom}"
                          AutomationProperties.LabeledBy="{Binding ElementName=nameHeader}" />
                 <StackPanel Margin="0,16,0,0"
                             Orientation="Vertical">

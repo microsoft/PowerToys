@@ -90,6 +90,14 @@ namespace FancyZonesEditor.Models
             }
         }
 
+        public bool IsCustom
+        {
+            get
+            {
+                return Type == LayoutType.Custom;
+            }
+        }
+
         // IsSelected (not-persisted) - tracks whether or not this LayoutModel is selected in the picker
         // TODO: once we switch to a picker per monitor, we need to move this state to the view
         public bool IsSelected
