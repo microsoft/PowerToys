@@ -250,6 +250,10 @@
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
                   <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
                 </Directory>
+                <Directory Id="RegistryPluginFolder" Name="Microsoft.PowerToys.Run.Plugin.Registry">
+                  <Directory Id="RegistryImagesFolder" Name="Images" />
+                  <Directory Id="RegistryLanguagesFolder" Name="Languages" />
+                </Directory>
                 <Directory Id="ServicePluginFolder" Name="Service">
                   <Directory Id="ServiceImagesFolder" Name="Images" />
                 </Directory>
@@ -796,7 +800,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
@@ -874,6 +878,9 @@
                 </Component>
                 <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
                     <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
+                </Component>
+                <Component Id="Launcher_Registry_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)RegistryPluginFolder">
+                    <File Id="Launcher_Registry_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Registry.resources.dll" />
                 </Component>
                 <?undef IdSafeLanguage?>
             <?endforeach?>
@@ -987,6 +994,17 @@
       <Component Id="WindowWalkerImagesComponent" Directory="WindowWalkerImagesFolder" Guid="3944A7F5-77F4-4979-9911-EDE709B2F509">
           <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.dark.png" />
           <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.light.png" />
+      </Component>
+
+      <!-- Registry Plugin -->
+      <Component Id="RegistryComponent" Directory="RegistryPluginFolder" Guid="186FDFDC-12F1-4221-BEF6-DE6763F54B18">
+        <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;ManagedTelemetry.dll?>
+          <File Id="Registry_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="RegistryImagesComponent" Directory="RegistryImagesFolder" Guid="2E2C91A2-9F53-40C6-BBE9-E6FD6D6E94EB">
+          <File Id="RegistryDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Images\reg.dark.png" />
+          <File Id="RegistryLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Images\reg.light.png" />
       </Component>
 
       <!-- Service Plugin -->
