@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
@@ -10,36 +11,37 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
     {
         public VSCodeWorkspacesApi() { }
 
-        public List<VSCodeWorkspace> Search(string query)
+        public List<VSCodeWorkspace> Workspaces
         {
-            var results = new List<VSCodeWorkspace>();
-
-            foreach (var vscodeInstance in VSCodeInstances.instances)
+            get
             {
-                // storage.json contains opened Workspaces
-                var vscode_storage = Path.Combine(vscodeInstance.AppData, "storage.json");
 
-                if (File.Exists(vscode_storage))
+                var results = new List<VSCodeWorkspace>();
+
+                foreach (var vscodeInstance in VSCodeInstances.instances)
                 {
-                    var fileContent = File.ReadAllText(vscode_storage);
+                    // storage.json contains opened Workspaces
+                    var vscode_storage = Path.Combine(vscodeInstance.AppData, "storage.json");
 
-                    try
+                    if (File.Exists(vscode_storage))
                     {
-                        VSCodeStorageFile vscodeStorageFile = JsonConvert.DeserializeObject<VSCodeStorageFile>(fileContent);
+                        var fileContent = File.ReadAllText(vscode_storage);
 
-                        if (vscodeStorageFile != null)
+                        try
                         {
-                            foreach (var workspaceUri in vscodeStorageFile.openedPathsList.workspaces3)
+                            VSCodeStorageFile vscodeStorageFile = JsonConvert.DeserializeObject<VSCodeStorageFile>(fileContent);
+
+                            if (vscodeStorageFile != null)
                             {
-                                if (workspaceUri != null && workspaceUri is String)
+                                foreach (var workspaceUri in vscodeStorageFile.openedPathsList.workspaces3)
                                 {
-                                    string unescapeUri = Uri.UnescapeDataString(workspaceUri);
-                                    var typeWorkspace = ParseVSCodeUri.GetTypeWorkspace(unescapeUri);
-                                    if (typeWorkspace.TypeWorkspace.HasValue)
+                                    if (workspaceUri != null && workspaceUri is String)
                                     {
-                                        var folderName = Path.GetFileName(unescapeUri);
-                                        if (folderName.ToLower().Contains(query.ToLower()))
+                                        string unescapeUri = Uri.UnescapeDataString(workspaceUri);
+                                        var typeWorkspace = ParseVSCodeUri.GetTypeWorkspace(unescapeUri);
+                                        if (typeWorkspace.TypeWorkspace.HasValue)
                                         {
+                                            var folderName = Path.GetFileName(unescapeUri);
                                             results.Add(new VSCodeWorkspace()
                                             {
                                                 Path = workspaceUri,
@@ -54,15 +56,19 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                                 }
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            var message = $"Failed to deserialize ${vscode_storage}";
+                            Log.Exception(message, ex, GetType());
+                        }
+
                     }
-                    catch (Exception ex){}
 
                 }
 
+
+                return results;
             }
-
-
-            return results;
         }
     }
 }
