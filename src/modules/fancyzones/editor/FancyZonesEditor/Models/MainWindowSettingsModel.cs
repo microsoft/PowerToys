@@ -24,7 +24,6 @@ namespace FancyZonesEditor
             VirtualDesktopId,
         }
 
-        private readonly CanvasLayoutModel _focusModel;
         private readonly GridLayoutModel _rowsModel;
         private readonly GridLayoutModel _columnsModel;
         private readonly GridLayoutModel _gridModel;
@@ -62,11 +61,8 @@ namespace FancyZonesEditor
 
         public MainWindowSettingsModel()
         {
-            // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
-            DefaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
-            _focusModel.InitTemplateZones();
-            DefaultModels.Add(_focusModel);
+            // Initialize the five default layout models: Columns, Rows, Grid, and PriorityGrid
+            DefaultModels = new List<LayoutModel>(4);
 
             _columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
             {
