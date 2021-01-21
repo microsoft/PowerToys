@@ -30,27 +30,38 @@ vector<wstring> filesToDelete = {
     L"PowerToys Run\\Settings\\QueryHistory.json"
 };
 
-vector<pair<wstring, wstring>> registryKeys = {
-    { L"HKEY_CLASSES_ROOT", L"Software\\Classes\\CLSID\\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}" },
-    { L"HKEY_CLASSES_ROOT", L"powertoys" },
-    { L"HKEY_CLASSES_ROOT", L"CLSID\\{ddee2b8a-6807-48a6-bb20-2338174ff779}" },
-    { L"HKEY_CLASSES_ROOT", L"CLSID\\{36B27788-A8BB-4698-A756-DF9F11F64F84}" },
-    { L"HKEY_CLASSES_ROOT", L"CLSID\\{45769bcc-e8fd-42d0-947e-02beef77a1f5}" },
-    { L"HKEY_CLASSES_ROOT", L"AppID\\{CF142243-F059-45AF-8842-DBBE9783DB14}" },
-    { L"HKEY_CLASSES_ROOT", L"CLSID\\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\\InprocServer32" },
-    { L"HKEY_CLASSES_ROOT", L"CLSID\\{0440049F-D1DC-4E46-B27B-98393D79486B}" },
-    { L"HKEY_CLASSES_ROOT", L"AllFileSystemObjects\\ShellEx\\ContextMenuHandlers\\PowerRenameExt" },
-    { L"HKEY_CURRENT_USER", L"SOFTWARE\\Classes\\AppUserModelId\\PowerToysRun" },
-    { L"HKEY_CLASSES_ROOT", L".svg\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
-    { L"HKEY_CLASSES_ROOT", L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
-    { L"HKEY_CLASSES_ROOT", L".md\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" }
+vector<pair<HKEY, wstring>> registryKeys = {
+    { HKEY_CLASSES_ROOT, L"Software\\Classes\\CLSID\\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}" },
+    { HKEY_CLASSES_ROOT, L"powertoys" },
+    { HKEY_CLASSES_ROOT, L"CLSID\\{ddee2b8a-6807-48a6-bb20-2338174ff779}" },
+    { HKEY_CLASSES_ROOT, L"CLSID\\{36B27788-A8BB-4698-A756-DF9F11F64F84}" },
+    { HKEY_CLASSES_ROOT, L"CLSID\\{45769bcc-e8fd-42d0-947e-02beef77a1f5}" },
+    { HKEY_CLASSES_ROOT, L"AppID\\{CF142243-F059-45AF-8842-DBBE9783DB14}" },
+    { HKEY_CLASSES_ROOT, L"CLSID\\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\\InprocServer32" },
+    { HKEY_CLASSES_ROOT, L"CLSID\\{0440049F-D1DC-4E46-B27B-98393D79486B}" },
+    { HKEY_CLASSES_ROOT, L"AllFileSystemObjects\\ShellEx\\ContextMenuHandlers\\PowerRenameExt" },
+    { HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\AppUserModelId\\PowerToysRun" },
+    { HKEY_CLASSES_ROOT, L".svg\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
+    { HKEY_CLASSES_ROOT, L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
+    { HKEY_CLASSES_ROOT, L".md\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" }
 };
 
-vector<tuple<wstring, wstring, wstring>> registryValues = {
-    { L"HKEY_LOCAL_MACHINE", L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{ddee2b8a-6807-48a6-bb20-2338174ff779}" },
-    { L"HKEY_LOCAL_MACHINE", L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}" },
-    { L"HKEY_LOCAL_MACHINE", L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"prevhost.exe" },
-    { L"HKEY_LOCAL_MACHINE", L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"dllhost.exe" }
+vector<tuple<HKEY, wstring, wstring>> registryValues = {
+    { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{ddee2b8a-6807-48a6-bb20-2338174ff779}" },
+    { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}" },
+    { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"prevhost.exe" },
+    { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"dllhost.exe" }
+};
+
+// Is there a Windows API for this?
+std::unordered_map<HKEY, wstring> hKeyToString = {
+    { HKEY_CLASSES_ROOT, L"HKEY_CLASSES_ROOT" },
+    { HKEY_CURRENT_USER, L"HKEY_CURRENT_USER" },
+    { HKEY_LOCAL_MACHINE, L"HKEY_LOCAL_MACHINE" },
+    { HKEY_PERFORMANCE_DATA, L"HKEY_PERFORMANCE_DATA" },
+    { HKEY_PERFORMANCE_NLSTEXT, L"HKEY_PERFORMANCE_NLSTEXT"},
+    { HKEY_PERFORMANCE_TEXT, L"HKEY_PERFORMANCE_TEXT"},
+    { HKEY_USERS, L"HKEY_USERS"},
 };
 
 vector<wstring> getXpathArray(wstring xpath)
@@ -250,7 +261,7 @@ void reportDotNetInstallationInfo(const filesystem::path& tmpDir)
     }
 }
 
-void queryKey(HKEY key, wofstream& stream, int ident = 1)
+void queryKey(HKEY key, wofstream& stream, int indent = 1)
 {
     TCHAR achKey[255];
     DWORD cbName;
@@ -284,7 +295,7 @@ void queryKey(HKEY key, wofstream& stream, int ident = 1)
 
             if (retCode == ERROR_SUCCESS)
             {
-                stream << wstring(ident, '\t');
+                stream << wstring(indent, '\t');
                 if (achValue[0] == '\0')
                 {
                     stream << "Default";
@@ -320,13 +331,13 @@ void queryKey(HKEY key, wofstream& stream, int ident = 1)
         }
 
         // Parsing subkeys recursively
-        for (std::vector<wstring>::iterator iter = vecKeys.begin(), end = vecKeys.end(); iter != end; ++iter)
+        for (auto& child : vecKeys)
         {
             HKEY hTestKey;
-            if (RegOpenKeyExW(key, iter->c_str(), 0, KEY_READ, &hTestKey) == ERROR_SUCCESS)
+            if (RegOpenKeyExW(key, child.c_str(), 0, KEY_READ, &hTestKey) == ERROR_SUCCESS)
             {
-                stream << wstring(ident, '\t') << iter[0] << "\n";
-                queryKey(hTestKey, stream, ident++);
+                stream << wstring(indent, '\t') << child << "\n";
+                queryKey(hTestKey, stream, indent + 1);
                 RegCloseKey(hTestKey);
             }
             else
@@ -337,19 +348,6 @@ void queryKey(HKEY key, wofstream& stream, int ident = 1)
     }
 }
 
-HKEY getRootKey(wstring key)
-{
-    if (key == L"HKEY_CURRENT_USER")
-    {
-        return HKEY_CURRENT_USER;
-    }
-    else if (key == L"HKEY_LOCAL_MACHINE")
-    {
-        return HKEY_LOCAL_MACHINE;
-    }
-    return HKEY_CLASSES_ROOT;
-}
-
 void reportRegistry(const filesystem::path& tmpDir)
 {
     auto registryReportPath = tmpDir;
@@ -358,13 +356,12 @@ void reportRegistry(const filesystem::path& tmpDir)
     wofstream registryReport(registryReportPath);
     try
     {
-        for (auto k : registryKeys)
+        for (auto [rootKey, subKey] : registryKeys)
         {
-            registryReport << k.first << "\\" << k.second << "\n";
+            registryReport << hKeyToString[rootKey] << "\\" << subKey << "\n";
 
-            HKEY rootKey = getRootKey(k.first);
             HKEY outKey;
-            LONG result = RegOpenKeyEx(rootKey, k.second.c_str(), 0, KEY_READ, &outKey);
+            LONG result = RegOpenKeyExW(rootKey, subKey.c_str(), 0, KEY_READ, &outKey);
             if (result == ERROR_SUCCESS)
             {
                 queryKey(outKey, registryReport);
@@ -377,27 +374,25 @@ void reportRegistry(const filesystem::path& tmpDir)
             registryReport << "\n";
         }
 
-        for (auto v : registryValues)
+        for (auto [rootKey, subKey, value] : registryValues)
         {
-            registryReport << std::get<0>(v) << "\\" << std::get<1>(v) << "\n";
-
-            HKEY rootKey = getRootKey(std::get<0>(v));
+            registryReport << hKeyToString[rootKey] << "\\" << subKey << "\n";
 
             // Reading size
             DWORD dataSize = 0;
             DWORD flags = RRF_RT_ANY;
             DWORD type;
-            LONG result = RegGetValue(rootKey, std::get<1>(v).c_str(), std::get<2>(v).c_str(), flags, &type, NULL, &dataSize);
+            LONG result = RegGetValueW(rootKey, subKey.c_str(), value.c_str(), flags, &type, NULL, &dataSize);
             if (result == ERROR_SUCCESS)
             {
                 // Reading value
                 if (type == REG_SZ) // string
                 {
-                    std::wstring data(dataSize / sizeof(wchar_t), L' ');
-                    result = RegGetValue(rootKey, std::get<1>(v).c_str(), std::get<2>(v).c_str(), flags, &type, &data[0], &dataSize);
+                    std::wstring data(dataSize / sizeof(wchar_t) + 1, L' ');
+                    result = RegGetValueW(rootKey, subKey.c_str(), value.c_str(), flags, &type, &data[0], &dataSize);
                     if (result == ERROR_SUCCESS)
                     {
-                        registryReport << "\t" << std::get<2>(v) << " > " << data << "\n";
+                        registryReport << "\t" << value << " > " << data << "\n";
                     }
                     else
                     {
@@ -408,10 +403,10 @@ void reportRegistry(const filesystem::path& tmpDir)
                 {
                     DWORD data = 0;
                     DWORD dataSize = sizeof(data);
-                    LONG retCode = RegGetValue(rootKey, std::get<1>(v).c_str(), std::get<2>(v).c_str(), flags, &type, &data, &dataSize);
+                    LONG retCode = RegGetValueW(rootKey, subKey.c_str(), value.c_str(), flags, &type, &data, &dataSize);
                     if (result == ERROR_SUCCESS)
                     {
-                        registryReport << "\t" << std::get<2>(v) << " > " << data << "\n";
+                        registryReport << "\t" << value << " > " << data << "\n";
                     }
                     else
                     {
