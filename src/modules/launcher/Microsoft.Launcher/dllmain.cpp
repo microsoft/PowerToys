@@ -377,7 +377,7 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
         }
         else
         {
-            Logger::info("PT Launcher start shortcut is not present in settings. Use default shortcut instead.");
+            Logger::info("PT Run start shortcut is not present in settings. Use default shortcut instead.");
             m_hotkey.win = false;
             m_hotkey.alt = true;
             m_hotkey.shift = false;
