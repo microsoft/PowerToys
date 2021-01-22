@@ -1850,7 +1850,8 @@ RUNLEVEL
 runsettings
 runtimeclass
 runtimeconfig
-runtimes
+Runtimes
+Rutkas
 rv
 rvalue
 rvm
@@ -2105,6 +2106,7 @@ syslog
 SYSMENU
 systemd
 SYSTEMTIME
+systray
 sz
 tadele
 Tahoma
