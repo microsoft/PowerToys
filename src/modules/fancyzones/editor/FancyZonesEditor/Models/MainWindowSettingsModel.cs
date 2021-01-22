@@ -24,6 +24,7 @@ namespace FancyZonesEditor
             VirtualDesktopId,
         }
 
+        private readonly CanvasLayoutModel _blankModel;
         private readonly CanvasLayoutModel _focusModel;
         private readonly GridLayoutModel _rowsModel;
         private readonly GridLayoutModel _columnsModel;
@@ -60,8 +61,13 @@ namespace FancyZonesEditor
 
         public MainWindowSettingsModel()
         {
-            // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
-            DefaultModels = new List<LayoutModel>(5);
+            // Initialize the five default layout models: Blank, Focus, Columns, Rows, Grid, and PriorityGrid
+            DefaultModels = new List<LayoutModel>(6);
+
+            _blankModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Blank, LayoutType.Blank);
+            _blankModel.TemplateZoneCount = 0;
+            DefaultModels.Add(_blankModel);
+
             _focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
             _focusModel.InitTemplateZones();
             DefaultModels.Add(_focusModel);
@@ -143,16 +149,6 @@ namespace FancyZonesEditor
 
         private static ObservableCollection<LayoutModel> _customModels = new ObservableCollection<LayoutModel>();
 
-        public static CanvasLayoutModel BlankModel
-        {
-            get
-            {
-                return _blankModel;
-            }
-        }
-
-        private static CanvasLayoutModel _blankModel = new CanvasLayoutModel(string.Empty, LayoutType.Blank);
-
         public LayoutModel SelectedModel
         {
             get
@@ -202,11 +198,7 @@ namespace FancyZonesEditor
             LayoutSettings currentApplied = App.Overlay.CurrentLayoutSettings;
 
             // set new layout
-            if (currentApplied.Type == LayoutType.Blank)
-            {
-                foundModel = BlankModel;
-            }
-            else if (currentApplied.Type == LayoutType.Custom)
+            if (currentApplied.Type == LayoutType.Custom)
             {
                 foreach (LayoutModel model in CustomModels)
                 {
@@ -242,7 +234,7 @@ namespace FancyZonesEditor
 
             if (foundModel == null)
             {
-                foundModel = DefaultModels[4]; // PriorityGrid
+                foundModel = DefaultModels[5]; // PriorityGrid
             }
 
             SetSelectedModel(foundModel);
