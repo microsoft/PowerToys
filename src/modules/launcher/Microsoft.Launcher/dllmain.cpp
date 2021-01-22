@@ -382,7 +382,7 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
             m_hotkey.alt = true;
             m_hotkey.shift = false;
             m_hotkey.ctrl = false;
-            m_hotkey.key = 32;
+            m_hotkey.key = VK_SPACE;
         }
     }
     catch (...)
