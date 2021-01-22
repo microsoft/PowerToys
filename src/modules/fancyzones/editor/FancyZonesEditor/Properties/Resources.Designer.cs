@@ -521,6 +521,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Number of zones.
+        /// </summary>
+        public static string NumberOfZones {
+            get {
+                return ResourceManager.GetString("NumberOfZones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reset layout.
         /// </summary>
         public static string Reset_Layout {
