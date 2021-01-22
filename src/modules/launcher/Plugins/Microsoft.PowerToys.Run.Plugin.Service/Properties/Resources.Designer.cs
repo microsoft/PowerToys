@@ -8,8 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.PowerToys.Run.Plugin.Service.Properties
-{
+namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -68,7 +70,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open services (Ctrl+Shift+O).
+        ///   Looks up a localized string similar to Open services (Ctrl+O).
         /// </summary>
         internal static string wox_plugin_service_open_services {
             get {
@@ -113,7 +115,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restart (Ctrl+Shift+R).
+        ///   Looks up a localized string similar to Restart (Ctrl+R).
         /// </summary>
         internal static string wox_plugin_service_restart {
             get {
