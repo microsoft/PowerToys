@@ -23,6 +23,9 @@ namespace FancyZonesEditor
                 }
 
                 model.Persist();
+
+                MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
+                settings.SetAppliedModel(model);
             }
 
             App.FancyZonesEditorIO.SerializeZoneSettings();
