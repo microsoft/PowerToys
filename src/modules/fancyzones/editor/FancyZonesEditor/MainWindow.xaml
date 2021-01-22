@@ -29,6 +29,7 @@
         <Converters:LayoutModelTypeToVisibilityConverter x:Key="LayoutModelTypeToVisibilityConverter" />
         <Converters:LayoutTypeCustomToVisibilityConverter x:Key="LayoutTypeCustomToVisibilityConverter" />
         <Converters:LayoutTypeTemplateToVisibilityConverter x:Key="LayoutTypeTemplateToVisibilityConverter" />
+        <Converters:LayoutModelTypeBlankToVisibilityConverter x:Key="LayoutModelTypeBlankToVisibilityConverter" />
 
         <DropShadowEffect x:Key="CardShadow" BlurRadius="6"
                           Opacity="0.24"
@@ -183,6 +184,7 @@
                                 BorderBrush="Transparent"
                                 Click="EditLayout_Click"
                                 Background="Transparent"
+                                Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}"
                                 Foreground="{DynamicResource PrimaryForegroundBrush}"
                                 ToolTip="{x:Static props:Resources.Edit_Layout}"
                                 AutomationProperties.Name="{x:Static props:Resources.Edit_Layout}"

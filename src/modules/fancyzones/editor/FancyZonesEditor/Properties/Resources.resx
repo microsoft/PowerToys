@@ -325,4 +325,7 @@ To merge zones, select the zones and click "merge".</value>
   <data name="NumberOfZones" xml:space="preserve">
     <value>Number of zones</value>
   </data>
+  <data name="Template_Layout_Blank" xml:space="preserve">
+    <value>No layout</value>
+  </data>
 </root>
