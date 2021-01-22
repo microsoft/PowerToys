@@ -121,7 +121,7 @@
     <value>Continue</value>
   </data>
   <data name="wox_plugin_service_open_services" xml:space="preserve">
-    <value>Open services (Ctrl+Shift+O)</value>
+    <value>Open services (Ctrl+O)</value>
   </data>
   <data name="wox_plugin_service_paused" xml:space="preserve">
     <value>Paused</value>
@@ -136,7 +136,7 @@
     <value>Service</value>
   </data>
   <data name="wox_plugin_service_restart" xml:space="preserve">
-    <value>Restart (Ctrl+Shift+R)</value>
+    <value>Restart (Ctrl+R)</value>
   </data>
   <data name="wox_plugin_service_restarted_notification" xml:space="preserve">
     <value>{0} has been restarted</value>

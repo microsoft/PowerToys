@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
                     Glyph = "\xE72C",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.R,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    AcceleratorModifiers = ModifierKeys.Control,
                     Action = _ =>
                     {
                         Task.Run(() => ServiceHelper.ChangeStatus(serviceResult, Action.Restart, _context.API));
@@ -96,7 +96,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
                 Glyph = "\xE8A7",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.O,
-                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                AcceleratorModifiers = ModifierKeys.Control,
                 Action = _ =>
                 {
                     Task.Run(() => ServiceHelper.OpenServices());
