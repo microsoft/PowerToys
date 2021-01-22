@@ -374,7 +374,8 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
             m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
             m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
             m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
-        }else
+        }
+        else
         {
             Logger::info("PT Launcher start shortcut is not present in settings. Use default shortcut instead.");
             m_hotkey.win = false;
