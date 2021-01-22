@@ -364,15 +364,29 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
 {
     try
     {
-        auto jsonHotkeyObject = settings.get_raw_json().GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OPEN_POWERLAUNCHER);
-        m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-        m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-        m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-        m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-        m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+        auto settingsObject = settings.get_raw_json();
+
+        if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
+        {
+            auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OPEN_POWERLAUNCHER);
+            m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+            m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+            m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+            m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+            m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+        }else
+        {
+            Logger::info("PT Launcher start shortcut is not present in settings. Use default shortcut instead.");
+            m_hotkey.win = false;
+            m_hotkey.alt = true;
+            m_hotkey.shift = false;
+            m_hotkey.ctrl = false;
+            m_hotkey.key = 32;
+        }
     }
     catch (...)
     {
+        Logger::error("Failed to initialize PT Launcher start shortcut");
         m_hotkey.key = 0;
     }
 }
