@@ -447,7 +447,8 @@
                 <TextBlock x:Name="numberOfZonesHeader"
                            Text="{x:Static props:Resources.NumberOfZones}"
                            Margin="0,16,0,0"
-                           Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                           Foreground="{DynamicResource PrimaryForegroundBrush}" 
+                           Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}" />
                 <StackPanel Margin="0,6,0,0" 
                             Orientation="Horizontal" 
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
