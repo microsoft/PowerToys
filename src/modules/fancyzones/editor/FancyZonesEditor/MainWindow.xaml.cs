@@ -286,32 +286,22 @@ namespace FancyZonesEditor
 
             if (GridLayoutRadioButton.IsChecked == true)
             {
-                // 1:1 Copy from MainWindowSettingsModel, so probably needs to be refactored / combined.
-                int multiplier = 10000;
-                int zoneCount = 3;
-
-                GridLayoutModel columnsModel = new GridLayoutModel(LayoutNameText.Text, LayoutType.Columns)
+                GridLayoutModel gridModel = new GridLayoutModel(LayoutNameText.Text, LayoutType.Columns)
                 {
                     Rows = 1,
-                    RowPercents = new List<int>(1) { multiplier },
+                    RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
                 };
-
-                columnsModel.CellChildMap = new int[1, zoneCount];
-                columnsModel.Columns = zoneCount;
-                columnsModel.ColumnPercents = new List<int>(zoneCount);
-
-                for (int i = 0; i < 3; i++)
-                {
-                    columnsModel.CellChildMap[0, i] = i;
-                    columnsModel.ColumnPercents.Add(((multiplier * (i + 1)) / zoneCount) - ((multiplier * i) / zoneCount));
-                }
-
-                selectedLayoutModel = columnsModel;
+                selectedLayoutModel = gridModel;
             }
             else
             {
-                selectedLayoutModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Blank);
+                selectedLayoutModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Custom)
+                {
+                    TemplateZoneCount = 0,
+                };
             }
+
+            selectedLayoutModel.InitTemplateZones();
 
             App.Overlay.CurrentDataContext = selectedLayoutModel;
             var mainEditor = App.Overlay;

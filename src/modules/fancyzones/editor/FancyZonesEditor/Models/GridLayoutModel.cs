@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -14,7 +14,7 @@ namespace FancyZonesEditor.Models
         // Non-localizable strings
         public const string ModelTypeID = "grid";
 
-        private const int _multiplier = 10000;
+        public const int GridMultiplier = 10000;
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static readonly byte[][] _priorityData = new byte[][]
@@ -78,10 +78,10 @@ namespace FancyZonesEditor.Models
         public int[,] CellChildMap { get; set; }
 
         // RowPercents - represents the %age height of each row in the grid
-        public List<int> RowPercents { get; set; }
+        public List<int> RowPercents { get; set; } = new List<int>();
 
         // ColumnPercents - represents the %age width of each column in the grid
-        public List<int> ColumnPercents { get; set; }
+        public List<int> ColumnPercents { get; set; } = new List<int>();
 
         // ShowSpacing - flag if free space between cells should be presented
         public bool ShowSpacing
@@ -170,13 +170,11 @@ namespace FancyZonesEditor.Models
                 }
             }
 
-            RowPercents = new List<int>(_rows);
             for (int row = 0; row < _rows; row++)
             {
                 RowPercents.Add(other.RowPercents[row]);
             }
 
-            ColumnPercents = new List<int>(_cols);
             for (int col = 0; col < _cols; col++)
             {
                 ColumnPercents.Add(other.ColumnPercents[col]);
@@ -306,7 +304,7 @@ namespace FancyZonesEditor.Models
 
                 // Note: This is NOT equal to _multiplier / ZoneCount and is done like this to make
                 // the sum of all RowPercents exactly (_multiplier).
-                RowPercents.Add(((_multiplier * (i + 1)) / TemplateZoneCount) - ((_multiplier * i) / TemplateZoneCount));
+                RowPercents.Add(((GridMultiplier * (i + 1)) / TemplateZoneCount) - ((GridMultiplier * i) / TemplateZoneCount));
             }
 
             _rows = TemplateZoneCount;
@@ -323,7 +321,7 @@ namespace FancyZonesEditor.Models
 
                 // Note: This is NOT equal to _multiplier / ZoneCount and is done like this to make
                 // the sum of all RowPercents exactly (_multiplier).
-                ColumnPercents.Add(((_multiplier * (i + 1)) / TemplateZoneCount) - ((_multiplier * i) / TemplateZoneCount));
+                ColumnPercents.Add(((GridMultiplier * (i + 1)) / TemplateZoneCount) - ((GridMultiplier * i) / TemplateZoneCount));
             }
 
             _cols = TemplateZoneCount;
@@ -356,12 +354,12 @@ namespace FancyZonesEditor.Models
             // done like this to make the sum of all RowPercents exactly (_multiplier).
             for (int row = 0; row < rows; row++)
             {
-                RowPercents.Add(((_multiplier * (row + 1)) / rows) - ((_multiplier * row) / rows));
+                RowPercents.Add(((GridMultiplier * (row + 1)) / rows) - ((GridMultiplier * row) / rows));
             }
 
             for (int col = 0; col < cols; col++)
             {
-                ColumnPercents.Add(((_multiplier * (col + 1)) / cols) - ((_multiplier * col) / cols));
+                ColumnPercents.Add(((GridMultiplier * (col + 1)) / cols) - ((GridMultiplier * col) / cols));
             }
 
             int index = 0;
