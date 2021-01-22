@@ -322,4 +322,7 @@ To merge zones, select the zones and click "merge".</value>
   <data name="Save" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="NumberOfZones" xml:space="preserve">
+    <value>Number of zones</value>
+  </data>
 </root>

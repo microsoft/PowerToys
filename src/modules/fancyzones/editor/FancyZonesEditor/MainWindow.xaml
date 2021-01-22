@@ -27,6 +27,8 @@
     <Window.Resources>
 
         <Converters:LayoutModelTypeToVisibilityConverter x:Key="LayoutModelTypeToVisibilityConverter" />
+        <Converters:LayoutTypeCustomToVisibilityConverter x:Key="LayoutTypeCustomToVisibilityConverter" />
+        <Converters:LayoutTypeTemplateToVisibilityConverter x:Key="LayoutTypeTemplateToVisibilityConverter" />
 
         <DropShadowEffect x:Key="CardShadow" BlurRadius="6"
                           Opacity="0.24"
@@ -58,6 +60,28 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="SpinnerButton" TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Padding" Value="0,0,0,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="#F2F2F2"/>
+            <Setter Property="Margin" Value="0,0,0,0" />
+        </Style>
+
+        <Style x:Key="ZoneCount" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontWeight" Value="Regular" />
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="LineHeight" Value="24" />
+            <Setter Property="Margin" Value="20,0,20,0" />
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
                     Width="{Binding DisplayWidth}"
@@ -392,6 +416,8 @@
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
                         Height="48"
+                        Margin="0,0,0,32"
+                        Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"
                         Style="{StaticResource AccentButtonStyle}">
                     <Button.Content>
                         <StackPanel Orientation="Horizontal">
@@ -408,15 +434,28 @@
                     </Button.Effect>
                 </Button>
 
-
                 <TextBlock x:Name="nameHeader"
                            Text="{x:Static props:Resources.Name}"
                            IsEnabled="{Binding ShowSpacing}"
-                           Margin="0,32,0,0"
+                           Margin="0,0,0,0"
                            Foreground="{DynamicResource PrimaryForegroundBrush}" />
                 <TextBox Text="{Binding Name}"
                          Margin="0,6,0,0"
+                         IsEnabled="{Binding IsCustom}"
                          AutomationProperties.LabeledBy="{Binding ElementName=nameHeader}" />
+
+                <TextBlock x:Name="numberOfZonesHeader"
+                           Text="{x:Static props:Resources.NumberOfZones}"
+                           Margin="0,16,0,0"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                <StackPanel Margin="0,6,0,0" 
+                            Orientation="Horizontal" 
+                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
+                    <Button x:Name="decrementZones" Width="40" Height="40" AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}" Content="-" Style="{StaticResource SpinnerButton}" Click="DecrementZones_Click"/>
+                    <TextBlock x:Name="zoneCount" Text="{Binding TemplateZoneCount}" Style="{StaticResource ZoneCount}"/>
+                    <Button x:Name="incrementZones" Width="40" Height="40" AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}" Content="+" Style="{StaticResource SpinnerButton}" Click="IncrementZones_Click"/>
+                </StackPanel>
+                
                 <StackPanel Margin="0,16,0,0"
                             Orientation="Vertical">
                     <ui:ToggleSwitch x:Name="spaceAroundSetting"
