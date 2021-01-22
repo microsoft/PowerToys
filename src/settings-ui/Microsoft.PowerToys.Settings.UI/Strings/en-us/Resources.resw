@@ -837,7 +837,7 @@
     <value>Activation behavior</value>
   </data>
   <data name="ColorFormats.Text" xml:space="preserve">
-    <value>Color formats</value>
+    <value>Picker behavior</value>
   </data>
   <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
     <value>Learn more about remapping limitations</value>
@@ -927,5 +927,8 @@
   <data name="ShortcutGuide_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
     <value>https://aka.ms/PowerToysOverview_ShortcutGuide</value>
     <comment>URL. Do not loc</comment>
+  </data>
+  <data name="ColorPicker_Editor.Text" xml:space="preserve">
+    <value>Editor</value>
   </data>
 </root>
