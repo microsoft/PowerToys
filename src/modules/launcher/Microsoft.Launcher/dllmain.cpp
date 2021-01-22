@@ -362,33 +362,36 @@ void Microsoft_Launcher::init_settings()
 
 void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& settings)
 {
-    try
+    auto settingsObject = settings.get_raw_json();
+    if (settingsObject.GetView().Size())
     {
-        auto settingsObject = settings.get_raw_json();
-
-        if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
+        try
         {
             auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OPEN_POWERLAUNCHER);
             m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
             m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
             m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
             m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-            m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));        
         }
-        else
+        catch(...)
         {
-            Logger::info("PT Run start shortcut is not present in settings. Use default shortcut instead.");
-            m_hotkey.win = false;
-            m_hotkey.alt = true;
-            m_hotkey.shift = false;
-            m_hotkey.ctrl = false;
-            m_hotkey.key = VK_SPACE;
+            Logger::error("Failed to initialize PT Run start shortcut");
         }
     }
-    catch (...)
+    else
     {
-        Logger::error("Failed to initialize PT Run start shortcut");
-        m_hotkey.key = 0;
+        Logger::info("PT Run settings are empty");
+    }
+
+    if (!m_hotkey.key)
+    {
+        Logger::info("PT Run is going to use default shortcut");
+        m_hotkey.win = false;
+        m_hotkey.alt = true;
+        m_hotkey.shift = false;
+        m_hotkey.ctrl = false;
+        m_hotkey.key = VK_SPACE;
     }
 }
 
