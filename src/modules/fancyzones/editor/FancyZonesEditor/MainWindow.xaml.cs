@@ -269,7 +269,7 @@ namespace FancyZonesEditor
 
             if (GridLayoutRadioButton.IsChecked == true)
             {
-                GridLayoutModel gridModel = new GridLayoutModel(LayoutNameText.Text, LayoutType.Columns)
+                GridLayoutModel gridModel = new GridLayoutModel(LayoutNameText.Text, LayoutType.Custom)
                 {
                     Rows = 1,
                     RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
