@@ -387,7 +387,7 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
     }
     catch (...)
     {
-        Logger::error("Failed to initialize PT Launcher start shortcut");
+        Logger::error("Failed to initialize PT Run start shortcut");
         m_hotkey.key = 0;
     }
 }
