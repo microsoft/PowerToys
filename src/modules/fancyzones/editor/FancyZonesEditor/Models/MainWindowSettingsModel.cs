@@ -43,8 +43,6 @@ namespace FancyZonesEditor
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
         public static readonly string FullRegistryPath = "HKEY_CURRENT_USER\\" + RegistryPath;
 
-        private const int _multiplier = 10000;
-
         public bool IsCustomLayoutActive
         {
             get
@@ -77,7 +75,7 @@ namespace FancyZonesEditor
             _columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
             {
                 Rows = 1,
-                RowPercents = new List<int>(1) { _multiplier },
+                RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
             _columnsModel.InitTemplateZones();
             DefaultModels.Add(_columnsModel);
@@ -85,7 +83,7 @@ namespace FancyZonesEditor
             _rowsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Rows, LayoutType.Rows)
             {
                 Columns = 1,
-                ColumnPercents = new List<int>(1) { _multiplier },
+                ColumnPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
             _rowsModel.InitTemplateZones();
             DefaultModels.Add(_rowsModel);
