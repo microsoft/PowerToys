@@ -263,23 +263,6 @@ namespace FancyZonesEditor
             e.Handled = true;
         }
 
-        private void Reset_Click(object sender, RoutedEventArgs e)
-        {
-            var overlay = App.Overlay;
-
-            if (overlay.CurrentDataContext is LayoutModel model)
-            {
-                model.IsSelected = false;
-                model.IsApplied = false;
-            }
-
-            overlay.CurrentLayoutSettings.ZonesetUuid = MainWindowSettingsModel.BlankModel.Uuid;
-            overlay.CurrentLayoutSettings.Type = LayoutType.Blank;
-            overlay.CurrentDataContext = MainWindowSettingsModel.BlankModel;
-
-            App.FancyZonesEditorIO.SerializeZoneSettings();
-        }
-
         private void NewLayoutDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
             LayoutModel selectedLayoutModel;

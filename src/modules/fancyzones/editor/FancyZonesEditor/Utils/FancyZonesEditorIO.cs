@@ -36,6 +36,7 @@ namespace FancyZonesEditor.Utils
         private readonly JsonSerializerOptions _options = new JsonSerializerOptions
         {
             PropertyNamingPolicy = new DashCaseNamingPolicy(),
+            WriteIndented = true,
         };
 
         private List<DeviceWrapper> _unusedDevices = new List<DeviceWrapper>();
@@ -565,11 +566,6 @@ namespace FancyZonesEditor.Utils
             // Serialize custom zonesets
             foreach (LayoutModel layout in MainWindowSettingsModel.CustomModels)
             {
-                if (layout.Type == LayoutType.Blank)
-                {
-                    continue;
-                }
-
                 JsonElement info;
                 string type;
 
@@ -774,36 +770,33 @@ namespace FancyZonesEditor.Utils
 
         private LayoutType JsonTagToLayoutType(string tag)
         {
-            LayoutType type = LayoutType.Blank;
             switch (tag)
             {
+                case BlankJsonTag:
+                    return LayoutType.Blank;
                 case FocusJsonTag:
-                    type = LayoutType.Focus;
-                    break;
+                    return LayoutType.Focus;
                 case ColumnsJsonTag:
-                    type = LayoutType.Columns;
-                    break;
+                    return LayoutType.Columns;
                 case RowsJsonTag:
-                    type = LayoutType.Rows;
-                    break;
+                    return LayoutType.Rows;
                 case GridJsonTag:
-                    type = LayoutType.Grid;
-                    break;
+                    return LayoutType.Grid;
                 case PriorityGridJsonTag:
-                    type = LayoutType.PriorityGrid;
-                    break;
+                    return LayoutType.PriorityGrid;
                 case CustomJsonTag:
-                    type = LayoutType.Custom;
-                    break;
+                    return LayoutType.Custom;
             }
 
-            return type;
+            return LayoutType.Blank;
         }
 
         private string LayoutTypeToJsonTag(LayoutType type)
         {
             switch (type)
             {
+                case LayoutType.Blank:
+                    return BlankJsonTag;
                 case LayoutType.Focus:
                     return FocusJsonTag;
                 case LayoutType.Columns:

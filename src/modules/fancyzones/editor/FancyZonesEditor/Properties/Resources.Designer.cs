@@ -584,6 +584,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No layout.
+        /// </summary>
+        public static string Template_Layout_Blank {
+            get {
+                return ResourceManager.GetString("Template_Layout_Blank", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Columns.
         /// </summary>
         public static string Template_Layout_Columns {
