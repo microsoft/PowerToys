@@ -178,6 +178,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Create custom layout.
+        /// </summary>
+        public static string Create_Custom_From_Template {
+            get {
+                return ResourceManager.GetString("Create_Custom_From_Template", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create new layout.
         /// </summary>
         public static string Create_new_layout {
