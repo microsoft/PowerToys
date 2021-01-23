@@ -12,9 +12,9 @@
 
 PowerToys suffers from the lack of a guided post-install experience. Without this, it is virtually impossible for new users to quickly get started with PowerToys due to the need to dig through documentation to understand how to use it. The proceeding document proposes the creation of a post-install prompt that introduces users to the various PowerToys and offers helpful insights and engaging customization options to users who normally would not look through the documentation.
 
-### 1.2. Key Definitions/Concepts
+### 1.2. Key Definition/Concept
 
-Here are definitions of words and acronyms found throughout this document to ensure clarity:
+Here we define the key acronym found throughout this document to ensure clarity:
 
 - **OOBE:** Out of box experience – The users’ initial interactions with the product immediately after installing the product and/or launching the product for the first time.
 
@@ -40,11 +40,11 @@ The PowerToys OOBE is for new power users and developers who are looking to tune
 - **High Reliability:** Less than 0.1% crash rate.
 - **Increased Activation:** 30% or more increase in usage in all PowerToys features.
 - **High User Retention:** 25% or more active PowerToys users after 28 days.
-- **High OOBE Completion Rate:** 50%  or more of New PowerToys users reach the last page of the OOBE prompt.
+- **High OOBE Engagement Rate** PowerToys users click through at least half of the available OOBE sections.
 
 ## 3. Requirements
 
-The base of this OOBE dialog was attributed by [Niel’s mock-up](https://github.com/microsoft/PowerToys/issues/1285).
+  The base of this OOBE dialog was attributed by [Niels’s mock-up](https://github.com/microsoft/PowerToys/issues/1285).
 
 ### 3.1. Functional Requirements
 
@@ -56,11 +56,11 @@ The base of this OOBE dialog was attributed by [Niel’s mock-up](https://github
 |2 | The OOBE Dialog should consist of a collection of pages that describe the available PowerToys. | P0 |
 |3 | On launch, present the Welcome/Landing page in the OOBE Dialog window based on the template described in [Figure 5.1.1.](#511-oobe-dialog-layout) | P1 |
 |4 | Traverse the various OOBE Dialog pages via an list view options on the left-hand pane. | P0 |
-|5 | Alternatively traverse the various OOBE Dialog pages via an on-screen next/previous buttons on each page. | P1 |
+|5 | Alternatively traverse the various OOBE Dialog pages via an on-screen next/previous buttons on each page. | P2 |
 |6 | At any time, the user should be able to exit the OOBE dialog by closing the window. | P0 |
 |7 | Alternatively, the user should be able to exit the OOBE dialog by pressing the ESC key. | P1 |
-|8 | When the OOBE dialog is exited, save all the options that were set by the user. | P0 |
-|9 | In the PowerToys settings “General” menu, add a button to re-launch the OOBE dialog under the “Run at startup” option. | P0 |
+|8 | Automatically save changes to settings as they are made in the OOBE. | P1 |
+|9 | In the PowerToys settings “General” menu, add a button to re-launch the OOBE dialog under the “Check for updates” button. | P0 |
 |10 | The OOBE dialog window should be able to be enlarged to accommodate accessibility needs. | P0 |
 |11 | The OOBE dialog should have a preset minimum window size to ensure all content can be viable with the need to scroll the page. | P1 |
 
@@ -72,10 +72,9 @@ The base of this OOBE dialog was attributed by [Niel’s mock-up](https://github
 |2 | A page should include textual information that gives an overview of its PowerToy's basic functions. | P0 |
 |3 | A page should include a hero image/GIF that provides a visual representation of its PowerToy's core functionality. | P0 |
 |4 | A page should include a link to that PowerToys overview page on Microsoft Docs. | P0 |
-|5 | For applicable PowerToys, include a &quot;Launch&quot; button on the page to allow users to instantiate the PowerToy directly from the OOBE dialog window. | P1 |
-|6 | Include a &quot;Settings&quot; button that deep links to the PowerToy's settings page. | P1 |
-|7 | A page should include a short-list of relevant settings options that the user can select between to customize their experience. | P1 |
-|8 | Include a &quot;Pro Tips&quot; section on the page that highlights a useful, yet often undiscovered feature for its PowerToy. | P3 |
+|5 | Include a &quot;Settings&quot; button that deep links to the PowerToy's settings page. | P1 |
+|6 | A page should include a short-list of relevant settings options that the user can select between to customize their experience. | P1 |
+|7 | Include a &quot;Pro Tips&quot; section on the page that highlights a useful, yet often undiscovered feature for its PowerToy. | P3 |
 
 ### 3.2. Displayed Options
 
@@ -88,16 +87,17 @@ We target only having at most 3 options per page/PowerToy to stay concise and en
 | Option | Include? | Why |
 | --- | --- | --- |
 | **Theme (Light/Dark/Default)** | ![Y](../images/OOBE/Y.png "Yes") | This is a universal setting that users are heavily opinionated about. With this being the first option shown to users, it establishes an immediate value proposition for users to continue clicking through the dialog. |
+| **Link to release notes** | ![Y](../images/OOBE/Y.png "Yes") | This provides value to returning PowerToys users who may have re-installed PowerToys and would like to quickly be updated on what has changed. |
 | **Run on startup** | ![N](../images/OOBE/N.png "No") | By default, this is already on. For new users, this is probably not something we want to show as they might turn it off prematurely without understanding the value it provides. |
-| **Always Run as Admin** | ![N](../images/OOBE/N.png "No") | This is not a critical option for most use cases and more of a nuance that general users will not be concerned about. |
+| **Always run as admin** | ![N](../images/OOBE/N.png "No") | This is not a critical option for most use cases and more of a nuance that general users will not be concerned about. |
 
 #### 3.2.2. Color Picker
 
 | Option | Include? | Why |
 | --- | --- | --- |
 | **Activate Color Picker (Shortcut)** | ![Y](../images/OOBE/Y.png "Yes") | This is a crucial setting for utilizing Color Picker that users should have a say on. |
-| **Activation Behavior** | ![Y](../images/OOBE/Y.png "Yes") | This is critical for users to set up their experience the way they want. |
-| **Color Format for Clipboard** | ![Y](../images/OOBE/Y.png "Yes") | This is especially useful as it exposes the various copy options that may otherwise go overlooked. |
+| **Activation behavior** | ![Y](../images/OOBE/Y.png "Yes") | This is critical for users to set up their experience the way they want. |
+| **Color format for clipboard** | ![Y](../images/OOBE/Y.png "Yes") | This is especially useful as it exposes the various copy options that may otherwise go overlooked. |
 | **Enable Color Picker** | ![N](../images/OOBE/N.png "No") | We want customers to use Color Picker first before they decide to disable it. Showing this option likely decreases the chance of that happening. |
 | **Editor Color Formats** | ![N](../images/OOBE/N.png "No") | This is typically an extraneous customization option for most users and would likely not be critical in a first-run experience. |
 
@@ -106,8 +106,8 @@ We target only having at most 3 options per page/PowerToy to stay concise and en
 | Option | Include? | Why |
 | --- | --- | --- |
 | **Hold Shift key to activate zones while dragging** | ![Y](../images/OOBE/Y.png "Yes") | This is a crucial operation that many first-time users might overlook if they do not read the documentation as noted in [#7421](https://github.com/microsoft/PowerToys/issues/7241#issuecomment-723561408). |
-| **Launch Zones Editor (Shortcut)** | ![Y](../images/OOBE/Y.png "Yes") | This is a crucial setting for utilizing FancyZones that users should have a say on. |
-| **Everything Else** | ![N](../images/OOBE/N.png "No") | These settings are typically extraneous customization options that most users would not find useful in a first-run experience. |
+| **Launch zones editor (Shortcut)** | ![Y](../images/OOBE/Y.png "Yes") | This is a crucial setting for utilizing FancyZones that users should have a say on. |
+| **Everything else** | ![N](../images/OOBE/N.png "No") | These settings are typically extraneous customization options that most users would not find useful in a first-run experience. |
 
 #### 3.2.4. File Explorer
 
@@ -119,7 +119,7 @@ We target only having at most 3 options per page/PowerToy to stay concise and en
 
 | Option | Include? | Why |
 | --- | --- | --- |
-| **Everything** | ![N](../images/OOBE/N.png "No") | Many first-run users will not find value in these options (or even understand what the options mean).A good description/visual should suffice for this page. |
+| **Everything** | ![N](../images/OOBE/N.png "No") | The available Image Resizer settings are not particularly valuable to first-run users exploring the OOBE. A good description/visual should provide enough clarity and exposure for this utility. |
 
 #### 3.2.6. Keyboard Manager
 
@@ -132,14 +132,15 @@ We target only having at most 3 options per page/PowerToy to stay concise and en
 
 | Option | Include? | Why |
 | --- | --- | --- |
-| **Everything** | ![N](../images/OOBE/N.png "No") | Many first-run users will not find value in these options.A good description/visual should suffice for this page. |
+| **Everything** | ![N](../images/OOBE/N.png "No") | The available PowerRename settings are not particularly valuable to first-run users exploring the OOBE. A good description/visual should provide enough clarity and exposure for this utility. |
+
 
 #### 3.2.8. PowerToys Run
 
 | Option | Include? | Why |
 | --- | --- | --- |
 | **Open PowerToys Run (Shortcut)** | ![Y](../images/OOBE/Y.png "Yes") | This is a crucial setting for utilizing PowerToys Run that users should have a say on. |
-| **Everything Else** | ![N](../images/OOBE/N.png "No") | These settings are typically extraneous customization options that most users would not find useful in a first-run experience. |
+| **Everything else** | ![N](../images/OOBE/N.png "No") | These settings are typically extraneous customization options that most users would not find useful in a first-run experience. |
 
 #### 3.2.9. Shortcut Guide
 
