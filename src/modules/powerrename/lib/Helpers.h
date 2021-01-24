@@ -7,7 +7,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME fileTime);
 bool isFileTimeUsed(_In_ PCWSTR source);
 bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource);
-HRESULT EnumerateDataObject(_In_ IUnknown* pdo, _In_ IPowerRenameManager* psrm);
+HRESULT EnumerateDataObject(_In_ IUnknown* pdo, _In_ IPowerRenameManager* psrm, _In_opt_ IProgressDialog* ppd);
 BOOL GetEnumeratedFileName(
     __out_ecount(cchMax) PWSTR pszUniqueName,
     UINT cchMax,

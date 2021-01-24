@@ -205,4 +205,7 @@ Please select from the options above to show items.</value>
   <data name="Rename_Criteria" xml:space="preserve">
     <value>Enter the criteria below to rename the items</value>
   </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
 </root>

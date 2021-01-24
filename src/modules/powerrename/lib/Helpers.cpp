@@ -292,7 +292,7 @@ HRESULT _GetShellItemArrayFromDataOject(_In_ IUnknown* dataSource, _COM_Outptr_ 
     return hr;
 }
 
-HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ int depth = 0)
+HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_opt_ IProgressDialog* ppd, _In_ int depth = 0)
 {
     HRESULT hr = E_INVALIDARG;
 
@@ -306,6 +306,13 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
         CComPtr<IShellItem> spsi;
         while ((S_OK == pesi->Next(1, &spsi, &celtFetched)) && (SUCCEEDED(hr)))
         {
+            if (ppd && ppd->HasUserCancelled())
+            {
+                // Cancelled by user
+                hr = E_ABORT;
+                break;
+            }
+
             CComPtr<IPowerRenameItemFactory> spsrif;
             hr = psrm->GetRenameItemFactory(&spsrif);
             if (SUCCEEDED(hr))
@@ -316,6 +323,16 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
                 {
                     spNewItem->PutDepth(depth);
                     hr = psrm->AddItem(spNewItem);
+                    if (SUCCEEDED(hr) && ppd)
+                    {
+                        // Update the progress dialog
+                        PWSTR pathDisplay = nullptr;
+                        if (SUCCEEDED(spNewItem->GetPath(&pathDisplay)))
+                        {
+                            ppd->SetLine(2, pathDisplay, TRUE, nullptr);
+                            CoTaskMemFree(pathDisplay);
+                        }
+                    }
                 }
 
                 if (SUCCEEDED(hr))
@@ -329,7 +346,7 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
                         if (SUCCEEDED(hr))
                         {
                             // Parse the folder contents recursively
-                            hr = _ParseEnumItems(spesiNext, psrm, depth + 1);
+                            hr = _ParseEnumItems(spesiNext, psrm, ppd, depth + 1);
                         }
                     }
                 }
@@ -343,16 +360,16 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
 }
 
 // Iterate through the data source and add paths to the rotation manager
-HRESULT EnumerateDataObject(_In_ IUnknown* dataSource, _In_ IPowerRenameManager* psrm)
+HRESULT EnumerateDataObject(_In_ IUnknown* pdo, _In_ IPowerRenameManager* psrm, _In_opt_ IProgressDialog* ppd)
 {
     CComPtr<IShellItemArray> spsia;
     HRESULT hr = E_FAIL;
-    if (SUCCEEDED(_GetShellItemArrayFromDataOject(dataSource, &spsia)))
+    if (SUCCEEDED(_GetShellItemArrayFromDataOject(pdo, &spsia)))
     {
         CComPtr<IEnumShellItems> spesi;
         if (SUCCEEDED(spsia->EnumItems(&spesi)))
         {
-            hr = _ParseEnumItems(spesi, psrm);
+            hr = _ParseEnumItems(spesi, psrm, ppd);
         }
     }
 

@@ -373,21 +373,45 @@ void CPowerRenameUI::_Cleanup()
     m_hwnd = NULL;
 }
 
-void CPowerRenameUI::_EnumerateItems(_In_ IUnknown* pdtobj)
+HRESULT CPowerRenameUI::_EnumerateItems(_In_ IUnknown* pdtobj)
 {
+    HRESULT hr = S_OK;
     // Enumerate the data object and populate the manager
     if (m_spsrm)
     {
-        m_disableCountUpdate = true;
-        EnumerateDataObject(pdtobj, m_spsrm);
-        m_disableCountUpdate = false;
+        // Add a progress dialog in case enumeration of items takes a long time.
+        // This also allows the user to cancel enumeration.
+        CComPtr<IProgressDialog> sppd;
+        hr = CoCreateInstance(CLSID_ProgressDialog, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&sppd));
+        if (SUCCEEDED(hr))
+        {
+            wchar_t buff[100] = { 0 };
+            LoadString(g_hInst, IDS_LOADING, buff, ARRAYSIZE(buff));
+            sppd->SetLine(1, buff, FALSE, NULL);
+            LoadString(g_hInst, IDS_APP_TITLE, buff, ARRAYSIZE(buff));
+            sppd->SetTitle(buff);
+            sppd->StartProgressDialog(m_hwnd, NULL, PROGDLG_MARQUEEPROGRESS, NULL);
 
-        UINT itemCount = 0;
-        m_spsrm->GetVisibleItemCount(&itemCount);
-        m_listview.SetItemCount(itemCount);
+            m_disableCountUpdate = true;
 
-        _UpdateCounts();
+            hr = EnumerateDataObject(pdtobj, m_spsrm, sppd);
+
+            m_disableCountUpdate = false;
+
+            sppd->StopProgressDialog();
+
+            if (SUCCEEDED(hr))
+            {
+                UINT itemCount = 0;
+                m_spsrm->GetVisibleItemCount(&itemCount);
+                m_listview.SetItemCount(itemCount);
+
+                _UpdateCounts();
+            }
+        }
     }
+
+    return hr;
 }
 
 HRESULT CPowerRenameUI::_ReadSettings()
@@ -607,7 +631,12 @@ void CPowerRenameUI::_OnInitDlg()
     if (m_dataSource)
     {
         // Populate the manager from the data object
-        _EnumerateItems(m_dataSource);
+        if (FAILED(_EnumerateItems(m_dataSource)))
+        {
+            // Failed during enumeration.  Close the dialog.
+            _OnCloseDlg();
+            return;
+        }
     }
 
     // Initialize from stored settings. Do this now in case we have

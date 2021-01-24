@@ -141,7 +141,7 @@ private:
     void _SetCheckboxesFromFlags(_In_ DWORD flags);
     void _ValidateFlagCheckbox(_In_ DWORD checkBoxId);
 
-    void _EnumerateItems(_In_ IUnknown* pdtobj);
+    HRESULT _EnumerateItems(_In_ IUnknown* pdtobj);
     void _UpdateCounts();
 
     void _CollectItemPosition(_In_ DWORD id);
