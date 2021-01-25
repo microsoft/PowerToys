@@ -131,6 +131,8 @@ namespace FancyZonesEditor
 
         private void DuplicateLayout_Click(object sender, RoutedEventArgs e)
         {
+            EditLayoutDialog.Hide();
+
             var mainEditor = App.Overlay;
             if (!(mainEditor.CurrentDataContext is LayoutModel model))
             {
@@ -200,21 +202,10 @@ namespace FancyZonesEditor
             App.Current.Shutdown();
         }
 
-        private async void DeleteLayout_Click(object sender, RoutedEventArgs e)
+        private void DeleteLayout_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new ModernWpf.Controls.ContentDialog()
-            {
-                Title = FancyZonesEditor.Properties.Resources.Are_You_Sure,
-                Content = FancyZonesEditor.Properties.Resources.Are_You_Sure_Description,
-                PrimaryButtonText = FancyZonesEditor.Properties.Resources.Delete,
-                SecondaryButtonText = FancyZonesEditor.Properties.Resources.Cancel,
-            };
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                LayoutModel model = ((FrameworkElement)sender).DataContext as LayoutModel;
-                model.Delete();
-            }
+            EditLayoutDialog.Hide();
+            DeleteLayout((FrameworkElement)sender);
         }
 
         private async void EditLayout_Click(object sender, RoutedEventArgs e)
@@ -269,7 +260,7 @@ namespace FancyZonesEditor
 
             if (GridLayoutRadioButton.IsChecked == true)
             {
-                GridLayoutModel gridModel = new GridLayoutModel(LayoutNameText.Text, LayoutType.Columns)
+                GridLayoutModel gridModel = new GridLayoutModel(LayoutNameText.Text, LayoutType.Custom)
                 {
                     Rows = 1,
                     RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
@@ -342,6 +333,24 @@ namespace FancyZonesEditor
 
             // reset selected model
             Select(_settings.AppliedModel);
+        }
+
+        private async void DeleteLayout(FrameworkElement element)
+        {
+            var dialog = new ModernWpf.Controls.ContentDialog()
+            {
+                Title = FancyZonesEditor.Properties.Resources.Are_You_Sure,
+                Content = FancyZonesEditor.Properties.Resources.Are_You_Sure_Description,
+                PrimaryButtonText = FancyZonesEditor.Properties.Resources.Delete,
+                SecondaryButtonText = FancyZonesEditor.Properties.Resources.Cancel,
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                LayoutModel model = element.DataContext as LayoutModel;
+                model.Delete();
+            }
         }
     }
 }

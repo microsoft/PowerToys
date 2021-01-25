@@ -328,4 +328,7 @@ To merge zones, select the zones and click "merge".</value>
   <data name="Template_Layout_Blank" xml:space="preserve">
     <value>No layout</value>
   </data>
+  <data name="Create_Custom_From_Template" xml:space="preserve">
+    <value>Create custom layout</value>
+  </data>
 </root>

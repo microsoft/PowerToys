@@ -133,22 +133,7 @@
                   KeyDown="LayoutItem_KeyDown"
                   MouseDown="LayoutItem_Click"
                   Margin="0,0,0,12">
-                <Grid.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="{x:Static props:Resources.Duplicate}" Click="DuplicateLayout_Click">
-                            <MenuItem.Icon>
-                                <ui:FontIcon Glyph="&#xE8C8;" />
-                            </MenuItem.Icon>
-                        </MenuItem>
 
-                        <MenuItem Header="{x:Static props:Resources.Delete}" Click="DeleteLayout_Click">
-                            <MenuItem.Icon>
-                                <ui:FontIcon Glyph="&#xE107;" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                    </ContextMenu>
-                </Grid.ContextMenu>
-                
                 <Border x:Name="LayoutItem"
                         Style="{StaticResource CardStyle}"
                         Margin="8"
@@ -418,7 +403,7 @@
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
                         Height="48"
-                        Margin="0,0,0,32"
+                        Margin="0,0,0,16"
                         Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"
                         Style="{StaticResource AccentButtonStyle}">
                     <Button.Content>
@@ -435,6 +420,69 @@
                                           ShadowDepth="1" />
                     </Button.Effect>
                 </Button>
+
+                <Grid Margin="0,0,0,32"
+                      Height="Auto"
+                      HorizontalAlignment="Stretch">
+                    
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Button Click="DuplicateLayout_Click"
+                            x:Name="duplicateLayoutButton"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="{x:Static props:Resources.Duplicate}"
+                            Height="48"
+                            Margin="0,0,4,0"
+                            Grid.Column="0"
+                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8C8;"
+                                       Margin="0,2,8,0"
+                                       FontFamily="Segoe MDL2 Assets" />
+                                <TextBlock Text="{x:Static props:Resources.Duplicate}" />
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    <Button Click="DeleteLayout_Click"
+                            x:Name="deleteLayoutButton"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                            Height="48"
+                            Margin="4,0,0,0"
+                            Grid.Column="1"
+                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE107;"
+                                       Margin="0,2,8,0"
+                                       FontFamily="Segoe MDL2 Assets" />
+                                <TextBlock Text="{x:Static props:Resources.Delete}" />
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+
+                    <Button Click="DuplicateLayout_Click"
+                            x:Name="createFromTemplateLayoutButton"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}"
+                            Height="48"
+                            Margin="0,0,4,0"
+                            Grid.Column="0"
+                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8C8;"
+                                       Margin="0,2,8,0"
+                                       FontFamily="Segoe MDL2 Assets" />
+                                <TextBlock Text="{x:Static props:Resources.Create_Custom_From_Template}" />
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                </Grid>
 
                 <TextBlock x:Name="nameHeader"
                            Text="{x:Static props:Resources.Name}"
