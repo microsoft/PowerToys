@@ -1733,6 +1733,36 @@ namespace FancyZonesUnitTests
                 Assert::IsTrue(actual);
             }
 
+            TEST_METHOD (SaveFancyZonesDataWithTemplates)
+            {
+                FancyZonesData data;
+                data.SetSettingsModulePath(m_moduleName);
+                const auto& jsonPath = data.zonesSettingsFileName;
+
+                // json with templates
+                json::JsonObject expectedJsonObj;
+                json::JsonObject templateObj = json::JsonObject::Parse(L"{\"type\": \"focus\", \"show-spacing\": false, \"spacing\": 15, \"zone-count\": 7, \"sensitivity-radius\": 25}");
+                json::JsonArray templatesArray{};
+                templatesArray.Append(templateObj);
+                expectedJsonObj.SetNamedValue(L"devices", json::JsonArray{});
+                expectedJsonObj.SetNamedValue(L"custom-zone-sets", json::JsonArray{});
+                expectedJsonObj.SetNamedValue(L"templates", templatesArray);
+
+                // write json with templates to file
+                json::to_file(jsonPath, expectedJsonObj);
+
+                data.SaveFancyZonesData();
+
+                // verify that file was written sucessfully
+                Assert::IsTrue(std::filesystem::exists(jsonPath));
+
+                // verify that templates were not changed after calling SaveFancyZonesData()
+                std::wstring str;
+                std::wifstream { jsonPath, std::ios::binary } >> str;
+                json::JsonObject actualJson = json::JsonObject::Parse(str);
+                compareJsonObjects(expectedJsonObj, actualJson);
+            }
+
             TEST_METHOD (AppLastZoneIndex)
             {
                 const std::wstring deviceId = L"device-id";
