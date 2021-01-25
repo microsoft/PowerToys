@@ -67,7 +67,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
 
             try
             {
-                svgData = SvgPreviewHandlerHelper.ScaleSvg(svgData);
+                svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)

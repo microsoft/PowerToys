@@ -70,16 +70,20 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
         }
 
         /// <summary>
-        /// Add attribute style to SVG element in svgData so that it displays properly
+        /// Add proper
         /// </summary>
-        /// <param name="svgData">Input Svg</param>
+        /// <param name="stringSvgData">Input Svg</param>
         /// <returns>Returns modified svgData with added style</returns>
-        public static string ScaleSvg(string svgData)
+        public static string AddStyleSVG(string stringSvgData)
         {
-            XElement contacts = XElement.Parse(svgData);
-            var attributes = contacts.Attributes();
+            XElement svgData = XElement.Parse(stringSvgData);
+
+            var attributes = svgData.Attributes();
             string width = string.Empty;
             string height = string.Empty;
+            string widthR = string.Empty;
+            string heightR = string.Empty;
+            string oldStyle = string.Empty;
 
             // Get width and height of element and remove it afterwards because it will be added inside style attribute
             for (int i = 0; i < attributes.Count(); i++)
@@ -88,24 +92,76 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
                 {
                     height = attributes.ElementAt(i).Value;
                     attributes.ElementAt(i).Remove();
+                    i--;
                 }
-
-                if (attributes.ElementAt(i).Name == "width")
+                else if (attributes.ElementAt(i).Name == "width")
                 {
                     width = attributes.ElementAt(i).Value;
                     attributes.ElementAt(i).Remove();
+                    i--;
+                }
+                else if (attributes.ElementAt(i).Name == "style")
+                {
+                    oldStyle = attributes.ElementAt(i).Value;
+                    attributes.ElementAt(i).Remove();
+                    i--;
                 }
             }
 
-            // Set style that will center SVG
+            svgData.ReplaceAttributes(attributes);
+
+            height = CheckUnit(height);
+            width = CheckUnit(width);
+            heightR = RemoveUnit(height);
+            widthR = RemoveUnit(width);
+
             string centering = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);";
 
-            // Set style that will downscale SVG if the preview window is smaller than default SVG size
-            string scaling = $"width: min(100%,{width}px); height: min(100%,{height}px);";
-            string style = scaling + centering;
-            attributes = attributes.Append(new XAttribute("style", style));
-            contacts.ReplaceAttributes(attributes);
-            return contacts.ToString();
+            // Because WebBrowser class is based on IE version that do not support max-width and max-height extra CSS is needed for it to work.
+            string scaling = $"max-width: {width} ; max-height: {height} ;";
+            scaling += $"  _height:expression(this.scrollHeight > {heightR} ? \" {height}\" : \"auto\"); _width:expression(this.scrollWidth > {widthR} ? \"{width}\" : \"auto\");";
+
+            svgData.Add(new XAttribute("style", scaling + centering + oldStyle));
+            return svgData.ToString();
+        }
+
+        /// <summary>
+        /// If there is a CSS unit at the end return the same string, else return the string with a px unit at the end
+        /// </summary>
+        /// <param name="lenght">CSS length</param>
+        /// <returns>Returns modified length</returns>
+        private static string CheckUnit(string lenght)
+        {
+            string[] cssUnits = { "cm", "mm", "in", "px", "pt", "pc", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "%" };
+            foreach (var unit in cssUnits)
+            {
+                if (lenght.EndsWith(unit, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return lenght;
+                }
+            }
+
+            return lenght + "px";
+        }
+
+        /// <summary>
+        /// Remove a CSS unit from the end of the string
+        /// </summary>
+        /// <param name="lenght">CSS length</param>
+        /// <returns>Returns modified length</returns>
+        private static string RemoveUnit(string lenght)
+        {
+            string[] cssUnits = { "cm", "mm", "in", "px", "pt", "pc", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "%" };
+            foreach (var unit in cssUnits)
+            {
+                if (lenght.EndsWith(unit, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    lenght = lenght.Remove(lenght.Length - unit.Length);
+                    return lenght;
+                }
+            }
+
+            return lenght;
         }
     }
 }
