@@ -1753,7 +1753,7 @@ namespace FancyZonesUnitTests
 
                 data.SaveFancyZonesData();
 
-                // verify that file was written sucessfully
+                // verify that file was written successfully
                 Assert::IsTrue(std::filesystem::exists(jsonPath));
 
                 // verify that templates were not changed after calling SaveFancyZonesData()
