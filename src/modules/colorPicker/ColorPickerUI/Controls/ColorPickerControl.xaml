@@ -274,14 +274,14 @@
                     <Button x:Name="CancelButton"
                             Click="CancelButton_Click"
                             AutomationProperties.Name="{x:Static p:Resources.Cancel}"
-                            Content="Cancel"
+                            Content="{x:Static p:Resources.Cancel}"
                             Width="80"/>
                     <Button Margin="12,0,12,0"
                             x:Name="OKButton"
                             Click="OKButton_Click"
                             Style="{StaticResource AccentButtonStyle}"
                             AutomationProperties.Name="{x:Static p:Resources.OK}"
-                            Content="OK"
+                            Content="{x:Static p:Resources.OK}"
                             Width="80"/>
                 </WrapPanel>
             </StackPanel>
