@@ -28,7 +28,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            if (!CalculateHelper.InputValid(query.Search))
+            NumberTranslator translator = NumberTranslator.Create(CultureInfo.CurrentCulture, new CultureInfo("en-US"));
+            var input = translator.Translate(query.Search);
+
+            if (!CalculateHelper.InputValid(input))
             {
                 return new List<Result>();
             }
@@ -36,7 +39,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             try
             {
                 // Using CurrentUICulture since this is user facing
-                var result = CalculateEngine.Interpret(query.Search, CultureInfo.CurrentUICulture);
+                var result = CalculateEngine.Interpret(input, CultureInfo.CurrentUICulture);
 
                 // This could happen for some incorrect queries, like pi(2)
                 if (result.Equals(default(CalculateResult)))
