@@ -161,11 +161,26 @@ namespace FancyZonesEditor.Utils
             public JsonElement Info { get; set; } // CanvasInfoWrapper or GridInfoWrapper
         }
 
+        private struct TemplateLayoutWrapper
+        {
+            public string Type { get; set; }
+
+            public bool ShowSpacing { get; set; }
+
+            public int Spacing { get; set; }
+
+            public int ZoneCount { get; set; }
+
+            public int SensitivityRadius { get; set; }
+        }
+
         private struct ZoneSettingsWrapper
         {
             public List<DeviceWrapper> Devices { get; set; }
 
             public List<CustomLayoutWrapper> CustomZoneSets { get; set; }
+
+            public List<TemplateLayoutWrapper> Templates { get; set; }
         }
 
         private struct EditorParams
@@ -532,6 +547,7 @@ namespace FancyZonesEditor.Utils
             ZoneSettingsWrapper zoneSettings = new ZoneSettingsWrapper { };
             zoneSettings.Devices = new List<DeviceWrapper>();
             zoneSettings.CustomZoneSets = new List<CustomLayoutWrapper>();
+            zoneSettings.Templates = new List<TemplateLayoutWrapper>();
 
             // Serialize used devices
             foreach (var monitor in App.Overlay.Monitors)
@@ -647,6 +663,25 @@ namespace FancyZonesEditor.Utils
                 };
 
                 zoneSettings.CustomZoneSets.Add(customLayout);
+            }
+
+            // Serialize template layouts
+            foreach (LayoutModel layout in MainWindowSettingsModel.DefaultModels)
+            {
+                TemplateLayoutWrapper wrapper = new TemplateLayoutWrapper
+                {
+                    Type = LayoutTypeToJsonTag(layout.Type),
+                    SensitivityRadius = layout.SensitivityRadius,
+                    ZoneCount = layout.TemplateZoneCount,
+                };
+
+                if (layout is GridLayoutModel grid)
+                {
+                    wrapper.ShowSpacing = grid.ShowSpacing;
+                    wrapper.Spacing = grid.Spacing;
+                }
+
+                zoneSettings.Templates.Add(wrapper);
             }
 
             try

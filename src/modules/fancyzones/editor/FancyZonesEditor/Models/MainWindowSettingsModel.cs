@@ -136,7 +136,7 @@ namespace FancyZonesEditor
 
         private bool _isCtrlKeyPressed;
 
-        public IList<LayoutModel> DefaultModels { get; }
+        public static IList<LayoutModel> DefaultModels { get; } = new List<LayoutModel>(6);
 
         public static ObservableCollection<LayoutModel> CustomModels
         {
