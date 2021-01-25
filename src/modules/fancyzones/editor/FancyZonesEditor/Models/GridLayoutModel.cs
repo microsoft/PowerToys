@@ -281,6 +281,9 @@ namespace FancyZonesEditor.Models
                 case LayoutType.PriorityGrid:
                     InitPriorityGrid();
                     break;
+                case LayoutType.Custom:
+                    InitColumns(); // Custom is initialized with columns
+                    break;
             }
 
             FirePropertyChanged();
