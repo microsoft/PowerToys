@@ -758,7 +758,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Request a feature]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Begär en funktion]]></Val>
+            <Val><![CDATA[Föreslå en funktion]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
