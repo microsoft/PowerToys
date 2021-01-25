@@ -527,6 +527,7 @@ namespace FancyZonesEditor.Utils
                 {
                     bool devicesParsingResult = SetDevices(zoneSettings.Devices);
                     bool customZonesParsingResult = SetCustomLayouts(zoneSettings.CustomZoneSets);
+                    bool templatesParsingResult = SetTemplateLayouts(zoneSettings.Templates);
 
                     if (!devicesParsingResult || !customZonesParsingResult)
                     {
@@ -801,6 +802,38 @@ namespace FancyZonesEditor.Utils
             }
 
             return result;
+        }
+
+        private bool SetTemplateLayouts(List<TemplateLayoutWrapper> templateLayouts)
+        {
+            if (templateLayouts == null)
+            {
+                return false;
+            }
+
+            foreach (var wrapper in templateLayouts)
+            {
+                var type = JsonTagToLayoutType(wrapper.Type);
+
+                foreach (var layout in MainWindowSettingsModel.DefaultModels)
+                {
+                    if (layout.Type == type)
+                    {
+                        layout.SensitivityRadius = wrapper.SensitivityRadius;
+                        layout.TemplateZoneCount = wrapper.ZoneCount;
+
+                        if (layout is GridLayoutModel grid)
+                        {
+                            grid.ShowSpacing = wrapper.ShowSpacing;
+                            grid.Spacing = wrapper.Spacing;
+                        }
+
+                        layout.InitTemplateZones();
+                    }
+                }
+            }
+
+            return true;
         }
 
         private LayoutType JsonTagToLayoutType(string tag)
