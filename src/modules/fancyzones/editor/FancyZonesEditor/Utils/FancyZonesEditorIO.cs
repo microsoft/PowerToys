@@ -707,6 +707,11 @@ namespace FancyZonesEditor.Utils
 
         private bool SetDevices(List<DeviceWrapper> devices)
         {
+            if (devices == null)
+            {
+                return false;
+            }
+
             bool result = true;
             var monitors = App.Overlay.Monitors;
             foreach (var device in devices)
@@ -749,6 +754,11 @@ namespace FancyZonesEditor.Utils
 
         private bool SetCustomLayouts(List<CustomLayoutWrapper> customLayouts)
         {
+            if (customLayouts == null)
+            {
+                return false;
+            }
+
             MainWindowSettingsModel.CustomModels.Clear();
             bool result = true;
 
