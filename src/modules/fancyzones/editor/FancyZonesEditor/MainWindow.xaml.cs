@@ -102,6 +102,12 @@ namespace FancyZonesEditor
 
         private void LayoutItem_Focused(object sender, RoutedEventArgs e)
         {
+            // Ignore focus on Edit button click
+            if (e.Source is Button)
+            {
+                return;
+            }
+
             Select(((Border)sender).DataContext as LayoutModel);
         }
 
@@ -211,7 +217,7 @@ namespace FancyZonesEditor
         private async void EditLayout_Click(object sender, RoutedEventArgs e)
         {
             var dataContext = ((FrameworkElement)sender).DataContext;
-            _settings.SetSelectedModel((LayoutModel)dataContext);
+            Select((LayoutModel)dataContext);
 
             if (_settings.SelectedModel is GridLayoutModel grid)
             {
