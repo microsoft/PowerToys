@@ -2374,6 +2374,7 @@ Whichdoes
 whitespaces
 WIC
 Wifi
+wifstream
 wih
 wiki
 wikipedia

@@ -61,11 +61,10 @@ namespace FancyZonesEditor
 
         public MainWindowSettingsModel()
         {
-            // Initialize the five default layout models: Blank, Focus, Columns, Rows, Grid, and PriorityGrid
-            DefaultModels = new List<LayoutModel>(6);
-
+            // Initialize default layout models: Blank, Focus, Columns, Rows, Grid, and PriorityGrid
             _blankModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Blank, LayoutType.Blank);
             _blankModel.TemplateZoneCount = 0;
+            _blankModel.SensitivityRadius = 0;
             DefaultModels.Add(_blankModel);
 
             _focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
@@ -137,7 +136,7 @@ namespace FancyZonesEditor
 
         private bool _isCtrlKeyPressed;
 
-        public IList<LayoutModel> DefaultModels { get; }
+        public static IList<LayoutModel> DefaultModels { get; } = new List<LayoutModel>(6);
 
         public static ObservableCollection<LayoutModel> CustomModels
         {
