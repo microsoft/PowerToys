@@ -42,6 +42,7 @@ namespace NonLocalizable
     const wchar_t SensitivityRadius[] = L"sensitivity-radius";
     const wchar_t ShowSpacing[] = L"show-spacing";
     const wchar_t Spacing[] = L"spacing";
+    const wchar_t Templates[] = L"templates";
     const wchar_t TypeStr[] = L"type";
     const wchar_t UuidStr[] = L"uuid";
     const wchar_t WidthStr[] = L"width";
@@ -533,14 +534,29 @@ namespace JSONHelpers
                             const TAppZoneHistoryMap& appZoneHistoryMap)
 
     {
+        auto before = json::from_file(zonesSettingsFileName);
+
         json::JsonObject root{};
         json::JsonObject appZoneHistoryRoot{};
+        json::JsonArray templates{};
 
+        try
+        {
+            if (before.has_value() && before->HasKey(NonLocalizable::Templates))
+            {
+                templates = before->GetNamedArray(NonLocalizable::Templates);
+            }
+        }
+        catch (const winrt::hresult_error&)
+        {
+        
+        }
+               
         appZoneHistoryRoot.SetNamedValue(NonLocalizable::AppZoneHistoryStr, JSONHelpers::SerializeAppZoneHistory(appZoneHistoryMap));
         root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
         root.SetNamedValue(NonLocalizable::CustomZoneSetsStr, JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
-
-        auto before = json::from_file(zonesSettingsFileName);
+        root.SetNamedValue(NonLocalizable::Templates, templates);
+        
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
         {
             Trace::FancyZones::DataChanged();
