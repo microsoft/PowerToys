@@ -129,7 +129,24 @@ namespace FancyZonesEditor
 
         private async void NewLayoutButton_Click(object sender, RoutedEventArgs e)
         {
-            LayoutNameText.Text = string.Empty;
+            string defaultNamePrefix = FancyZonesEditor.Properties.Resources.Default_Custom_Layout_Name;
+            int maxCustomIndex = 0;
+            foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
+            {
+                string name = customModel.Name;
+                if (name.StartsWith(defaultNamePrefix))
+                {
+                    if (int.TryParse(name.Substring(defaultNamePrefix.Length), out int i))
+                    {
+                        if (maxCustomIndex < i)
+                        {
+                            maxCustomIndex = i;
+                        }
+                    }
+                }
+            }
+
+            LayoutNameText.Text = defaultNamePrefix + " " + (++maxCustomIndex);
             GridLayoutRadioButton.IsChecked = true;
             GridLayoutRadioButton.Focus();
             await NewLayoutDialog.ShowAsync();
