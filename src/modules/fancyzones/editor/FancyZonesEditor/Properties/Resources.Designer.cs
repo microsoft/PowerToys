@@ -223,6 +223,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Custom layout.
+        /// </summary>
+        public static string Default_Custom_Layout_Name {
+            get {
+                return ResourceManager.GetString("Default_Custom_Layout_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string Delete {
