@@ -394,7 +394,9 @@
                           PrimaryButtonText="{x:Static props:Resources.Save}"
                           PrimaryButtonClick="EditLayoutDialog_PrimaryButtonClick"
                           SecondaryButtonClick="EditLayoutDialog_SecondaryButtonClick"
-                          Title="{x:Static props:Resources.Edit_Layout}">
+                          Title="{x:Static props:Resources.Edit_Layout}"
+                          Opened="Dialog_Opened"
+                          Closed="Dialog_Closed">
             <StackPanel Margin="0,16,0,0"
                         MinWidth="420"
                         DataContext="{Binding SelectedModel}">
@@ -551,7 +553,9 @@
                           PrimaryButtonText="{x:Static props:Resources.Create}"
                           PrimaryButtonClick="NewLayoutDialog_PrimaryButtonClick"
                           IsPrimaryButtonEnabled="{Binding ElementName=LayoutNameText, Path=Text.Length}"
-                          Title="{x:Static props:Resources.Choose_layout_type}">
+                          Title="{x:Static props:Resources.Choose_layout_type}"
+                          Opened="Dialog_Opened"
+                          Closed="Dialog_Closed">
             <StackPanel Margin="0,16,0,0">
                 <TextBlock x:Name="NameHeaderText"
                            Text="{x:Static props:Resources.Name}" />
