@@ -1,11 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Windows;
 
 namespace FancyZonesEditor.Models
 {
@@ -14,7 +11,25 @@ namespace FancyZonesEditor.Models
     public class GridLayoutModel : LayoutModel
     {
         // Non-localizable strings
-        private const string ModelTypeID = "grid";
+        public const string ModelTypeID = "grid";
+
+        public const int GridMultiplier = 10000;
+
+        // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
+        private static readonly byte[][] _priorityData = new byte[][]
+        {
+            new byte[] { 0, 0, 0, 0, 0, 1, 1, 39, 16, 39, 16, 0 },
+            new byte[] { 0, 0, 0, 0, 0, 1, 2, 39, 16, 26, 11, 13, 5, 0, 1 },
+            new byte[] { 0, 0, 0, 0, 0, 1, 3, 39, 16, 9, 196, 19, 136, 9, 196, 0, 1, 2 },
+            new byte[] { 0, 0, 0, 0, 0, 2, 3, 19, 136, 19, 136, 9, 196, 19, 136, 9, 196, 0, 1, 2, 0, 1, 3 },
+            new byte[] { 0, 0, 0, 0, 0, 2, 3, 19, 136, 19, 136, 9, 196, 19, 136, 9, 196, 0, 1, 2, 3, 1, 4 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 3, 13, 5, 13, 6, 13, 5, 9, 196, 19, 136, 9, 196, 0, 1, 2, 0, 1, 3, 4, 1, 5 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 3, 13, 5, 13, 6, 13, 5, 9, 196, 19, 136, 9, 196, 0, 1, 2, 3, 1, 4, 5, 1, 6 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 2, 7 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 2, 5, 6, 1, 7, 8 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 1, 8, 9 },
+            new byte[] { 0, 0, 0, 0, 0, 3, 4, 13, 5, 13, 6, 13, 5, 9, 196, 9, 196, 9, 196, 9, 196, 0, 1, 2, 3, 4, 1, 5, 6, 7, 8, 9, 10 },
+        };
 
         // Rows - number of rows in the Grid
         public int Rows
@@ -29,7 +44,6 @@ namespace FancyZonesEditor.Models
                 if (_rows != value)
                 {
                     _rows = value;
-                    FirePropertyChanged();
                 }
             }
         }
@@ -49,7 +63,6 @@ namespace FancyZonesEditor.Models
                 if (_cols != value)
                 {
                     _cols = value;
-                    FirePropertyChanged();
                 }
             }
         }
@@ -62,10 +75,50 @@ namespace FancyZonesEditor.Models
         public int[,] CellChildMap { get; set; }
 
         // RowPercents - represents the %age height of each row in the grid
-        public List<int> RowPercents { get; set; }
+        public List<int> RowPercents { get; set; } = new List<int>();
 
         // ColumnPercents - represents the %age width of each column in the grid
-        public List<int> ColumnPercents { get; set; }
+        public List<int> ColumnPercents { get; set; } = new List<int>();
+
+        // ShowSpacing - flag if free space between cells should be presented
+        public bool ShowSpacing
+        {
+            get
+            {
+                return _showSpacing;
+            }
+
+            set
+            {
+                if (value != _showSpacing)
+                {
+                    _showSpacing = value;
+                    FirePropertyChanged(nameof(ShowSpacing));
+                }
+            }
+        }
+
+        private bool _showSpacing = LayoutSettings.DefaultShowSpacing;
+
+        // Spacing - free space between cells
+        public int Spacing
+        {
+            get
+            {
+                return _spacing;
+            }
+
+            set
+            {
+                if (value != _spacing)
+                {
+                    _spacing = value;
+                    FirePropertyChanged(nameof(Spacing));
+                }
+            }
+        }
+
+        private int _spacing = LayoutSettings.DefaultSpacing;
 
         // FreeZones (not persisted) - used to keep track of child indices that are no longer in use in the CellChildMap,
         //  making them candidates for re-use when it's needed to add another child
@@ -97,13 +150,46 @@ namespace FancyZonesEditor.Models
             CellChildMap = cellChildMap;
         }
 
+        public GridLayoutModel(GridLayoutModel other)
+            : base(other)
+        {
+            _rows = other._rows;
+            _cols = other._cols;
+            _showSpacing = other._showSpacing;
+            _spacing = other._spacing;
+
+            CellChildMap = new int[_rows, _cols];
+            for (int row = 0; row < _rows; row++)
+            {
+                for (int col = 0; col < _cols; col++)
+                {
+                    CellChildMap[row, col] = other.CellChildMap[row, col];
+                }
+            }
+
+            for (int row = 0; row < _rows; row++)
+            {
+                RowPercents.Add(other.RowPercents[row]);
+            }
+
+            for (int col = 0; col < _cols; col++)
+            {
+                ColumnPercents.Add(other.ColumnPercents[col]);
+            }
+        }
+
+        public void UpdatePreview()
+        {
+            FirePropertyChanged();
+        }
+
         public void Reload(byte[] data)
         {
             // Skip version (2 bytes), id (2 bytes), and type (1 bytes)
             int i = 5;
 
-            Rows = data[i++];
-            Columns = data[i++];
+            _rows = data[i++];
+            _cols = data[i++];
 
             RowPercents = new List<int>(Rows);
             for (int row = 0; row < Rows; row++)
@@ -125,6 +211,8 @@ namespace FancyZonesEditor.Models
                     CellChildMap[row, col] = data[i++];
                 }
             }
+
+            FirePropertyChanged();
         }
 
         // Clone
@@ -171,30 +259,36 @@ namespace FancyZonesEditor.Models
             }
 
             layout.ColumnPercents = colPercents;
+
+            layout.ShowSpacing = ShowSpacing;
+            layout.Spacing = Spacing;
+            layout.SensitivityRadius = SensitivityRadius;
         }
 
-        private struct GridLayoutInfo
+        // InitTemplateZones
+        // Creates zones based on template zones count
+        public override void InitTemplateZones()
         {
-            public int Rows { get; set; }
+            switch (Type)
+            {
+                case LayoutType.Rows:
+                    InitRows();
+                    break;
+                case LayoutType.Columns:
+                    InitColumns();
+                    break;
+                case LayoutType.Grid:
+                    InitGrid();
+                    break;
+                case LayoutType.PriorityGrid:
+                    InitPriorityGrid();
+                    break;
+                case LayoutType.Custom:
+                    InitColumns(); // Custom is initialized with columns
+                    break;
+            }
 
-            public int Columns { get; set; }
-
-            public List<int> RowsPercentage { get; set; }
-
-            public List<int> ColumnsPercentage { get; set; }
-
-            public int[][] CellChildMap { get; set; }
-        }
-
-        private struct GridLayoutJson
-        {
-            public string Uuid { get; set; }
-
-            public string Name { get; set; }
-
-            public string Type { get; set; }
-
-            public GridLayoutInfo Info { get; set; }
+            FirePropertyChanged();
         }
 
         // PersistData
@@ -202,40 +296,105 @@ namespace FancyZonesEditor.Models
         protected override void PersistData()
         {
             AddCustomLayout(this);
+        }
 
-            GridLayoutInfo layoutInfo = new GridLayoutInfo
-            {
-                Rows = Rows,
-                Columns = Columns,
-                RowsPercentage = RowPercents,
-                ColumnsPercentage = ColumnPercents,
-                CellChildMap = new int[Rows][],
-            };
+        private void InitRows()
+        {
+            CellChildMap = new int[TemplateZoneCount, 1];
+            RowPercents = new List<int>(TemplateZoneCount);
 
-            for (int row = 0; row < Rows; row++)
+            for (int i = 0; i < TemplateZoneCount; i++)
             {
-                layoutInfo.CellChildMap[row] = new int[Columns];
-                for (int col = 0; col < Columns; col++)
+                CellChildMap[i, 0] = i;
+
+                // Note: This is NOT equal to _multiplier / ZoneCount and is done like this to make
+                // the sum of all RowPercents exactly (_multiplier).
+                RowPercents.Add(((GridMultiplier * (i + 1)) / TemplateZoneCount) - ((GridMultiplier * i) / TemplateZoneCount));
+            }
+
+            _rows = TemplateZoneCount;
+        }
+
+        private void InitColumns()
+        {
+            CellChildMap = new int[1, TemplateZoneCount];
+            ColumnPercents = new List<int>(TemplateZoneCount);
+
+            for (int i = 0; i < TemplateZoneCount; i++)
+            {
+                CellChildMap[0, i] = i;
+
+                // Note: This is NOT equal to _multiplier / ZoneCount and is done like this to make
+                // the sum of all RowPercents exactly (_multiplier).
+                ColumnPercents.Add(((GridMultiplier * (i + 1)) / TemplateZoneCount) - ((GridMultiplier * i) / TemplateZoneCount));
+            }
+
+            _cols = TemplateZoneCount;
+        }
+
+        private void InitGrid()
+        {
+            int rows = 1;
+            while (TemplateZoneCount / rows >= rows)
+            {
+                rows++;
+            }
+
+            rows--;
+            int cols = TemplateZoneCount / rows;
+            if (TemplateZoneCount % rows == 0)
+            {
+                // even grid
+            }
+            else
+            {
+                cols++;
+            }
+
+            RowPercents = new List<int>(rows);
+            ColumnPercents = new List<int>(cols);
+            CellChildMap = new int[rows, cols];
+
+            // Note: The following are NOT equal to _multiplier divided by rows or columns and is
+            // done like this to make the sum of all RowPercents exactly (_multiplier).
+            for (int row = 0; row < rows; row++)
+            {
+                RowPercents.Add(((GridMultiplier * (row + 1)) / rows) - ((GridMultiplier * row) / rows));
+            }
+
+            for (int col = 0; col < cols; col++)
+            {
+                ColumnPercents.Add(((GridMultiplier * (col + 1)) / cols) - ((GridMultiplier * col) / cols));
+            }
+
+            int index = 0;
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
                 {
-                    layoutInfo.CellChildMap[row][col] = CellChildMap[row, col];
+                    CellChildMap[row, col] = index++;
+                    if (index == TemplateZoneCount)
+                    {
+                        index--;
+                    }
                 }
             }
 
-            GridLayoutJson jsonObj = new GridLayoutJson
-            {
-                Uuid = Uuid,
-                Name = Name,
-                Type = ModelTypeID,
-                Info = layoutInfo,
-            };
-            JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = new DashCaseNamingPolicy(),
-            };
+            _rows = rows;
+            _cols = cols;
+        }
 
-            string jsonString = JsonSerializer.Serialize(jsonObj, options);
-            AddCustomLayoutJson(JsonSerializer.Deserialize<JsonElement>(jsonString));
-            SerializeCreatedCustomZonesets();
+        private void InitPriorityGrid()
+        {
+            if (TemplateZoneCount <= _priorityData.Length)
+            {
+                Reload(_priorityData[TemplateZoneCount - 1]);
+            }
+            else
+            {
+                // same as grid;
+                InitGrid();
+            }
         }
     }
 }

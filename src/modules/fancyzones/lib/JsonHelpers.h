@@ -59,11 +59,24 @@ namespace JSONHelpers
     using TDeviceInfoMap = std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData>;
     using TCustomZoneSetsMap = std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData>;
 
-    struct AppliedZonesetsJSON
+    struct MonitorInfo
     {
-        static json::JsonObject ToJson(const TDeviceInfoMap& deviceInfoMap);
-        static json::JsonObject ToJson(const TDeviceInfoMap& deviceInfoMap, const GUID& currentVirtualDesktop);
-        static std::optional<TDeviceInfoMap> FromJson(const json::JsonObject& json);
+        int dpi;
+        std::wstring id;
+        int top;
+        int left;
+        bool isSelected = false;
+
+        static json::JsonObject ToJson(const MonitorInfo& monitor);
+    };
+    
+    struct EditorArgs
+    {
+        DWORD processId;
+        bool spanZonesAcrossMonitors;
+        std::vector<MonitorInfo> monitors;
+
+        static json::JsonObject ToJson(const EditorArgs& args);
     };
 
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName);
@@ -79,14 +92,4 @@ namespace JSONHelpers
 
     TCustomZoneSetsMap ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON);
     json::JsonArray SerializeCustomZoneSets(const TCustomZoneSetsMap& customZoneSetsMap);
-
-    void SerializeDeviceInfoToTmpFile(const TDeviceInfoMap& deviceInfoMap, const GUID& currentVirtualDesktop, std::wstring_view tmpFilePath);
-    std::optional<TDeviceInfoMap> ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);
-    std::vector<CustomZoneSetJSON> ParseCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
-    std::vector<std::wstring> ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
-
-#if defined(UNIT_TESTS)
-    void SerializeCustomZoneSetsToTmpFile(const TCustomZoneSetsMap& customZoneSetsMap, std::wstring_view tmpFilePath);
-#endif
-
 }

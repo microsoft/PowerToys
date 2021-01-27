@@ -4,7 +4,6 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows;
 using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor.ViewModels
@@ -21,14 +20,6 @@ namespace FancyZonesEditor.ViewModels
         public ObservableCollection<MonitorInfoModel> MonitorInfoForViewModel { get; set; }
 
         public static double DesktopPreviewMultiplier { get; private set; }
-
-        public Visibility DesktopsPanelVisibility
-        {
-            get
-            {
-                return App.Overlay.MultiMonitorMode ? Visibility.Visible : Visibility.Collapsed;
-            }
-        }
 
         public RelayCommand AddCommand { get; set; }
 
@@ -57,7 +48,7 @@ namespace FancyZonesEditor.ViewModels
 
             double maxMultiplier = MaxPreviewDisplaySize / maxDimension;
             double minMultiplier = MinPreviewDisplaySize / minDimension;
-            DesktopPreviewMultiplier = (minMultiplier + maxMultiplier) / 2;
+            DesktopPreviewMultiplier = (minMultiplier + maxMultiplier) / 3.5;
         }
 
         private void RaisePropertyChanged(string propertyName)

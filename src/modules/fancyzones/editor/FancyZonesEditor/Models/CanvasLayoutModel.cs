@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Windows;
 
 namespace FancyZonesEditor.Models
@@ -14,7 +12,7 @@ namespace FancyZonesEditor.Models
     public class CanvasLayoutModel : LayoutModel
     {
         // Non-localizable strings
-        private const string ModelTypeID = "canvas";
+        public const string ModelTypeID = "canvas";
 
         public Rect CanvasRect { get; private set; }
 
@@ -33,6 +31,17 @@ namespace FancyZonesEditor.Models
         public CanvasLayoutModel(string name)
         : base(name)
         {
+        }
+
+        public CanvasLayoutModel(CanvasLayoutModel other)
+            : base(other)
+        {
+            CanvasRect = new Rect(other.CanvasRect.X, other.CanvasRect.Y, other.CanvasRect.Width, other.CanvasRect.Height);
+
+            foreach (Int32Rect zone in other.Zones)
+            {
+                Zones.Add(zone);
+            }
         }
 
         // Zones - the list of all zones in this layout, described as independent rectangles
@@ -54,6 +63,28 @@ namespace FancyZonesEditor.Models
             UpdateLayout();
         }
 
+        // InitTemplateZones
+        // Creates zones based on template zones count
+        public override void InitTemplateZones()
+        {
+            Zones.Clear();
+
+            var workingArea = App.Overlay.WorkArea;
+            int topLeftCoordinate = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(100); // TODO: replace magic numbers
+            int width = (int)(workingArea.Width * 0.4);
+            int height = (int)(workingArea.Height * 0.4);
+            Int32Rect focusZoneRect = new Int32Rect(topLeftCoordinate, topLeftCoordinate, width, height);
+            int focusRectXIncrement = (TemplateZoneCount <= 1) ? 0 : (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(50); // TODO: replace magic numbers
+            int focusRectYIncrement = (TemplateZoneCount <= 1) ? 0 : (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(50); // TODO: replace magic numbers
+
+            for (int i = 0; i < TemplateZoneCount; i++)
+            {
+                Zones.Add(focusZoneRect);
+                focusZoneRect.X += focusRectXIncrement;
+                focusZoneRect.Y += focusRectYIncrement;
+            }
+        }
+
         private void UpdateLayout()
         {
             FirePropertyChanged();
@@ -71,6 +102,7 @@ namespace FancyZonesEditor.Models
                 layout.Zones.Add(zone);
             }
 
+            layout.SensitivityRadius = SensitivityRadius;
             return layout;
         }
 
@@ -81,37 +113,8 @@ namespace FancyZonesEditor.Models
             {
                 other.Zones.Add(zone);
             }
-        }
 
-        private struct Zone
-        {
-            public int X { get; set; }
-
-            public int Y { get; set; }
-
-            public int Width { get; set; }
-
-            public int Height { get; set; }
-        }
-
-        private struct CanvasLayoutInfo
-        {
-            public int RefWidth { get; set; }
-
-            public int RefHeight { get; set; }
-
-            public Zone[] Zones { get; set; }
-        }
-
-        private struct CanvasLayoutJson
-        {
-            public string Uuid { get; set; }
-
-            public string Name { get; set; }
-
-            public string Type { get; set; }
-
-            public CanvasLayoutInfo Info { get; set; }
+            other.SensitivityRadius = SensitivityRadius;
         }
 
         // PersistData
@@ -119,48 +122,6 @@ namespace FancyZonesEditor.Models
         protected override void PersistData()
         {
             AddCustomLayout(this);
-
-            var canvasRect = CanvasRect;
-            if (canvasRect.Width == 0 || canvasRect.Height == 0)
-            {
-                canvasRect = App.Overlay.WorkArea;
-            }
-
-            CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
-            {
-                RefWidth = (int)canvasRect.Width,
-                RefHeight = (int)canvasRect.Height,
-                Zones = new Zone[Zones.Count],
-            };
-
-            for (int i = 0; i < Zones.Count; ++i)
-            {
-                Zone zone = new Zone
-                {
-                    X = Zones[i].X,
-                    Y = Zones[i].Y,
-                    Width = Zones[i].Width,
-                    Height = Zones[i].Height,
-                };
-
-                layoutInfo.Zones[i] = zone;
-            }
-
-            CanvasLayoutJson jsonObj = new CanvasLayoutJson
-            {
-                Uuid = Uuid,
-                Name = Name,
-                Type = ModelTypeID,
-                Info = layoutInfo,
-            };
-            JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = new DashCaseNamingPolicy(),
-            };
-
-            string jsonString = JsonSerializer.Serialize(jsonObj, options);
-            AddCustomLayoutJson(JsonSerializer.Deserialize<JsonElement>(jsonString));
-            SerializeCreatedCustomZonesets();
         }
     }
 }

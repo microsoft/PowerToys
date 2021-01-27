@@ -374,8 +374,9 @@
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.runtimeconfig.json" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ControlzEx.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\MahApps.Metro.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ModernWpf.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ModernWpf.Controls.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Json.dll" />
         <File Id="FancyZones_ManagedCommon" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedCommon.dll" />
         <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedTelemetry.dll" />

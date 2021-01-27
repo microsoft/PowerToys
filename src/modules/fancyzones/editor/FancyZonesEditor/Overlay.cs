@@ -13,7 +13,6 @@ namespace FancyZonesEditor
     public class Overlay
     {
         private MainWindow _mainWindow;
-
         private LayoutPreview _layoutPreview;
         private UserControl _editor;
 
@@ -28,7 +27,7 @@ namespace FancyZonesEditor
                     return Monitors[CurrentDesktop].Device.WorkAreaRect;
                 }
 
-                return default(Rect);
+                return default;
             }
         }
 
@@ -54,7 +53,7 @@ namespace FancyZonesEditor
                     return Monitors[CurrentDesktop].Window;
                 }
 
-                return default(Window);
+                return default;
             }
         }
 
@@ -100,14 +99,13 @@ namespace FancyZonesEditor
                         return;
                     }
 
-                    var prevSettings = CurrentLayoutSettings;
                     _currentDesktop = value;
 
                     MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
                     if (settings != null)
                     {
-                        settings.ResetAppliedModel();
-                        settings.UpdateDesktopDependantProperties(prevSettings);
+                        settings.SetAppliedModel(null);
+                        settings.UpdateDefaultModels();
                     }
 
                     Update();
@@ -130,8 +128,8 @@ namespace FancyZonesEditor
 
                 if (_spanZonesAcrossMonitors)
                 {
-                    Rect workArea = default(Rect);
-                    Rect bounds = default(Rect);
+                    Rect workArea = default;
+                    Rect bounds = default;
 
                     foreach (Monitor monitor in Monitors)
                     {
@@ -174,7 +172,7 @@ namespace FancyZonesEditor
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
-                Opacity = 0.5,
+                Opacity = 1,
             };
 
             ShowLayout();
@@ -201,6 +199,30 @@ namespace FancyZonesEditor
             }
         }
 
+        public void SetLayoutSettings(Monitor monitor, LayoutModel model)
+        {
+            if (model == null)
+            {
+                return;
+            }
+
+            monitor.Settings.ZonesetUuid = model.Uuid;
+            monitor.Settings.Type = model.Type;
+            monitor.Settings.SensitivityRadius = model.SensitivityRadius;
+            monitor.Settings.ZoneCount = model.TemplateZoneCount;
+
+            if (model is GridLayoutModel grid)
+            {
+                monitor.Settings.ShowSpacing = grid.ShowSpacing;
+                monitor.Settings.Spacing = grid.Spacing;
+            }
+            else
+            {
+                monitor.Settings.ShowSpacing = false;
+                monitor.Settings.Spacing = 0;
+            }
+        }
+
         public void OpenEditor(LayoutModel model)
         {
             _layoutPreview = null;
@@ -216,11 +238,10 @@ namespace FancyZonesEditor
             CurrentLayoutWindow.Content = _editor;
 
             EditorWindow window;
-            bool isGrid = false;
+
             if (model is GridLayoutModel)
             {
                 window = new GridEditorWindow();
-                isGrid = true;
             }
             else
             {
@@ -230,14 +251,6 @@ namespace FancyZonesEditor
             window.Owner = Monitors[App.Overlay.CurrentDesktop].Window;
             window.DataContext = model;
             window.Show();
-
-            if (isGrid)
-            {
-                (window as GridEditorWindow).NameTextBox().Focus();
-            }
-
-            window.LeftWindowCommands = null;
-            window.RightWindowCommands = null;
         }
 
         public void CloseEditor()
@@ -246,7 +259,7 @@ namespace FancyZonesEditor
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
-                Opacity = 0.5,
+                Opacity = 1,
             };
 
             CurrentLayoutWindow.Content = _layoutPreview;
@@ -318,8 +331,6 @@ namespace FancyZonesEditor
             _mainWindow.ShowActivated = true;
             _mainWindow.Topmost = true;
             _mainWindow.Show();
-            _mainWindow.LeftWindowCommands = null;
-            _mainWindow.RightWindowCommands = null;
 
             // window is set to topmost to make sure it shows on top of PowerToys settings page
             // we can reset topmost flag now

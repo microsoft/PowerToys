@@ -1047,34 +1047,16 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CustomZoneFromValidCanvasLayoutInfo)
                 {
                     //prepare device data
-                    {
-                        const std::wstring zoneUuid = L"default_device_id";
-
-                        JSONHelpers::TDeviceInfoMap deviceInfoMap;
-                        deviceInfoMap.insert(std::make_pair(zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 }));
-                        
-                        GUID virtualDesktopId{};
-                        Assert::IsTrue(VirtualDesktopUtils::GetCurrentVirtualDesktopId(&virtualDesktopId), L"Cannot create virtual desktop id");
-                        const std::wstring deviceInfoPath = FancyZonesDataInstance().zonesSettingsFileName + L".device_info_tmp";
-                        JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoMap, virtualDesktopId, deviceInfoPath);
-
-                        FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
-                        std::filesystem::remove(deviceInfoPath);
-                    }
+                    const std::wstring zoneUuid = L"default_device_id";
+                    FancyZonesDataInstance().SetDeviceInfo(zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 });
 
                     //prepare expected data
                     wil::unique_cotaskmem_string uuid;
                     Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
                     const CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 0, 0, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
                     CustomZoneSetData zoneSetData{ L"name", CustomLayoutType::Canvas, info };
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid.get(), zoneSetData };
-                    JSONHelpers::TCustomZoneSetsMap customZoneSets;
-                    customZoneSets.insert(std::make_pair(uuid.get(), zoneSetData));
-                    JSONHelpers::SerializeCustomZoneSetsToTmpFile(customZoneSets, m_path);
-
-                    Assert::IsTrue(std::filesystem::exists(m_path));
-                    FancyZonesDataInstance().ParseCustomZoneSetsFromTmpFile(m_path);
-
+                    FancyZonesDataInstance().SetCustomZonesets(uuid.get(), zoneSetData);
+                    
                     //test
                     const int spacing = 10;
                     const int zoneCount = static_cast<int>(info.zones.size());
@@ -1091,20 +1073,8 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CustomZoneFromValidGridFullLayoutInfo)
                 {
                     //prepare device data
-                    {
-                        const std::wstring zoneUuid = L"default_device_id";
-
-                        JSONHelpers::TDeviceInfoMap deviceInfoMap;
-                        deviceInfoMap.insert(std::make_pair(zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 }));
-
-                        GUID virtualDesktopId{};
-                        Assert::IsTrue(VirtualDesktopUtils::GetCurrentVirtualDesktopId(&virtualDesktopId), L"Cannot create virtual desktop id");
-                        const std::wstring deviceInfoPath = FancyZonesDataInstance().zonesSettingsFileName + L".device_info_tmp";
-                        JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoMap, virtualDesktopId, deviceInfoPath);
-
-                        FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
-                        std::filesystem::remove(deviceInfoPath);
-                    }
+                    const std::wstring zoneUuid = L"default_device_id";
+                    FancyZonesDataInstance().SetDeviceInfo(zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 });
 
                     //prepare expected data
                     wil::unique_cotaskmem_string uuid;
@@ -1116,13 +1086,7 @@ namespace FancyZonesUnitTests
                         .columnsPercents = { 2500, 5000, 2500 },
                         .cellChildMap = { { 0, 1, 2 } } }));
                     CustomZoneSetData zoneSetData{ L"name", CustomLayoutType::Grid, grid };
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid.get(), zoneSetData };
-                    JSONHelpers::TCustomZoneSetsMap customZoneSets;
-                    customZoneSets.insert(std::make_pair(uuid.get(), zoneSetData));
-                    JSONHelpers::SerializeCustomZoneSetsToTmpFile(customZoneSets, m_path);
-
-                    Assert::IsTrue(std::filesystem::exists(m_path));
-                    FancyZonesDataInstance().ParseCustomZoneSetsFromTmpFile(m_path);
+                    FancyZonesDataInstance().SetCustomZonesets(uuid.get(), zoneSetData);
 
                     const int spacing = 10;
                     const int zoneCount = grid.rows() * grid.columns();

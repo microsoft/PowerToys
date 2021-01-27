@@ -65,19 +65,14 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MahApps.Metro" Version="2.3.2" />
-    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
-    <PackageReference Include="System.Text.Json" Version="4.7.2" />
+    <PackageReference Include="ControlzEx" Version="4.4.0" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.3" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="images\ChromeClose.png" />
-    <Resource Include="images\Delete.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="images\Merge.png" />
+    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
+    <PackageReference Include="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\FancyZonesEditor.ico" />
@@ -86,6 +81,11 @@
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
