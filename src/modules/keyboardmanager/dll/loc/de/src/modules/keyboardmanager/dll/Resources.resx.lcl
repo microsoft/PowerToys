@@ -398,7 +398,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Schlüssel]]></Val>
+            <Val><![CDATA[Taste]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Key Drop Down]]></Val>
