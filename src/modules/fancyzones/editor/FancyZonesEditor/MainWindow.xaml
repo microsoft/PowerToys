@@ -65,12 +65,29 @@
         <Style x:Key="SpinnerButton" TargetType="Button">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}"/>
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="Padding" Value="0,0,0,5"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#F2F2F2"/>
+            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
             <Setter Property="Margin" Value="0,0,0,0" />
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            
+            <Style.Triggers>
+                <Trigger Property="Border.IsMouseOver" Value="True">
+                    <Setter Property="Background"
+                            Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="ZoneCount" TargetType="TextBlock">
@@ -504,9 +521,21 @@
                 <StackPanel Margin="0,6,0,0" 
                             Orientation="Horizontal" 
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
-                    <Button x:Name="decrementZones" Width="40" Height="40" AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}" Content="-" Style="{StaticResource SpinnerButton}" Click="DecrementZones_Click"/>
+                    <Button x:Name="decrementZones" 
+                            Width="40" 
+                            Height="40" 
+                            AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}" 
+                            Content="-" 
+                            Style="{StaticResource SpinnerButton}"
+                            Click="DecrementZones_Click"/>
                     <TextBlock x:Name="zoneCount" Text="{Binding TemplateZoneCount}" Style="{StaticResource ZoneCount}"/>
-                    <Button x:Name="incrementZones" Width="40" Height="40" AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}" Content="+" Style="{StaticResource SpinnerButton}" Click="IncrementZones_Click"/>
+                    <Button x:Name="incrementZones" 
+                            Width="40" 
+                            Height="40" 
+                            AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}" 
+                            Content="+" 
+                            Style="{StaticResource SpinnerButton}" 
+                            Click="IncrementZones_Click"/>
                 </StackPanel>
                 
                 <StackPanel Margin="0,16,0,0"
