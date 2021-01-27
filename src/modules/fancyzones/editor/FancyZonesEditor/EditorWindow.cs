@@ -26,7 +26,7 @@ namespace FancyZonesEditor
 
                 MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
                 settings.SetAppliedModel(model);
-                App.Overlay.SaveCurrentLayoutSettings(model);
+                App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
             }
 
             App.FancyZonesEditorIO.SerializeZoneSettings();

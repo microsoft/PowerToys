@@ -31,14 +31,6 @@ namespace FancyZonesEditor
         private readonly GridLayoutModel _gridModel;
         private readonly GridLayoutModel _priorityGridModel;
 
-        public const ushort _focusModelId = 0xFFFF;
-        public const ushort _rowsModelId = 0xFFFE;
-        public const ushort _columnsModelId = 0xFFFD;
-        public const ushort _gridModelId = 0xFFFC;
-        public const ushort _priorityGridModelId = 0xFFFB;
-        public const ushort _blankCustomModelId = 0xFFFA;
-        public const ushort _lastDefinedId = _blankCustomModelId;
-
         // Non-localizable strings
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
         public static readonly string FullRegistryPath = "HKEY_CURRENT_USER\\" + RegistryPath;
@@ -62,9 +54,11 @@ namespace FancyZonesEditor
         public MainWindowSettingsModel()
         {
             // Initialize default layout models: Blank, Focus, Columns, Rows, Grid, and PriorityGrid
-            _blankModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Blank, LayoutType.Blank);
-            _blankModel.TemplateZoneCount = 0;
-            _blankModel.SensitivityRadius = 0;
+            _blankModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Blank, LayoutType.Blank)
+            {
+                TemplateZoneCount = 0,
+                SensitivityRadius = 0,
+            };
             DefaultModels.Add(_blankModel);
 
             _focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
@@ -135,6 +129,14 @@ namespace FancyZonesEditor
         }
 
         private bool _isCtrlKeyPressed;
+
+        public LayoutModel BlankModel
+        {
+            get
+            {
+                return _blankModel;
+            }
+        }
 
         public static IList<LayoutModel> DefaultModels { get; } = new List<LayoutModel>(6);
 
@@ -233,7 +235,7 @@ namespace FancyZonesEditor
 
             if (foundModel == null)
             {
-                foundModel = DefaultModels[5]; // PriorityGrid
+                foundModel = _priorityGridModel;
             }
 
             SetSelectedModel(foundModel);

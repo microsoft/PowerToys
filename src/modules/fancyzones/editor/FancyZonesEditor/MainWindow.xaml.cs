@@ -212,7 +212,7 @@ namespace FancyZonesEditor
 
             model.Persist();
 
-            App.Overlay.SaveCurrentLayoutSettings(model);
+            App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
             App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
@@ -222,7 +222,7 @@ namespace FancyZonesEditor
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
                 _settings.SetAppliedModel(model);
-                App.Overlay.SaveCurrentLayoutSettings(model);
+                App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
                 App.FancyZonesEditorIO.SerializeZoneSettings();
             }
         }
@@ -359,7 +359,7 @@ namespace FancyZonesEditor
             // update current settings
             if (model == _settings.AppliedModel)
             {
-                App.Overlay.SaveCurrentLayoutSettings(model);
+                App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
             }
 
             App.FancyZonesEditorIO.SerializeZoneSettings();
@@ -382,6 +382,22 @@ namespace FancyZonesEditor
             if (result == ContentDialogResult.Primary)
             {
                 LayoutModel model = element.DataContext as LayoutModel;
+
+                if (model == _settings.AppliedModel)
+                {
+                    _settings.SetAppliedModel(_settings.BlankModel);
+                    Select(_settings.BlankModel);
+                }
+
+                foreach (var monitor in App.Overlay.Monitors)
+                {
+                    if (monitor.Settings.ZonesetUuid == model.Uuid)
+                    {
+                        App.Overlay.SetLayoutSettings(monitor, _settings.BlankModel);
+                    }
+                }
+
+                App.FancyZonesEditorIO.SerializeZoneSettings();
                 model.Delete();
             }
         }
