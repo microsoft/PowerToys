@@ -167,7 +167,7 @@ namespace JSONHelpers
                 info.zones.push_back(zone);
             }
 
-            info.sensitivityRadius = infoJson.GetNamedNumber(NonLocalizable::SensitivityRadius, DefaultValues::SensitivityRadius);
+            info.sensitivityRadius = static_cast<int>(infoJson.GetNamedNumber(NonLocalizable::SensitivityRadius, DefaultValues::SensitivityRadius));
             return info;
         }
         catch (const winrt::hresult_error&)
@@ -229,8 +229,8 @@ namespace JSONHelpers
             }
 
             info.m_showSpacing = infoJson.GetNamedBoolean(NonLocalizable::ShowSpacing, DefaultValues::ShowSpacing);
-            info.m_spacing = infoJson.GetNamedNumber(NonLocalizable::Spacing, DefaultValues::Spacing);
-            info.m_sensitivityRadius = infoJson.GetNamedNumber(NonLocalizable::SensitivityRadius, DefaultValues::SensitivityRadius);
+            info.m_spacing = static_cast<int>(infoJson.GetNamedNumber(NonLocalizable::Spacing, DefaultValues::Spacing));
+            info.m_sensitivityRadius = static_cast<int>(infoJson.GetNamedNumber(NonLocalizable::SensitivityRadius, DefaultValues::SensitivityRadius));
 
             return info;
         }
