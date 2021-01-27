@@ -128,40 +128,40 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
         /// <summary>
         /// If there is a CSS unit at the end return the same string, else return the string with a px unit at the end
         /// </summary>
-        /// <param name="lenght">CSS length</param>
+        /// <param name="length">CSS length</param>
         /// <returns>Returns modified length</returns>
-        private static string CheckUnit(string lenght)
+        private static string CheckUnit(string length)
         {
             string[] cssUnits = { "cm", "mm", "in", "px", "pt", "pc", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "%" };
             foreach (var unit in cssUnits)
             {
-                if (lenght.EndsWith(unit, System.StringComparison.CurrentCultureIgnoreCase))
+                if (length.EndsWith(unit, System.StringComparison.CurrentCultureIgnoreCase))
                 {
-                    return lenght;
+                    return length;
                 }
             }
 
-            return lenght + "px";
+            return length + "px";
         }
 
         /// <summary>
         /// Remove a CSS unit from the end of the string
         /// </summary>
-        /// <param name="lenght">CSS length</param>
+        /// <param name="length">CSS length</param>
         /// <returns>Returns modified length</returns>
-        private static string RemoveUnit(string lenght)
+        private static string RemoveUnit(string length)
         {
             string[] cssUnits = { "cm", "mm", "in", "px", "pt", "pc", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "%" };
             foreach (var unit in cssUnits)
             {
-                if (lenght.EndsWith(unit, System.StringComparison.CurrentCultureIgnoreCase))
+                if (length.EndsWith(unit, System.StringComparison.CurrentCultureIgnoreCase))
                 {
-                    lenght = lenght.Remove(lenght.Length - unit.Length);
-                    return lenght;
+                    length = length.Remove(length.Length - unit.Length);
+                    return length;
                 }
             }
 
-            return lenght;
+            return length;
         }
     }
 }
