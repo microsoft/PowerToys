@@ -17,11 +17,11 @@
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF9a9a9a" />
     <SolidColorBrush x:Key="BackdropBrush" Color="#88000000" />
     <SolidColorBrush x:Key="TitleBarSecondaryForegroundBrush" Color="#FF9a9a9a" />
-    <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FF2b2b2b" />
+    <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FF3A3A3A" />
     <SolidColorBrush x:Key="LayoutItemBackgroundPointerOverBrush" Color="#FF333333" />
     <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#BF1b1b1b" />
     <SolidColorBrush x:Key="LayoutPreviewBackgroundBrush" Color="#331B1B1B" />
-    <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF1b1b1b" />
+    <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF4a4a4a" />
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#E51b1b1b" />
 </ResourceDictionary>
