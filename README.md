@@ -38,6 +38,8 @@ This is our preferred method.
 #### Experimental version
 To install the Video Conference mute, please use the [v0.28 pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.27 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
+We hope to have an updated version in Febuary 2021 with the new DirectShow driver.
+
 ### Via WinGet (Preview)
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/releases). To install PowerToys, run the following command from the command line / PowerShell:
 
@@ -93,7 +95,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - Bug fixes in editor
 
 **FancyZones**
-- Streamlined, simplified user interface 
+- Streamlined, simplified user interface (Massive thanks to [@niels9001](https://github.com/niels9001))
 - Dark mode for the editor
 - Certain settings (e.g. number of zones, spacing settings) can now be set on individual layouts.
 - Bug fixes
@@ -105,7 +107,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 **PowerToys Run**
 - Service management plugin (restart, stop, ...)
-- Registry key plugin
+- Registry key plugin 
 - System action plugin (Reboot, lock, ...)
 - Hyperbolic functions added to calculator
 - Icon fixes when running in certain themes
