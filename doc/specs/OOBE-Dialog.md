@@ -53,113 +53,51 @@ The PowerToys OOBE is for new power users and developers who are looking to tune
 |No. | Requirement | Pri |
 | - | - | - |
 |1 | The OOBE Dialog window should launch immediately after installation. | P0 |
-|2 | The OOBE Dialog should consist of a collection of pages that describe the available PowerToys. | P0 |
-|3 | On launch, present the Welcome/Landing page in the OOBE Dialog window based on the template described in [Figure 5.1.1.](#511-oobe-dialog-layout) | P1 |
+|2 | The OOBE Dialog should consist of a collection of pages that describe the available PowerToys, organized based on the template depicted in [Figure 5.1.1.](#511-oobe-dialog-layout). | P0 |
+|3 | On launch, present a Welcome/Landing page in the OOBE Dialog window as described in [Section 3.1.3.](#313-welcomeoverview-page-content)  | P1 |
 |4 | Traverse the various OOBE Dialog pages via an list view options on the left-hand pane. | P0 |
 |5 | Alternatively traverse the various OOBE Dialog pages via an on-screen next/previous buttons on each page. | P2 |
 |6 | At any time, the user should be able to exit the OOBE dialog by closing the window. | P0 |
 |7 | Alternatively, the user should be able to exit the OOBE dialog by pressing the ESC key. | P1 |
 |8 | Automatically save changes to settings as they are made in the OOBE. | P1 |
 |9 | In the PowerToys settings “General” menu, add a button to re-launch the OOBE dialog under the “Check for updates” button. | P0 |
-|10 | The OOBE dialog window should be able to be enlarged to accommodate accessibility needs. | P0 |
+|10 | The window is resizable and the content is responsive to being resized. | P0 |
 |11 | The OOBE dialog should have a preset minimum window size to ensure all content can be viable with the need to scroll the page. | P1 |
 
 #### 3.1.2. Page Layout
 
+This section describes the content that should be displayed on a given page for each PowerToys utility.
+
 | No. | Requirement | Pri |
 | - | - | - |
 |1 | Each page of the OOBE dialog should focus on the details and settings of a single PowerToy. | P0 |
-|2 | A page should include textual information that gives an overview of its PowerToy's basic functions. | P0 |
-|3 | A page should include a hero image/GIF that provides a visual representation of its PowerToy's core functionality. | P0 |
-|4 | A page should include a link to that PowerToys overview page on Microsoft Docs. | P0 |
-|5 | Include a &quot;Settings&quot; button that deep links to the PowerToy's settings page. | P1 |
-|6 | A page should include a short-list of relevant settings options that the user can select between to customize their experience. | P1 |
+|2 | A page should include textual information that gives an overview of its PowerToy's functionality. | P0 |
+|3 | A page should have a dedicated "How to run/launch" section for explaining the shortcut or actions needed to utilize the PowerToy, emphasizing that users are encouraged to "try it out" while in the OOBE. | P0 |
+|4 | A page should include a hero image/GIF that provides a visual representation of its PowerToy's core functionality. | P0 |
+|5 | A page should include a link to that PowerToys overview page on Microsoft Docs. | P1 |
+|6 | Include a &quot;Settings&quot; button that deep links to the PowerToy's settings page. | P1 |
 |7 | Include a &quot;Pro Tips&quot; section on the page that highlights a useful, yet often undiscovered feature for its PowerToy. | P3 |
 
-### 3.2. Displayed Options
+#### 3.1.3. Welcome/Overview Page Content
 
-The proceeding subsections describe the settings we choose to display for each PowerToy and the justification for why it was included.
+This section describes the content that should be displayed on the Welcome/Overview Page of the OOBE window. [Figure 5.1.2](#512-oobe-welcomeoverview-page) provides a visual of the layout.
 
-We target only having at most 3 options per page/PowerToy to stay concise and ensure the settings displayed are the most useful for the general user-base.
-
-#### 3.2.1. Welcome/Landing Page
-
-| Option | Include? | Why |
-| --- | --- | --- |
-| **Theme (Light/Dark/Default)** | ![Y](../images/OOBE/Y.png "Yes") | This is a universal setting that users are heavily opinionated about. With this being the first option shown to users, it establishes an immediate value proposition for users to continue clicking through the dialog. |
-| **Link to release notes** | ![Y](../images/OOBE/Y.png "Yes") | This provides value to returning PowerToys users who may have re-installed PowerToys and would like to quickly be updated on what has changed. |
-| **Run on startup** | ![N](../images/OOBE/N.png "No") | By default, this is already on. For new users, this is probably not something we want to show as they might turn it off prematurely without understanding the value it provides. |
-| **Always run as admin** | ![N](../images/OOBE/N.png "No") | This is not a critical option for most use cases and more of a nuance that general users will not be concerned about. |
-
-#### 3.2.2. Color Picker
-
-| Option | Include? | Why |
-| --- | --- | --- |
-| **Activate Color Picker (Shortcut)** | ![Y](../images/OOBE/Y.png "Yes") | This is a crucial setting for utilizing Color Picker that users should have a say on. |
-| **Activation behavior** | ![Y](../images/OOBE/Y.png "Yes") | This is critical for users to set up their experience the way they want. |
-| **Color format for clipboard** | ![Y](../images/OOBE/Y.png "Yes") | This is especially useful as it exposes the various copy options that may otherwise go overlooked. |
-| **Enable Color Picker** | ![N](../images/OOBE/N.png "No") | We want customers to use Color Picker first before they decide to disable it. Showing this option likely decreases the chance of that happening. |
-| **Editor Color Formats** | ![N](../images/OOBE/N.png "No") | This is typically an extraneous customization option for most users and would likely not be critical in a first-run experience. |
-
-#### 3.2.3. FancyZones
-
-| Option | Include? | Why |
-| --- | --- | --- |
-| **Hold Shift key to activate zones while dragging** | ![Y](../images/OOBE/Y.png "Yes") | This is a crucial operation that many first-time users might overlook if they do not read the documentation as noted in [#7421](https://github.com/microsoft/PowerToys/issues/7241#issuecomment-723561408). |
-| **Launch zones editor (Shortcut)** | ![Y](../images/OOBE/Y.png "Yes") | This is a crucial setting for utilizing FancyZones that users should have a say on. |
-| **Everything else** | ![N](../images/OOBE/N.png "No") | These settings are typically extraneous customization options that most users would not find useful in a first-run experience. |
-
-#### 3.2.4. File Explorer
-
-| Option | Include? | Why |
-| --- | --- | --- |
-| **Everything** | ![N](../images/OOBE/N.png "No") | This gets tricky to incorporate as it requires admin privileges. In addition, many first-run users may not find value in the available options (or even understand what the options mean). A good description/visual should suffice for this page. |
-
-#### 3.2.5. Image Resizer
-
-| Option | Include? | Why |
-| --- | --- | --- |
-| **Everything** | ![N](../images/OOBE/N.png "No") | The available Image Resizer settings are not particularly valuable to first-run users exploring the OOBE. A good description/visual should provide enough clarity and exposure for this utility. |
-
-#### 3.2.6. Keyboard Manager
-
-| Option | Include? | Why |
-| --- | --- | --- |
-| **Remap keys** | ![Y](../images/OOBE/Y.png "Yes") | This is a core functionality of Keyboard manager so users should be able to quickly change and test out these settings.(Deep link to window in settings menu.) |
-| **Remap shortcuts** | ![Y](../images/OOBE/Y.png "Yes") | This is a core functionality of Keyboard manager so users should be able to quickly change and test out these settings.(Deep link to window in settings menu.) |
-
-#### 3.2.7. PowerRename
-
-| Option | Include? | Why |
-| --- | --- | --- |
-| **Everything** | ![N](../images/OOBE/N.png "No") | The available PowerRename settings are not particularly valuable to first-run users exploring the OOBE. A good description/visual should provide enough clarity and exposure for this utility. |
-
-
-#### 3.2.8. PowerToys Run
-
-| Option | Include? | Why |
-| --- | --- | --- |
-| **Open PowerToys Run (Shortcut)** | ![Y](../images/OOBE/Y.png "Yes") | This is a crucial setting for utilizing PowerToys Run that users should have a say on. |
-| **Everything else** | ![N](../images/OOBE/N.png "No") | These settings are typically extraneous customization options that most users would not find useful in a first-run experience. |
-
-#### 3.2.9. Shortcut Guide
-
-| Option | Include? | Why |
-| --- | --- | --- |
-| **Opacity of background** | ![Y](../images/OOBE/Y.png "Yes") | Useful option for users to set their preferences. |
-| **Press duration before showing** | ![N](../images/OOBE/N.png "No") | Likely not relevant for a first-time user. |
+| No. | Requirement | Pri |
+| - | - | - |
+|1 | A high level, textual overview of the PowerToys application. | P0 |
+|2 | Link to PowerToys General Settings. | P0 |
+|3 | Link to PowerToys overview on Microsoft Docs. | P0 |
+|4 | Link to PowerToys releases page to showcase latest update changes. | P1 |
 
 ## 4. Measure Requirements
 
-| **No.** | **Requirement** | **Implication** | **Pri** |
+| No. | Requirement | Implication | Pri |
 | --- | --- | --- | --- |
 |1 | Date/Time of first-run | Helps to categorize usage and retention trends across various groups of new users. | P0 |
 |2 | OOBE sections viewed | Used to gauge how far users progress through the OOBE dialog. Helps guide decisions on further enhancements to improve retention. | P0 |
-|3 | Settings changed/options selected from OOBE dialog | Gives our developers quantitative data on the most highly utilized options/settings for insight into future planning and development. | P0 |
-|4 | Accesses to linked documentation | Used to gauge interest in user's desire to learn more about the PowerToys described. | P1 |
-|5 | Access to linked settings pages | Used to gauge whether the settings presented to users in the dialog are sufficient for user needs. | P1 |
-|6 | PowerToys launched while OOBE window is active. | Used to track user engagement with the various PowerToys while exploring the content in the OOBE. | P1 |
-|7 | Screen size | Gives crucial information for considerations related to minimal/maximum window size needed for displaying content. | P2 |
+|3 | Access to linked settings pages | Used to gauge whether users would find value in having quick settings access for particular utilities. | P1 |
+|4 | PowerToys launched while OOBE window is active. | Used to track user engagement with the various PowerToys while exploring the content in the OOBE. | P1 |
+|5 | Screen size | Gives crucial information for considerations related to minimal/maximum window size needed for displaying content. | P2 |
 
 ## 5. Appendix
 
@@ -167,4 +105,8 @@ We target only having at most 3 options per page/PowerToy to stay concise and en
 
 #### 5.1.1. OOBE Dialog Layout
 
-![OOBE_Window](../images/OOBE/OOBE_Window.png "OOBE Dialog Window")
+![OOBE_Window](../images/OOBE/OOBE_Utility_template.png "OOBE Dialog Window")
+
+#### 5.1.2. OOBE Welcome/Overview Page
+
+![OOBE_Overview](../images/OOBE/OverviewPage.png "OOBE Overview Page")
