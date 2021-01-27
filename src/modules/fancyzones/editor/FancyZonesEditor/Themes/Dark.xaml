@@ -21,7 +21,7 @@
     <SolidColorBrush x:Key="LayoutItemBackgroundPointerOverBrush" Color="#FF333333" />
     <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#BF1b1b1b" />
     <SolidColorBrush x:Key="LayoutPreviewBackgroundBrush" Color="#331B1B1B" />
-    <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF4a4a4a" />
+    <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF5a5a5a" />
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#E51b1b1b" />
 </ResourceDictionary>
