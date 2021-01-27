@@ -38,7 +38,7 @@ This is our preferred method.
 #### Experimental version
 To install the Video Conference mute, please use the [v0.28 pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.27 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
-We hope to have an updated version in Febuary 2021 with the new DirectShow driver.
+We hope to have an updated version in February 2021 with the new DirectShow driver.
 
 ### Via WinGet (Preview)
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/releases). To install PowerToys, run the following command from the command line / PowerShell:
@@ -140,7 +140,7 @@ and
 For [v0.33][github-next-release-work], we are proactively working on:
 
 - Stability
-- Video conference mute's new DirectShow filter should be ready shortly for testing and we hope to have the utility inside the offical 0.33
+- Video conference mute's new DirectShow filter should be ready shortly for testing and we hope to have the utility inside the official 0.33 build
 - OOBE dialog
 - Plugin Manager
 
