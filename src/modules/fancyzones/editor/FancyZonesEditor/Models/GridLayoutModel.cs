@@ -45,7 +45,6 @@ namespace FancyZonesEditor.Models
                 if (_rows != value)
                 {
                     _rows = value;
-                    FirePropertyChanged();
                 }
             }
         }
@@ -65,7 +64,6 @@ namespace FancyZonesEditor.Models
                 if (_cols != value)
                 {
                     _cols = value;
-                    FirePropertyChanged();
                 }
             }
         }
@@ -179,6 +177,11 @@ namespace FancyZonesEditor.Models
             {
                 ColumnPercents.Add(other.ColumnPercents[col]);
             }
+        }
+
+        public void UpdatePreview()
+        {
+            FirePropertyChanged();
         }
 
         public void Reload(byte[] data)

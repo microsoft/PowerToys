@@ -242,6 +242,7 @@ namespace FancyZonesEditor
             FixAccuracyError(_colInfo, _model.ColumnPercents);
             _model.CellChildMap = newCellChildMap;
             _model.Columns++;
+            _model.UpdatePreview();
         }
 
         public void SplitRow(int foundRow, int spliteeIndex, int newChildIndex, double space, double offset, double actualHeight)
@@ -293,6 +294,7 @@ namespace FancyZonesEditor
             FixAccuracyError(_rowInfo, _model.RowPercents);
             _model.CellChildMap = newCellChildMap;
             _model.Rows++;
+            _model.UpdatePreview();
         }
 
         public void SplitOnDrag(GridResizer resizer, double delta, double space)
@@ -451,6 +453,8 @@ namespace FancyZonesEditor
                 _model.CellChildMap = newCellChildMap;
                 _model.Rows++;
             }
+
+            _model.UpdatePreview();
         }
 
         public void RecalculateZones(int spacing, Size arrangeSize)
@@ -1038,6 +1042,7 @@ namespace FancyZonesEditor
 
             _model.Rows = rows;
             _model.Columns = cols;
+            _model.UpdatePreview();
         }
 
         private void FixAccuracyError(List<RowColInfo> info, List<int> percents)
