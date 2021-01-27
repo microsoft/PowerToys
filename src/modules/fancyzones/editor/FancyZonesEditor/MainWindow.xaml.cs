@@ -25,6 +25,8 @@ namespace FancyZonesEditor
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
         private LayoutModel _backup = null;
 
+        private ContentDialog _openedDialog = null;
+
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
@@ -56,7 +58,14 @@ namespace FancyZonesEditor
         {
             if (e.Key == Key.Escape)
             {
-                OnClosing(sender, null);
+                if (_openedDialog != null)
+                {
+                    _openedDialog.Hide();
+                }
+                else
+                {
+                    OnClosing(sender, null);
+                }
             }
         }
 
@@ -375,6 +384,16 @@ namespace FancyZonesEditor
                 LayoutModel model = element.DataContext as LayoutModel;
                 model.Delete();
             }
+        }
+
+        private void Dialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+        {
+            _openedDialog = sender;
+        }
+
+        private void Dialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
+        {
+            _openedDialog = null;
         }
     }
 }
