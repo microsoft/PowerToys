@@ -138,9 +138,11 @@ and
 For [v0.33][github-next-release-work], we are proactively working on:
 
 - Stability
-- ARM64 work
-- Video conference mute investigation toward a DirectShow filter versus a driver
-- OOBE work
+- Video conference mute's new DirectShow filter should be ready shortly for testing and we hope to have the utility inside the offical 0.33
+- OOBE dialog
+- Plugin Manager
+
+For 0.35, we aim to focus mainly on getting the all the parts needed support ARM64 support.  This includes our installer, CI system, build server, and upgrading all projects to .NET Core projects to .NET 5.
 
 ## PowerToys Community
 
