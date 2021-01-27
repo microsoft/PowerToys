@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
