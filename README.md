@@ -94,8 +94,8 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 **FancyZones**
 - Streamlined, simplified user interface 
-- Dark mode
-- Certain settings (e.g. number of zones, spacing settings) can now be set on individual layouts
+- Dark mode for the editor
+- Certain settings (e.g. number of zones, spacing settings) can now be set on individual layouts.
 - Bug fixes
 
 **File explorer**
