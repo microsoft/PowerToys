@@ -5,7 +5,7 @@ environment:
     version: '2019'
   runtime:
     provider: 'appcontainer'
-    image: 'cdpxwin1809.azurecr.io/global/vse2019:16.6.2'
+    image: 'cdpxwin1809.azurecr.io/global/vse2019:16.5.0'
     source_mode: 'map'
 
 version:
