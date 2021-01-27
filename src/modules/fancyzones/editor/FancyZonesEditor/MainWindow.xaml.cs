@@ -250,6 +250,7 @@ namespace FancyZonesEditor
 
         private void EditZones_Click(object sender, RoutedEventArgs e)
         {
+            EditLayoutDialog.Hide();
             var mainEditor = App.Overlay;
             if (!(mainEditor.CurrentDataContext is LayoutModel model))
             {
