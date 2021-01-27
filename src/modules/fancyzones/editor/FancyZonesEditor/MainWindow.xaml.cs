@@ -203,7 +203,7 @@ namespace FancyZonesEditor
 
             model.Persist();
 
-            App.Overlay.SaveCurrentLayoutSettings(model);
+            App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
             App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
@@ -213,7 +213,7 @@ namespace FancyZonesEditor
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
                 _settings.SetAppliedModel(model);
-                App.Overlay.SaveCurrentLayoutSettings(model);
+                App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
                 App.FancyZonesEditorIO.SerializeZoneSettings();
             }
         }
@@ -350,7 +350,7 @@ namespace FancyZonesEditor
             // update current settings
             if (model == _settings.AppliedModel)
             {
-                App.Overlay.SaveCurrentLayoutSettings(model);
+                App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
             }
 
             App.FancyZonesEditorIO.SerializeZoneSettings();

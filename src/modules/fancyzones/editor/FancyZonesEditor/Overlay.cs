@@ -199,27 +199,27 @@ namespace FancyZonesEditor
             }
         }
 
-        public void SaveCurrentLayoutSettings(LayoutModel model)
+        public void SetLayoutSettings(Monitor monitor, LayoutModel model)
         {
             if (model == null)
             {
                 return;
             }
 
-            CurrentLayoutSettings.ZonesetUuid = model.Uuid;
-            CurrentLayoutSettings.Type = model.Type;
-            CurrentLayoutSettings.SensitivityRadius = model.SensitivityRadius;
-            CurrentLayoutSettings.ZoneCount = model.TemplateZoneCount;
+            monitor.Settings.ZonesetUuid = model.Uuid;
+            monitor.Settings.Type = model.Type;
+            monitor.Settings.SensitivityRadius = model.SensitivityRadius;
+            monitor.Settings.ZoneCount = model.TemplateZoneCount;
 
             if (model is GridLayoutModel grid)
             {
-                CurrentLayoutSettings.ShowSpacing = grid.ShowSpacing;
-                CurrentLayoutSettings.Spacing = grid.Spacing;
+                monitor.Settings.ShowSpacing = grid.ShowSpacing;
+                monitor.Settings.Spacing = grid.Spacing;
             }
             else
             {
-                CurrentLayoutSettings.ShowSpacing = false;
-                CurrentLayoutSettings.Spacing = 0;
+                monitor.Settings.ShowSpacing = false;
+                monitor.Settings.Spacing = 0;
             }
         }
 
