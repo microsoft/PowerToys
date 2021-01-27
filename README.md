@@ -94,6 +94,8 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 **FancyZones**
 - Streamlined, simplified user interface 
+- Dark mode
+- Certain settings (e.g. number of zones, spacing settings) can now be set on individual layouts
 - Bug fixes
 
 **File explorer**
@@ -102,11 +104,12 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - SVG thumbnail quality improved
 
 **PowerToys Run**
-- Service plugin
+- Service management plugin (restart, stop, ...)
 - Registry key plugin
+- System action plugin (Reboot, lock, ...)
 - Hyperbolic functions added to calculator
-- icon fixes when running in certain themes
-- unneeded dependencies removed
+- Icon fixes when running in certain themes
+- Unneeded dependencies removed
 - Bug fixes
 
 **Installer**
