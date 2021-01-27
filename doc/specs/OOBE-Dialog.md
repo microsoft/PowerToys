@@ -55,14 +55,14 @@ The PowerToys OOBE is for new power users and developers who are looking to tune
 |1 | The OOBE Dialog window should launch immediately after installation. | P0 |
 |2 | The OOBE Dialog should consist of a collection of pages that describe the available PowerToys, organized based on the template depicted in [Figure 5.1.1.](#511-oobe-dialog-layout). | P0 |
 |3 | On launch, present a Welcome/Landing page in the OOBE Dialog window as described in [Section 3.1.3.](#313-welcomeoverview-page-content)  | P1 |
-|4 | Traverse the various OOBE Dialog pages via an list view options on the left-hand pane. | P0 |
+|4 | Traverse the various OOBE Dialog pages via a list view options on the left-hand pane. | P0 |
 |5 | Alternatively traverse the various OOBE Dialog pages via an on-screen next/previous buttons on each page. | P2 |
 |6 | At any time, the user should be able to exit the OOBE dialog by closing the window. | P0 |
 |7 | Alternatively, the user should be able to exit the OOBE dialog by pressing the ESC key. | P1 |
 |8 | Automatically save changes to settings as they are made in the OOBE. | P1 |
 |9 | In the PowerToys settings “General” menu, add a button to re-launch the OOBE dialog under the “Check for updates” button. | P0 |
 |10 | The window is resizable and the content is responsive to being resized. | P0 |
-|11 | The OOBE dialog should have a preset minimum window size to ensure all content can be viable with the need to scroll the page. | P1 |
+|11 | The OOBE dialog should have a preset minimum window size to ensure all content can be viewable without the need to scroll the page. | P1 |
 
 #### 3.1.2. Page Layout
 
@@ -76,7 +76,7 @@ This section describes the content that should be displayed on a given page for 
 |4 | A page should include a hero image/GIF that provides a visual representation of its PowerToy's core functionality. | P0 |
 |5 | A page should include a link to that PowerToys overview page on Microsoft Docs. | P1 |
 |6 | Include a &quot;Settings&quot; button that deep links to the PowerToy's settings page. | P1 |
-|7 | Include a &quot;Pro Tips&quot; section on the page that highlights a useful, yet often undiscovered feature for its PowerToy. | P3 |
+|7 | Include a collapsible &quot;Pro Tips&quot; section on the page that highlights a useful, yet often undiscovered feature for its PowerToy. | P3 |
 
 #### 3.1.3. Welcome/Overview Page Content
 
