@@ -1517,7 +1517,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Modifica il mapping dei tasti di scelta rapida ad altri tasti di scelta rapida o tasti. È anche possibile impostare i mapping per applicazioni di destinazione specifiche.]]></Val>
+            <Val><![CDATA[Modifica la mappatura dei tasti di scelta rapida ad altri tasti di scelta rapida o tasti. È anche possibile impostare le mappature in modo mirato ad applicazioni specifiche]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
