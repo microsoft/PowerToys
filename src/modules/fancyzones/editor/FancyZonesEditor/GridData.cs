@@ -120,24 +120,28 @@ namespace FancyZonesEditor
             {
                 _colInfo.Add(new RowColInfo(model.ColumnPercents[col]));
             }
+
+            int maxIndex = 0;
+            for (int row = 0; row < _model.Rows; row++)
+            {
+                for (int col = 0; col < _model.Columns; col++)
+                {
+                    maxIndex = Math.Max(maxIndex, _model.CellChildMap[row, col]);
+                }
+            }
+
+            _zoneCount = maxIndex + 1;
         }
 
         public int ZoneCount
         {
             get
             {
-                int maxIndex = 0;
-                for (int row = 0; row < _model.Rows; row++)
-                {
-                    for (int col = 0; col < _model.Columns; col++)
-                    {
-                        maxIndex = Math.Max(maxIndex, _model.CellChildMap[row, col]);
-                    }
-                }
-
-                return maxIndex;
+                return _zoneCount;
             }
         }
+
+        private int _zoneCount;
 
         public Tuple<int, int> RowColByIndex(int index)
         {

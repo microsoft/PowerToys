@@ -53,7 +53,7 @@ namespace FancyZonesEditor
             Model.PropertyChanged += OnGridDimensionsChanged;
 
             int zoneCount = _data.ZoneCount;
-            for (int i = 0; i <= zoneCount; i++)
+            for (int i = 0; i < zoneCount; i++)
             {
                 AddZone();
             }
