@@ -5,7 +5,8 @@ environment:
     version: '2019'
   runtime:
     provider: 'appcontainer'
-    image: 'cdpxwin1809.azurecr.io/global/vse2019:16.5.0'
+    # we will want to shift this to latest in the near future but this unblocks us
+    image: 'cdpxwin1809.azurecr.io/global/vse2019@sha256:44a8af0de5efa68829dbdfc3ecef3864d9770f1fc426b897fc37888032c9f60c'
     source_mode: 'map'
 
 version:
