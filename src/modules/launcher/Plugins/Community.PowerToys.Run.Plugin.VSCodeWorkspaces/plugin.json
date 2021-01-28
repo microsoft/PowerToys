@@ -1,6 +1,6 @@
 {
   "ID": "CEA0FDFC6D3B4085823D60DC76F28100",
-  "ActionKeyword": "*",
+  "ActionKeyword": "{",
   "Name": "VSCode Workspaces",
   "Description": "Opened VSCode Workspaces",
   "Author": "ricardosantos9521",

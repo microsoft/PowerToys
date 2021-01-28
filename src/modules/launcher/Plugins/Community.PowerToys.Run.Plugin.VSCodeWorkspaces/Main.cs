@@ -122,10 +122,14 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
             }
 
             results.ForEach(x => x.Score = 100);
+            results.OrderBy(x => x.Title);
 
-            results = results.Where(a => a.Title.ToLower().Contains(query.Search.ToLower())).ToList();
+            if (query.ActionKeyword == String.Empty || (query.ActionKeyword != String.Empty && query.Search != String.Empty))
+            {
+                results = results.Where(a => a.Title.ToLower().Contains(query.Search.ToLower())).ToList();
 
-            results.Sort((a, b) => b.Title.ToLower().CompareTo(query.Search.ToLower()) - a.Title.ToLower().CompareTo(query.Search.ToLower()));
+                results.Sort((a, b) => b.Title.ToLower().CompareTo(query.Search.ToLower()) - a.Title.ToLower().CompareTo(query.Search.ToLower()));
+            }
 
             return results;
         }
