@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Add Key Remap]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aggiungi nuovo mapping del tasto]]></Val>
+            <Val><![CDATA[Aggiungi nuova mappatura del tasto]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Add Shortcut Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aggiungi nuovo mapping del tasto di scelta rapida]]></Val>
+            <Val><![CDATA[Aggiungi nuova mappatura del tasto di scelta rapida]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Delete Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Elimina nuovo mapping]]></Val>
+            <Val><![CDATA[Elimina nuova mappatura]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -125,7 +125,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Some of the keys could not be remapped. Do you want to continue anyway?]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è stato possibile eseguire il nuovo mapping di alcuni tasti. Continuare comunque?]]></Val>
+            <Val><![CDATA[Non è stato possibile eseguire la nuova mappatura di alcuni tasti. Continuare comunque?]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -152,7 +152,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap keys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Modifica il mapping dei tasti]]></Val>
+            <Val><![CDATA[Modifica la mappatura dei tasti]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -191,7 +191,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Some of the shortcuts could not be remapped. Do you want to continue anyway?]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è stato possibile eseguire il nuovo mapping di alcuni tasti di scelta rapida. Continuare comunque?]]></Val>
+            <Val><![CDATA[Non è stato possibile eseguire la nuova mappatura di alcuni tasti di scelta rapida. Continuare comunque?]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -227,7 +227,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap shortcuts]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Modifica il mapping dei tasti di scelta rapida]]></Val>
+            <Val><![CDATA[Modifica la mappatura dei tasti di scelta rapida]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -236,7 +236,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap this key as it conflicts with another remapped key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile modificare il mapping del tasto in quanto è in conflitto con il nuovo mapping di un altro tasto]]></Val>
+            <Val><![CDATA[Non è possibile modificare la mappatura del tasto in quanto è in conflitto con la nuova mappatura di un altro tasto]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -245,7 +245,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap this shortcut as it conflicts with another remapped shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile modificare il mapping del tasto di scelta rapida perché è in conflitto con il nuovo mapping di un altro tasto di scelta rapida]]></Val>
+            <Val><![CDATA[Non è possibile modificare la mappatura del tasto di scelta rapida perché è in conflitto con la nuova mappatura di un altro tasto di scelta rapida]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -254,7 +254,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap from/to Ctrl Alt Del]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile impostare un nuovo mapping da/a CTRL ALT CANC]]></Val>
+            <Val><![CDATA[Non è possibile impostare una nuova mappatura da/a CTRL ALT CANC]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -272,7 +272,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap a shortcut to itself]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile modificare il mapping di un tasto di scelta rapida su se stesso]]></Val>
+            <Val><![CDATA[Non è possibile modificare la mappatura di un tasto di scelta rapida su se stesso]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -281,7 +281,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap a key to itself]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile modificare il mapping di un tasto su se stesso]]></Val>
+            <Val><![CDATA[Non è possibile modificare la mappatura di un tasto su se stesso]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -299,7 +299,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remapping successful]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[La modifica del mapping è riuscita]]></Val>
+            <Val><![CDATA[La modifica della mappatura è riuscita]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -308,7 +308,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Some remappings were not applied]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Alcuni nuovi mapping non sono stati applicati]]></Val>
+            <Val><![CDATA[Alcune nuove mappature non sono state applicate]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -317,7 +317,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap a key more than once]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile modificare il mapping di un tasto più di una volta]]></Val>
+            <Val><![CDATA[Non è possibile modificare la mappatura di un tasto più di una volta]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -326,7 +326,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap a shortcut more than once for the same target app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile modificare il mapping di un tasto di scelta rapida più di una volta per la stessa app di destinazione]]></Val>
+            <Val><![CDATA[Non è possibile modificare la mappatura di un tasto di scelta rapida più di una volta per la stessa app di destinazione]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -335,7 +335,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to save the remappings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è stato possibile salvare i nuovi mapping]]></Val>
+            <Val><![CDATA[Non è stato possibile salvare le nuove mappature]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -389,7 +389,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap from/to Win L]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile impostare un nuovo mapping da/a WINDOWS L.]]></Val>
+            <Val><![CDATA[Non è possibile impostare una nuova mappatura da/a WINDOWS L.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
