@@ -9,6 +9,7 @@ using UnitsNet;
 using UnitsNet.Units;
 using Wox.Plugin;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Plugin.UnitConverter
 {
@@ -18,7 +19,6 @@ namespace Microsoft.Plugin.UnitConverter
         private static string _icon_path;
         private bool _disposed;
         private readonly QuantityType[] _included = new QuantityType[] { QuantityType.Acceleration, QuantityType.Length, QuantityType.Mass, QuantityType.Speed, QuantityType.Temperature, QuantityType.Volume };
-
 
         public void Init(PluginInitContext context) {
             if (context == null) {
@@ -36,6 +36,8 @@ namespace Microsoft.Plugin.UnitConverter
             }
 
             string[] split = query.Search.Split(' ');
+            shorthandFeetInchHandler(ref split);
+
             if (split.Length < 4 || split.Length > 4) {
                 // deny any other queries than:
                 // 10 ft in cm
@@ -43,8 +45,8 @@ namespace Microsoft.Plugin.UnitConverter
                 return new List<Result>();
             }
 
-            string input_first_unit = split[1];//.ToLower();
-            string input_second_unit = split[3];//.ToLower();
+            string input_first_unit = split[1].ToLower();
+            string input_second_unit = split[3].ToLower();
             double converted = -1;
 
             List<Result> final_list = new List<Result>();
@@ -98,6 +100,53 @@ namespace Microsoft.Plugin.UnitConverter
             }
 
             return final_list;
+        }
+
+        /// <summary>
+        /// Replaces a split input array with shorthand feet/inch notation (1', 1'2" etc) to 'x foot in cm'. 
+        /// </summary>
+        /// <param name="split"></param>
+        private void shorthandFeetInchHandler(ref string[] split) {
+            // catches 1' || 1" || 1'2 || 1'2" in cm
+            // by converting it to "x foot in cm"
+            if (split.Length == 3) {
+                string[] shortsplit = Regex.Split(split[0], @"(?<=\D)(?=\d)|(?<=\d)(?=\D)");
+
+                switch (shortsplit.Length) {
+                    case 2:
+                        // ex: 1' & 1"
+                        if (shortsplit[1] == "\'") {
+                            string[] newInput = new string[] { shortsplit[0], "foot", split[1], split[2] };
+                            split = newInput;
+                        }
+                        else if (shortsplit[1] == "\"") {
+                            string[] newInput = new string[] { shortsplit[0], "inch", split[1], split[2] };
+                            split = newInput;
+                        }
+                        break;
+
+                    case 3:
+                    case 4:
+                        // ex: 1'2 and 1'2"
+                        if (shortsplit[1] == "\'") {
+                            bool isFeet = double.TryParse(shortsplit[0], out double feet);
+                            bool isInches = double.TryParse(shortsplit[2], out double inches);
+
+                            if (!isFeet || !isInches) {
+                                // one of either could not be parsed correctly
+                                break;
+                            }
+
+                            double totalInFeet = Length.FromFeetInches(feet, inches).Feet;
+                            string[] newInput = new string[] { totalInFeet.ToString(), "foot", split[1], split[2] };
+                            split = newInput;
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
         }
 
         private void AddToResult(List<Result> currentList, double converted_value, string unit_name) {
