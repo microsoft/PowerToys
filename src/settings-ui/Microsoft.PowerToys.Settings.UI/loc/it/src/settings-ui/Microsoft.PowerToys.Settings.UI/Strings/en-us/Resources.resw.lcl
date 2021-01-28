@@ -132,10 +132,13 @@
       </Item>
       <Item ItemId=";ColorFormats.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color formats]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Picker behavior]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Formati colore]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Color formats]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -240,6 +243,15 @@
           <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Selezione colori rapida e semplice a livello di sistema.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ColorPicker_Editor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Editor]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1400,7 +1412,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Learn more about remapping limitations]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Altre informazioni sui limiti per la modifica dei mapping]]></Val>
+            <Val><![CDATA[Altre informazioni sui limiti per la modifica delle mappature]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1418,7 +1430,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Reconfigure your keyboard by remapping keys and shortcuts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Consente di riconfigurare la tastiera tramite il nuovo mapping di tasti e tasti di scelta rapida.]]></Val>
+            <Val><![CDATA[Consente di riconfigurare la tastiera tramite la nuova mappatura di tasti e tasti di scelta rapida.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1463,7 +1475,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Select the profile to display the active key remap and shortcuts]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Selezionare il profilo per visualizzare il nuovo mapping del tasto attivo e i tasti di scelta rapida]]></Val>
+            <Val><![CDATA[Selezionare il profilo per visualizzare la nuova mappatura del tasto attivo e i tasti di scelta rapida]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1472,7 +1484,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap a key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Modifica il mapping di un tasto]]></Val>
+            <Val><![CDATA[Modifica la mappatura di un tasto]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1481,7 +1493,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap keys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Modifica il mapping dei tasti]]></Val>
+            <Val><![CDATA[Modifica la mappatura dei tasti]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1490,7 +1502,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap keys to other keys or shortcuts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Modifica il mapping dei tasti ad altri tasti o tasti di scelta rapida.]]></Val>
+            <Val><![CDATA[Modifica la mappatura dei tasti ad altri tasti o tasti di scelta rapida.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1499,7 +1511,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap a shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Modifica il mapping di un tasto di scelta rapida]]></Val>
+            <Val><![CDATA[Modifica la mappatura di un tasto di scelta rapida]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1508,7 +1520,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap shortcuts]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Modifica il mapping dei tasti di scelta rapida]]></Val>
+            <Val><![CDATA[Modifica la mappatura dei tasti di scelta rapida]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1517,7 +1529,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Modifica la mappatura dei tasti di scelta rapida ad altri tasti di scelta rapida o tasti. È anche possibile impostare le mappature in modo mirato ad applicazioni specifiche]]></Val>
+            <Val><![CDATA[Modifica la mappatura dei tasti di scelta rapida ad altri tasti di scelta rapida o tasti. È anche possibile impostare le mappature per applicazioni di destinazione specifiche.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1526,7 +1538,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Key Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nuovo mapping del tasto]]></Val>
+            <Val><![CDATA[Nuova mappatura del tasto]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1535,7 +1547,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nuovo mapping del tasto di scelta rapida]]></Val>
+            <Val><![CDATA[Nuova mappatura del tasto di scelta rapida]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1544,7 +1556,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remapped to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nuovo mapping a]]></Val>
+            <Val><![CDATA[Nuova mappatura a]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1553,7 +1565,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remapped to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nuovo mapping a]]></Val>
+            <Val><![CDATA[Nuova mappatura a]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1994,7 +2006,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Current Key Remappings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nuovi mapping del tasto corrente]]></Val>
+            <Val><![CDATA[Nuove mappature del tasto corrente]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2003,7 +2015,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Current Shortcut Remappings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nuovi mapping del tasto di scelta rapida corrente]]></Val>
+            <Val><![CDATA[Nuove mappature del tasto di scelta rapida corrente]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

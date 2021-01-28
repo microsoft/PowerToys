@@ -132,10 +132,13 @@
       </Item>
       <Item ItemId=";ColorFormats.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color formats]]></Val>
+          <Val><![CDATA[Picker behavior]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[颜色格式]]></Val>
+            <Val><![CDATA[选取器行为]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Color formats]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -240,6 +243,15 @@
           <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[快速、简单的系统范围颜色选择器。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ColorPicker_Editor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[编辑器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
