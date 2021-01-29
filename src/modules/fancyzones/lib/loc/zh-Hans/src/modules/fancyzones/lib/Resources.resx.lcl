@@ -260,7 +260,7 @@
         <Str Cat="Text">
           <Val><![CDATA[During zone layout changes, windows assigned to a zone will match new size/positions]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在区域布局变化期间，分配给区域的窗口将匹配新的大小/位置]]></Val>
+            <Val><![CDATA[在区域布局变化时，分配给区域的窗口将匹配新的大小/位置]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Handles urls]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[句柄 URL]]></Val>
+            <Val><![CDATA[处理 URL]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
