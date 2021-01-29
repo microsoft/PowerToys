@@ -173,11 +173,20 @@ namespace FancyZonesEditor.Models
                     _zoneCount = value;
                     InitTemplateZones();
                     FirePropertyChanged(nameof(TemplateZoneCount));
+                    FirePropertyChanged(nameof(IsZoneAddingAllowed));
                 }
             }
         }
 
         private int _zoneCount = LayoutSettings.DefaultZoneCount;
+
+        public bool IsZoneAddingAllowed
+        {
+            get
+            {
+                return TemplateZoneCount < LayoutSettings.MaxZones;
+            }
+        }
 
         // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;

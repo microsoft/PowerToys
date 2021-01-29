@@ -20,6 +20,7 @@ namespace FancyZonesEditor.Models
             : base(uuid, name, type)
         {
             Zones = zones;
+            TemplateZoneCount = Zones.Count;
             CanvasRect = new Rect(new Size(width, height));
         }
 
@@ -52,6 +53,7 @@ namespace FancyZonesEditor.Models
         public void RemoveZoneAt(int index)
         {
             Zones.RemoveAt(index);
+            TemplateZoneCount = Zones.Count;
             UpdateLayout();
         }
 
@@ -60,6 +62,7 @@ namespace FancyZonesEditor.Models
         public void AddZone(Int32Rect zone)
         {
             Zones.Add(zone);
+            TemplateZoneCount = Zones.Count;
             UpdateLayout();
         }
 

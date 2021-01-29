@@ -35,6 +35,14 @@ namespace FancyZonesEditor
             _stashedModel = (CanvasLayoutModel)_model.Clone();
         }
 
+        public LayoutModel Model
+        {
+            get
+            {
+                return _model;
+            }
+        }
+
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
             Rect workingArea = App.Overlay.WorkArea;
