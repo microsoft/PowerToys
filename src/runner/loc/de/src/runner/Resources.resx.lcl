@@ -28,6 +28,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";BUGREPORT_SUCCESS" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bug report .zip file has been created on your Desktop.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die ZIP-Datei mit dem Fehlerbericht wurde auf Ihrem Desktop erstellt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";COULDNOT_RESTART_ELEVATED" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Could not start PowerToys as an administrator!]]></Val>
@@ -312,6 +321,15 @@
           <Val><![CDATA[This setting has been disabled manually via <a href="https://ms_settings_startupapps" target="_blank">Startup Settings</a>.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Diese Einstellung wurde über die <a href="https://ms_settings_startupapps" target="_blank">Starteinstellungen</a> manuell deaktiviert.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SUBMIT_BUG_TEXT" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Report Bug]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler melden]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
