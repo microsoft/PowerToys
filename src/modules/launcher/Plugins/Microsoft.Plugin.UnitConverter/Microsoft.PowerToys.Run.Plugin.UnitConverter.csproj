@@ -3,9 +3,10 @@
   
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <ProjectGuid>{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Plugin.UnitConverter</RootNamespace>
-    <AssemblyName>Microsoft.Plugin.UnitConverter</AssemblyName>
+    <RootNamespace>Microsoft.PowerToys.Run.Plugin.UnitConverter</RootNamespace>
+    <AssemblyName>Microsoft.PowerToys.Run.Plugin.UnitConverter</AssemblyName>
     <Version>$(Version).0</Version>
     <useWPF>true</useWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
