@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper;
@@ -47,7 +48,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     results.Add(new Result
                     {
                         Title = title,
-                        SubTitle = $"Workspace{(a.TypeWorkspace != TypeWorkspace.Local ? $" in {typeWorkspace}" : "")}: {SystemPath.RealPath(a.RelativePath)}",
+                        SubTitle = $"${Resources.Workspace}{(a.TypeWorkspace != TypeWorkspace.Local ? $" ${Resources.In} {typeWorkspace}" : "")}: {SystemPath.RealPath(a.RelativePath)}",
                         Icon = a.VSCodeInstance.WorkspaceIcon,
                         Action = c =>
                         {
@@ -90,7 +91,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     results.Add(new Result
                     {
                         Title = title,
-                        SubTitle = "SSH Remote machine",
+                        SubTitle = Resources.SSHRemoteMachine,
                         Icon = a.VSCodeInstance.RemoteIcon,
                         Action = c =>
                         {
@@ -141,12 +142,12 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
 
         public string GetTranslatedPluginTitle()
         {
-            return "VSCode Workspaces";
+            return Resources.PluginTitle;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return "Opened VSCode Workspaces";
+            return Resources.PluginDescription;
         }
     }
 }

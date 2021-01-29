@@ -1,4 +1,5 @@
-﻿using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
+﻿using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties;
+using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
@@ -20,9 +21,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
         {
             switch (TypeWorkspace)
             {
-                case TypeWorkspace.Local: return "Local";
+                case TypeWorkspace.Local: return Resources.TypeWorkspaceLocal;
                 case TypeWorkspace.Codespaces: return "Codespaces";
-                case TypeWorkspace.RemoteContainers: return "Container";
+                case TypeWorkspace.RemoteContainers: return Resources.TypeWorkspaceContainer;
                 case TypeWorkspace.RemoteSSH: return "SSH";
                 case TypeWorkspace.RemoteWSL: return "WSL";
             }

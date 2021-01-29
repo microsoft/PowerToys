@@ -806,7 +806,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;ServicePluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacePluginFolder;ServicePluginFolder?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
