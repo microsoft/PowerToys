@@ -77,7 +77,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.31 - January 2020 Update
 
-Our goals for [v0.31 release cycle][github-release-link] were to focus on adding improving the FancyZones editor, adding in some new toys into PowerToys Run, some ARM64 work, and stability. 
+Our goals for [v0.31 release cycle][github-release-link] were to focus on improving the FancyZones editor, adding in some new features into PowerToys Run, some ARM64 work, and stability. 
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
 
@@ -108,7 +108,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 **PowerToys Run**
 - Service management plugin (restart, stop, ...)
 - Registry key plugin 
-- System action plugin (Reboot, lock, ...)
+- System action plugin (reboot, lock, ...)
 - Hyperbolic functions added to calculator
 - Icon fixes when running in certain themes
 - Unneeded dependencies removed
@@ -144,7 +144,7 @@ For [v0.33][github-next-release-work], we are proactively working on:
 - OOBE dialog
 - Plugin Manager
 
-For 0.35, we aim to focus mainly on getting the all the parts needed support ARM64 support.  This includes our installer, CI system, build server, and upgrading all projects to .NET Core projects to .NET 5.
+For 0.35, we aim to focus mainly on getting all the parts needed to support ARM64 support.  This includes our installer, CI system, build server, and upgrading all projects to .NET Core projects to .NET 5.
 
 ## PowerToys Community
 
