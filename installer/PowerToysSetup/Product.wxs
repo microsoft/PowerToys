@@ -1005,10 +1005,9 @@
         <?endforeach?>
       </Component>
       <Component Id="VSCodeWorkspacesImagesComponent" Directory="VSCodeWorkspaceImagesFolder" Guid="6F3C0CF1-7024-4333-BFA1-850D340AEE69">
-        <File Id="VSCodeWorkspaceFolder" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code_workspace.png" />
-        <File Id="VSCodeWorkspaceFolderInsiders" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code_insiders_workspace.png" />
-        <File Id="VSCodeWorkspaceRemoteMachine" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code_machine.png" />
-        <File Id="VSCodeWorkspaceRemoteMachineInsiders" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code_insiders_machine.png" />
+        <File Id="VSCodeWorkspacePluginIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\vscode_plugin.png" />
+        <File Id="VSCodeWorkspaceFolder" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\folder.png" />
+        <File Id="VSCodeWorkspaceRemote" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\monitor.png" />
       </Component>
 
       <!-- WindowWalker Plugin -->  

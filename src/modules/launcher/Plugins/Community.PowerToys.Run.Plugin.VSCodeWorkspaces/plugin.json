@@ -8,5 +8,5 @@
   "Language": "csharp",
   "Website": "",
   "ExecuteFileName": "Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll",
-  "IcoPath": "Images\\code.png"
+  "IcoPath": "Images\\vscode_plugin.png"
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 {
@@ -16,5 +18,13 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
         public string ExecutablePath { get; set; } = String.Empty;
 
         public string AppData { get; set; } = String.Empty;
+
+        public ImageSource WorkspaceIcon(){ return WorkspaceIconBitMap; }
+
+        public ImageSource RemoteIcon(){ return RemoteIconBitMap; }
+
+        public BitmapImage WorkspaceIconBitMap { get; set; }
+
+        public BitmapImage RemoteIconBitMap { get; set; }
     }
 }

@@ -47,8 +47,8 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     results.Add(new Result
                     {
                         Title = title,
-                        IcoPath = a.VSCodeInstance.VSCodeVersion == VSCodeVersion.Stable ? "Images/code_workspace.png" : "Images/code_insiders_workspace.png",
                         SubTitle = $"Workspace{(a.TypeWorkspace != TypeWorkspace.Local ? $" in {typeWorkspace}" : "")}: {SystemPath.RealPath(a.RelativePath)}",
+                        Icon = a.VSCodeInstance.WorkspaceIcon,
                         Action = c =>
                         {
                             bool hide;
@@ -90,8 +90,8 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     results.Add(new Result
                     {
                         Title = title,
-                        IcoPath = a.VSCodeInstance.VSCodeVersion == VSCodeVersion.Stable ? "Images/code_machine.png" : "Images/code_insiders_machine.png",
                         SubTitle = "SSH Remote machine",
+                        Icon = a.VSCodeInstance.RemoteIcon,
                         Action = c =>
                         {
                             bool hide;
