@@ -101,7 +101,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - Bug fixes
 
 **File explorer**
-- Fixed OneDrive SVG Bug
+- Fixed a bug with SVG preview on OneDrive folders
 - SVG are scaled appropriately when viewbox is provided
 - SVG thumbnail quality improved
 
