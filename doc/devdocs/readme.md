@@ -176,16 +176,6 @@ While developing, it's possible to connect the WebView to the development server
 This project generates the web UI shown in the [PowerToys Settings](/src/editor).
 It's a `ReactJS` project created using [Fluent UI](https://developer.microsoft.com/en-us/fluentui#/).
 
-## Current modules
-### [`FancyZones`](modules/fancyzones.md)
-The FancyZones PowerToy that allows users to create custom zones on the screen, to which the windows will snap when moved.
-
-### [`PowerRename`](modules/powerrename.md)
-PowerRename is a Windows Shell Context Menu Extension for advanced bulk renaming using simple search and replace or more powerful regular expression matching.
-
-### [`Shortcut Guide`](modules/shortcut_guide.md)
-The Windows Shortcut Guide, displayed when the WinKey is held for some time.
-
 #### Options
 
 This module has a setting to serve as an example for each of the currently implemented settings property:
