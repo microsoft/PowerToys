@@ -10,18 +10,6 @@ namespace FancyZonesEditor
 {
     public partial class CanvasEditorWindow : EditorWindow
     {
-        // Default distance from the top and left borders to the zone.
-        private const int DefaultOffset = 100;
-
-        // Next created zone will be by OffsetShift value below and to the right of the previous.
-        private const int OffsetShift = 50;
-
-        // Zone size depends on the work area size multiplied by ZoneSizeMultiplier value.
-        private const double ZoneSizeMultiplier = 0.4;
-
-        // Distance from the top and left borders to the zone.
-        private int _offset = DefaultOffset;
-
         private CanvasLayoutModel _model;
         private CanvasLayoutModel _stashedModel;
 
@@ -45,22 +33,7 @@ namespace FancyZonesEditor
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            Rect workingArea = App.Overlay.WorkArea;
-            int offset = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_offset);
-
-            if (offset + (int)(workingArea.Width * ZoneSizeMultiplier) < (int)workingArea.Width
-                && offset + (int)(workingArea.Height * ZoneSizeMultiplier) < (int)workingArea.Height)
-            {
-                _model.AddZone(new Int32Rect(offset, offset, (int)(workingArea.Width * ZoneSizeMultiplier), (int)(workingArea.Height * ZoneSizeMultiplier)));
-            }
-            else
-            {
-                _offset = DefaultOffset;
-                offset = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_offset);
-                _model.AddZone(new Int32Rect(offset, offset, (int)(workingArea.Width * ZoneSizeMultiplier), (int)(workingArea.Height * ZoneSizeMultiplier)));
-            }
-
-            _offset += OffsetShift;
+            _model.AddZone();
         }
 
         protected new void OnCancel(object sender, RoutedEventArgs e)
