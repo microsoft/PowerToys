@@ -14,12 +14,25 @@ namespace FancyZonesEditor.Models
         // Non-localizable strings
         public const string ModelTypeID = "canvas";
 
+        // Default distance from the top and left borders to the zone.
+        private const int DefaultOffset = 100;
+
+        // Next created zone will be by OffsetShift value below and to the right of the previous.
+        private const int OffsetShift = 50;
+
+        // Zone size depends on the work area size multiplied by ZoneSizeMultiplier value.
+        private const double ZoneSizeMultiplier = 0.4;
+
+        // Distance from the top and left borders to the zone.
+        private int _topLeft = DefaultOffset;
+
         public Rect CanvasRect { get; private set; }
 
         public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int width, int height)
             : base(uuid, name, type)
         {
             Zones = zones;
+            TemplateZoneCount = Zones.Count;
             CanvasRect = new Rect(new Size(width, height));
         }
 
@@ -52,6 +65,7 @@ namespace FancyZonesEditor.Models
         public void RemoveZoneAt(int index)
         {
             Zones.RemoveAt(index);
+            TemplateZoneCount = Zones.Count;
             UpdateLayout();
         }
 
@@ -60,29 +74,56 @@ namespace FancyZonesEditor.Models
         public void AddZone(Int32Rect zone)
         {
             Zones.Add(zone);
+            TemplateZoneCount = Zones.Count;
             UpdateLayout();
+        }
+
+        public void AddZone()
+        {
+            AddNewZone();
+            TemplateZoneCount = Zones.Count;
+            UpdateLayout();
+        }
+
+        private void AddNewZone()
+        {
+            if (Zones.Count == 0)
+            {
+                _topLeft = DefaultOffset;
+            }
+
+            Rect workingArea = App.Overlay.WorkArea;
+            int topLeft = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_topLeft);
+            int width = (int)(workingArea.Width * ZoneSizeMultiplier);
+            int height = (int)(workingArea.Height * ZoneSizeMultiplier);
+
+            if (topLeft + width >= (int)workingArea.Width || topLeft + height >= (int)workingArea.Height)
+            {
+                _topLeft = DefaultOffset;
+                topLeft = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_topLeft);
+            }
+
+            Zones.Add(new Int32Rect(topLeft, topLeft, width, height));
+            _topLeft += OffsetShift;
         }
 
         // InitTemplateZones
         // Creates zones based on template zones count
         public override void InitTemplateZones()
         {
+            if (Type == LayoutType.Custom || Type == LayoutType.Blank)
+            {
+                return;
+            }
+
             Zones.Clear();
-
-            var workingArea = App.Overlay.WorkArea;
-            int topLeftCoordinate = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(100); // TODO: replace magic numbers
-            int width = (int)(workingArea.Width * 0.4);
-            int height = (int)(workingArea.Height * 0.4);
-            Int32Rect focusZoneRect = new Int32Rect(topLeftCoordinate, topLeftCoordinate, width, height);
-            int focusRectXIncrement = (TemplateZoneCount <= 1) ? 0 : (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(50); // TODO: replace magic numbers
-            int focusRectYIncrement = (TemplateZoneCount <= 1) ? 0 : (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(50); // TODO: replace magic numbers
-
             for (int i = 0; i < TemplateZoneCount; i++)
             {
-                Zones.Add(focusZoneRect);
-                focusZoneRect.X += focusRectXIncrement;
-                focusZoneRect.Y += focusRectYIncrement;
+                AddNewZone();
             }
+
+            TemplateZoneCount = Zones.Count;
+            UpdateLayout();
         }
 
         private void UpdateLayout()

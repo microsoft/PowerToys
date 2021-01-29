@@ -46,6 +46,8 @@
                     Content="&#xE109;"
                     FontSize="24"
                     ToolTip="{x:Static props:Resources.Add_zone}"
+                    DataContext="{Binding Path=Model, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
+                    IsEnabled="{Binding IsZoneAddingAllowed}"
                     Click="OnAddZone" />
 
             <Grid Margin="0,24,0,0">

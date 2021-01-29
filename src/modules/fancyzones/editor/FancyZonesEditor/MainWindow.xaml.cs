@@ -91,7 +91,7 @@ namespace FancyZonesEditor
                 return;
             }
 
-            if (model.TemplateZoneCount < LayoutSettings.MaxZones)
+            if (model.IsZoneAddingAllowed)
             {
                 model.TemplateZoneCount++;
             }
