@@ -48,7 +48,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     results.Add(new Result
                     {
                         Title = title,
-                        SubTitle = $"${Resources.Workspace}{(a.TypeWorkspace != TypeWorkspace.Local ? $" ${Resources.In} {typeWorkspace}" : "")}: {SystemPath.RealPath(a.RelativePath)}",
+                        SubTitle = $"{Resources.Workspace}{(a.TypeWorkspace != TypeWorkspace.Local ? $" {Resources.In} {typeWorkspace}" : "")}: {SystemPath.RealPath(a.RelativePath)}",
                         Icon = a.VSCodeInstance.WorkspaceIcon,
                         Action = c =>
                         {
