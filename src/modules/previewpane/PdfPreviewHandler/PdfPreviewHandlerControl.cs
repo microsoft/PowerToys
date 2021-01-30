@@ -151,7 +151,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         }
 
         /// <summary>
-        /// Resize the panel on flowlayout panel resize based on the size of the image.
+        /// Resize the Panels on FlowLayoutPanel resize based on the size of the image.
         /// </summary>
         /// <param name="sender">sender (not used)</param>
         /// <param name="e">args (not used)</param>
@@ -198,8 +198,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         /// <returns>New size off the panel.</returns>
         private Size CalculateSize(Image image)
         {
-            var hasScrollbar = _flowLayoutPanel.VerticalScroll.Visible;
-            int width = this.ClientSize.Width - 12 - (hasScrollbar ? 16 : 0);
+            var hasScrollBar = _flowLayoutPanel.VerticalScroll.Visible;
+            int width = this.ClientSize.Width - 12 - (hasScrollBar ? 16 : 0);
 
             int originalWidth = image.Width;
             int originalHeight = image.Height;
