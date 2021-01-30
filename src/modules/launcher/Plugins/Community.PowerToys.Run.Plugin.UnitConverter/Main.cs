@@ -11,7 +11,7 @@ using Wox.Plugin;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Plugin.UnitConverter
+namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public class Main : IPlugin, /*IPluginI18n,*/ IDisposable
     {
@@ -45,8 +45,8 @@ namespace Microsoft.Plugin.UnitConverter
                 return new List<Result>();
             }
 
-            string input_first_unit = split[1].ToLower();
-            string input_second_unit = split[3].ToLower();
+            string input_first_unit = split[1];//.ToLower();
+            string input_second_unit = split[3];//.ToLower();
             double converted = -1;
 
             List<Result> final_list = new List<Result>();
