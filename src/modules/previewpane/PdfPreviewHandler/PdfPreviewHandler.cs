@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
     [Guid("45769bcc-e8fd-42d0-947e-02beef77a1f6")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
-    public class PdfPreviewHandler : FileBasedPreviewHandler, IDisposable
+    public class PdfPreviewHandler : StreamBasedPreviewHandler, IDisposable
     {
         private PdfPreviewHandlerControl _pdfPreviewHandlerControl;
         private bool disposedValue;
@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         /// <inheritdoc />
         public override void DoPreview()
         {
-            _pdfPreviewHandlerControl.DoPreview(FilePath);
+            _pdfPreviewHandlerControl.DoPreview(Stream);
         }
 
         /// <inheritdoc />

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.PowerToys.PreviewHandler.Pdf.Properties {
+namespace PdfPreviewHandlerUI.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.PowerToys.PreviewHandler.Pdf.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PdfPreviewHandlerUI.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -59,26 +59,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf.Properties {
                 resourceCulture = value;
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to The pdf could not be preview due to an internal error..
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static string PdfNotPreviewedError
-        {
-            get
-            {
-                return ResourceManager.GetString("PdfNotPreviewedError", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Can't preview pdf. The pdf is password protected..
-        /// </summary>
-        internal static string PdfPasswordProtectedError
-        {
-            get
-            {
-                return ResourceManager.GetString("PdfPasswordProtectedError", resourceCulture);
+        internal static System.Drawing.Bitmap iuSIIE25YX {
+            get {
+                object obj = ResourceManager.GetObject("iuSIIE25YX", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }
