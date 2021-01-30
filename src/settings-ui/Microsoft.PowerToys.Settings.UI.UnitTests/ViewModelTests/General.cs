@@ -38,7 +38,7 @@ namespace ViewModelTests
             var fileMock = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
 
             var mockGeneralSettingsUtils = new SettingsUtils(fileMock.Object, settingPathMock.Object);
-            GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
+            GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettingsOrDefault<GeneralSettings>();
 
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 

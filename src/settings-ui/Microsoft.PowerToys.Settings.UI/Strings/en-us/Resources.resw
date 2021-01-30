@@ -709,7 +709,7 @@
     <value>Version:</value>
   </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
-    <value>Last checked: </value>
+    <value>Last successfully checked: </value>
   </data>
   <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>
@@ -841,7 +841,7 @@
     <value>Activation behavior</value>
   </data>
   <data name="ColorFormats.Text" xml:space="preserve">
-    <value>Color formats</value>
+    <value>Picker behavior</value>
   </data>
   <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
     <value>Learn more about remapping limitations</value>
@@ -880,6 +880,22 @@
   <data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
     <value>Show color name</value>
   </data>
+  <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
+    <value>Large</value>
+    <comment>The size of the image</comment>
+  </data>
+  <data name="ImageResizer_DefaultSize_Medium" xml:space="preserve">
+    <value>Medium</value>
+    <comment>The size of the image</comment>
+  </data>
+  <data name="ImageResizer_DefaultSize_Phone" xml:space="preserve">
+    <value>Phone</value>
+    <comment>The size of the image referring to a Mobile Phone typical image size</comment>
+  </data>
+  <data name="ImageResizer_DefaultSize_Small" xml:space="preserve">
+    <value>Small</value>
+    <comment>The size of the image</comment>
+  </data>
   <data name="ColorPicker_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
     <value>https://aka.ms/PowerToysOverview_ColorPicker</value>
     <comment>URL. Do not loc</comment>
@@ -915,5 +931,8 @@
   <data name="ShortcutGuide_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
     <value>https://aka.ms/PowerToysOverview_ShortcutGuide</value>
     <comment>URL. Do not loc</comment>
+  </data>
+  <data name="ColorPicker_Editor.Text" xml:space="preserve">
+    <value>Editor</value>
   </data>
 </root>

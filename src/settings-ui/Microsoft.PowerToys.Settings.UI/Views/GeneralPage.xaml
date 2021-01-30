@@ -133,7 +133,9 @@
 
             <StackPanel Orientation="Horizontal" 
                         Margin="{StaticResource SmallBottomMargin}"
-                        AutomationProperties.LabeledBy="{Binding ElementName=General_VersionLastChecked}">
+                        AutomationProperties.LabeledBy="{Binding ElementName=General_VersionLastChecked}"
+                        Visibility="{Binding AutoUpdatesEnabled,
+                                             Converter={StaticResource VisibleIfTrueConverter}}">
                  <TextBlock x:Name="General_VersionLastChecked" x:Uid="General_VersionLastChecked" />
                  <TextBlock Text="{x:Bind ViewModel.UpdateCheckedDate, Mode=OneWay}"
                             Foreground="{ThemeResource ListViewItemForegroundPointerOver}"
@@ -144,12 +146,14 @@
                     Style="{StaticResource AccentButtonStyle}"
                     Foreground="White"
                     Command="{Binding CheckForUpdatesEventHandler}"
+                    IsEnabled="{Binding AutoUpdatesEnabled}"
                     />
 
             <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates" 
                           Margin="{StaticResource MediumTopMargin}"
                           Visibility="{Binding Mode=TwoWay, Path=IsAdmin, Converter={StaticResource VisibleIfTrueConverter}}"
-                          IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}"/>
+                          IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}"
+                          IsEnabled="{Binding AutoUpdatesEnabled}" />
 
         </StackPanel>
 

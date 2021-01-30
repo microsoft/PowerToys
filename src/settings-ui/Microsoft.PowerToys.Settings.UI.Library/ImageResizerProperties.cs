@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -20,18 +21,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ImageresizerPngInterlaceOption = new IntProperty();
             ImageresizerTiffCompressOption = new IntProperty();
             ImageresizerFileName = new StringProperty("%1 (%2)");
-
-            ImageresizerSizes = new ImageResizerSizes(new ObservableCollection<ImageSize>()
-            {
-                new ImageSize(0, "Small", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
-                new ImageSize(1, "Medium", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
-                new ImageSize(2, "Large", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
-                new ImageSize(3, "Phone", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
-            });
-
+            ImageresizerSizes = new ImageResizerSizes();
             ImageresizerKeepDateModified = new BoolProperty();
             ImageresizerFallbackEncoder = new StringProperty(new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057").ToString());
             ImageresizerCustomSize = new ImageResizerCustomSizeProperty(new ImageSize(4, "custom", ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel));
+        }
+
+        public ImageResizerProperties(Func<string, string> resourceLoader)
+            : this()
+        {
+            if (resourceLoader == null)
+            {
+                throw new NullReferenceException("Resource loader is null");
+            }
+
+            ImageresizerSizes = new ImageResizerSizes(new ObservableCollection<ImageSize>()
+            {
+                new ImageSize(0, resourceLoader("ImageResizer_DefaultSize_Small"), ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
+                new ImageSize(1, resourceLoader("ImageResizer_DefaultSize_Medium"), ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
+                new ImageSize(2, resourceLoader("ImageResizer_DefaultSize_Large"), ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
+                new ImageSize(3, resourceLoader("ImageResizer_DefaultSize_Phone"), ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
+            });
         }
 
         [JsonPropertyName("imageresizer_selectedSizeIndex")]

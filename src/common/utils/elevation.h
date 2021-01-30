@@ -169,7 +169,7 @@ inline bool run_same_elevation(const std::wstring& file, const std::wstring& par
         executable_args += L" " + params;
     }
 
-    STARTUPINFO si = { 0 };
+    STARTUPINFO si = { sizeof(STARTUPINFO) };
     PROCESS_INFORMATION pi = { 0 };
     auto succeeded = CreateProcessW(file.c_str(),
                                     const_cast<LPWSTR>(executable_args.c_str()),

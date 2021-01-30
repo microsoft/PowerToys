@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -40,27 +39,27 @@ namespace FancyZonesEditor
         private void GridEditor_Loaded(object sender, RoutedEventArgs e)
         {
             GridLayoutModel model = (GridLayoutModel)DataContext;
-            if (model != null)
+            if (model == null)
             {
-                _data = new GridData(model);
-                _dragHandles = new GridDragHandles(AdornerLayer.Children, Resizer_DragDelta, Resizer_DragCompleted);
-
-                int zoneCount = _data.ZoneCount;
-                for (int i = 0; i <= zoneCount; i++)
-                {
-                    AddZone();
-                }
+                return;
             }
+
+            _data = new GridData(model);
+            _dragHandles = new GridDragHandles(AdornerLayer.Children, Resizer_DragDelta, Resizer_DragCompleted);
+            _dragHandles.InitDragHandles(model);
 
             Model = model;
-            if (Model == null)
+            Model.PropertyChanged += OnGridDimensionsChanged;
+
+            int zoneCount = _data.ZoneCount;
+            for (int i = 0; i < zoneCount; i++)
             {
-                Model = new GridLayoutModel();
-                DataContext = Model;
+                AddZone();
             }
 
-            Model.PropertyChanged += OnGridDimensionsChanged;
-            _dragHandles.InitDragHandles(model);
+            Rect workingArea = App.Overlay.WorkArea;
+            Size actualSize = new Size(workingArea.Width, workingArea.Height);
+            ArrangeGridRects(actualSize);
         }
 
         private void GridEditor_Unloaded(object sender, RoutedEventArgs e)
@@ -330,15 +329,17 @@ namespace FancyZonesEditor
                     zone.Visibility = Visibility.Visible;
                     return freeIndex;
                 }
+
+                zone = new GridZone(Model.ShowSpacing ? Model.Spacing : 0);
+                zone.Split += OnSplit;
+                zone.MergeDrag += OnMergeDrag;
+                zone.MergeComplete += OnMergeComplete;
+                zone.FullSplit += OnFullSplit;
+                Preview.Children.Add(zone);
+                return Preview.Children.Count - 1;
             }
 
-            zone = new GridZone();
-            zone.Split += OnSplit;
-            zone.MergeDrag += OnMergeDrag;
-            zone.MergeComplete += OnMergeComplete;
-            zone.FullSplit += OnFullSplit;
-            Preview.Children.Add(zone);
-            return Preview.Children.Count - 1;
+            return 0;
         }
 
         private void OnGridDimensionsChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -372,7 +373,7 @@ namespace FancyZonesEditor
             Preview.Height = workArea.Height;
 
             GridLayoutModel model = Model;
-            if (model == null)
+            if (model == null || _data == null)
             {
                 return;
             }
@@ -383,9 +384,7 @@ namespace FancyZonesEditor
                 return;
             }
 
-            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-
-            int spacing = settings.ShowSpacing ? settings.Spacing : 0;
+            int spacing = model.ShowSpacing ? model.Spacing : 0;
 
             _data.RecalculateZones(spacing, arrangeSize);
             _data.ArrangeZones(Preview.Children, spacing);
@@ -411,10 +410,10 @@ namespace FancyZonesEditor
                 if (_dragHandles.HasSnappedNonAdjacentResizers(resizer))
                 {
                     double spacing = 0;
-                    MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-                    if (settings.ShowSpacing)
+                    GridLayoutModel model = Model;
+                    if (model.ShowSpacing)
                     {
-                        spacing = settings.Spacing;
+                        spacing = model.Spacing;
                     }
 
                     _data.SplitOnDrag(resizer, delta, spacing);

@@ -2,7 +2,7 @@
 name: "⭐ Feature request"
 about: Propose something new.
 title: ''
-labels: ''
+labels: Triage-Needed
 assignees: ''
 
 ---

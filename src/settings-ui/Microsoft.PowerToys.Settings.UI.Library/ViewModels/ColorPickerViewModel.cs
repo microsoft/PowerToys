@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             if (_settingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
             {
-                _colorPickerSettings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerSettings.ModuleName);
+                _colorPickerSettings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerSettings.ModuleName);
             }
             else
             {

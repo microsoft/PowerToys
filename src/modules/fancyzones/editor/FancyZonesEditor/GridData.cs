@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -120,24 +119,28 @@ namespace FancyZonesEditor
             {
                 _colInfo.Add(new RowColInfo(model.ColumnPercents[col]));
             }
+
+            int maxIndex = 0;
+            for (int row = 0; row < _model.Rows; row++)
+            {
+                for (int col = 0; col < _model.Columns; col++)
+                {
+                    maxIndex = Math.Max(maxIndex, _model.CellChildMap[row, col]);
+                }
+            }
+
+            _zoneCount = maxIndex + 1;
         }
 
         public int ZoneCount
         {
             get
             {
-                int maxIndex = 0;
-                for (int row = 0; row < _model.Rows; row++)
-                {
-                    for (int col = 0; col < _model.Columns; col++)
-                    {
-                        maxIndex = Math.Max(maxIndex, _model.CellChildMap[row, col]);
-                    }
-                }
-
-                return maxIndex;
+                return _zoneCount;
             }
         }
+
+        private int _zoneCount;
 
         public Tuple<int, int> RowColByIndex(int index)
         {
@@ -238,6 +241,7 @@ namespace FancyZonesEditor
             FixAccuracyError(_colInfo, _model.ColumnPercents);
             _model.CellChildMap = newCellChildMap;
             _model.Columns++;
+            _model.UpdatePreview();
         }
 
         public void SplitRow(int foundRow, int spliteeIndex, int newChildIndex, double space, double offset, double actualHeight)
@@ -289,6 +293,7 @@ namespace FancyZonesEditor
             FixAccuracyError(_rowInfo, _model.RowPercents);
             _model.CellChildMap = newCellChildMap;
             _model.Rows++;
+            _model.UpdatePreview();
         }
 
         public void SplitOnDrag(GridResizer resizer, double delta, double space)
@@ -447,6 +452,8 @@ namespace FancyZonesEditor
                 _model.CellChildMap = newCellChildMap;
                 _model.Rows++;
             }
+
+            _model.UpdatePreview();
         }
 
         public void RecalculateZones(int spacing, Size arrangeSize)
@@ -474,6 +481,11 @@ namespace FancyZonesEditor
 
         public void ArrangeZones(UIElementCollection zones, int spacing)
         {
+            if (zones.Count == 0)
+            {
+                return;
+            }
+
             int rows = _model.Rows;
             int cols = _model.Columns;
             int[,] cells = _model.CellChildMap;
@@ -1029,6 +1041,7 @@ namespace FancyZonesEditor
 
             _model.Rows = rows;
             _model.Columns = cols;
+            _model.UpdatePreview();
         }
 
         private void FixAccuracyError(List<RowColInfo> info, List<int> percents)

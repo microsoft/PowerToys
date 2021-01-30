@@ -127,7 +127,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wox.Test", "src\modules\lau
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{4AFC9975-2456-4C70-94A4-84073C1CED93}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Calculator", "src\modules\launcher\Plugins\Microsoft.Plugin.Calculator\Microsoft.Plugin.Calculator.csproj", "{59BD9891-3837-438A-958D-ADC7F91F6F7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Calculator", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.csproj", "{59BD9891-3837-438A-958D-ADC7F91F6F7E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.WindowWalker", "src\modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Microsoft.Plugin.WindowWalker.csproj", "{74F1B9ED-F59C-4FE7-B473-7B453E30837E}"
 EndProject
@@ -233,7 +233,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri.UnitTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.UnitTests", "src\settings-ui\Microsoft.PowerToys.Settings.UI.UnitTests\Microsoft.PowerToys.Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Calculator.UnitTest", "src\modules\launcher\Plugins\Microsoft.Plugin.Calculator.UnitTest\Microsoft.Plugin.Calculator.UnitTest.csproj", "{632BBE62-5421-49EA-835A-7FFA4F499BD6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.csproj", "{632BBE62-5421-49EA-835A-7FFA4F499BD6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Folder.UnitTests\Microsoft.Plugin.Folder.UnitTests.csproj", "{4FA206A5-F69F-4193-BF8F-F6EEB496734C}"
 EndProject
@@ -308,6 +308,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfPreviewHandler", "src\modules\previewpane\PdfPreviewHandler\PdfPreviewHandler.csproj", "{69E1EE8D-143A-4060-9129-4658ACF14AAF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-PdfPreviewHandler", "src\modules\previewpane\UnitTests-PdfPreviewHandler\UnitTests-PdfPreviewHandler.csproj", "{ECC20689-002A-4354-95A6-B58DF089C6FF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Registry", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Microsoft.PowerToys.Run.Plugin.Registry.csproj", "{4BABF3FE-3451-42FD-873F-3C332E18DCEF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Registry.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry.UnitTest\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.csproj", "{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -791,6 +795,14 @@ Global
 		{ECC20689-002A-4354-95A6-B58DF089C6FF}.Release|Any CPU.ActiveCfg = Release|x64
 		{ECC20689-002A-4354-95A6-B58DF089C6FF}.Release|x64.ActiveCfg = Release|x64
 		{ECC20689-002A-4354-95A6-B58DF089C6FF}.Release|x64.Build.0 = Release|x64
+		{4BABF3FE-3451-42FD-873F-3C332E18DCEF}.Debug|x64.ActiveCfg = Debug|x64
+		{4BABF3FE-3451-42FD-873F-3C332E18DCEF}.Debug|x64.Build.0 = Debug|x64
+		{4BABF3FE-3451-42FD-873F-3C332E18DCEF}.Release|x64.ActiveCfg = Release|x64
+		{4BABF3FE-3451-42FD-873F-3C332E18DCEF}.Release|x64.Build.0 = Release|x64
+		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}.Debug|x64.ActiveCfg = Debug|x64
+		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}.Debug|x64.Build.0 = Debug|x64
+		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}.Release|x64.ActiveCfg = Release|x64
+		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -885,6 +897,8 @@ Global
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{69E1EE8D-143A-4060-9129-4658ACF14AAF} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{ECC20689-002A-4354-95A6-B58DF089C6FF} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{4BABF3FE-3451-42FD-873F-3C332E18DCEF} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

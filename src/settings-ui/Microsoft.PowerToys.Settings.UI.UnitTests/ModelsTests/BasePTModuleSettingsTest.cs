@@ -48,7 +48,7 @@ namespace CommonLibTest
             JsonSchema expectedSchema = JsonSchema.Parse(expectedSchemaText);
 
             // Act
-            JObject actualSchema = JObject.Parse(settingsUtils.GetSettings<BasePTSettingsTest>(file_name).ToJsonString());
+            JObject actualSchema = JObject.Parse(settingsUtils.GetSettingsOrDefault<BasePTSettingsTest>(file_name).ToJsonString());
             bool valid = actualSchema.IsValid(expectedSchema);
 
             // Assert

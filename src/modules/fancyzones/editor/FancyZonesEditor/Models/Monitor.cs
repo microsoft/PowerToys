@@ -5,7 +5,6 @@
 using System;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 using FancyZonesEditor.Utils;
 

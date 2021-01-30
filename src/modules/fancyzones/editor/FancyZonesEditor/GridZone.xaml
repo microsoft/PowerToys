@@ -4,13 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FancyZonesEditor"
+    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    Background="{StaticResource GridZoneBackgroundBrush}"
-    BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"
+    Background="{DynamicResource GridZoneBackgroundBrush}"
+    BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
     BorderThickness="1"
-    Opacity="0.8"
+    Opacity="1"
     mc:Ignorable="d">
     <Grid x:Name="Frame">
         <Canvas x:Name="Body" />
@@ -23,9 +24,9 @@
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center"
             Content="ID"
-            FontFamily="Segoe UI Light"
+            FontWeight="SemiBold"
             FontSize="64"
-            Foreground="White" />
+            Foreground="{DynamicResource PrimaryForegroundBrush}" />
         <!--<TextBlock Margin="2" Text="Shift Key switches direction&#13;Ctrl  Key repeats"/>-->
     </Grid>
 </UserControl>

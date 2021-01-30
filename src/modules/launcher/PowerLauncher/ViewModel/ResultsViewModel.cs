@@ -52,7 +52,20 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        public int SelectedIndex { get; set; }
+        private int _selectedIndex;
+
+        public int SelectedIndex
+        {
+            get => _selectedIndex;
+            set
+            {
+                if (_selectedIndex != value)
+                {
+                    _selectedIndex = value;
+                    OnPropertyChanged(nameof(SelectedIndex));
+                }
+            }
+        }
 
         private ResultViewModel _selectedItem;
 
@@ -84,7 +97,20 @@ namespace PowerLauncher.ViewModel
 
         public Thickness Margin { get; set; }
 
-        public Visibility Visibility { get; set; } = Visibility.Hidden;
+        private Visibility _visibility = Visibility.Hidden;
+
+        public Visibility Visibility
+        {
+            get => _visibility;
+            set
+            {
+                if (_visibility != value)
+                {
+                    _visibility = value;
+                    OnPropertyChanged(nameof(Visibility));
+                }
+            }
+        }
 
         public ResultCollection Results { get; }
 

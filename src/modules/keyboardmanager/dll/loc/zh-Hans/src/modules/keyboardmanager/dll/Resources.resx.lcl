@@ -82,7 +82,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ERRORMESSAGE_DISABLEASACTIONKEY" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ERRORMESSAGE_DISABLEASACTIONKEY" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Disable can not be an action or a modifier key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -130,7 +130,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";EditKeyboard_SourceHeader" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";EditKeyboard_SourceHeader" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Key:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -232,7 +232,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_ConflictingModifierKey" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_ConflictingModifierKey" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap this key as it conflicts with another remapped key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -277,7 +277,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_MappedToSameKey" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_MappedToSameKey" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap a key to itself]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -286,7 +286,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_MaxShortcutSize" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_MaxShortcutSize" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcuts can only have up to 2 modifier keys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -313,7 +313,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_SameKeyPreviouslyMapped" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_SameKeyPreviouslyMapped" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap a key more than once]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -340,7 +340,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_ShortcutAtleast2Keys" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_ShortcutAtleast2Keys" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcut must have atleast 2 keys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -349,7 +349,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_ShortcutMaxOneActionKey" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_ShortcutMaxOneActionKey" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcut cannot have more than one action key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -367,7 +367,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_ShortcutOneActionKey" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_ShortcutOneActionKey" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcut must contain an action key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -376,7 +376,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_ShortcutStartWithModifier" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_ShortcutStartWithModifier" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcut must start with a modifier key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -385,7 +385,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ErrorMessage_WinL" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ErrorMessage_WinL" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap from/to Win L]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -398,7 +398,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[密钥]]></Val>
+            <Val><![CDATA[键]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Key Drop Down]]></Val>
@@ -451,7 +451,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TypeKey_Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TypeKey_Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Key Pressed:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -460,7 +460,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TypeKey_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TypeKey_Title" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press a key on selected keyboard:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -469,7 +469,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TypeShortcut_Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TypeShortcut_Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keys Pressed:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -478,7 +478,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TypeShortcut_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TypeShortcut_Title" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press the keys in shortcut:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -491,7 +491,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Type]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[类型]]></Val>
+            <Val><![CDATA[按键]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

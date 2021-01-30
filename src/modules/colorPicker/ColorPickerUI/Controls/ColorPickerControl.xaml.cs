@@ -199,6 +199,7 @@ namespace ColorPicker.Controls
                 CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
                 detailsStackPanel.BeginAnimation(StackPanel.OpacityProperty, opacityAppear);
                 detailsGrid.BeginAnimation(Grid.HeightProperty, resize);
+                CurrentColorButton.IsEnabled = false;
             }
         }
 
@@ -226,6 +227,7 @@ namespace ColorPicker.Controls
                 detailsStackPanel.BeginAnimation(Window.OpacityProperty, opacityAppear);
                 detailsGrid.BeginAnimation(Grid.HeightProperty, resize);
                 detailsGrid.Visibility = Visibility.Collapsed;
+                CurrentColorButton.IsEnabled = true;
             }
         }
 

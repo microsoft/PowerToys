@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (settingsConfig == null)
                 {
                     T settingsItem = new T();
-                    settingsConfig = _settingsUtils.GetSettings<T>(settingsItem.GetModuleName());
+                    settingsConfig = _settingsUtils.GetSettingsOrDefault<T>(settingsItem.GetModuleName());
                 }
 
                 return settingsConfig;

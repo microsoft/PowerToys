@@ -37,11 +37,9 @@ namespace PowerLauncher.ViewModel
 
         private readonly WoxJsonStorage<QueryHistory> _historyItemsStorage;
         private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
-        private readonly WoxJsonStorage<TopMostRecord> _topMostRecordStorage;
         private readonly PowerToysRunSettings _settings;
         private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
-        private readonly TopMostRecord _topMostRecord;
         private readonly object _addResultsLock = new object();
         private readonly System.Diagnostics.Stopwatch _hotkeyTimer = new System.Diagnostics.Stopwatch();
 
@@ -66,10 +64,8 @@ namespace PowerLauncher.ViewModel
 
             _historyItemsStorage = new WoxJsonStorage<QueryHistory>();
             _userSelectedRecordStorage = new WoxJsonStorage<UserSelectedRecord>();
-            _topMostRecordStorage = new WoxJsonStorage<TopMostRecord>();
             _history = _historyItemsStorage.Load();
             _userSelectedRecord = _userSelectedRecordStorage.Load();
-            _topMostRecord = _topMostRecordStorage.Load();
 
             ContextMenu = new ResultsViewModel(_settings);
             Results = new ResultsViewModel(_settings);
@@ -171,8 +167,11 @@ namespace PowerLauncher.ViewModel
 
                         if (SelectedIsFromQueryResults())
                         {
+                            // todo: revert _userSelectedRecordStorage.Save() and _historyItemsStorage.Save() after https://github.com/microsoft/PowerToys/issues/9164 is done
                             _userSelectedRecord.Add(result);
+                            _userSelectedRecordStorage.Save();
                             _history.Add(result.OriginQuery.RawQuery);
+                            _historyItemsStorage.Save();
                         }
                         else
                         {
@@ -297,15 +296,55 @@ namespace PowerLauncher.ViewModel
 
         public Brush MainWindowBorderBrush { get; set; }
 
-        public ResultsViewModel Results { get; private set; }
+        private ResultsViewModel _results;
+
+        public ResultsViewModel Results
+        {
+            get => _results;
+            private set
+            {
+                if (value != _results)
+                {
+                    _results = value;
+                    OnPropertyChanged(nameof(Results));
+                }
+            }
+        }
 
         public ResultsViewModel ContextMenu { get; private set; }
 
         public ResultsViewModel History { get; private set; }
 
-        public string SystemQueryText { get; set; } = string.Empty;
+        private string _systemQueryText = string.Empty;
 
-        public string QueryText { get; set; } = string.Empty;
+        public string SystemQueryText
+        {
+            get => _systemQueryText;
+            set
+            {
+                if (_systemQueryText != value)
+                {
+                    _systemQueryText = value;
+                    OnPropertyChanged(nameof(SystemQueryText));
+                }
+            }
+        }
+
+        private string _queryText = string.Empty;
+
+        public string QueryText
+        {
+            get => _queryText;
+
+            set
+            {
+                if (_queryText != value)
+                {
+                    _queryText = value;
+                    OnPropertyChanged(nameof(QueryText));
+                }
+            }
+        }
 
         /// <summary>
         /// we need move cursor to end when we manually changed query
@@ -381,7 +420,12 @@ namespace PowerLauncher.ViewModel
 
             set
             {
-                _visibility = value;
+                if (_visibility != value)
+                {
+                    _visibility = value;
+                    OnPropertyChanged(nameof(MainWindowVisibility));
+                }
+
                 if (value == Visibility.Visible)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
@@ -793,7 +837,6 @@ namespace PowerLauncher.ViewModel
             {
                 _historyItemsStorage.Save();
                 _userSelectedRecordStorage.Save();
-                _topMostRecordStorage.Save();
 
                 _saved = true;
             }
@@ -816,14 +859,7 @@ namespace PowerLauncher.ViewModel
 
             foreach (var result in list)
             {
-                if (_topMostRecord.IsTopMost(result))
-                {
-                    result.Score = int.MaxValue;
-                }
-                else
-                {
-                    result.Score += _userSelectedRecord.GetSelectedCount(result) * 5;
-                }
+                result.Score += _userSelectedRecord.GetSelectedCount(result) * 5;
             }
 
             // Using CurrentCultureIgnoreCase since this is user facing

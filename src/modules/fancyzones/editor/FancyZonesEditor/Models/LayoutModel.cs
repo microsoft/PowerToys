@@ -3,11 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace FancyZonesEditor.Models
 {
@@ -42,6 +39,17 @@ namespace FancyZonesEditor.Models
             Type = type;
         }
 
+        protected LayoutModel(LayoutModel other)
+        {
+            _guid = other._guid;
+            _name = other._name;
+            Type = other.Type;
+            _isSelected = other._isSelected;
+            _isApplied = other._isApplied;
+            _sensitivityRadius = other._sensitivityRadius;
+            _zoneCount = other._zoneCount;
+        }
+
         // Name - the display name for this layout model - is also used as the key in the registry
         public string Name
         {
@@ -55,7 +63,7 @@ namespace FancyZonesEditor.Models
                 if (_name != value)
                 {
                     _name = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(Name));
                 }
             }
         }
@@ -82,6 +90,14 @@ namespace FancyZonesEditor.Models
             }
         }
 
+        public bool IsCustom
+        {
+            get
+            {
+                return Type == LayoutType.Custom;
+            }
+        }
+
         // IsSelected (not-persisted) - tracks whether or not this LayoutModel is selected in the picker
         // TODO: once we switch to a picker per monitor, we need to move this state to the view
         public bool IsSelected
@@ -96,13 +112,14 @@ namespace FancyZonesEditor.Models
                 if (_isSelected != value)
                 {
                     _isSelected = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(IsSelected));
                 }
             }
         }
 
         private bool _isSelected;
 
+        // IsApplied (not-persisted) - tracks whether or not this LayoutModel is applied in the picker
         public bool IsApplied
         {
             get
@@ -115,12 +132,61 @@ namespace FancyZonesEditor.Models
                 if (_isApplied != value)
                 {
                     _isApplied = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(IsApplied));
                 }
             }
         }
 
         private bool _isApplied;
+
+        public int SensitivityRadius
+        {
+            get
+            {
+                return _sensitivityRadius;
+            }
+
+            set
+            {
+                if (value != _sensitivityRadius)
+                {
+                    _sensitivityRadius = value;
+                    FirePropertyChanged(nameof(SensitivityRadius));
+                }
+            }
+        }
+
+        private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
+
+        // TemplateZoneCount - number of zones selected in the picker window for template layouts
+        public int TemplateZoneCount
+        {
+            get
+            {
+                return _zoneCount;
+            }
+
+            set
+            {
+                if (value != _zoneCount)
+                {
+                    _zoneCount = value;
+                    InitTemplateZones();
+                    FirePropertyChanged(nameof(TemplateZoneCount));
+                    FirePropertyChanged(nameof(IsZoneAddingAllowed));
+                }
+            }
+        }
+
+        private int _zoneCount = LayoutSettings.DefaultZoneCount;
+
+        public bool IsZoneAddingAllowed
+        {
+            get
+            {
+                return TemplateZoneCount < LayoutSettings.MaxZones;
+            }
+        }
 
         // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
@@ -134,11 +200,11 @@ namespace FancyZonesEditor.Models
         // Removes this Layout from the registry and the loaded CustomModels list
         public void Delete()
         {
-            int i = _customModels.IndexOf(this);
+            var customModels = MainWindowSettingsModel.CustomModels;
+            int i = customModels.IndexOf(this);
             if (i != -1)
             {
-                _customModels.RemoveAt(i);
-                _deletedCustomModels.Add(Guid.ToString().ToUpper());
+                customModels.RemoveAt(i);
             }
         }
 
@@ -146,48 +212,25 @@ namespace FancyZonesEditor.Models
         public void AddCustomLayout(LayoutModel model)
         {
             bool updated = false;
-            for (int i = 0; i < _customModels.Count && !updated; i++)
+            var customModels = MainWindowSettingsModel.CustomModels;
+            for (int i = 0; i < customModels.Count && !updated; i++)
             {
-                if (_customModels[i].Uuid == model.Uuid)
+                if (customModels[i].Uuid == model.Uuid)
                 {
-                    _customModels[i] = model;
+                    customModels[i] = model;
                     updated = true;
                 }
             }
 
             if (!updated)
             {
-                _customModels.Add(model);
+                customModels.Add(model);
             }
         }
 
-        // Add custom layouts json data that would be serialized to a temp file
-        public void AddCustomLayoutJson(JsonElement json)
-        {
-            _createdCustomLayouts.Add(json);
-        }
-
-        public static void SerializeDeletedCustomZoneSets()
-        {
-            App.FancyZonesEditorIO.SerializeDeletedCustomZoneSets(_deletedCustomModels);
-        }
-
-        public static void SerializeCreatedCustomZonesets()
-        {
-            App.FancyZonesEditorIO.SerializeCreatedCustomZonesets(_createdCustomLayouts);
-        }
-
-        // Loads all the custom Layouts from tmp file passed by FancyZonesLib
-        public static ObservableCollection<LayoutModel> LoadCustomModels()
-        {
-            _customModels = new ObservableCollection<LayoutModel>();
-            App.FancyZonesEditorIO.ParseLayouts(ref _customModels, ref _deletedCustomModels);
-            return _customModels;
-        }
-
-        private static ObservableCollection<LayoutModel> _customModels;
-        private static List<string> _deletedCustomModels = new List<string>();
-        private static List<JsonElement> _createdCustomLayouts = new List<JsonElement>();
+        // InitTemplateZones
+        // Creates zones based on template zones count
+        public abstract void InitTemplateZones();
 
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract void PersistData();
@@ -197,21 +240,6 @@ namespace FancyZonesEditor.Models
         public void Persist()
         {
             PersistData();
-            Apply();
-        }
-
-        public void Apply()
-        {
-            MainWindowSettingsModel settings = ((App)App.Current).MainWindowSettings;
-            settings.ResetAppliedModel();
-            IsApplied = true;
-
-            // update settings
-            App.Overlay.CurrentLayoutSettings.ZonesetUuid = Uuid;
-            App.Overlay.CurrentLayoutSettings.Type = Type;
-
-            // update temp file
-            App.FancyZonesEditorIO.SerializeAppliedLayouts();
         }
     }
 }

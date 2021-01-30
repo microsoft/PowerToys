@@ -8,11 +8,11 @@ using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
 {
-    /// <summary>
-    /// Interaction logic for windowEditor.xaml
-    /// </summary>
     public partial class CanvasEditorWindow : EditorWindow
     {
+        private CanvasLayoutModel _model;
+        private CanvasLayoutModel _stashedModel;
+
         public CanvasEditorWindow()
         {
             InitializeComponent();
@@ -23,24 +23,17 @@ namespace FancyZonesEditor
             _stashedModel = (CanvasLayoutModel)_model.Clone();
         }
 
+        public LayoutModel Model
+        {
+            get
+            {
+                return _model;
+            }
+        }
+
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            Rect workingArea = App.Overlay.WorkArea;
-            int offset = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_offset);
-
-            if (offset + (int)(workingArea.Width * 0.4) < (int)workingArea.Width
-                && offset + (int)(workingArea.Height * 0.4) < (int)workingArea.Height)
-            {
-                _model.AddZone(new Int32Rect(offset, offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
-            }
-            else
-            {
-                _offset = 100;
-                offset = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_offset);
-                _model.AddZone(new Int32Rect(offset, offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
-            }
-
-            _offset += 50; // TODO: replace hardcoded numbers
+            _model.AddZone();
         }
 
         protected new void OnCancel(object sender, RoutedEventArgs e)
@@ -56,9 +49,5 @@ namespace FancyZonesEditor
                 OnCancel(sender, null);
             }
         }
-
-        private int _offset = 100;
-        private CanvasLayoutModel _model;
-        private CanvasLayoutModel _stashedModel;
     }
 }

@@ -45,6 +45,7 @@ namespace FancyZonesDataTypes
             int height;
         };
         std::vector<CanvasLayoutInfo::Rect> zones;
+        int sensitivityRadius;
     };
 
     struct GridLayoutInfo
@@ -62,6 +63,9 @@ namespace FancyZonesDataTypes
             const std::vector<int>& rowsPercents;
             const std::vector<int>& columnsPercents;
             const std::vector<std::vector<int>>& cellChildMap;
+            bool showSpacing;
+            int spacing;
+            int sensitivityRadius;
         };
 
         GridLayoutInfo(const Minimal& info);
@@ -74,16 +78,22 @@ namespace FancyZonesDataTypes
 
         inline int rows() const { return m_rows; }
         inline int columns() const { return m_columns; }
-
         inline const std::vector<int>& rowsPercents() const { return m_rowsPercents; };
         inline const std::vector<int>& columnsPercents() const { return m_columnsPercents; };
         inline const std::vector<std::vector<int>>& cellChildMap() const { return m_cellChildMap; };
+
+        inline bool showSpacing() const { return m_showSpacing; }
+        inline int spacing() const { return m_spacing; }
+        inline int sensitivityRadius() const { return m_sensitivityRadius; }
 
         int m_rows;
         int m_columns;
         std::vector<int> m_rowsPercents;
         std::vector<int> m_columnsPercents;
         std::vector<std::vector<int>> m_cellChildMap;
+        bool m_showSpacing;
+        int m_spacing;
+        int m_sensitivityRadius;
     };
 
     struct CustomZoneSetData

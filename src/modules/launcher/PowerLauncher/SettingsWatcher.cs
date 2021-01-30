@@ -7,7 +7,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Threading;
 using System.Windows.Input;
-using ManagedCommon;
 using Microsoft.PowerToys.Common.UI;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Helper;
@@ -45,7 +44,7 @@ namespace PowerLauncher
             OverloadSettings();
 
             // Apply theme at startup
-            _themeManager.ChangeTheme(_settings.Theme, _settings.Theme == Theme.System);
+            _themeManager.ChangeTheme(_settings.Theme, true);
         }
 
         public void CreateSettingsIfNotExists()
@@ -71,7 +70,7 @@ namespace PowerLauncher
                     retryCount++;
                     CreateSettingsIfNotExists();
 
-                    var overloadSettings = _settingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                    var overloadSettings = _settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
 
                     var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerLauncher);
                     if (_settings.Hotkey != openPowerlauncher)
@@ -112,7 +111,7 @@ namespace PowerLauncher
                     if (_settings.Theme != overloadSettings.Properties.Theme)
                     {
                         _settings.Theme = overloadSettings.Properties.Theme;
-                        _themeManager.ChangeTheme(_settings.Theme, _settings.Theme == Theme.System);
+                        _themeManager.ChangeTheme(_settings.Theme, true);
                     }
 
                     retry = false;

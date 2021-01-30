@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones persisted data path not found. Please report the bug to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[FancyZones の持続的なデータ パスが見つかりませんでした。バグを次へ報告してください:]]></Val>
+            <Val><![CDATA[FancyZones の持続的なデータ パスが見つかりませんでした。このバグを次へご報告ください:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The FancyZones editor failed to start. Please report the bug to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[FancyZones エディターを開始できませんでした。バグを次へ報告してください:]]></Val>
+            <Val><![CDATA[FancyZones エディターを開始できませんでした。このバグを次へご報告ください:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to save the FancyZones settings. Please retry again later, if the problem persists report the bug to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[FancyZones の設定を保存できませんでした。後でもう一度お試しください。問題が解決しない場合は、バグを次へ報告してください:]]></Val>
+            <Val><![CDATA[FancyZones の設定を保存できませんでした。後でもう一度お試しください。問題が解決しない場合は、このバグを次へご報告ください:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

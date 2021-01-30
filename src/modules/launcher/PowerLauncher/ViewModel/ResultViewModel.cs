@@ -36,9 +36,35 @@ namespace PowerLauncher.ViewModel
 
         public bool IsHovered { get; set; }
 
-        public bool AreContextButtonsActive { get; set; }
+        private bool _areContextButtonsActive;
 
-        public int ContextMenuSelectedIndex { get; set; }
+        public bool AreContextButtonsActive
+        {
+            get => _areContextButtonsActive;
+            set
+            {
+                if (_areContextButtonsActive != value)
+                {
+                    _areContextButtonsActive = value;
+                    OnPropertyChanged(nameof(AreContextButtonsActive));
+                }
+            }
+        }
+
+        private int _contextMenuSelectedIndex;
+
+        public int ContextMenuSelectedIndex
+        {
+            get => _contextMenuSelectedIndex;
+            set
+            {
+                if (_contextMenuSelectedIndex != value)
+                {
+                    _contextMenuSelectedIndex = value;
+                    OnPropertyChanged(nameof(ContextMenuSelectedIndex));
+                }
+            }
+        }
 
         public const int NoSelectionIndex = -1;
 

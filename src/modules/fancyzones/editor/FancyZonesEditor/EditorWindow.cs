@@ -5,11 +5,10 @@
 using System;
 using System.Windows;
 using FancyZonesEditor.Models;
-using MahApps.Metro.Controls;
 
 namespace FancyZonesEditor
 {
-    public class EditorWindow : MetroWindow
+    public class EditorWindow : Window
     {
         protected void OnSaveApplyTemplate(object sender, RoutedEventArgs e)
         {
@@ -24,9 +23,13 @@ namespace FancyZonesEditor
                 }
 
                 model.Persist();
+
+                MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
+                settings.SetAppliedModel(model);
+                App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
             }
 
-            LayoutModel.SerializeDeletedCustomZoneSets();
+            App.FancyZonesEditorIO.SerializeZoneSettings();
 
             _backToLayoutPicker = false;
             Close();

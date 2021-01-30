@@ -38,7 +38,7 @@ namespace Wox.Infrastructure.UserSettings
                 {
                     _previousHotkey = _hotkey;
                     _hotkey = value;
-                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Hotkey));
                 }
             }
         }
@@ -115,12 +115,25 @@ namespace Wox.Infrastructure.UserSettings
                 if (_maxResultsToShow != value)
                 {
                     _maxResultsToShow = value;
-                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(MaxResultsToShow));
                 }
             }
         }
 
-        public int ActivateTimes { get; set; }
+        private int _activeTimes;
+
+        public int ActivateTimes
+        {
+            get => _activeTimes;
+            set
+            {
+                if (_activeTimes != value)
+                {
+                    _activeTimes = value;
+                    OnPropertyChanged(nameof(ActivateTimes));
+                }
+            }
+        }
 
         // Order defaults to 0 or -1, so 1 will let this property appear last
         [JsonProperty(Order = 1)]

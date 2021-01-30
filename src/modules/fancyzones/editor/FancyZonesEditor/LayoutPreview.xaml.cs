@@ -8,7 +8,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -22,10 +21,11 @@ namespace FancyZonesEditor
         private const string PropertyZoneCountID = "ZoneCount";
         private const string PropertyShowSpacingID = "ShowSpacing";
         private const string PropertySpacingID = "Spacing";
+        private const string PropertyZoneBackgroundID = "ZoneBackground";
+        private const string PropertyZoneBorderID = "ZoneBorder";
         private const string ObjectDependencyID = "IsActualSize";
 
         public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));
-
         private LayoutModel _model;
         private List<Int32Rect> _zones = new List<Int32Rect>();
 
@@ -49,8 +49,17 @@ namespace FancyZonesEditor
 
         private void LayoutPreview_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
+            if (_model != null)
+            {
+                _model.PropertyChanged -= LayoutModel_PropertyChanged;
+            }
+
             _model = (LayoutModel)DataContext;
-            RenderPreview();
+            if (_model != null)
+            {
+                _model.PropertyChanged += LayoutModel_PropertyChanged;
+                RenderPreview();
+            }
         }
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -66,6 +75,11 @@ namespace FancyZonesEditor
                     RenderPreview();
                 }
             }
+        }
+
+        private void LayoutModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            RenderPreview();
         }
 
         public Int32Rect[] GetZoneRects()
@@ -114,9 +128,7 @@ namespace FancyZonesEditor
             RowColInfo[] colInfo = (from percent in grid.ColumnPercents
                                     select new RowColInfo(percent)).ToArray();
 
-            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-
-            int spacing = settings.ShowSpacing ? settings.Spacing : 0;
+            int spacing = grid.ShowSpacing ? grid.Spacing : 0;
 
             var workArea = App.Overlay.WorkArea;
             double width = workArea.Width - (spacing * (cols + 1));
@@ -157,7 +169,7 @@ namespace FancyZonesEditor
                         ((col == 0) || (grid.CellChildMap[row, col - 1] != childIndex)))
                     {
                         // this is not a continuation of a span
-                        Rectangle rect = new Rectangle();
+                        Border rect = new Border();
                         left = colInfo[col].Start;
                         top = rowInfo[row].Start;
                         Canvas.SetTop(rect, top);
@@ -177,9 +189,7 @@ namespace FancyZonesEditor
 
                         rect.Width = Math.Max(0, colInfo[maxCol].End - left);
                         rect.Height = Math.Max(0, rowInfo[maxRow].End - top);
-                        rect.StrokeThickness = 1;
-                        rect.Stroke = Brushes.DarkGray;
-                        rect.Fill = Brushes.LightGray;
+                        rect.Style = (Style)FindResource("GridLayoutPreviewActualSizeStyle");
                         frame.Children.Add(rect);
                         _zones.Add(new Int32Rect(
                             (int)left, (int)top, (int)rect.Width, (int)rect.Height));
@@ -216,8 +226,7 @@ namespace FancyZonesEditor
                 Body.ColumnDefinitions.Add(def);
             }
 
-            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-            Thickness margin = new Thickness(settings.ShowSpacing ? settings.Spacing / 20 : 0);
+            Thickness margin = new Thickness(grid.ShowSpacing ? grid.Spacing / 20 : 0);
 
             List<int> visited = new List<int>();
 
@@ -229,7 +238,7 @@ namespace FancyZonesEditor
                     if (!visited.Contains(childIndex))
                     {
                         visited.Add(childIndex);
-                        Rectangle rect = new Rectangle();
+                        Border rect = new Border();
                         Grid.SetRow(rect, row);
                         Grid.SetColumn(rect, col);
                         int span = 1;
@@ -251,11 +260,8 @@ namespace FancyZonesEditor
                         }
 
                         Grid.SetColumnSpan(rect, span);
-
                         rect.Margin = margin;
-                        rect.StrokeThickness = 1;
-                        rect.Stroke = Brushes.DarkGray;
-                        rect.Fill = Brushes.LightGray;
+                        rect.Style = (Style)FindResource("GridLayoutPreviewStyle");
                         Body.Children.Add(rect);
                     }
                 }
@@ -296,14 +302,21 @@ namespace FancyZonesEditor
 
             foreach (Int32Rect zone in canvas.Zones)
             {
-                Rectangle rect = new Rectangle();
+                Border rect = new Border();
                 Canvas.SetTop(rect, zone.Y);
                 Canvas.SetLeft(rect, zone.X);
                 rect.MinWidth = zone.Width;
                 rect.MinHeight = zone.Height;
-                rect.StrokeThickness = 5;
-                rect.Stroke = Brushes.DarkGray;
-                rect.Fill = Brushes.LightGray;
+
+                if (IsActualSize)
+                {
+                   rect.Style = (Style)FindResource("CanvasLayoutPreviewActualSizeStyle");
+                }
+                else
+                {
+                   rect.Style = (Style)FindResource("CanvasLayoutPreviewStyle");
+                }
+
                 frame.Children.Add(rect);
             }
 

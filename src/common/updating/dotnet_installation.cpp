@@ -10,6 +10,8 @@ namespace fs = std::filesystem;
 
 namespace updating
 {
+    constexpr size_t REQUIRED_MINIMAL_PATCH = 10;
+
     bool dotnet_is_installed()
     {
         auto runtimes = exec_and_read_output(LR"(dotnet --list-runtimes)");
@@ -17,13 +19,34 @@ namespace updating
         {
             return false;
         }
-        const char DESKTOP_DOTNET_RUNTIME_STRING[] = "Microsoft.WindowsDesktop.App 3.1.";
-        return runtimes->find(DESKTOP_DOTNET_RUNTIME_STRING) != std::string::npos;
+        std::regex dotnet3_1_x{ R"(Microsoft\.WindowsDesktop\.App\s3\.1\.(\d+))" };
+
+        size_t latestPatchInstalled = 0;
+        using rexit = std::sregex_iterator;
+        for (auto it = rexit{ begin(*runtimes), end(*runtimes), dotnet3_1_x }; it != rexit{}; ++it)
+        {
+            if (!it->ready() || it->size() < 2)
+            {
+                continue;
+            }
+            auto patchNumberGroup = (*it)[1];
+            if (!patchNumberGroup.matched)
+            {
+                continue;
+            }
+            const auto patchString = patchNumberGroup.str();
+            size_t patch = 0;
+            if (auto [_, ec] = std::from_chars(&*begin(patchString), &*end(patchString), patch); ec == std::errc())
+            {
+                latestPatchInstalled = std::max(patch, latestPatchInstalled);
+            }
+        }
+        return latestPatchInstalled >= REQUIRED_MINIMAL_PATCH;
     }
 
     std::optional<fs::path> download_dotnet()
     {
-        const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/513acf37-8da2-497d-bdaa-84d6e33c1fee/eb7b010350df712c752f4ec4b615f89d/windowsdesktop-runtime-3.1.10-win-x64.exe";
+        const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/3f1cc4f7-0c1a-48ca-9551-a8447fa55892/ed9809822448f55b649858920afb35cb/windowsdesktop-runtime-3.1.11-win-x64.exe";
         const wchar_t DOTNET_DESKTOP_FILENAME[] = L"windowsdesktop-runtime.exe";
 
         auto dotnet_download_path = fs::temp_directory_path() / DOTNET_DESKTOP_FILENAME;
