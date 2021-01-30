@@ -23,6 +23,7 @@ namespace
     vector<tuple<HKEY, wstring, wstring>> registryValues = {
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{ddee2b8a-6807-48a6-bb20-2338174ff779}" },
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}" },
+        { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{45769bcc-e8fd-42d0-947e-02beef77a1f6}" },
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"prevhost.exe" },
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"dllhost.exe" }
     };

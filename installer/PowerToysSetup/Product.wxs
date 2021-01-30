@@ -433,6 +433,19 @@
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
         </RegistryKey>
+        <!-- Registry Key for Class Registration of Pdf Preview Handler -->
+        <RegistryKey Root="HKCR" Key="CLSID\{45769bcc-e8fd-42d0-947e-02beef77a1f6}">
+          <RegistryValue Type="string" Value="Microsoft.PowerToys.PreviewHandler.Pdf.PdfPreviewHandler" />
+          <RegistryValue Type="string" Name="DisplayName" Value="Pdf Preview Handler" />
+          <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
+          <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value="" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[FileExplorerPreviewInstallFolder]PdfPreviewHandler.comhost.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="PdfPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Pdf.PdfPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="PdfPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Pdf.PdfPreviewHandler" />
+        </RegistryKey>
         <!-- Registry Key for AppID registration -->
         <RegistryKey Root="HKCR" Key="AppID\{CF142243-F059-45AF-8842-DBBE9783DB14}">
           <RegistryValue Type="expandable" Name="DllSurrogate" Value="%SystemRoot%\system32\prevhost.exe" />
@@ -445,6 +458,10 @@
         <RegistryKey Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\PreviewHandlers">
           <RegistryValue Type="string" Name="{45769bcc-e8fd-42d0-947e-02beef77a1f5}" Value="Markdown Preview Handler" />
         </RegistryKey>
+        <!-- Add Pdf preview handler to preview handlers list -->
+        <RegistryKey Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\PreviewHandlers">
+          <RegistryValue Type="string" Name="{45769bcc-e8fd-42d0-947e-02beef77a1f6}" Value="Pdf Preview Handler" />
+        </RegistryKey>
         <!-- Add file type association for Svg Preview Handler -->
         <RegistryKey Root="HKCR" Key=".svg\shellex">
           <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{ddee2b8a-6807-48a6-bb20-2338174ff779}" />
@@ -456,6 +473,10 @@
         <!-- Add file type association for Markdown Preview Handler -->
         <RegistryKey Root="HKCR" Key=".md\shellex">
           <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{45769bcc-e8fd-42d0-947e-02beef77a1f5}" />
+        </RegistryKey>
+        <!-- Add file type association for Pdf Preview Handler -->
+        <RegistryKey Root="HKCR" Key=".pdf\shellex">
+          <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{45769bcc-e8fd-42d0-947e-02beef77a1f6}" />
         </RegistryKey>
         <!-- Update Key to use IE11 for prevhost.exe -->
         <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
@@ -630,6 +651,11 @@
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Markdig.Signed.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\HtmlAgilityPack.dll" />
         <File Id="FileExplorerPreview_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.IO.Abstractions.dll" />
+        <!-- File to include dll for Pdf Preview Handler -->
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.deps.json" />
       </Component>
     </DirectoryRef>
 
@@ -856,7 +882,10 @@
                     <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\MarkdownPreviewHandler.resources.dll" />
                 </Component>
                 <Component Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
-                    <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\SvgPreviewHandler.resources.dll" />
+                  <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\SvgPreviewHandler.resources.dll" />
+                </Component>
+                <Component Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+                  <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\PdfPreviewHandler.resources.dll" />
                 </Component>
                 <!-- Launcher plugin resources -->
                 <Component Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder">
