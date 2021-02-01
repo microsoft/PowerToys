@@ -46,6 +46,8 @@ namespace FancyZonesEditor
                 WrapPanelItemSize = SmallWrapPanelItemSize;
             }
 
+            MaxWidth = workArea.Width;
+            MaxHeight = workArea.Height;
             SizeToContent = SizeToContent.WidthAndHeight;
         }
 
