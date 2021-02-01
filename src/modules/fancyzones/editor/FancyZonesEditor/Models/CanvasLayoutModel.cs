@@ -91,6 +91,10 @@ namespace FancyZonesEditor.Models
             {
                 _topLeft = DefaultOffset;
             }
+            else if (_topLeft == Zones[Zones.Count - 1].X)
+            {
+                _topLeft += OffsetShift;
+            }
 
             Rect workingArea = App.Overlay.WorkArea;
             int topLeft = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_topLeft);
@@ -155,7 +159,9 @@ namespace FancyZonesEditor.Models
                 other.Zones.Add(zone);
             }
 
+            other._topLeft = _topLeft;
             other.SensitivityRadius = SensitivityRadius;
+            other.UpdateLayout();
         }
 
         // PersistData
