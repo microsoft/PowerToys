@@ -310,10 +310,18 @@ namespace FancyZonesEditor
 
             selectedLayoutModel.InitTemplateZones();
 
+            try
+            {
+                Hide();
+            }
+            catch
+            {
+                // See https://github.com/microsoft/PowerToys/issues/9396
+                Hide();
+            }
+
             App.Overlay.CurrentDataContext = selectedLayoutModel;
-            var mainEditor = App.Overlay;
-            Hide();
-            mainEditor.OpenEditor(selectedLayoutModel);
+            App.Overlay.OpenEditor(selectedLayoutModel);
         }
 
         // This is required to fix a WPF rendering bug when using custom chrome
