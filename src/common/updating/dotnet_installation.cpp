@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 
 namespace updating
 {
-    constexpr size_t REQUIRED_MINIMAL_PATCH = 10;
+    constexpr size_t REQUIRED_MINIMAL_PATCH = 11;
 
     bool dotnet_is_installed()
     {
