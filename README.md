@@ -25,13 +25,13 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 ### Requirements
 
 - Windows 10 v1903 (build 18362) or better preferred, Windows 10 v1803 (build 17134) minimum.  
-- Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.10-windows-x64-installer). The installer should handle this but we want to directly make people aware.
+- Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.11-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
 
 #### Stable version
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.31.0-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.31.1-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -115,7 +115,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - Bug fixes
 
 **Installer**
-- Default to .NET Core 3.1.10
+- Default to .NET Core 3.1.11
 
 #### Community contributions
 
