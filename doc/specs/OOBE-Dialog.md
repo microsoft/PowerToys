@@ -93,7 +93,7 @@ This section describes the content that should be displayed on the Welcome/Overv
 | No. | Requirement | Implication | Pri |
 | --- | --- | --- | --- |
 |1 | Date/Time of first-run | Helps to categorize usage and retention trends across various groups of new users. | P0 |
-|2 | OOBE sections viewed | Used to gauge how far users progress through the OOBE dialog. Helps guide decisions on further enhancements to improve retention. | P0 |
+|2 | When specific OOBE sections are entered/exited | Used to gauge how far users progress through the OOBE dialog. Helps guide decisions on further enhancements to improve retention. | P0 |
 |3 | Access to linked settings pages | Used to gauge whether users would find value in having quick settings access for particular utilities. | P1 |
 |4 | PowerToys launched while OOBE window is active. | Used to track user engagement with the various PowerToys while exploring the content in the OOBE. | P1 |
 |5 | Screen size | Gives crucial information for considerations related to minimal/maximum window size needed for displaying content. | P2 |
