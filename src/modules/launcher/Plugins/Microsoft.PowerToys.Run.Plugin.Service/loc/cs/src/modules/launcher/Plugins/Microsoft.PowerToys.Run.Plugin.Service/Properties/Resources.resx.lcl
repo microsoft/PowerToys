@@ -21,6 +21,9 @@
       <Item ItemId=";wox_plugin_service_open_services" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open services (Ctrl+O)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Otevřít služby (Ctrl+O)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -28,7 +31,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Pausing]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pozastavování]]></Val>
+            <Val><![CDATA[Probíhá pozastavování]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -45,6 +48,9 @@
       <Item ItemId=";wox_plugin_service_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Manages Windows services]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Spravuje služby Windows.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -60,12 +66,18 @@
       <Item ItemId=";wox_plugin_service_restart" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Restart (Ctrl+R)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Restartovat (Ctrl+R)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";wox_plugin_service_restarted_notification" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[{0} has been restarted]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Služba {0} se restartovala.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -73,7 +85,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Running]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Spuštěné]]></Val>
+            <Val><![CDATA[Spuštěno]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -81,6 +93,9 @@
       <Item ItemId=";wox_plugin_service_start" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Start (Enter)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Spustit (Enter)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -88,7 +103,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Automatic]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Automatické]]></Val>
+            <Val><![CDATA[Automaticky]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -133,7 +148,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Starting]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Spouštění]]></Val>
+            <Val><![CDATA[Probíhá spouštění]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -142,7 +157,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Started]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Spuštěné]]></Val>
+            <Val><![CDATA[Spuštěno]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -177,6 +192,9 @@
       <Item ItemId=";wox_plugin_service_stop" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Stop (Enter)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zastavit (Enter)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -184,7 +202,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Stopping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zastavování]]></Val>
+            <Val><![CDATA[Probíhá zastavování]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -201,6 +219,9 @@
       <Item ItemId=";wox_plugin_service_stopped_notification" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[{0} has been stopped]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Služba {0} se úspěšně zastavila.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
