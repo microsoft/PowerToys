@@ -75,7 +75,7 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.31 - January 2020 Update
+### 0.31 - January 2021 Update
 
 Our goals for [v0.31 release cycle][github-release-link] were to focus on improving the FancyZones editor, adding in some new features into PowerToys Run, some ARM64 work, and stability. 
 
