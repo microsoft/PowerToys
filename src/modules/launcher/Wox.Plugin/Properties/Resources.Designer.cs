@@ -59,32 +59,5 @@ namespace Wox.Plugin.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copying path {0} has failed, it will now be deleted for consistency.
-        /// </summary>
-        public static string filesfolder_copy_failed {
-            get {
-                return ResourceManager.GetString("filesfolder_copy_failed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Not able to delete folder {0}, please go to the location and manually delete it.
-        /// </summary>
-        public static string filesfolder_removefolder_failed {
-            get {
-                return ResourceManager.GetString("filesfolder_removefolder_failed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to verify folders and files between {0} and {1}.
-        /// </summary>
-        public static string filesfolder_verifybothfolderfilesequal_failed {
-            get {
-                return ResourceManager.GetString("filesfolder_verifybothfolderfilesequal_failed", resourceCulture);
-            }
-        }
     }
 }

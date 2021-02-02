@@ -129,9 +129,6 @@
   <data name="lastExecuteTime" xml:space="preserve">
     <value>Last execution time: {0}</value>
   </data>
-  <data name="about_activate_times" xml:space="preserve">
-    <value>You have activated Wox {0} times</value>
-  </data>
   <data name="reportWindow_header" xml:space="preserve">
     <value>Something went wrong.</value>
   </data>
