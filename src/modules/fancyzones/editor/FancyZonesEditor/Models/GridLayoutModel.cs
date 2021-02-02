@@ -263,6 +263,8 @@ namespace FancyZonesEditor.Models
             layout.ShowSpacing = ShowSpacing;
             layout.Spacing = Spacing;
             layout.SensitivityRadius = SensitivityRadius;
+
+            layout.FirePropertyChanged();
         }
 
         // InitTemplateZones
