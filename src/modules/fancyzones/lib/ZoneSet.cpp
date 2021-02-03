@@ -268,7 +268,7 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
                 overlap.right = min(overlap.right, current.right);
             }
 
-            // Avoid divison by zero
+            // Avoid division by zero
             int width = max(overlap.right - overlap.left, 1);
             int height = max(overlap.bottom - overlap.top, 1);
 
