@@ -99,18 +99,30 @@
                 <ColumnDefinition Width="8"/>
             </Grid.ColumnDefinitions>
 
-            <Label Name="LabelID"
-               Content="ID"
-               Canvas.Left="10"
-               Canvas.Bottom="10"
-               FontSize="64"
-               FontWeight="SemiBold"
-               Foreground="{DynamicResource PrimaryForegroundBrush}"
-               Grid.Column="2"
-               Grid.Row="2"
-               VerticalContentAlignment="Center"
-               HorizontalContentAlignment="Center" />
-            
+            <DockPanel HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Grid.Column="2"
+                       Grid.Row="2">
+                <Label
+                    Name="LabelID"
+                    DockPanel.Dock="Top"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Content="ID"
+                    FontWeight="SemiBold"
+                    FontSize="64"
+                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                <Label
+                    Name="LabelSize"
+                    DockPanel.Dock="Bottom"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Content="(WidthxHeight)"
+                    FontWeight="Thin"
+                    FontSize="32"
+                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
+            </DockPanel>
+
             <Thumb x:Name="Caption" Cursor="SizeAll" Background="Transparent" BorderThickness="3" Padding="4" Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="Caption_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
 
             <Thumb x:Name="NResize" Cursor="SizeNS" BorderThickness="0,3,0,0" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="NResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
