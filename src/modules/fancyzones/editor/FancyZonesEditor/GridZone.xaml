@@ -15,18 +15,28 @@
     mc:Ignorable="d">
     <Grid x:Name="Frame">
         <Canvas x:Name="Body" />
-        <Label
-            Name="LabelID"
-            Grid.Row="3"
-            Grid.Column="2"
-            Canvas.Left="10"
-            Canvas.Bottom="10"
-            HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center"
-            Content="ID"
-            FontWeight="SemiBold"
-            FontSize="64"
-            Foreground="{DynamicResource PrimaryForegroundBrush}" />
+        <DockPanel HorizontalAlignment="Center"
+                   VerticalAlignment="Center">
+            <Label
+                Name="LabelID"
+                DockPanel.Dock="Top"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Content="ID"
+                FontWeight="SemiBold"
+                FontSize="64"
+                Foreground="{DynamicResource PrimaryForegroundBrush}" />
+            <Label
+                Name="LabelSize"
+                DockPanel.Dock="Bottom"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Content="(1920x1080)"
+                FontWeight="Thin"
+                FontSize="32"
+                Foreground="{DynamicResource PrimaryForegroundBrush}" />
+
+        </DockPanel>
         <!--<TextBlock Margin="2" Text="Shift Key switches direction&#13;Ctrl  Key repeats"/>-->
     </Grid>
 </UserControl>
