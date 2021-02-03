@@ -106,10 +106,10 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - SVG thumbnail quality improved
 
 **PowerToys Run**
-- Service management plugin (restart, stop, ...)
-- Registry key plugin 
+- Service management plugin (restart, stop, ...) using the `!` keyword
+- Registry key plugin using the `:` keyword
 - System action plugin (reboot, lock, ...)
-- Hyperbolic functions added to calculator
+- Hyperbolic functions added to calculator (example: `=arsinh(3)`)
 - Icon fixes when running in certain themes
 - Unneeded dependencies removed
 - Bug fixes
