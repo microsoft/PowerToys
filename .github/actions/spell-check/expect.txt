@@ -438,6 +438,7 @@ DELA
 deletethis
 delims
 DENORMAL
+deondre
 depersist
 deprioritized
 deps
@@ -2375,6 +2376,7 @@ webpage
 website
 webview
 wekyb
+welcomeoverview
 Whichdoes
 whitespaces
 WIC
