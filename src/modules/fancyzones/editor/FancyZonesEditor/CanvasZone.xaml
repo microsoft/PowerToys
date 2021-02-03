@@ -117,7 +117,6 @@
                     DockPanel.Dock="Bottom"
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
-                    Content="(WidthxHeight)"
                     FontWeight="Thin"
                     FontSize="32"
                     Foreground="{DynamicResource PrimaryForegroundBrush}" />
