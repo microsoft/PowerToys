@@ -211,7 +211,7 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
     }
 
     // If captured zones do not overlap, return all of them
-    // Otherwise, return the smallest one
+    // Otherwise, return one of them based on mouse position inside the overlapped area.
     bool overlap = false;
     for (size_t i = 0; i < capturedZones.size(); ++i)
     {
@@ -244,30 +244,54 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
 
     if (overlap)
     {
-        size_t smallestIdx = 0;
-        for (size_t i = 1; i < capturedZones.size(); ++i)
+        try
         {
-            RECT rectS;
-            RECT rectI;
-            try
-            {
-                rectS = m_zones.at(capturedZones[smallestIdx])->GetZoneRect();
-                rectI = m_zones.at(capturedZones[i])->GetZoneRect();
-            }
-            catch (std::out_of_range)
-            {
-                return {};
-            }
-            int smallestSize = (rectS.bottom - rectS.top) * (rectS.right - rectS.left);
-            int iSize = (rectI.bottom - rectI.top) * (rectI.right - rectI.left);
+            auto expand = [&](RECT& rect) {
+                rect.top -= m_config.SensitivityRadius / 2;
+                rect.bottom += m_config.SensitivityRadius / 2;
+                rect.left -= m_config.SensitivityRadius / 2;
+                rect.right += m_config.SensitivityRadius / 2;
+            };
 
-            if (iSize <= smallestSize)
+            // Compute the overlapped rectangle.
+            RECT overlap = m_zones.at(capturedZones[0])->GetZoneRect();
+            expand(overlap);
+
+            for (size_t i = 1; i < capturedZones.size(); ++i)
             {
-                smallestIdx = i;
+                RECT current = m_zones.at(capturedZones[i])->GetZoneRect();
+                expand(current);
+
+                overlap.top = max(overlap.top, current.top);
+                overlap.left = max(overlap.left, current.left);
+                overlap.bottom = min(overlap.bottom, current.bottom);
+                overlap.right = min(overlap.right, current.right);
             }
+
+            // Avoid divison by zero
+            int width = max(overlap.right - overlap.left, 1);
+            int height = max(overlap.bottom - overlap.top, 1);
+
+            bool verticalSplit = height > width;
+            size_t zoneIndex;
+
+            if (verticalSplit)
+            {
+                zoneIndex = (pt.y - overlap.top) * capturedZones.size() / height;
+            }
+            else
+            {
+                zoneIndex = (pt.x - overlap.left) * capturedZones.size() / width;
+            }
+
+            zoneIndex = std::clamp(zoneIndex, size_t(0), capturedZones.size() - 1);
+
+            return { capturedZones[zoneIndex] };
         }
-
-        capturedZones = { capturedZones[smallestIdx] };
+        catch (std::out_of_range)
+        {
+            return {};
+        }
     }
 
     return capturedZones;
