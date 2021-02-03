@@ -5,8 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Principal;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 using Windows.Management.Deployment;
-using Wox.Plugin.Logger;
 using Package = Windows.ApplicationModel.Package;
 
 namespace Microsoft.Plugin.Program.Programs

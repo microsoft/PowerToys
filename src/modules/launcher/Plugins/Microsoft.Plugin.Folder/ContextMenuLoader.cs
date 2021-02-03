@@ -9,9 +9,9 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
-using Wox.Infrastructure;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
+using Microsoft.PowerToys.Run.Infrastructure;
+using Microsoft.PowerToys.Run.Plugin;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 
 namespace Microsoft.Plugin.Folder
 {

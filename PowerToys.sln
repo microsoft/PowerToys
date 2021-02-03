@@ -119,11 +119,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerCommon", "sr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "launcher", "launcher", "{C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wox.Infrastructure", "src\modules\launcher\Wox.Infrastructure\Wox.Infrastructure.csproj", "{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Infrastructure", "src\modules\launcher\Microsoft.PowerToys.Run.Infrastructure\Microsoft.PowerToys.Run.Infrastructure.csproj", "{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wox.Plugin", "src\modules\launcher\Wox.Plugin\Wox.Plugin.csproj", "{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin", "src\modules\launcher\Microsoft.PowerToys.Run.Plugin\Microsoft.PowerToys.Run.Plugin.csproj", "{8451ECDD-2EA4-4966-BB0A-7BBC40138E80}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wox.Test", "src\modules\launcher\Wox.Test\Wox.Test.csproj", "{FF742965-9A80-41A5-B042-D6C7D3A21708}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Test", "src\modules\launcher\Microsoft.PowerToys.Run.Test\Microsoft.PowerToys.Run.Test.csproj", "{FF742965-9A80-41A5-B042-D6C7D3A21708}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{4AFC9975-2456-4C70-94A4-84073C1CED93}"
 EndProject
@@ -140,12 +140,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Indexer", 
 		{8451ECDD-2EA4-4966-BB0A-7BBC40138E80} = {8451ECDD-2EA4-4966-BB0A-7BBC40138E80}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Launcher", "src\modules\launcher\Microsoft.Launcher\Microsoft.Launcher.vcxproj", "{E364F67B-BB12-4E91-B639-355866EBCD8B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.PowerToys.Run", "src\modules\launcher\Microsoft.PowerToys.Run\Microsoft.PowerToys.Run.vcxproj", "{E364F67B-BB12-4E91-B639-355866EBCD8B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{F97E5003-F263-4D4A-A964-0F1F3C82DEF2} = {F97E5003-F263-4D4A-A964-0F1F3C82DEF2}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerLauncher", "src\modules\launcher\PowerLauncher\PowerLauncher.csproj", "{F97E5003-F263-4D4A-A964-0F1F3C82DEF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.UI", "src\modules\launcher\Microsoft.PowerToys.Run.UI\Microsoft.PowerToys.Run.UI.csproj", "{F97E5003-F263-4D4A-A964-0F1F3C82DEF2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{03276A39-D4E9-417C-8FFD-200B0EE5E871} = {03276A39-D4E9-417C-8FFD-200B0EE5E871}
 		{FDB3555B-58EF-4AE6-B5F1-904719637AB4} = {FDB3555B-58EF-4AE6-B5F1-904719637AB4}
@@ -207,7 +207,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToysInterop", "src\com
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder", "src\modules\launcher\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj", "{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerLauncher.Telemetry", "src\modules\launcher\PowerLauncher.Telemetry\PowerLauncher.Telemetry.csproj", "{08C8C05F-0362-41BC-818C-724572DF8B06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Telemetry", "src\modules\launcher\Microsoft.PowerToys.Run.Telemetry\Microsoft.PowerToys.Run.Telemetry.csproj", "{08C8C05F-0362-41BC-818C-724572DF8B06}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedTelemetry", "src\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj", "{5D00D290-4016-4CFE-9E41-1E7C724509BA}"
 EndProject
@@ -229,7 +229,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "colorpicker", "colorpicker"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri", "src\modules\launcher\Plugins\Microsoft.Plugin.Uri\Microsoft.Plugin.Uri.csproj", "{03276A39-D4E9-417C-8FFD-200B0EE5E871}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Uri.UnitTests\Microsoft.Plugin.Uri.UnitTests.csproj", "{B81FB7B6-D30E-428F-908A-41422EFC1172}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri.UnitTests", "src\modules\launcherPlugins\Microsoft.Plugin.Uri.UnitTests\Microsoft.Plugin.Uri.UnitTests.csproj", "{B81FB7B6-D30E-428F-908A-41422EFC1172}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.UnitTests", "src\settings-ui\Microsoft.PowerToys.Settings.UI.UnitTests\Microsoft.PowerToys.Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
 EndProject

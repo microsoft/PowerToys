@@ -6,7 +6,7 @@ using System.Diagnostics.Tracing;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
-namespace Microsoft.PowerLauncher.Telemetry
+namespace Microsoft.PowerToys.Run.Telemetry
 {
     [EventData]
     public class SettingsBootEvent : EventBase, IEvent

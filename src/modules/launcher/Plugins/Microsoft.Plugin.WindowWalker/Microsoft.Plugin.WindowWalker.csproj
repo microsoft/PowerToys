@@ -60,10 +60,10 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" >
+    <ProjectReference Include="..\..\Microsoft.PowerToys.Run.Infrastructure\Microsoft.PowerToys.Run.Infrastructure.csproj" >
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" >
+    <ProjectReference Include="..\..\Microsoft.PowerToys.Run.Plugin\Microsoft.PowerToys.Run.Plugin.csproj" >
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>

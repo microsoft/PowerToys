@@ -56,7 +56,7 @@
     <ProjectReference Include="..\..\..\..\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" >
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" >
+    <ProjectReference Include="..\..\Microsoft.PowerToys.Run.Infrastructure\Microsoft.PowerToys.Run.Infrastructure.csproj" >
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
@@ -81,7 +81,7 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Wox.Test</_Parameter1>
+      <_Parameter1>Microsoft.PowerToys.Run.Test</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
   <ItemGroup>

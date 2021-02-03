@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Plugin.Indexer.SearchHelper;
-using Wox.Infrastructure;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
+using Microsoft.PowerToys.Run.Infrastructure;
+using Microsoft.PowerToys.Run.Plugin;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 
 namespace Microsoft.Plugin.Indexer
 {

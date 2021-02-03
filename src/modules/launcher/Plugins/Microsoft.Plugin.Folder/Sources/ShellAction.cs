@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
+using Microsoft.PowerToys.Run.Plugin;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 
 namespace Microsoft.Plugin.Folder.Sources
 {

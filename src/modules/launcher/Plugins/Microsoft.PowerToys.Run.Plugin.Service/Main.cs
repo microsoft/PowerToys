@@ -10,7 +10,6 @@ using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.Service.Helpers;
 using Microsoft.PowerToys.Run.Plugin.Service.Properties;
-using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.Service
 {

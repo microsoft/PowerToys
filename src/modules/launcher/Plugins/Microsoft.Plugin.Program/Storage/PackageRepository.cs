@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Programs;
+using Microsoft.PowerToys.Run.Infrastructure.Storage;
 using Windows.ApplicationModel;
-using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.Storage
 {

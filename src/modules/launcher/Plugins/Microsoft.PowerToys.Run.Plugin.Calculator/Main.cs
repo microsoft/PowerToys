@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ManagedCommon;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
+using Microsoft.PowerToys.Run.Plugin;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {

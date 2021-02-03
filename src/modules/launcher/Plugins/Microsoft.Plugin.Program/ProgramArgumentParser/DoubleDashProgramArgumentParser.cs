@@ -4,7 +4,7 @@
 
 using System;
 using System.Linq;
-using Wox.Plugin;
+using Microsoft.PowerToys.Run.Plugin;
 
 namespace Microsoft.Plugin.Program
 {

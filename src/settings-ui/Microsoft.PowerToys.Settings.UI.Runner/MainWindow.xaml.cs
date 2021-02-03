@@ -4,7 +4,7 @@
 
 using System;
 using System.Windows;
-using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Run.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;

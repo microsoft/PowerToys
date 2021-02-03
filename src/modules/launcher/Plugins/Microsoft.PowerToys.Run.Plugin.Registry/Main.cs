@@ -11,7 +11,6 @@ using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
 using Microsoft.PowerToys.Run.Plugin.Registry.Helper;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
-using Wox.Plugin;
 
 [assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.Registry.UnitTests")]
 

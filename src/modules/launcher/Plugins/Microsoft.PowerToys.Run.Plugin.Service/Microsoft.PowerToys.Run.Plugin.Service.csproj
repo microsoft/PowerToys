@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\..\..\Version.props" />
 
@@ -70,7 +70,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
+    <ProjectReference Include="..\..\Microsoft.PowerToys.Run.Plugin\Microsoft.PowerToys.Run.Plugin.csproj" />
   </ItemGroup>
   
   <ItemGroup>

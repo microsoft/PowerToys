@@ -11,7 +11,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources.Result;
-using Wox.Plugin;
+using Microsoft.PowerToys.Run.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources
 {

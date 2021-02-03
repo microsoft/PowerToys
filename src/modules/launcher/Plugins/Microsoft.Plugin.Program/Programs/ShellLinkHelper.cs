@@ -8,7 +8,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Accessibility;
 using Microsoft.Plugin.Program.Logger;
-using Wox.Plugin.Logger;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {

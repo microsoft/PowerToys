@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Wox.Plugin;
+using Microsoft.PowerToys.Run.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources.Result
 {
@@ -23,9 +23,9 @@ namespace Microsoft.Plugin.Folder.Sources.Result
             _shellAction = shellAction;
         }
 
-        public Wox.Plugin.Result Create(IPublicAPI contextApi)
+        public Microsoft.PowerToys.Run.Plugin.Result Create(IPublicAPI contextApi)
         {
-            return new Wox.Plugin.Result
+            return new Microsoft.PowerToys.Run.Plugin.Result
             {
                 Title = Properties.Resources.wox_plugin_folder_select_folder_first_result_title,
                 QueryTextDisplay = Search,

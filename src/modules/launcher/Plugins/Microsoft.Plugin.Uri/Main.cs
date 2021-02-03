@@ -9,9 +9,9 @@ using System.IO.Abstractions;
 using System.Text;
 using ManagedCommon;
 using Microsoft.Plugin.Uri.UriHelper;
-using Wox.Infrastructure.Storage;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
+using Microsoft.PowerToys.Run.Infrastructure.Storage;
+using Microsoft.PowerToys.Run.Plugin;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 
 namespace Microsoft.Plugin.Uri
 {

@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using Wox.Infrastructure.Storage;
+using Microsoft.PowerToys.Run.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.Storage
 {

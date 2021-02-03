@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
+using Microsoft.PowerToys.Run.Infrastructure.Storage;
 using NUnit.Framework;
-using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {

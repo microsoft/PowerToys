@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
-using Wox.Plugin;
+using Microsoft.PowerToys.Run.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {

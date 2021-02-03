@@ -10,9 +10,8 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.ServiceProcess;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 using Microsoft.PowerToys.Run.Plugin.Service.Properties;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
 {

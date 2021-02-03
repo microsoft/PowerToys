@@ -13,11 +13,11 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.Run.Infrastructure.Storage;
+using Microsoft.PowerToys.Run.Plugin;
+using Microsoft.PowerToys.Run.Plugin.Logger;
+using Microsoft.PowerToys.Run.Plugin.SharedCommands;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Wox.Infrastructure.Storage;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
-using Wox.Plugin.SharedCommands;
 using Control = System.Windows.Controls.Control;
 
 namespace Microsoft.Plugin.Shell

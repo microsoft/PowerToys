@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Wox.Plugin;
+using Microsoft.PowerToys.Run.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources.Result
 {
@@ -10,6 +10,6 @@ namespace Microsoft.Plugin.Folder.Sources.Result
     {
         string Search { get; set; }
 
-        Wox.Plugin.Result Create(IPublicAPI contextApi);
+        Microsoft.PowerToys.Run.Plugin.Result Create(IPublicAPI contextApi);
     }
 }

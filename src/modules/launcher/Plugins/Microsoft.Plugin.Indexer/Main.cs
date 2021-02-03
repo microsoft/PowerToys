@@ -14,11 +14,11 @@ using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.Indexer.DriveDetection;
 using Microsoft.Plugin.Indexer.SearchHelper;
+using Microsoft.PowerToys.Run.Infrastructure.Storage;
+using Microsoft.PowerToys.Run.Plugin;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.Search.Interop;
-using Wox.Infrastructure.Storage;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Indexer
 {

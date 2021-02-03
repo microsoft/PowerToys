@@ -20,11 +20,11 @@ using System.Windows.Media.Imaging;
 using ManagedCommon;
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Win32;
-using Wox.Infrastructure;
-using Wox.Infrastructure.Image;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
-using Wox.Plugin.SharedCommands;
+using Microsoft.PowerToys.Run.Infrastructure;
+using Microsoft.PowerToys.Run.Infrastructure.Image;
+using Microsoft.PowerToys.Run.Plugin;
+using Microsoft.PowerToys.Run.Plugin.Logger;
+using Microsoft.PowerToys.Run.Plugin.SharedCommands;
 using static Microsoft.Plugin.Program.Programs.UWP;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -289,7 +289,7 @@ namespace Microsoft.Plugin.Program.Programs
             if (!string.IsNullOrWhiteSpace(resourceReference) && resourceReference.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 // magic comes from @talynone
-                // https://github.com/talynone/Wox.Plugin.WindowsUniversalAppLauncher/blob/master/StoreAppLauncher/Helpers/NativeApiHelper.cs#L139-L153
+                // https://github.com/talynone/Microsoft.PowerToys.Run.Plugin.WindowsUniversalAppLauncher/blob/master/StoreAppLauncher/Helpers/NativeApiHelper.cs#L139-L153
                 string key = resourceReference.Substring(prefix.Length);
                 string parsed;
 

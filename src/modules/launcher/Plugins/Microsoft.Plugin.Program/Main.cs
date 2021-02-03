@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,10 +11,9 @@ using ManagedCommon;
 using Microsoft.Plugin.Program.ProgramArgumentParser;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
-using Wox.Infrastructure.Storage;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
-using Stopwatch = Wox.Infrastructure.Stopwatch;
+using Microsoft.PowerToys.Run.Infrastructure.Storage;
+using Microsoft.PowerToys.Run.Plugin;
+using Stopwatch = Microsoft.PowerToys.Run.Infrastructure.Stopwatch;
 
 namespace Microsoft.Plugin.Program
 {

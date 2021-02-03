@@ -6,10 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 {

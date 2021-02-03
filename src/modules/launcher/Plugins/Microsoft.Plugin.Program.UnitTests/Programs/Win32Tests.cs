@@ -5,11 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.PowerToys.Run.Infrastructure;
+using Microsoft.PowerToys.Run.Infrastructure.FileSystemHelper;
+using Microsoft.PowerToys.Run.Plugin;
 using Moq;
 using NUnit.Framework;
-using Wox.Infrastructure;
-using Wox.Infrastructure.FileSystemHelper;
-using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {

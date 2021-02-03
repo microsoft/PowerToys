@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Plugin.Program.ProgramArgumentParser;
+using Microsoft.PowerToys.Run.Plugin;
 using Mono.Collections.Generic;
 using NUnit.Framework;
-using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program.UnitTests.ProgramArgumentParser
 {

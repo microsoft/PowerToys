@@ -16,12 +16,12 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Plugin.Program.Logger;
+using Microsoft.PowerToys.Run.Infrastructure;
+using Microsoft.PowerToys.Run.Infrastructure.FileSystemHelper;
+using Microsoft.PowerToys.Run.Plugin;
+using Microsoft.PowerToys.Run.Plugin.Logger;
 using Microsoft.Win32;
-using Wox.Infrastructure;
-using Wox.Infrastructure.FileSystemHelper;
-using Wox.Plugin;
-using Wox.Plugin.Logger;
-using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
+using DirectoryWrapper = Microsoft.PowerToys.Run.Infrastructure.FileSystemHelper.DirectoryWrapper;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -312,7 +312,7 @@ namespace Microsoft.Plugin.Program.Programs
                     {
                         try
                         {
-                            Wox.Infrastructure.Helper.OpenInConsole(ParentDirectory);
+                            Microsoft.PowerToys.Run.Infrastructure.Helper.OpenInConsole(ParentDirectory);
                             return true;
                         }
                         catch (Exception e)

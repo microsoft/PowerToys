@@ -10,7 +10,6 @@ using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
 using Microsoft.PowerToys.Run.Plugin.Registry.Enumerations;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
 using Microsoft.Win32;
-using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 {

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Folder.Sources
 {

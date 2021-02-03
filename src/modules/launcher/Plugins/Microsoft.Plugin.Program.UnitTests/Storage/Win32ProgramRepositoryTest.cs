@@ -9,10 +9,10 @@ using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
+using Microsoft.PowerToys.Run.Infrastructure.FileSystemHelper;
+using Microsoft.PowerToys.Run.Infrastructure.Storage;
 using Moq;
 using NUnit.Framework;
-using Wox.Infrastructure.FileSystemHelper;
-using Wox.Infrastructure.Storage;
 using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage

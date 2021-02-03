@@ -48,8 +48,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
+    <ProjectReference Include="..\..\Microsoft.PowerToys.Run.Infrastructure\Microsoft.PowerToys.Run.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Microsoft.PowerToys.Run.Plugin\Microsoft.PowerToys.Run.Plugin.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">

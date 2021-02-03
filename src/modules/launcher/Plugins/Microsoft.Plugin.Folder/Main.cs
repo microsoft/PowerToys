@@ -9,9 +9,9 @@ using System.Linq;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources;
+using Microsoft.PowerToys.Run.Infrastructure.Storage;
+using Microsoft.PowerToys.Run.Plugin;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Wox.Infrastructure.Storage;
-using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder
 {

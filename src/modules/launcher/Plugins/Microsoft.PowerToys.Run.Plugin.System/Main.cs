@@ -8,9 +8,8 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interop;
 using ManagedCommon;
+using Microsoft.PowerToys.Run.Infrastructure;
 using Microsoft.PowerToys.Run.Plugin.System.Win32;
-using Wox.Infrastructure;
-using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.System
 {

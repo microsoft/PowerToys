@@ -4,8 +4,8 @@
 
 using System.Globalization;
 using System.IO.Abstractions;
-using Wox.Infrastructure;
-using Wox.Plugin;
+using Microsoft.PowerToys.Run.Infrastructure;
+using Microsoft.PowerToys.Run.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources.Result
 {
@@ -31,9 +31,9 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 
         public string Search { get; set; }
 
-        public Wox.Plugin.Result Create(IPublicAPI contextApi)
+        public Microsoft.PowerToys.Run.Plugin.Result Create(IPublicAPI contextApi)
         {
-            var result = new Wox.Plugin.Result(StringMatcher.FuzzySearch(Search, _path.GetFileName(FilePath)).MatchData)
+            var result = new Microsoft.PowerToys.Run.Plugin.Result(StringMatcher.FuzzySearch(Search, _path.GetFileName(FilePath)).MatchData)
             {
                 Title = Title,
 

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
-using Wox.Plugin;
+using Microsoft.PowerToys.Run.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources.Result
 {
@@ -17,9 +17,9 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 
         public string Search { get; set; }
 
-        public Wox.Plugin.Result Create(IPublicAPI contextApi)
+        public Microsoft.PowerToys.Run.Plugin.Result Create(IPublicAPI contextApi)
         {
-            return new Wox.Plugin.Result
+            return new Microsoft.PowerToys.Run.Plugin.Result
             {
                 Title = Properties.Resources.Microsoft_plugin_folder_truncation_warning_title,
                 QueryTextDisplay = Search,

@@ -3,12 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
-using System.Text;
+using Microsoft.PowerToys.Run.Infrastructure;
 using Mono.Collections.Generic;
 using Moq;
 using NUnit.Framework;
-using Wox.Infrastructure;
-using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
 {

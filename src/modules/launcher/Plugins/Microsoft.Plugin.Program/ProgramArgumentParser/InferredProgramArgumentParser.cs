@@ -4,7 +4,7 @@
 
 using System.Linq;
 using System.Text.RegularExpressions;
-using Wox.Plugin;
+using Microsoft.PowerToys.Run.Plugin;
 
 namespace Microsoft.Plugin.Program
 {
