@@ -8,6 +8,7 @@
 #include "Zone.h"
 #include "util.h"
 
+#include <common/logger/logger.h>
 #include <common/display/dpi_aware.h>
 
 #include <limits>
@@ -290,7 +291,8 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
         }
         catch (std::out_of_range)
         {
-            return {};
+            Logger::error("Exception out_of_range was thrown in ZoneSet::ZonesFromPoint");
+            return { capturedZones[0] };
         }
     }
 
