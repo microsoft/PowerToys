@@ -165,21 +165,24 @@
                        x:Name="RadioButtons_Name_Position"
                        Margin="{StaticResource SmallTopMargin}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
-            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Position}">
-                <RadioButton x:Uid="Radio_Position_Cursor"
-                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                             IsChecked="{Binding Mode=TwoWay, Path=ViewModel.IsCursorPositionRadioButtonChecked}" />
 
-                <RadioButton x:Uid="Radio_Position_Primary"
-                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                             IsChecked="{Binding Mode=TwoWay, Path=ViewModel.IsPrimaryPositionRadioButtonChecked}" />
+            <RadioButton x:Uid="Radio_Position_Cursor"
+                         GroupName="PowerLauncher_Position"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsCursorPositionRadioButtonChecked}"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
-                <RadioButton x:Uid="Radio_Position_Custom"
-                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                             IsChecked="{Binding Mode=TwoWay, Path=ViewModel.IsCustomPositionRadioButtonChecked}" />
+            <RadioButton x:Uid="Radio_Position_Primary"
+                         GroupName="PowerLauncher_Position"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsPrimaryPositionRadioButtonChecked}"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
-                <muxc:NumberBox x:Uid="PowerLauncher_MonitorToDisplayOn"
-                                Value="{Binding Mode=TwoWay, Path=ViewModel.MonitorToDisplayOn}"
+            <RadioButton x:Uid="Radio_Position_Custom"
+                         GroupName="PowerLauncher_Position"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsCustomPositionRadioButtonChecked}"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+
+            <muxc:NumberBox x:Uid="PowerLauncher_MonitorToDisplayOn"
+                                Value="{Binding Mode=TwoWay, Path=MonitorToDisplayOn}"
                                 AcceptsExpression="False"
                                 MinWidth="240"
                                 SpinButtonPlacementMode="Compact"
@@ -187,7 +190,6 @@
                                 Minimum="0"
                                 Margin="{StaticResource SmallTopMargin}"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsCustomPositionRadioButtonChecked}"/>
-            </StackPanel>
 
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
