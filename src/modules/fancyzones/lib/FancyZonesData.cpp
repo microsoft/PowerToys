@@ -16,6 +16,7 @@
 #include <sstream>
 #include <unordered_set>
 #include <common/utils/process_path.h>
+#include <common/logger/logger.h>
 
 // Non-localizable strings
 namespace NonLocalizable
@@ -523,14 +524,14 @@ void FancyZonesData::SaveAppZoneHistoryAndZoneSettings() const
 
 void FancyZonesData::SaveZoneSettings() const
 {
-    OutputDebugStringW(L"SaveZoneSettings\n");
+    Logger::trace("FancyZonesData::SaveZoneSettings()");
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
 }
 
 void FancyZonesData::SaveAppZoneHistory() const
 {
-    OutputDebugStringW(L"SaveAppZoneHistory\n");
+    Logger::trace("FancyZonesData::SaveAppZoneHistory()");
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
 }
