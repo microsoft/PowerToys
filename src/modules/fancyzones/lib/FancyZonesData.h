@@ -81,7 +81,7 @@ public:
     json::JsonObject GetPersistFancyZonesJSON();
 
     void LoadFancyZonesData();
-    void SaveFancyZonesData() const;
+    void SaveAppZoneHistoryAndZoneSettings() const;
     void SaveZoneSettings() const;
     void SaveAppZoneHistory() const;
 
