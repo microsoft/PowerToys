@@ -483,7 +483,9 @@ namespace FancyZonesUnitTests
 
                 m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
+                // Move into the middle zone, since we're in the middle of the overlapped area.
+                // See the implementation of ZonesFromPoint.
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
             }
     };
 
