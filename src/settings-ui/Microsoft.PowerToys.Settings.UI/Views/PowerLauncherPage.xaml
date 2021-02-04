@@ -161,27 +161,27 @@
             <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
             The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
             Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
-            <TextBlock x:Uid="PowerLauncher_PositionModeHeader"
+            <TextBlock x:Uid="PowerToysRun_PositionModeHeader"
                        x:Name="RadioButtons_Name_Position"
                        Margin="{StaticResource SmallTopMargin}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
 
             <RadioButton x:Uid="Radio_Position_Cursor"
-                         GroupName="PowerLauncher_Position"
+                         GroupName="PowerToysRun_Position"
                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsCursorPositionRadioButtonChecked}"
                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
             <RadioButton x:Uid="Radio_Position_Primary"
-                         GroupName="PowerLauncher_Position"
+                         GroupName="PowerToysRun_Position"
                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsPrimaryPositionRadioButtonChecked}"
                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
             <RadioButton x:Uid="Radio_Position_Custom"
-                         GroupName="PowerLauncher_Position"
+                         GroupName="PowerToysRun_Position"
                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsCustomPositionRadioButtonChecked}"
                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
-            <muxc:NumberBox x:Uid="PowerLauncher_MonitorToDisplayOn"
+            <muxc:NumberBox x:Uid="PowerToysRun_MonitorToDisplayOn"
                                 Value="{Binding Mode=TwoWay, Path=MonitorToDisplayOn}"
                                 AcceptsExpression="False"
                                 MinWidth="240"

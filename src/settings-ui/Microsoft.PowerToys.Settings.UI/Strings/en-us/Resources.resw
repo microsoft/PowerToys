@@ -1157,7 +1157,7 @@ Win + Shift + O to toggle your video</value>
   <data name="PowerLauncher_MonitorToDisplayOn.Header" xml:space="preserve">
     <value>Specify a monitor index</value>
   </data>
-  <data name="PowerLauncher_PositionHeader.Text" xml:space="preserve">
+  <data name="PowerToysRun_PositionHeader.Text" xml:space="preserve">
     <value>Show launcher on</value>
   </data>
   <data name="Radio_Position_Cursor.Content" xml:space="preserve">
