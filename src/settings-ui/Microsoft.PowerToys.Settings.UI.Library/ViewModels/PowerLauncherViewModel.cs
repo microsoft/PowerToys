@@ -22,6 +22,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _isLightThemeRadioButtonChecked;
         private bool _isSystemThemeRadioButtonChecked;
 
+        private bool _isCursorPositionRadioButtonChecked;
+        private bool _isPrimaryPositionRadioButtonChecked;
+        private bool _isCustomPositionRadioButtonChecked;
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly ISettingsUtils _settingsUtils;
@@ -73,6 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 settings.Properties.OpenPowerLauncher.Alt = true;
                 settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
                 settings.Properties.MaximumNumberOfResults = 4;
+                settings.Properties.MonitorToDisplayOn = 0;
                 callback(settings);
             }
 
@@ -86,6 +91,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     break;
                 case Theme.System:
                     _isSystemThemeRadioButtonChecked = true;
+                    break;
+            }
+
+            switch (settings.Properties.Position)
+            {
+                case Position.Cursor:
+                    _isCursorPositionRadioButtonChecked = true;
+                    break;
+                case Position.Primary:
+                    _isPrimaryPositionRadioButtonChecked = true;
+                    break;
+                case Position.Custom:
+                    _isCustomPositionRadioButtonChecked = true;
                     break;
             }
 
@@ -240,6 +258,83 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                     UpdateSettings();
                 }
+            }
+        }
+
+        public int MonitorToDisplayOn
+        {
+            get
+            {
+                return settings.Properties.MonitorToDisplayOn;
+            }
+
+            set
+            {
+                if (settings.Properties.MonitorToDisplayOn != value)
+                {
+                    settings.Properties.MonitorToDisplayOn = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool IsCursorPositionRadioButtonChecked
+        {
+            get
+            {
+                return _isCursorPositionRadioButtonChecked;
+            }
+
+            set
+            {
+                if (value == true)
+                {
+                    settings.Properties.Position = Position.Cursor;
+                }
+
+                _isCursorPositionRadioButtonChecked = value;
+
+                UpdateSettings();
+            }
+        }
+
+        public bool IsPrimaryPositionRadioButtonChecked
+        {
+            get
+            {
+                return _isPrimaryPositionRadioButtonChecked;
+            }
+
+            set
+            {
+                if (value == true)
+                {
+                    settings.Properties.Position = Position.Primary;
+                }
+
+                _isPrimaryPositionRadioButtonChecked = value;
+
+                UpdateSettings();
+            }
+        }
+
+        public bool IsCustomPositionRadioButtonChecked
+        {
+            get
+            {
+                return _isCustomPositionRadioButtonChecked;
+            }
+
+            set
+            {
+                if (value == true)
+                {
+                    settings.Properties.Position = Position.Custom;
+                }
+
+                _isCustomPositionRadioButtonChecked = value;
+
+                UpdateSettings();
             }
         }
 

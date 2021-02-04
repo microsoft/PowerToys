@@ -47,6 +47,8 @@ namespace Wox.Infrastructure.UserSettings
 
         public Theme Theme { get; set; } = Theme.System;
 
+        public Position Position { get; set; } = Position.Cursor;
+
         public string QueryBoxFont { get; set; } = FontFamily.GenericSansSerif.Name;
 
         public string QueryBoxFontStyle { get; set; }
@@ -116,6 +118,25 @@ namespace Wox.Infrastructure.UserSettings
                 {
                     _maxResultsToShow = value;
                     OnPropertyChanged(nameof(MaxResultsToShow));
+                }
+            }
+        }
+
+        private int _monitorToDisplayOn;
+
+        public int MonitorToDisplayOn
+        {
+            get
+            {
+                return _monitorToDisplayOn;
+            }
+
+            set
+            {
+                if (_monitorToDisplayOn != value)
+                {
+                    _monitorToDisplayOn = value;
+                    OnPropertyChanged(nameof(MonitorToDisplayOn));
                 }
             }
         }

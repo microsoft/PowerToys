@@ -126,6 +126,16 @@ namespace PowerLauncher
                         _themeManager.ChangeTheme(_settings.Theme, true);
                     }
 
+                    if (_settings.Position != overloadSettings.Properties.Position)
+                    {
+                        _settings.Position = overloadSettings.Properties.Position;
+                    }
+
+                    if (_settings.MonitorToDisplayOn != overloadSettings.Properties.MonitorToDisplayOn)
+                    {
+                        _settings.MonitorToDisplayOn = overloadSettings.Properties.MonitorToDisplayOn;
+                    }
+
                     retry = false;
                 }
 
