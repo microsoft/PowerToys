@@ -1161,7 +1161,7 @@ Win + Shift + O to toggle your video</value>
     <value>Show launcher on</value>
   </data>
   <data name="Radio_Position_Cursor.Content" xml:space="preserve">
-    <value>Follow Mouse</value>
+    <value>Monitor with mouse cursor</value>
   </data>
   <data name="Radio_Position_Custom.Content" xml:space="preserve">
     <value>Specified Monitor</value>
