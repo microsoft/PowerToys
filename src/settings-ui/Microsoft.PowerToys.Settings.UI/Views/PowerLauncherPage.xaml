@@ -161,7 +161,7 @@
             <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
             The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
             Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
-            <TextBlock x:Uid="PowerToysRun_PositionModeHeader"
+            <TextBlock x:Uid="PowerToysRun_PositionHeader"
                        x:Name="RadioButtons_Name_Position"
                        Margin="{StaticResource SmallTopMargin}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />

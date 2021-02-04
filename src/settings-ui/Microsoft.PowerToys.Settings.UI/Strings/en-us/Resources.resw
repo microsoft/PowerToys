@@ -1158,7 +1158,7 @@ Win + Shift + O to toggle your video</value>
     <value>Specify a monitor index</value>
   </data>
   <data name="PowerToysRun_PositionHeader.Text" xml:space="preserve">
-    <value>Show launcher on</value>
+    <value>Show PowerToys Run on</value>
   </data>
   <data name="Radio_Position_Cursor.Content" xml:space="preserve">
     <value>Monitor with mouse cursor</value>
