@@ -327,14 +327,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
-                if (value == true)
+                if (value != _isCustomPositionRadioButtonChecked)
                 {
+                    _isCustomPositionRadioButtonChecked = value;
                     settings.Properties.Position = Position.Custom;
+                    UpdateSettings();
+                    OnPropertyChanged(nameof(CustomMonitorFieldEnabled));
                 }
+            }
+        }
 
-                _isCustomPositionRadioButtonChecked = value;
-
-                UpdateSettings();
+        public bool CustomMonitorFieldEnabled
+        {
+            get
+            {
+                return _isCustomPositionRadioButtonChecked && EnablePowerLauncher;
             }
         }
 

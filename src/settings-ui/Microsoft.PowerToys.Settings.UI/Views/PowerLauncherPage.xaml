@@ -189,7 +189,7 @@
                                 HorizontalAlignment="Left"
                                 Minimum="0"
                                 Margin="{StaticResource SmallTopMargin}"
-                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsCustomPositionRadioButtonChecked}"/>
+                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CustomMonitorFieldEnabled}"/>
 
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
