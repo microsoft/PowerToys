@@ -222,7 +222,10 @@ void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
     auto replaceDesktopId = [&desktopId](const std::wstring& deviceId) {
         return deviceId.substr(0, deviceId.rfind('_') + 1) + desktopId;
     };
+
     std::scoped_lock lock{ dataLock };
+    bool dirtyFlag = false;
+
     for (auto& [path, perDesktopData] : appZoneHistoryMap)
     {
         for (auto& data : perDesktopData)
@@ -230,30 +233,42 @@ void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
             if (ExtractVirtualDesktopId(data.deviceId) == NonLocalizable::DefaultGuid)
             {
                 data.deviceId = replaceDesktopId(data.deviceId);
+                dirtyFlag = true;
             }
         }
     }
+    
     std::vector<std::wstring> toReplace{};
+    
     for (const auto& [id, data] : deviceInfoMap)
     {
         if (ExtractVirtualDesktopId(id) == NonLocalizable::DefaultGuid)
         {
             toReplace.push_back(id);
+            dirtyFlag = true;
         }
     }
+    
     for (const auto& id : toReplace)
     {
         auto mapEntry = deviceInfoMap.extract(id);
         mapEntry.key() = replaceDesktopId(id);
         deviceInfoMap.insert(std::move(mapEntry));
     }
-    SaveFancyZonesData();
+    
+    // TODO: when updating the primary desktop GUID, the app zone history also needs to be updated 
+    if (dirtyFlag)
+    {
+        SaveZoneSettings();
+    }
 }
 
 void FancyZonesData::RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops)
 {
     std::unordered_set<std::wstring> active(std::begin(activeDesktops), std::end(activeDesktops));
     std::scoped_lock lock{ dataLock };
+    bool dirtyFlag = false;
+
     for (auto it = std::begin(deviceInfoMap); it != std::end(deviceInfoMap);)
     {
         std::wstring desktopId = ExtractVirtualDesktopId(it->first);
@@ -264,12 +279,17 @@ void FancyZonesData::RemoveDeletedDesktops(const std::vector<std::wstring>& acti
             {
                 RemoveDesktopAppZoneHistory(desktopId);
                 it = deviceInfoMap.erase(it);
+                dirtyFlag = true;
                 continue;
             }
         }
         ++it;
     }
-    SaveFancyZonesData();
+
+    if (dirtyFlag)
+    {
+        SaveAppZoneHistoryAndZoneSettings();
+    }
 }
 
 bool FancyZonesData::IsAnotherWindowOfApplicationInstanceZoned(HWND window, const std::wstring_view& deviceId) const
@@ -392,7 +412,7 @@ bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& dev
                     {
                         appZoneHistoryMap.erase(processPath);
                     }
-                    SaveFancyZonesData();
+                    SaveAppZoneHistory();
                     return true;
                 }
                 else
@@ -436,7 +456,7 @@ bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, 
                 data.processIdToHandleMap[processId] = window;
                 data.zoneSetUuid = zoneSetId;
                 data.zoneIndexSet = zoneIndexSet;
-                SaveFancyZonesData();
+                SaveAppZoneHistory();
                 return true;
             }
         }
@@ -460,7 +480,7 @@ bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, 
         appZoneHistoryMap[processPath] = std::vector<FancyZonesDataTypes::AppZoneHistoryData>{ data };
     }
 
-    SaveFancyZonesData();
+    SaveAppZoneHistory();
     return true;
 }
 
@@ -483,7 +503,7 @@ void FancyZonesData::LoadFancyZonesData()
 {
     if (!std::filesystem::exists(zonesSettingsFileName))
     {
-        SaveFancyZonesData();
+        SaveAppZoneHistoryAndZoneSettings();
     }
     else
     {
@@ -493,25 +513,24 @@ void FancyZonesData::LoadFancyZonesData()
         deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
         customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
     }
-
-    DeleteFancyZonesRegistryData();
 }
 
-void FancyZonesData::SaveFancyZonesData() const
+void FancyZonesData::SaveAppZoneHistoryAndZoneSettings() const
 {
-    std::scoped_lock lock{ dataLock };
-    JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
-    JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
+    SaveZoneSettings();
+    SaveAppZoneHistory();
 }
 
 void FancyZonesData::SaveZoneSettings() const
 {
+    OutputDebugStringW(L"SaveZoneSettings\n");
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
 }
 
 void FancyZonesData::SaveAppZoneHistory() const
 {
+    OutputDebugStringW(L"SaveAppZoneHistory\n");
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
 }
