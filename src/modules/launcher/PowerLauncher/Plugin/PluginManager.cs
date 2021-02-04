@@ -28,21 +28,49 @@ namespace PowerLauncher.Plugin
 
         private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
 
+        private static List<PluginPair> _allPlugins;
+
+        // should be only used in tests
+        public static void SetAllPlugins(List<PluginPair> plugins)
+        {
+            _allPlugins = plugins;
+        }
+
         /// <summary>
         /// Gets directories that will hold Wox plugin directory
         /// </summary>
-        public static List<PluginPair> AllPlugins { get; private set; } = new List<PluginPair>();
+        public static List<PluginPair> AllPlugins
+        {
+            get
+            {
+                if (_allPlugins == null)
+                {
+                    _allPlugins = PluginsLoader.Plugins(PluginConfig.Parse(Directories));
+                }
+
+                return _allPlugins;
+            }
+        }
 
         public static IPublicAPI API { get; private set; }
 
-        public static readonly List<PluginPair> GlobalPlugins = new List<PluginPair>();
-        public static readonly Dictionary<string, PluginPair> NonGlobalPlugins = new Dictionary<string, PluginPair>();
+        public static List<PluginPair> GlobalPlugins
+        {
+            get
+            {
+                return AllPlugins.Where(x => x.Metadata.IsGlobal).ToList();
+            }
+        }
+
+        public static Dictionary<string, PluginPair> NonGlobalPlugins
+        {
+            get
+            {
+                return AllPlugins.Where(x => !string.IsNullOrWhiteSpace(x.Metadata.ActionKeyword)).ToDictionary(x => x.Metadata.ActionKeyword);
+            }
+        }
+
         private static readonly string[] Directories = { Constant.PreinstalledDirectory, Constant.PluginsDirectory };
-
-        // todo happlebao, this should not be public, the indicator function should be embedded
-        public static PluginSettings Settings { get; set; }
-
-        private static List<PluginMetadata> _metadatas;
 
         private static void ValidateUserDirectory()
         {
@@ -73,19 +101,6 @@ namespace PowerLauncher.Plugin
         static PluginManager()
         {
             ValidateUserDirectory();
-        }
-
-        /// <summary>
-        /// because InitializePlugins needs API, so LoadPlugins needs to be called first
-        /// todo happlebao The API should be removed
-        /// </summary>
-        /// <param name="settings">Plugin settings</param>
-        public static void LoadPlugins(PluginSettings settings)
-        {
-            _metadatas = PluginConfig.Parse(Directories);
-            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            Settings.UpdatePluginSettings(_metadatas);
-            AllPlugins = PluginsLoader.Plugins(_metadatas);
         }
 
         /// <summary>
@@ -120,18 +135,6 @@ namespace PowerLauncher.Plugin
             });
 
             _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
-            foreach (var plugin in AllPlugins)
-            {
-                if (IsGlobalPlugin(plugin.Metadata))
-                {
-                    GlobalPlugins.Add(plugin);
-                }
-
-                // Plugins may have multiple ActionKeywords, eg. WebSearch
-                plugin.Metadata.GetActionKeywords().Where(x => x != Query.GlobalPluginWildcardSign)
-                                                .ToList()
-                                                .ForEach(x => NonGlobalPlugins[x] = plugin);
-            }
 
             if (failedPlugins.Any())
             {
@@ -143,24 +146,6 @@ namespace PowerLauncher.Plugin
         public static void InstallPlugin(string path)
         {
             PluginInstaller.Install(path);
-        }
-
-        public static List<PluginPair> ValidPluginsForQuery(Query query)
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-
-            if (NonGlobalPlugins.ContainsKey(query.ActionKeyword))
-            {
-                var plugin = NonGlobalPlugins[query.ActionKeyword];
-                return new List<PluginPair> { plugin };
-            }
-            else
-            {
-                return GlobalPlugins;
-            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
@@ -245,11 +230,6 @@ namespace PowerLauncher.Plugin
             }
         }
 
-        private static bool IsGlobalPlugin(PluginMetadata metadata)
-        {
-            return metadata.GetActionKeywords().Contains(Query.GlobalPluginWildcardSign);
-        }
-
         /// <summary>
         /// get specified plugin, return null if not found
         /// </summary>
@@ -290,72 +270,6 @@ namespace PowerLauncher.Plugin
             else
             {
                 return new List<ContextMenuResult>();
-            }
-        }
-
-        public static bool ActionKeywordRegistered(string actionKeyword)
-        {
-            if (actionKeyword != Query.GlobalPluginWildcardSign &&
-                NonGlobalPlugins.ContainsKey(actionKeyword))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// used to add action keyword for multiple action keyword plugin
-        /// e.g. web search
-        /// </summary>
-        public static void AddActionKeyword(string id, string newActionKeyword)
-        {
-            var plugin = GetPluginForId(id);
-            if (newActionKeyword == Query.GlobalPluginWildcardSign)
-            {
-                GlobalPlugins.Add(plugin);
-            }
-            else
-            {
-                NonGlobalPlugins[newActionKeyword] = plugin;
-            }
-
-            plugin.Metadata.GetActionKeywords().Add(newActionKeyword);
-        }
-
-        /// <summary>
-        /// used to add action keyword for multiple action keyword plugin
-        /// e.g. web search
-        /// </summary>
-        public static void RemoveActionKeyword(string id, string oldActionkeyword)
-        {
-            var plugin = GetPluginForId(id);
-            if (oldActionkeyword == Query.GlobalPluginWildcardSign
-                && // Plugins may have multiple ActionKeywords that are global, eg. WebSearch
-                plugin.Metadata.GetActionKeywords()
-                                    .Where(x => x == Query.GlobalPluginWildcardSign)
-                                    .ToList()
-                                    .Count == 1)
-            {
-                GlobalPlugins.Remove(plugin);
-            }
-
-            if (oldActionkeyword != Query.GlobalPluginWildcardSign)
-            {
-                NonGlobalPlugins.Remove(oldActionkeyword);
-            }
-
-            plugin.Metadata.GetActionKeywords().Remove(oldActionkeyword);
-        }
-
-        public static void ReplaceActionKeyword(string id, string oldActionKeyword, string newActionKeyword)
-        {
-            if (oldActionKeyword != newActionKeyword)
-            {
-                AddActionKeyword(id, newActionKeyword);
-                RemoveActionKeyword(id, oldActionKeyword);
             }
         }
 

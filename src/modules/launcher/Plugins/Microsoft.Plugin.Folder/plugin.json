@@ -1,6 +1,7 @@
 {
     "ID":"B4D3B69656E14D44865C8D818EAE47C4",
-    "ActionKeyword": "*",
+    "ActionKeyword": "",
+    "IsGlobal":  true,
     "Name":"Folder",
     "Description":"Searcn and open folders",
     "Author":"qianlifeng",

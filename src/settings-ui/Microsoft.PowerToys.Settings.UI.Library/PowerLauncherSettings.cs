@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -15,6 +16,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("properties")]
         public PowerLauncherProperties Properties { get; set; }
+
+        [JsonPropertyName("plugins")]
+        public IEnumerable<PowerLauncherPluginSettings> Plugins { get; set; }
 
         public PowerLauncherSettings()
         {

@@ -1,6 +1,7 @@
 {
     "ID":"D409510CD0D2481F853690A07E6DC426",
-    "ActionKeyword":">",
+    "ActionKeyword": ">",
+    "IsGlobal": false,
     "Name":"Shell",
     "Description":"Provide executing commands. Commands should start with >",
     "Author":"qianlifeng",

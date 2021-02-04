@@ -539,7 +539,7 @@ namespace PowerLauncher.ViewModel
                 _updateToken = currentCancellationToken;
                 var queryText = QueryText.Trim();
 
-                var pluginQueryPairs = QueryBuilder.Build(ref queryText, PluginManager.NonGlobalPlugins);
+                var pluginQueryPairs = QueryBuilder.Build(ref queryText);
                 if (pluginQueryPairs != null && pluginQueryPairs.Count > 0)
                 {
                     _currentQuery = queryText;
@@ -885,7 +885,7 @@ namespace PowerLauncher.ViewModel
 
             // Fix Cold start for plugins
             string s = "m";
-            var pluginQueryPairs = QueryBuilder.Build(ref s, PluginManager.NonGlobalPlugins);
+            var pluginQueryPairs = QueryBuilder.Build(ref s);
 
             // To execute a query corresponding to each plugin
             foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPairs)

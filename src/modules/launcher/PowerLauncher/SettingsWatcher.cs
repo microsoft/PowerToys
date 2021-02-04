@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Threading;
 using System.Windows.Input;
 using Microsoft.PowerToys.Common.UI;
@@ -54,6 +56,7 @@ namespace PowerLauncher
                 Log.Info("PT Run settings.json was missing, creating a new one", GetType());
 
                 var defaultSettings = new PowerLauncherSettings();
+                defaultSettings.Plugins = GetPluginsSettings();
                 defaultSettings.Save(_settingsUtils);
             }
         }
@@ -71,6 +74,29 @@ namespace PowerLauncher
                     CreateSettingsIfNotExists();
 
                     var overloadSettings = _settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+
+                    if (overloadSettings.Plugins == null || !overloadSettings.Plugins.Any())
+                    {
+                        // Needed to be consistent with old settings
+                        overloadSettings.Plugins = GetPluginsSettings();
+                        _settingsUtils.SaveSettings(overloadSettings.ToJsonString(), PowerLauncherSettings.ModuleName);
+                    }
+                    else
+                    {
+                        foreach (var setting in overloadSettings.Plugins)
+                        {
+                            var plugin = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == setting.Id);
+                            if (plugin != null)
+                            {
+                                plugin.Metadata.Name = setting.Name;
+                                plugin.Metadata.Description = setting.Description;
+                                plugin.Metadata.Author = setting.Authour;
+                                plugin.Metadata.Disabled = setting.Disabled;
+                                plugin.Metadata.ActionKeyword = setting.ActionKeyword;
+                                plugin.Metadata.IsGlobal = setting.IsGlobal;
+                            }
+                        }
+                    }
 
                     var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerLauncher);
                     if (_settings.Hotkey != openPowerlauncher)
@@ -159,6 +185,20 @@ namespace PowerLauncher
             Key key = KeyInterop.KeyFromVirtualKey(hotkey.Code);
             HotkeyModel model = new HotkeyModel(hotkey.Alt, hotkey.Shift, hotkey.Win, hotkey.Ctrl, key);
             return model.ToString();
+        }
+
+        private static IEnumerable<PowerLauncherPluginSettings> GetPluginsSettings()
+        {
+            return PluginManager.AllPlugins.Select(x => x.Metadata).Select(x => new PowerLauncherPluginSettings
+            {
+                Id = x.ID,
+                Name = x.Name,
+                Description = x.Description,
+                Authour = x.Author,
+                Disabled = x.Disabled,
+                IsGlobal = x.IsGlobal,
+                ActionKeyword = x.ActionKeyword,
+            });
         }
     }
 }

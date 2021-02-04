@@ -12,16 +12,11 @@ namespace PowerLauncher.Plugin
 {
     public static class QueryBuilder
     {
-        public static Dictionary<PluginPair, Query> Build(ref string text, Dictionary<string, PluginPair> nonGlobalPlugins)
+        public static Dictionary<PluginPair, Query> Build(ref string text)
         {
             if (text == null)
             {
                 throw new ArgumentNullException(nameof(text));
-            }
-
-            if (nonGlobalPlugins == null)
-            {
-                throw new ArgumentNullException(nameof(nonGlobalPlugins));
             }
 
             // replace multiple white spaces with one white space
@@ -41,12 +36,12 @@ namespace PowerLauncher.Plugin
 
             string possibleActionKeyword = terms[0];
 
-            foreach (string pluginActionKeyword in nonGlobalPlugins.Keys)
+            foreach (string pluginActionKeyword in PluginManager.NonGlobalPlugins.Keys)
             {
                 // Using Ordinal since this is used internally
                 if (possibleActionKeyword.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
                 {
-                    if (nonGlobalPlugins.TryGetValue(pluginActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
+                    if (PluginManager.NonGlobalPlugins.TryGetValue(pluginActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
                     {
                         // The search string is the raw query excluding the action keyword
                         string search = rawQuery.Substring(pluginActionKeyword.Length).Trim();
@@ -75,8 +70,6 @@ namespace PowerLauncher.Plugin
             // add the global plugins to the list.
             if (pluginQueryPair.Count == 0)
             {
-                var globalplugins = PluginManager.GlobalPlugins;
-
                 foreach (PluginPair globalPlugin in PluginManager.GlobalPlugins)
                 {
                     if (!pluginQueryPair.ContainsKey(globalPlugin))
