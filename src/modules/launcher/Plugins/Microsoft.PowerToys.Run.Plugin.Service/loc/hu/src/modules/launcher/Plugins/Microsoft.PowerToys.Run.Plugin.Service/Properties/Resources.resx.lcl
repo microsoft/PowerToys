@@ -21,6 +21,9 @@
       <Item ItemId=";wox_plugin_service_open_services" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open services (Ctrl+O)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Szolgáltatások megnyitása (Ctrl+O)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -28,7 +31,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Pausing]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Szüneteltetés]]></Val>
+            <Val><![CDATA[Szüneteltetés folyamatban]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -37,7 +40,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Paused]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Felfüggesztve]]></Val>
+            <Val><![CDATA[Szüneteltetve]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -45,6 +48,9 @@
       <Item ItemId=";wox_plugin_service_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Manages Windows services]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows-szolgáltatások kezelése]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -60,12 +66,18 @@
       <Item ItemId=";wox_plugin_service_restart" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Restart (Ctrl+R)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Újraindítás (Ctrl+R)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";wox_plugin_service_restarted_notification" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[{0} has been restarted]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A(z) {0} újraindult]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -81,6 +93,9 @@
       <Item ItemId=";wox_plugin_service_start" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Start (Enter)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Indítás (Enter)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -124,7 +139,7 @@
         <Str Cat="Text">
           <Val><![CDATA[System]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[System]]></Val>
+            <Val><![CDATA[Rendszer]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -177,6 +192,9 @@
       <Item ItemId=";wox_plugin_service_stop" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Stop (Enter)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Leállítás (Enter)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -201,6 +219,9 @@
       <Item ItemId=";wox_plugin_service_stopped_notification" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[{0} has been stopped]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A(z) {0} leállt]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

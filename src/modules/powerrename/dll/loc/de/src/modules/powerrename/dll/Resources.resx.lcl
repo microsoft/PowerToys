@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Only show the PowerRename menu item on the extended context menu (Shift + Right-click).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Hiermit wird im erweiterten Kontextmenü nur das PowerRename-Menüelement angezeigt (UMSCHALT+RECHTSKLICK).]]></Val>
+            <Val><![CDATA[Hiermit wird das PowerRename-Menüelement nur im erweiterten Kontextmenü angezeigt (UMSCHALT-RECHTSKLICK).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
