@@ -234,9 +234,7 @@ namespace PowerLauncher
                     int index = _settings.MonitorToDisplayOn;
                     if (index < Screen.AllScreens.Length)
                     {
-                        // User inputs index as they see in the settings window (1-indexed)
-                        // so subtract 1 here to get the right Screen from AllScreens
-                        return Screen.AllScreens[_settings.MonitorToDisplayOn - 1];
+                        return Screen.AllScreens[_settings.MonitorToDisplayOn];
                     }
 
                     return Screen.FromPoint(System.Windows.Forms.Cursor.Position);

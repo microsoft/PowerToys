@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -19,6 +21,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private readonly ObservableCollection<Tuple<string, string>> searchResultPreferencesOptions;
         private readonly ObservableCollection<Tuple<string, string>> searchTypePreferencesOptions;
+
+        private Dictionary<int, int> detectedMonitors;
 
         public PowerLauncherPage()
         {
@@ -38,6 +42,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ApplicationName"), "application_name"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_StringInApplication"), "string_in_application"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
+
+            SetDetectedMonitors();
         }
 
         private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -87,5 +93,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
         */
+
+        private void PowerToysRun_MonitorToDisplayOn_ComboBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            var index = 0;
+
+            foreach (var item in detectedMonitors)
+            {
+                if (item.Key == ViewModel.MonitorToDisplayOn)
+                {
+                    break;
+                }
+
+                index++;
+            }
+
+            PowerToysRun_MonitorToDisplayOn_ComboBox.SelectedIndex = index;
+        }
+
+        private void SetDetectedMonitors()
+        {
+            int monitorCount = MonitorResolutionHelper.AllMonitors.Count();
+
+            detectedMonitors = new Dictionary<int, int>();
+            for (int i = 0; i < monitorCount; i++)
+            {
+                detectedMonitors.Add(i, i + 1);
+            }
+        }
     }
 }

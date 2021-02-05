@@ -181,15 +181,17 @@
                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsCustomPositionRadioButtonChecked}"
                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
-            <muxc:NumberBox x:Uid="PowerToysRun_MonitorToDisplayOn"
-                                Value="{Binding Mode=TwoWay, Path=MonitorToDisplayOn}"
-                                AcceptsExpression="False"
-                                MinWidth="240"
-                                SpinButtonPlacementMode="Compact"
-                                HorizontalAlignment="Left"
-                                Minimum="0"
-                                Margin="{StaticResource SmallTopMargin}"
-                                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CustomMonitorFieldEnabled}"/>
+            <ComboBox x:Name="PowerToysRun_MonitorToDisplayOn_ComboBox"
+                      x:Uid="PowerToysRun_MonitorToDisplayOn"
+                      MinWidth="240"
+                      Margin="{StaticResource SmallTopMargin}"
+                      HorizontalAlignment="Left"
+                      DisplayMemberPath="Value"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CustomMonitorFieldEnabled}"
+                      ItemsSource="{x:Bind Mode=OneWay, Path=detectedMonitors}"
+                      Loaded="PowerToysRun_MonitorToDisplayOn_ComboBox_Loaded"
+                      SelectedValue="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorToDisplayOn}"
+                      SelectedValuePath="Key" />
 
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
