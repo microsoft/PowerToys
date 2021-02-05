@@ -159,6 +159,11 @@ private:
     bool CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, int spacing) noexcept;
     bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
     bool CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing);
+    std::vector<size_t> ZoneSelectSubregion(const std::vector<size_t>& capturedZones, POINT pt) const;
+
+    // `compare` should return true if the first argument is a better choice than the second argument.
+    template<class CompareF>
+    std::vector<size_t> ZoneSelectPriority(const std::vector<size_t>& capturedZones, CompareF compare) const;
 
     ZonesMap m_zones;
     std::map<HWND, std::vector<size_t>> m_windowIndexSet;
@@ -212,7 +217,7 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
     }
 
     // If captured zones do not overlap, return all of them
-    // Otherwise, return one of them based on mouse position inside the overlapped area.
+    // Otherwise, return one of them based on the chosen selection algorithm.
     bool overlap = false;
     for (size_t i = 0; i < capturedZones.size(); ++i)
     {
@@ -245,49 +250,22 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
 
     if (overlap)
     {
+        auto zoneArea = [](auto zone) {
+            RECT rect = zone->GetZoneRect();
+            return max(rect.bottom - rect.top, 0) * max(rect.right - rect.left, 0);
+        };
+
         try
         {
-            auto expand = [&](RECT& rect) {
-                rect.top -= m_config.SensitivityRadius / 2;
-                rect.bottom += m_config.SensitivityRadius / 2;
-                rect.left -= m_config.SensitivityRadius / 2;
-                rect.right += m_config.SensitivityRadius / 2;
-            };
-
-            // Compute the overlapped rectangle.
-            RECT overlap = m_zones.at(capturedZones[0])->GetZoneRect();
-            expand(overlap);
-
-            for (size_t i = 1; i < capturedZones.size(); ++i)
+            switch (m_config.SelectionAlgorithm)
             {
-                RECT current = m_zones.at(capturedZones[i])->GetZoneRect();
-                expand(current);
-
-                overlap.top = max(overlap.top, current.top);
-                overlap.left = max(overlap.left, current.left);
-                overlap.bottom = min(overlap.bottom, current.bottom);
-                overlap.right = min(overlap.right, current.right);
+            case ZoneSelectionAlgorithm::SUBREGION:
+                return ZoneSelectSubregion(capturedZones, pt);
+            case ZoneSelectionAlgorithm::SMALLEST:
+                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zoneArea(zone1) < zoneArea(zone2); });
+            case ZoneSelectionAlgorithm::LARGEST:
+                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zoneArea(zone1) > zoneArea(zone2); });
             }
-
-            // Avoid division by zero
-            int width = max(overlap.right - overlap.left, 1);
-            int height = max(overlap.bottom - overlap.top, 1);
-
-            bool verticalSplit = height > width;
-            size_t zoneIndex;
-
-            if (verticalSplit)
-            {
-                zoneIndex = (pt.y - overlap.top) * capturedZones.size() / height;
-            }
-            else
-            {
-                zoneIndex = (pt.x - overlap.left) * capturedZones.size() / width;
-            }
-
-            zoneIndex = std::clamp(zoneIndex, size_t(0), capturedZones.size() - 1);
-
-            return { capturedZones[zoneIndex] };
         }
         catch (std::out_of_range)
         {
@@ -961,6 +939,67 @@ std::vector<size_t> ZoneSet::GetCombinedZoneRange(const std::vector<size_t>& ini
     }
 
     return result;
+}
+
+std::vector<size_t> ZoneSet::ZoneSelectSubregion(const std::vector<size_t>& capturedZones, POINT pt) const
+{
+    auto expand = [&](RECT& rect) {
+        rect.top -= m_config.SensitivityRadius / 2;
+        rect.bottom += m_config.SensitivityRadius / 2;
+        rect.left -= m_config.SensitivityRadius / 2;
+        rect.right += m_config.SensitivityRadius / 2;
+    };
+
+    // Compute the overlapped rectangle.
+    RECT overlap = m_zones.at(capturedZones[0])->GetZoneRect();
+    expand(overlap);
+
+    for (size_t i = 1; i < capturedZones.size(); ++i)
+    {
+        RECT current = m_zones.at(capturedZones[i])->GetZoneRect();
+        expand(current);
+
+        overlap.top = max(overlap.top, current.top);
+        overlap.left = max(overlap.left, current.left);
+        overlap.bottom = min(overlap.bottom, current.bottom);
+        overlap.right = min(overlap.right, current.right);
+    }
+
+    // Avoid division by zero
+    int width = max(overlap.right - overlap.left, 1);
+    int height = max(overlap.bottom - overlap.top, 1);
+
+    bool verticalSplit = height > width;
+    size_t zoneIndex;
+
+    if (verticalSplit)
+    {
+        zoneIndex = (pt.y - overlap.top) * capturedZones.size() / height;
+    }
+    else
+    {
+        zoneIndex = (pt.x - overlap.left) * capturedZones.size() / width;
+    }
+
+    zoneIndex = std::clamp(zoneIndex, size_t(0), capturedZones.size() - 1);
+
+    return { capturedZones[zoneIndex] };
+}
+
+template<class CompareF>
+std::vector<size_t> ZoneSet::ZoneSelectPriority(const std::vector<size_t>& capturedZones, CompareF compare) const
+{
+    size_t chosen = 0;
+
+    for (size_t i = 1; i < capturedZones.size(); ++i)
+    {
+        if (compare(m_zones.at(capturedZones[i]), m_zones.at(capturedZones[chosen])))
+        {
+            chosen = i;
+        }
+    }
+
+    return { capturedZones[chosen] };
 }
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept
