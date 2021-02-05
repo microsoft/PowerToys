@@ -1169,4 +1169,8 @@ Win + Shift + O to toggle your video</value>
   <data name="Radio_Position_Primary.Content" xml:space="preserve">
     <value>Primary Monitor</value>
   </data>
+  <data name="Windows_Display_Settings.Text" xml:space="preserve">
+    <value>Windows display settings</value>
+    <comment>Windows refers to the Operating system</comment>
+  </data>
 </root>
