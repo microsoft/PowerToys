@@ -488,7 +488,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[분할기의 방향을 변경하려면 &lt;Shift&gt; 키를 누르고 있습니다.]D;]A;영역을 병합하려면 영역을 선택하고 "병합"을 클릭합니다.]]></Val>
+            <Val><![CDATA[분할기의 방향을 변경하려면 <Shift> 키를 누르고 있습니다.]D;]A;영역을 병합하려면 영역을 선택하고 "병합"을 클릭합니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click "merge".]]></Val>

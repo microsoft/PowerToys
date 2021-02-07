@@ -500,7 +500,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hold Enter to continue]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[계속하려면 &lt;Enter&gt; 키를 길게 누릅니다.]]></Val>
+            <Val><![CDATA[계속하려면 <Enter> 키를 길게 누릅니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -509,7 +509,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hold Esc to discard]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[삭제하려면 &lt;Esc&gt; 키를 누르고 있습니다.]]></Val>
+            <Val><![CDATA[삭제하려면 <Esc> 키를 길게 누릅니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

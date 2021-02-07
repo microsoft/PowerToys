@@ -12,12 +12,18 @@
       <Item ItemId=";Microsoft_plugin_sys_emptyrecyclebin" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Empty Recycle Bin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Пустая корзина]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_sys_emptyrecyclebin_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Empty Recycle Bin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Пустая корзина]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -25,7 +31,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hibernate]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Гибернация]]></Val>
+            <Val><![CDATA[Перейти в режим гибернации]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -33,6 +39,9 @@
       <Item ItemId=";Microsoft_plugin_sys_hibernate_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Hibernate computer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Перевод компьютера в режим гибернации]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -48,18 +57,27 @@
       <Item ItemId=";Microsoft_plugin_sys_lock_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Lock computer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Блокировка компьютера]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_sys_plugin_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Provides Windows related commands, shutdown, lock, sleep ....]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Предоставляет команды, относящиеся к Windows: завершить работу, заблокировать, перейти в спящий режим…]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_sys_plugin_name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows System Commands]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Системные команды Windows]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -67,7 +85,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restart]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Перезапустить]]></Val>
+            <Val><![CDATA[Перезагрузка]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -75,6 +93,9 @@
       <Item ItemId=";Microsoft_plugin_sys_restart_computer_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Restart computer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Перезагрузка компьютера]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -91,7 +112,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shutdown computer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Завершение работы с компьютером]]></Val>
+            <Val><![CDATA[Завершение работы компьютера]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -108,6 +129,9 @@
       <Item ItemId=";Microsoft_plugin_sys_sign_out_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Sign out of computer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Выход из системы компьютера]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -115,7 +139,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Sleep]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Сон]]></Val>
+            <Val><![CDATA[Спящий режим]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -123,6 +147,9 @@
       <Item ItemId=";Microsoft_plugin_sys_sleep_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Put computer to sleep]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Перевод компьютера в спящий режим]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
