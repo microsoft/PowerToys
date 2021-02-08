@@ -123,6 +123,14 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
     IFACEMETHOD_(void, MoveWindowIntoZoneByPoint)
     (HWND window, HWND workAreaWindow, POINT ptClient) = 0;
     /**
+     * Cycle through tabs in the zone that the window is in.
+     *
+     * @param   window Handle of the current window who is cycled to its next.
+     * @param   reverse Whether we should move to in reverse order (to the previous tab) or move to the next tab.
+     */
+    IFACEMETHOD_(void, CycleTabs)
+    (HWND window, bool reverse) = 0;
+    /**
      * Calculate zone coordinates within zone layout based on number of zones and spacing.
      *
      * @param   workAreaRect The rectangular area on the screen on which the zone layout is applied.

@@ -51,6 +51,8 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.FancyzonesBorderColor.Value, viewModel.ZoneBorderColor);
             Assert.AreEqual(originalSettings.Properties.FancyzonesDisplayChangeMoveWindows.Value, viewModel.DisplayChangeMoveWindows);
             Assert.AreEqual(originalSettings.Properties.FancyzonesEditorHotkey.Value.ToString(), viewModel.EditorHotkey.ToString());
+            Assert.AreEqual(originalSettings.Properties.FancyzonesNextTabHotkey.Value.ToString(), viewModel.NextTabHotkey.ToString());
+            Assert.AreEqual(originalSettings.Properties.FancyzonesPrevTabHotkey.Value.ToString(), viewModel.PrevTabHotkey.ToString());
             Assert.AreEqual(originalSettings.Properties.FancyzonesExcludedApps.Value, viewModel.ExcludedApps);
             Assert.AreEqual(originalSettings.Properties.FancyzonesHighlightOpacity.Value, viewModel.HighlightOpacity);
             Assert.AreEqual(originalSettings.Properties.FancyzonesInActiveColor.Value, viewModel.ZoneInActiveColor);

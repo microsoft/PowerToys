@@ -70,6 +70,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
             EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
+            NextTabHotkey = Settings.Properties.FancyzonesNextTabHotkey.Value;
+            PrevTabHotkey = Settings.Properties.FancyzonesPrevTabHotkey.Value;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -105,6 +107,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private int _highlightOpacity;
         private string _excludedApps;
         private HotkeySettings _editorHotkey;
+        private HotkeySettings _nextTabHotkey;
+        private HotkeySettings _prevTabHotkey;
         private string _zoneInActiveColor;
         private string _zoneBorderColor;
         private string _zoneHighlightColor;
@@ -518,7 +522,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     if (value == null || value.IsEmpty())
                     {
-                        _editorHotkey = FZConfigProperties.DefaultHotkeyValue;
+                        _editorHotkey = FZConfigProperties.DefaultEditorHotkeyValue;
                     }
                     else
                     {
@@ -526,6 +530,58 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     }
 
                     Settings.Properties.FancyzonesEditorHotkey.Value = _editorHotkey;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings NextTabHotkey
+        {
+            get
+            {
+                return _nextTabHotkey;
+            }
+
+            set
+            {
+                if (value != _nextTabHotkey)
+                {
+                    if (value == null || value.IsEmpty())
+                    {
+                        _nextTabHotkey = FZConfigProperties.DefaultNextTabHotkeyValue;
+                    }
+                    else
+                    {
+                        _nextTabHotkey = value;
+                    }
+
+                    Settings.Properties.FancyzonesNextTabHotkey.Value = _nextTabHotkey;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings PrevTabHotkey
+        {
+            get
+            {
+                return _prevTabHotkey;
+            }
+
+            set
+            {
+                if (value != _prevTabHotkey)
+                {
+                    if (value == null || value.IsEmpty())
+                    {
+                        _prevTabHotkey = FZConfigProperties.DefaultPrevTabHotkeyValue;
+                    }
+                    else
+                    {
+                        _prevTabHotkey = value;
+                    }
+
+                    Settings.Properties.FancyzonesNextTabHotkey.Value = _prevTabHotkey;
                     NotifyPropertyChanged();
                 }
             }

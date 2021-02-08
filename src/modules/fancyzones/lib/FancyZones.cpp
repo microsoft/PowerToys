@@ -209,6 +209,7 @@ private:
 
     void UpdateZoneWindows() noexcept;
     void UpdateWindowsPositions() noexcept;
+    void CycleTabs(bool reverse) noexcept;
     void CycleActiveZoneSet(DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept;
@@ -265,6 +266,14 @@ private:
         Exit,
         Terminate
     };
+
+    // IDs used to register hot keys (keyboard shortcuts).
+    enum class HotKeysIds : int
+    {
+        Editor = 1,
+        NextTab = 2,
+        PrevTab = 3,
+    };
 };
 
 std::function<void()> FancyZones::disableModuleCallback = {};
@@ -297,7 +306,9 @@ FancyZones::Run() noexcept
         return;
     }
 
-    RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
+    RegisterHotKey(m_window, static_cast<int>(HotKeysIds::Editor), m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
+    RegisterHotKey(m_window, static_cast<int>(HotKeysIds::NextTab), m_settings->GetSettings()->nextTabHotkey.get_modifiers(), m_settings->GetSettings()->nextTabHotkey.get_code());
+    RegisterHotKey(m_window, static_cast<int>(HotKeysIds::PrevTab), m_settings->GetSettings()->prevTabHotkey.get_modifiers(), m_settings->GetSettings()->prevTabHotkey.get_code());
 
     VirtualDesktopInitialize();
 
@@ -575,7 +586,6 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     //    CycleActiveZoneSet(info->vkCode);
     //    return false;
     //}
-
     if (m_windowMoveHandler.IsDragEnabled() && shift)
     {
         return true;
@@ -746,8 +756,12 @@ void FancyZones::ToggleEditor() noexcept
 void FancyZones::SettingsChanged() noexcept
 {
     // Update the hotkey
-    UnregisterHotKey(m_window, 1);
-    RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
+    UnregisterHotKey(m_window, static_cast<int>(HotKeysIds::Editor));
+    UnregisterHotKey(m_window, static_cast<int>(HotKeysIds::NextTab));
+    UnregisterHotKey(m_window, static_cast<int>(HotKeysIds::PrevTab));
+    RegisterHotKey(m_window, static_cast<int>(HotKeysIds::Editor), m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
+    RegisterHotKey(m_window, static_cast<int>(HotKeysIds::NextTab), m_settings->GetSettings()->nextTabHotkey.get_modifiers(), m_settings->GetSettings()->nextTabHotkey.get_code());
+    RegisterHotKey(m_window, static_cast<int>(HotKeysIds::PrevTab), m_settings->GetSettings()->prevTabHotkey.get_modifiers(), m_settings->GetSettings()->prevTabHotkey.get_code());
 
     // Needed if we toggled spanZonesAcrossMonitors
     m_workAreaHandler.Clear();
@@ -770,9 +784,15 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     {
     case WM_HOTKEY:
     {
-        if (wparam == 1)
+        auto hotKeyId = static_cast<HotKeysIds>(wparam);
+        if (hotKeyId == HotKeysIds::Editor)
         {
             ToggleEditor();
+        }
+        else if (hotKeyId == HotKeysIds::NextTab || hotKeyId == HotKeysIds::PrevTab)
+        {
+            bool reverese = hotKeyId == HotKeysIds::PrevTab;
+            CycleTabs(reverese);
         }
     }
     break;
@@ -1024,6 +1044,31 @@ void FancyZones::UpdateWindowsPositions() noexcept
         return TRUE;
     };
     EnumWindows(callback, reinterpret_cast<LPARAM>(this));
+}
+
+void FancyZones::CycleTabs(bool reverse) noexcept
+{
+    std::unique_lock writeLock(m_lock);
+
+    auto window = GetForegroundWindow();
+
+    HMONITOR current;
+    {
+        if (m_settings->GetSettings()->spanZonesAcrossMonitors)
+        {
+            current = NULL;
+        }
+        else
+        {
+            current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        }
+    }
+
+    auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, current);
+    if (zoneWindow)
+    {
+        zoneWindow->CycleTabs(window, reverse);
+    }
 }
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept

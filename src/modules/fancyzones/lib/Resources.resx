@@ -196,6 +196,12 @@
   <data name="Setting_Launch_Editor_Hotkey_Label" xml:space="preserve">
     <value>Configure the zone editor hotkey</value>
   </data>
+  <data name="Setting_Launch_NextTab_Hotkey_Label" xml:space="preserve">
+    <value>Configure the hotkey to move to the next tab</value>
+  </data>
+  <data name="Setting_Launch_PrevTab_Hotkey_Label" xml:space="preserve">
+    <value>Configure the hotkey to move to the previous tab</value>
+  </data>
   <data name="Setting_Excluded_Apps_Description" xml:space="preserve">
     <value>To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings.</value>
     <comment>Windows refers to the Operating system</comment>

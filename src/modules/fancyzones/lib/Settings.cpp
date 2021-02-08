@@ -29,6 +29,8 @@ namespace NonLocalizable
     const wchar_t ZoneBorderColorID[] = L"fancyzones_zoneBorderColor";
     const wchar_t ZoneHighlightColorID[] = L"fancyzones_zoneHighlightColor";
     const wchar_t EditorHotkeyID[] = L"fancyzones_editor_hotkey";
+    const wchar_t NextTabHotkeyID[] = L"fancyzones_nextTab_hotkey";
+    const wchar_t PrevTabHotkeyID[] = L"fancyzones_prevTab_hotkey";
     const wchar_t ExcludedAppsID[] = L"fancyzones_excluded_apps";
     const wchar_t ZoneHighlightOpacityID[] = L"fancyzones_highlight_opacity";
 
@@ -120,6 +122,8 @@ FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ int* buffer_size) noexce
         IDS_SETTING_LAUNCH_EDITOR_BUTTON,
         IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION);
     settings.add_hotkey(NonLocalizable::EditorHotkeyID, IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, m_settings.editorHotkey);
+    settings.add_hotkey(NonLocalizable::NextTabHotkeyID, IDS_SETTING_LAUNCH_NEXTTAB_HOTKEY_LABEL, m_settings.nextTabHotkey);
+    settings.add_hotkey(NonLocalizable::PrevTabHotkeyID, IDS_SETTING_LAUNCH_PREVTAB_HOTKEY_LABEL, m_settings.prevTabHotkey);
 
     for (auto const& setting : m_configBools)
     {
@@ -211,6 +215,16 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
             m_settings.editorHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
         }
 
+        if (const auto val = values.get_json(NonLocalizable::NextTabHotkeyID))
+        {
+            m_settings.nextTabHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+        }
+
+        if (const auto val = values.get_json(NonLocalizable::PrevTabHotkeyID))
+        {
+            m_settings.prevTabHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+        }
+
         if (auto val = values.get_string_value(NonLocalizable::ExcludedAppsID))
         {
             m_settings.excludedApps = std::move(*val);
@@ -265,6 +279,8 @@ void FancyZonesSettings::SaveSettings() noexcept
         values.add_property(NonLocalizable::ZoneHighlightColorID, m_settings.zoneHighlightColor);
         values.add_property(NonLocalizable::ZoneHighlightOpacityID, m_settings.zoneHighlightOpacity);
         values.add_property(NonLocalizable::EditorHotkeyID, m_settings.editorHotkey.get_json());
+        values.add_property(NonLocalizable::NextTabHotkeyID, m_settings.nextTabHotkey.get_json());
+        values.add_property(NonLocalizable::PrevTabHotkeyID, m_settings.prevTabHotkey.get_json());
         values.add_property(NonLocalizable::ExcludedAppsID, m_settings.excludedApps);
 
         values.save_to_settings_file();

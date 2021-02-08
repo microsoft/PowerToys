@@ -48,6 +48,8 @@ public:
     ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
     IFACEMETHODIMP_(void)
     CycleActiveZoneSet(DWORD vkCode) noexcept;
+    IFACEMETHODIMP_(void)
+    CycleTabs(HWND window, bool reverse) noexcept;
     IFACEMETHODIMP_(std::wstring)
     UniqueId() noexcept { return { m_uniqueId }; }
     IFACEMETHODIMP_(void)
@@ -295,6 +297,15 @@ ZoneWindow::CycleActiveZoneSet(DWORD wparam) noexcept
     if (m_windowMoveSize)
     {
         InvalidateRect(m_window.get(), nullptr, true);
+    }
+}
+
+IFACEMETHODIMP_(void)
+ZoneWindow::CycleTabs(HWND window, bool reverese) noexcept
+{
+    if (m_activeZoneSet)
+    {
+        m_activeZoneSet->CycleTabs(window, reverese);
     }
 }
 

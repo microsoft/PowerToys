@@ -92,7 +92,13 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @param   vkCode Pressed key representing layout index.
      */
     IFACEMETHOD_(void, CycleActiveZoneSet)(DWORD vkCode) = 0;
-
+    /**
+     * Cycle through tabs in the zone that the window is in.
+     *
+     * @param   window Handle of the current window who is cycled to its next.
+     * @param   reverse Whether we should move to in reverse order (to the previous tab) or move to the next tab.
+     */
+    IFACEMETHOD_(void, CycleTabs)(HWND window, bool reverse) = 0;
     /**
      * Save information about zone in which window was assigned, when closing the window.
      * Used once we open same window again to assign it to its previous zone.

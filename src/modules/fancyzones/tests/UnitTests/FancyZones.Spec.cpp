@@ -68,6 +68,8 @@ namespace FancyZonesUnitTests
             PowerToysSettings::Settings ptSettings(HINSTANCE{}, L"FancyZonesUnitTests");
 
             ptSettings.add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, settings.editorHotkey);
+            ptSettings.add_hotkey(L"fancyzones_nextTab_hotkey", IDS_SETTING_LAUNCH_NEXTTAB_HOTKEY_LABEL, settings.nextTabHotkey);
+            ptSettings.add_hotkey(L"fancyzones_prevTab_hotkey", IDS_SETTING_LAUNCH_PREVTAB_HOTKEY_LABEL, settings.prevTabHotkey);
             ptSettings.add_bool_toggle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, settings.shiftDrag);
             ptSettings.add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
@@ -133,6 +135,8 @@ namespace FancyZonesUnitTests
                         .zoneHighlightColor = L"#FAFAFA",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
+                        .nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_NEXT),
+                        .prevTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_PRIOR),
                         .excludedApps = L"app\r\napp2",
                         .excludedAppsArray = { L"APP", L"APP2" },
                     };
@@ -165,6 +169,8 @@ namespace FancyZonesUnitTests
                         .zoneHighlightColor = L"#FAFAFA",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
+                        .nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_NEXT),
+                        .prevTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_PRIOR),
                         .excludedApps = L"app\r\napp2",
                         .excludedAppsArray = { L"APP", L"APP2" },
                     };
@@ -199,6 +205,8 @@ namespace FancyZonesUnitTests
                         .zoneHighlightColor = L"#abafee",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
+                        .nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_NEXT),
+                        .prevTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_PRIOR),
                         .excludedApps = L"app\r\napp2",
                         .excludedAppsArray = { L"APP", L"APP2" },
                     };
@@ -233,6 +241,8 @@ namespace FancyZonesUnitTests
                         .zoneHighlightColor = L"#abafee",
                         .zoneHighlightOpacity = expected,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
+                        .nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_NEXT),
+                        .prevTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_PRIOR),
                         .excludedApps = L"app\r\napp2",
                         .excludedAppsArray = { L"APP", L"APP2" },
                     };
@@ -267,6 +277,8 @@ namespace FancyZonesUnitTests
                         .zoneHighlightColor = L"#abafee",
                         .zoneHighlightOpacity = expected,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
+                        .nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_NEXT),
+                        .prevTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_PRIOR),
                         .excludedApps = L"app\r\napp2",
                         .excludedAppsArray = { L"APP", L"APP2" },
                     };
@@ -293,6 +305,8 @@ namespace FancyZonesUnitTests
             PowerToysSettings::Settings ptSettings(HINSTANCE{}, L"FancyZonesUnitTests");
 
             ptSettings.add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, settings.editorHotkey);
+            ptSettings.add_hotkey(L"fancyzones_nextTab_hotkey", IDS_SETTING_LAUNCH_NEXTTAB_HOTKEY_LABEL, settings.nextTabHotkey);
+            ptSettings.add_hotkey(L"fancyzones_prevTab_hotkey", IDS_SETTING_LAUNCH_PREVTAB_HOTKEY_LABEL, settings.prevTabHotkey);
             ptSettings.add_bool_toggle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, settings.shiftDrag);
             ptSettings.add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);

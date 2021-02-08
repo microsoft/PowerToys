@@ -35,6 +35,8 @@ struct Settings
     std::wstring zoneHighlightColor = L"#008CFF";
     int zoneHighlightOpacity = 50;
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
+    PowerToysSettings::HotkeyObject nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_NEXT);
+    PowerToysSettings::HotkeyObject prevTabHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_PRIOR);
     std::wstring excludedApps = L"";
     std::vector<std::wstring> excludedAppsArray;
 };

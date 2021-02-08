@@ -92,7 +92,25 @@
                 MinWidth="240"
                 />
 
+            <CustomControls:HotkeySettingsControl
+                x:Uid="FancyZones_HotkeyNextTabControl"
+                Margin="{StaticResource SmallTopMargin}"
+                HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}"
+                Keys="Win, Ctrl, Alt, Shift"
+                Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                HorizontalAlignment="Left"
+                MinWidth="240"
+                />
 
+            <CustomControls:HotkeySettingsControl
+                x:Uid="FancyZones_HotkeyPrevTabControl"
+                Margin="{StaticResource SmallTopMargin}"
+                HotkeySettings="{x:Bind Path=ViewModel.PrevTabHotkey, Mode=TwoWay}"
+                Keys="Win, Ctrl, Alt, Shift"
+                Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                HorizontalAlignment="Left"
+                MinWidth="240"
+                />
 
             <CheckBox x:Uid="FancyZones_UseCursorPosEditorStartupScreen"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen}"

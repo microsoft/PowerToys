@@ -336,6 +336,14 @@
     <value>Open layout editor</value>
     <comment>Shortcut to launch the FancyZones layout editor application</comment>
   </data>
+  <data name="FancyZones_HotkeyNextTabControl.Header" xml:space="preserve">
+    <value>Move to next tab</value>
+    <comment>Shortcut to move to the next application (tab) in the current zone.</comment>
+  </data>
+  <data name="FancyZones_HotkeyPrevTabControl.Header" xml:space="preserve">
+    <value>Move to previous tab</value>
+    <comment>Shortcut to move to the previous application (tab) in the current zone.</comment>
+  </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut setting</value>
   </data>
