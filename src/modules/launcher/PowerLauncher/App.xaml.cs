@@ -80,7 +80,7 @@ namespace PowerLauncher
 
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
-            Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
+            Stopwatch.Normal("App.OnStartup - Startup cost", () =>
             {
                 var textToLog = new StringBuilder();
                 textToLog.AppendLine("Begin PowerToys Run startup ----------------------------------------------------");
@@ -178,7 +178,7 @@ namespace PowerLauncher
         {
             if (!_disposed)
             {
-                Stopwatch.Normal("|App.OnExit|Exit cost", () =>
+                Stopwatch.Normal("App.OnExit - Exit cost", () =>
                 {
                     Log.Info("Start PowerToys Run Exit----------------------------------------------------  ", GetType());
                     if (disposing)

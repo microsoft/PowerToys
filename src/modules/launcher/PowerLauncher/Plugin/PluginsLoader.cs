@@ -31,7 +31,7 @@ namespace PowerLauncher.Plugin
 
             foreach (var metadata in metadatas)
             {
-                var milliseconds = Stopwatch.Debug($"|PluginsLoader.CSharpPlugins|Constructor init cost for {metadata.Name}", () =>
+                var milliseconds = Stopwatch.Debug($"PluginsLoader.CSharpPlugins - Constructor init cost for {metadata.Name}", () =>
                 {
 #if DEBUG
                     var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(metadata.ExecuteFilePath);

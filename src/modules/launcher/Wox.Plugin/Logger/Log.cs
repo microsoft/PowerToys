@@ -32,7 +32,7 @@ namespace Wox.Plugin.Logger
 
             var configuration = new LoggingConfiguration();
             var target = new FileTarget();
-            target.Layout = NLog.Layouts.Layout.FromString("[${longdate}] [${level:uppercase=true}] [${logger}]${message}\n");
+            target.Layout = NLog.Layouts.Layout.FromString("[${longdate}] [${level:uppercase=true}]${message}\n");
             configuration.AddTarget("file", target);
 
             // Adding CurrentCulture since this is user facing
