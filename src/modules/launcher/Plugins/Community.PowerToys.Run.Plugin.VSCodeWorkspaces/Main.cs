@@ -75,6 +75,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                             }
                             return hide;
                         },
+                        ContextData = a,
                     });
                 });
 
@@ -117,13 +118,31 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                                 hide = false;
                             }
                             return hide;
-                        }
+                        },
+                        ContextData = a,
                     });
                 });
             }
 
-            results.ForEach(x => x.Score = 100);
-            results.OrderBy(x => x.Title);
+            results.ForEach(x =>
+            {
+                if (x.Score == 0)
+                {
+                    x.Score = 100;
+                }
+
+                //if is a remote machine give it 12 extra points
+                if (x.ContextData is VSCodeRemoteMachine)
+                {
+                    x.Score = x.Score + (query.Search.Count() * 5);
+                }
+
+                //intersect the title with the query
+                var intersection = x.Title.ToLower().Intersect(query.Search.ToLower()).Count();
+                x.Score = x.Score - (Convert.ToInt32(((x.Title.Count() - intersection) *2.5)));
+            });
+
+            results = results.OrderBy(x => x.Title).ToList();
 
             if (query.ActionKeyword == String.Empty || (query.ActionKeyword != String.Empty && query.Search != String.Empty))
             {
