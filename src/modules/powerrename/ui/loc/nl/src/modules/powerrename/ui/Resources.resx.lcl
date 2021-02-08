@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enumerate Items]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Items opsommen]]></Val>
+            <Val><![CDATA[Items nummeren]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
