@@ -416,7 +416,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zone highlight opacity]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nieprzezroczystość wyróżnienia strefy]]></Val>
+            <Val><![CDATA[Nieprzezroczystość wyróżnionej strefy]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -446,7 +446,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zone inactive color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kolor nieaktywny strefy]]></Val>
+            <Val><![CDATA[Kolor nieaktywnej strefy]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zone inactive color (Default: #F5FCFF)]]></Val>
@@ -479,7 +479,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use a non-primary mouse button to toggle zone activation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Do przełączania aktywacji strefy użyj przycisku myszy innego niż podstawowy]]></Val>
+            <Val><![CDATA[Aktywuj strefy przyciskiem myszy innym niż podstawowy]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -542,7 +542,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore the original size of windows when unsnapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Przywróć oryginalny rozmiar okien podczas odciągania]]></Val>
+            <Val><![CDATA[Przywróć oryginalny rozmiar okien po odciągnięciu]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -596,7 +596,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zone behavior]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zachowanie strefy]]></Val>
+            <Val><![CDATA[Zachowanie stref]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -605,7 +605,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zone highlight color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kolor wyróżnienia strefy]]></Val>
+            <Val><![CDATA[Kolor wyróżnionej strefy]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zone highlight color (Default: #0078D7)]]></Val>

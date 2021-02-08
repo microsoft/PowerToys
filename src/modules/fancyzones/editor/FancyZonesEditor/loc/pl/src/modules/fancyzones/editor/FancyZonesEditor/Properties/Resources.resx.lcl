@@ -263,7 +263,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones Editor Exception Handler]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Procedura obsługi wyjątków edytora Fantazyjne strefy]]></Val>
+            <Val><![CDATA[Procedura obsługi wyjątków edytora FancyZones]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
