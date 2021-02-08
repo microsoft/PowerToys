@@ -102,7 +102,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                                 {
                                     FileName = a.VSCodeInstance.ExecutablePath,
                                     UseShellExecute = true,
-                                    Arguments = $"--remote ssh-remote+{((char)34) + a.Host + ((char)34)}",
+                                    Arguments = $"--new-window --enable-proposed-api ms-vscode-remote.remote-ssh --remote ssh-remote+{((char)34) + a.Host + ((char)34)}",
                                     WindowStyle = ProcessWindowStyle.Hidden,
                                 };
                                 Process.Start(process);
@@ -128,8 +128,6 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
             if (query.ActionKeyword == String.Empty || (query.ActionKeyword != String.Empty && query.Search != String.Empty))
             {
                 results = results.Where(a => a.Title.ToLower().Contains(query.Search.ToLower())).ToList();
-
-                results.Sort((a, b) => b.Title.ToLower().CompareTo(query.Search.ToLower()) - a.Title.ToLower().CompareTo(query.Search.ToLower()));
             }
 
             return results;
