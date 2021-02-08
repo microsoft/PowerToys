@@ -1228,6 +1228,7 @@ LOGMSG
 logon
 LOGPIXELSX
 LOn
+longdate
 lookbehind
 lowlevel
 LOWORD
