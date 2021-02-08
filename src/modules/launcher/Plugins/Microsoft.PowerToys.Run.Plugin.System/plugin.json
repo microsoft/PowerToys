@@ -9,5 +9,6 @@
   "Language": "csharp",
   "Website": "https://aka.ms/powertoys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.System.dll",
-  "IcoPath": "Images\\lock.png"
+  "IcoPathDark": "Images\\lock.dark.png",
+  "IcoPathLight": "Images\\lock.light.png"
 }

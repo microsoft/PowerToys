@@ -88,9 +88,6 @@ namespace PowerLauncher
                             var plugin = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == setting.Id);
                             if (plugin != null)
                             {
-                                plugin.Metadata.Name = setting.Name;
-                                plugin.Metadata.Description = setting.Description;
-                                plugin.Metadata.Author = setting.Authour;
                                 plugin.Metadata.Disabled = setting.Disabled;
                                 plugin.Metadata.ActionKeyword = setting.ActionKeyword;
                                 plugin.Metadata.IsGlobal = setting.IsGlobal;
@@ -194,10 +191,12 @@ namespace PowerLauncher
                 Id = x.ID,
                 Name = x.Name,
                 Description = x.Description,
-                Authour = x.Author,
+                Author = x.Author,
                 Disabled = x.Disabled,
                 IsGlobal = x.IsGlobal,
                 ActionKeyword = x.ActionKeyword,
+                IconPathDark = x.IcoPathDark,
+                IconPathLight = x.IcoPathLight,
             });
         }
     }

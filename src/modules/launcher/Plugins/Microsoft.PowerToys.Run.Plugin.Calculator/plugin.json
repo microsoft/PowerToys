@@ -9,5 +9,6 @@
   "Language": "csharp",
   "Website": "https://aka.ms/powertoys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Calculator.dll",
-  "IcoPath": "Images\\calculator.dark.png"
+  "IcoPathDark": "Images\\calculator.dark.png",
+  "IcoPathLight": "Images\\calculator.light.png"
 }

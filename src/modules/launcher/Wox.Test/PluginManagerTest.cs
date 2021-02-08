@@ -32,7 +32,8 @@ namespace Wox.Test
             var metadata = new PluginMetadata
             {
                 ID = "dummyName",
-                IcoPath = "dummyIcoPath",
+                IcoPathDark = "dummyIcoPath",
+                IcoPathLight = "dummyIcoPath",
                 ExecuteFileName = "dummyExecuteFileName",
                 PluginDirectory = "dummyPluginDirectory",
             };

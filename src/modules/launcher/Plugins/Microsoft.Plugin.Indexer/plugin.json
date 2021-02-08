@@ -1,7 +1,7 @@
 {
   "ID": "2140FC9819AD43A3A616E2735815C27C",
   "ActionKeyword": "?",
-  "IsGlobal":  true,
+  "IsGlobal": true,
   "Name": "Windows Indexer",
   "Description": "Search for files and folders",
   "Author": "Microsoft",
@@ -9,5 +9,6 @@
   "Language": "csharp",
   "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.Plugin.Indexer.dll",
-  "IcoPath": "Images\\indexer.dark.png"
+  "IcoPathDark": "Images\\indexer.dark.png",
+  "IcoPathLight": "Images\\indexer.light.png"
 }

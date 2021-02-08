@@ -9,5 +9,6 @@
   "Language": "csharp",
   "Website": "http://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.Plugin.Uri.dll",
-  "IcoPath": "Images\\uri.dark.png"
+  "IcoPathDark": "Images\\uri.dark.png",
+  "IcoPathLight": "Images\\uri.light.png"
 }

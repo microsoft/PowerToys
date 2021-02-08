@@ -9,5 +9,6 @@
   "Language": "csharp",
   "Website": "https://aka.ms/powertoys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Registry.dll",
-  "IcoPath": "Images\\reg.dark.png"
+  "IcoPathDark": "Images\\reg.dark.png",
+  "IcoPathLight": "Images\\reg.light.png"
 }

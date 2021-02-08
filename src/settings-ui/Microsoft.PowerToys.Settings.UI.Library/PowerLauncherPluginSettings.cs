@@ -12,12 +12,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public string Description { get; set; }
 
-        public string Authour { get; set; }
+        public string Author { get; set; }
 
         public bool Disabled { get; set; }
 
         public bool IsGlobal { get; set; }
 
         public string ActionKeyword { get; set; }
+
+        public string IconPathDark { get; set; }
+
+        public string IconPathLight { get; set; }
     }
 }
