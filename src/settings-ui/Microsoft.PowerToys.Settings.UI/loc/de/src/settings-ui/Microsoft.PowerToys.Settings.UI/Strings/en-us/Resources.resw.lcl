@@ -125,7 +125,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Attribution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zuordnung]]></Val>
+            <Val><![CDATA[Würdigung]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
