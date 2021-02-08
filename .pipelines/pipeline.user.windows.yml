@@ -83,6 +83,7 @@ build:
             - 'modules\FancyZones\FancyZonesEditor.dll'
             - 'modules\FancyZones\ManagedCommon.dll'
             - 'modules\FancyZones\Telemetry.dll'
+            - 'modules\FancyZones\Microsoft.PowerToys.Common.UI.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll'
             - 'modules\FileExplorerPreview\powerpreview.dll'
