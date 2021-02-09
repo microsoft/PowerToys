@@ -418,7 +418,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if ((elevated ||
              general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
              std::string(lpCmdLine).find("--dont-elevate") != std::string::npos))
-        {   
+        {
+
             result = runner(elevated, openSettings);
         }
         else
