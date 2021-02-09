@@ -187,9 +187,9 @@
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
 
-                <Button Click="Button_Click" Margin="0,4,0,4">
+                <HyperlinkButton Click="OobeButton_Click">
                     <TextBlock Text="OOBE"/>
-                </Button>
+                </HyperlinkButton>
                 
                 <HyperlinkButton x:Uid="GeneralPage_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="General_Repository"/>
