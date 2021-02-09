@@ -12,9 +12,26 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
     /// </summary>
     public partial class OobeWindow : Window
     {
+        private static Window inst;
+
         public OobeWindow()
         {
             InitializeComponent();
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            inst = null;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (inst != null)
+            {
+                inst.Close();
+            }
+
+            inst = this;
         }
     }
 }

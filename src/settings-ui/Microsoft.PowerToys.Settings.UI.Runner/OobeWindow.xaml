@@ -7,7 +7,9 @@
         xmlns:Controls="clr-namespace:Microsoft.Toolkit.Wpf.UI.Controls;assembly=Microsoft.Toolkit.Wpf.UI.Controls"
         xmlns:xaml="clr-namespace:Microsoft.Toolkit.Wpf.UI.XamlHost;assembly=Microsoft.Toolkit.Wpf.UI.XamlHost"
         mc:Ignorable="d"
-        Title="OobeWindow" Height="450" Width="800">
+        Title="OobeWindow" Height="450" Width="800"
+        Loaded="Window_Loaded"
+        Closed="Window_Closed">
     <Grid>
         <xaml:WindowsXamlHost InitialTypeName="Microsoft.PowerToys.Settings.UI.OobePage" />
     </Grid>
