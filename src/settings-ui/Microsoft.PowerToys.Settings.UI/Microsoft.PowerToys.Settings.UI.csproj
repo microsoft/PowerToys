@@ -111,6 +111,9 @@
     <Compile Include="Helpers\StartProcessHelper.cs" />
     <Compile Include="ICoreWindowInterop.cs" />
     <Compile Include="Interop.cs" />
+    <Compile Include="OobePage.xaml.cs">
+      <DependentUpon>OobePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
@@ -215,6 +218,10 @@
     <Page Include="Controls\HotkeySettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="OobePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\Button.xaml">
       <SubType>Designer</SubType>
