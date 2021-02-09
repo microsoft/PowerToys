@@ -107,7 +107,7 @@
                 <RadioButton x:Uid="Radio_Theme_Light" />
                 <RadioButton x:Uid="Radio_Theme_Default"/>
             </muxc:RadioButtons>
-            <HyperlinkButton NavigateUri="ms-settings:colors">
+            <HyperlinkButton Click="OpenColorsSettings_Click">
                 <TextBlock x:Uid="Windows_Color_Settings" />
             </HyperlinkButton>
         </StackPanel>

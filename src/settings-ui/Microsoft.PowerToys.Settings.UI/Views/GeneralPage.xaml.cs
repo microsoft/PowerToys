@@ -117,5 +117,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             return 0;
         }
+
+        private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)
+        {
+            Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+        }
     }
 }

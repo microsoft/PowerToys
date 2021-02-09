@@ -38,6 +38,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
         }
 
+        private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+        }
+
         /*
         public Tuple<string, string> SelectedSearchResultPreference
         {
