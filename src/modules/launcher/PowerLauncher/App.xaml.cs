@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
@@ -79,10 +80,11 @@ namespace PowerLauncher
 
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
-            Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
+            Stopwatch.Normal("App.OnStartup - Startup cost", () =>
             {
-                Log.Info("Begin PowerToys Run startup ----------------------------------------------------", GetType());
-                Log.Info($"Runtime info:{ErrorReporting.RuntimeInfo()}", GetType());
+                var textToLog = new StringBuilder();
+                textToLog.AppendLine("Begin PowerToys Run startup ----------------------------------------------------");
+                textToLog.AppendLine($"Runtime info:{ErrorReporting.RuntimeInfo()}");
 
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
@@ -117,10 +119,11 @@ namespace PowerLauncher
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
                 _themeManager.ThemeChanged += OnThemeChanged;
-                Log.Info("End PowerToys Run startup ----------------------------------------------------  ", GetType());
+                textToLog.AppendLine("End PowerToys Run startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
 
+                Log.Info(textToLog.ToString(), GetType());
                 PowerToysTelemetry.Log.WriteEvent(new LauncherBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
 
                 // [Conditional("RELEASE")]
@@ -175,7 +178,7 @@ namespace PowerLauncher
         {
             if (!_disposed)
             {
-                Stopwatch.Normal("|App.OnExit|Exit cost", () =>
+                Stopwatch.Normal("App.OnExit - Exit cost", () =>
                 {
                     Log.Info("Start PowerToys Run Exit----------------------------------------------------  ", GetType());
                     if (disposing)
