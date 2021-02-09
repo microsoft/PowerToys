@@ -409,7 +409,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         modules();
 
         auto general_settings = load_general_settings();
-        bool openSettings = std::string(lpCmdLine).find("--open-settings") != std::string::npos;
+        const bool openSettings = std::string(lpCmdLine).find("--open-settings") != std::string::npos;
 
         // Apply the general settings but don't save it as the modules() variable has not been loaded yet
         apply_general_settings(general_settings, false);
