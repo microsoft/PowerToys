@@ -20,10 +20,7 @@ signing_options:
 package_sources:
   nuget:
     feeds:
-      'Nuget': 'https://api.nuget.org/v3/index.json'
-      'Toolset': 'https://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
-      'PipelineBuildSupplement': 'https://msazure.pkgs.visualstudio.com/_packaging/PipelineBuildSupplement/nuget/v3/index.json'
-
+      'PowerToysCDPX_Feed': 'https://github-private.pkgs.visualstudio.com/microsoft/_packaging/PowerToysCDPX_Feed/nuget/v3/index.json'
 restore:
   commands:
     - !!defaultcommand
