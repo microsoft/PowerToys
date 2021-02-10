@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace Wox.Plugin
@@ -17,11 +18,8 @@ namespace Wox.Plugin
 
         private string _pluginDirectory;
 
-        private List<string> _actionKeywords;
-
-        public PluginMetadata(List<string> actionKeywords = null)
+        public PluginMetadata()
         {
-            _actionKeywords = actionKeywords;
         }
 
         public string ID { get; set; }
@@ -55,31 +53,23 @@ namespace Wox.Plugin
             {
                 _pluginDirectory = value;
                 ExecuteFilePath = Path.Combine(value, ExecuteFileName);
-                IcoPath = Path.Combine(value, IcoPath);
+                IcoPathDark = Path.Combine(value, IcoPathDark);
+                IcoPathLight = Path.Combine(value, IcoPathLight);
             }
         }
 
         public string ActionKeyword { get; set; }
 
-        public List<string> GetActionKeywords()
-        {
-            return _actionKeywords;
-        }
+        public bool IsGlobal { get; set; }
 
-        public void SetActionKeywords(List<string> value)
-        {
-            _actionKeywords = value;
-        }
+        public string IcoPathDark { get; set; }
 
-        public string IcoPath { get; set; }
+        public string IcoPathLight { get; set; }
 
         public override string ToString()
         {
             return Name;
         }
-
-        [Obsolete("Use IcoPath")]
-        public string FullIcoPath => IcoPath;
 
         /// <summary>
         /// Gets or sets init time include both plugin load time and init time

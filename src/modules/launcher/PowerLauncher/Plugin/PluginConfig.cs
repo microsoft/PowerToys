@@ -81,12 +81,6 @@ namespace PowerLauncher.Plugin
             {
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginDirectory = pluginDirectory;
-
-                // for plugins which doesn't has ActionKeywords key
-                metadata.SetActionKeywords(metadata.GetActionKeywords() ?? new List<string> { metadata.ActionKeyword });
-
-                // for plugin still use old ActionKeyword
-                metadata.ActionKeyword = metadata.GetActionKeywords()?[0];
             }
             catch (Exception e)
             {

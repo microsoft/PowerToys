@@ -1,6 +1,7 @@
 {
   "ID": "11A6C36E4E91439CA69F702CBD364EF7",
   "ActionKeyword": "!",
+  "IsGlobal": false,
   "Name": "Service",
   "Description": "Manages Windows services",
   "Author": "davidegiacometti",
@@ -8,5 +9,6 @@
   "Language": "csharp",
   "Website": "https://aka.ms/powertoys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Service.dll",
-  "IcoPath": "Images\\service.dark.png"
+  "IcoPathDark": "Images\\service.dark.png",
+  "IcoPathLight": "Images\\service.light.png"
 }

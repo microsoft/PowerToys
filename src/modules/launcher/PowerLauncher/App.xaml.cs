@@ -100,7 +100,6 @@ namespace PowerLauncher
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
-                PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _themeManager);

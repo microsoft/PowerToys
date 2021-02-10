@@ -1,6 +1,7 @@
 {
   "ID": "303417D927BF4C97BCFFC78A123BE0C8",
   "ActionKeyword": ":",
+  "IsGlobal": false,
   "Name": "Registry",
   "Description": "Search inside the Windows Registry",
   "Author": "TobiasSekan",
@@ -8,5 +9,6 @@
   "Language": "csharp",
   "Website": "https://aka.ms/powertoys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Registry.dll",
-  "IcoPath": "Images\\reg.dark.png"
+  "IcoPathDark": "Images\\reg.dark.png",
+  "IcoPathLight": "Images\\reg.light.png"
 }
