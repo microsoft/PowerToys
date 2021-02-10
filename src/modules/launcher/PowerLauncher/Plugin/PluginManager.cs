@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
@@ -66,7 +67,11 @@ namespace PowerLauncher.Plugin
         {
             get
             {
-                return AllPlugins.Where(x => !string.IsNullOrWhiteSpace(x.Metadata.ActionKeyword)).ToDictionary(x => x.Metadata.ActionKeyword);
+                return AllPlugins
+                    .Where(x => !string.IsNullOrWhiteSpace(x.Metadata.ActionKeyword))
+                    .GroupBy(x => x.Metadata.ActionKeyword)
+                    .Select(x => x.First())
+                    .ToDictionary(x => x.Metadata.ActionKeyword);
             }
         }
 
