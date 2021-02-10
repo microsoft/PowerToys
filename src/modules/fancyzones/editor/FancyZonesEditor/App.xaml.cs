@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI;
 
 namespace FancyZonesEditor
 {

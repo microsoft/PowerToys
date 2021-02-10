@@ -133,22 +133,22 @@ namespace Microsoft.PowerToys.Common.UI
             else if (theme == Theme.HighContrastOne)
             {
                 _currentTheme = Theme.HighContrastOne;
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastOneTheme, true);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastOneTheme);
             }
             else if (theme == Theme.HighContrastTwo)
             {
                 _currentTheme = Theme.HighContrastTwo;
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastTwoTheme, true);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastTwoTheme);
             }
             else if (theme == Theme.HighContrastWhite)
             {
                 _currentTheme = Theme.HighContrastWhite;
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastWhiteTheme, true);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastWhiteTheme);
             }
             else if (theme == Theme.HighContrastBlack)
             {
                 _currentTheme = Theme.HighContrastBlack;
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastBlackTheme, true);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastBlackTheme);
             }
             else if (theme == Theme.Light)
             {
