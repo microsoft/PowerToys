@@ -25,6 +25,62 @@ namespace NonLocalizable
 
 using namespace FancyZonesUtils;
 
+struct ZoneWindow;
+
+namespace
+{
+    // The reason for using this class is the need to call ShowWindow(window, SW_SHOWNORMAL); on each
+    // newly created window for it to be displayed properly. The call sometimes has side effects when
+    // a fullscreen app is running, and happens when the resolution change event is triggered
+    // (e.g. when running some games).
+    // This class will serve as a pool of windows for which this call was already done.
+    class WindowPool
+    {
+        std::vector<HWND> m_pool;
+
+    public:
+
+        HWND NewZoneWindow(Rect position, HINSTANCE hinstance, ZoneWindow* owner)
+        {
+            if (m_pool.empty())
+            {
+                HWND window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, position.left(), position.top(), position.width(), position.height(), nullptr, nullptr, hinstance, owner);
+                MakeWindowTransparent(window);
+
+                // According to ShowWindow docs, we must call it with SW_SHOWNORMAL the first time
+                ShowWindow(window, SW_SHOWNORMAL);
+                ShowWindow(window, SW_HIDE);
+                return window;
+            }
+            else
+            {
+                HWND window = m_pool.back();
+                m_pool.pop_back();
+                SetWindowLongPtrW(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(owner));
+                MoveWindow(window, position.left(), position.top(), position.width(), position.height(), TRUE);
+                return window;
+            }
+        }
+
+        void FreeZoneWindow(HWND window)
+        {
+            SetWindowLongPtrW(window, GWLP_USERDATA, 0);
+            ShowWindow(window, SW_HIDE);
+            m_pool.push_back(window);
+        }
+
+        ~WindowPool()
+        {
+            for (HWND window : m_pool)
+            {
+                DestroyWindow(window);
+            }
+        }
+    };
+
+    WindowPool windowPool;
+}
+
 struct ZoneWindow : public winrt::implements<ZoneWindow, IZoneWindow>
 {
 public:
@@ -78,7 +134,7 @@ private:
     winrt::com_ptr<IZoneWindowHost> m_host;
     HMONITOR m_monitor{};
     std::wstring m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
-    wil::unique_hwnd m_window{}; // Hidden tool window used to represent current monitor desktop work area.
+    HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
     std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
@@ -104,6 +160,7 @@ ZoneWindow::ZoneWindow(HINSTANCE hinstance)
 
 ZoneWindow::~ZoneWindow()
 {
+    windowPool.FreeZoneWindow(m_window);
 }
 
 bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId)
@@ -130,21 +187,14 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     m_uniqueId = uniqueId;
     InitializeZoneSets(parentUniqueId);
 
-    m_window = wil::unique_hwnd{
-        CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, workAreaRect.left(), workAreaRect.top(), workAreaRect.width(), workAreaRect.height(), nullptr, nullptr, hinstance, this)
-    };
+    m_window = windowPool.NewZoneWindow(workAreaRect, hinstance, this);
 
     if (!m_window)
     {
         return false;
     }
 
-    MakeWindowTransparent(m_window.get());
-    // According to ShowWindow docs, we must call it with SW_SHOWNORMAL the first time
-    ShowWindow(m_window.get(), SW_SHOWNORMAL);
-    ShowWindow(m_window.get(), SW_HIDE);
-
-    m_zoneWindowDrawing = std::make_unique<ZoneWindowDrawing>(m_window.get());
+    m_zoneWindowDrawing = std::make_unique<ZoneWindowDrawing>(m_window);
 
     return true;
 }
@@ -162,7 +212,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 {
     bool redraw = false;
     POINT ptClient = ptScreen;
-    MapWindowPoints(nullptr, m_window.get(), &ptClient, 1);
+    MapWindowPoints(nullptr, m_window, &ptClient, 1);
 
     if (dragEnabled)
     {
@@ -212,8 +262,8 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
     if (m_activeZoneSet)
     {
         POINT ptClient = ptScreen;
-        MapWindowPoints(nullptr, m_window.get(), &ptClient, 1);
-        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), m_highlightZone);
+        MapWindowPoints(nullptr, m_window, &ptClient, 1);
+        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, m_highlightZone);
 
         if (FancyZonesUtils::HasNoVisibleOwner(window))
         {
@@ -238,7 +288,7 @@ ZoneWindow::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>&
 {
     if (m_activeZoneSet)
     {
-        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), indexSet);
+        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet);
     }
 }
 
@@ -247,7 +297,7 @@ ZoneWindow::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, boo
 {
     if (m_activeZoneSet)
     {
-        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window.get(), vkCode, cycle))
+        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window, vkCode, cycle))
         {
             if (FancyZonesUtils::HasNoVisibleOwner(window))
             {
@@ -264,7 +314,7 @@ ZoneWindow::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, 
 {
     if (m_activeZoneSet)
     {
-        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndPosition(window, m_window.get(), vkCode, cycle))
+        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndPosition(window, m_window, vkCode, cycle))
         {
             SaveWindowProcessToZoneIndex(window);
             return true;
@@ -278,7 +328,7 @@ ZoneWindow::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexce
 {
     if (m_activeZoneSet)
     {
-        if (m_activeZoneSet->ExtendWindowByDirectionAndPosition(window, m_window.get(), vkCode))
+        if (m_activeZoneSet->ExtendWindowByDirectionAndPosition(window, m_window, vkCode))
         {
             SaveWindowProcessToZoneIndex(window);
             return true;
@@ -294,7 +344,7 @@ ZoneWindow::CycleActiveZoneSet(DWORD wparam) noexcept
 
     if (m_windowMoveSize)
     {
-        InvalidateRect(m_window.get(), nullptr, true);
+        InvalidateRect(m_window, nullptr, true);
     }
 }
 
@@ -320,7 +370,7 @@ ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
 IFACEMETHODIMP_(void)
 ZoneWindow::ShowZoneWindow() noexcept
 {
-    auto window = m_window.get();
+    auto window = m_window;
     if (!window)
     {
         return;
@@ -460,8 +510,8 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     {
     case WM_NCDESTROY:
     {
-        ::DefWindowProc(m_window.get(), message, wparam, lparam);
-        SetWindowLongPtr(m_window.get(), GWLP_USERDATA, 0);
+        ::DefWindowProc(m_window, message, wparam, lparam);
+        SetWindowLongPtr(m_window, GWLP_USERDATA, 0);
     }
     break;
 
@@ -476,7 +526,7 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
 
     default:
     {
-        return DefWindowProc(m_window.get(), message, wparam, lparam);
+        return DefWindowProc(m_window, message, wparam, lparam);
     }
     }
     return 0;
