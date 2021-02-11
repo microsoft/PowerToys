@@ -119,7 +119,6 @@
     <ClCompile Include="RcResource.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\runner\updating.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="progressbar_window.h" />
   </ItemGroup>
