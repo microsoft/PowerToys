@@ -606,7 +606,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
 
     std::array<std::wstring_view, 4> processesToTerminate = {
         L"PowerLauncher.exe",
-        L"Microsoft.PowerToys.Settings.UI.Runner.exe",
+        L"PowerToys.Settings.exe",
         L"Microsoft.PowerToys.Settings.UI.exe",
         L"PowerToys.exe"
     };
