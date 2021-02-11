@@ -39,15 +39,15 @@ namespace
         std::vector<HWND> m_pool;
         std::mutex m_mutex;
 
-        bool IsEmpty()
-        {
-            std::unique_lock lock(m_mutex);
-            return m_pool.empty();
-        }
-
         HWND ExtractWindow()
         {
             std::unique_lock lock(m_mutex);
+
+            if (m_pool.empty())
+            {
+                return NULL;
+            }
+
             HWND window = m_pool.back();
             m_pool.pop_back();
             return window;
@@ -57,7 +57,8 @@ namespace
 
         HWND NewZoneWindow(Rect position, HINSTANCE hinstance, ZoneWindow* owner)
         {
-            if (IsEmpty())
+            HWND windowFromPool = ExtractWindow();
+            if (windowFromPool == NULL)
             {
                 HWND window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, position.left(), position.top(), position.width(), position.height(), nullptr, nullptr, hinstance, owner);
                 Logger::info("Creating new zone window, hWnd = {}", (void*)window);
@@ -70,11 +71,10 @@ namespace
             }
             else
             {
-                HWND window = ExtractWindow();
-                Logger::info("Reusing zone window from pool, hWnd = {}", (void*)window);
-                SetWindowLongPtrW(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(owner));
-                MoveWindow(window, position.left(), position.top(), position.width(), position.height(), TRUE);
-                return window;
+                Logger::info("Reusing zone window from pool, hWnd = {}", (void*)windowFromPool);
+                SetWindowLongPtrW(windowFromPool, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(owner));
+                MoveWindow(windowFromPool, position.left(), position.top(), position.width(), position.height(), TRUE);
+                return windowFromPool;
             }
         }
 
