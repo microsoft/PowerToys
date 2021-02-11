@@ -6,7 +6,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
-    <StartupObject>Microsoft.PowerToys.Settings.UI.Runner.Program</StartupObject>
+    <StartupObject>PowerToys.Settings.Program</StartupObject>
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>PowerToys Settings UI Runner</Description>
@@ -32,12 +32,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\SettingsUIRunner</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
     <Optimize>false</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\SettingsUIRunner</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
     <Optimize>true</Optimize>
   </PropertyGroup>
 

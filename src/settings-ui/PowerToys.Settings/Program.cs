@@ -11,7 +11,7 @@ using interop;
 using ManagedCommon;
 using Windows.UI.Popups;
 
-namespace Microsoft.PowerToys.Settings.UI.Runner
+namespace PowerToys.Settings
 {
     public static class Program
     {
@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         [STAThread]
         public static void Main(string[] args)
         {
-            using (new UI.App())
+            using (new Microsoft.PowerToys.Settings.UI.App())
             {
                 App app = new App();
                 app.InitializeComponent();
