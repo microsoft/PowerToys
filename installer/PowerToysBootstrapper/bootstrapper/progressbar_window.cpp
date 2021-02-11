@@ -6,20 +6,21 @@
 #include "progressbar_window.h"
 #include "Generated Files/resource.h"
 
-const int labelHeight = 20;
+const int labelHeight = 18;
 
-const int progressBarHeight = 15;
-const int progressBarMargin = 10;
+const int progressBarHeight = 20;
+const int margin = 10;
 
-const int windowWidth = 450;
+const int windowWidth = 480;
 const int titleBarHeight = 32;
-const int windowHeight = progressBarMargin * 3 + progressBarHeight + labelHeight + titleBarHeight;
+const int windowHeight = margin * 4 + progressBarHeight + labelHeight + titleBarHeight;
 
 int progressBarSteps = 0;
 
 HWND hDialog = nullptr;
 HWND hLabel = nullptr;
 HWND hProgressBar = nullptr;
+HBRUSH hBrush = nullptr;
 
 std::wstring labelText;
 std::mutex uiThreadIsRunning;
@@ -43,9 +44,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         hLabel = CreateWindowW(nonlocalized::labelClass,
             labelText.c_str(),
             WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-            progressBarMargin,
-            0,
-            windowWidth - progressBarMargin * 4,
+            margin,
+            margin,
+            windowWidth - (margin * 4),
             labelHeight,
             hWnd,
             (HMENU)(501),
@@ -55,9 +56,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
             PROGRESS_CLASS,
             nullptr,
             WS_VISIBLE | WS_CHILD | PBS_SMOOTH,
-            progressBarMargin,
-            progressBarMargin + labelHeight,
-            windowWidth - progressBarMargin * 4,
+            margin,
+            (margin * 2) + labelHeight,
+            windowWidth - (margin * 4),
             progressBarHeight,
             hWnd,
             (HMENU)(IDR_PROGRESS_BAR),
@@ -80,6 +81,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         }
 
         break;
+    }
+    case WM_CTLCOLORSTATIC:
+    {
+      if (lParam == (LPARAM)hLabel)
+      {
+        if (!hBrush)
+        {
+            HDC hdcStatic = (HDC)wParam;
+            SetTextColor(hdcStatic, RGB(0, 0, 0));
+            SetBkColor(hdcStatic, RGB(255, 255, 255));
+            hBrush = CreateSolidBrush(RGB(255, 255, 255));
+        }
+
+        return (LRESULT)hBrush;
+      }
+      break;
     }
     case WM_CLOSE:
     {
