@@ -20,7 +20,7 @@ echo     ^<PublishProtocol^>FileSystem^</PublishProtocol^> >> !settingsPublishPr
 echo     ^<Configuration^>Release^</Configuration^> >> !settingsPublishProfile!
 echo     ^<Platform^>x64^</Platform^> >> !settingsPublishProfile!
 echo     ^<TargetFramework^>netcoreapp3.1^</TargetFramework^> >> !settingsPublishProfile!
-echo     ^<PublishDir^>..\..\..\x64\Release\SettingsUIRunner^</PublishDir^> >> !settingsPublishProfile!
+echo     ^<PublishDir^>..\..\..\x64\Release\Settings^</PublishDir^> >> !settingsPublishProfile!
 echo     ^<RuntimeIdentifier^>win-x64^</RuntimeIdentifier^> >> !settingsPublishProfile!
 echo     ^<SelfContained^>false^</SelfContained^> >> !settingsPublishProfile!
 echo     ^<PublishSingleFile^>False^</PublishSingleFile^> >> !settingsPublishProfile!
