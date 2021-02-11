@@ -160,8 +160,8 @@
       <Item ItemId=";Custom_Layout_Create_New" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Custom layout]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Tworzy nowy niestandardowy]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Układ niestandardowy]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create new custom]]></Val>
@@ -181,6 +181,9 @@
       <Item ItemId=";Default_Custom_Layout_Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Custom layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Układ niestandardowy]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -260,7 +263,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones Editor Exception Handler]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Procedura obsługi wyjątków edytora Fantazyjne strefy]]></Val>
+            <Val><![CDATA[Procedura obsługi wyjątków edytora FancyZones]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -125,7 +125,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Attribution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zuordnung]]></Val>
+            <Val><![CDATA[Würdigung]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -480,6 +480,24 @@
           <Val><![CDATA[Use a non-primary mouse button to toggle zone activation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nicht primäre Maustaste zum Umschalten der Zonenaktivierung verwenden]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Win + Up/Down/Left/Right to move windows based on relative position]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[WINDOWS+NACH OBEN/UNTEN/LINKS/RECHTS, um Fenster basierend auf der relativen Position zu verschieben]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Win + Left/Right to move windows based on zone index]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[WINDOWS+NACH LINKS/RECHTS, um Fenster basierend auf dem Zonenindex zu verschieben]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

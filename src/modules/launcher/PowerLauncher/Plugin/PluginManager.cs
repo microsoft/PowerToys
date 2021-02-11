@@ -120,7 +120,7 @@ namespace PowerLauncher.Plugin
             {
                 try
                 {
-                    var milliseconds = Stopwatch.Debug($"|PluginManager.InitializePlugins|Init method time cost for <{pair.Metadata.Name}>", () =>
+                    var milliseconds = Stopwatch.Debug($"PluginManager.InitializePlugins - Init method time cost for <{pair.Metadata.Name}>", () =>
                     {
                         pair.Plugin.Init(new PluginInitContext
                         {
@@ -165,7 +165,7 @@ namespace PowerLauncher.Plugin
             {
                 List<Result> results = null;
                 var metadata = pair.Metadata;
-                var milliseconds = Stopwatch.Debug($"|PluginManager.QueryForPlugin|Cost for {metadata.Name}", () =>
+                var milliseconds = Stopwatch.Debug($"PluginManager.QueryForPlugin - Cost for {metadata.Name}", () =>
                 {
                     if (delayedExecution && (pair.Plugin is IDelayedExecutionPlugin))
                     {

@@ -942,7 +942,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) n
             if (workArea)
             {
                 m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
-                FancyZonesDataInstance().SaveFancyZonesData();
+                FancyZonesDataInstance().SaveZoneSettings();
             }
         }
     }

@@ -438,6 +438,7 @@ DELA
 deletethis
 delims
 DENORMAL
+deondre
 depersist
 deprioritized
 deps
@@ -1097,6 +1098,7 @@ ITemplate
 ITEMSTATEICONCLICK
 ITest
 ith
+itsme
 IThrottled
 IThumbnail
 ITrigger
@@ -1226,6 +1228,7 @@ LOGMSG
 logon
 LOGPIXELSX
 LOn
+longdate
 lookbehind
 lowlevel
 LOWORD
@@ -1586,6 +1589,7 @@ PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
 pathcch
+pavelzw
 pb
 pbc
 Pbgra
@@ -2373,6 +2377,7 @@ webpage
 website
 webview
 wekyb
+welcomeoverview
 Whichdoes
 whitespaces
 WIC

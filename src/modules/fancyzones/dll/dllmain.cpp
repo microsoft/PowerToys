@@ -162,6 +162,9 @@ public:
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name(), FancyZonesModule::get_key());
         FancyZonesDataInstance().LoadFancyZonesData();
         s_instance = this;
+
+        // TODO: consider removing this call since the registry hasn't been used since 0.15
+        DeleteFancyZonesRegistryData();
     }
 
 private:

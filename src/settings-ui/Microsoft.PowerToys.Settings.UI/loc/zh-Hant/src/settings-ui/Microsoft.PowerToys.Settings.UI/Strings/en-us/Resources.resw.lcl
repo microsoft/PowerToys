@@ -323,7 +323,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Encoding]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在編碼]]></Val>
+            <Val><![CDATA[編碼]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -480,6 +480,24 @@
           <Val><![CDATA[Use a non-primary mouse button to toggle zone activation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[使用非主要滑鼠按鈕切換所要啟用的區域]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Win + Up/Down/Left/Right to move windows based on relative position]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows 鍵 + 向上鍵/向下鍵/向左鍵/向右鍵，可根據相對位置移動視窗]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Win + Left/Right to move windows based on zone index]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows 鍵 + 向左鍵/向右鍵，可根據區域索引移動視窗]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

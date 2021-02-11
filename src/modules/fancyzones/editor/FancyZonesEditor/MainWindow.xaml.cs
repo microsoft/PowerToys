@@ -304,10 +304,9 @@ namespace FancyZonesEditor
             }
             else
             {
-                selectedLayoutModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Custom)
-                {
-                    TemplateZoneCount = 0,
-                };
+                CanvasLayoutModel canvasModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Custom);
+                canvasModel.AddZone();
+                selectedLayoutModel = canvasModel;
             }
 
             selectedLayoutModel.InitTemplateZones();

@@ -110,6 +110,7 @@
     <Compile Include="Helpers\Observable.cs" />
     <Compile Include="Helpers\RelayCommand.cs" />
     <Compile Include="Helpers\ResourceExtensions.cs" />
+    <Compile Include="Helpers\StartProcessHelper.cs" />
     <Compile Include="ICoreWindowInterop.cs" />
     <Compile Include="Interop.cs" />
     <Compile Include="Services\ActivationService.cs" />

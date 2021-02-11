@@ -63,7 +63,7 @@ namespace Wox.Infrastructure.Image
             UpdateIconPath(theme);
             Task.Run(() =>
             {
-                Stopwatch.Normal("|ImageLoader.Initialize|Preload images cost", () =>
+                Stopwatch.Normal("ImageLoader.Initialize - Preload images cost", () =>
                 {
                     ImageCache.Usage.AsParallel().ForAll(x =>
                     {

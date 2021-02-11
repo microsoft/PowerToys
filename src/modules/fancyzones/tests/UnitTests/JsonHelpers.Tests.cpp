@@ -1727,7 +1727,7 @@ namespace FancyZonesUnitTests
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
-                data.SaveFancyZonesData();
+                data.SaveAppZoneHistoryAndZoneSettings();
                 bool actual = std::filesystem::exists(jsonPath);
 
                 Assert::IsTrue(actual);
@@ -1751,7 +1751,7 @@ namespace FancyZonesUnitTests
                 // write json with templates to file
                 json::to_file(jsonPath, expectedJsonObj);
 
-                data.SaveFancyZonesData();
+                data.SaveAppZoneHistoryAndZoneSettings();
 
                 // verify that file was written successfully
                 Assert::IsTrue(std::filesystem::exists(jsonPath));

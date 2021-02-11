@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use a non-primary mouse button to toggle zone activation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Do przełączania aktywacji strefy użyj przycisku myszy innego niż podstawowy]]></Val>
+            <Val><![CDATA[Aktywuj strefy przyciskiem myszy innym niż podstawowy]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -185,7 +185,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore the original size of windows when unsnapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Przywróć oryginalny rozmiar okien podczas odciągania]]></Val>
+            <Val><![CDATA[Przywróć oryginalny rozmiar okien po odciągnięciu]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

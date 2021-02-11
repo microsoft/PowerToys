@@ -21,5 +21,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
+
+        private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+        }
     }
 }

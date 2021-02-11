@@ -52,12 +52,12 @@ namespace Microsoft.Plugin.Program
 
             var a = Task.Run(() =>
             {
-                Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _win32ProgramRepository.IndexPrograms);
+                Stopwatch.Normal("Microsoft.Plugin.Program.Main - Win32Program index cost", _win32ProgramRepository.IndexPrograms);
             });
 
             var b = Task.Run(() =>
             {
-                Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Package index cost", _packageRepository.IndexPrograms);
+                Stopwatch.Normal("Microsoft.Plugin.Program.Main - Package index cost", _packageRepository.IndexPrograms);
             });
 
             Task.WaitAll(a, b);

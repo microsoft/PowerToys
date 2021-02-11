@@ -79,7 +79,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                     }
                     else
                     {
-                        schedule_restart_as_elevated();
+                        schedule_restart_as_elevated(true);
                         PostQuitMessage(0);
                     }
                 }

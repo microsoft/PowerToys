@@ -61,15 +61,6 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have activated Wox {0} times.
-        /// </summary>
-        public static string about_activate_times {
-            get {
-                return ResourceManager.GetString("about_activate_times", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Application Icon.
         /// </summary>
         public static string AppIcon {

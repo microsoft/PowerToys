@@ -51,6 +51,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             plugin.IsVisible = plugin.IsVisible != true;
         }
 
+        private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+        }
+
         /*
         public Tuple<string, string> SelectedSearchResultPreference
         {

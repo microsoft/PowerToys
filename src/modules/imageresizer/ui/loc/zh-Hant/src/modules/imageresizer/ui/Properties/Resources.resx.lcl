@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Encoding]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在編碼]]></Val>
+            <Val><![CDATA[編碼]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

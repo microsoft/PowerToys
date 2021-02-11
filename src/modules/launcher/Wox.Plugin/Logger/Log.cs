@@ -5,6 +5,7 @@
 using System;
 using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
+using System.Text;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -31,6 +32,7 @@ namespace Wox.Plugin.Logger
 
             var configuration = new LoggingConfiguration();
             var target = new FileTarget();
+            target.Layout = NLog.Layouts.Layout.FromString("[${longdate}] [${level:uppercase=true}]${message}\n");
             configuration.AddTarget("file", target);
 
             // Adding CurrentCulture since this is user facing
@@ -48,27 +50,28 @@ namespace Wox.Plugin.Logger
         private static void LogInternalException(string message, System.Exception e, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
             var logger = GetLogger(fullClassName.FullName, methodName);
+            var formattedOutput = new StringBuilder();
 
-            LogInternal(LogLevel.Error, message, fullClassName, logger, methodName, sourceFilePath, sourceLineNumber);
-
-            logger.Error("-------------------------- Begin exception --------------------------");
-            logger.Error($"\n\tMessage:\n\t {message}");
+            formattedOutput.AppendLine("-------------------------- Begin exception --------------------------");
+            formattedOutput.AppendLine($"Message: {message}");
 
             do
             {
-                logger.Error(
-                    $"\n\tException full name:\n\t <{e.GetType().FullName}>" +
-                    $"\n\tException message:\n\t <{e.Message}>" +
-                    $"\n\tException stack trace:\n\t <{e.StackTrace}>" +
-                    $"\n\tException source:\n\t <{e.Source}>" +
-                    $"\n\tException target site:\n\t <{e.TargetSite}>" +
-                    $"\n\tException HResult:\n\t <{e.HResult}>");
+                formattedOutput.Append(
+                    "\n" +
+                    $"Exception full name  : {e.GetType().FullName}\n" +
+                    $"Exception message    : {e.Message}\n" +
+                    $"Exception stack trace:\n{e.StackTrace}\n" +
+                    $"Exception source     : {e.Source}\n" +
+                    $"Exception target site: {e.TargetSite}\n" +
+                    $"Exception HResult    : {e.HResult}\n");
 
                 e = e.InnerException;
             }
             while (e != null);
 
-            logger.Error("-------------------------- End exception --------------------------");
+            formattedOutput.AppendLine("-------------------------- End exception --------------------------");
+            LogInternal(LogLevel.Error, formattedOutput.ToString(), logger, sourceFilePath, sourceLineNumber);
         }
 
         public static void Info(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
@@ -125,15 +128,13 @@ namespace Wox.Plugin.Logger
         {
             var logger = GetLogger(fullClassName.FullName, methodName);
 
-            LogInternal(level, message, fullClassName, logger, methodName, sourceFilePath, sourceLineNumber);
+            LogInternal(level, message, logger, sourceFilePath, sourceLineNumber);
         }
 
-        private static void LogInternal(LogLevel level, string message, Type fullClassName, NLog.Logger logger, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+        private static void LogInternal(LogLevel level, string message, NLog.Logger logger, [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            // System.Diagnostics.Debug.WriteLine($" {level.Name} | {message}");
-            var msg = $"\n\tMessage: {message}" +
-                    $"\n\tArea: {fullClassName}.{methodName}" +
-                    $"\n\tSource Path: {sourceFilePath}::{sourceLineNumber}\n";
+            var msg = $" [{sourceFilePath}::{sourceLineNumber}]" +
+                      $"\n{message}";
 
             logger.Log(level, msg);
         }

@@ -12,12 +12,18 @@
       <Item ItemId=";Microsoft_plugin_sys_emptyrecyclebin" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Empty Recycle Bin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Prullenbak leegmaken]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_sys_emptyrecyclebin_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Empty Recycle Bin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Prullenbak leegmaken]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -25,7 +31,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hibernate]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sluimeren]]></Val>
+            <Val><![CDATA[Sluimerstand]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -33,6 +39,9 @@
       <Item ItemId=";Microsoft_plugin_sys_hibernate_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Hibernate computer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sluimerstand van computer inschakelen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -48,18 +57,27 @@
       <Item ItemId=";Microsoft_plugin_sys_lock_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Lock computer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Computer vergrendelen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_sys_plugin_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Provides Windows related commands, shutdown, lock, sleep ....]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Biedt aan Windows verwante opdrachten, afsluiten, vergrendelen, slaapstand ....]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_sys_plugin_name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows System Commands]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Systeemopdrachten van Windows]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -75,6 +93,9 @@
       <Item ItemId=";Microsoft_plugin_sys_restart_computer_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Restart computer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Computer opnieuw opstarten]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -108,6 +129,9 @@
       <Item ItemId=";Microsoft_plugin_sys_sign_out_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Sign out of computer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Afmelden bij computer]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -115,7 +139,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Sleep]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Slapen]]></Val>
+            <Val><![CDATA[Slaapstand]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -123,6 +147,9 @@
       <Item ItemId=";Microsoft_plugin_sys_sleep_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Put computer to sleep]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[De computer in slaapstand zetten]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
