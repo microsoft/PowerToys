@@ -11,7 +11,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Windows.Data.Json;
 
-namespace Microsoft.PowerToys.Settings.UI.Runner
+namespace PowerToys.Settings
 {
     // Interaction logic for MainWindow.xaml.
     public partial class MainWindow : Window
