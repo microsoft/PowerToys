@@ -471,9 +471,7 @@
 
     <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)">
       <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe">
-          <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
-        </File>
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Newtonsoft.Json.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.dll" />
