@@ -32,12 +32,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\SettingsUIRunner</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
     <Optimize>false</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\SettingsUIRunner</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\Settings</OutputPath>
     <Optimize>true</Optimize>
   </PropertyGroup>
 
