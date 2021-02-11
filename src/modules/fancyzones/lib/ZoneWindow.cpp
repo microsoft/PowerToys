@@ -60,6 +60,7 @@ namespace
             if (IsEmpty())
             {
                 HWND window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, position.left(), position.top(), position.width(), position.height(), nullptr, nullptr, hinstance, owner);
+                Logger::info("Creating new zone window, hWnd = {}", (void*)window);
                 MakeWindowTransparent(window);
 
                 // According to ShowWindow docs, we must call it with SW_SHOWNORMAL the first time
@@ -70,6 +71,7 @@ namespace
             else
             {
                 HWND window = ExtractWindow();
+                Logger::info("Reusing zone window from pool, hWnd = {}", (void*)window);
                 SetWindowLongPtrW(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(owner));
                 MoveWindow(window, position.left(), position.top(), position.width(), position.height(), TRUE);
                 return window;
@@ -78,6 +80,7 @@ namespace
 
         void FreeZoneWindow(HWND window)
         {
+            Logger::info("Freeing zone window, hWnd = {}", (void*)window);
             SetWindowLongPtrW(window, GWLP_USERDATA, 0);
             ShowWindow(window, SW_HIDE);
 
