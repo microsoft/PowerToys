@@ -164,7 +164,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Pick a color from the screen, copy formatted value to clipboard, then to the editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[从屏幕中选择一种颜色，将格式化值复制到剪贴板，然后再复制到编辑器]]></Val>
+            <Val><![CDATA[从屏幕中取色，将格式化值复制到剪贴板，并打开编辑器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -182,7 +182,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Pick a color from the screen and copy formatted value to clipboard]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[从屏幕中选择一种颜色，然后将格式化值复制到剪贴板]]></Val>
+            <Val><![CDATA[从屏幕中取色，将格式化值复制到剪贴板]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -191,7 +191,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Activation behavior]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[激活行为]]></Val>
+            <Val><![CDATA[激活方式]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -752,7 +752,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Check for updates]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[检查是否有更新]]></Val>
+            <Val><![CDATA[检查更新]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2171,7 +2171,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[当按下 Windows 键时，显示包含 Windows 快捷键的帮助叠加层。]]></Val>
+            <Val><![CDATA[长按 Windows 键时，显示包含 Windows 快捷键的速查表。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2198,7 +2198,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opacity of background]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[背景的不透明度]]></Val>
+            <Val><![CDATA[背景不透明度]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2207,7 +2207,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[需要按住多长时间(毫秒)才能显示]]></Val>
+            <Val><![CDATA[为显示需要按住多长时间(毫秒)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
