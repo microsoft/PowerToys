@@ -10,43 +10,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
-
-    <Page.Resources>
-        <DataTemplate x:Name="CollapsedPlugin" x:DataType="ViewModels:PowerLauncherPluginViewModel">
-            <Grid ColumnSpacing="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="40"/>
-                </Grid.ColumnDefinitions>
-
-                <Image Source="{x:Bind IconPath}"/>
-
-                <StackPanel Orientation="Vertical" Grid.Column="1">
-                    <TextBlock FontSize="18" Text="{x:Bind Path=Name}"/>
-                    <TextBlock FontSize="12" TextWrapping="Wrap">
-                        <Run Text="{x:Bind Description}" />. <Run x:Uid="PowerLauncher_AuthoredBy" /> <Run Text="{x:Bind Author}" /><Run Text="." />
-                    </TextBlock>
-                </StackPanel>
-
-                <ToggleSwitch x:Name="ToggleSwitch" IsOn="{x:Bind Path=Disabled, Converter={StaticResource BooleanInvertConverter}, Mode=TwoWay}" Grid.Column="2"/>
-            </Grid>
-        </DataTemplate>
-
-        <DataTemplate x:Name="FullPlugin" x:DataType="ViewModels:PowerLauncherPluginViewModel">
-            <StackPanel Orientation="Vertical">
-                <ContentPresenter 
-                    x:Name="CollapsedPlugin"
-                    ContentTemplate="{StaticResource CollapsedPlugin}"/>
-
-                <StackPanel  Padding="10,10,10,0">
-                    <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult" IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
-                    <TextBlock x:Uid="PowerLauncher_ActionPhrase" Margin="0,5,0,0" />
-                    <TextBox Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}" Width="150px" HorizontalAlignment="Left"></TextBox>
-                </StackPanel>
-            </StackPanel>
-        </DataTemplate>
-    </Page.Resources>
+    
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}" >
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -191,75 +155,49 @@
 
             <ListView 
                 ItemsSource="{x:Bind Path=ViewModel.Plugins}"
-                SelectionMode="Multiple"
-                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                SelectionMode="None"
+                IsItemClickEnabled="True"
+                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                ItemClick="ListView_ItemClick"
+                >
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         <Setter Property="VerticalContentAlignment" Value="Stretch" />
-                        <!--<Setter Property="Foreground" Value="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>-->
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListViewItem">
-                                    <Grid>
-                                        <VisualStateManager.VisualStateGroups>
-                                            <VisualStateGroup x:Name="CommonStates">
-                                                <VisualState x:Name="Normal">
-                                                    <Storyboard>
-                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenterFull" Storyboard.TargetProperty="Visibility">
-                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed" />
-                                                        </ObjectAnimationUsingKeyFrames>
-                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenterCollapsed" Storyboard.TargetProperty="Visibility">
-                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
-                                                        </ObjectAnimationUsingKeyFrames>
-                                                    </Storyboard>
-                                                </VisualState>
-                                                <VisualState x:Name="PointerOverSelected">
-                                                    <Storyboard>
-                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenterFull" Storyboard.TargetProperty="Visibility">
-                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
-                                                        </ObjectAnimationUsingKeyFrames>
-                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenterFull" Storyboard.TargetProperty="Background">
-                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemChromeMediumColor}" />
-                                                        </ObjectAnimationUsingKeyFrames>
-                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenterCollapsed" Storyboard.TargetProperty="Visibility">
-                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed" />
-                                                        </ObjectAnimationUsingKeyFrames>
-                                                    </Storyboard>
-                                                </VisualState>
-                                                <VisualState x:Name="PointerOver">
-                                                    <Storyboard>
-                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenterFull" Storyboard.TargetProperty="Visibility">
-                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed" />
-                                                        </ObjectAnimationUsingKeyFrames>
-                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenterCollapsed" Storyboard.TargetProperty="Visibility">
-                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
-                                                        </ObjectAnimationUsingKeyFrames>
-                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenterCollapsed" Storyboard.TargetProperty="Background">
-                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemChromeMediumColor}" />
-                                                        </ObjectAnimationUsingKeyFrames>
-                                                    </Storyboard>
-                                                </VisualState>
-                                            </VisualStateGroup>
-                                        </VisualStateManager.VisualStateGroups>
-                                        <ContentPresenter
-                                                x:Name="ContentPresenterFull"
-                                                Padding="10,20,10,20"
-                                                ContentTemplate="{StaticResource FullPlugin}"
-                                                />
-
-                                        <ContentPresenter
-                                                x:Name="ContentPresenterCollapsed"
-                                                Padding="10,20,10,20"
-                                                ContentTemplate="{StaticResource CollapsedPlugin}"
-                                                />
-                                    </Grid>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
+                        <Setter Property="Padding" Value="0,0,0,0"/>
                     </Style>
                 </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel">
+                        <StackPanel Orientation="Vertical" Padding="20,10,20,10">
+                            <Grid ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="40"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Image Source="{x:Bind IconPath}"/>
+
+                                <StackPanel Orientation="Vertical" Grid.Column="1">
+                                    <TextBlock FontSize="18" Text="{x:Bind Path=Name}"/>
+                                    <TextBlock FontSize="12" TextWrapping="Wrap">
+                                        <Run Text="{x:Bind Description}" />. <Run x:Uid="PowerLauncher_AuthoredBy" /> <Run Text="{x:Bind Author}" /><Run Text="." />
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle" x:Name="ToggleSwitch" IsOn="{x:Bind Path=Disabled, Converter={StaticResource BooleanInvertConverter}, Mode=TwoWay}" Grid.Column="2"/>
+                            </Grid>
+
+                            <StackPanel  Padding="10,10,10,0" Visibility="{x:Bind Path=IsVisible, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult" IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
+                                <TextBlock x:Uid="PowerLauncher_ActionKeywordTextBlock" Margin="0,5,0,0" />
+                                <TextBox x:Uid="PowerLauncher_ActionKeywordTextBox" Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}" Width="150px" HorizontalAlignment="Left"></TextBox>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
             </ListView>
 
             <TextBlock x:Uid="Appearance_GroupSettings"

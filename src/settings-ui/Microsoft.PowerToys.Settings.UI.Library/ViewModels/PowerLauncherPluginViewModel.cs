@@ -85,6 +85,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public string IconPath { get => isDark() ? settings.IconPathDark : settings.IconPathLight; }
 
+        private bool _isVisible;
+
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set
+            {
+                if (value != _isVisible)
+                {
+                    _isVisible = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")

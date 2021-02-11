@@ -40,6 +40,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
         }
 
+        private void ListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            var plugin = e.ClickedItem as PowerLauncherPluginViewModel;
+            if (plugin == null)
+            {
+                return;
+            }
+
+            plugin.IsVisible = plugin.IsVisible != true;
+        }
+
         /*
         public Tuple<string, string> SelectedSearchResultPreference
         {
