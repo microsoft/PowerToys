@@ -11,7 +11,7 @@ The Settings.UI project contains the xaml files for each of the UI components. I
 #### [Viewmodels:](/src/core/Microsoft.PowerToys.Settings.UI.Library)
 The Settings.UI.Library project contains the data that is to be rendered by the UI components.
 
-#### [Settings Runner:](/src/core/Microsoft.PowerToys.Settings.UI.Runner)
+#### [Settings Runner:](/src/core/PowerToys.Settings)
 The function of the settings runner project is to communicate all changes that the user makes in the user interface, to the runner so that it can be dispatched and reflected in all the modules.
 
 [MVVM]: https://docs.microsoft.com/en-us/windows/uwp/data-binding/data-binding-and-mvvm
