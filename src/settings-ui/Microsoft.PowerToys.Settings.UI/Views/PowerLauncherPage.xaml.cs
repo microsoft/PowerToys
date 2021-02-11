@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            plugin.IsVisible = plugin.IsVisible != true;
+            plugin.ShowAdditionalInfo = plugin.ShowAdditionalInfo != true;
         }
 
         private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)

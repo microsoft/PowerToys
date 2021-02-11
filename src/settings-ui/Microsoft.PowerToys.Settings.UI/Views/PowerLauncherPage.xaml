@@ -190,7 +190,7 @@
                                 <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle" x:Name="ToggleSwitch" IsOn="{x:Bind Path=Disabled, Converter={StaticResource BooleanInvertConverter}, Mode=TwoWay}" Grid.Column="2"/>
                             </Grid>
 
-                            <StackPanel  Padding="10,10,10,0" Visibility="{x:Bind Path=IsVisible, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel  Padding="10,10,10,0" Visibility="{x:Bind Path=ShowAdditionalInfo, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult" IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
                                 <TextBlock x:Uid="PowerLauncher_ActionKeywordTextBlock" Margin="0,5,0,0" />
                                 <TextBox x:Uid="PowerLauncher_ActionKeywordTextBox" Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}" Width="150px" HorizontalAlignment="Left"></TextBox>
