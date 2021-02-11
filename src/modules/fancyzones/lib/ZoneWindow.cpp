@@ -37,12 +37,27 @@ namespace
     class WindowPool
     {
         std::vector<HWND> m_pool;
+        std::mutex m_mutex;
+
+        bool IsEmpty()
+        {
+            std::unique_lock lock(m_mutex);
+            return m_pool.empty();
+        }
+
+        HWND ExtractWindow()
+        {
+            std::unique_lock lock(m_mutex);
+            HWND window = m_pool.back();
+            m_pool.pop_back();
+            return window;
+        }
 
     public:
 
         HWND NewZoneWindow(Rect position, HINSTANCE hinstance, ZoneWindow* owner)
         {
-            if (m_pool.empty())
+            if (IsEmpty())
             {
                 HWND window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, position.left(), position.top(), position.width(), position.height(), nullptr, nullptr, hinstance, owner);
                 MakeWindowTransparent(window);
@@ -54,8 +69,7 @@ namespace
             }
             else
             {
-                HWND window = m_pool.back();
-                m_pool.pop_back();
+                HWND window = ExtractWindow();
                 SetWindowLongPtrW(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(owner));
                 MoveWindow(window, position.left(), position.top(), position.width(), position.height(), TRUE);
                 return window;
@@ -66,6 +80,8 @@ namespace
         {
             SetWindowLongPtrW(window, GWLP_USERDATA, 0);
             ShowWindow(window, SW_HIDE);
+
+            std::unique_lock lock(m_mutex);
             m_pool.push_back(window);
         }
 
