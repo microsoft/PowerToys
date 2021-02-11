@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PowerLauncherProperties Properties { get; set; }
 
         [JsonPropertyName("plugins")]
-        public IEnumerable<PowerLauncherPluginSettings> Plugins { get; set; }
+        public IEnumerable<PowerLauncherPluginSettings> Plugins { get; set; } = new List<PowerLauncherPluginSettings>();
 
         public PowerLauncherSettings()
         {
