@@ -26,14 +26,18 @@
                 FontWeight="SemiBold"
                 FontSize="64"
                 Foreground="{DynamicResource PrimaryForegroundBrush}" />
-            <Label
-                Name="LabelSize"
-                DockPanel.Dock="Bottom"
-                HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center"
-                FontWeight="Thin"
-                FontSize="32"
-                Foreground="{DynamicResource PrimaryForegroundBrush}" />
+            <TextBlock FontSize="18"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                       DockPanel.Dock="Bottom"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center">
+                     <Run x:Name="WidthLabel" />
+                     <Run Text="&#xE106;"
+                          FontSize="10"
+                          FontFamily="Segoe MDL2 Assets" />
+                    <Run x:Name="HeightLabel" />
+            </TextBlock>
 
         </DockPanel>
         <!--<TextBlock Margin="2" Text="Shift Key switches direction&#13;Ctrl  Key repeats"/>-->

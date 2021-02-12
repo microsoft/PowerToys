@@ -78,7 +78,8 @@ namespace FancyZonesEditor
 
         private void GridZone_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            LabelSize.Content = "(" + Math.Round(ActualWidth).ToString() + "x" + Math.Round(ActualHeight).ToString() + ")";
+            WidthLabel.Text = Math.Round(ActualWidth).ToString();
+            HeightLabel.Text = Math.Round(ActualHeight).ToString();
         }
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
