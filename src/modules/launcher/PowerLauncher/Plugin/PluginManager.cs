@@ -12,7 +12,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
-using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 

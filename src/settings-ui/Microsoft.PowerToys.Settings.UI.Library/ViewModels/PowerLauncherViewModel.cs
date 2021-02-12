@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using ManagedCommon;
@@ -28,11 +31,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private readonly SendCallback callback;
 
+        private readonly Func<bool> isDark;
+
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode, Func<bool> isDark)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+            this.isDark = isDark;
 
             // To obtain the general Settings configurations of PowerToys
             if (settingsRepository == null)
@@ -81,6 +87,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     _isSystemThemeRadioButtonChecked = true;
                     break;
             }
+
+            foreach (var plugin in Plugins)
+            {
+                plugin.PropertyChanged += OnPluginInfoChange;
+            }
+        }
+
+        private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
+        {
+            UpdateSettings();
         }
 
         public PowerLauncherViewModel(PowerLauncherSettings settings, SendCallback callback)
@@ -357,6 +373,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.Properties.DisableDriveDetectionWarning = value;
                     UpdateSettings();
                 }
+            }
+        }
+
+        private List<PowerLauncherPluginViewModel> _plugins;
+
+        public List<PowerLauncherPluginViewModel> Plugins
+        {
+            get
+            {
+                if (_plugins == null)
+                {
+                    _plugins = settings.Plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)).ToList();
+                }
+
+                return _plugins;
             }
         }
     }
