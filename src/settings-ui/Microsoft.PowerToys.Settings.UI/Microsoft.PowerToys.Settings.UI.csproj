@@ -111,6 +111,13 @@
     <Compile Include="Helpers\StartProcessHelper.cs" />
     <Compile Include="ICoreWindowInterop.cs" />
     <Compile Include="Interop.cs" />
+    <Compile Include="OOBE\ViewModel\OobeShellViewModel.cs" />
+    <Compile Include="OOBE\Views\OobeDumpPage.xaml.cs">
+      <DependentUpon>OobeDumpPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeShellPage.xaml.cs">
+      <DependentUpon>OobeShellPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
@@ -216,6 +223,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="OOBE\Views\OobeDumpPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeShellPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Styles\Button.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -300,6 +315,7 @@
       <Name>Microsoft.PowerToys.Settings.UI.Library</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
