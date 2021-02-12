@@ -371,6 +371,7 @@ CSY
 CTAB
 CTest
 ctime
+CTLCOLORSTATIC
 ctor
 CTRLALTDEL
 Ctx
@@ -2232,6 +2233,7 @@ uint
 uintptr
 UIPI
 UIs
+UITo
 ul
 ULARGE
 ULLONG
