@@ -5,13 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using static Microsoft.PowerToys.Settings.UI.Helpers.NativeMethods;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -113,7 +111,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SetDetectedMonitors()
         {
-            int monitorCount = MonitorResolutionHelper.AllMonitors.Count();
+            int monitorCount = GetSystemMetrics(SystemMetric.SM_CMONITORS);
 
             detectedMonitors = new Dictionary<int, int>();
             for (int i = 0; i < monitorCount; i++)
