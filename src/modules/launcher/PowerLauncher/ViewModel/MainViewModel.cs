@@ -501,7 +501,7 @@ namespace PowerLauncher.ViewModel
                     Title = string.Format(CultureInfo.InvariantCulture, title, h.Query),
                     SubTitle = string.Format(CultureInfo.InvariantCulture, time, h.ExecutedDateTime),
                     IcoPath = "Images\\history.png",
-                    OriginQuery = new Query { RawQuery = h.Query },
+                    OriginQuery = new Query(h.Query),
                     Action = _ =>
                     {
                         SelectedResults = Results;
@@ -539,9 +539,10 @@ namespace PowerLauncher.ViewModel
                 _updateToken = currentCancellationToken;
                 var queryText = QueryText.Trim();
 
-                var pluginQueryPairs = QueryBuilder.Build(ref queryText);
+                var pluginQueryPairs = QueryBuilder.Build(queryText);
                 if (pluginQueryPairs != null && pluginQueryPairs.Count > 0)
                 {
+                    queryText = pluginQueryPairs.Values.First().ActionKeyword;
                     _currentQuery = queryText;
                     Task.Run(
                         () =>
@@ -885,7 +886,7 @@ namespace PowerLauncher.ViewModel
 
             // Fix Cold start for plugins
             string s = "m";
-            var pluginQueryPairs = QueryBuilder.Build(ref s);
+            var pluginQueryPairs = QueryBuilder.Build(s);
 
             // To execute a query corresponding to each plugin
             foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPairs)
