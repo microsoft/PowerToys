@@ -114,6 +114,9 @@
     <Compile Include="OobePage.xaml.cs">
       <DependentUpon>OobePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OOBE\Views\OobeShellPage.xaml.cs">
+      <DependentUpon>OobeShellPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
@@ -223,6 +226,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="OOBE\Views\OobeShellPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Styles\Button.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -306,6 +313,9 @@
       <Project>{b1bcc8c6-46b5-4bfa-8f22-20f32d99ec6a}</Project>
       <Name>Microsoft.PowerToys.Settings.UI.Library</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="OobeViews\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
