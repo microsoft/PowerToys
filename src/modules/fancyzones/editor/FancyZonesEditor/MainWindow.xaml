@@ -170,7 +170,7 @@
                                    FontWeight="SemiBold"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Top"
-                                   Margin="0,-4,0,0"
+                                   Margin="0,-4,24,0"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
 
                         <Button Content="&#xE104;"
@@ -196,26 +196,8 @@
 
                         <local:LayoutPreview Grid.Row="1"
                                              Margin="0,8,0,8"
-                                             VerticalAlignment="Stretch"                                
+                                             VerticalAlignment="Stretch"
                                              HorizontalAlignment="Stretch" />
-                        <Grid Grid.Row="2"
-                              Visibility="Collapsed"
-                              HorizontalAlignment="Stretch"
-                              Margin="2,0,0,0">
-                            <StackPanel Orientation="Vertical"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center">
-                                <TextBlock ToolTip="{x:Static props:Resources.Space_Around_Zones}"
-                                           x:Name="SpacingTextBlock"
-                                           Foreground="{DynamicResource SecondaryForegroundBrush}">
-                                    <Run FontSize="10"
-                                         Text="&#xE1D9;"
-                                         FontFamily="Segoe MDL2 Assets" />
-                                    <Run Text=" " />
-                                    <Run Text="20" />
-                                </TextBlock>
-                            </StackPanel>
-                        </Grid>
                     </Grid>
                 </Border>
                 <Border x:Name="SelectionHighlight"
@@ -229,9 +211,6 @@
                 <DataTrigger Binding="{Binding IsApplied}"
                              Value="true">
                     <Setter TargetName="layoutName"
-                            Property="Foreground"
-                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                    <Setter TargetName="SpacingTextBlock"
                             Property="Foreground"
                             Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
                     <Setter TargetName="SelectionHighlight"
@@ -552,7 +531,7 @@
                                Foreground="{DynamicResource PrimaryForegroundBrush}"
                                Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
 
-                    <TextBox Margin="0,6,0,0"
+                    <ui:NumberBox Margin="0,6,0,0"
                              IsEnabled="{Binding ShowSpacing}"
                              Text="{Binding Spacing}"
                              Width="86"
@@ -566,7 +545,7 @@
                                Foreground="{DynamicResource PrimaryForegroundBrush}"
                                x:Name="sensitivityRadiusValue" />
 
-                    <TextBox Margin="0,6,0,0"
+                    <ui:NumberBox Margin="0,6,0,0"
                              Text="{Binding SensitivityRadius}"
                              Width="86"
                              AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}"
