@@ -36,34 +36,32 @@ namespace PowerLauncher.Plugin
 
             string possibleActionKeyword = terms[0];
 
-            foreach (string pluginActionKeyword in PluginManager.NonGlobalPlugins.Keys)
+            foreach (var plugin in PluginManager.NonGlobalPlugins)
             {
-                // Using Ordinal since this is used internally
-                if (possibleActionKeyword.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
+                var pluginActionKeyword = plugin.Metadata.ActionKeyword;
+                if (plugin.Metadata.Disabled || !possibleActionKeyword.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
                 {
-                    if (PluginManager.NonGlobalPlugins.TryGetValue(pluginActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
-                    {
-                        // The search string is the raw query excluding the action keyword
-                        string search = rawQuery.Substring(pluginActionKeyword.Length).Trim();
-
-                        // To set the terms of the query after removing the action keyword
-                        if (possibleActionKeyword.Length > pluginActionKeyword.Length)
-                        {
-                            // If the first term contains the action keyword, then set the remaining string to be the first term
-                            terms[0] = possibleActionKeyword.Substring(pluginActionKeyword.Length);
-                        }
-                        else
-                        {
-                            // If the first term is the action keyword, then skip it.
-                            terms = terms.Skip(1).ToArray();
-                        }
-
-                        // A new query is constructed for each plugin as they have different action keywords
-                        var query = new Query(rawQuery, search, new ReadOnlyCollection<string>(terms), pluginActionKeyword);
-
-                        pluginQueryPair.TryAdd(pluginPair, query);
-                    }
+                    continue;
                 }
+
+                string search = rawQuery.Substring(pluginActionKeyword.Length).Trim();
+
+                // To set the terms of the query after removing the action keyword
+                if (possibleActionKeyword.Length > pluginActionKeyword.Length)
+                {
+                    // If the first term contains the action keyword, then set the remaining string to be the first term
+                    terms[0] = possibleActionKeyword.Substring(pluginActionKeyword.Length);
+                }
+                else
+                {
+                    // If the first term is the action keyword, then skip it.
+                    terms = terms.Skip(1).ToArray();
+                }
+
+                // A new query is constructed for each plugin as they have different action keywords
+                var query = new Query(rawQuery, search, new ReadOnlyCollection<string>(terms), pluginActionKeyword);
+
+                pluginQueryPair.TryAdd(plugin, query);
             }
 
             // If the user has specified a matching action keyword, then do not
