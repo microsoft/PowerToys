@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="..\..\Version.props" />
@@ -114,6 +114,10 @@
     <Compile Include="OobePage.xaml.cs">
       <DependentUpon>OobePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OOBE\ViewModel\OobeShellViewModel.cs" />
+    <Compile Include="OOBE\Views\OobeDumpPage.xaml.cs">
+      <DependentUpon>OobeDumpPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OOBE\Views\OobeShellPage.xaml.cs">
       <DependentUpon>OobeShellPage.xaml</DependentUpon>
     </Compile>
@@ -223,6 +227,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="OobePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeDumpPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
