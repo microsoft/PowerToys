@@ -937,4 +937,13 @@
   <data name="ColorPicker_Editor.Text" xml:space="preserve">
     <value>Editor</value>
   </data>
+  <data name="Oobe_GetStarted.Text" xml:space="preserve">
+    <value>Let's get started!</value>
+  </data>
+  <data name="Oobe_PowerToysDescription.Text" xml:space="preserve">
+    <value>PowerToys is a collection of tools that will transform the way you use Windows.</value>
+  </data>
+  <data name="Oobe_Welcome.Text" xml:space="preserve">
+    <value>Welcome to PowerToys</value>
+  </data>
 </root>

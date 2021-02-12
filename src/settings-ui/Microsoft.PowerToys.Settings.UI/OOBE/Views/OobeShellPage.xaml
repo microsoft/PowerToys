@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -164,6 +164,18 @@
             <NavigationView.PaneCustomContent>
                 <StackPanel Grid.Column="0" Margin="0,0,0,48"
                             Orientation="Vertical">
+                    <TextBlock x:Uid="Oobe_Welcome"
+                               FontWeight="SemiBold"
+                               FontSize="24"
+                               Margin="32,32,32,16" />
+                    <TextBlock x:Uid="Oobe_PowerToysDescription"
+                               Margin="32,0,32,0"
+                               TextWrapping="Wrap"
+                               Opacity="0.8" />
+                    <TextBlock x:Uid="Oobe_GetStarted"
+                               Margin="32,8,32,0"
+                               TextWrapping="Wrap"
+                               Opacity="0.8" />
                 </StackPanel>
             </NavigationView.PaneCustomContent>
             <NavigationView.MenuItems>
