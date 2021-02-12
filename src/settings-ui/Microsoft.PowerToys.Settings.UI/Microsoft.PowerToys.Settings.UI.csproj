@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="..\..\Version.props" />
@@ -160,6 +160,11 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\FluentIcons\ColorPicker.png" />
+    <Content Include="Assets\FluentIcons\FancyZones.png" />
+    <Content Include="Assets\FluentIcons\ImageResizer.png" />
+    <Content Include="Assets\FluentIcons\KBM.png" />
+    <Content Include="Assets\FluentIcons\PowerRename.png" />
     <Content Include="Assets\Logo.scale-200.png" />
     <Content Include="Assets\Modules\ColorPicker.png" />
     <Content Include="Assets\Modules\FancyZones.png" />
