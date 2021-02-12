@@ -9,6 +9,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     public static class StartProcessHelper
     {
         public const string ColorsSettings = "ms-settings:colors";
+        public const string DisplaySettings = "ms-settings:display";
 
         public static void Start(string process)
         {

@@ -192,7 +192,7 @@
                       Loaded="PowerToysRun_MonitorToDisplayOn_ComboBox_Loaded"
                       SelectedValue="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorToDisplayOn}"
                       SelectedValuePath="Key" />
-                <HyperlinkButton NavigateUri="ms-settings:display">
+                <HyperlinkButton Click="OpenDisplaySettings_Click">
                     <TextBlock x:Uid="Windows_Display_Settings" />
                 </HyperlinkButton>
 
