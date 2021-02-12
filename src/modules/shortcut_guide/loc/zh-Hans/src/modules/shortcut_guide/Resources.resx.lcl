@@ -104,7 +104,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[当按下 Windows 键时，显示包含 Windows 快捷键的帮助叠加层。]]></Val>
+            <Val><![CDATA[长按 Windows 键时，显示包含 Windows 快捷键的速查表。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
