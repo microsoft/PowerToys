@@ -63,6 +63,13 @@ namespace PowerToys.Settings
                     Program.GetTwoWayIPCManager().Send(msg);
                 });
 
+                // open oobe
+                ShellPage.SetOpenOobeCallback(() =>
+                {
+                    var oobe = new OobeWindow();
+                    oobe.Show();
+                });
+
                 // receive IPC Message
                 Program.IPCMessageReceivedCallback = (string msg) =>
                 {
