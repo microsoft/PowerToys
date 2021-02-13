@@ -7,6 +7,7 @@
 #include <commctrl.h>
 #include <Shlobj.h>
 #include <helpers.h>
+#include <PowerRenameEnum.h>
 #include <windowsx.h>
 #include <thread>
 #include <trace.h>
@@ -93,6 +94,7 @@ IFACEMETHODIMP CPowerRenameUI::QueryInterface(__in REFIID riid, __deref_out void
     static const QITAB qit[] = {
         QITABENT(CPowerRenameUI, IPowerRenameUI),
         QITABENT(CPowerRenameUI, IPowerRenameManagerEvents),
+        QITABENT(CPowerRenameUI, IPowerRenameEnumEvents),
         QITABENT(CPowerRenameUI, IDropTarget),
         { 0 },
     };
@@ -232,6 +234,61 @@ IFACEMETHODIMP CPowerRenameUI::OnRenameCompleted()
 
     // Close the window
     PostMessage(m_hwnd, WM_CLOSE, (WPARAM)0, (LPARAM)0);
+    return S_OK;
+}
+
+// IPowerRenameEnumEvent
+IFACEMETHODIMP CPowerRenameUI::OnStarted()
+{
+    m_enumStartTick = GetTickCount64();
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameUI::OnCompleted(_In_ bool canceled)
+{
+    if (m_sppd)
+    {
+        m_sppd->StopProgressDialog();
+        m_sppd = nullptr;
+    }
+
+    return S_OK;
+}
+IFACEMETHODIMP CPowerRenameUI::OnFoundItem(_In_ IPowerRenameItem* pItem)
+{
+    // Check if we need to create the progress dialog.  We delay m_progressDlgDelayMS before
+    // showing the progress dialog so the user does not see it briefly on every launch.
+    if (!m_sppd && (GetTickCount64() - m_enumStartTick > m_progressDlgDelayMS))
+    {
+        if (SUCCEEDED(CoCreateInstance(CLSID_ProgressDialog, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&m_sppd))))
+        {
+            wchar_t buff[100] = { 0 };
+            LoadString(g_hInst, IDS_LOADING, buff, ARRAYSIZE(buff));
+            m_sppd->SetLine(1, buff, FALSE, NULL);
+            LoadString(g_hInst, IDS_APP_TITLE, buff, ARRAYSIZE(buff));
+            m_sppd->SetTitle(buff);
+            m_sppd->StartProgressDialog(m_hwnd, NULL, PROGDLG_MARQUEEPROGRESS, NULL);
+        }
+    }
+
+    if (m_sppd)
+    {
+        if (m_sppd->HasUserCancelled() && m_sppre)
+        {
+            // Cancel the enumeration
+            m_sppre->Cancel();
+        }
+        else
+        {
+            // Update the progress dialog
+            PWSTR pathDisplay = nullptr;
+            if (SUCCEEDED(pItem->GetPath(&pathDisplay)))
+            {
+                m_sppd->SetLine(2, pathDisplay, TRUE, nullptr);
+                CoTaskMemFree(pathDisplay);
+            }
+        }
+    }
     return S_OK;
 }
 
@@ -379,35 +436,31 @@ HRESULT CPowerRenameUI::_EnumerateItems(_In_ IUnknown* pdtobj)
     // Enumerate the data object and populate the manager
     if (m_spsrm)
     {
-        // Add a progress dialog in case enumeration of items takes a long time.
-        // This also allows the user to cancel enumeration.
-        CComPtr<IProgressDialog> sppd;
-        hr = CoCreateInstance(CLSID_ProgressDialog, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&sppd));
+        m_disableCountUpdate = true;
+
+        // Ensure we re-create the enumerator
+        m_sppre = nullptr;
+        hr = CPowerRenameEnum::s_CreateInstance(pdtobj, m_spsrm, IID_PPV_ARGS(&m_sppre));
         if (SUCCEEDED(hr))
         {
-            wchar_t buff[100] = { 0 };
-            LoadString(g_hInst, IDS_LOADING, buff, ARRAYSIZE(buff));
-            sppd->SetLine(1, buff, FALSE, NULL);
-            LoadString(g_hInst, IDS_APP_TITLE, buff, ARRAYSIZE(buff));
-            sppd->SetTitle(buff);
-            sppd->StartProgressDialog(m_hwnd, NULL, PROGDLG_MARQUEEPROGRESS, NULL);
-
-            m_disableCountUpdate = true;
-
-            hr = EnumerateDataObject(pdtobj, m_spsrm, sppd);
-
-            m_disableCountUpdate = false;
-
-            sppd->StopProgressDialog();
-
+            DWORD dwCookie = 0;
+            hr = m_sppre->Advise(this, &dwCookie);
             if (SUCCEEDED(hr))
             {
-                UINT itemCount = 0;
-                m_spsrm->GetVisibleItemCount(&itemCount);
-                m_listview.SetItemCount(itemCount);
-
-                _UpdateCounts();
+                hr = m_sppre->Start();
+                m_sppre->UnAdvise(dwCookie);
             }
+        }
+
+        m_disableCountUpdate = false;
+
+        if (SUCCEEDED(hr))
+        {
+            UINT itemCount = 0;
+            m_spsrm->GetItemCount(&itemCount);
+            m_listview.SetItemCount(itemCount);
+
+            _UpdateCounts();
         }
     }
 

@@ -275,7 +275,7 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
     return hr;
 }
 
-HRESULT _GetShellItemArrayFromDataOject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items)
+HRESULT GetShellItemArrayFromDataObject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items)
 {
     *items = nullptr;
     CComPtr<IDataObject> dataObj;
@@ -287,90 +287,6 @@ HRESULT _GetShellItemArrayFromDataOject(_In_ IUnknown* dataSource, _COM_Outptr_ 
     else
     {
         hr = dataSource->QueryInterface(IID_PPV_ARGS(items));
-    }
-
-    return hr;
-}
-
-HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_opt_ IProgressDialog* ppd, _In_ int depth = 0)
-{
-    HRESULT hr = E_INVALIDARG;
-
-    // We shouldn't get this deep since we only enum the contents of
-    // regular folders but adding just in case
-    if ((pesi) && (depth < (MAX_PATH / 2)))
-    {
-        hr = S_OK;
-
-        ULONG celtFetched;
-        CComPtr<IShellItem> spsi;
-        while ((S_OK == pesi->Next(1, &spsi, &celtFetched)) && (SUCCEEDED(hr)))
-        {
-            if (ppd && ppd->HasUserCancelled())
-            {
-                // Cancelled by user
-                hr = E_ABORT;
-                break;
-            }
-
-            CComPtr<IPowerRenameItemFactory> spsrif;
-            hr = psrm->GetRenameItemFactory(&spsrif);
-            if (SUCCEEDED(hr))
-            {
-                CComPtr<IPowerRenameItem> spNewItem;
-                hr = spsrif->Create(spsi, &spNewItem);
-                if (SUCCEEDED(hr))
-                {
-                    spNewItem->PutDepth(depth);
-                    hr = psrm->AddItem(spNewItem);
-                    if (SUCCEEDED(hr) && ppd)
-                    {
-                        // Update the progress dialog
-                        PWSTR pathDisplay = nullptr;
-                        if (SUCCEEDED(spNewItem->GetPath(&pathDisplay)))
-                        {
-                            ppd->SetLine(2, pathDisplay, TRUE, nullptr);
-                            CoTaskMemFree(pathDisplay);
-                        }
-                    }
-                }
-
-                if (SUCCEEDED(hr))
-                {
-                    bool isFolder = false;
-                    if (SUCCEEDED(spNewItem->GetIsFolder(&isFolder)) && isFolder)
-                    {
-                        // Bind to the IShellItem for the IEnumShellItems interface
-                        CComPtr<IEnumShellItems> spesiNext;
-                        hr = spsi->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(&spesiNext));
-                        if (SUCCEEDED(hr))
-                        {
-                            // Parse the folder contents recursively
-                            hr = _ParseEnumItems(spesiNext, psrm, ppd, depth + 1);
-                        }
-                    }
-                }
-            }
-
-            spsi = nullptr;
-        }
-    }
-
-    return hr;
-}
-
-// Iterate through the data source and add paths to the rotation manager
-HRESULT EnumerateDataObject(_In_ IUnknown* pdo, _In_ IPowerRenameManager* psrm, _In_opt_ IProgressDialog* ppd)
-{
-    CComPtr<IShellItemArray> spsia;
-    HRESULT hr = E_FAIL;
-    if (SUCCEEDED(_GetShellItemArrayFromDataOject(pdo, &spsia)))
-    {
-        CComPtr<IEnumShellItems> spesi;
-        if (SUCCEEDED(spsia->EnumItems(&spesi)))
-        {
-            hr = _ParseEnumItems(spesi, psrm, ppd);
-        }
     }
 
     return hr;
@@ -545,7 +461,7 @@ bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource)
 {
     bool hasRenamable = false;
     CComPtr<IShellItemArray> spsia;
-    if (SUCCEEDED(_GetShellItemArrayFromDataOject(dataSource, &spsia)))
+    if (SUCCEEDED(GetShellItemArrayFromDataObject(dataSource, &spsia)))
     {
         CComPtr<IEnumShellItems> spesi;
         if (SUCCEEDED(spsia->EnumItems(&spesi)))

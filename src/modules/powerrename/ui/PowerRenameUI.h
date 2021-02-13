@@ -38,7 +38,8 @@ private:
 class CPowerRenameUI :
     public IDropTarget,
     public IPowerRenameUI,
-    public IPowerRenameManagerEvents
+    public IPowerRenameManagerEvents,
+    public IPowerRenameEnumEvents
 {
 public:
     CPowerRenameUI();
@@ -66,6 +67,11 @@ public:
     IFACEMETHODIMP OnRegExCompleted(_In_ DWORD threadId);
     IFACEMETHODIMP OnRenameStarted();
     IFACEMETHODIMP OnRenameCompleted();
+
+    // IPowerRenameEnumEvents
+    IFACEMETHODIMP OnStarted();
+    IFACEMETHODIMP OnCompleted(_In_ bool canceled);
+    IFACEMETHODIMP OnFoundItem(_In_ IPowerRenameItem* pItem);
 
     // IDropTarget
     IFACEMETHODIMP DragEnter(_In_ IDataObject* pdtobj, DWORD grfKeyState, POINTL pt, _Inout_ DWORD* pdwEffect);
@@ -164,12 +170,16 @@ private:
     int m_initialHeight = 0;
     int m_lastWidth = 0;
     int m_lastHeight = 0;
+    ULONGLONG m_enumStartTick = 0;
+    const ULONGLONG m_progressDlgDelayMS = 3000;
     CComPtr<IPowerRenameManager> m_spsrm;
     CComPtr<IUnknown> m_dataSource;
+    CComPtr<IPowerRenameEnum> m_sppre;
     CComPtr<IDropTargetHelper> m_spdth;
     CComPtr<IAutoComplete2> m_spSearchAC;
     CComPtr<IUnknown> m_spSearchACL;
     CComPtr<IAutoComplete2> m_spReplaceAC;
     CComPtr<IUnknown> m_spReplaceACL;
+    CComPtr<IProgressDialog> m_sppd;
     CPowerRenameListView m_listview;
 };
