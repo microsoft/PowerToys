@@ -18,6 +18,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         private static string _icon_path;
         private bool _disposed;
         private readonly QuantityType[] _included = new QuantityType[] { QuantityType.Acceleration, QuantityType.Length, QuantityType.Mass, QuantityType.Speed, QuantityType.Temperature, QuantityType.Volume };
+        private CultureInfo _currentCulture = CultureInfo.InvariantCulture;
 
         public void Init(PluginInitContext context) {
             if (context == null) {
@@ -62,7 +63,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
                 if (first_unit_is_abbreviated && second_unit_is_abbreviated) {
                     // a
-                    converted = UnitsNet.UnitConverter.ConvertByAbbreviation(double.Parse(split[0], CultureInfo.InvariantCulture), unit_info.Name, input_first_unit, input_second_unit);
+                    converted = UnitsNet.UnitConverter.ConvertByAbbreviation(double.Parse(split[0], _currentCulture), unit_info.Name, input_first_unit, input_second_unit);
                     AddToResult(final_list, converted, split[3]);
                 }
                 else if ((!first_unit_is_abbreviated) && (!second_unit_is_abbreviated)) {
@@ -71,7 +72,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit);
 
                     if (first_unabbreviated && second_unabbreviated) {
-                        converted = UnitsNet.UnitConverter.ConvertByName(double.Parse(split[0], CultureInfo.InvariantCulture), unit_info.Name, input_first_unit, input_second_unit);
+                        converted = UnitsNet.UnitConverter.ConvertByName(double.Parse(split[0], _currentCulture), unit_info.Name, input_first_unit, input_second_unit);
                         AddToResult(final_list, converted, split[3]);
                     }
                 }
@@ -82,7 +83,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
                         if (second_unabbreviated) {
                             UnitInfo second = Array.Find(unit_info.UnitInfos, info => info.Name.ToLower() == input_second_unit.ToLower());
-                            converted = UnitsNet.UnitConverter.Convert(double.Parse(split[0], CultureInfo.InvariantCulture), first_unit, second.Value);
+                            converted = UnitsNet.UnitConverter.Convert(double.Parse(split[0], _currentCulture), first_unit, second.Value);
                             AddToResult(final_list, converted, split[3]);
                         }
                     }
@@ -91,8 +92,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
                         if (first_unabbreviated) {
                             UnitInfo first = Array.Find(unit_info.UnitInfos, info => info.Name.ToLower() == input_first_unit.ToLower());
-                            converted = UnitsNet.UnitConverter.Convert(double.Parse(split[0], CultureInfo.InvariantCulture), first.Value, second_unit);
-                            Debug.WriteLine(string.Format("Seen: {0}", double.Parse(split[0], CultureInfo.InvariantCulture)));
+                            converted = UnitsNet.UnitConverter.Convert(double.Parse(split[0], _currentCulture), first.Value, second_unit);
                             AddToResult(final_list, converted, split[3]);
                         }
                     }
@@ -129,16 +129,23 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     case 4:
                         // ex: 1'2 and 1'2"
                         if (shortsplit[1] == "\'") {
-                            bool isFeet = double.TryParse(shortsplit[0], out double feet);
-                            bool isInches = double.TryParse(shortsplit[2], out double inches);
+                            bool isFeet = double.TryParse(shortsplit[0], NumberStyles.AllowDecimalPoint, _currentCulture, out double feet);
+                            bool isInches = double.TryParse(shortsplit[2], NumberStyles.AllowDecimalPoint, _currentCulture, out double inches);
 
                             if (!isFeet || !isInches) {
                                 // one of either could not be parsed correctly
                                 break;
                             }
+                            
+                            double totalInFeet = Length.FromFeetInches(feet, inches).Feet; 
+                            string convertedTotalInFeet = totalInFeet.ToString();
 
-                            double totalInFeet = Length.FromFeetInches(feet, inches).Feet;
-                            string[] newInput = new string[] { totalInFeet.ToString(), "foot", split[1], split[2] };
+                            if (_currentCulture == CultureInfo.InvariantCulture) {
+                                // todo: actually make this work for more cultures where decimal parsing could break (e.g. '1,5' != 15)
+                                convertedTotalInFeet = totalInFeet.ToString().Replace(',', '.');
+                            }
+
+                            string[] newInput = new string[] { convertedTotalInFeet, "foot", split[1], split[2] };
                             split = newInput;
                         }
                         break;
