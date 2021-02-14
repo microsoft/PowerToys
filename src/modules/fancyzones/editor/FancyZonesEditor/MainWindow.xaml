@@ -369,8 +369,8 @@
                             AutomationProperties.Name="{x:Static props:Resources.Duplicate}"
                             ToolTip="{x:Static props:Resources.Duplicate}"
                             Content="&#xE8C8;"
-                            Background="Transparent"
                             FontFamily="Segoe MDL2 Assets"
+                            Style="{StaticResource IconOnlyButtonStyle}"
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
 
                     <Button Click="DuplicateLayout_Click"
@@ -378,18 +378,18 @@
                             AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}"
                             ToolTip="{x:Static props:Resources.Create_Custom_From_Template}"
                             Content="&#xE8C8;"
-                            Background="Transparent"
                             FontFamily="Segoe MDL2 Assets"
+                            Style="{StaticResource IconOnlyButtonStyle}"
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}" />
 
                     <Button Click="DeleteLayout_Click"
                             x:Name="deleteLayoutButton"
                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
                             ToolTip="{x:Static props:Resources.Delete}"
-                            Background="Transparent"
                             Content="&#xE107;"
                             FontFamily="Segoe MDL2 Assets"
-                            Foreground="Red"
+                            Foreground="#c50500"
+                            Style="{StaticResource IconOnlyButtonStyle}"
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
                 </StackPanel>
 
@@ -397,36 +397,40 @@
                     <local:LayoutPreview Width="216"
                                          Height="132"
                                          Margin="0,16,0,16" />
-                    <ui:HyperlinkButton Click="EditZones_Click"
+                    <Button Click="EditZones_Click"
                                         x:Name="editZoneLayoutButton"
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
                                         HorizontalContentAlignment="Center"
+                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                        Style="{StaticResource IconOnlyButtonStyle}"
                                         Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
-                        <ui:HyperlinkButton.Content>
+                        <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE104;"
                                            Margin="0,2,8,0"
                                            FontFamily="Segoe MDL2 Assets" />
                                 <TextBlock Text="{x:Static props:Resources.Edit_zones}" />
                             </StackPanel>
-                        </ui:HyperlinkButton.Content>
-                    </ui:HyperlinkButton>
+                        </Button.Content>
+                    </Button>
 
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
-                        <ui:HyperlinkButton x:Name="incrementZones"
+                        <Button x:Name="incrementZones"
                                             Width="40"
                                             Height="40"
                                             AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}"
                                             ToolTip="{x:Static props:Resources.Zone_Count_Increment}"
+                                            Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                            Style="{StaticResource IconOnlyButtonStyle}"
                                             Click="IncrementZones_Click">
-                            <ui:HyperlinkButton.Content>
+                            <Button.Content>
                                 <TextBlock Text="&#xE109;"
                                            FontFamily="Segoe MDL2 Assets" />
-                            </ui:HyperlinkButton.Content>
-                        </ui:HyperlinkButton>
+                            </Button.Content>
+                        </Button>
                         <TextBlock x:Name="zoneCount"
                                    Text="{Binding TemplateZoneCount}"
                                    FontWeight="SemiBold"
@@ -438,17 +442,19 @@
                                    ToolTip="Number of zones"
                                    VerticalAlignment="Center" />
 
-                        <ui:HyperlinkButton x:Name="decrementZones"
+                        <Button x:Name="decrementZones"
                                             Width="40"
                                             Height="40"
                                             AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}"
                                             ToolTip="{x:Static props:Resources.Zone_Count_Decrement}"
+                                            Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                            Style="{StaticResource IconOnlyButtonStyle}"
                                             Click="DecrementZones_Click">
-                            <ui:HyperlinkButton.Content>
+                            <Button.Content>
                                 <TextBlock Text="&#xE108;"
                                            FontFamily="Segoe MDL2 Assets" />
-                            </ui:HyperlinkButton.Content>
-                        </ui:HyperlinkButton>
+                            </Button.Content>
+                        </Button>
                     </StackPanel>
                     <TextBox Text="{Binding Name}"
                              ui:ControlHelper.Header="{x:Static props:Resources.Name}"
