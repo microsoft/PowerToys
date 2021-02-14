@@ -944,7 +944,7 @@
     <value>Direct activation phrase</value>
   </data>
   <data name="PowerLauncher_AuthoredBy.Text" xml:space="preserve">
-    <value>Author:</value>
+    <value>Authored by</value>
     <comment>example: Authored by Microsoft</comment>
   </data>
   <data name="PowerLauncher_IncludeInGlobalResult.Content" xml:space="preserve">
