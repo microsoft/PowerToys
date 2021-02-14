@@ -134,6 +134,7 @@
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Top"
                                    Margin="0,-4,24,0"
+                                   ToolTip="{Binding Name}"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
 
                         <Button Content="&#xE104;"
