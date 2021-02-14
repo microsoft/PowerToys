@@ -19,6 +19,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="AllowDrop" Value="true"/>
+            <Setter Property="ContextMenu" Value="{DynamicResource TextControlContextMenu}" />
             <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst"/>
             <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
             <Setter Property="Padding" Value="12,0,0,0" />
