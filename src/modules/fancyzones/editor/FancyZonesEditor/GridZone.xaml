@@ -26,7 +26,7 @@
                 FontWeight="SemiBold"
                 FontSize="64"
                 Foreground="{DynamicResource PrimaryForegroundBrush}" />
-            <TextBlock FontSize="18"
+            <TextBlock FontSize="16"
                        Foreground="{DynamicResource SecondaryForegroundBrush}"
                        DockPanel.Dock="Bottom"
                        FontWeight="SemiBold"
