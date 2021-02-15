@@ -85,17 +85,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 NavIndex = 2,
                 Icon = "\uE773",
                 Image = "ms-appx:///Assets/Modules/PowerLauncher.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png",
                 GifSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/Launcher/QuickStart.gif",
                 Description = "Run helps you search and launch your app instantly with a simple Alt+Space and start typing.",
-            });
-            Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
-            {
-                ModuleName = "File explorer add-ons",
-                Tag = "FileExplorer",
-                IsNew = false,
-                NavIndex = 1,
-                Icon = "\uEC50",
-                Image = "ms-appx:///Assets/Modules/PowerPreview.png",
             });
             Modules.Insert((int)PowerToysModulesEnum.PowerRename, new OobePowerToysModule()
             {
@@ -107,7 +99,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Image = "ms-appx:///Assets/Modules/PowerRename.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/PowerRename.png",
             });
-            Modules.Insert((int)PowerToysModulesEnum.ShortcutGuide, new OobePowerToysModule()
+            /*Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
+            {
+                ModuleName = "File explorer add-ons",
+                Tag = "FileExplorer",
+                IsNew = false,
+                NavIndex = 1,
+                Icon = "\uEC50",
+                Image = "ms-appx:///Assets/Modules/PowerPreview.png",
+            });*/
+            /*Modules.Insert((int)PowerToysModulesEnum.ShortcutGuide, new OobePowerToysModule()
             {
                 ModuleName = "Shortcut Guide",
                 Tag = "ShortcutGuide",
@@ -115,8 +116,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 NavIndex = 0,
                 Icon = "\uEDA7",
                 Image = "ms-appx:///Assets/Modules/ShortcutGuide.png",
-            });
-            Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
+            });*/
+            /*Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = "Video Conference",
                 Tag = "VideoConference",
@@ -124,7 +125,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 NavIndex = 1,
                 Icon = "\uEC50",
                 Image = "ms-appx:///Assets/Modules/VideoConference.png",
-            });
+            });*/
         }
 
         private void UserControl_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
