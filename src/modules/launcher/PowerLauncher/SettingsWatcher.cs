@@ -186,17 +186,17 @@ namespace PowerLauncher
 
         private static IEnumerable<PowerLauncherPluginSettings> GetPluginsSettings()
         {
-            return PluginManager.AllPlugins.Select(x => x.Metadata).Select(x => new PowerLauncherPluginSettings
+            return PluginManager.AllPlugins.Select(x => new PowerLauncherPluginSettings
             {
-                Id = x.ID,
-                Name = x.Name,
-                Description = x.Description,
-                Author = x.Author,
-                Disabled = x.Disabled,
-                IsGlobal = x.IsGlobal,
-                ActionKeyword = x.ActionKeyword,
-                IconPathDark = x.IcoPathDark,
-                IconPathLight = x.IcoPathLight,
+                Id = x.Metadata.ID,
+                Name = x.Plugin.Name,
+                Description = x.Plugin.Description,
+                Author = x.Metadata.Author,
+                Disabled = x.Metadata.Disabled,
+                IsGlobal = x.Metadata.IsGlobal,
+                ActionKeyword = x.Metadata.ActionKeyword,
+                IconPathDark = x.Metadata.IcoPathDark,
+                IconPathLight = x.Metadata.IcoPathLight,
             });
         }
     }

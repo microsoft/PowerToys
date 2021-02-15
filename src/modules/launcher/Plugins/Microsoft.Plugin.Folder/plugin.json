@@ -3,7 +3,6 @@
   "ActionKeyword": "",
   "IsGlobal": true,
   "Name": "Folder",
-  "Description": "Search and open folders",
   "Author": "qianlifeng",
   "Version": "1.0.0",
   "Language": "csharp",

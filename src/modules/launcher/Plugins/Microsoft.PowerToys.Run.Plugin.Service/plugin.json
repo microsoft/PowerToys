@@ -3,7 +3,6 @@
   "ActionKeyword": "!",
   "IsGlobal": false,
   "Name": "Service",
-  "Description": "Manages Windows services",
   "Author": "davidegiacometti",
   "Version": "1.0.0",
   "Language": "csharp",

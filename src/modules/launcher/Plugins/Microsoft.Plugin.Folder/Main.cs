@@ -38,6 +38,10 @@ namespace Microsoft.Plugin.Folder
         private IContextMenu _contextMenuLoader;
         private bool _disposed;
 
+        public string Name => Properties.Resources.wox_plugin_folder_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_folder_plugin_description;
+
         public void Save()
         {
             _storage.Save();
