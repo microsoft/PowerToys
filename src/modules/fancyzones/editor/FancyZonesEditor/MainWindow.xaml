@@ -418,19 +418,21 @@
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
-                        <Button x:Name="incrementZones"
-                                            Width="40"
-                                            Height="40"
-                                            AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}"
-                                            ToolTip="{x:Static props:Resources.Zone_Count_Increment}"
-                                            Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
-                                            Style="{StaticResource IconOnlyButtonStyle}"
-                                            Click="IncrementZones_Click">
+
+                        <Button x:Name="decrementZones"
+                                Width="40"
+                                Height="40"
+                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}"
+                                ToolTip="{x:Static props:Resources.Zone_Count_Decrement}"
+                                Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                Style="{StaticResource IconOnlyButtonStyle}"
+                                Click="DecrementZones_Click">
                             <Button.Content>
-                                <TextBlock Text="&#xE109;"
+                                <TextBlock Text="&#xE108;"
                                            FontFamily="Segoe MDL2 Assets" />
                             </Button.Content>
                         </Button>
+                     
                         <TextBlock x:Name="zoneCount"
                                    Text="{Binding TemplateZoneCount}"
                                    FontWeight="SemiBold"
@@ -442,16 +444,16 @@
                                    ToolTip="Number of zones"
                                    VerticalAlignment="Center" />
 
-                        <Button x:Name="decrementZones"
-                                            Width="40"
-                                            Height="40"
-                                            AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}"
-                                            ToolTip="{x:Static props:Resources.Zone_Count_Decrement}"
-                                            Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
-                                            Style="{StaticResource IconOnlyButtonStyle}"
-                                            Click="DecrementZones_Click">
+                        <Button x:Name="incrementZones"
+                                Width="40"
+                                Height="40"
+                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}"
+                                ToolTip="{x:Static props:Resources.Zone_Count_Increment}"
+                                Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                Style="{StaticResource IconOnlyButtonStyle}"
+                                Click="IncrementZones_Click">
                             <Button.Content>
-                                <TextBlock Text="&#xE108;"
+                                <TextBlock Text="&#xE109;"
                                            FontFamily="Segoe MDL2 Assets" />
                             </Button.Content>
                         </Button>
