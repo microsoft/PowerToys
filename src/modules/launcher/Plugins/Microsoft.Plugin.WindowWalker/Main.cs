@@ -19,6 +19,10 @@ namespace Microsoft.Plugin.WindowWalker
 
         private PluginInitContext Context { get; set; }
 
+        public string Name => Properties.Resources.wox_plugin_windowwalker_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_windowwalker_plugin_description;
+
         static Main()
         {
             SearchController.Instance.OnSearchResultUpdateEventHandler += SearchResultUpdated;

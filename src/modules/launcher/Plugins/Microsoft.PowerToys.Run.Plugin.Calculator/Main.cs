@@ -19,6 +19,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         private string IconPath { get; set; }
 
+        public string Name => Properties.Resources.wox_plugin_calculator_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_calculator_plugin_description;
+
         private bool _disposed;
 
         public List<Result> Query(Query query)
