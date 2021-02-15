@@ -21,7 +21,7 @@
             <TextBlock Margin="32,0,32,0"
                        TextWrapping="Wrap"
                        Opacity="0.8"
-                       Text="Color Picker is a simple and quick system-wide color picker with Win+Shift+C. Color Picker allows to pick colors from any currently running application and automatically copies the HEX or RGB values to your clipboard." />
+                       Text="{x:Bind ViewModel.Description}" />
             <HyperlinkButton Margin="32,0,32,0"
                              Content="Learn more about Color Picker" />
             <StackPanel Orientation="Horizontal"

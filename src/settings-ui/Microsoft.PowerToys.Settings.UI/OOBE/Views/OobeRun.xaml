@@ -20,7 +20,7 @@
             <TextBlock Margin="32,0,32,0"
                        TextWrapping="Wrap"
                        Opacity="0.8"
-                       Text="Run helps you search and launch your app instantly with a simple Alt+Space and start typing." />
+                       Text="{x:Bind ViewModel.Description}" />
             <HyperlinkButton Margin="32,0,32,0"
                              Content="Learn more about Run" />
             <StackPanel Orientation="Horizontal"

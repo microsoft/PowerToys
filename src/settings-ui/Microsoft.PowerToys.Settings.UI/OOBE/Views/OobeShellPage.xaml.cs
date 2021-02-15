@@ -43,6 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Image = "ms-appx:///Assets/Modules/ColorPicker.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png",
                 GifSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/colorpicker/ColorPicking.gif",
+                Description = "Color Picker is a simple and quick system-wide color picker with Win+Shift+C. Color Picker allows to pick colors from any currently running application and automatically copies the HEX or RGB values to your clipboard.",
             });
             Modules.Insert((int)PowerToysModulesEnum.FancyZones, new OobePowerToysModule()
             {
@@ -54,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Image = "ms-appx:///Assets/Modules/FancyZones.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png",
                 GifSource = "https://user-images.githubusercontent.com/9866362/101410242-5b90a280-38df-11eb-834a-8365453b8429.gif",
+                Description = "FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.",
             });
             Modules.Insert((int)PowerToysModulesEnum.ImageResizer, new OobePowerToysModule()
             {
@@ -84,6 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uE773",
                 Image = "ms-appx:///Assets/Modules/PowerLauncher.png",
                 GifSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/Launcher/QuickStart.gif",
+                Description = "Run helps you search and launch your app instantly with a simple Alt+Space and start typing.",
             });
             Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
             {
