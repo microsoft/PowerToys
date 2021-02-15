@@ -24,6 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
 
         public string Description { get; set; }
 
+        public string Link { get; set; }
+
         public OobePowerToysModule()
         {
         }
@@ -44,6 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             FluentIcon = other.FluentIcon;
             GifSource = other.GifSource;
             Description = other.Description;
+            Link = other.Link;
         }
     }
 }
