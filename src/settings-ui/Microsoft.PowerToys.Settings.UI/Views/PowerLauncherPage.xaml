@@ -153,47 +153,77 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <ListView 
-                ItemsSource="{x:Bind Path=ViewModel.Plugins}"
-                SelectionMode="None"
-                IsItemClickEnabled="True"
-                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                ItemClick="ListView_ItemClick"
-                >
+            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins}"
+                      SelectionMode="None"
+                      IsItemClickEnabled="True"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                      ItemClick="ListView_ItemClick"
+                      Margin="-12,12,0,0">
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        <Setter Property="VerticalContentAlignment" Value="Stretch" />
-                        <Setter Property="Padding" Value="0,0,0,0"/>
+                        <Setter Property="HorizontalContentAlignment"
+                                Value="Stretch" />
+                        <Setter Property="VerticalContentAlignment"
+                                Value="Stretch" />
+                        <Setter Property="Padding"
+                                Value="0,0,0,0" />
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel">
-                        <StackPanel Orientation="Vertical" Padding="20,10,20,10">
-                            <Grid ColumnSpacing="10">
+                        <StackPanel Orientation="Vertical"
+                                    Padding="0,12,0,12">
+                            <Grid ColumnSpacing="0">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="40"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="60" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="52" />
                                 </Grid.ColumnDefinitions>
 
-                                <Image Source="{x:Bind IconPath}"/>
+                                <Image Source="{x:Bind IconPath}"
+                                       Width="36"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Top"
+                                       Margin="12,0,12,0"
+                                       Height="36" />
 
-                                <StackPanel Orientation="Vertical" Grid.Column="1">
-                                    <TextBlock FontSize="18" Text="{x:Bind Path=Name}"/>
-                                    <TextBlock FontSize="12" TextWrapping="Wrap">
-                                        <Run Text="{x:Bind Description}" />. <Run x:Uid="PowerLauncher_AuthoredBy" /> <Run Text="{x:Bind Author}" /><Run Text="." />
+                                <StackPanel Orientation="Vertical"
+                                            Grid.Column="1" Margin="0,0,12,0">
+                                    <TextBlock FontSize="18"
+                                               Text="{x:Bind Path=Name}" />
+                                    <TextBlock FontSize="12"
+                                               Foreground="{ThemeResource SystemBaseMediumColor}"
+                                               Text="{x:Bind Description}"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock FontSize="12"
+                                               Foreground="{ThemeResource SystemBaseMediumColor}">
+                                           <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                           <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                     </TextBlock>
                                 </StackPanel>
 
-                                <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle" x:Name="ToggleSwitch" IsOn="{x:Bind Path=Disabled, Converter={StaticResource BooleanInvertConverter}, Mode=TwoWay}" Grid.Column="2"/>
+                                <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
+                                              x:Name="ToggleSwitch"
+                                              HorizontalAlignment="Center"
+                                              IsOn="{x:Bind Path=Disabled, Converter={StaticResource BooleanInvertConverter}, Mode=TwoWay}"
+                                              Grid.Column="2" />
                             </Grid>
 
-                            <StackPanel  Padding="10,10,10,0" Visibility="{x:Bind Path=ShowAdditionalInfo, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult" IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
-                                <TextBlock x:Uid="PowerLauncher_ActionKeywordTextBlock" Margin="0,5,0,0" />
-                                <TextBox x:Uid="PowerLauncher_ActionKeywordTextBox" Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}" Width="150px" HorizontalAlignment="Left"></TextBox>
+                            <StackPanel  Margin="60,24,0,0"
+                                         Visibility="{x:Bind Path=ShowAdditionalInfo, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+
+                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
+                                          IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
+                                <TextBlock x:Uid="PowerLauncher_ActionKeyword"
+                                           x:Name="ActionKeywordHeaderTextBlock"
+                                           Margin="{StaticResource SmallTopMargin}" />
+                                <TextBox x:Uid="PowerLauncher_ActionKeyword"
+                                         Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}"
+                                         Width="86"
+                                         Margin="0,6,0,0"
+                                         AutomationProperties.LabeledBy="{Binding ElementName=ActionKeywordHeaderTextBlock}"
+                                         HorizontalAlignment="Left" />
                             </StackPanel>
                         </StackPanel>
                     </DataTemplate>
