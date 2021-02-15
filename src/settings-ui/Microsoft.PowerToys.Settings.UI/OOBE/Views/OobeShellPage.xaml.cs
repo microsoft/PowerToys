@@ -88,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 NavIndex = 2,
                 Icon = "\uE773",
                 Image = "ms-appx:///Assets/Modules/PowerLauncher.png",
-                FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/empty.png",
                 GifSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/Launcher/QuickStart.gif",
                 Description = "Run helps you search and launch your app instantly with a simple Alt+Space and start typing.",
             });
@@ -111,6 +111,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = false,
                 NavIndex = 1,
                 Icon = "\uEC50",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/empty.png",
                 Image = "ms-appx:///Assets/Modules/PowerPreview.png",
                 Description = "This is the FileExplorer",
                 GifSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-fileexplorer.gif",
@@ -122,6 +123,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = false,
                 NavIndex = 0,
                 Icon = "\uEDA7",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/empty.png",
                 Image = "ms-appx:///Assets/Modules/ShortcutGuide.png",
                 Description = "This is the Shortcut Guide",
             });
@@ -132,6 +134,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = true,
                 NavIndex = 1,
                 Icon = "\uEC50",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/empty.png",
                 Image = "ms-appx:///Assets/Modules/VideoConference.png",
                 Description = "This is the Video Conference",
             });
