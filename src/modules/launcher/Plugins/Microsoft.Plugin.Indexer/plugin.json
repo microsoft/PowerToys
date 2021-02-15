@@ -3,7 +3,6 @@
   "ActionKeyword": "?",
   "IsGlobal": true,
   "Name": "Windows Indexer",
-  "Description": "Search for files and folders",
   "Author": "Microsoft",
   "Version": "1.0.0",
   "Language": "csharp",
