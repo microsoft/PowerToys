@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:p="clr-namespace:PowerLauncher.Properties"
     xmlns:local="clr-namespace:PowerLauncher"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     mc:Ignorable="d" 
     d:DesignHeight="300"
     d:DesignWidth="720">
@@ -20,6 +21,7 @@
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="AllowDrop" Value="true"/>
             <Setter Property="ContextMenu" Value="{DynamicResource TextControlContextMenu}" />
+            <Setter Property="ui:TextContextMenu.UsingTextContextMenu" Value="True" />
             <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst"/>
             <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
             <Setter Property="Padding" Value="12,0,0,0" />
