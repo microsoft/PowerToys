@@ -3,7 +3,6 @@
   "ActionKeyword": ">",
   "IsGlobal": false,
   "Name": "Shell",
-  "Description": "Provide executing commands. Commands should start with >",
   "Author": "qianlifeng",
   "Version": "1.0.0",
   "Language": "csharp",

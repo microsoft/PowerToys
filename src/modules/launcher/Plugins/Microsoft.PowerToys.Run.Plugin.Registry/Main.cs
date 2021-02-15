@@ -42,6 +42,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry
         /// </summary>
         private bool _disposed;
 
+        public string Name => Resources.PluginTitle;
+
+        public string Description => Resources.PluginDescription;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Main"/> class.
         /// </summary>

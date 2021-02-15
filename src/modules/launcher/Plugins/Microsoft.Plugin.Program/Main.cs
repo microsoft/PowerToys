@@ -32,6 +32,10 @@ namespace Microsoft.Plugin.Program
 
         internal static ProgramPluginSettings Settings { get; set; }
 
+        public string Name => Properties.Resources.wox_plugin_program_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_program_plugin_description;
+
         private static PluginInitContext _context;
         private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed;

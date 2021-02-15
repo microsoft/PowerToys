@@ -34,6 +34,10 @@ namespace Microsoft.Plugin.Shell
 
         private string IconPath { get; set; }
 
+        public string Name => Properties.Resources.wox_plugin_cmd_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_cmd_plugin_description;
+
         private PluginInitContext _context;
 
         public Main()

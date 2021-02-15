@@ -3,7 +3,6 @@
   "ActionKeyword": ":",
   "IsGlobal": false,
   "Name": "Registry",
-  "Description": "Search inside the Windows Registry",
   "Author": "TobiasSekan",
   "Version": "1.0.0",
   "Language": "csharp",

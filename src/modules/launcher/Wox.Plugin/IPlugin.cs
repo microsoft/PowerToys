@@ -11,5 +11,11 @@ namespace Wox.Plugin
         List<Result> Query(Query query);
 
         void Init(PluginInitContext context);
+
+        // Localized name
+        string Name { get; }
+
+        // Localized description
+        string Description { get; }
     }
 }

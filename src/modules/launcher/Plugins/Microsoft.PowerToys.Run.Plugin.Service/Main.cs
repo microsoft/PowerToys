@@ -19,6 +19,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
         private PluginInitContext _context;
         private string _icoPath;
 
+        public string Name => Resources.wox_plugin_service_plugin_name;
+
+        public string Description => Resources.wox_plugin_service_plugin_description;
+
         public void Init(PluginInitContext context)
         {
             _context = context;
