@@ -46,8 +46,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void UserControl_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            // Navigate to first page
+            if (Modules.Count > 0)
+            {
+                NavigationView.SelectedItem = Modules[0];
             }
+        }
 
         [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -55,6 +58,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             OobePowerToysModule selectedItem = args.SelectedItem as OobePowerToysModule;
             switch ((string)selectedItem.Tag)
             {
+                case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
+                case "FancyZones": NavigationFrame.Navigate(typeof(OobeFancyZones)); break;
+                case "Run": NavigationFrame.Navigate(typeof(OobeRun)); break;
                 default: NavigationFrame.Navigate(typeof(OobeDumpPage)); break;
             }
         }
