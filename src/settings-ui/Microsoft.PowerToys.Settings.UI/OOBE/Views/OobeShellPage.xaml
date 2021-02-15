@@ -153,7 +153,11 @@
         </Style>
 
         <DataTemplate x:Key="NavigationViewMenuItem" x:DataType="localModels:PowerToysModule">
-            <NavigationViewItem Content="{x:Bind Name}" Tag="{x:Bind Tag}" Style="{StaticResource NavigationViewItemStyle1}" />
+            <NavigationViewItem Content="{x:Bind Name}" Tag="{x:Bind Tag}" Style="{StaticResource NavigationViewItemStyle1}">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="{x:Bind Icon}"/>
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
         </DataTemplate>
     </UserControl.Resources>
     
