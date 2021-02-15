@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         /// </summary>
         public static OobeShellPage OobeShellHandler { get; set; }
 
-        public ObservableCollection<PowerToysModule> Modules { get; }
+        public ObservableCollection<OobePowerToysModule> Modules { get; }
 
         public OobeShellPage()
         {
@@ -30,17 +30,17 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             DataContext = ViewModel;
             OobeShellHandler = this;
 
-            Modules = new ObservableCollection<PowerToysModule>();
+            Modules = new ObservableCollection<OobePowerToysModule>();
 
-            Modules.Add(new PowerToysModule() { Name = "Color Picker", Tag = "ColorPicker", IsNew = false, NavIndex = 0, Icon = "\uEF3C", Image = "ms-appx:///Assets/Modules/ColorPicker.png", FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png" });
-            Modules.Add(new PowerToysModule() { Name = "FancyZones", Tag = "FancyZones", IsNew = false, NavIndex = 1, Icon = "\uE737", Image = "ms-appx:///Assets/Modules/FancyZones.png", FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png" });
-            Modules.Add(new PowerToysModule() { Name = "ImageResizer", Tag = "ImageResizer", IsNew = false, NavIndex = 2, Icon = "\uEB9F", Image = "ms-appx:///Assets/Modules/ImageResizer.png", FluentIcon = "ms-appx:///Assets/FluentIcons/ImageResizer.png" });
-            Modules.Add(new PowerToysModule() { Name = "KBM", Tag = "KBM", IsNew = false, NavIndex = 0, Icon = "\uE765", Image = "ms-appx:///Assets/Modules/KBM.png", FluentIcon = "ms-appx:///Assets/FluentIcons/KBM.png" });
-            Modules.Add(new PowerToysModule() { Name = "Run", Tag = "Run", IsNew = false, NavIndex = 2, Icon = "\uE773", Image = "ms-appx:///Assets/Modules/PowerLauncher.png", FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png" });
-            Modules.Add(new PowerToysModule() { Name = "File explorer add-ons", Tag = "FileExplorer", IsNew = false, NavIndex = 1, Icon = "\uEC50", Image = "ms-appx:///Assets/Modules/PowerPreview.png", FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png" });
-            Modules.Add(new PowerToysModule() { Name = "PowerRename", Tag = "PowerRename", IsNew = false, NavIndex = 2, Icon = "\uE8AC", Image = "ms-appx:///Assets/Modules/PowerRename.png", FluentIcon = "ms-appx:///Assets/FluentIcons/PowerRename.png" });
-            Modules.Add(new PowerToysModule() { Name = "Shortcut Guide", Tag = "ShortcutGuide", IsNew = false, NavIndex = 0, Icon = "\uEDA7", Image = "ms-appx:///Assets/Modules/ShortcutGuide.png", FluentIcon = "ms-appx:///Assets/FluentIcons/ImageResizer.png" });
-            Modules.Add(new PowerToysModule() { Name = "Video Conference", Tag = "VideoConference", IsNew = true, NavIndex = 1, Icon = "\uEC50", Image = "ms-appx:///Assets/Modules/VideoConference.png", FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png" });
+            Modules.Add(new OobePowerToysModule() { ModuleName = "Color Picker", Tag = "ColorPicker", IsNew = false, NavIndex = 0, Icon = "\uEF3C", Image = "ms-appx:///Assets/Modules/ColorPicker.png", FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png" });
+            Modules.Add(new OobePowerToysModule() { ModuleName = "FancyZones", Tag = "FancyZones", IsNew = false, NavIndex = 1, Icon = "\uE737", Image = "ms-appx:///Assets/Modules/FancyZones.png", FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png" });
+            Modules.Add(new OobePowerToysModule() { ModuleName = "ImageResizer", Tag = "ImageResizer", IsNew = false, NavIndex = 2, Icon = "\uEB9F", Image = "ms-appx:///Assets/Modules/ImageResizer.png", FluentIcon = "ms-appx:///Assets/FluentIcons/ImageResizer.png" });
+            Modules.Add(new OobePowerToysModule() { ModuleName = "KBM", Tag = "KBM", IsNew = false, NavIndex = 0, Icon = "\uE765", Image = "ms-appx:///Assets/Modules/KBM.png", FluentIcon = "ms-appx:///Assets/FluentIcons/KBM.png" });
+            Modules.Add(new OobePowerToysModule() { ModuleName = "PowerToys Run", Tag = "Run", IsNew = false, NavIndex = 2, Icon = "\uE773", Image = "ms-appx:///Assets/Modules/PowerLauncher.png", FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png" });
+            Modules.Add(new OobePowerToysModule() { ModuleName = "File explorer add-ons", Tag = "FileExplorer", IsNew = false, NavIndex = 1, Icon = "\uEC50", Image = "ms-appx:///Assets/Modules/PowerPreview.png", FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png" });
+            Modules.Add(new OobePowerToysModule() { ModuleName = "PowerRename", Tag = "PowerRename", IsNew = false, NavIndex = 2, Icon = "\uE8AC", Image = "ms-appx:///Assets/Modules/PowerRename.png", FluentIcon = "ms-appx:///Assets/FluentIcons/PowerRename.png" });
+            Modules.Add(new OobePowerToysModule() { ModuleName = "Shortcut Guide", Tag = "ShortcutGuide", IsNew = false, NavIndex = 0, Icon = "\uEDA7", Image = "ms-appx:///Assets/Modules/ShortcutGuide.png", FluentIcon = "ms-appx:///Assets/FluentIcons/ImageResizer.png" });
+            Modules.Add(new OobePowerToysModule() { ModuleName = "Video Conference", Tag = "VideoConference", IsNew = true, NavIndex = 1, Icon = "\uEC50", Image = "ms-appx:///Assets/Modules/VideoConference.png", FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png" });
         }
 
         private void UserControl_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            NavigationViewItem selectedItem = args.SelectedItem as NavigationViewItem;
+            OobePowerToysModule selectedItem = args.SelectedItem as OobePowerToysModule;
             switch ((string)selectedItem.Tag)
             {
                 default: NavigationFrame.Navigate(typeof(OobeDumpPage)); break;

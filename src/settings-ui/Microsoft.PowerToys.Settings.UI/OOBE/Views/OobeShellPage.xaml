@@ -152,8 +152,8 @@
             </Setter>
         </Style>
 
-        <DataTemplate x:Key="NavigationViewMenuItem" x:DataType="localModels:PowerToysModule">
-            <NavigationViewItem Content="{x:Bind Name}" Tag="{x:Bind Tag}" Style="{StaticResource NavigationViewItemStyle1}">
+        <DataTemplate x:Key="NavigationViewMenuItem" x:DataType="localModels:OobePowerToysModule">
+            <NavigationViewItem Content="{x:Bind ModuleName}" Tag="{x:Bind Tag}" Style="{StaticResource NavigationViewItemStyle1}">
                 <NavigationViewItem.Icon>
                     <FontIcon Glyph="{x:Bind Icon}"/>
                 </NavigationViewItem.Icon>
