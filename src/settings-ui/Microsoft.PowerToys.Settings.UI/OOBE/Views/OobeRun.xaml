@@ -21,13 +21,21 @@
                        TextWrapping="Wrap"
                        Opacity="0.8"
                        Text="{x:Bind ViewModel.Description}" />
-            <HyperlinkButton Margin="32,0,32,0"
-                             Content="Learn more about Run" />
+            <HyperlinkButton Margin="32,0,32,0">
+                <TextBlock>
+                    <Run x:Uid="Oobe_LearnMore"/>
+                    <Run Text="{x:Bind ViewModel.ModuleName}"/>
+                </TextBlock>
+            </HyperlinkButton>
             <StackPanel Orientation="Horizontal"
                         Margin="32,48,0,0"
                         Spacing="4">
-                <Button Content="Launch Run"
-                        Style="{StaticResource AccentButtonStyle}" />
+                <Button Style="{StaticResource AccentButtonStyle}">
+                    <TextBlock>
+                        <Run x:Uid="Oobe_Launch"/>
+                        <Run Text="{x:Bind ViewModel.ModuleName}"/>
+                    </TextBlock>
+                </Button>
                 <Button Foreground="{ThemeResource SystemControlBackgroundAccentBrush}"
                         VerticalAlignment="Bottom"
                         HorizontalAlignment="Left"

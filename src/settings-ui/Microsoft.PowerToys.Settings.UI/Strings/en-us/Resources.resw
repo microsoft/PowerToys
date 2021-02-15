@@ -946,4 +946,10 @@
   <data name="Oobe_Welcome.Text" xml:space="preserve">
     <value>Welcome to PowerToys</value>
   </data>
+  <data name="Oobe_Launch.Text" xml:space="preserve">
+    <value>Launch</value>
+  </data>
+  <data name="Oobe_LearnMore.Text" xml:space="preserve">
+    <value>Learn more about</value>
+  </data>
 </root>
