@@ -12,7 +12,7 @@
         <StackPanel Orientation="Vertical">
             <Image Stretch="UniformToFill"
                    Height="320"
-                   Source="https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/Launcher/QuickStart.gif" />
+                   Source="{x:Bind ViewModel.GifSource}" />
             <TextBlock Text="{x:Bind ViewModel.ModuleName}"
                        FontWeight="SemiBold"
                        FontSize="32"

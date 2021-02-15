@@ -13,7 +13,7 @@
                     VerticalAlignment="Top">
             <Image Stretch="UniformToFill"
                    Height="320"
-                   Source="https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/colorpicker/ColorPicking.gif" />
+                   Source="{x:Bind ViewModel.GifSource}" />
             <TextBlock Text="{x:Bind ViewModel.ModuleName}"
                        FontWeight="SemiBold"
                        FontSize="32"

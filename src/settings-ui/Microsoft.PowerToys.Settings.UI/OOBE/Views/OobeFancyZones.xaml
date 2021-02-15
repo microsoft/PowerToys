@@ -12,7 +12,7 @@
         <StackPanel Orientation="Vertical">
             <Image Stretch="UniformToFill"
                    Height="320"
-                   Source="https://user-images.githubusercontent.com/9866362/101410242-5b90a280-38df-11eb-834a-8365453b8429.gif" />
+                   Source="{x:Bind ViewModel.GifSource}" />
             <TextBlock Text="{x:Bind ViewModel.ModuleName}"
                        FontWeight="SemiBold"
                        FontSize="32"
