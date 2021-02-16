@@ -117,9 +117,6 @@
     <Compile Include="OOBE\Views\OobeColorPicker.xaml.cs">
       <DependentUpon>OobeColorPicker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="OOBE\Views\OobeDumpPage.xaml.cs">
-      <DependentUpon>OobeDumpPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="OOBE\Views\OobeFancyZones.xaml.cs">
       <DependentUpon>OobeFancyZones.xaml</DependentUpon>
     </Compile>
@@ -258,10 +255,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="OOBE\Views\OobeColorPicker.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="OOBE\Views\OobeDumpPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
