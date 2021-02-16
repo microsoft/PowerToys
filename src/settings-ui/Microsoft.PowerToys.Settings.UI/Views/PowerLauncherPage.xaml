@@ -7,9 +7,9 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
-      xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
-      xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
-      mc:Ignorable="d"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
+    mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
     
