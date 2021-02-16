@@ -1154,6 +1154,9 @@ Win + Shift + O to toggle your video</value>
   <data name="Position_GroupSettings.Text" xml:space="preserve">
     <value>Position</value>
   </data>
+  <data name="PowerToys_Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
+    <value>Position &amp; appearance</value>
+  </data>
   <data name="PowerLauncher_MonitorToDisplayOn.Header" xml:space="preserve">
     <value>Specify a monitor index</value>
   </data>
