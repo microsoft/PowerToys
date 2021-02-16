@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
 
         public string FluentIcon { get; set; }
 
-        public string GifSource { get; set; }
+        public string PreviewImageSource { get; set; }
 
         public string Description { get; set; }
 
@@ -44,7 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             NavIndex = other.NavIndex;
             Icon = other.Icon;
             FluentIcon = other.FluentIcon;
-            GifSource = other.GifSource;
+            PreviewImageSource = other.PreviewImageSource;
             Description = other.Description;
             Link = other.Link;
         }

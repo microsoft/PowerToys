@@ -13,7 +13,7 @@
                     VerticalAlignment="Top">
             <Image Stretch="UniformToFill"
                    Height="320"
-                   Source="{x:Bind ViewModel.GifSource}" />
+                   Source="{x:Bind ViewModel.PreviewImageSource}" />
             <TextBlock Text="{x:Bind ViewModel.ModuleName}"
                        FontWeight="SemiBold"
                        FontSize="32"
