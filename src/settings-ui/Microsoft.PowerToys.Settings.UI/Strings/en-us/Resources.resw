@@ -953,4 +953,7 @@
   <data name="PowerLauncher_EnablePluginToggle.AutomationProperties.Name" xml:space="preserve">
     <value>Enable plugin</value>
   </data>
+  <data name="PowerLauncher_NotAccessibleWarning.Text" xml:space="preserve">
+    <value>The plugin is not accessible from PowerToys Run</value>
+  </data>
 </root>

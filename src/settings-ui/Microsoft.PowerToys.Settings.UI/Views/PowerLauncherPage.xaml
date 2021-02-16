@@ -155,7 +155,7 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins}"                
+            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
                       IsItemClickEnabled="True"
                       x:Name="PluginsListView"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
@@ -179,7 +179,7 @@
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel">
+                    <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
                         <StackPanel Orientation="Vertical" Background="Transparent"
                                     Padding="0,12,0,12">
                             <Interactivity:Interaction.Behaviors>
@@ -226,6 +226,11 @@
                                            <Run x:Uid="PowerLauncher_AuthoredBy" />
                                            <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                     </TextBlock>
+                                    <TextBlock 
+                                        x:Uid="PowerLauncher_NotAccessibleWarning"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                                        Visibility="{x:Bind ShowWarning, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 </StackPanel>
 
                                 <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
