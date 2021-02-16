@@ -542,7 +542,7 @@ namespace PowerLauncher.ViewModel
                 var pluginQueryPairs = QueryBuilder.Build(queryText);
                 if (pluginQueryPairs != null && pluginQueryPairs.Count > 0)
                 {
-                    queryText = pluginQueryPairs.Values.First().ActionKeyword;
+                    queryText = pluginQueryPairs.Values.First().RawQuery;
                     _currentQuery = queryText;
                     Task.Run(
                         () =>
@@ -566,13 +566,9 @@ namespace PowerLauncher.ViewModel
                             {
                                 var plugin = pluginQueryItem.Key;
                                 var query = pluginQueryItem.Value;
-
-                                if (!plugin.Metadata.Disabled)
-                                {
-                                    var results = PluginManager.QueryForPlugin(plugin, query);
-                                    resultPluginPair.Add((results, plugin.Metadata));
-                                    currentCancellationToken.ThrowIfCancellationRequested();
-                                }
+                                var results = PluginManager.QueryForPlugin(plugin, query);
+                                resultPluginPair.Add((results, plugin.Metadata));
+                                currentCancellationToken.ThrowIfCancellationRequested();
                             }
 
                             lock (_addResultsLock)
@@ -604,39 +600,36 @@ namespace PowerLauncher.ViewModel
                                 {
                                     try
                                     {
-                                        if (!plugin.Metadata.Disabled)
+                                        Query query;
+                                        pluginQueryPairs.TryGetValue(plugin, out query);
+
+                                        var results = PluginManager.QueryForPlugin(plugin, query, true);
+                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                        if ((results?.Count ?? 0) != 0)
                                         {
-                                            Query query;
-                                            pluginQueryPairs.TryGetValue(plugin, out query);
-
-                                            var results = PluginManager.QueryForPlugin(plugin, query, true);
-                                            currentCancellationToken.ThrowIfCancellationRequested();
-                                            if ((results?.Count ?? 0) != 0)
+                                            lock (_addResultsLock)
                                             {
-                                                lock (_addResultsLock)
+                                                // Using CurrentCultureIgnoreCase since this is user facing
+                                                if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                                 {
-                                                    // Using CurrentCultureIgnoreCase since this is user facing
-                                                    if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
-                                                    {
-                                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                                    currentCancellationToken.ThrowIfCancellationRequested();
 
-                                                        // Remove the original results from the plugin
-                                                        Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
-                                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                                    // Remove the original results from the plugin
+                                                    Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
+                                                    currentCancellationToken.ThrowIfCancellationRequested();
 
-                                                        // Add the new results from the plugin
-                                                        UpdateResultView(results, queryText, currentCancellationToken);
+                                                    // Add the new results from the plugin
+                                                    UpdateResultView(results, queryText, currentCancellationToken);
 
-                                                        currentCancellationToken.ThrowIfCancellationRequested();
-                                                        numResults = Results.Results.Count;
-                                                        Results.Sort();
-                                                        Results.SelectedItem = Results.Results.FirstOrDefault();
-                                                    }
+                                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                                    numResults = Results.Results.Count;
+                                                    Results.Sort();
+                                                    Results.SelectedItem = Results.Results.FirstOrDefault();
                                                 }
-
-                                                currentCancellationToken.ThrowIfCancellationRequested();
-                                                UpdateResultsListViewAfterQuery(queryText, true);
                                             }
+
+                                            currentCancellationToken.ThrowIfCancellationRequested();
+                                            UpdateResultsListViewAfterQuery(queryText, true);
                                         }
                                     }
                                     catch (OperationCanceledException)

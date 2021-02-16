@@ -51,7 +51,7 @@ namespace Wox.Test
             string searchQuery = "file.txt  file2  file3";
             PluginManager.SetAllPlugins(new List<PluginPair>()
             {
-                new PluginPair { Metadata = new PluginMetadata() { Disabled = true, IsGlobal = true } },
+                new PluginPair { Metadata = new PluginMetadata() { Disabled = false, IsGlobal = true } },
             });
 
             // Act

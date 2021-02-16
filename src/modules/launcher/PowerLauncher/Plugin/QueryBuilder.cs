@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Mono.Collections.Generic;
 using Wox.Plugin;
 
 namespace PowerLauncher.Plugin
@@ -31,7 +29,7 @@ namespace PowerLauncher.Plugin
                     continue;
                 }
 
-                // A new query is constructed for each plugin as they have different action keywords
+                // A new query is constructed for each plugin
                 var query = new Query(text, pluginActionKeyword);
                 pluginQueryPair.TryAdd(plugin, query);
             }
@@ -42,7 +40,7 @@ namespace PowerLauncher.Plugin
             {
                 foreach (PluginPair globalPlugin in PluginManager.GlobalPlugins)
                 {
-                    if (!pluginQueryPair.ContainsKey(globalPlugin))
+                    if (!globalPlugin.Metadata.Disabled && !pluginQueryPair.ContainsKey(globalPlugin))
                     {
                         var query = new Query(text);
                         pluginQueryPair.Add(globalPlugin, query);
