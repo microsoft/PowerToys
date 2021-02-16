@@ -11,5 +11,20 @@ namespace PowerToys.Settings
     /// </summary>
     public partial class App : Application
     {
+        public bool ShowOobe { get; set; }
+
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            if (!ShowOobe)
+            {
+                MainWindow mainWindow = new MainWindow();
+                mainWindow.Show();
+            }
+            else
+            {
+                OobeWindow otherWindow = new OobeWindow();
+                otherWindow.Show();
+            }
+        }
     }
 }

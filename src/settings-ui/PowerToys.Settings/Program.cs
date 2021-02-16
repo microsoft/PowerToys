@@ -19,6 +19,7 @@ namespace PowerToys.Settings
             Theme, // used in the old settings
             ElevatedStatus,
             IsUserAdmin,
+            ShowOobeWindow,
         }
 
         // Quantity of arguments
@@ -50,6 +51,12 @@ namespace PowerToys.Settings
 
                     IsElevated = args[(int)Arguments.ElevatedStatus] == "true";
                     IsUserAnAdmin = args[(int)Arguments.IsUserAdmin] == "true";
+
+                    if (args.Length > ArgumentsQty)
+                    {
+                        // open oobe window
+                        app.ShowOobe = args[(int)Arguments.ShowOobeWindow] == "true";
+                    }
 
                     RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
                     {
