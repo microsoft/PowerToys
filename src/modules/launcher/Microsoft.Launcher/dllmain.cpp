@@ -202,9 +202,16 @@ public:
                 sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
                 sei.nShow = SW_SHOWNORMAL;
                 sei.lpParameters = executable_args.data();
-                ShellExecuteExW(&sei);
-
-                m_hProcess = sei.hProcess;
+                
+                if (ShellExecuteExW(&sei))
+                {
+                    m_enabled = true;
+                    m_hProcess = sei.hProcess;
+                }
+                else
+                {
+                    Logger::error("Launcher failed to start");
+                }
             }
             else
             {
@@ -231,6 +238,7 @@ public:
 
                         if (run_non_elevated(action_runner_path, params, pidBuffer))
                         {
+                            m_enabled = true;
                             const int maxRetries = 80;
                             for (int retry = 0; retry < maxRetries; ++retry)
                             {
@@ -248,8 +256,6 @@ public:
                 }
             }
         }
-
-        m_enabled = true;
     }
 
     // Disable the powertoy
