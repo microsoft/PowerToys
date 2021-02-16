@@ -17,8 +17,6 @@
                 <ResourceDictionary Source="/Styles/Button.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <converters:ModuleEnabledToForegroundConverter x:Key="ModuleEnabledToForegroundConverter"/>
-            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-            <converters:BooleanInvertConverter x:Key="BooleanInvertConverter"/>
 
             <SolidColorBrush x:Key="DarkForegroundDisabledBrush">#66FFFFFF</SolidColorBrush>
             <SolidColorBrush x:Key="DarkForegroundBrush">#FFFFFFFF</SolidColorBrush>
