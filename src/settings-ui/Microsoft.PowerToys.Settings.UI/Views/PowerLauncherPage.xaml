@@ -7,6 +7,8 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
@@ -153,13 +155,19 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins}"
-                      SelectionMode="None"
+            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins}"                
                       IsItemClickEnabled="True"
+                      x:Name="PluginsListView"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                      ItemClick="ListView_ItemClick"
                       Margin="-12,12,0,0">
-
+                <ListView.Resources>
+                    <SolidColorBrush x:Key="ListViewItemBackgroundSelected"
+                                     Color="{ThemeResource SystemChromeLowColor}" />
+                    <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver"
+                                     Color="{ThemeResource SystemChromeLowColor}" />
+                    <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed"
+                                     Color="{ThemeResource SystemChromeLowColor}" />
+                </ListView.Resources>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment"
@@ -172,8 +180,25 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel">
-                        <StackPanel Orientation="Vertical"
+                        <StackPanel Orientation="Vertical" Background="Transparent"
                                     Padding="0,12,0,12">
+                            <Interactivity:Interaction.Behaviors>
+
+                                <Core:DataTriggerBehavior Binding="{Binding ElementName=PluginsListView, Path=SelectedItem.Id, Mode=OneWay}"
+                                                          Value="{Binding Id}"
+                                                          ComparisonCondition="Equal">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=AdditionalInfoPanel}"
+                                                               PropertyName="Visibility"
+                                                               Value="Visible" />
+                                </Core:DataTriggerBehavior>
+                                <Core:DataTriggerBehavior Binding="{Binding ElementName=PluginsListView, Path=SelectedItem.Id, Mode=OneWay}"
+                                                          Value="{Binding Id}"
+                                                          ComparisonCondition="NotEqual">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=AdditionalInfoPanel}"
+                                                               PropertyName="Visibility"
+                                                               Value="Collapsed" />
+                                </Core:DataTriggerBehavior>
+                            </Interactivity:Interaction.Behaviors>
                             <Grid ColumnSpacing="0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="60" />
@@ -210,8 +235,7 @@
                                               Grid.Column="2" />
                             </Grid>
 
-                            <StackPanel  Margin="60,24,0,0"
-                                         Visibility="{x:Bind Path=ShowAdditionalInfo, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel  Margin="60,24,0,24" x:Name="AdditionalInfoPanel" Visibility="Collapsed">
 
                                 <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
