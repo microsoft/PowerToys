@@ -877,9 +877,8 @@ namespace PowerLauncher.ViewModel
             Results.Clear();
             MainWindowVisibility = System.Windows.Visibility.Collapsed;
 
-            // Fix Cold start for plugins
-            string s = "m";
-            var pluginQueryPairs = QueryBuilder.Build(s);
+            // Fix Cold start for plugins, "m" is just a random string needed to query results
+            var pluginQueryPairs = QueryBuilder.Build("m");
 
             // To execute a query corresponding to each plugin
             foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPairs)
