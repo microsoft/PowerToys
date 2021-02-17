@@ -3,20 +3,27 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Windows;
 using interop;
 using ManagedCommon;
-using Windows.UI.Popups;
 
 namespace PowerToys.Settings
 {
     public static class Program
     {
+        private enum Arguments
+        {
+            ExecutablePath = 0,
+            PTPipeName,
+            SettingsPipeName, // used in the old settings
+            PTPid,
+            Theme, // used in the old settings
+            ElevatedStatus,
+            IsUserAdmin,
+        }
+
         // Quantity of arguments
-        private const int ArgumentsQty = 5;
+        private const int ArgumentsQty = 6;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
@@ -39,10 +46,10 @@ namespace PowerToys.Settings
 
                 if (args != null && args.Length >= ArgumentsQty)
                 {
-                    _ = int.TryParse(args[2], out int powerToysPID);
+                    _ = int.TryParse(args[(int)Arguments.PTPid], out int powerToysPID);
                     PowerToysPID = powerToysPID;
 
-                    if (args[4] == "true")
+                    if (args[(int)Arguments.ElevatedStatus] == "true")
                     {
                         IsElevated = true;
                     }
@@ -51,7 +58,7 @@ namespace PowerToys.Settings
                         IsElevated = false;
                     }
 
-                    if (args[5] == "true")
+                    if (args[(int)Arguments.IsUserAdmin] == "true")
                     {
                         IsUserAnAdmin = true;
                     }
@@ -65,7 +72,7 @@ namespace PowerToys.Settings
                         Environment.Exit(0);
                     });
 
-                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], (string message) =>
+                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[(int)Arguments.PTPipeName], args[(int)Arguments.ExecutablePath], (string message) =>
                     {
                         if (IPCMessageReceivedCallback != null && message.Length > 0)
                         {
