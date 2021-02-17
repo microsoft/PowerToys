@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="..\..\Version.props" />
@@ -117,17 +117,32 @@
     <Compile Include="OOBE\Views\OobeColorPicker.xaml.cs">
       <DependentUpon>OobeColorPicker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="OOBE\Views\OobeDumpPage.xaml.cs">
-      <DependentUpon>OobeDumpPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="OOBE\Views\OobeFancyZones.xaml.cs">
       <DependentUpon>OobeFancyZones.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeFileExplorer.xaml.cs">
+      <DependentUpon>OobeFileExplorer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeImageResizer.xaml.cs">
+      <DependentUpon>OobeImageResizer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeKBM.xaml.cs">
+      <DependentUpon>OobeKBM.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobePowerRename.xaml.cs">
+      <DependentUpon>OobePowerRename.xaml</DependentUpon>
     </Compile>
     <Compile Include="OOBE\Views\OobeRun.xaml.cs">
       <DependentUpon>OobeRun.xaml</DependentUpon>
     </Compile>
     <Compile Include="OOBE\Views\OobeShellPage.xaml.cs">
       <DependentUpon>OobeShellPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeShortcutGuide.xaml.cs">
+      <DependentUpon>OobeShortcutGuide.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeVideoConference.xaml.cs">
+      <DependentUpon>OobeVideoConference.xaml</DependentUpon>
     </Compile>
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Services\NavigationService.cs" />
@@ -243,11 +258,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="OOBE\Views\OobeDumpPage.xaml">
+    <Page Include="OOBE\Views\OobeFancyZones.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="OOBE\Views\OobeFancyZones.xaml">
+    <Page Include="OOBE\Views\OobeFileExplorer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeImageResizer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeKBM.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobePowerRename.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -256,6 +283,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="OOBE\Views\OobeShellPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeShortcutGuide.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeVideoConference.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
