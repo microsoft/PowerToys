@@ -71,6 +71,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
+    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
   </ItemGroup>
   
   <ItemGroup>

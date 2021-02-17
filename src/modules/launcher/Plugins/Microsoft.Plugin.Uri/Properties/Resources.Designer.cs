@@ -61,6 +61,15 @@ namespace Microsoft.Plugin.Uri.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to open URL.
+        /// </summary>
+        public static string Microsoft_plugin_uri_open_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_uri_open_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Handles urls.
         /// </summary>
         public static string Microsoft_plugin_uri_plugin_description {

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.ServiceProcess;
 using Microsoft.PowerToys.Run.Plugin.Service.Properties;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -91,20 +92,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
 
         public static void OpenServices()
         {
-            try
-            {
-                var info = new ProcessStartInfo
-                {
-                    FileName = "services.msc",
-                    UseShellExecute = true,
-                };
-
-                Process.Start(info);
-            }
-            catch (Win32Exception ex)
-            {
-                Log.Error(ex.Message, MethodBase.GetCurrentMethod().DeclaringType);
-            }
+            Helper.OpenInShell("services.msc");
         }
 
         private static string GetResultTitle(ServiceController serviceController)

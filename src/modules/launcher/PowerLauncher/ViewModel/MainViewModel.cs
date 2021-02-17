@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -240,11 +239,6 @@ namespace PowerLauncher.ViewModel
 
             SelectFirstResultCommand = new RelayCommand(_ => SelectedResults.SelectFirstResult());
 
-            StartHelpCommand = new RelayCommand(_ =>
-            {
-                Process.Start("https://aka.ms/PowerToys/");
-            });
-
             OpenResultWithKeyboardCommand = new RelayCommand(index =>
             {
                 OpenResultsEvent(index, false);
@@ -458,8 +452,6 @@ namespace PowerLauncher.ViewModel
         public ICommand SelectPrevPageCommand { get; set; }
 
         public ICommand SelectFirstResultCommand { get; set; }
-
-        public ICommand StartHelpCommand { get; set; }
 
         public ICommand LoadContextMenuCommand { get; set; }
 

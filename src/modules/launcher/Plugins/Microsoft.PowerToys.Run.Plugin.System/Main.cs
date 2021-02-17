@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interop;
 using ManagedCommon;
@@ -70,7 +69,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\shutdown.{IconTheme}.png",
                     Action = c =>
                     {
-                        Process.Start("shutdown", "/s /t 0");
+                        Helper.OpenInShell("shutdown", "/s /t 0");
                         return true;
                     },
                 },
@@ -81,7 +80,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\restart.{IconTheme}.png",
                     Action = c =>
                     {
-                        Process.Start("shutdown", "/r /t 0");
+                        Helper.OpenInShell("shutdown", "/r /t 0");
                         return true;
                     },
                 },

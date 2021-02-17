@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Windows;
@@ -112,16 +111,10 @@ namespace Microsoft.Plugin.Folder
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>
                 {
-                    try
-                    {
-                        Process.Start("explorer.exe", $" /select,\"{record.FullPath}\"");
-                    }
-                    catch (Exception e)
+                    if (!Helper.OpenInShell("explorer.exe", $"/select,\"{record.FullPath}\""))
                     {
                         var message = $"{Properties.Resources.Microsoft_plugin_folder_file_open_failed} {record.FullPath}";
-                        Log.Exception(message, e, GetType());
                         _context.API.ShowMsg(message);
-
                         return false;
                     }
 

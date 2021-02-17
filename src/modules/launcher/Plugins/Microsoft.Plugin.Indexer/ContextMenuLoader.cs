@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -175,15 +174,9 @@ namespace Microsoft.Plugin.Indexer
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>
                 {
-                    try
-                    {
-                        Process.Start("explorer.exe", $" /select,\"{record.Path}\"");
-                    }
-                    catch (Exception e)
+                    if (!Helper.OpenInShell("explorer.exe", $"/select,\"{record.Path}\""))
                     {
                         var message = $"{Properties.Resources.Microsoft_plugin_indexer_folder_open_failed} {record.Path}";
-                        Log.Exception(message, e, GetType());
-
                         _context.API.ShowMsg(message);
                         return false;
                     }

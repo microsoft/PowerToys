@@ -4,11 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Text;
 using ManagedCommon;
 using Microsoft.Plugin.Uri.UriHelper;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -67,10 +67,14 @@ namespace Microsoft.Plugin.Uri
                         : DefaultIconPath,
                     Action = action =>
                     {
-                        Process.Start(new ProcessStartInfo(uriResultString)
+                        if (!Helper.OpenInShell(uriResultString))
                         {
-                            UseShellExecute = true,
-                        });
+                            var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
+                            var message = $"{Properties.Resources.Microsoft_plugin_uri_open_failed}: {uriResultString}";
+                            Context.API.ShowMsg(title, message);
+                            return false;
+                        }
+
                         return true;
                     },
                 });
