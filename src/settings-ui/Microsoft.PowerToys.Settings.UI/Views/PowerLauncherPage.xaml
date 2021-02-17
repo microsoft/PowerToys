@@ -235,7 +235,8 @@
                                         x:Uid="PowerLauncher_NotAccessibleWarning"
                                         FontSize="12"
                                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                                        Visibility="{x:Bind ShowWarning, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        Visibility="{x:Bind ShowWarning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        TextWrapping="Wrap" />
                                 </StackPanel>
 
                                 <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
