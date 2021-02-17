@@ -954,6 +954,6 @@
     <value>Enable plugin</value>
   </data>
   <data name="PowerLauncher_NotAccessibleWarning.Text" xml:space="preserve">
-    <value>The plugin is not accessible from PowerToys Run</value>
+    <value>Please define an activation phrase or allow it for the global results to use this plugin</value>
   </data>
 </root>
