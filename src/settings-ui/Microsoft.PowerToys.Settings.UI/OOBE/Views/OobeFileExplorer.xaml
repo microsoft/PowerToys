@@ -1,5 +1,5 @@
-<Page
-    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeFancyZones"
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeFileExplorer"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
@@ -9,7 +9,8 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Vertical"
+                    VerticalAlignment="Top">
             <Image Stretch="UniformToFill"
                    Height="320"
                    Source="{x:Bind ViewModel.PreviewImageSource}" />

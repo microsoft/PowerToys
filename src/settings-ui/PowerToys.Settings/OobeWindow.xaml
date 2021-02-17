@@ -8,7 +8,7 @@
         xmlns:xaml="clr-namespace:Microsoft.Toolkit.Wpf.UI.XamlHost;assembly=Microsoft.Toolkit.Wpf.UI.XamlHost"
         mc:Ignorable="d"
         Title="OobeWindow"
-        MinWidth="480" Height="800" Width="1100"
+        MinWidth="480" Height="800" Width="1400"
         Loaded="Window_Loaded"
         Closed="Window_Closed">
     <Grid>

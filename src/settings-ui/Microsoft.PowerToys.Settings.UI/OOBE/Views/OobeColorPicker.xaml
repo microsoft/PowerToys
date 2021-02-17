@@ -13,7 +13,7 @@
                     VerticalAlignment="Top">
             <Image Stretch="UniformToFill"
                    Height="320"
-                   Source="{x:Bind ViewModel.GifSource}" />
+                   Source="{x:Bind ViewModel.PreviewImageSource}" />
             <TextBlock Text="{x:Bind ViewModel.ModuleName}"
                        FontWeight="SemiBold"
                        FontSize="32"
@@ -22,7 +22,7 @@
                        TextWrapping="Wrap"
                        Opacity="0.8"
                        Text="{x:Bind ViewModel.Description}" />
-            <HyperlinkButton Margin="32,0,32,0">
+            <HyperlinkButton Margin="32,0,32,0" NavigateUri="{x:Bind ViewModel.Link}">
                 <TextBlock>
                     <Run x:Uid="Oobe_LearnMore"/>
                     <Run Text="{x:Bind ViewModel.ModuleName}"/>

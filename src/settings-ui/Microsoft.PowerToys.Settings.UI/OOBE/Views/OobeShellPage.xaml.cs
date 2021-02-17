@@ -42,8 +42,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uEF3C",
                 Image = "ms-appx:///Assets/Modules/ColorPicker.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png",
-                GifSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/colorpicker/ColorPicking.gif",
+                PreviewImageSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/colorpicker/ColorPicking.gif",
                 Description = "Color Picker is a simple and quick system-wide color picker with Win+Shift+C. Color Picker allows to pick colors from any currently running application and automatically copies the HEX or RGB values to your clipboard.",
+                Link = "https://docs.microsoft.com/en-us/windows/powertoys/color-picker",
             });
             Modules.Insert((int)PowerToysModulesEnum.FancyZones, new OobePowerToysModule()
             {
@@ -54,8 +55,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uE737",
                 Image = "ms-appx:///Assets/Modules/FancyZones.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png",
-                GifSource = "https://user-images.githubusercontent.com/9866362/101410242-5b90a280-38df-11eb-834a-8365453b8429.gif",
+                PreviewImageSource = "https://user-images.githubusercontent.com/9866362/101410242-5b90a280-38df-11eb-834a-8365453b8429.gif",
                 Description = "FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.",
+                Link = "https://docs.microsoft.com/en-us/windows/powertoys/fancyzones",
             });
             Modules.Insert((int)PowerToysModulesEnum.ImageResizer, new OobePowerToysModule()
             {
@@ -66,16 +68,22 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uEB9F",
                 Image = "ms-appx:///Assets/Modules/ImageResizer.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ImageResizer.png",
+                Description = "This is Image Resizer",
+                PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-resize-images.gif",
+                Link = "https://docs.microsoft.com/en-us/windows/powertoys/image-resizer",
             });
             Modules.Insert((int)PowerToysModulesEnum.KBM, new OobePowerToysModule()
             {
-                ModuleName = "KBM",
+                ModuleName = "Keyboard Manager",
                 Tag = "KBM",
                 IsNew = false,
                 NavIndex = 0,
                 Icon = "\uE765",
                 Image = "ms-appx:///Assets/Modules/KBM.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/KBM.png",
+                Description = "This is the Keyboard Manager",
+                PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-keyboard-remap-a-b.png",
+                Link = "https://docs.microsoft.com/en-us/windows/powertoys/keyboard-manager",
             });
             Modules.Insert((int)PowerToysModulesEnum.Run, new OobePowerToysModule()
             {
@@ -85,9 +93,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 NavIndex = 2,
                 Icon = "\uE773",
                 Image = "ms-appx:///Assets/Modules/PowerLauncher.png",
-                FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png",
-                GifSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/Launcher/QuickStart.gif",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/empty.png",
+                PreviewImageSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/Launcher/QuickStart.gif",
                 Description = "Run helps you search and launch your app instantly with a simple Alt+Space and start typing.",
+                Link = "https://docs.microsoft.com/en-us/windows/powertoys/run",
             });
             Modules.Insert((int)PowerToysModulesEnum.PowerRename, new OobePowerToysModule()
             {
@@ -98,34 +107,49 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uE8AC",
                 Image = "ms-appx:///Assets/Modules/PowerRename.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/PowerRename.png",
+                Description = "This is the PowerRename",
+                PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powerrename-demo.gif",
+                Link = "https://docs.microsoft.com/en-us/windows/powertoys/powerrename",
             });
-            /*Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
             {
                 ModuleName = "File explorer add-ons",
                 Tag = "FileExplorer",
                 IsNew = false,
                 NavIndex = 1,
                 Icon = "\uEC50",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/empty.png",
                 Image = "ms-appx:///Assets/Modules/PowerPreview.png",
-            });*/
-            /*Modules.Insert((int)PowerToysModulesEnum.ShortcutGuide, new OobePowerToysModule()
+                Description = "This is the FileExplorer",
+                PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-fileexplorer.gif",
+                Link = "https://docs.microsoft.com/en-us/windows/powertoys/file-explorer",
+            });
+            Modules.Insert((int)PowerToysModulesEnum.ShortcutGuide, new OobePowerToysModule()
             {
                 ModuleName = "Shortcut Guide",
                 Tag = "ShortcutGuide",
                 IsNew = false,
                 NavIndex = 0,
                 Icon = "\uEDA7",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/empty.png",
                 Image = "ms-appx:///Assets/Modules/ShortcutGuide.png",
-            });*/
-            /*Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
+                Description = "This is the Shortcut Guide",
+                PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/pt-shortcut-guide-large.png",
+                Link = "https://docs.microsoft.com/en-us/windows/powertoys/shortcut-guide",
+            });
+            Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = "Video Conference",
                 Tag = "VideoConference",
                 IsNew = true,
                 NavIndex = 1,
                 Icon = "\uEC50",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/empty.png",
                 Image = "ms-appx:///Assets/Modules/VideoConference.png",
-            });*/
+                Description = "This is the Video Conference",
+                PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/pt-video-conference-mute-settings.png",
+                Link = "https://docs.microsoft.com/en-us/windows/powertoys/video-conference-mute",
+            });
         }
 
         private void UserControl_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -140,12 +164,17 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             OobePowerToysModule selectedItem = args.SelectedItem as OobePowerToysModule;
-            switch ((string)selectedItem.Tag)
+            switch (selectedItem.Tag)
             {
                 case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
                 case "FancyZones": NavigationFrame.Navigate(typeof(OobeFancyZones)); break;
                 case "Run": NavigationFrame.Navigate(typeof(OobeRun)); break;
-                default: NavigationFrame.Navigate(typeof(OobeDumpPage)); break;
+                case "ImageResizer": NavigationFrame.Navigate(typeof(OobeImageResizer)); break;
+                case "KBM": NavigationFrame.Navigate(typeof(OobeKBM)); break;
+                case "PowerRename": NavigationFrame.Navigate(typeof(OobePowerRename)); break;
+                case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
+                case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
+                case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
             }
         }
     }
