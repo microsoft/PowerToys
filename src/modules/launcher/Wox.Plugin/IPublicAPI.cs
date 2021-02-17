@@ -78,7 +78,8 @@ namespace Wox.Plugin
         /// <summary>
         /// Show toast notification
         /// </summary>
-        /// <param name="text">Notification text</param>
-        void ShowNotification(string text);
+        /// <param name="text">Notification main text</param>
+        /// <param name="secondaryText">Notification optional text</param>
+        void ShowNotification(string text, string secondaryText = null);
     }
 }

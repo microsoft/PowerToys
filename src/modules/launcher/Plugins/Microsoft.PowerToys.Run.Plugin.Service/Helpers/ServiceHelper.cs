@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.ServiceProcess;
@@ -75,11 +74,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
 
                 if (exitCode == 0)
                 {
-                    contextAPI.ShowNotification(GetLocalizedMessage(serviceResult, action));
+                    contextAPI.ShowNotification(GetLocalizedMessage(action), serviceResult.DisplayName);
                 }
                 else
                 {
-                    contextAPI.ShowNotification("An error occurred");
+                    contextAPI.ShowNotification(GetLocalizedErrorMessage(action), serviceResult.DisplayName);
                     Log.Error($"The command returned {exitCode}", MethodBase.GetCurrentMethod().DeclaringType);
                 }
             }
@@ -192,19 +191,39 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
             }
         }
 
-        private static string GetLocalizedMessage(ServiceResult serviceResult, Action action)
+        private static string GetLocalizedMessage(Action action)
         {
             if (action == Action.Start)
             {
-                return string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_service_started_notification, serviceResult.DisplayName);
+                return Resources.wox_plugin_service_started_notification;
             }
             else if (action == Action.Stop)
             {
-                return string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_service_stopped_notification, serviceResult.DisplayName);
+                return Resources.wox_plugin_service_stopped_notification;
             }
             else if (action == Action.Restart)
             {
-                return string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_service_restarted_notification, serviceResult.DisplayName);
+                return Resources.wox_plugin_service_restarted_notification;
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        private static string GetLocalizedErrorMessage(Action action)
+        {
+            if (action == Action.Start)
+            {
+                return Resources.wox_plugin_service_start_error_notification;
+            }
+            else if (action == Action.Stop)
+            {
+                return Resources.wox_plugin_service_stop_error_notification;
+            }
+            else if (action == Action.Restart)
+            {
+                return Resources.wox_plugin_service_restart_error_notification;
             }
             else
             {
