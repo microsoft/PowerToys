@@ -360,7 +360,7 @@
             <Grid DataContext="{Binding SelectedModel}"
                   MinWidth="320" Margin="0,0,0,32">
 
-                <StackPanel Margin="0,-32,0,0"
+                <StackPanel Margin="0,-37,0,0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
                             Orientation="Horizontal">
