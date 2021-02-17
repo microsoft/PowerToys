@@ -18,9 +18,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("maximum_number_of_results")]
         public int MaximumNumberOfResults { get; set; }
 
-        [JsonPropertyName("monitor_to_display_on")]
-        public int MonitorToDisplayOn { get; set; }
-
         [JsonPropertyName("open_powerlauncher")]
         public HotkeySettings OpenPowerLauncher { get; set; }
 
@@ -64,7 +61,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             MaximumNumberOfResults = 4;
             Theme = Theme.System;
             Position = Position.Cursor;
-            MonitorToDisplayOn = 0;
         }
     }
 }

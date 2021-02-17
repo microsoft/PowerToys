@@ -20,8 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private readonly ObservableCollection<Tuple<string, string>> searchResultPreferencesOptions;
         private readonly ObservableCollection<Tuple<string, string>> searchTypePreferencesOptions;
 
-        private Dictionary<int, int> detectedMonitors;
-
         public PowerLauncherPage()
         {
             InitializeComponent();
@@ -40,8 +38,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ApplicationName"), "application_name"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_StringInApplication"), "string_in_application"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
-
-            SetDetectedMonitors();
         }
 
         private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -91,33 +87,5 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
         */
-
-        private void PowerToysRun_MonitorToDisplayOn_ComboBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
-        {
-            var index = 0;
-
-            foreach (var item in detectedMonitors)
-            {
-                if (item.Key == ViewModel.MonitorToDisplayOn)
-                {
-                    break;
-                }
-
-                index++;
-            }
-
-            PowerToysRun_MonitorToDisplayOn_ComboBox.SelectedIndex = index;
-        }
-
-        private void SetDetectedMonitors()
-        {
-            int monitorCount = GetSystemMetrics(SystemMetric.SM_CMONITORS);
-
-            detectedMonitors = new Dictionary<int, int>();
-            for (int i = 0; i < monitorCount; i++)
-            {
-                detectedMonitors.Add(i, i + 1);
-            }
-        }
     }
 }

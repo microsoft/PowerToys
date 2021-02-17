@@ -230,13 +230,7 @@ namespace PowerLauncher
             {
                 case ManagedCommon.Position.Primary:
                     return Screen.PrimaryScreen;
-                case ManagedCommon.Position.Custom:
-                    int index = _settings.MonitorToDisplayOn;
-                    if (index < Screen.AllScreens.Length)
-                    {
-                        return Screen.AllScreens[_settings.MonitorToDisplayOn];
-                    }
-
+                case ManagedCommon.Position.Focus:
                     return Screen.FromPoint(System.Windows.Forms.Cursor.Position);
                 case ManagedCommon.Position.Cursor:
                 default:

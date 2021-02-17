@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private bool _isCursorPositionRadioButtonChecked;
         private bool _isPrimaryPositionRadioButtonChecked;
-        private bool _isCustomPositionRadioButtonChecked;
+        private bool _isFocusPositionRadioButtonChecked;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -77,7 +77,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 settings.Properties.OpenPowerLauncher.Alt = true;
                 settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
                 settings.Properties.MaximumNumberOfResults = 4;
-                settings.Properties.MonitorToDisplayOn = 0;
                 callback(settings);
             }
 
@@ -102,8 +101,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 case Position.Primary:
                     _isPrimaryPositionRadioButtonChecked = true;
                     break;
-                case Position.Custom:
-                    _isCustomPositionRadioButtonChecked = true;
+                case Position.Focus:
+                    _isFocusPositionRadioButtonChecked = true;
                     break;
             }
 
@@ -261,23 +260,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public int MonitorToDisplayOn
-        {
-            get
-            {
-                return settings.Properties.MonitorToDisplayOn;
-            }
-
-            set
-            {
-                if (settings.Properties.MonitorToDisplayOn != value)
-                {
-                    settings.Properties.MonitorToDisplayOn = value;
-                    UpdateSettings();
-                }
-            }
-        }
-
         public bool IsCursorPositionRadioButtonChecked
         {
             get
@@ -318,30 +300,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool IsCustomPositionRadioButtonChecked
+        public bool IsFocusPositionRadioButtonChecked
         {
             get
             {
-                return _isCustomPositionRadioButtonChecked;
+                return _isFocusPositionRadioButtonChecked;
             }
 
             set
             {
-                if (value != _isCustomPositionRadioButtonChecked)
+                if (value == true)
                 {
-                    _isCustomPositionRadioButtonChecked = value;
-                    settings.Properties.Position = Position.Custom;
-                    UpdateSettings();
-                    OnPropertyChanged(nameof(CustomMonitorFieldEnabled));
+                    settings.Properties.Position = Position.Focus;
                 }
-            }
-        }
 
-        public bool CustomMonitorFieldEnabled
-        {
-            get
-            {
-                return _isCustomPositionRadioButtonChecked && EnablePowerLauncher;
+                _isFocusPositionRadioButtonChecked = value;
+
+                UpdateSettings();
             }
         }
 

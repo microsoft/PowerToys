@@ -122,25 +122,6 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
-        private int _monitorToDisplayOn;
-
-        public int MonitorToDisplayOn
-        {
-            get
-            {
-                return _monitorToDisplayOn;
-            }
-
-            set
-            {
-                if (_monitorToDisplayOn != value)
-                {
-                    _monitorToDisplayOn = value;
-                    OnPropertyChanged(nameof(MonitorToDisplayOn));
-                }
-            }
-        }
-
         private int _activeTimes;
 
         public int ActivateTimes

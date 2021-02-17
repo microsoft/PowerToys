@@ -1166,11 +1166,11 @@ Win + Shift + O to toggle your video</value>
   <data name="Radio_Position_Cursor.Content" xml:space="preserve">
     <value>Monitor with mouse cursor</value>
   </data>
-  <data name="Radio_Position_Custom.Content" xml:space="preserve">
-    <value>Specified Monitor</value>
+  <data name="Radio_Position_Focus.Content" xml:space="preserve">
+    <value>Monitor with focused window</value>
   </data>
   <data name="Radio_Position_Primary.Content" xml:space="preserve">
-    <value>Primary Monitor</value>
+    <value>Primary monitor</value>
   </data>
   <data name="Windows_Display_Settings.Text" xml:space="preserve">
     <value>Windows display settings</value>

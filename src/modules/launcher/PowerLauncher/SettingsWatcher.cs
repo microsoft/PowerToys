@@ -131,11 +131,6 @@ namespace PowerLauncher
                         _settings.Position = overloadSettings.Properties.Position;
                     }
 
-                    if (_settings.MonitorToDisplayOn != overloadSettings.Properties.MonitorToDisplayOn)
-                    {
-                        _settings.MonitorToDisplayOn = overloadSettings.Properties.MonitorToDisplayOn;
-                    }
-
                     retry = false;
                 }
 

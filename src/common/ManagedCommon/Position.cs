@@ -8,6 +8,6 @@ namespace ManagedCommon
     {
         Cursor,
         Primary,
-        Custom,
+        Focus,
     }
 }
