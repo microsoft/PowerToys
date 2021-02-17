@@ -529,8 +529,8 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hold down Shift key to change orientation of splitter.
-        ///To merge zones, select the zones and click &quot;merge&quot;..
+        ///   Looks up a localized string similar to To change the orientation of the splitter, hold down the Shift key.
+        ///To merge zones, click and drag over the zones you wish to merge..
         /// </summary>
         public static string Note_Custom_Table {
             get {

@@ -160,8 +160,8 @@
     <value>Name</value>
   </data>
   <data name="Note_Custom_Table" xml:space="preserve">
-    <value>Hold down Shift key to change orientation of splitter.
-To merge zones, select the zones and click "merge".</value>
+    <value>To change the orientation of the splitter, hold down the Shift key.
+To merge zones, click and drag over the zones you wish to merge.</value>
   </data>
   <data name="Save_Apply" xml:space="preserve">
     <value>Save &amp; apply</value>
