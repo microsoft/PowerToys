@@ -14,4 +14,7 @@ namespace PTSettingsHelper
     void save_general_settings(const json::JsonObject& settings);
     json::JsonObject load_general_settings();
     std::wstring get_log_settings_file_location();
+
+    bool get_oobe_opened_state();
+    void save_oobe_opened_state();
 }

@@ -277,7 +277,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window()
+void run_settings_window(bool showOobeWindow)
 {
     g_isLaunchInProgress = true;
 
@@ -366,6 +366,16 @@ void run_settings_window()
         settings_isUserAnAdmin = L"false";
     }
 
+    std::wstring settings_showOobe;
+    if (showOobeWindow)
+    {
+        settings_showOobe = L"true";
+    }
+    else
+    {
+        settings_showOobe = L"false";
+    }
+
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
@@ -384,7 +394,9 @@ void run_settings_window()
     executable_args.append(settings_elevatedStatus);
     executable_args.append(L" ");
     executable_args.append(settings_isUserAnAdmin);
-
+    executable_args.append(L" ");
+    executable_args.append(settings_showOobe);
+    
     BOOL process_created = false;
 
     // Due to a bug in .NET, running the Settings process as non-elevated
@@ -510,7 +522,9 @@ void open_settings_window()
     {
         if (!g_isLaunchInProgress)
         {
-            std::thread(run_settings_window).detach();
+            std::thread([]() {
+                run_settings_window(false);
+            }).detach();
         }
     }
 }
@@ -525,4 +539,11 @@ void close_settings_window()
             TerminateProcess(proc, 0);
         }
     }
+}
+
+void open_oobe_window()
+{
+    std::thread([]() {
+        run_settings_window(true);
+    }).detach();
 }

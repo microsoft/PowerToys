@@ -40,6 +40,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/version/version.h>
 #include <common/utils/window.h>
+#include <runner/settings_window.h>
 
 extern updating::notifications::strings Strings;
 
@@ -77,7 +78,7 @@ void open_menu_from_another_instance()
     PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, 0);
 }
 
-int runner(bool isProcessElevated, bool openSettings)
+int runner(bool isProcessElevated, bool openSettings, bool openOobe)
 {
     std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
     logFilePath.append(LogSettings::runnerLogPath);
@@ -159,6 +160,11 @@ int runner(bool isProcessElevated, bool openSettings)
         if (openSettings)
         {
             open_settings_window();
+        }
+
+        if (openOobe)
+        {
+            open_oobe_window(); 
         }
 
         result = run_message_loop();
@@ -411,6 +417,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         auto general_settings = load_general_settings();
         const bool openSettings = std::string(lpCmdLine).find("--open-settings") != std::string::npos;
 
+        // Open OOBE window at the first launch
+        const bool openOobe = !PTSettingsHelper::get_oobe_opened_state();
+        if (openOobe)
+        {
+            PTSettingsHelper::save_oobe_opened_state();
+        }
+
         // Apply the general settings but don't save it as the modules() variable has not been loaded yet
         apply_general_settings(general_settings, false);
         int rvalue = 0;
@@ -420,7 +433,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
              std::string(lpCmdLine).find("--dont-elevate") != std::string::npos))
         {
 
-            result = runner(elevated, openSettings);
+            result = runner(elevated, openSettings, openOobe);
         }
         else
         {
