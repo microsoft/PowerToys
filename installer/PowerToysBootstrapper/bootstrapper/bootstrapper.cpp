@@ -19,7 +19,6 @@
 
 auto Strings = create_notifications_strings();
 static bool g_Silent = false;
-static bool g_LoggerEnabled = false;
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
@@ -50,9 +49,10 @@ std::optional<fs::path> ExtractEmbeddedInstaller(const fs::path extractPath)
 
 void SetupLogger(fs::path directory, const spdlog::level::level_enum severity)
 {
+    std::shared_ptr<spdlog::logger> logger;
+    auto nullLogger = spdlog::null_logger_mt("null");
     try
     {
-        std::shared_ptr<spdlog::logger> logger;
         if (severity != spdlog::level::off)
         {
             logger = spdlog::basic_logger_mt("file", (directory / EXE_LOG_FILENAME).wstring());
@@ -64,7 +64,7 @@ void SetupLogger(fs::path directory, const spdlog::level::level_enum severity)
         }
         else
         {
-            logger = spdlog::null_logger_mt("null");
+            logger = nullLogger;
         }
 
         logger->set_pattern("[%L][%d-%m-%C-%T] %v");
@@ -72,10 +72,10 @@ void SetupLogger(fs::path directory, const spdlog::level::level_enum severity)
         spdlog::set_default_logger(std::move(logger));
         spdlog::set_level(severity);
         spdlog::flush_every(std::chrono::seconds(5));
-        g_LoggerEnabled = true;
     }
     catch (...)
     {
+        spdlog::set_default_logger(nullLogger);
     }
 }
 
@@ -418,10 +418,7 @@ int WINAPI WinMain(HINSTANCE hi, HINSTANCE, LPSTR, int)
         std::string messageA{ "Unhandled std exception encountered\n" };
         messageA.append(ex.what());
 
-        if (g_LoggerEnabled)
-        {
             spdlog::error(messageA.c_str());
-        }
 
         std::wstring messageW{};
         std::copy(messageA.begin(), messageA.end(), messageW.begin());
@@ -432,10 +429,7 @@ int WINAPI WinMain(HINSTANCE hi, HINSTANCE, LPSTR, int)
         std::wstring message{ L"Unhandled winrt exception encountered\n" };
         message.append(ex.message().c_str());
 
-        if (g_LoggerEnabled)
-        {
-            spdlog::error(message.c_str());
-        }
+        spdlog::error(message.c_str());
 
         ShowMessageBoxError(message.c_str());
     }
@@ -445,10 +439,7 @@ int WINAPI WinMain(HINSTANCE hi, HINSTANCE, LPSTR, int)
         std::wstring message{ L"Unknown exception encountered\n" };
         message.append(lastErrorMessage ? std::move(*lastErrorMessage) : L"");
 
-        if (g_LoggerEnabled)
-        {
-            spdlog::error(message.c_str());
-        }
+        spdlog::error(message.c_str());
 
         ShowMessageBoxError(message.c_str());
     }
