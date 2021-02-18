@@ -13,9 +13,8 @@ namespace PowerToys.Settings
     {
         private enum Arguments
         {
-            ExecutablePath = 0,
-            PTPipeName,
-            SettingsPipeName, // used in the old settings
+            PTPipeName = 0,
+            SettingsPipeName,
             PTPid,
             Theme, // used in the old settings
             ElevatedStatus,
@@ -49,30 +48,15 @@ namespace PowerToys.Settings
                     _ = int.TryParse(args[(int)Arguments.PTPid], out int powerToysPID);
                     PowerToysPID = powerToysPID;
 
-                    if (args[(int)Arguments.ElevatedStatus] == "true")
-                    {
-                        IsElevated = true;
-                    }
-                    else
-                    {
-                        IsElevated = false;
-                    }
-
-                    if (args[(int)Arguments.IsUserAdmin] == "true")
-                    {
-                        IsUserAnAdmin = true;
-                    }
-                    else
-                    {
-                        IsUserAnAdmin = false;
-                    }
+                    IsElevated = args[(int)Arguments.ElevatedStatus] == "true";
+                    IsUserAnAdmin = args[(int)Arguments.IsUserAdmin] == "true";
 
                     RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
                     {
                         Environment.Exit(0);
                     });
 
-                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[(int)Arguments.PTPipeName], args[(int)Arguments.ExecutablePath], (string message) =>
+                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[(int)Arguments.SettingsPipeName], args[(int)Arguments.PTPipeName], (string message) =>
                     {
                         if (IPCMessageReceivedCallback != null && message.Length > 0)
                         {
