@@ -61,7 +61,7 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Disable drive detection warning for the file search plugin.
+        ///   Looks up a localized string similar to Disable drive detection warning.
         /// </summary>
         public static string disable_drive_detection_warning {
             get {

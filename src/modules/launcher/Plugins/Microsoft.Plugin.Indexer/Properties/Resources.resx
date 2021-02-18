@@ -160,6 +160,6 @@
     <value>Search</value>
   </data>
   <data name="disable_drive_detection_warning" xml:space="preserve">
-    <value>Disable drive detection warning for the file search plugin</value>
+    <value>Disable drive detection warning</value>
   </data>
 </root>
