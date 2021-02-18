@@ -265,6 +265,8 @@ IFACEMETHODIMP CPowerRenameUI::OnFoundItem(_In_ IPowerRenameItem* pItem)
             wchar_t buff[100] = { 0 };
             LoadString(g_hInst, IDS_LOADING, buff, ARRAYSIZE(buff));
             m_sppd->SetLine(1, buff, FALSE, NULL);
+            LoadString(g_hInst, IDS_LOADING_MSG, buff, ARRAYSIZE(buff));
+            m_sppd->SetLine(2, buff, FALSE, NULL);
             LoadString(g_hInst, IDS_APP_TITLE, buff, ARRAYSIZE(buff));
             m_sppd->SetTitle(buff);
             m_sppd->StartProgressDialog(m_hwnd, NULL, PROGDLG_MARQUEEPROGRESS, NULL);
@@ -277,16 +279,6 @@ IFACEMETHODIMP CPowerRenameUI::OnFoundItem(_In_ IPowerRenameItem* pItem)
         {
             // Cancel the enumeration
             m_sppre->Cancel();
-        }
-        else
-        {
-            // Update the progress dialog
-            PWSTR pathDisplay = nullptr;
-            if (SUCCEEDED(pItem->GetPath(&pathDisplay)))
-            {
-                m_sppd->SetLine(2, pathDisplay, TRUE, nullptr);
-                CoTaskMemFree(pathDisplay);
-            }
         }
     }
     return S_OK;

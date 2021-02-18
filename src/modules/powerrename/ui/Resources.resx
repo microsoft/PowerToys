@@ -208,4 +208,7 @@ Please select from the options above to show items.</value>
   <data name="Loading" xml:space="preserve">
     <value>Loading...</value>
   </data>
+  <data name="Loading_Msg" xml:space="preserve">
+    <value>Please wait while the selected items are enumerated.</value>
+  </data>
 </root>

@@ -171,7 +171,7 @@ private:
     int m_lastWidth = 0;
     int m_lastHeight = 0;
     ULONGLONG m_enumStartTick = 0;
-    const ULONGLONG m_progressDlgDelayMS = 3000;
+    const ULONGLONG m_progressDlgDelayMS = 1500;
     CComPtr<IPowerRenameManager> m_spsrm;
     CComPtr<IUnknown> m_dataSource;
     CComPtr<IPowerRenameEnum> m_sppre;
