@@ -3,20 +3,26 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Windows;
 using interop;
 using ManagedCommon;
-using Windows.UI.Popups;
 
 namespace PowerToys.Settings
 {
     public static class Program
     {
+        private enum Arguments
+        {
+            PTPipeName = 0,
+            SettingsPipeName,
+            PTPid,
+            Theme, // used in the old settings
+            ElevatedStatus,
+            IsUserAdmin,
+        }
+
         // Quantity of arguments
-        private const int ArgumentsQty = 5;
+        private const int ArgumentsQty = 6;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
@@ -39,33 +45,18 @@ namespace PowerToys.Settings
 
                 if (args != null && args.Length >= ArgumentsQty)
                 {
-                    _ = int.TryParse(args[2], out int powerToysPID);
+                    _ = int.TryParse(args[(int)Arguments.PTPid], out int powerToysPID);
                     PowerToysPID = powerToysPID;
 
-                    if (args[4] == "true")
-                    {
-                        IsElevated = true;
-                    }
-                    else
-                    {
-                        IsElevated = false;
-                    }
-
-                    if (args[5] == "true")
-                    {
-                        IsUserAnAdmin = true;
-                    }
-                    else
-                    {
-                        IsUserAnAdmin = false;
-                    }
+                    IsElevated = args[(int)Arguments.ElevatedStatus] == "true";
+                    IsUserAnAdmin = args[(int)Arguments.IsUserAdmin] == "true";
 
                     RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
                     {
                         Environment.Exit(0);
                     });
 
-                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], (string message) =>
+                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[(int)Arguments.SettingsPipeName], args[(int)Arguments.PTPipeName], (string message) =>
                     {
                         if (IPCMessageReceivedCallback != null && message.Length > 0)
                         {
