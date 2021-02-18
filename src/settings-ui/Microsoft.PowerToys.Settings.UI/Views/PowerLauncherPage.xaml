@@ -233,6 +233,24 @@
 
                                 <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
+
+                                <TextBlock x:Uid="PowerLauncher_ActionKeyword"
+                                           x:Name="ActionKeywordHeaderTextBlock"
+                                           Margin="{StaticResource SmallTopMargin}" />
+                                <TextBox x:Uid="PowerLauncher_ActionKeyword"
+                                         Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}"
+                                         Width="86"
+                                         Margin="0,6,0,0"
+                                         AutomationProperties.LabeledBy="{Binding ElementName=ActionKeywordHeaderTextBlock}"
+                                         HorizontalAlignment="Left" />
+
+                                <TextBlock x:Name="AdditionalOptionsTextBlock"
+                                           x:Uid="Run_AdditionalOptions"
+                                           Text="Additional options"
+                                           Margin="{StaticResource SmallTopMargin}"
+                                           Visibility="{x:Bind ShowAdditionalOptions, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+
                                 <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
                                           SelectionMode="None">
                                     <ListView.ItemContainerStyle>
@@ -252,15 +270,6 @@
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
-                                <TextBlock x:Uid="PowerLauncher_ActionKeyword"
-                                           x:Name="ActionKeywordHeaderTextBlock"
-                                           Margin="{StaticResource SmallTopMargin}" />
-                                <TextBox x:Uid="PowerLauncher_ActionKeyword"
-                                         Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}"
-                                         Width="86"
-                                         Margin="0,6,0,0"
-                                         AutomationProperties.LabeledBy="{Binding ElementName=ActionKeywordHeaderTextBlock}"
-                                         HorizontalAlignment="Left" />
                             </StackPanel>
                         </StackPanel>
                     </DataTemplate>

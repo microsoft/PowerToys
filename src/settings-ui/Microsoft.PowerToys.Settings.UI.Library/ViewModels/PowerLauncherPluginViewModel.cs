@@ -107,6 +107,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool ShowAdditionalOptions
+        {
+            get => AdditionalOptions.Any();
+        }
+
         public string IconPath { get => isDark() ? settings.IconPathDark : settings.IconPathLight; }
 
         public event PropertyChangedEventHandler PropertyChanged;
