@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PowerLauncherPluginSettings
@@ -23,5 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string IconPathDark { get; set; }
 
         public string IconPathLight { get; set; }
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions { get; set; }
     }
 }

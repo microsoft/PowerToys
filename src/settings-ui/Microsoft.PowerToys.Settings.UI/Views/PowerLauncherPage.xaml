@@ -145,12 +145,6 @@
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
             />
 
-            <CheckBox x:Uid="PowerLauncher_DisableDriveDetectionWarning"
-	                Margin="{StaticResource SmallTopMargin}"
-	                IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableDriveDetectionWarning}"
-	                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-	                />
-
             <TextBlock x:Uid="PowerLauncher_Plugins"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
@@ -239,6 +233,25 @@
 
                                 <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
+                                <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
+                                          SelectionMode="None">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalContentAlignment"
+                                                Value="Stretch" />
+                                            <Setter Property="VerticalContentAlignment"
+                                                Value="Stretch" />
+                                            <Setter Property="Padding"
+                                                Value="0,0,0,0" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+                                            <CheckBox Content="{x:Bind Path=DisplayLabel}" 
+                                                      IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
                                 <TextBlock x:Uid="PowerLauncher_ActionKeyword"
                                            x:Name="ActionKeywordHeaderTextBlock"
                                            Margin="{StaticResource SmallTopMargin}" />

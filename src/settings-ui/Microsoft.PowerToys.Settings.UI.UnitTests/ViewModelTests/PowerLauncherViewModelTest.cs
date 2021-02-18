@@ -72,7 +72,6 @@ namespace ViewModelTests
             Assert.AreEqual(originalGeneralSettings.Enabled.PowerLauncher, viewModel.EnablePowerLauncher);
             Assert.AreEqual(originalSettings.Properties.ClearInputOnLaunch, viewModel.ClearInputOnLaunch);
             Assert.AreEqual(originalSettings.Properties.CopyPathLocation.ToString(), viewModel.CopyPathLocation.ToString());
-            Assert.AreEqual(originalSettings.Properties.DisableDriveDetectionWarning, viewModel.DisableDriveDetectionWarning);
             Assert.AreEqual(originalSettings.Properties.IgnoreHotkeysInFullscreen, viewModel.IgnoreHotkeysInFullScreen);
             Assert.AreEqual(originalSettings.Properties.MaximumNumberOfResults, viewModel.MaximumNumberOfResults);
             Assert.AreEqual(originalSettings.Properties.OpenPowerLauncher.ToString(), viewModel.OpenPowerLauncher.ToString());
@@ -172,17 +171,6 @@ namespace ViewModelTests
 
             Assert.IsTrue(mockSettings.Properties.OverrideWinkeyR);
             Assert.IsFalse(mockSettings.Properties.OverrideWinkeyS);
-        }
-
-        [TestMethod]
-        public void DriveDetectionViewModelWhenSetMustUpdateOverrides()
-        {
-            // Act
-            viewModel.DisableDriveDetectionWarning = true;
-
-            // Assert
-            Assert.AreEqual(1, sendCallbackMock.TimesSent);
-            Assert.IsTrue(mockSettings.Properties.DisableDriveDetectionWarning);
         }
     }
 }

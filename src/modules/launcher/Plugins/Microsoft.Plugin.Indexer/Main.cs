@@ -24,6 +24,7 @@ namespace Microsoft.Plugin.Indexer
 {
     internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable, IDelayedExecutionPlugin
     {
+        private const string DisableDriveDetectionWarning = nameof(DisableDriveDetectionWarning);
         private static readonly IFileSystem _fileSystem = new FileSystem();
 
         // This variable contains metadata about the Plugin
@@ -50,6 +51,16 @@ namespace Microsoft.Plugin.Indexer
         public string Name => Properties.Resources.Microsoft_plugin_indexer_name;
 
         public string Description => Properties.Resources.Microsoft_plugin_indexer_plugin_description;
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = DisableDriveDetectionWarning,
+                DisplayLabel = Properties.Resources.disable_drive_detection_warning,
+                Value = false,
+            },
+        };
 
         private IContextMenu _contextMenuLoader;
         private bool disposedValue;
@@ -233,9 +244,10 @@ namespace Microsoft.Plugin.Indexer
             return _contextMenuLoader.LoadContextMenus(selectedResult);
         }
 
-        public void UpdateSettings(PowerLauncherSettings settings)
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
-            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = settings.Properties.DisableDriveDetectionWarning;
+            var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == DisableDriveDetectionWarning);
+            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = option == null ? false : option.Value;
         }
 
         public Control CreateSettingPanel()
