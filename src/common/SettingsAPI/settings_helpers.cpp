@@ -79,33 +79,45 @@ namespace PTSettingsHelper
         return result.wstring();
     }
 
-    bool get_oobe_opened_state()
+    bool get_oobe_opened_state() noexcept
     {
-        std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
-        oobePath = oobePath.append(oobe_filename);
-        if (std::filesystem::exists(oobePath))
+        try
         {
-            auto saved_settings = json::from_file(oobePath.c_str());
-            if (!saved_settings.has_value())
+            std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
+            oobePath = oobePath.append(oobe_filename);
+            if (std::filesystem::exists(oobePath))
             {
-                return false;
+                auto saved_settings = json::from_file(oobePath.c_str());
+                if (!saved_settings.has_value())
+                {
+                    return false;
+                }
+
+                bool opened = saved_settings->GetNamedBoolean(L"openedAtFirstLaunch", false);
+                return opened;
             }
-
-            bool opened = saved_settings->GetNamedBoolean(L"openedAtFirstLaunch", false);
-            return opened;
         }
-
+        catch (const std::exception&)
+        {
+        }
+        
         return false;
     }
 
-    void save_oobe_opened_state()
+    void save_oobe_opened_state() noexcept
     {
-        std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
-        oobePath = oobePath.append(oobe_filename);
+        try
+        {
+            std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
+            oobePath = oobePath.append(oobe_filename);
 
-        json::JsonObject obj;
-        obj.SetNamedValue(L"openedAtFirstLaunch", json::value(true));
+            json::JsonObject obj;
+            obj.SetNamedValue(L"openedAtFirstLaunch", json::value(true));
 
-        json::to_file(oobePath.c_str(), obj);
+            json::to_file(oobePath.c_str(), obj);
+        }
+        catch (const std::exception&)
+        {
+        }        
     }
 }
