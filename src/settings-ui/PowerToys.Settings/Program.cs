@@ -23,7 +23,8 @@ namespace PowerToys.Settings
         }
 
         // Quantity of arguments
-        private const int ArgumentsQty = 6;
+        private const int RequiredArgumentsQty = 6;
+        private const int RequiredAndOptionalArgumentsQty = 7;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
@@ -44,7 +45,7 @@ namespace PowerToys.Settings
                 App app = new App();
                 app.InitializeComponent();
 
-                if (args != null && args.Length >= ArgumentsQty)
+                if (args != null && args.Length >= RequiredArgumentsQty)
                 {
                     _ = int.TryParse(args[(int)Arguments.PTPid], out int powerToysPID);
                     PowerToysPID = powerToysPID;
@@ -52,7 +53,7 @@ namespace PowerToys.Settings
                     IsElevated = args[(int)Arguments.ElevatedStatus] == "true";
                     IsUserAnAdmin = args[(int)Arguments.IsUserAdmin] == "true";
 
-                    if (args.Length > ArgumentsQty)
+                    if (args.Length == RequiredAndOptionalArgumentsQty)
                     {
                         // open oobe window
                         app.ShowOobe = args[(int)Arguments.ShowOobeWindow] == "true";
