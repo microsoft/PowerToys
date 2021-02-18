@@ -232,7 +232,7 @@
                                            <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                     </TextBlock>
                                     <TextBlock 
-                                        x:Uid="PowerLauncher_NotAccessibleWarning"
+                                        x:Uid="Run_NotAccessibleWarning"
                                         FontSize="12"
                                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                                         Visibility="{x:Bind ShowWarning, Converter={StaticResource BoolToVisibilityConverter}}"

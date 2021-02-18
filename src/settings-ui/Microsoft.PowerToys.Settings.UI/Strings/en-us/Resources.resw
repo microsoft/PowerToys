@@ -953,7 +953,7 @@
   <data name="PowerLauncher_EnablePluginToggle.AutomationProperties.Name" xml:space="preserve">
     <value>Enable plugin</value>
   </data>
-  <data name="PowerLauncher_NotAccessibleWarning.Text" xml:space="preserve">
+  <data name="Run_NotAccessibleWarning.Text" xml:space="preserve">
     <value>Please define an activation phrase or allow this plugin for the global results to use it</value>
   </data>
 </root>
