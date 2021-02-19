@@ -9,7 +9,7 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     Background="{DynamicResource GridZoneBackgroundBrush}"
-    BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
+    BorderBrush="{DynamicResource LayoutPreviewZoneBorderBrush}"
     BorderThickness="1"
     Opacity="1"
     mc:Ignorable="d">
