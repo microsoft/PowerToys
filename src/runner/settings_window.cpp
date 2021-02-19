@@ -277,7 +277,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window()
+void run_settings_window(bool showOobeWindow)
 {
     g_isLaunchInProgress = true;
 
@@ -303,7 +303,7 @@ void run_settings_window()
         executable_path.append(L"\\PowerToysSettings.exe");
     }
 
-    // Arg 2: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
+    // Args 2,3: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
     std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
     std::wstring settings_pipe_name(L"\\\\.\\pipe\\powertoys_settings_");
     UUID temp_uuid;
@@ -327,10 +327,10 @@ void run_settings_window()
         uuid_chars = nullptr;
     }
 
-    // Arg 3: process pid.
+    // Arg 4: process pid.
     DWORD powertoys_pid = GetCurrentProcessId();
 
-    // Arg 4: settings theme.
+    // Arg 5: settings theme.
     const std::wstring settings_theme_setting{ get_general_settings().theme };
     std::wstring settings_theme = L"system";
     if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
@@ -338,33 +338,18 @@ void run_settings_window()
         settings_theme = L"dark";
     }
 
-    // Arg 4: settings theme.
     GeneralSettings save_settings = get_general_settings();
 
+    // Arg 6: elevated status
     bool isElevated{ get_general_settings().isElevated };
-    std::wstring settings_elevatedStatus;
-    settings_elevatedStatus = isElevated;
-
-    if (isElevated)
-    {
-        settings_elevatedStatus = L"true";
-    }
-    else
-    {
-        settings_elevatedStatus = L"false";
-    }
-
+    std::wstring settings_elevatedStatus = isElevated ? L"true" : L"false";
+    
+    // Arg 7: is user an admin
     bool isAdmin{ get_general_settings().isAdmin };
-    std::wstring settings_isUserAnAdmin;
+    std::wstring settings_isUserAnAdmin = isAdmin ? L"true" : L"false";
 
-    if (isAdmin)
-    {
-        settings_isUserAnAdmin = L"true";
-    }
-    else
-    {
-        settings_isUserAnAdmin = L"false";
-    }
+    // Arg 8: should oobe window be shown
+    std::wstring settings_showOobe = showOobeWindow ? L"true" : L"false";
 
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
@@ -384,7 +369,9 @@ void run_settings_window()
     executable_args.append(settings_elevatedStatus);
     executable_args.append(L" ");
     executable_args.append(settings_isUserAnAdmin);
-
+    executable_args.append(L" ");
+    executable_args.append(settings_showOobe);
+    
     BOOL process_created = false;
 
     // Due to a bug in .NET, running the Settings process as non-elevated
@@ -510,7 +497,9 @@ void open_settings_window()
     {
         if (!g_isLaunchInProgress)
         {
-            std::thread(run_settings_window).detach();
+            std::thread([]() {
+                run_settings_window(false);
+            }).detach();
         }
     }
 }
@@ -525,4 +514,11 @@ void close_settings_window()
             TerminateProcess(proc, 0);
         }
     }
+}
+
+void open_oobe_window()
+{
+    std::thread([]() {
+        run_settings_window(true);
+    }).detach();
 }
