@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
@@ -22,6 +24,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             this.settings = settings;
             this.isDark = isDark;
+            foreach (var item in AdditionalOptions)
+            {
+                item.PropertyChanged += (object sender, PropertyChangedEventArgs e) =>
+                {
+                    NotifyPropertyChanged(nameof(AdditionalOptions));
+                };
+            }
         }
 
         public string Id { get => settings.Id; }
@@ -84,6 +93,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     NotifyPropertyChanged(nameof(ShowWarning));
                 }
             }
+        }
+
+        private IEnumerable<PluginAdditionalOptionViewModel> _additionalOptions;
+
+        public IEnumerable<PluginAdditionalOptionViewModel> AdditionalOptions
+        {
+            get
+            {
+                if (_additionalOptions == null)
+                {
+                    _additionalOptions = settings.AdditionalOptions.Select(x => new PluginAdditionalOptionViewModel(x)).ToList();
+                }
+
+                return _additionalOptions;
+            }
+        }
+
+        public bool ShowAdditionalOptions
+        {
+            get => AdditionalOptions.Any();
         }
 
         public override string ToString()

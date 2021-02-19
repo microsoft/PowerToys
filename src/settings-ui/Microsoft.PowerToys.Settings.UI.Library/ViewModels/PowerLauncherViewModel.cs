@@ -360,23 +360,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool DisableDriveDetectionWarning
-        {
-            get
-            {
-                return settings.Properties.DisableDriveDetectionWarning;
-            }
-
-            set
-            {
-                if (settings.Properties.DisableDriveDetectionWarning != value)
-                {
-                    settings.Properties.DisableDriveDetectionWarning = value;
-                    UpdateSettings();
-                }
-            }
-        }
-
         private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
 
         public ObservableCollection<PowerLauncherPluginViewModel> Plugins

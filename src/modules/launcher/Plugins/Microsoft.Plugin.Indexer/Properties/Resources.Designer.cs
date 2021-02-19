@@ -61,6 +61,15 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disable drive detection warning.
+        /// </summary>
+        public static string disable_drive_detection_warning {
+            get {
+                return ResourceManager.GetString("disable_drive_detection_warning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fail to set text in clipboard.
         /// </summary>
         public static string Microsoft_plugin_indexer_clipboard_failed {

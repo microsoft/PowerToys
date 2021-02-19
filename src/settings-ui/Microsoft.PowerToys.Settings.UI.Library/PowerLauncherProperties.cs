@@ -39,9 +39,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("ignore_hotkeys_in_fullscreen")]
         public bool IgnoreHotkeysInFullscreen { get; set; }
 
-        [JsonPropertyName("disable_drive_detection_warning")]
-        public bool DisableDriveDetectionWarning { get; set; }
-
         [JsonPropertyName("clear_input_on_launch")]
         public bool ClearInputOnLaunch { get; set; }
 
@@ -57,7 +54,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SearchResultPreference = "most_recently_used";
             SearchTypePreference = "application_name";
             IgnoreHotkeysInFullscreen = false;
-            DisableDriveDetectionWarning = false;
             ClearInputOnLaunch = false;
             MaximumNumberOfResults = 4;
             Theme = Theme.System;

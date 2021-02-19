@@ -159,4 +159,7 @@
   <data name="Microsoft_plugin_indexer_subtitle_header" xml:space="preserve">
     <value>Search</value>
   </data>
+  <data name="disable_drive_detection_warning" xml:space="preserve">
+    <value>Disable drive detection warning</value>
+  </data>
 </root>
