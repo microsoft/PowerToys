@@ -139,7 +139,10 @@
     <value>Restart (Ctrl+R)</value>
   </data>
   <data name="wox_plugin_service_restarted_notification" xml:space="preserve">
-    <value>{0} has been restarted</value>
+    <value>The service has been restarted</value>
+  </data>
+  <data name="wox_plugin_service_restart_error_notification" xml:space="preserve">
+    <value>An error occurred while restarting the service</value>
   </data>
   <data name="wox_plugin_service_running" xml:space="preserve">
     <value>Running</value>
@@ -151,10 +154,13 @@
     <value>Started</value>
   </data>
   <data name="wox_plugin_service_started_notification" xml:space="preserve">
-    <value>{0} has been started</value>
+    <value>The service has been started</value>
   </data>
   <data name="wox_plugin_service_startup" xml:space="preserve">
     <value>Startup</value>
+  </data>
+  <data name="wox_plugin_service_start_error_notification" xml:space="preserve">
+    <value>An error occurred while starting the service</value>
   </data>
   <data name="wox_plugin_service_start_mode_automatic" xml:space="preserve">
     <value>Automatic</value>
@@ -184,7 +190,10 @@
     <value>Stopped</value>
   </data>
   <data name="wox_plugin_service_stopped_notification" xml:space="preserve">
-    <value>{0} has been stopped</value>
+    <value>The service has been stopped</value>
+  </data>
+  <data name="wox_plugin_service_stop_error_notification" xml:space="preserve">
+    <value>An error occurred while stopping the service</value>
   </data>
   <data name="wox_plugin_service_stop_pending" xml:space="preserve">
     <value>Stopping</value>
