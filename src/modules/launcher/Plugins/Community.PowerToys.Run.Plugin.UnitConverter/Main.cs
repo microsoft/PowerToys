@@ -36,7 +36,10 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             }
 
             string[] split = query.Search.Split(' ');
+            split = Array.ConvertAll(split, x => x.ToLower());
+
             shorthandFeetInchHandler(ref split);
+            degreePrefixer(ref split);
 
             if (split.Length < 4 || split.Length > 4) {
                 // deny any other queries than:
@@ -154,6 +157,56 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' to '10 °c in degreeFahrenheit'. 
+        /// </summary>
+        /// <param name="split"></param>
+        private void degreePrefixer(ref string[] split) {
+            switch (split[1]) {
+                case "celsius":
+                    split[1] = "degreeCelsius";
+                    break;
+
+                case "fahrenheit":
+                    split[1] = "degreeFahrenheit";
+                    break;
+
+                case "c":
+                    split[1] = "°c";
+                    break;
+
+                case "f":
+                    split[1] = "°f";
+                    break;
+
+                default:
+                    break;
+            }
+
+            switch (split[3]) {
+                case "celsius":
+                    split[3] = "degreeCelsius";
+                    break;
+
+                case "fahrenheit":
+                    split[3] = "degreeFahrenheit";
+                    break;
+
+                case "c":
+                    split[3] = "°c";
+                    break;
+
+                case "f":
+                    split[3] = "°f";
+                    break;
+
+                default:
+                    break;
+            }
+
+
         }
 
         private void AddToResult(List<Result> currentList, double converted_value, string unit_name) {
