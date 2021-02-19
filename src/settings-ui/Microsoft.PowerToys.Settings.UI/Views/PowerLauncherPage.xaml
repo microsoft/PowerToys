@@ -9,9 +9,14 @@
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
+    <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+    </Page.Resources>
     
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}" >
         <VisualStateManager.VisualStateGroups>
@@ -149,7 +154,7 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins}"                
+            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
                       IsItemClickEnabled="True"
                       x:Name="PluginsListView"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
@@ -173,7 +178,7 @@
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel">
+                    <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
                         <StackPanel Orientation="Vertical" Background="Transparent"
                                     Padding="0,12,0,12">
                             <Interactivity:Interaction.Behaviors>
@@ -220,12 +225,18 @@
                                            <Run x:Uid="PowerLauncher_AuthoredBy" />
                                            <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                     </TextBlock>
+                                    <TextBlock 
+                                        x:Uid="Run_NotAccessibleWarning"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                                        Visibility="{x:Bind ShowWarning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        TextWrapping="Wrap" />
                                 </StackPanel>
 
                                 <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
                                               x:Name="ToggleSwitch"
                                               HorizontalAlignment="Center"
-                                              IsOn="{x:Bind Path=Disabled, Converter={StaticResource BooleanInvertConverter}, Mode=TwoWay}"
+                                              IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"
                                               Grid.Column="2" />
                             </Grid>
 
@@ -247,7 +258,7 @@
                                 <TextBlock x:Name="AdditionalOptionsTextBlock"
                                            x:Uid="Run_AdditionalOptions"
                                            Margin="{StaticResource SmallTopMargin}"
-                                           Visibility="{x:Bind ShowAdditionalOptions, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                           Visibility="{x:Bind ShowAdditionalOptions, Converter={StaticResource BoolToVisibilityConverter}}"
                                            Style="{StaticResource SettingsGroupTitleStyle}"/>
 
                                 <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
