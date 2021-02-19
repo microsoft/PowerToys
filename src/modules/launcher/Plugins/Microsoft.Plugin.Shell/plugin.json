@@ -9,5 +9,6 @@
   "Website": "https://aka.ms/powertoys",
   "ExecuteFileName": "Microsoft.Plugin.Shell.dll",
   "IcoPathDark": "Images\\shell.dark.png",
-  "IcoPathLight": "Images\\shell.light.png"
+  "IcoPathLight": "Images\\shell.light.png",
+  "Glyph": "\uE756"
 }

@@ -9,5 +9,6 @@
   "Website": "https://aka.ms/powertoys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Calculator.dll",
   "IcoPathDark": "Images\\calculator.dark.png",
-  "IcoPathLight": "Images\\calculator.light.png"
+  "IcoPathLight": "Images\\calculator.light.png",
+  "Glyph": "\uE8EF"
 }

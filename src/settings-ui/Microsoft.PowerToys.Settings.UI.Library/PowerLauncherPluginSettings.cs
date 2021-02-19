@@ -22,9 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public string ActionKeyword { get; set; }
 
-        public string IconPathDark { get; set; }
-
-        public string IconPathLight { get; set; }
+        public string Glyph { get; set; }
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions { get; set; }
     }

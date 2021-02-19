@@ -9,5 +9,6 @@
   "Website": "https://www.windowwalker.com/",
   "ExecuteFileName": "Microsoft.Plugin.WindowWalker.dll",
   "IcoPathDark": "Images\\windowwalker.dark.png",
-  "IcoPathLight": "Images\\windowwalker.light.png"
+  "IcoPathLight": "Images\\windowwalker.light.png",
+  "Glyph": "\uE727"
 }

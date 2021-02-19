@@ -205,16 +205,16 @@
                                     <ColumnDefinition Width="52" />
                                 </Grid.ColumnDefinitions>
 
-                                <Image Source="{x:Bind IconPath}"
-                                       Width="36"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Top"
-                                       Margin="12,0,12,0"
-                                       Height="36" />
+                                <FontIcon Glyph="{x:Bind Glyph}"
+                                          FontSize="36"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Top"
+                                          Margin="12,0,12,0"/>
 
                                 <StackPanel Orientation="Vertical"
                                             Grid.Column="1" Margin="0,0,12,0">
                                     <TextBlock FontSize="18"
+                                               VerticalAlignment="Top"
                                                Text="{x:Bind Path=Name}" />
                                     <TextBlock FontSize="12"
                                                Foreground="{ThemeResource SystemBaseMediumColor}"

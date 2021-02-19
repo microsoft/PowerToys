@@ -32,14 +32,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private readonly SendCallback callback;
 
-        private readonly Func<bool> isDark;
-
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode, Func<bool> isDark)
+        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-            this.isDark = isDark;
 
             // To obtain the general Settings configurations of PowerToys
             if (settingsRepository == null)
@@ -368,7 +365,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (_plugins == null)
                 {
-                    _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(settings.Plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
+                    _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(settings.Plugins.Select(x => new PowerLauncherPluginViewModel(x)));
                 }
 
                 return _plugins;

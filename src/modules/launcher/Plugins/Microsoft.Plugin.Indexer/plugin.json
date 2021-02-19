@@ -9,5 +9,6 @@
   "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.Plugin.Indexer.dll",
   "IcoPathDark": "Images\\indexer.dark.png",
-  "IcoPathLight": "Images\\indexer.light.png"
+  "IcoPathLight": "Images\\indexer.light.png",
+  "Glyph": "\uE773"
 }

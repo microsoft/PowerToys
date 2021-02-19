@@ -9,5 +9,6 @@
   "Website": "http://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.Plugin.Uri.dll",
   "IcoPathDark": "Images\\uri.dark.png",
-  "IcoPathLight": "Images\\uri.light.png"
+  "IcoPathLight": "Images\\uri.light.png",
+  "Glyph": "\uEB41"
 }

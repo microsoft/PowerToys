@@ -184,8 +184,7 @@ namespace PowerLauncher
                 Disabled = x.Metadata.Disabled,
                 IsGlobal = x.Metadata.IsGlobal,
                 ActionKeyword = x.Metadata.ActionKeyword,
-                IconPathDark = x.Metadata.IcoPathDark,
-                IconPathLight = x.Metadata.IcoPathLight,
+                Glyph = x.Metadata.Glyph,
                 AdditionalOptions = x.Plugin is ISettingProvider ? (x.Plugin as ISettingProvider).AdditionalOptions : new List<PluginAdditionalOption>(),
             });
         }

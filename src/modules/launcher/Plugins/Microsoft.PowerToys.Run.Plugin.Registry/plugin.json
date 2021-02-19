@@ -9,5 +9,6 @@
   "Website": "https://aka.ms/powertoys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Registry.dll",
   "IcoPathDark": "Images\\reg.dark.png",
-  "IcoPathLight": "Images\\reg.light.png"
+  "IcoPathLight": "Images\\reg.light.png",
+  "Glyph": "\uE74C"
 }

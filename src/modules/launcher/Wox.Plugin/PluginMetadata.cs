@@ -60,6 +60,8 @@ namespace Wox.Plugin
 
         public bool IsGlobal { get; set; }
 
+        public string Glyph { get; set; }
+
         public string IcoPathDark { get; set; }
 
         public string IcoPathLight { get; set; }

@@ -13,9 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
     public class PowerLauncherPluginViewModel : INotifyPropertyChanged
     {
         private readonly PowerLauncherPluginSettings settings;
-        private readonly Func<bool> isDark;
 
-        public PowerLauncherPluginViewModel(PowerLauncherPluginSettings settings, Func<bool> isDark)
+        public PowerLauncherPluginViewModel(PowerLauncherPluginSettings settings)
         {
             if (settings == null)
             {
@@ -23,7 +22,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             this.settings = settings;
-            this.isDark = isDark;
             foreach (var item in AdditionalOptions)
             {
                 item.PropertyChanged += (object sender, PropertyChangedEventArgs e) =>
@@ -120,7 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             return $"{Name}. {Description}";
         }
 
-        public string IconPath { get => isDark() ? settings.IconPathDark : settings.IconPathLight; }
+        public string Glyph => settings.Glyph;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
