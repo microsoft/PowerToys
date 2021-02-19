@@ -1,12 +1,14 @@
 ﻿{
     "ID": "aa0ee9daff654fb7be452c2d77c471b9",
     "ActionKeyword": "*",
+    "IsGlobal": true,
     "Name": "UnitConverter",
     "Description": "Provides unit conversion.",
     "Author": "ThiefZero",
     "Version": "0.0.1",
     "Language": "csharp",
     "Website": "https://github.com/ThiefZero/PowerToys",
-    "IcoPath": "Images\\calculator.dark.png",
+    "IcoPathDark": "Images\\calculator.dark.png",
+    "IcoPathLight": "Images\\calculator.light.png",
     "ExecuteFileName": "Community.PowerToys.Run.Plugin.UnitConverter.dll"
 }
