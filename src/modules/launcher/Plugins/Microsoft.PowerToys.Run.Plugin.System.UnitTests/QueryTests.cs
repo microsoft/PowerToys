@@ -30,8 +30,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
         {
             // Setup
             Mock<Main> main = new Mock<Main>();
-            string[] terms = { typedString };
-            Query expectedQuery = new Query(typedString, typedString, new ReadOnlyCollection<string>(terms), string.Empty);
+            Query expectedQuery = new Query(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
