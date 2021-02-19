@@ -112,14 +112,18 @@
                     FontWeight="SemiBold"
                     FontSize="64"
                     Foreground="{DynamicResource PrimaryForegroundBrush}" />
-                <Label
-                    Name="LabelSize"
-                    DockPanel.Dock="Bottom"
-                    HorizontalContentAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    FontWeight="Thin"
-                    FontSize="32"
-                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                <TextBlock FontSize="16"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           DockPanel.Dock="Bottom"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+                     <Run x:Name="WidthLabel" />
+                     <Run Text="&#xE106;"
+                          FontSize="10"
+                          FontFamily="Segoe MDL2 Assets" />
+                    <Run x:Name="HeightLabel" />
+                </TextBlock>
             </DockPanel>
 
             <Thumb x:Name="Caption" Cursor="SizeAll" Background="Transparent" BorderThickness="3" Padding="4" Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="Caption_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
