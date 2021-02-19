@@ -187,10 +187,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\FluentIcons\ColorPicker.png" />
+    <Content Include="Assets\FluentIcons\empty.png" />
     <Content Include="Assets\FluentIcons\FancyZones.png" />
     <Content Include="Assets\FluentIcons\ImageResizer.png" />
-    <Content Include="Assets\FluentIcons\KBM.png" />
+    <Content Include="Assets\FluentIcons\KeyboardManager.png" />
     <Content Include="Assets\FluentIcons\PowerRename.png" />
+    <Content Include="Assets\FluentIcons\PowerToys.png" />
+    <Content Include="Assets\FluentIcons\PowerToysRun.png" />
+    <Content Include="Assets\FluentIcons\ShortcutGuide.png" />
+    <Content Include="Assets\FluentIcons\VideoConferenceMute.png" />
     <Content Include="Assets\Logo.scale-200.png" />
     <Content Include="Assets\Modules\ColorPicker.png" />
     <Content Include="Assets\Modules\FancyZones.png" />
