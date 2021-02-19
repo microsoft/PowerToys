@@ -45,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     settings.Disabled = value;
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowWarning));
                 }
             }
         }
@@ -62,6 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     settings.IsGlobal = value;
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowWarning));
                 }
             }
         }
@@ -79,8 +81,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     settings.ActionKeyword = value;
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowWarning));
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return $"{Name}. {Description}";
         }
 
         public string IconPath { get => isDark() ? settings.IconPathDark : settings.IconPathLight; }
@@ -90,6 +98,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public bool ShowWarning
+        {
+            get => !Disabled && !IsGlobal && string.IsNullOrWhiteSpace(ActionKeyword);
         }
     }
 }

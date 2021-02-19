@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -376,15 +377,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        private List<PowerLauncherPluginViewModel> _plugins;
+        private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
 
-        public List<PowerLauncherPluginViewModel> Plugins
+        public ObservableCollection<PowerLauncherPluginViewModel> Plugins
         {
             get
             {
                 if (_plugins == null)
                 {
-                    _plugins = settings.Plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)).ToList();
+                    _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(settings.Plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
                 }
 
                 return _plugins;
