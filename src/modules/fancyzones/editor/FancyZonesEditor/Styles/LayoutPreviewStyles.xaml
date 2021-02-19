@@ -4,41 +4,30 @@
                     xmlns:local="clr-namespace:FancyZonesEditor.Styles">
 
     <Style x:Key="GridLayoutSmallScalePreviewStyle" TargetType="Border">
-        <Setter Property="Background"
-                Value="{DynamicResource LayoutPreviewSmallScaleZoneBackgroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource LayoutPreviewSmallScaleZoneBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource LayoutItemBackgroundBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>
 
-    <Style x:Key="GridLayoutActualScalePreviewStyle"
-           TargetType="Border">
-        <Setter Property="Background"
-                Value="{DynamicResource LayoutPreviewActualScaleZoneBackgroundBrush}" />
+    <Style x:Key="GridLayoutActualScalePreviewStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource LayoutPreviewActualScaleZoneBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius"
-                Value="4" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="4" />
     </Style>
 
-    <Style x:Key="CanvasLayoutSmallScalePreviewStyle"
-           TargetType="Border">
-        <Setter Property="Background"
-                Value="{DynamicResource LayoutPreviewSmallScaleZoneBackgroundBrush}" />
+    <Style x:Key="CanvasLayoutSmallScalePreviewStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource LayoutPreviewSmallScaleZoneBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource LayoutItemBackgroundBrush}" />
         <Setter Property="BorderThickness" Value="10" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>
 
-    <Style x:Key="CanvasLayoutActualScalePreviewStyle"
-           TargetType="Border">
-        <Setter Property="Background"
-                Value="{DynamicResource LayoutPreviewActualScaleZoneBackgroundBrush}" />
-        <Setter Property="BorderBrush"
-                Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
-        <Setter Property="BorderThickness"
-                Value="1" />
-        <Setter Property="CornerRadius"
-                Value="4" />
+    <Style x:Key="CanvasLayoutActualScalePreviewStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource LayoutPreviewActualScaleZoneBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="4" />
     </Style>
 </ResourceDictionary>

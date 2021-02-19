@@ -20,9 +20,9 @@
     <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FF3A3A3A" />
     <SolidColorBrush x:Key="LayoutItemBackgroundPointerOverBrush" Color="#FF333333" />
     <SolidColorBrush x:Key="LayoutPreviewBackgroundBrush" Color="#331B1B1B" />
-    <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF5a5a5a" />
+    <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF555454" />
 
-    <SolidColorBrush x:Key="LayoutPreviewActualScaleZoneBackgroundBrush" Color="#CC202020" />
+    <SolidColorBrush x:Key="LayoutPreviewActualScaleZoneBackgroundBrush" Color="#E5202020" />
     <SolidColorBrush x:Key="LayoutPreviewSmallScaleZoneBackgroundBrush" Color="#FF202020" />
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#E5202020" />
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#E5202020" />

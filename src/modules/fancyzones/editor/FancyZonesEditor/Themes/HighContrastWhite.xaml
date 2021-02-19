@@ -22,7 +22,7 @@
     <SolidColorBrush x:Key="LayoutPreviewBackgroundBrush" Color="#19949494" />
     <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#9c9c9c" />
     
-    <SolidColorBrush x:Key="LayoutPreviewActualScaleZoneBackgroundBrush" Color="#E5F3F3F3" />
+    <SolidColorBrush x:Key="LayoutPreviewActualScaleZoneBackgroundBrush" Color="#EFF3F3F3" />
     <SolidColorBrush x:Key="LayoutPreviewSmallScaleZoneBackgroundBrush" Color="#FFDCDCDC" />
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#E5F3F3F3" />
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#E5F3F3F3" />
