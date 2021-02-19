@@ -56,7 +56,7 @@ namespace PowerLauncher
                 Log.Info("PT Run settings.json was missing, creating a new one", GetType());
 
                 var defaultSettings = new PowerLauncherSettings();
-                defaultSettings.Plugins = GetPluginsSettings();
+                defaultSettings.Plugins = GetDefaultPluginsSettings();
                 defaultSettings.Save(_settingsUtils);
             }
         }
@@ -78,7 +78,7 @@ namespace PowerLauncher
                     if (overloadSettings.Plugins == null || !overloadSettings.Plugins.Any())
                     {
                         // Needed to be consistent with old settings
-                        overloadSettings.Plugins = GetPluginsSettings();
+                        overloadSettings.Plugins = GetDefaultPluginsSettings();
                         _settingsUtils.SaveSettings(overloadSettings.ToJsonString(), PowerLauncherSettings.ModuleName);
                     }
                     else
@@ -91,6 +91,10 @@ namespace PowerLauncher
                                 plugin.Metadata.Disabled = setting.Disabled;
                                 plugin.Metadata.ActionKeyword = setting.ActionKeyword;
                                 plugin.Metadata.IsGlobal = setting.IsGlobal;
+                                if (plugin.Plugin is ISettingProvider)
+                                {
+                                    (plugin.Plugin as ISettingProvider).UpdateSettings(setting);
+                                }
                             }
                         }
                     }
@@ -101,13 +105,6 @@ namespace PowerLauncher
                         _settings.Hotkey = openPowerlauncher;
                     }
 
-                    var shell = PluginManager.AllPlugins.Find(pp => pp.Metadata.Name == "Shell");
-                    if (shell != null)
-                    {
-                        var shellSettings = shell.Plugin as ISettingProvider;
-                        shellSettings.UpdateSettings(overloadSettings);
-                    }
-
                     if (_settings.MaxResultsToShow != overloadSettings.Properties.MaximumNumberOfResults)
                     {
                         _settings.MaxResultsToShow = overloadSettings.Properties.MaximumNumberOfResults;
@@ -116,14 +113,6 @@ namespace PowerLauncher
                     if (_settings.IgnoreHotkeysOnFullscreen != overloadSettings.Properties.IgnoreHotkeysInFullscreen)
                     {
                         _settings.IgnoreHotkeysOnFullscreen = overloadSettings.Properties.IgnoreHotkeysInFullscreen;
-                    }
-
-                    // Using OrdinalIgnoreCase since this is internal
-                    var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer", StringComparison.OrdinalIgnoreCase));
-                    if (indexer != null)
-                    {
-                        var indexerSettings = indexer.Plugin as ISettingProvider;
-                        indexerSettings.UpdateSettings(overloadSettings);
                     }
 
                     if (_settings.ClearInputOnLaunch != overloadSettings.Properties.ClearInputOnLaunch)
@@ -184,9 +173,9 @@ namespace PowerLauncher
             return model.ToString();
         }
 
-        private static IEnumerable<PowerLauncherPluginSettings> GetPluginsSettings()
+        private static IEnumerable<PowerLauncherPluginSettings> GetDefaultPluginsSettings()
         {
-            return PluginManager.AllPlugins.Select(x => new PowerLauncherPluginSettings
+            return PluginManager.AllPlugins.Select(x => new PowerLauncherPluginSettings()
             {
                 Id = x.Metadata.ID,
                 Name = x.Plugin.Name,
@@ -197,6 +186,7 @@ namespace PowerLauncher
                 ActionKeyword = x.Metadata.ActionKeyword,
                 IconPathDark = x.Metadata.IcoPathDark,
                 IconPathLight = x.Metadata.IcoPathLight,
+                AdditionalOptions = x.Plugin is ISettingProvider ? (x.Plugin as ISettingProvider).AdditionalOptions : new List<PluginAdditionalOption>(),
             });
         }
     }

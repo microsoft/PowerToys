@@ -22,7 +22,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Microsoft.Plugin.Shell
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
@@ -334,10 +334,6 @@ namespace Microsoft.Plugin.Shell
             };
 
             return resultlist;
-        }
-
-        public void UpdateSettings(PowerLauncherSettings settings)
-        {
         }
     }
 }

@@ -15,7 +15,7 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu, IDisposable
+    public class Main : IPlugin, IPluginI18n, ISavable, IContextMenu, IDisposable
     {
         public const string FolderImagePath = "Images\\folder.dark.png";
         public const string FileImagePath = "Images\\file.dark.png";
@@ -121,10 +121,6 @@ namespace Microsoft.Plugin.Folder
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             return _contextMenuLoader.LoadContextMenus(selectedResult);
-        }
-
-        public void UpdateSettings(PowerLauncherSettings settings)
-        {
         }
 
         public void Dispose()
