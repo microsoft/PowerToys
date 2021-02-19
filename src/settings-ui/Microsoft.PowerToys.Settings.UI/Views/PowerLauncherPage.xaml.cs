@@ -4,11 +4,11 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Globalization;
+using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
-using Windows.UI.Xaml;
+using Microsoft.PowerToys.Telemetry;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -38,11 +38,34 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ApplicationName"), "application_name"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_StringInApplication"), "string_in_application"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
+
+            if (!onHostAppExitSubscribed)
+            {
+                (App.Current as App).OnHostAppExit += WritePluginsTelemetry;
+                onHostAppExitSubscribed = true;
+            }
         }
+
+        private static bool onHostAppExitSubscribed;
 
         private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+        }
+
+        private static void WritePluginsTelemetry()
+        {
+            var settingsUtils = new SettingsUtils();
+            var settings = settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+            var events = settings.Plugins.Select(x => new PluginSettingsCompleteEvent()
+            {
+                Name = x.Name,
+                Disabled = x.Disabled,
+                IsGlobal = x.IsGlobal,
+                ActionKeyword = x.ActionKeyword,
+            });
+
+            events.AsParallel().ForAll(x => PowerToysTelemetry.Log.WriteEvent(x));
         }
 
         /*

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -19,6 +20,13 @@ namespace Microsoft.PowerToys.Settings.UI
             var coreWindow = Windows.UI.Core.CoreWindow.GetForCurrentThread();
             var coreWindowInterop = Interop.GetInterop(coreWindow);
             NativeMethods.ShowWindow(coreWindowInterop.WindowHandle, Interop.SW_HIDE);
+        }
+
+        public event Action OnHostAppExit;
+
+        public void HostAppExit()
+        {
+            OnHostAppExit?.Invoke();
         }
 
         public static bool IsDarkTheme()

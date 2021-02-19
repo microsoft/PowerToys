@@ -38,7 +38,7 @@ namespace PowerToys.Settings
         [STAThread]
         public static void Main(string[] args)
         {
-            using (new Microsoft.PowerToys.Settings.UI.App())
+            using (var xamlApp = new Microsoft.PowerToys.Settings.UI.App())
             {
                 App app = new App();
                 app.InitializeComponent();
@@ -67,6 +67,12 @@ namespace PowerToys.Settings
                         }
                     });
                     ipcmanager.Start();
+
+                    app.Exit += (object sender, ExitEventArgs e) =>
+                    {
+                        xamlApp.HostAppExit();
+                    };
+
                     app.Run();
                 }
                 else
