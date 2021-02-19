@@ -15,6 +15,6 @@ namespace PTSettingsHelper
     json::JsonObject load_general_settings();
     std::wstring get_log_settings_file_location();
 
-    bool get_oobe_opened_state() noexcept;
-    void save_oobe_opened_state() noexcept;
+    bool get_oobe_opened_state();
+    void save_oobe_opened_state();
 }

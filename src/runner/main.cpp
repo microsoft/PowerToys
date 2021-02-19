@@ -407,6 +407,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
     }
 
+    bool openOobe = false;
+    try
+    {
+        openOobe = !PTSettingsHelper::get_oobe_opened_state();
+        if (openOobe)
+        {
+            PTSettingsHelper::save_oobe_opened_state();
+        }
+    }
+    catch (const std::exception& e)
+    {
+        Logger::error("Failed to get or save OOBE state with an exception: {}", e.what());
+    }
+
     int result = 0;
     try
     {
@@ -415,14 +429,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         modules();
 
         auto general_settings = load_general_settings();
-        const bool openSettings = std::string(lpCmdLine).find("--open-settings") != std::string::npos;
-
-        // Open OOBE window at the first launch
-        const bool openOobe = !PTSettingsHelper::get_oobe_opened_state();
-        if (openOobe)
-        {
-            PTSettingsHelper::save_oobe_opened_state();
-        }
+        const bool openSettings = std::string(lpCmdLine).find("--open-settings") != std::string::npos;       
 
         // Apply the general settings but don't save it as the modules() variable has not been loaded yet
         apply_general_settings(general_settings, false);

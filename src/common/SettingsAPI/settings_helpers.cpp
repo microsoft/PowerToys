@@ -79,45 +79,33 @@ namespace PTSettingsHelper
         return result.wstring();
     }
 
-    bool get_oobe_opened_state() noexcept
+    bool get_oobe_opened_state()
     {
-        try
+        std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
+        oobePath = oobePath.append(oobe_filename);
+        if (std::filesystem::exists(oobePath))
         {
-            std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
-            oobePath = oobePath.append(oobe_filename);
-            if (std::filesystem::exists(oobePath))
+            auto saved_settings = json::from_file(oobePath.c_str());
+            if (!saved_settings.has_value())
             {
-                auto saved_settings = json::from_file(oobePath.c_str());
-                if (!saved_settings.has_value())
-                {
-                    return false;
-                }
-
-                bool opened = saved_settings->GetNamedBoolean(L"openedAtFirstLaunch", false);
-                return opened;
+                return false;
             }
-        }
-        catch (const std::exception&)
-        {
+
+            bool opened = saved_settings->GetNamedBoolean(L"openedAtFirstLaunch", false);
+            return opened;
         }
         
         return false;
     }
 
-    void save_oobe_opened_state() noexcept
+    void save_oobe_opened_state()
     {
-        try
-        {
-            std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
-            oobePath = oobePath.append(oobe_filename);
+        std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
+        oobePath = oobePath.append(oobe_filename);
 
-            json::JsonObject obj;
-            obj.SetNamedValue(L"openedAtFirstLaunch", json::value(true));
+        json::JsonObject obj;
+        obj.SetNamedValue(L"openedAtFirstLaunch", json::value(true));
 
-            json::to_file(oobePath.c_str(), obj);
-        }
-        catch (const std::exception&)
-        {
-        }        
+        json::to_file(oobePath.c_str(), obj);      
     }
 }
