@@ -80,10 +80,6 @@ void open_menu_from_another_instance()
 
 int runner(bool isProcessElevated, bool openSettings, bool openOobe)
 {
-    std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
-    logFilePath.append(LogSettings::runnerLogPath);
-    Logger::init(LogSettings::runnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
-
     Logger::info("Runner is starting. Elevated={}", isProcessElevated);
     DPIAware::EnableDPIAwarenessForThisProcess();
 
@@ -341,6 +337,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         // continue as usual
         break;
     }
+
+    std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
+    logFilePath.append(LogSettings::runnerLogPath);
+    Logger::init(LogSettings::runnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
     wil::unique_mutex_nothrow msi_mutex;
     wil::unique_mutex_nothrow msix_mutex;
