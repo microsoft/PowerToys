@@ -98,8 +98,6 @@
     <Compile Include="Controls\HotkeySettingsControl.xaml.cs">
       <DependentUpon>HotkeySettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\BooleanInvertConverter.cs" />
-    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
