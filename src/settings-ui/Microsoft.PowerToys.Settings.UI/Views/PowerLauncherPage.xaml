@@ -246,7 +246,6 @@
 
                                 <TextBlock x:Name="AdditionalOptionsTextBlock"
                                            x:Uid="Run_AdditionalOptions"
-                                           Text="Additional options"
                                            Margin="{StaticResource SmallTopMargin}"
                                            Visibility="{x:Bind ShowAdditionalOptions, Converter={StaticResource BooleanToVisibilityConverter}}"
                                            Style="{StaticResource SettingsGroupTitleStyle}"/>

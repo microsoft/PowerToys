@@ -950,4 +950,7 @@
   <data name="PowerLauncher_EnablePluginToggle.AutomationProperties.Name" xml:space="preserve">
     <value>Enable plugin</value>
   </data>
+  <data name="Run_AdditionalOptions.Text" xml:space="preserve">
+    <value>Additional options</value>
+  </data>
 </root>
