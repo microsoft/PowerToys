@@ -82,6 +82,7 @@
     <Border BorderBrush="{DynamicResource LayoutPreviewZoneBorderBrush}"
             Background="{DynamicResource CanvasZoneBackgroundBrush}"
             CornerRadius="4"
+            Effect="{StaticResource ZoneDropShadow}"
             BorderThickness="1">
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>

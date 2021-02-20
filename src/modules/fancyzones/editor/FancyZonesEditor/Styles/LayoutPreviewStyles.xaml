@@ -3,6 +3,8 @@
                     xmlns:ui="http://schemas.modernwpf.com/2019"
                     xmlns:local="clr-namespace:FancyZonesEditor.Styles">
 
+    <DropShadowEffect x:Key="ZoneDropShadow" BlurRadius="16" Opacity="0.28" ShadowDepth="1" />
+
     <Style x:Key="GridLayoutSmallScalePreviewStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource LayoutPreviewSmallScaleZoneBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource LayoutItemBackgroundBrush}" />
@@ -15,6 +17,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
         <Setter Property="BorderThickness" Value="2" />
         <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Effect" Value="{StaticResource ZoneDropShadow}" />
     </Style>
 
     <Style x:Key="CanvasLayoutSmallScalePreviewStyle" TargetType="Border">
@@ -29,5 +32,6 @@
         <Setter Property="BorderBrush" Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
         <Setter Property="BorderThickness" Value="2" />
         <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Effect" Value="{StaticResource ZoneDropShadow}" />
     </Style>
 </ResourceDictionary>
