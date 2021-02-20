@@ -15,7 +15,7 @@
     <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#FF202020" />
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFffffff" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF1aebff" />
-    <SolidColorBrush x:Key="BackdropBrush" Color="#88000000" />
+    <SolidColorBrush x:Key="BackdropBrush" Color="#E55B5B5B" />
     <SolidColorBrush x:Key="TitleBarSecondaryForegroundBrush" Color="#FF9a9a9a" />
     <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FF3A3A3A" />
     <SolidColorBrush x:Key="LayoutItemBackgroundPointerOverBrush" Color="#FF333333" />
