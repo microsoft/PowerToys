@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <UseWPF>true</UseWPF>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Toolkit.Uwp.UI" Version="6.1.1" />
+        <PackageReference Include="Microsoft.Toolkit.Wpf.UI.Controls" Version="6.1.2" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.705.50" />
+        <PackageReference Include="WindowsThemeListener" Version="1.0.0" />
+    </ItemGroup>
+
+	<!-- Outputs the needed html files -->
+    <ItemGroup>
+        <None Update="index.html">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="monacoSRC\**\*.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>

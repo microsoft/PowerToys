@@ -1,0 +1,21 @@
+﻿<Window x:Class="monacoPreview.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        mc:Ignorable="d"
+        Title="MainWindow"
+        Height="700"
+        Width="300"
+        SizeChanged="FormResize"
+        x:Name="window"
+        xmlns:System="clr-namespace:System;assembly=System.Runtime">
+    <Window.Resources>
+        <!-- Data url for loading page-->
+        <System:Uri x:Key="LoadingUrl">data:text/html;base64,PHA+TG9hZGluZy4uLjwvcD48YnI+PGltZyBzcmM9Imh0dHBzOi8vZG9jcy5taWNyb3NvZnQuY29tL2RlLWRlL3dpbmRvd3Mvd2ludWkvYXBpL21pY3Jvc29mdC51aS54YW1sLmNvbnRyb2xzL2ltYWdlcy9jb250cm9scy9wcm9ncmVzc3JpbmdfaW5kZXRlcm1pbmF0ZS5naWYiPg==</System:Uri>
+    </Window.Resources>
+    <Viewbox x:Name="viewbox">
+        <wv2:WebView2 Width="300" Height="700" Name="webView" Source="{DynamicResource LoadingUrl}" />
+    </Viewbox>
+</Window>

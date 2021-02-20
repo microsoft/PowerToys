@@ -1,0 +1,15 @@
+﻿<Window x:Class="monacoPreview.addHandler"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:monacoPreview"
+        mc:Ignorable="d"
+        Title="addHandler" Height="200" Width="150">
+    <Grid>
+        <TextBox HorizontalAlignment="Left" Margin="9,80,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="131" Text=".html"/>
+        <Label Content="Add handler for filetype:" HorizontalAlignment="Left" Margin="4,54,0,0" VerticalAlignment="Top" Width="141"/>
+        <Button Content="Add!" HorizontalAlignment="Left" Margin="55,101,0,0" VerticalAlignment="Top" Click="Button_Click"/>
+
+    </Grid>
+</Window>
