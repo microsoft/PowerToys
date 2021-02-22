@@ -86,7 +86,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
                 return ResourceManager.GetString("wox_plugin_calculator_not_a_number", resourceCulture);
             }
         }
-        
         /// <summary>
         ///   Looks up a localized string similar to Allows you to do mathematical calculations. (Try 5*3-2 in PowerToys Run).
         /// </summary>
