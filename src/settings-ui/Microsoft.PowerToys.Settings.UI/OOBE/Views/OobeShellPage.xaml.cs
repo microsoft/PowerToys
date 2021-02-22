@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = false,
                 NavIndex = 1,
                 Icon = "\uEC50",
-                FluentIcon = "ms-appx:///Assets/FluentIcons/empty.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FileExplorerPreview.png",
                 Image = "ms-appx:///Assets/Modules/PowerPreview.png",
                 Description = "This is the FileExplorer",
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-fileexplorer.gif",
