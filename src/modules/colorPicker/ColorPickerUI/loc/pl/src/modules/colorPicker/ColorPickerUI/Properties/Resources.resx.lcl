@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press the Color Picker icon to capture a color from your screen.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Naciśnij ikonę selektora kolorów, aby przechwycić kolor z ekranu.]]></Val>
+            <Val><![CDATA[Naciśnij ikonę próbnika kolorów, aby przechwycić kolor z ekranu.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -554,7 +554,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Edytor selektora kolorów]]></Val>
+            <Val><![CDATA[Edytor próbnika kolorów]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
