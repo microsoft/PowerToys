@@ -2335,6 +2335,8 @@ vk
 VKey
 VKTAB
 vm
+vmax
+vmin
 Voicemail
 VOS
 VREDRAW
@@ -2348,6 +2350,7 @@ VSTS
 VSTT
 VTABLE
 Vtbl
+vw
 Vx
 watsonportal
 wav
@@ -2480,6 +2483,7 @@ xa
 xamarin
 xaml
 XAngle
+XAttribute
 xbf
 XBind
 XBUTTON
