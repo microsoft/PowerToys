@@ -135,6 +135,7 @@
   </data>
   <data name="TypeWorkspaceLocal" xml:space="preserve">
     <value>Local</value>
+    <comment>As in "The workspace is on the local machine"</comment>
   </data>
   <data name="Workspace" xml:space="preserve">
     <value>Workspace</value>
