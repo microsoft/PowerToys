@@ -62,7 +62,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
                 return ResourceManager.GetString("wox_plugin_calculator_copy_failed", resourceCulture);
             }
         }
-        
         /// <summary>
         ///   Looks up a localized string similar to Copy this number to the clipboard.
         /// </summary>
