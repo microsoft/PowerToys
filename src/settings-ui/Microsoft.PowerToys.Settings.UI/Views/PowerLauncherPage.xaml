@@ -17,7 +17,7 @@
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
         <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
     </Page.Resources>
-    
+
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}" >
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -220,16 +220,18 @@
                                                Foreground="{ThemeResource SystemBaseMediumColor}"
                                                Text="{x:Bind Description}"
                                                TextWrapping="Wrap" />
-                                    <TextBlock FontSize="12"
-                                               Foreground="{ThemeResource SystemBaseMediumColor}">
-                                           <Run x:Uid="PowerLauncher_AuthoredBy" />
-                                           <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
-                                    </TextBlock>
                                     <TextBlock 
                                         x:Uid="Run_NotAccessibleWarning"
                                         FontSize="12"
                                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                                        Visibility="{x:Bind ShowWarning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        Visibility="{x:Bind ShowNotAccessibleWarning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        TextWrapping="Wrap" />
+
+                                    <TextBlock 
+                                        x:Uid="Run_NotAllowedActionKeyword"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                                        Visibility="{x:Bind ShowNotAllowedKeywordWarning, Converter={StaticResource BoolToVisibilityConverter}}"
                                         TextWrapping="Wrap" />
                                 </StackPanel>
 
@@ -240,8 +242,7 @@
                                               Grid.Column="2" />
                             </Grid>
 
-                            <StackPanel  Margin="60,24,0,24" x:Name="AdditionalInfoPanel" Visibility="Collapsed">
-
+                            <StackPanel Margin="60,24,0,24" x:Name="AdditionalInfoPanel" Visibility="Collapsed">
                                 <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
 
@@ -280,6 +281,14 @@
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
+
+                                <TextBlock FontSize="12"
+                                           Foreground="{ThemeResource SystemBaseMediumColor}"
+                                           HorizontalAlignment="Right"
+                                           Margin="0,0,12,0">
+                                           <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                           <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
+                                </TextBlock>
                             </StackPanel>
                         </StackPanel>
                     </DataTemplate>
