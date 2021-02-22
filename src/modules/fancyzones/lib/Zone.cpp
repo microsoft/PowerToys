@@ -108,22 +108,6 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept
     // Map to screen coords
     MapWindowRect(zoneWindow, nullptr, &newWindowRect);
 
-    MONITORINFO mi{ sizeof(mi) };
-    if (GetMonitorInfoW(MonitorFromWindow(zoneWindow, MONITOR_DEFAULTTONEAREST), &mi))
-    {
-        const auto taskbar_left_size = std::abs(mi.rcMonitor.left - mi.rcWork.left);
-        const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
-        OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
-
-        if (accountForUnawareness && !allMonitorsHaveSameDpiScaling())
-        {
-            newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
-            newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);
-            newWindowRect.top = max(mi.rcMonitor.top, newWindowRect.top);
-            newWindowRect.bottom = min(mi.rcMonitor.bottom - taskbar_top_size, newWindowRect.bottom);
-        }
-    }
-
     if ((::GetWindowLong(window, GWL_STYLE) & WS_SIZEBOX) == 0)
     {
         newWindowRect.right = newWindowRect.left + (windowRect.right - windowRect.left);
