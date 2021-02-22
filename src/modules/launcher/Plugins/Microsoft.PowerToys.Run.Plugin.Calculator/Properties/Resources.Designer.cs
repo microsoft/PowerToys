@@ -54,7 +54,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
                 resourceCulture = value;
             }
         }
-        
         /// <summary>
         ///   Looks up a localized string similar to Copy failed, please try later.
         /// </summary>
