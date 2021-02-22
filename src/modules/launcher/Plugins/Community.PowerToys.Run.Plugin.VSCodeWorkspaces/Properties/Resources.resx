@@ -122,6 +122,7 @@
   </data>
   <data name="In" xml:space="preserve">
     <value>in</value>
+    <comment>Used to indicate the location where something is</comment>
   </data>
   <data name="PluginDescription" xml:space="preserve">
     <value>Show VSCode Workspaces and Remote machines</value>
