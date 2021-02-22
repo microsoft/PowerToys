@@ -154,6 +154,13 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
+            <TextBlock x:Uid="Run_AllPluginsDisabled"
+                       FontSize="12"
+                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                       Visibility="{x:Bind ViewModel.AllPluginsDisabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                       TextWrapping="Wrap"
+                       Margin="{StaticResource SmallTopMargin}"/>
+
             <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
                       IsItemClickEnabled="True"
                       x:Name="PluginsListView"

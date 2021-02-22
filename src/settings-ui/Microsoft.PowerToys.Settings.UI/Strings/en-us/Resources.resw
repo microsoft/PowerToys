@@ -956,6 +956,9 @@
   <data name="Run_NotAccessibleWarning.Text" xml:space="preserve">
     <value>Please define an activation phrase or allow this plugin for the global results to use it</value>
   </data>
+  <data name="Run_AllPluginsDisabled.Text" xml:space="preserve">
+    <value>PowerToys Run is not usable. Enable at least one plugin to use it.</value>
+  </data>
   <data name="Run_NotAllowedActionKeyword.Text" xml:space="preserve">
     <value>The action keyword is not allowed</value>
   </data>
