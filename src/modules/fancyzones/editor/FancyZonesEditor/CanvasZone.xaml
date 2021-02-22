@@ -12,7 +12,7 @@
     <UserControl.Resources>
         <Style x:Key="CanvasZoneThumbStyle" TargetType="{x:Type Thumb}">
             <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Thumb}">
@@ -79,9 +79,10 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
+    <Border BorderBrush="{DynamicResource LayoutPreviewZoneBorderBrush}"
             Background="{DynamicResource CanvasZoneBackgroundBrush}"
             CornerRadius="4"
+            Effect="{StaticResource ZoneDropShadow}"
             BorderThickness="1">
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
@@ -126,7 +127,7 @@
                 </TextBlock>
             </DockPanel>
 
-            <Thumb x:Name="Caption" Cursor="SizeAll" Background="Transparent" BorderThickness="3" Padding="4" Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="Caption_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="Caption" Cursor="SizeAll" Background="Transparent" BorderThickness="3" Padding="4" Grid.Column="0" Grid.ColumnSpan="5" Margin="-1" Grid.Row="0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="Caption_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
 
             <Thumb x:Name="NResize" Cursor="SizeNS" BorderThickness="0,3,0,0" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="NResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
             <Thumb x:Name="SResize" Cursor="SizeNS" BorderThickness="0,0,0,3" Grid.Row="4" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="SResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
