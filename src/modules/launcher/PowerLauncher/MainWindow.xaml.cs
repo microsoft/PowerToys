@@ -231,7 +231,9 @@ namespace PowerLauncher
                 case ManagedCommon.Position.Primary:
                     return Screen.PrimaryScreen;
                 case ManagedCommon.Position.Focus:
-                    return Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+                    IntPtr foregroundWindowHandle = NativeMethods.GetForegroundWindow();
+                    Screen activeScreen = Screen.FromHandle(foregroundWindowHandle);
+                    return activeScreen;
                 case ManagedCommon.Position.Cursor:
                 default:
                     return Screen.FromPoint(System.Windows.Forms.Cursor.Position);
