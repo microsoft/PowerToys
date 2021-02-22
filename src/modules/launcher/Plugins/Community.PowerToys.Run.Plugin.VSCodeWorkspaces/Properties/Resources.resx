@@ -131,6 +131,7 @@
   </data>
   <data name="TypeWorkspaceContainer" xml:space="preserve">
     <value>Container</value>
+    <comment>As in "Visual Code workspace container type</comment>
   </data>
   <data name="TypeWorkspaceLocal" xml:space="preserve">
     <value>Local</value>
