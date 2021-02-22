@@ -189,6 +189,7 @@
     <Content Include="Assets\FluentIcons\ColorPicker.png" />
     <Content Include="Assets\FluentIcons\empty.png" />
     <Content Include="Assets\FluentIcons\FancyZones.png" />
+    <Content Include="Assets\FluentIcons\FileExplorerPreview.png" />
     <Content Include="Assets\FluentIcons\ImageResizer.png" />
     <Content Include="Assets\FluentIcons\KeyboardManager.png" />
     <Content Include="Assets\FluentIcons\PowerRename.png" />
