@@ -94,7 +94,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
                 return ResourceManager.GetString("wox_plugin_calculator_plugin_description", resourceCulture);
             }
         }
-        
         /// <summary>
         ///   Looks up a localized string similar to Calculator.
         /// </summary>
