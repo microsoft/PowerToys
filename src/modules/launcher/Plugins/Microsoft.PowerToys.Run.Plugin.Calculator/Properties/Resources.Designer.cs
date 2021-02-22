@@ -78,7 +78,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
                 return ResourceManager.GetString("wox_plugin_calculator_expression_not_complete", resourceCulture);
             }
         }
-        
         /// <summary>
         ///   Looks up a localized string similar to Not a number (NaN).
         /// </summary>
