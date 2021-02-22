@@ -47,7 +47,7 @@ namespace Microsoft.Plugin.Indexer
 
         private string WarningIconPath { get; set; }
 
-        public string Name => Properties.Resources.Microsoft_plugin_indexer_name;
+        public string Name => Properties.Resources.Microsoft_plugin_indexer_plugin_name;
 
         public string Description => Properties.Resources.Microsoft_plugin_indexer_plugin_description;
 
