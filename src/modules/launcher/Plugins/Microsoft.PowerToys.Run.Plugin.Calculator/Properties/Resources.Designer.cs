@@ -70,7 +70,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
                 return ResourceManager.GetString("wox_plugin_calculator_copy_number_to_clipboard", resourceCulture);
             }
         }
-        
         /// <summary>
         ///   Looks up a localized string similar to Expression wrong or incomplete (Did you forget some parentheses?).
         /// </summary>
