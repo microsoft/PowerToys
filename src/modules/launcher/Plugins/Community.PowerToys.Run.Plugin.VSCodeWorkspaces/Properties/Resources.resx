@@ -139,5 +139,6 @@
   </data>
   <data name="Workspace" xml:space="preserve">
     <value>Workspace</value>
+    <comment>It refers to the "Visual Studio Code  workspace"</comment>
   </data>
 </root>
