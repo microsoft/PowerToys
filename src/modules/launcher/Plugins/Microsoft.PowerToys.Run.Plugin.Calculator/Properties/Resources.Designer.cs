@@ -28,7 +28,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Resources() {
         }
-        
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
