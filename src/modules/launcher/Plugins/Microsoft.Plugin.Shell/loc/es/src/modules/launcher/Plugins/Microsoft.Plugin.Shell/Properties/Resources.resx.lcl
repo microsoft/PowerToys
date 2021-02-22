@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Allows to execute system commands from PowerToys Run. Commands should start with >]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Permite ejecutar comandos del sistema desde el Ejecutor de PowerToys. Los comandos deberían empezar con >.]]></Val>
+            <Val><![CDATA[Permite ejecutar comandos del sistema desde PowerToys Run. Los comandos deberÃ­an empezar con >.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

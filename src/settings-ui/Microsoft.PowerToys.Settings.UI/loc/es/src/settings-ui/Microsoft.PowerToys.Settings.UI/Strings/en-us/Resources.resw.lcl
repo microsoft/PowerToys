@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Acerca del Ejecutor de PowerToys]]></Val>
+            <Val><![CDATA[Acerca de PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1688,7 +1688,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Habilitar el Ejecutor de PowerToys]]></Val>
+            <Val><![CDATA[Habilitar PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1733,7 +1733,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abrir el Ejecutor de PowerToys]]></Val>
+            <Val><![CDATA[Abrir PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1907,7 +1907,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Habilitar el Cambio de nombre avanzado]]></Val>
+            <Val><![CDATA[Habilitar PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2144,7 +2144,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cambio de nombre avanzado]]></Val>
+            <Val><![CDATA[PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Selektor kolorów — informacje]]></Val>
+            <Val><![CDATA[Próbnik kolorów — informacje]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -155,7 +155,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Selektor kolorów z włączonym trybem edytora]]></Val>
+            <Val><![CDATA[Próbnik kolorów z włączonym trybem edytora]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -173,7 +173,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker only]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Tylko selektor kolorów]]></Val>
+            <Val><![CDATA[Tylko próbnik kolorów]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -200,7 +200,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Activate Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uaktywnij selektor kolorów]]></Val>
+            <Val><![CDATA[Uaktywnij próbnik kolorów]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Open Color Picker]]></Val>
@@ -242,7 +242,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Szybki i prosty selektor kolorów w całym systemie.]]></Val>
+            <Val><![CDATA[Szybki i prosty próbnik kolorów dostępny w całym systemie.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -260,7 +260,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Włącz selektor kolorów]]></Val>
+            <Val><![CDATA[Włącz próbnik kolorów]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -269,7 +269,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Selektor kolorów]]></Val>
+            <Val><![CDATA[Próbnik kolorów]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2081,7 +2081,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Selektor kolorów]]></Val>
+            <Val><![CDATA[Próbnik kolorów]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

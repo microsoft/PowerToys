@@ -80,7 +80,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft PowerToys 是一组实用程序，可帮助高级用户调整和简化他们的 Windows 体验，从而提高工作效率。]]></Val>
+            <Val><![CDATA[Microsoft PowerToys 是一组实用程序，以供高级用户调整和优化他们的 Windows 体验，从而提高工作效率。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -125,7 +125,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Attribution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[属性]]></Val>
+            <Val><![CDATA[归因]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -155,7 +155,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[启用了编辑器模式的 Color Picker]]></Val>
+            <Val><![CDATA[直接通过颜色选择器取色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -173,7 +173,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker only]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[仅 Color Picker]]></Val>
+            <Val><![CDATA[通过颜色选择器取色并编辑]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
