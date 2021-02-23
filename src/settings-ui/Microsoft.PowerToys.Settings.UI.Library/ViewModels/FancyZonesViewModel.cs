@@ -278,6 +278,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.Smallest)
                 {
                     _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.Smallest;
+                    Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value = (int)OverlappingZonesAlgorithm.Smallest;
                     NotifyPropertyChanged();
                 }
             }
@@ -295,6 +296,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.Largest)
                 {
                     _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.Largest;
+                    Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value = (int)OverlappingZonesAlgorithm.Largest;
                     NotifyPropertyChanged();
                 }
             }
@@ -312,6 +314,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.Positional)
                 {
                     _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.Positional;
+                    Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value = (int)OverlappingZonesAlgorithm.Positional;
                     NotifyPropertyChanged();
                 }
             }
