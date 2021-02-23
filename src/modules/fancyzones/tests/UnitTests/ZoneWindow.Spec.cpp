@@ -56,6 +56,11 @@ namespace FancyZonesUnitTests
         {
             return false;
         }
+        IFACEMETHODIMP_(Settings::OverlappingZonesAlgorithm)
+        GetOverlappingZonesAlgorithm() noexcept
+        {
+            return Settings::OverlappingZonesAlgorithm::Smallest;
+        }
 
         IZoneWindow* m_zoneWindow;
     };

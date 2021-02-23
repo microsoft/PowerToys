@@ -28,7 +28,7 @@ namespace FancyZonesUnitTests
                 auto hres = CoCreateGuid(&m_id);
                 Assert::AreEqual(S_OK, hres);
 
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius);
+                ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius, Settings::OverlappingZonesAlgorithm::Smallest);
                 m_set = MakeZoneSet(m_config);
             }
 
