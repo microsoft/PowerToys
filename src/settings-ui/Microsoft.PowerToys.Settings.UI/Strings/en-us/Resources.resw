@@ -330,7 +330,7 @@
     <value>To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
-    <value>Zone highlight opacity</value>
+    <value>Zone opacity</value>
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
