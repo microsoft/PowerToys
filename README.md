@@ -75,65 +75,53 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.31 - January 2021 Update
+### 0.33 - February 2021 Update
 
 Our goals for [v0.31 release cycle][github-release-link] were to focus on improving the FancyZones editor, adding in some new features into PowerToys Run, some ARM64 work, and stability. 
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
 
-#### Highlights from v0.31
+#### Highlights from v0.33
 
 **General**
-- Bug report tool and improved logging now added to our system tray.
-- Added in CodeQL and other CI improvements.
-- OOBE Spec should be finalized
-
-**ARM64 Progress**
-- .NET Core upgrade for code bases the PowerToys team controls is complete.  We still have two external dependencies that are .NET Framework that need to be updated.
+- Updated overview links to be language agnostic to the docs site.
 
 **Color Picker** 
-- Bug fixes in editor
+- 
 
 **FancyZones**
-- Streamlined, simplified user interface (Massive thanks to [@niels9001](https://github.com/niels9001))
-- Dark mode for the editor
-- Certain settings (e.g. number of zones, spacing settings) can now be set on individual layouts.
-- Bug fixes
+- 
 
-**File explorer**
-- Fixed a bug with SVG preview on OneDrive folders
-- SVG are scaled appropriately when viewbox is provided
-- SVG thumbnail quality improved
+**File Explorer**
+- 
+
+**Image Resizer**
+- 
+
+**Keyboard manager**
+- 
+
+**PowerRename**
+- 
 
 **PowerToys Run**
-- Service management plugin (restart, stop, ...) using the `!` keyword
-- Registry key plugin using the `:` keyword
-- System action plugin (reboot, lock, ...)
-- Hyperbolic functions added to calculator (example: `=arsinh(3)`)
-- Icon fixes when running in certain themes
-- Unneeded dependencies removed
-- Bug fixes
+- 
 
 **Installer**
-- Default to .NET Core 3.1.11
+- 
+
+**ARM64 Progress**
+- Investigation on how we'll accomplish Settings with the XAML Island and WPF app.
 
 #### Community contributions
 
 We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
-[@Aaron-Junker](https://github.com/Aaron-Junker), 
-[@BenConstable9](https://github.com/BenConstable9), 
-[@chrdavis](https://github.com/chrdavis), 
-[@davidegiacometti](https://github.com/davidegiacometti), 
-[@ExecThTs](https://github.com/ExecThTs), 
-[@htcfreek](https://github.com/htcfreek), 
-[@itsme-alan](https://github.com/itsme-alan), 
-[@jay-o-way](https://github.com/jay-o-way), 
-[@martinchrzan](https://github.com/martinchrzan), 
-[@niels9001](https://github.com/niels9001), 
-[@pavelzw](https://github.com/pavelzw), 
+CRUTKAS, CREATE LIST
+[@crutkas](https://github.com/crutkas), 
+[@crutkas](https://github.com/crutkas), 
 and 
-[@TobiasSekan](https://github.com/TobiasSekan) 
+[@crutkas](https://github.com/crutkas), 
 
 #### What is being planned for v0.33 - February 2021
 
