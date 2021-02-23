@@ -236,9 +236,13 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
             m_settings.zoneHighlightOpacity = *val;
         }
 
-        if (auto val = values.get_int_value(NonLocalizable::ZoneHighlightOpacityID))
+        if (auto val = values.get_int_value(NonLocalizable::OverlappingZonesAlgorithmID))
         {
-            m_settings.zoneHighlightOpacity = *val;
+            // Avoid undefined behavior
+            if (*val >= 0 || *val < (int)Settings::OverlappingZonesAlgorithm::EnumElements)
+            {
+                m_settings.overlappingZonesAlgorithm = (Settings::OverlappingZonesAlgorithm)*val;
+            }
         }
     }
     catch (...)

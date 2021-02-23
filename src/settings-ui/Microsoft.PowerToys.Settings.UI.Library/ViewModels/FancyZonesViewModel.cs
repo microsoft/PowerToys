@@ -34,9 +34,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private enum OverlappingZonesAlgorithm
         {
-            OverlappingZonesSmallest = 0,
-            OverlappingZonesLargest,
-            OverlappingZonesPositional,
+            Smallest = 0,
+            Largest = 1,
+            Positional = 2,
         }
 
         public FancyZonesViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
@@ -270,14 +270,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.OverlappingZonesSmallest;
+                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.Smallest;
             }
 
             set
             {
-                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.OverlappingZonesSmallest)
+                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.Smallest)
                 {
-                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.OverlappingZonesSmallest;
+                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.Smallest;
                     NotifyPropertyChanged();
                 }
             }
@@ -287,14 +287,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.OverlappingZonesLargest;
+                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.Largest;
             }
 
             set
             {
-                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.OverlappingZonesLargest)
+                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.Largest)
                 {
-                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.OverlappingZonesLargest;
+                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.Largest;
                     NotifyPropertyChanged();
                 }
             }
@@ -304,14 +304,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.OverlappingZonesPositional;
+                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.Positional;
             }
 
             set
             {
-                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.OverlappingZonesPositional)
+                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.Positional)
                 {
-                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.OverlappingZonesPositional;
+                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.Positional;
                     NotifyPropertyChanged();
                 }
             }

@@ -14,11 +14,12 @@ namespace ZonedWindowProperties
 
 struct Settings
 {
-    enum struct OverlappingZonesAlgorithm
+    enum struct OverlappingZonesAlgorithm : int
     {
         Smallest = 0,
         Largest = 1,
         Positional = 2,
+        EnumElements = 3, // number of elements in the enum, not counting this
     };
 
     // The values specified here are the defaults.
