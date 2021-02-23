@@ -960,6 +960,6 @@
     <value>PowerToys Run can't provide any results without plugins. Please enable at least one plugin.</value>
   </data>
   <data name="Run_NotAllowedActionKeyword.Text" xml:space="preserve">
-    <value>The action keyword is not allowed</value>
+    <value>This activation phrase overrides the behavior of other plugins. Please change it to something else.</value>
   </data>
 </root>
