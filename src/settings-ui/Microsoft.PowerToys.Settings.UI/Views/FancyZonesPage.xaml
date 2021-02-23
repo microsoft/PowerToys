@@ -125,6 +125,23 @@
                       Margin="{StaticResource XSmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
+            <RadioButton x:Uid="FancyZones_OverlappingZonesSmallest"
+                         GroupName="FancyZones_OverlappingZonesGroup"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverlappingZonesSmallest}"
+                         Margin="24,8,0,0"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <RadioButton x:Uid="FancyZones_OverlappingZonesLargest"
+                         GroupName="FancyZones_OverlappingZonesGroup"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverlappingZonesLargest}"
+                         Margin="24,8,0,0"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <RadioButton x:Uid="FancyZones_OverlappingZonesPositional"
+                         GroupName="FancyZones_OverlappingZonesGroup"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverlappingZonesPositional}"
+                         Margin="24,8,0,0"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <TextBlock x:Uid="FancyZones_WindowBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"

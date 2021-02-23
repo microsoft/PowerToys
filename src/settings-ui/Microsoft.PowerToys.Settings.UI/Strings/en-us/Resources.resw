@@ -937,4 +937,13 @@
   <data name="ColorPicker_Editor.Text" xml:space="preserve">
     <value>Editor</value>
   </data>
+  <data name="FancyZones_OverlappingZonesLargest" xml:space="preserve">
+    <value>Largest zone by area</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesPositional" xml:space="preserve">
+    <value>Select a zone based on position inside overlap</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesSmallest" xml:space="preserve">
+    <value>Smallest zone by area</value>
+  </data>
 </root>
