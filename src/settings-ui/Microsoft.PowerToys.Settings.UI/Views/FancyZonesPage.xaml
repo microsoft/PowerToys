@@ -126,6 +126,7 @@
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <TextBlock x:Uid="FancyZones_OverlappingZonesLabel"
+                       Margin="{StaticResource SmallTopMargin}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <RadioButton x:Uid="FancyZones_OverlappingZonesSmallest"
