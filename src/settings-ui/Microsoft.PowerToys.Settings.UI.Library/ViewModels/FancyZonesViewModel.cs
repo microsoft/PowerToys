@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             MoveWindowBasedOnPosition,
         }
 
-        private enum OverlappingZonesBehaviour
+        private enum OverlappingZonesAlgorithm
         {
             OverlappingZonesSmallest = 0,
             OverlappingZonesLargest,
@@ -65,20 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
             _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             _moveWindowBehaviour = Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value ? MoveWindowBehaviour.MoveWindowBasedOnPosition : MoveWindowBehaviour.MoveWindowBasedOnZoneIndex;
-
-            if (Settings.Properties.FancyzonesOverlappingZonesSmallest.Value)
-            {
-                _overlappingZonesBehaviour = OverlappingZonesBehaviour.OverlappingZonesSmallest;
-            }
-            else if (Settings.Properties.FancyzonesOverlappingZonesLargest.Value)
-            {
-                _overlappingZonesBehaviour = OverlappingZonesBehaviour.OverlappingZonesLargest;
-            }
-            else
-            {
-                _overlappingZonesBehaviour = OverlappingZonesBehaviour.OverlappingZonesPositional;
-            }
-
+            _overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value;
             _displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
             _zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
             _appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
@@ -113,7 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _overrideSnapHotkeys;
         private bool _moveWindowsAcrossMonitors;
         private MoveWindowBehaviour _moveWindowBehaviour;
-        private OverlappingZonesBehaviour _overlappingZonesBehaviour;
+        private OverlappingZonesAlgorithm _overlappingZonesAlgorithm;
         private bool _displayChangemoveWindows;
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
@@ -283,14 +270,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return _overlappingZonesBehaviour == OverlappingZonesBehaviour.OverlappingZonesSmallest;
+                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.OverlappingZonesSmallest;
             }
 
             set
             {
-                if (value && _overlappingZonesBehaviour != OverlappingZonesBehaviour.OverlappingZonesSmallest)
+                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.OverlappingZonesSmallest)
                 {
-                    _overlappingZonesBehaviour = OverlappingZonesBehaviour.OverlappingZonesSmallest;
+                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.OverlappingZonesSmallest;
                     NotifyPropertyChanged();
                 }
             }
@@ -300,14 +287,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return _overlappingZonesBehaviour == OverlappingZonesBehaviour.OverlappingZonesLargest;
+                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.OverlappingZonesLargest;
             }
 
             set
             {
-                if (value && _overlappingZonesBehaviour != OverlappingZonesBehaviour.OverlappingZonesLargest)
+                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.OverlappingZonesLargest)
                 {
-                    _overlappingZonesBehaviour = OverlappingZonesBehaviour.OverlappingZonesLargest;
+                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.OverlappingZonesLargest;
                     NotifyPropertyChanged();
                 }
             }
@@ -317,14 +304,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return _overlappingZonesBehaviour == OverlappingZonesBehaviour.OverlappingZonesPositional;
+                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.OverlappingZonesPositional;
             }
 
             set
             {
-                if (value && _overlappingZonesBehaviour != OverlappingZonesBehaviour.OverlappingZonesPositional)
+                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.OverlappingZonesPositional)
                 {
-                    _overlappingZonesBehaviour = OverlappingZonesBehaviour.OverlappingZonesPositional;
+                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.OverlappingZonesPositional;
                     NotifyPropertyChanged();
                 }
             }

@@ -14,6 +14,13 @@ namespace ZonedWindowProperties
 
 struct Settings
 {
+    enum struct OverlappingZonesAlgorithm
+    {
+        Smallest = 0,
+        Largest = 1,
+        Positional = 2,
+    };
+
     // The values specified here are the defaults.
     bool shiftDrag = true;
     bool mouseSwitch = false;
@@ -34,6 +41,7 @@ struct Settings
     std::wstring zoneBorderColor = L"#FFFFFF";
     std::wstring zoneHighlightColor = L"#008CFF";
     int zoneHighlightOpacity = 50;
+    OverlappingZonesAlgorithm overlappingZonesAlgorithm = OverlappingZonesAlgorithm::Smallest;
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
     std::wstring excludedApps = L"";
     std::vector<std::wstring> excludedAppsArray;

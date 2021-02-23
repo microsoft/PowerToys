@@ -18,9 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesMouseSwitch = new BoolProperty();
             FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
             FancyzonesMoveWindowsBasedOnPosition = new BoolProperty();
-            FancyzonesOverlappingZonesSmallest = new BoolProperty();
-            FancyzonesOverlappingZonesLargest = new BoolProperty();
-            FancyzonesOverlappingZonesPositional = new BoolProperty();
+            FancyzonesOverlappingZonesAlgorithm = new IntProperty();
             FancyzonesDisplayChangeMoveWindows = new BoolProperty();
             FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
             FancyzonesAppLastZoneMoveWindows = new BoolProperty();
@@ -53,14 +51,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("fancyzones_moveWindowsBasedOnPosition")]
         public BoolProperty FancyzonesMoveWindowsBasedOnPosition { get; set; }
 
-        [JsonPropertyName("fancyzones_overlappingZonesSmallest")]
-        public BoolProperty FancyzonesOverlappingZonesSmallest { get; set; }
-
-        [JsonPropertyName("fancyzones_overlappingZonesLargest")]
-        public BoolProperty FancyzonesOverlappingZonesLargest { get; set; }
-
-        [JsonPropertyName("fancyzones_overlappingZonesPositional")]
-        public BoolProperty FancyzonesOverlappingZonesPositional { get; set; }
+        [JsonPropertyName("fancyzones_overlappingZonesAlgorithm")]
+        public IntProperty FancyzonesOverlappingZonesAlgorithm { get; set; }
 
         [JsonPropertyName("fancyzones_displayChange_moveWindows")]
         public BoolProperty FancyzonesDisplayChangeMoveWindows { get; set; }
