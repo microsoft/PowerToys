@@ -35,6 +35,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules = new ObservableCollection<OobePowerToysModule>();
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
 
+            Modules.Insert((int)PowerToysModulesEnum.Overview, new OobePowerToysModule()
+            {
+                ModuleName = "Overview",
+                Tag = "Overview",
+                IsNew = false,
+                Icon = "\uEF3C",
+                Image = "ms-appx:///Assets/Modules/ColorPicker.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/PowerToys.png",
+                PreviewImageSource = "https://github.com/microsoft/PowerToys/raw/master/doc/images/overview/PT%20hero%20image.png",
+                DescriptionLink = "https://aka.ms/PowerToysOverview",
+                Link = "https://github.com/microsoft/PowerToys/releases/",
+            });
             Modules.Insert((int)PowerToysModulesEnum.ColorPicker, new OobePowerToysModule()
             {
                 ModuleName = "Color Picker",
@@ -159,6 +171,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             OobePowerToysModule selectedItem = args.SelectedItem as OobePowerToysModule;
             switch (selectedItem.Tag)
             {
+                case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
                 case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
                 case "FancyZones": NavigationFrame.Navigate(typeof(OobeFancyZones)); break;
                 case "Run": NavigationFrame.Navigate(typeof(OobeRun)); break;
