@@ -947,7 +947,7 @@
     <value>When multiple zones overlap:</value>
   </data>
   <data name="PowerLauncher_Plugins.Text" xml:space="preserve">
-    <value>Plug-ins</value>
+    <value>Plugins</value>
   </data>
   <data name="PowerLauncher_ActionKeyword.Text" xml:space="preserve">
     <value>Direct activation phrase</value>
