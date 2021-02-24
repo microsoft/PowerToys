@@ -97,6 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
         {
+            OnPropertyChanged(nameof(AllPluginsDisabled));
             UpdateSettings();
         }
 
@@ -373,6 +374,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                 return _plugins;
             }
+        }
+
+        public bool AllPluginsDisabled
+        {
+            get => Plugins.All(x => x.Disabled);
         }
     }
 }

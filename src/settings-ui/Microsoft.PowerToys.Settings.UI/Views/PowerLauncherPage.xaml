@@ -17,7 +17,7 @@
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
         <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
     </Page.Resources>
-    
+
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}" >
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -150,9 +150,43 @@
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
             />
 
+            <TextBlock x:Uid="Appearance_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+            <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
+            The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
+            Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
+            <TextBlock x:Uid="ColorModeHeader"
+                       x:Name="RadioButtons_Name_Theme" 
+                       Margin="{StaticResource SmallTopMargin}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Theme}">
+                <RadioButton x:Uid="Radio_Theme_Dark"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                             IsChecked="{Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}" />
+
+                <RadioButton x:Uid="Radio_Theme_Light"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                             IsChecked="{Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}" />
+
+                <RadioButton x:Uid="Radio_Theme_Default"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                             IsChecked="{Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}" />
+                <HyperlinkButton Click="OpenColorsSettings_Click">
+                    <TextBlock x:Uid="Windows_Color_Settings" />
+                </HyperlinkButton>
+            </StackPanel>
+
             <TextBlock x:Uid="PowerLauncher_Plugins"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <TextBlock x:Uid="Run_AllPluginsDisabled"
+                       FontSize="12"
+                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                       Visibility="{x:Bind ViewModel.AllPluginsDisabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                       TextWrapping="Wrap"
+                       Margin="{StaticResource SmallTopMargin}"/>
 
             <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
                       IsItemClickEnabled="True"
@@ -220,16 +254,18 @@
                                                Foreground="{ThemeResource SystemBaseMediumColor}"
                                                Text="{x:Bind Description}"
                                                TextWrapping="Wrap" />
-                                    <TextBlock FontSize="12"
-                                               Foreground="{ThemeResource SystemBaseMediumColor}">
-                                           <Run x:Uid="PowerLauncher_AuthoredBy" />
-                                           <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
-                                    </TextBlock>
                                     <TextBlock 
                                         x:Uid="Run_NotAccessibleWarning"
                                         FontSize="12"
                                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                                        Visibility="{x:Bind ShowWarning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        Visibility="{x:Bind ShowNotAccessibleWarning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        TextWrapping="Wrap" />
+
+                                    <TextBlock 
+                                        x:Uid="Run_NotAllowedActionKeyword"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                                        Visibility="{x:Bind ShowNotAllowedKeywordWarning, Converter={StaticResource BoolToVisibilityConverter}}"
                                         TextWrapping="Wrap" />
                                 </StackPanel>
 
@@ -240,8 +276,7 @@
                                               Grid.Column="2" />
                             </Grid>
 
-                            <StackPanel  Margin="60,24,0,24" x:Name="AdditionalInfoPanel" Visibility="Collapsed">
-
+                            <StackPanel Margin="60,24,0,24" x:Name="AdditionalInfoPanel" Visibility="Collapsed">
                                 <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
 
@@ -280,39 +315,19 @@
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
+
+                                <TextBlock FontSize="12"
+                                           Foreground="{ThemeResource SystemBaseMediumColor}"
+                                           HorizontalAlignment="Right"
+                                           Margin="0,0,12,0">
+                                           <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                           <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
+                                </TextBlock>
                             </StackPanel>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-
-            <TextBlock x:Uid="Appearance_GroupSettings"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
-
-            <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
-            The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
-            Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
-            <TextBlock x:Uid="ColorModeHeader"
-                       x:Name="RadioButtons_Name_Theme" 
-                       Margin="{StaticResource SmallTopMargin}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
-            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Theme}">
-                <RadioButton x:Uid="Radio_Theme_Dark"
-                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                             IsChecked="{Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}" />
-
-                <RadioButton x:Uid="Radio_Theme_Light"
-                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                             IsChecked="{Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}" />
-
-                <RadioButton x:Uid="Radio_Theme_Default"
-                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                             IsChecked="{Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}" />
-                <HyperlinkButton Click="OpenColorsSettings_Click">
-                    <TextBlock x:Uid="Windows_Color_Settings" />
-                </HyperlinkButton>
-            </StackPanel>
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 
