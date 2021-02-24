@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     settings.Disabled = value;
                     NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ShowWarning));
+                    NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
                 }
             }
         }
@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     settings.IsGlobal = value;
                     NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ShowWarning));
+                    NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
                 }
             }
         }
@@ -90,7 +90,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     settings.ActionKeyword = value;
                     NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ShowWarning));
+                    NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
+                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
                 }
             }
         }
@@ -129,9 +130,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public bool ShowWarning
+        public bool ShowNotAccessibleWarning
         {
             get => !Disabled && !IsGlobal && string.IsNullOrWhiteSpace(ActionKeyword);
+        }
+
+        private static readonly List<string> NotAllowedKeywords = new List<string>()
+        {
+            "~", @"\", @"\\",
+        };
+
+        public bool ShowNotAllowedKeywordWarning
+        {
+            get => NotAllowedKeywords.Contains(ActionKeyword);
         }
     }
 }
