@@ -55,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.Disabled = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
+                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
                     NotifyPropertyChanged(nameof(Enabled));
                     NotifyPropertyChanged(nameof(DisabledOpacity));
                 }
@@ -148,7 +149,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public bool ShowNotAllowedKeywordWarning
         {
-            get => NotAllowedKeywords.Contains(ActionKeyword);
+            get => !Disabled && NotAllowedKeywords.Contains(ActionKeyword);
         }
     }
 }
