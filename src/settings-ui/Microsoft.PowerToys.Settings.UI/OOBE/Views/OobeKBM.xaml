@@ -31,12 +31,6 @@
             <StackPanel Orientation="Horizontal"
                         Margin="32,48,0,0"
                         Spacing="4">
-                <Button Style="{StaticResource AccentButtonStyle}">
-                    <TextBlock>
-                        <Run x:Uid="Oobe_Launch"/>
-                        <Run Text="{x:Bind ViewModel.ModuleName}"/>
-                    </TextBlock>
-                </Button>
                 <Button Foreground="{ThemeResource SystemControlBackgroundAccentBrush}"
                         VerticalAlignment="Bottom"
                         HorizontalAlignment="Left"
