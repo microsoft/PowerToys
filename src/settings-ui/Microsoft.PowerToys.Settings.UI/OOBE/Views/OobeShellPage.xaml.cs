@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
+using Windows.ApplicationModel.Resources;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
@@ -32,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             OobeShellHandler = this;
 
             Modules = new ObservableCollection<OobePowerToysModule>();
+            ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
 
             Modules.Insert((int)PowerToysModulesEnum.ColorPicker, new OobePowerToysModule()
             {
@@ -43,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Image = "ms-appx:///Assets/Modules/ColorPicker.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png",
                 PreviewImageSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/colorpicker/ColorPicking.gif",
-                Description = "Color Picker is a simple and quick system-wide color picker with Win+Shift+C. Color Picker allows to pick colors from any currently running application and automatically copies the HEX or RGB values to your clipboard.",
+                Description = loader.GetString("Oobe_ColorPicker_Description"),
                 Link = "https://docs.microsoft.com/en-us/windows/powertoys/color-picker",
             });
             Modules.Insert((int)PowerToysModulesEnum.FancyZones, new OobePowerToysModule()
@@ -56,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Image = "ms-appx:///Assets/Modules/FancyZones.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png",
                 PreviewImageSource = "https://user-images.githubusercontent.com/9866362/101410242-5b90a280-38df-11eb-834a-8365453b8429.gif",
-                Description = "FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.",
+                Description = loader.GetString("Oobe_FancyZones_Description"),
                 Link = "https://docs.microsoft.com/en-us/windows/powertoys/fancyzones",
             });
             Modules.Insert((int)PowerToysModulesEnum.ImageResizer, new OobePowerToysModule()
@@ -68,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uEB9F",
                 Image = "ms-appx:///Assets/Modules/ImageResizer.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ImageResizer.png",
-                Description = "This is Image Resizer",
+                Description = loader.GetString("Oobe_ImageResizer_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-resize-images.gif",
                 Link = "https://docs.microsoft.com/en-us/windows/powertoys/image-resizer",
             });
@@ -81,7 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uE765",
                 Image = "ms-appx:///Assets/Modules/KeyboardManager.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/KeyboardManager.png",
-                Description = "This is the Keyboard Manager",
+                Description = loader.GetString("Oobe_KBM_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-keyboard-remap-a-b.png",
                 Link = "https://docs.microsoft.com/en-us/windows/powertoys/keyboard-manager",
             });
@@ -95,7 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Image = "ms-appx:///Assets/Modules/PowerLauncher.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/PowerToysRun.png",
                 PreviewImageSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/Launcher/QuickStart.gif",
-                Description = "Run helps you search and launch your app instantly with a simple Alt+Space and start typing.",
+                Description = loader.GetString("Oobe_PowerRun_Description"),
                 Link = "https://docs.microsoft.com/en-us/windows/powertoys/run",
             });
             Modules.Insert((int)PowerToysModulesEnum.PowerRename, new OobePowerToysModule()
@@ -107,7 +109,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uE8AC",
                 Image = "ms-appx:///Assets/Modules/PowerRename.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/PowerRename.png",
-                Description = "This is the PowerRename",
+                Description = loader.GetString("Oobe_PowerRename_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powerrename-demo.gif",
                 Link = "https://docs.microsoft.com/en-us/windows/powertoys/powerrename",
             });
@@ -120,7 +122,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uEC50",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/FileExplorerPreview.png",
                 Image = "ms-appx:///Assets/Modules/PowerPreview.png",
-                Description = "This is the FileExplorer",
+                Description = loader.GetString("Oobe_FileExplorer_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-fileexplorer.gif",
                 Link = "https://docs.microsoft.com/en-us/windows/powertoys/file-explorer",
             });
@@ -133,7 +135,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uEDA7",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ShortcutGuide.png",
                 Image = "ms-appx:///Assets/Modules/ShortcutGuide.png",
-                Description = "This is the Shortcut Guide",
+                Description = loader.GetString("Oobe_ShortcutGuide_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/pt-shortcut-guide-large.png",
                 Link = "https://docs.microsoft.com/en-us/windows/powertoys/shortcut-guide",
             });
@@ -146,7 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uEC50",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/VideoConferenceMute.png",
                 Image = "ms-appx:///Assets/Modules/VideoConference.png",
-                Description = "This is the Video Conference",
+                Description = loader.GetString("Oobe_VideoConference_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/pt-video-conference-mute-settings.png",
                 Link = "https://docs.microsoft.com/en-us/windows/powertoys/video-conference-mute",
             });
