@@ -184,7 +184,7 @@
             <TextBlock x:Uid="Run_AllPluginsDisabled"
                        FontSize="12"
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                       Visibility="{x:Bind ViewModel.AllPluginsDisabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Visibility="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                        TextWrapping="Wrap"
                        Margin="{StaticResource SmallTopMargin}"/>
 
