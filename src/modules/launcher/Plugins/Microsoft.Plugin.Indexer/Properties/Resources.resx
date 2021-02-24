@@ -154,7 +154,7 @@
     <value>Returns files and folders</value>
   </data>
   <data name="Microsoft_plugin_indexer_plugin_name" xml:space="preserve">
-    <value>Windows Indexer</value>
+    <value>Windows Search</value>
   </data>
   <data name="Microsoft_plugin_indexer_subtitle_header" xml:space="preserve">
     <value>Search</value>
