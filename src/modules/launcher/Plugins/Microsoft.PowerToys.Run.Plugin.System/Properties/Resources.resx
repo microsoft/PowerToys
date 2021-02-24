@@ -142,7 +142,7 @@
     <comment>This should align to the action in Windows of a locking your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_plugin_description" xml:space="preserve">
-    <value>Provides Windows related commands, shutdown, lock, sleep ....</value>
+    <value>Allows to execute system commands (e.g. 'shutdown', 'lock', 'sleep' etc.)</value>
     <comment>This should align to the actions in Windows relating to shutting down, signing out, locking, sleeping, restarting, emptying the recycle bin, and hibernating your computer. </comment>
   </data>
   <data name="Microsoft_plugin_sys_plugin_name" xml:space="preserve">

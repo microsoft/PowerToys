@@ -97,7 +97,7 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allows to execute system commands from PowerToys Run.
+        ///   Looks up a localized string similar to Allows to execute commands (e.g &apos;ping&apos;, &apos;cmd&apos;, etc.).
         /// </summary>
         public static string wox_plugin_cmd_plugin_description {
             get {

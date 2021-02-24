@@ -124,7 +124,7 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open favorite folder from PowerToys Run directly.
+        ///   Looks up a localized string similar to Navigate folders starting from a drive letter &apos;C:\&apos; or from the user home &apos;~&apos;.
         /// </summary>
         public static string wox_plugin_folder_plugin_description {
             get {

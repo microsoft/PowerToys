@@ -160,7 +160,7 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Returns files and folders.
+        ///   Looks up a localized string similar to Search files and folders.
         /// </summary>
         public static string Microsoft_plugin_indexer_plugin_description {
             get {

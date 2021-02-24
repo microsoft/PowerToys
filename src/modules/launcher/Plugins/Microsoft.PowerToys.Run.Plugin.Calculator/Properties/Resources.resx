@@ -121,7 +121,7 @@
     <value>Calculator</value>
   </data>
   <data name="wox_plugin_calculator_plugin_description" xml:space="preserve">
-    <value>Allows you to do mathematical calculations. (Try 5*3-2 in PowerToys Run)</value>
+    <value>Allows you to do mathematical calculations (e.g. 5*3-2)</value>
   </data>
   <data name="wox_plugin_calculator_not_a_number" xml:space="preserve">
     <value>Not a number (NaN)</value>
