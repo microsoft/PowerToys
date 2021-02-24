@@ -55,9 +55,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.Disabled = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
+                    NotifyPropertyChanged(nameof(ShowNotAllowedKeywordWarning));
+                    NotifyPropertyChanged(nameof(Enabled));
+                    NotifyPropertyChanged(nameof(DisabledOpacity));
                 }
             }
         }
+
+        public bool Enabled => !Disabled;
+
+        public double DisabledOpacity => Disabled ? 0.5 : 1;
 
         public bool IsGlobal
         {
@@ -142,7 +149,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public bool ShowNotAllowedKeywordWarning
         {
-            get => NotAllowedKeywords.Contains(ActionKeyword);
+            get => !Disabled && NotAllowedKeywords.Contains(ActionKeyword);
         }
     }
 }

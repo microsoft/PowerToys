@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(nameof(AllPluginsDisabled));
+            OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
             UpdateSettings();
         }
 
@@ -128,6 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     GeneralSettingsConfig.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
+                    OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -376,9 +377,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool AllPluginsDisabled
+        public bool ShowAllPluginsDisabledWarning
         {
-            get => Plugins.All(x => x.Disabled);
+            get => EnablePowerLauncher && Plugins.All(x => x.Disabled);
         }
     }
 }

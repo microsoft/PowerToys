@@ -184,7 +184,7 @@
             <TextBlock x:Uid="Run_AllPluginsDisabled"
                        FontSize="12"
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                       Visibility="{x:Bind ViewModel.AllPluginsDisabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Visibility="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                        TextWrapping="Wrap"
                        Margin="{StaticResource SmallTopMargin}"/>
 
@@ -241,6 +241,7 @@
 
                                 <Image Source="{x:Bind IconPath}"
                                        Width="36"
+                                       Opacity="{x:Bind DisabledOpacity, Mode=OneWay}"
                                        HorizontalAlignment="Left"
                                        VerticalAlignment="Top"
                                        Margin="12,0,12,0"
@@ -249,11 +250,13 @@
                                 <StackPanel Orientation="Vertical"
                                             Grid.Column="1" Margin="0,0,12,0">
                                     <TextBlock FontSize="18"
-                                               Text="{x:Bind Path=Name}" />
+                                               Text="{x:Bind Path=Name}"
+                                               Opacity="{x:Bind DisabledOpacity}"/>
                                     <TextBlock FontSize="12"
+                                               Opacity="{x:Bind DisabledOpacity}"
                                                Foreground="{ThemeResource SystemBaseMediumColor}"
                                                Text="{x:Bind Description}"
-                                               TextWrapping="Wrap" />
+                                               TextWrapping="Wrap"/>
                                     <TextBlock 
                                         x:Uid="Run_NotAccessibleWarning"
                                         FontSize="12"
@@ -278,26 +281,31 @@
 
                             <StackPanel Margin="60,24,0,24" x:Name="AdditionalInfoPanel" Visibility="Collapsed">
                                 <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
-                                          IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}" />
+                                          IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
+                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}"/>
 
                                 <TextBlock x:Uid="PowerLauncher_ActionKeyword"
                                            x:Name="ActionKeywordHeaderTextBlock"
-                                           Margin="{StaticResource SmallTopMargin}" />
+                                           Margin="{StaticResource SmallTopMargin}"
+                                           Opacity="{x:Bind DisabledOpacity}"/>
                                 <TextBox x:Uid="PowerLauncher_ActionKeyword"
                                          Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}"
                                          Width="86"
                                          Margin="0,6,0,0"
                                          AutomationProperties.LabeledBy="{Binding ElementName=ActionKeywordHeaderTextBlock}"
-                                         HorizontalAlignment="Left" />
+                                         HorizontalAlignment="Left"
+                                         IsEnabled="{x:Bind Enabled, Mode=OneWay}"/>
 
                                 <TextBlock x:Name="AdditionalOptionsTextBlock"
                                            x:Uid="Run_AdditionalOptions"
                                            Margin="{StaticResource SmallTopMargin}"
                                            Visibility="{x:Bind ShowAdditionalOptions, Converter={StaticResource BoolToVisibilityConverter}}"
-                                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+                                           Style="{StaticResource SettingsGroupTitleStyle}"
+                                           Opacity="{x:Bind DisabledOpacity}"/>
 
                                 <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
-                                          SelectionMode="None">
+                                          SelectionMode="None"
+                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                     <ListView.ItemContainerStyle>
                                         <Style TargetType="ListViewItem">
                                             <Setter Property="HorizontalContentAlignment"
@@ -317,6 +325,7 @@
                                 </ListView>
 
                                 <TextBlock FontSize="12"
+                                           Opacity="{x:Bind DisabledOpacity}"
                                            Foreground="{ThemeResource SystemBaseMediumColor}"
                                            HorizontalAlignment="Right"
                                            Margin="0,0,12,0">
