@@ -952,4 +952,31 @@
   <data name="Oobe_LearnMore.Text" xml:space="preserve">
     <value>Learn more about</value>
   </data>
+  <data name="Oobe_ColorPicker_Description" xml:space="preserve">
+    <value>ColorPicker is a system-wide color picking utility activated with Win+Shift+C. Pick colors from any currently running application, the picker automatically copies the color into your clipboard in a configurable format. Color Picker also contains an editor that shows a history of previously picked colors, allows you to fine-tune the selected color and to copy different string representations. This code is based on Martin Chrzan's Color Picker.</value>
+  </data>
+  <data name="Oobe_FancyZones_Description" xml:space="preserve">
+    <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
+  </data>
+  <data name="Oobe_FileExplorer_Description" xml:space="preserve">
+    <value>File Explorer add-ons enable preview pane rendering in File Explorer to display SVG icons (.svg) and Markdown (.md) file previews. To enable the preview pane, select the "View" tab in File Explorer, then select "Preview Pane".</value>
+  </data>
+  <data name="Oobe_ImageResizer_Description" xml:space="preserve">
+    <value>Image Resizer is a Windows Shell Extension for quickly resizing images. With a simple right click from File Explorer, resize one or many images instantly. This code is based on Brice Lambson's Image Resizer.</value>
+  </data>
+  <data name="Oobe_KBM_Description" xml:space="preserve">
+    <value>Keyboard Manager allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts. This PowerToy requires Windows 10 1903 (build 18362) or later.</value>
+  </data>
+  <data name="Oobe_PowerRename_Description" xml:space="preserve">
+    <value>PowerRename enables you to perform bulk renaming, searching and replacing file names. It includes advanced features, such as using regular expressions, targeting specific file types, previewing expected results, and the ability to undo changes. This code is based on Chris Davis's SmartRename.</value>
+  </data>
+  <data name="Oobe_PowerRun_Description" xml:space="preserve">
+    <value>PowerToys Run can help you search and launch your app instantly - just enter the shortcut Alt+Space and start typing. It is open source and modular for additional plugins. Window Walker is now included as well. This PowerToy requires Windows 10 1903 (build 18362) or later.</value>
+  </data>
+  <data name="Oobe_ShortcutGuide_Description" xml:space="preserve">
+    <value>Windows key shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.</value>
+  </data>
+  <data name="Oobe_VideoConference_Description" xml:space="preserve">
+    <value>Quickly mute your microphone (audio) and turn off your camera (video) while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
+  </data>
 </root>
