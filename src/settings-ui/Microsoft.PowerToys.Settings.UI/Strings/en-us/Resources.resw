@@ -1019,4 +1019,16 @@
   <data name="Oobe_VideoConference_Description" xml:space="preserve">
     <value>Quickly mute your microphone (audio) and turn off your camera (video) while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
   </data>
+  <data name="Oobe_Overview_CheckoutLatestVersion.Text" xml:space="preserve">
+    <value>For returning users, check out what is new on this latest version of</value>
+  </data>
+  <data name="Oobe_Overview_Description.Text" xml:space="preserve">
+    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity. Take a moment to preview the various utilities listed or view our comprehensive documentation on</value>
+  </data>
+  <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
+    <value>Microsoft Docs.</value>
+  </data>
+  <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
+    <value>PowerToys in our release notes.</value>
+  </data>
 </root>

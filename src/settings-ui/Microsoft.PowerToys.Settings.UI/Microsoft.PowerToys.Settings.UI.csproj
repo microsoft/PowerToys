@@ -129,6 +129,9 @@
     <Compile Include="OOBE\Views\OobeKBM.xaml.cs">
       <DependentUpon>OobeKBM.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OOBE\Views\OobeOverview.xaml.cs">
+      <DependentUpon>OobeOverview.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OOBE\Views\OobePowerRename.xaml.cs">
       <DependentUpon>OobePowerRename.xaml</DependentUpon>
     </Compile>
@@ -277,6 +280,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="OOBE\Views\OobeKBM.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeOverview.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

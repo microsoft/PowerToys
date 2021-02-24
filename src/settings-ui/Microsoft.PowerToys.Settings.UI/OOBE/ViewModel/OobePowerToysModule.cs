@@ -14,8 +14,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
 
         public string Image { get; set; }
 
-        public int NavIndex { get; set; }
-
         public string Icon { get; set; }
 
         public string FluentIcon { get; set; }
@@ -25,6 +23,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
         public string Description { get; set; }
 
         public string Link { get; set; }
+
+        public string DescriptionLink { get; set; }
 
         public OobePowerToysModule()
         {
@@ -41,12 +41,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             Tag = other.Tag;
             IsNew = other.IsNew;
             Image = other.Image;
-            NavIndex = other.NavIndex;
             Icon = other.Icon;
             FluentIcon = other.FluentIcon;
             PreviewImageSource = other.PreviewImageSource;
             Description = other.Description;
             Link = other.Link;
+            DescriptionLink = other.DescriptionLink;
         }
     }
 }
