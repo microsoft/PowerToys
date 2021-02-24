@@ -35,12 +35,23 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules = new ObservableCollection<OobePowerToysModule>();
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
 
+            Modules.Insert((int)PowerToysModulesEnum.Overview, new OobePowerToysModule()
+            {
+                ModuleName = "Overview",
+                Tag = "Overview",
+                IsNew = false,
+                Icon = "\uEF3C",
+                Image = "ms-appx:///Assets/Modules/ColorPicker.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/PowerToys.png",
+                PreviewImageSource = "https://github.com/microsoft/PowerToys/raw/master/doc/images/overview/PT%20hero%20image.png",
+                DescriptionLink = "https://aka.ms/PowerToysOverview",
+                Link = "https://github.com/microsoft/PowerToys/releases/",
+            });
             Modules.Insert((int)PowerToysModulesEnum.ColorPicker, new OobePowerToysModule()
             {
                 ModuleName = "Color Picker",
                 Tag = "ColorPicker",
                 IsNew = false,
-                NavIndex = 0,
                 Icon = "\uEF3C",
                 Image = "ms-appx:///Assets/Modules/ColorPicker.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png",
@@ -53,7 +64,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "FancyZones",
                 Tag = "FancyZones",
                 IsNew = false,
-                NavIndex = 1,
                 Icon = "\uE737",
                 Image = "ms-appx:///Assets/Modules/FancyZones.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png",
@@ -66,7 +76,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "ImageResizer",
                 Tag = "ImageResizer",
                 IsNew = false,
-                NavIndex = 2,
                 Icon = "\uEB9F",
                 Image = "ms-appx:///Assets/Modules/ImageResizer.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ImageResizer.png",
@@ -79,7 +88,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "Keyboard Manager",
                 Tag = "KBM",
                 IsNew = false,
-                NavIndex = 0,
                 Icon = "\uE765",
                 Image = "ms-appx:///Assets/Modules/KeyboardManager.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/KeyboardManager.png",
@@ -92,7 +100,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "PowerToys Run",
                 Tag = "Run",
                 IsNew = false,
-                NavIndex = 2,
                 Icon = "\uE773",
                 Image = "ms-appx:///Assets/Modules/PowerLauncher.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/PowerToysRun.png",
@@ -105,7 +112,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "PowerRename",
                 Tag = "PowerRename",
                 IsNew = false,
-                NavIndex = 2,
                 Icon = "\uE8AC",
                 Image = "ms-appx:///Assets/Modules/PowerRename.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/PowerRename.png",
@@ -118,7 +124,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "File explorer add-ons",
                 Tag = "FileExplorer",
                 IsNew = false,
-                NavIndex = 1,
                 Icon = "\uEC50",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/FileExplorerPreview.png",
                 Image = "ms-appx:///Assets/Modules/PowerPreview.png",
@@ -131,7 +136,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "Shortcut Guide",
                 Tag = "ShortcutGuide",
                 IsNew = false,
-                NavIndex = 0,
                 Icon = "\uEDA7",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ShortcutGuide.png",
                 Image = "ms-appx:///Assets/Modules/ShortcutGuide.png",
@@ -144,7 +148,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "Video Conference",
                 Tag = "VideoConference",
                 IsNew = true,
-                NavIndex = 1,
                 Icon = "\uEC50",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/VideoConferenceMute.png",
                 Image = "ms-appx:///Assets/Modules/VideoConference.png",
@@ -168,6 +171,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             OobePowerToysModule selectedItem = args.SelectedItem as OobePowerToysModule;
             switch (selectedItem.Tag)
             {
+                case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
                 case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
                 case "FancyZones": NavigationFrame.Navigate(typeof(OobeFancyZones)); break;
                 case "Run": NavigationFrame.Navigate(typeof(OobeRun)); break;
