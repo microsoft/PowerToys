@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,8 +13,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
         public bool IsNew { get; set; }
 
         public string Image { get; set; }
-
-        public int NavIndex { get; set; }
 
         public string Icon { get; set; }
 
@@ -41,7 +39,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             Tag = other.Tag;
             IsNew = other.IsNew;
             Image = other.Image;
-            NavIndex = other.NavIndex;
             Icon = other.Icon;
             FluentIcon = other.FluentIcon;
             PreviewImageSource = other.PreviewImageSource;
