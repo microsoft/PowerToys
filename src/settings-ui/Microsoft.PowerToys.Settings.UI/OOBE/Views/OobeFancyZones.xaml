@@ -27,22 +27,34 @@
                     <Run Text="{x:Bind ViewModel.ModuleName}"/>
                 </TextBlock>
             </HyperlinkButton>
-            <StackPanel Orientation="Horizontal"
-                        Margin="32,48,0,0"
-                        Spacing="4">
-                <Button Foreground="{ThemeResource SystemControlBackgroundAccentBrush}"
-                        VerticalAlignment="Bottom"
-                        HorizontalAlignment="Left"
-                        Style="{StaticResource TextBlockButtonStyle}">
-                    <StackPanel Orientation="Horizontal"
+
+            <TextBlock x:Uid="Oobe_HowToUse"
+                       Style="{StaticResource OobeSubtitleStyle}"/>
+            <TextBlock x:Uid="Oobe_FancyZones_HowToUse"
+                       Margin="32,0,32,0"
+                       TextWrapping="Wrap"
+                       Opacity="0.8" />
+
+            <TextBlock x:Uid="Oobe_TipsAndTricks"
+                       Style="{StaticResource OobeSubtitleStyle}"/>
+            <TextBlock x:Uid="Oobe_FancyZones_TipsAndTricks"
+                       Margin="32,0,32,0"
+                       TextWrapping="Wrap"
+                       Opacity="0.8" />
+
+            <Button Foreground="{ThemeResource SystemControlBackgroundAccentBrush}"
+                    Margin="32,48,0,0"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Left"
+                    Style="{StaticResource TextBlockButtonStyle}">
+                <StackPanel Orientation="Horizontal"
                                 Spacing="8">
-                        <TextBlock Text="&#xE115;"
+                    <TextBlock Text="&#xE115;"
                                    Margin="0,3,0,0"
                                    FontFamily="Segoe MDL2 Assets" />
-                        <TextBlock Text="Settings" />
-                    </StackPanel>
-                </Button>
-            </StackPanel>
+                    <TextBlock Text="Settings" />
+                </StackPanel>
+            </Button>
         </StackPanel>
     </Grid>
 </Page>

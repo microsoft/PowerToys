@@ -991,4 +991,68 @@
   <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
     <value>PowerToys in our release notes.</value>
   </data>
+  <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
+    <value>Win + Shift + C to open the Color Picker.</value>
+  </data>
+  <data name="Oobe_ColorPicker_TipsAndTricks.Text" xml:space="preserve">
+    <value>To select a color with more precision, scrolling the mouse wheel to zoom in.</value>
+  </data>
+  <data name="Oobe_FancyZones_HowToUse.Text" xml:space="preserve">
+    <value>Shift + drag while dragging the window to snap a window to a zone, and release the window in the desired zone.
+Win + ` to open the FancyZones editor.</value>
+  </data>
+  <data name="Oobe_FancyZones_TipsAndTricks.Text" xml:space="preserve">
+    <value>Snap a window to multiple zones by holding the Ctrl key (while also holding Shift) when dragging a window.</value>
+  </data>
+  <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
+    <value>Open Windows File Explorer, select the View tab in the File Explorer ribbon, then select Preview Pane. 
+From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!</value>
+  </data>
+  <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
+    <value>How to create mappings</value>
+  </data>
+  <data name="Oobe_HowToEnable.Text" xml:space="preserve">
+    <value>How to enable</value>
+  </data>
+  <data name="Oobe_HowToLaunch.Text" xml:space="preserve">
+    <value>How to Launch</value>
+  </data>
+  <data name="Oobe_HowToUse.Text" xml:space="preserve">
+    <value>How to use</value>
+  </data>
+  <data name="Oobe_ImageResizer_HowToLaunch.Text" xml:space="preserve">
+    <value>In File Explorer, right-clicking one or more image files and clicking on Resize pictures from the context menu.</value>
+  </data>
+  <data name="Oobe_ImageResizer_TipsAndTricks.Text" xml:space="preserve">
+    <value>Want a custom size? You can add them in the PowerToys Settings!</value>
+  </data>
+  <data name="Oobe_KBM_HowToCreateMappings.Text" xml:space="preserve">
+    <value>Launch PowerToys settings, navigate to the Keyboard Manager menu, and select either Remap a key or Remap a shortcut.</value>
+  </data>
+  <data name="Oobe_KBM_TipsAndTricks.Text" xml:space="preserve">
+    <value>Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.</value>
+  </data>
+  <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
+    <value>In File Explorer, right-clicking one or more selected files and clicking on PowerRename from the context menu.</value>
+  </data>
+  <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
+    <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
+  </data>
+  <data name="Oobe_Run_HowToLaunch.Text" xml:space="preserve">
+    <value>Alt + Space to open PowerToys and just start typing.</value>
+  </data>
+  <data name="Oobe_Run_TipsAndTricks.Text" xml:space="preserve">
+    <value>PowerToys runs supports various action keys to funnel search queries for a specific subset of results. Typing &lt; searches for running processes only, ? will search only for file, or . for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
+  </data>
+  <data name="Oobe_ShortcutGuide_HowToLaunch.Text" xml:space="preserve">
+    <value>Win + ? to open Shortcut Guide. You can also launch it by holding the Win key for one second!</value>
+  </data>
+  <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
+    <value>Tips and Tricks</value>
+  </data>
+  <data name="Oobe_VideoConference_HowToLaunch.Text" xml:space="preserve">
+    <value>Win + N to toggle both your microphone and video 
+Win + Shift + A to toggle your microphone 
+Win + Shift + O to toggle your video</value>
+  </data>
 </root>
