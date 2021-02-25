@@ -938,15 +938,15 @@
     <value>Editor</value>
   </data>
   <data name="FancyZones_OverlappingZonesLargest.Content" xml:space="preserve">
-    <value>Largest zone by area</value>
+    <value>Activate the largest zone by area</value>
   </data>
   <data name="FancyZones_OverlappingZonesPositional.Content" xml:space="preserve">
-    <value>Select a zone based on position inside overlap</value>
+    <value>Split the overlapped area into multiple activation targets</value>
   </data>
   <data name="FancyZones_OverlappingZonesSmallest.Content" xml:space="preserve">
-    <value>Smallest zone by area</value>
+    <value>Activate the smallest zone by area</value>
   </data>
   <data name="FancyZones_OverlappingZonesLabel.Text" xml:space="preserve">
-    <value>When multiple zones overlap, choose which zone gets highlighted:</value>
+    <value>When multiple zones overlap:</value>
   </data>
 </root>
