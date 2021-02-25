@@ -136,5 +136,13 @@ namespace PowerToys.Settings
         {
             inst = (Window)sender;
         }
+
+        private void MainWindow_Activated(object sender, EventArgs e)
+        {
+            if (((Window)sender).Visibility == Visibility.Hidden)
+            {
+                ((Window)sender).Visibility = Visibility.Visible;
+            }
+        }
     }
 }
