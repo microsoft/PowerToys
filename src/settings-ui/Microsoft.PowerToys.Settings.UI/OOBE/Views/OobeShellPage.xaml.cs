@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             Modules.Insert((int)PowerToysModulesEnum.Overview, new OobePowerToysModule()
             {
-                ModuleName = "Overview",
+                ModuleName = "Welcome to PowerToys",
                 Tag = "Overview",
                 IsNew = false,
                 Icon = "\uEF3C",
@@ -121,7 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
             {
-                ModuleName = "File explorer add-ons",
+                ModuleName = "File Explorer add-ons",
                 Tag = "FileExplorer",
                 IsNew = false,
                 Icon = "\uEC50",
@@ -166,7 +166,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         }
 
         [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
-        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             OobePowerToysModule selectedItem = args.SelectedItem as OobePowerToysModule;
             switch (selectedItem.Tag)
