@@ -1057,35 +1057,45 @@ Win + Shift + O to toggle your video</value>
   </data>
   <data name="Oobe_ColorPicker" xml:space="preserve">
     <value>Color Picker</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_FancyZones" xml:space="preserve">
     <value>FancyZones</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_FileExplorer" xml:space="preserve">
     <value>File Explorer add-ons</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_ImageResizer" xml:space="preserve">
     <value>ImageResizer</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_KBM" xml:space="preserve">
     <value>Keyboard Manager</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Overview" xml:space="preserve">
     <value>Overview</value>
   </data>
   <data name="Oobe_PowerRename" xml:space="preserve">
     <value>PowerRename</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Run" xml:space="preserve">
     <value>PowerToys Run</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_ShortcutGuide" xml:space="preserve">
     <value>Shortcut Guide</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_VideoConference" xml:space="preserve">
     <value>Video Conference</value>
+    <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Welcome" xml:space="preserve">
     <value>Welcome to PowerToys</value>
+    <comment>Do not localize 'PowerToys'</comment>
   </data>
 </root>
