@@ -406,7 +406,8 @@ void ZoneWindow::CalculateZoneSet() noexcept
             zoneSetId,
             activeZoneSet.type,
             m_monitor,
-            sensitivityRadius));
+            sensitivityRadius,
+            m_host->GetOverlappingZonesAlgorithm()));
 
         RECT workArea;
         if (m_monitor)

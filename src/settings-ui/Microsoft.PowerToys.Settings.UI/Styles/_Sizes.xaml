@@ -19,4 +19,7 @@
 
     <!-- MaxWidth of the content panel, similar to W10 Settings -->
     <x:Double x:Key="MaxContentWidth">460</x:Double>
+
+    <!-- Maximum Width of a combo box inside the content panel -->
+    <x:Double x:Key="MaxComboBoxWidth">444</x:Double>
 </ResourceDictionary>

@@ -937,4 +937,16 @@
   <data name="ColorPicker_Editor.Text" xml:space="preserve">
     <value>Editor</value>
   </data>
+  <data name="FancyZones_OverlappingZonesLargest.Content" xml:space="preserve">
+    <value>Activate the largest zone by area</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesPositional.Content" xml:space="preserve">
+    <value>Split the overlapped area into multiple activation targets</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesSmallest.Content" xml:space="preserve">
+    <value>Activate the smallest zone by area</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesLabel.Text" xml:space="preserve">
+    <value>When multiple zones overlap:</value>
+  </data>
 </root>

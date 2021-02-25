@@ -257,14 +257,16 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
 
         try
         {
+            using Algorithm = Settings::OverlappingZonesAlgorithm;
+
             switch (m_config.SelectionAlgorithm)
             {
-            case ZoneSelectionAlgorithm::SUBREGION:
-                return ZoneSelectSubregion(capturedZones, pt);
-            case ZoneSelectionAlgorithm::SMALLEST:
+            case Algorithm::Smallest:
                 return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zoneArea(zone1) < zoneArea(zone2); });
-            case ZoneSelectionAlgorithm::LARGEST:
+            case Algorithm::Largest:
                 return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zoneArea(zone1) > zoneArea(zone2); });
+            case Algorithm::Positional:
+                return ZoneSelectSubregion(capturedZones, pt);
             }
         }
         catch (std::out_of_range)
