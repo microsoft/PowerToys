@@ -27,6 +27,21 @@
                     <Run Text="{x:Bind ViewModel.ModuleName}"/>
                 </TextBlock>
             </HyperlinkButton>
+
+            <TextBlock x:Uid="Oobe_HowToLaunch"
+                       Style="{StaticResource OobeSubtitleStyle}"/>
+            <TextBlock x:Uid="Oobe_Run_HowToLaunch"
+                       Margin="32,0,32,0"
+                       TextWrapping="Wrap"
+                       Opacity="0.8" />
+
+            <TextBlock x:Uid="Oobe_TipsAndTricks"
+                       Style="{StaticResource OobeSubtitleStyle}"/>
+            <TextBlock x:Uid="Oobe_Run_TipsAndTricks"
+                       Margin="32,0,32,0"
+                       TextWrapping="Wrap"
+                       Opacity="0.8" />
+            
             <StackPanel Orientation="Horizontal"
                         Margin="32,48,0,0"
                         Spacing="4">

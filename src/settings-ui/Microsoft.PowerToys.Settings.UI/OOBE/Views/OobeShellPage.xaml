@@ -34,7 +34,7 @@
             <winui:NavigationView.PaneCustomContent>
                 <StackPanel Grid.Column="0" Margin="16"
                             Orientation="Vertical">
-                    <TextBlock x:Uid="Oobe_Welcome"
+                    <TextBlock x:Uid="Oobe_GettingStarted"
                                TextWrapping="Wrap"
                                FontWeight="SemiBold"
                                FontSize="24"
