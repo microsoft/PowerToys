@@ -1154,19 +1154,19 @@ Win + Shift + O to toggle your video</value>
   <data name="Position_GroupSettings.Text" xml:space="preserve">
     <value>Position</value>
   </data>
-  <data name="PowerToys_Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
+  <data name="Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
     <value>Position &amp; appearance</value>
   </data>
-  <data name="PowerToysRun_PositionHeader.Text" xml:space="preserve">
+  <data name="Run_PositionHeader.Text" xml:space="preserve">
     <value>Show PowerToys Run on</value>
   </data>
-  <data name="Radio_Position_Cursor.Content" xml:space="preserve">
+  <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
     <value>Monitor with mouse cursor</value>
   </data>
-  <data name="Radio_Position_Focus.Content" xml:space="preserve">
+  <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
     <value>Monitor with focused window</value>
   </data>
-  <data name="Radio_Position_Primary.Content" xml:space="preserve">
+  <data name="Run_Radio_Position_Primary.Content" xml:space="preserve">
     <value>Primary monitor</value>
   </data>
 </root>
