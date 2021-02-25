@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
