@@ -975,6 +975,6 @@
     <value>This activation phrase overrides the behavior of other plugins. Please change it to something else.</value>
   </data>
   <data name="Run_PluginUseDescription.Text" xml:space="preserve">
-    <value>You can include or remove each plugin from the global results, change the  direct activation phrase and configure additional options.</value>
+    <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options.</value>
   </data>
 </root>
