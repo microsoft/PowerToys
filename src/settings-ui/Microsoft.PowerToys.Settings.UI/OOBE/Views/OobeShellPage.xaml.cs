@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             Modules.Insert((int)PowerToysModulesEnum.Overview, new OobePowerToysModule()
             {
-                ModuleName = "Welcome to PowerToys",
+                ModuleName = loader.GetString("Oobe_Welcome"),
                 Tag = "Overview",
                 IsNew = false,
                 Icon = "\uEF3C",
@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.ColorPicker, new OobePowerToysModule()
             {
-                ModuleName = "Color Picker",
+                ModuleName = loader.GetString("Oobe_ColorPicker"),
                 Tag = "ColorPicker",
                 IsNew = false,
                 Icon = "\uEF3C",
@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.FancyZones, new OobePowerToysModule()
             {
-                ModuleName = "FancyZones",
+                ModuleName = loader.GetString("Oobe_FancyZones"),
                 Tag = "FancyZones",
                 IsNew = false,
                 Icon = "\uE737",
@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.ImageResizer, new OobePowerToysModule()
             {
-                ModuleName = "ImageResizer",
+                ModuleName = loader.GetString("Oobe_ImageResizer"),
                 Tag = "ImageResizer",
                 IsNew = false,
                 Icon = "\uEB9F",
@@ -85,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.KBM, new OobePowerToysModule()
             {
-                ModuleName = "Keyboard Manager",
+                ModuleName = loader.GetString("Oobe_KBM"),
                 Tag = "KBM",
                 IsNew = false,
                 Icon = "\uE765",
@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.Run, new OobePowerToysModule()
             {
-                ModuleName = "PowerToys Run",
+                ModuleName = loader.GetString("Oobe_Run"),
                 Tag = "Run",
                 IsNew = false,
                 Icon = "\uE773",
@@ -109,7 +109,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.PowerRename, new OobePowerToysModule()
             {
-                ModuleName = "PowerRename",
+                ModuleName = loader.GetString("Oobe_PowerRename"),
                 Tag = "PowerRename",
                 IsNew = false,
                 Icon = "\uE8AC",
@@ -121,7 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
             {
-                ModuleName = "File Explorer add-ons",
+                ModuleName = loader.GetString("Oobe_FileExplorer"),
                 Tag = "FileExplorer",
                 IsNew = false,
                 Icon = "\uEC50",
@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.ShortcutGuide, new OobePowerToysModule()
             {
-                ModuleName = "Shortcut Guide",
+                ModuleName = loader.GetString("Oobe_ShortcutGuide"),
                 Tag = "ShortcutGuide",
                 IsNew = false,
                 Icon = "\uEDA7",
@@ -145,7 +145,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
-                ModuleName = "Video Conference",
+                ModuleName = loader.GetString("Oobe_VideoConference"),
                 Tag = "VideoConference",
                 IsNew = true,
                 Icon = "\uEC50",
