@@ -55,6 +55,7 @@
 #define NumberOfZonesKey "NumberOfZones"
 #define NumberOfWindowsKey "NumberOfWindows"
 #define InputModeKey "InputMode"
+#define OverlappingZonesAlgorithmKey "OverlappingZonesAlgorithm"
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
@@ -260,6 +261,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingWideString(settings.zoneBorderColor.c_str(), ZoneBorderColorKey),
         TraceLoggingWideString(settings.zoneHighlightColor.c_str(), ZoneHighlightColorKey),
         TraceLoggingInt32(settings.zoneHighlightOpacity, ZoneHighlightOpacityKey),
+        TraceLoggingInt32((int)settings.overlappingZonesAlgorithm, OverlappingZonesAlgorithmKey),
         TraceLoggingWideString(hotkeyStr.c_str(), HotkeyKey),
         TraceLoggingInt32(static_cast<int>(settings.excludedAppsArray.size()), ExcludedAppsCountKey));
 }
