@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             Modules.Insert((int)PowerToysModulesEnum.Overview, new OobePowerToysModule()
             {
-                ModuleName = "Welcome to PowerToys",
+                ModuleName = loader.GetString("Oobe_Welcome"),
                 Tag = "Overview",
                 IsNew = false,
                 Icon = "\uEF3C",
@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
             Modules.Insert((int)PowerToysModulesEnum.ColorPicker, new OobePowerToysModule()
             {
-                ModuleName = "Color Picker",
+                ModuleName = loader.GetString("Oobe_ColorPicker"),
                 Tag = "ColorPicker",
                 IsNew = false,
                 Icon = "\uEF3C",
@@ -57,11 +57,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ColorPicker.png",
                 PreviewImageSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/colorpicker/ColorPicking.gif",
                 Description = loader.GetString("Oobe_ColorPicker_Description"),
-                Link = "https://docs.microsoft.com/en-us/windows/powertoys/color-picker",
+                Link = "https://aka.ms/PowerToysOverview_ColorPicker",
             });
             Modules.Insert((int)PowerToysModulesEnum.FancyZones, new OobePowerToysModule()
             {
-                ModuleName = "FancyZones",
+                ModuleName = loader.GetString("Oobe_FancyZones"),
                 Tag = "FancyZones",
                 IsNew = false,
                 Icon = "\uE737",
@@ -69,11 +69,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 FluentIcon = "ms-appx:///Assets/FluentIcons/FancyZones.png",
                 PreviewImageSource = "https://user-images.githubusercontent.com/9866362/101410242-5b90a280-38df-11eb-834a-8365453b8429.gif",
                 Description = loader.GetString("Oobe_FancyZones_Description"),
-                Link = "https://docs.microsoft.com/en-us/windows/powertoys/fancyzones",
+                Link = "https://aka.ms/PowerToysOverview_FancyZones",
             });
             Modules.Insert((int)PowerToysModulesEnum.ImageResizer, new OobePowerToysModule()
             {
-                ModuleName = "ImageResizer",
+                ModuleName = loader.GetString("Oobe_ImageResizer"),
                 Tag = "ImageResizer",
                 IsNew = false,
                 Icon = "\uEB9F",
@@ -81,11 +81,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 FluentIcon = "ms-appx:///Assets/FluentIcons/ImageResizer.png",
                 Description = loader.GetString("Oobe_ImageResizer_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-resize-images.gif",
-                Link = "https://docs.microsoft.com/en-us/windows/powertoys/image-resizer",
+                Link = "https://aka.ms/PowerToysOverview_ImageResizer",
             });
             Modules.Insert((int)PowerToysModulesEnum.KBM, new OobePowerToysModule()
             {
-                ModuleName = "Keyboard Manager",
+                ModuleName = loader.GetString("Oobe_KBM"),
                 Tag = "KBM",
                 IsNew = false,
                 Icon = "\uE765",
@@ -93,11 +93,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 FluentIcon = "ms-appx:///Assets/FluentIcons/KeyboardManager.png",
                 Description = loader.GetString("Oobe_KBM_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-keyboard-remap-a-b.png",
-                Link = "https://docs.microsoft.com/en-us/windows/powertoys/keyboard-manager",
+                Link = "https://aka.ms/PowerToysOverview_KeyboardManager",
             });
             Modules.Insert((int)PowerToysModulesEnum.Run, new OobePowerToysModule()
             {
-                ModuleName = "PowerToys Run",
+                ModuleName = loader.GetString("Oobe_Run"),
                 Tag = "Run",
                 IsNew = false,
                 Icon = "\uE773",
@@ -105,11 +105,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 FluentIcon = "ms-appx:///Assets/FluentIcons/PowerToysRun.png",
                 PreviewImageSource = "https://raw.githubusercontent.com/wiki/microsoft/PowerToys/images/Launcher/QuickStart.gif",
                 Description = loader.GetString("Oobe_PowerRun_Description"),
-                Link = "https://docs.microsoft.com/en-us/windows/powertoys/run",
+                Link = "https://aka.ms/PowerToysOverview_PowerToysRun",
             });
             Modules.Insert((int)PowerToysModulesEnum.PowerRename, new OobePowerToysModule()
             {
-                ModuleName = "PowerRename",
+                ModuleName = loader.GetString("Oobe_PowerRename"),
                 Tag = "PowerRename",
                 IsNew = false,
                 Icon = "\uE8AC",
@@ -117,11 +117,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 FluentIcon = "ms-appx:///Assets/FluentIcons/PowerRename.png",
                 Description = loader.GetString("Oobe_PowerRename_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powerrename-demo.gif",
-                Link = "https://docs.microsoft.com/en-us/windows/powertoys/powerrename",
+                Link = "https://aka.ms/PowerToysOverview_PowerRename",
             });
             Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
             {
-                ModuleName = "File Explorer add-ons",
+                ModuleName = loader.GetString("Oobe_FileExplorer"),
                 Tag = "FileExplorer",
                 IsNew = false,
                 Icon = "\uEC50",
@@ -129,11 +129,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Image = "ms-appx:///Assets/Modules/PowerPreview.png",
                 Description = loader.GetString("Oobe_FileExplorer_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/powertoys-fileexplorer.gif",
-                Link = "https://docs.microsoft.com/en-us/windows/powertoys/file-explorer",
+                Link = "https://aka.ms/PowerToysOverview_FileExplorerAddOns",
             });
             Modules.Insert((int)PowerToysModulesEnum.ShortcutGuide, new OobePowerToysModule()
             {
-                ModuleName = "Shortcut Guide",
+                ModuleName = loader.GetString("Oobe_ShortcutGuide"),
                 Tag = "ShortcutGuide",
                 IsNew = false,
                 Icon = "\uEDA7",
@@ -141,11 +141,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Image = "ms-appx:///Assets/Modules/ShortcutGuide.png",
                 Description = loader.GetString("Oobe_ShortcutGuide_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/pt-shortcut-guide-large.png",
-                Link = "https://docs.microsoft.com/en-us/windows/powertoys/shortcut-guide",
+                Link = "https://aka.ms/PowerToysOverview_ShortcutGuide",
             });
-            Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
+            /*Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
-                ModuleName = "Video Conference",
+                ModuleName = loader.GetString("Oobe_VideoConference"),
                 Tag = "VideoConference",
                 IsNew = true,
                 Icon = "\uEC50",
@@ -153,8 +153,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Image = "ms-appx:///Assets/Modules/VideoConference.png",
                 Description = loader.GetString("Oobe_VideoConference_Description"),
                 PreviewImageSource = "https://docs.microsoft.com/en-us/windows/images/pt-video-conference-mute-settings.png",
-                Link = "https://docs.microsoft.com/en-us/windows/powertoys/video-conference-mute",
-            });
+                Link = "https://aka.ms/PowerToysOverview_VideoConference",
+            });*/
         }
 
         private void UserControl_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
