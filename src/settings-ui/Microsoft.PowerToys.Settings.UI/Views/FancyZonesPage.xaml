@@ -129,23 +129,16 @@
                        Margin="{StaticResource SmallTopMargin}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <RadioButton x:Uid="FancyZones_OverlappingZonesSmallest"
-                         GroupName="FancyZones_OverlappingZonesGroup"
-                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverlappingZonesSmallest}"
-                         Margin="24,8,0,0"
-                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-
-            <RadioButton x:Uid="FancyZones_OverlappingZonesLargest"
-                         GroupName="FancyZones_OverlappingZonesGroup"
-                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverlappingZonesLargest}"
-                         Margin="24,8,0,0"
-                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-
-            <RadioButton x:Uid="FancyZones_OverlappingZonesPositional"
-                         GroupName="FancyZones_OverlappingZonesGroup"
-                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverlappingZonesPositional}"
-                         Margin="24,8,0,0"
-                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <ComboBox Name="FancyZones_OverlappingZonesComboBox"
+                      x:Uid="FancyZones_OverlappingZonesComboBox"
+                      SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}"
+                      VerticalAlignment="Center"
+                      Width="{StaticResource MaxComboBoxWidth}"
+                      Margin="{StaticResource SmallTopMargin}">
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesLargest" />
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesPositional" />
+            </ComboBox>
 
             <TextBlock x:Uid="FancyZones_WindowBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"

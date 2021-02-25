@@ -266,55 +266,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool OverlappingZonesSmallest
+        public int OverlappingZonesAlgorithmIndex
         {
             get
             {
-                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.Smallest;
+                return (int)_overlappingZonesAlgorithm;
             }
 
             set
             {
-                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.Smallest)
+                if (value != (int)_overlappingZonesAlgorithm)
                 {
-                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.Smallest;
-                    Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value = (int)OverlappingZonesAlgorithm.Smallest;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public bool OverlappingZonesLargest
-        {
-            get
-            {
-                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.Largest;
-            }
-
-            set
-            {
-                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.Largest)
-                {
-                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.Largest;
-                    Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value = (int)OverlappingZonesAlgorithm.Largest;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public bool OverlappingZonesPositional
-        {
-            get
-            {
-                return _overlappingZonesAlgorithm == OverlappingZonesAlgorithm.Positional;
-            }
-
-            set
-            {
-                if (value && _overlappingZonesAlgorithm != OverlappingZonesAlgorithm.Positional)
-                {
-                    _overlappingZonesAlgorithm = OverlappingZonesAlgorithm.Positional;
-                    Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value = (int)OverlappingZonesAlgorithm.Positional;
+                    _overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)value;
+                    Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value = value;
                     NotifyPropertyChanged();
                 }
             }
