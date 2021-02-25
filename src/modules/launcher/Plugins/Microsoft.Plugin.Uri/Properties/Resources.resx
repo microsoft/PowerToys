@@ -121,10 +121,10 @@
     <value>Failed to open URL</value>
   </data>
   <data name="Microsoft_plugin_uri_plugin_description" xml:space="preserve">
-    <value>Opens URLs in your default browser</value>
+    <value>Opens URLs and UNC network shares</value>
   </data>
   <data name="Microsoft_plugin_uri_plugin_name" xml:space="preserve">
-    <value>URL Handler</value>
+    <value>URI Handler</value>
   </data>
   <data name="Microsoft_plugin_uri_website" xml:space="preserve">
     <value>Open in browser</value>
