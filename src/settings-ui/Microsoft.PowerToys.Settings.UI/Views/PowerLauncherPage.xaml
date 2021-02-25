@@ -7,8 +7,6 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
@@ -190,6 +188,7 @@
 
             <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
                       IsItemClickEnabled="True"
+                      SelectionChanged="PluginsListView_SelectionChanged"
                       x:Name="PluginsListView"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
                       Margin="-12,12,0,0">
@@ -215,23 +214,6 @@
                     <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
                         <StackPanel Orientation="Vertical" Background="Transparent"
                                     Padding="0,12,0,12">
-                            <Interactivity:Interaction.Behaviors>
-
-                                <Core:DataTriggerBehavior Binding="{Binding ElementName=PluginsListView, Path=SelectedItem.Id, Mode=OneWay}"
-                                                          Value="{Binding Id}"
-                                                          ComparisonCondition="Equal">
-                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=AdditionalInfoPanel}"
-                                                               PropertyName="Visibility"
-                                                               Value="Visible" />
-                                </Core:DataTriggerBehavior>
-                                <Core:DataTriggerBehavior Binding="{Binding ElementName=PluginsListView, Path=SelectedItem.Id, Mode=OneWay}"
-                                                          Value="{Binding Id}"
-                                                          ComparisonCondition="NotEqual">
-                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=AdditionalInfoPanel}"
-                                                               PropertyName="Visibility"
-                                                               Value="Collapsed" />
-                                </Core:DataTriggerBehavior>
-                            </Interactivity:Interaction.Behaviors>
                             <Grid ColumnSpacing="0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="60" />
@@ -279,7 +261,9 @@
                                               Grid.Column="2" />
                             </Grid>
 
-                            <StackPanel Margin="60,24,0,24" x:Name="AdditionalInfoPanel" Visibility="Collapsed">
+                            <StackPanel Margin="60,24,0,24" 
+                                        x:Name="AdditionalInfoPanel" 
+                                        Visibility="{x:Bind ShowAdditionalInfoPanel, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"/>
