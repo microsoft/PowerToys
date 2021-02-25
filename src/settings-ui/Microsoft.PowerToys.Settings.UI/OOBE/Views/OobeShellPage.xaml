@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:localModels="using:Microsoft.PowerToys.Settings.UI.OOBE.ViewModel"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,187 +11,45 @@
     Loaded="UserControl_Loaded">
 
     <UserControl.Resources>
-        <Style x:Key="NavigationViewItemPresenterStyleWhenOnLeftPane" TargetType="NavigationViewItemPresenter">
-            <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}"/>
-            <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}"/>
-            <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}"/>
-            <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}"/>
-            <Setter Property="UseSystemFocusVisuals" Value="True"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="NavigationViewItemPresenter">
-                        <Grid x:Name="LayoutRoot" Background="{TemplateBinding Background}" Height="56" Control.IsTemplateFocusTarget="True">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="PointerStates">
-                                    <VisualState x:Name="Normal"/>
-                                    <VisualState x:Name="PointerOver">
-                                        <VisualState.Setters>
-                                            <Setter Target="LayoutRoot.(RevealBrush.State)" Value="PointerOver"/>
-                                            <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}"/>
-                                            <Setter Target="RevealBorder.BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrushPointerOver}"/>
-                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewItemForegroundPointerOver}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="Pressed">
-                                        <VisualState.Setters>
-                                            <Setter Target="LayoutRoot.(RevealBrush.State)" Value="Pressed"/>
-                                            <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewItemBackgroundPressed}"/>
-                                            <Setter Target="RevealBorder.BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrushPressed}"/>
-                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewItemForegroundPressed}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="Selected">
-                                        <VisualState.Setters>
-                                            <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewItemBackgroundSelected}"/>
-                                            <Setter Target="RevealBorder.BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrushSelected}"/>
-                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewItemForegroundSelected}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="PointerOverSelected">
-                                        <VisualState.Setters>
-                                            <Setter Target="LayoutRoot.(RevealBrush.State)" Value="PointerOver"/>
-                                            <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewItemBackgroundSelectedPointerOver}"/>
-                                            <Setter Target="RevealBorder.BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrushSelectedPointerOver}"/>
-                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewItemForegroundSelectedPointerOver}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="PressedSelected">
-                                        <VisualState.Setters>
-                                            <Setter Target="LayoutRoot.(RevealBrush.State)" Value="Pressed"/>
-                                            <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewItemBackgroundSelectedPressed}"/>
-                                            <Setter Target="RevealBorder.BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrushSelectedPressed}"/>
-                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewItemForegroundSelectedPressed}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                                <VisualStateGroup x:Name="DisabledStates">
-                                    <VisualState x:Name="Enabled"/>
-                                    <VisualState x:Name="Disabled">
-                                        <VisualState.Setters>
-                                            <Setter Target="RevealBorder.BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrushCheckedDisabled}"/>
-                                            <Setter Target="LayoutRoot.Opacity" Value="{ThemeResource ListViewItemDisabledThemeOpacity}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                                <VisualStateGroup x:Name="IconStates">
-                                    <VisualState x:Name="IconVisible"/>
-                                    <VisualState x:Name="IconCollapsed">
-                                        <VisualState.Setters>
-                                            <Setter Target="IconBox.Visibility" Value="Collapsed"/>
-                                            <Setter Target="IconColumn.Width" Value="16"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                            <Grid HorizontalAlignment="Left" Margin="4,0,0,0" VerticalAlignment="Center">
-                                <Rectangle x:Name="SelectionIndicator" Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}" Margin="16,0,0,0" Height="24" Opacity="0.0" Width="2"/>
-                            </Grid>
-                            <Border x:Name="RevealBorder" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}"/>
-                            <Grid x:Name="ContentGrid" HorizontalAlignment="Left" Height="56">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition x:Name="IconColumn" Width="74"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Viewbox x:Name="IconBox" Width="24" HorizontalAlignment="Right" Margin="{ThemeResource NavigationViewItemIconBoxMargin}">
-                                    <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}"/>
-                                </Viewbox>
-                                <ContentPresenter x:Name="ContentPresenter" FontWeight="SemiBold" AutomationProperties.AccessibilityView="Raw" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                            </Grid>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="NavigationViewItemStyle1" TargetType="NavigationViewItem">
-            <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}"/>
-            <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}"/>
-            <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}"/>
-            <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}"/>
-            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
-            <Setter Property="FontWeight" Value="Normal"/>
-            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
-            <Setter Property="UseSystemFocusVisuals" Value="True"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="NavigationViewItem">
-                        <NavigationViewItemPresenter x:Name="NavigationViewItemPresenter" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Icon="{TemplateBinding Icon}" IsTabStop="False" Margin="{TemplateBinding Margin}" Padding="{TemplateBinding Padding}" UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}" VerticalAlignment="{TemplateBinding VerticalAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="ItemOnNavigationViewListPositionStates">
-                                    <VisualState x:Name="OnLeftNavigation">
-                                        <VisualState.Setters>
-                                            <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnLeftPane}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="OnLeftNavigationReveal">
-                                        <VisualState.Setters>
-                                            <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="OnTopNavigationPrimary">
-                                        <VisualState.Setters>
-                                            <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnTopPane}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="OnTopNavigationPrimaryReveal">
-                                        <VisualState.Setters>
-                                            <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="OnTopNavigationOverflow">
-                                        <VisualState.Setters>
-                                            <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnTopPaneOverflow}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                        </NavigationViewItemPresenter>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
 
         <DataTemplate x:Key="NavigationViewMenuItem" x:DataType="localModels:OobePowerToysModule">
-            <NavigationViewItem Content="{x:Bind ModuleName}" Tag="{x:Bind Tag}" Style="{StaticResource NavigationViewItemStyle1}">
-                <NavigationViewItem.Icon>
+            <winui:NavigationViewItem Content="{x:Bind ModuleName}" Tag="{x:Bind Tag}">
+                <winui:NavigationViewItem.Icon>
                     <BitmapIcon UriSource="{x:Bind FluentIcon}" ShowAsMonochrome="False"/>
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
+                </winui:NavigationViewItem.Icon>
+            </winui:NavigationViewItem>
         </DataTemplate>
     </UserControl.Resources>
     
     <Grid>
-        <NavigationView IsSettingsVisible="False"
+        <winui:NavigationView IsSettingsVisible="False"
                         IsPaneToggleButtonVisible="False"
                         IsPaneOpen="True"
                         x:Name="NavigationView"
-                        OpenPaneLength="386"
+                        OpenPaneLength="296"
                         SelectionChanged="NavigationView_SelectionChanged"
                         IsBackButtonVisible="Collapsed"
                         MenuItemsSource="{x:Bind Modules, Mode=OneTime}"
                         MenuItemTemplate="{StaticResource NavigationViewMenuItem}">
-            <NavigationView.PaneCustomContent>
-                <StackPanel Grid.Column="0" Margin="0,0,0,48"
+            <winui:NavigationView.PaneCustomContent>
+                <StackPanel Grid.Column="0" Margin="16"
                             Orientation="Vertical">
                     <TextBlock x:Uid="Oobe_Welcome"
+                               TextWrapping="Wrap"
                                FontWeight="SemiBold"
                                FontSize="24"
-                               Margin="32,32,32,16" />
+                               Margin="0,0,0,16" />
                     <TextBlock x:Uid="Oobe_PowerToysDescription"
-                               Margin="32,0,32,0"
-                               TextWrapping="Wrap"
-                               Opacity="0.8" />
+                               TextWrapping="Wrap" 
+                               Margin="0, 0, 0, 8"/>
                     <TextBlock x:Uid="Oobe_GetStarted"
-                               Margin="32,8,32,0"
-                               TextWrapping="Wrap"
-                               Opacity="0.8" />
+                               Margin="0,8,0,0"
+                               TextWrapping="Wrap" />
                 </StackPanel>
-            </NavigationView.PaneCustomContent>
-            <NavigationView.Content>
-                <Frame x:Name="NavigationFrame" Margin="0,-32,0,0" />
-            </NavigationView.Content>
-        </NavigationView>
+            </winui:NavigationView.PaneCustomContent>
+            <winui:NavigationView.Content>
+                <Frame x:Name="NavigationFrame" />
+            </winui:NavigationView.Content>
+        </winui:NavigationView>
     </Grid>
 </UserControl>

@@ -981,10 +981,10 @@
     <value>Let's get started!</value>
   </data>
   <data name="Oobe_PowerToysDescription.Text" xml:space="preserve">
-    <value>PowerToys is a collection of tools that will transform the way you use Windows.</value>
+    <value>Welcome to PowerToys!  These overviews will help you quickly learn the basics of all our utilities.</value>
   </data>
   <data name="Oobe_Welcome.Text" xml:space="preserve">
-    <value>Welcome to PowerToys</value>
+    <value>Getting Started</value>
   </data>
   <data name="Oobe_Launch.Text" xml:space="preserve">
     <value>Launch</value>
