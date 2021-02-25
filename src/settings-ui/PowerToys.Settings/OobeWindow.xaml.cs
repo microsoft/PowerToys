@@ -14,6 +14,14 @@ namespace PowerToys.Settings
     {
         private static Window inst;
 
+        public static bool IsOpened
+        {
+            get
+            {
+                return inst != null;
+            }
+        }
+
         public OobeWindow()
         {
             InitializeComponent();
@@ -22,6 +30,7 @@ namespace PowerToys.Settings
         private void Window_Closed(object sender, EventArgs e)
         {
             inst = null;
+            MainWindow.CloseHiddenWindow();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

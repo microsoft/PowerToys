@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -16,6 +16,8 @@ namespace PowerToys.Settings
     // Interaction logic for MainWindow.xaml.
     public partial class MainWindow : Window
     {
+        private static Window inst;
+
         private bool isOpen = true;
 
         public MainWindow()
@@ -27,6 +29,14 @@ namespace PowerToys.Settings
             bootTime.Stop();
 
             PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
+        }
+
+        public static void CloseHiddenWindow()
+        {
+            if (inst != null && inst.Visibility == Visibility.Hidden)
+            {
+                inst.Close();
+            }
         }
 
         private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
@@ -104,7 +114,15 @@ namespace PowerToys.Settings
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            isOpen = false;
+            if (OobeWindow.IsOpened)
+            {
+                e.Cancel = true;
+                ((Window)sender).Hide();
+            }
+            else
+            {
+                isOpen = false;
+            }
 
             // XAML Islands: If the window is closed while minimized, exit the process. Required to avoid process not terminating issue - https://github.com/microsoft/PowerToys/issues/4430
             if (WindowState == WindowState.Minimized)
@@ -112,6 +130,11 @@ namespace PowerToys.Settings
                 // Run Environment.Exit on a separate task to avoid performance impact
                 System.Threading.Tasks.Task.Run(() => { Environment.Exit(0); });
             }
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            inst = (Window)sender;
         }
     }
 }
