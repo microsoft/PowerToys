@@ -179,6 +179,11 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
+            <TextBlock x:Uid="Run_PluginUseDescription"
+                       FontSize="12"
+                       Foreground="{ThemeResource SystemBaseMediumColor}"
+                       TextWrapping="Wrap"/>
+            
             <TextBlock x:Uid="Run_AllPluginsDisabled"
                        FontSize="12"
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"

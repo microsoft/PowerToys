@@ -70,7 +70,7 @@ namespace Microsoft.Plugin.Uri.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Opens URLs and UNC network shares.
+        ///   Looks up a localized string similar to Opens URLs and UNC network shares..
         /// </summary>
         public static string Microsoft_plugin_uri_plugin_description {
             get {
