@@ -1157,9 +1157,6 @@ Win + Shift + O to toggle your video</value>
   <data name="PowerToys_Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
     <value>Position &amp; appearance</value>
   </data>
-  <data name="PowerLauncher_MonitorToDisplayOn.Header" xml:space="preserve">
-    <value>Specify a monitor index</value>
-  </data>
   <data name="PowerToysRun_PositionHeader.Text" xml:space="preserve">
     <value>Show PowerToys Run on</value>
   </data>
@@ -1171,9 +1168,5 @@ Win + Shift + O to toggle your video</value>
   </data>
   <data name="Radio_Position_Primary.Content" xml:space="preserve">
     <value>Primary monitor</value>
-  </data>
-  <data name="Windows_Display_Settings.Text" xml:space="preserve">
-    <value>Windows display settings</value>
-    <comment>Windows refers to the Operating system</comment>
   </data>
 </root>
