@@ -3,7 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using ManagedCommon;
@@ -28,11 +32,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private readonly SendCallback callback;
 
+        private readonly Func<bool> isDark;
+
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode, Func<bool> isDark)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+            this.isDark = isDark;
 
             // To obtain the general Settings configurations of PowerToys
             if (settingsRepository == null)
@@ -81,6 +88,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     _isSystemThemeRadioButtonChecked = true;
                     break;
             }
+
+            foreach (var plugin in Plugins)
+            {
+                plugin.PropertyChanged += OnPluginInfoChange;
+            }
+        }
+
+        private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
+            UpdateSettings();
         }
 
         public PowerLauncherViewModel(PowerLauncherSettings settings, SendCallback callback)
@@ -110,6 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     GeneralSettingsConfig.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
+                    OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -343,21 +362,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool DisableDriveDetectionWarning
+        private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
+
+        public ObservableCollection<PowerLauncherPluginViewModel> Plugins
         {
             get
             {
-                return settings.Properties.DisableDriveDetectionWarning;
-            }
-
-            set
-            {
-                if (settings.Properties.DisableDriveDetectionWarning != value)
+                if (_plugins == null)
                 {
-                    settings.Properties.DisableDriveDetectionWarning = value;
-                    UpdateSettings();
+                    _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(settings.Plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
                 }
+
+                return _plugins;
             }
+        }
+
+        public bool ShowAllPluginsDisabledWarning
+        {
+            get => EnablePowerLauncher && Plugins.All(x => x.Disabled);
         }
     }
 }

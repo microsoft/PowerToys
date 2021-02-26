@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search inside the Windows Registry.
+        ///   Looks up a localized string similar to Navigates inside the Windows Registry..
         /// </summary>
         internal static string PluginDescription {
             get {

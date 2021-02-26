@@ -32,10 +32,7 @@ namespace Microsoft.Plugin.Program.UnitTests.ProgramArgumentParser
                 new NoArgumentsArgumentParser(),
            };
 
-            // basic version of the Quey parser which can be found at Wox.Core.Plugin.QueryBuilder but did not want to create a project reference
-            var splittedSearchString = inputQuery?.Split(Query.TermSeparator, System.StringSplitOptions.RemoveEmptyEntries);
-            var cleanQuery = string.Join(Query.TermSeparator, splittedSearchString);
-            var query = new Query(cleanQuery, cleanQuery, new ReadOnlyCollection<string>(splittedSearchString), string.Empty);
+            var query = new Query(inputQuery);
 
             // Act
             string program = null, programArguments = null;

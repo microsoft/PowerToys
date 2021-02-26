@@ -26,6 +26,10 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public string IconTheme { get; set; }
 
+        public string Name => Properties.Resources.Microsoft_plugin_sys_plugin_name;
+
+        public string Description => Properties.Resources.Microsoft_plugin_sys_plugin_description;
+
         public void Init(PluginInitContext context)
         {
             this._context = context;

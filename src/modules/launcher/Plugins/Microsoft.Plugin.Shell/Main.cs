@@ -22,7 +22,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Microsoft.Plugin.Shell
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
@@ -33,6 +33,10 @@ namespace Microsoft.Plugin.Shell
         private readonly PluginJsonStorage<ShellPluginSettings> _storage;
 
         private string IconPath { get; set; }
+
+        public string Name => Properties.Resources.wox_plugin_cmd_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_cmd_plugin_description;
 
         private PluginInitContext _context;
 
@@ -330,10 +334,6 @@ namespace Microsoft.Plugin.Shell
             };
 
             return resultlist;
-        }
-
-        public void UpdateSettings(PowerLauncherSettings settings)
-        {
         }
     }
 }

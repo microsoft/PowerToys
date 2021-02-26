@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mono.Collections.Generic;
 using NUnit.Framework;
 using PowerLauncher.Plugin;
@@ -36,25 +37,8 @@ namespace Wox.Test
             string searchQuery = ">   file.txt    file2 file3";
 
             // Act
-            var pluginQueryPairs = QueryBuilder.Build(ref searchQuery);
-
-            // Assert
-            Assert.AreEqual("> file.txt file2 file3", searchQuery);
-        }
-
-        [Test]
-        public void QueryBuilderShouldRemoveExtraSpacesForDisabledNonGlobalPlugin()
-        {
-            // Arrange
-            PluginManager.SetAllPlugins(new List<PluginPair>()
-            {
-                new PluginPair { Metadata = new PluginMetadata() { Disabled = true, ActionKeyword = ">" } },
-            });
-
-            string searchQuery = ">   file.txt    file2 file3";
-
-            // Act
-            var pluginQueryPairs = QueryBuilder.Build(ref searchQuery);
+            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
+            searchQuery = pluginQueryPairs.Values.First().RawQuery;
 
             // Assert
             Assert.AreEqual("> file.txt file2 file3", searchQuery);
@@ -65,9 +49,14 @@ namespace Wox.Test
         {
             // Arrange
             string searchQuery = "file.txt  file2  file3";
+            PluginManager.SetAllPlugins(new List<PluginPair>()
+            {
+                new PluginPair { Metadata = new PluginMetadata() { Disabled = false, IsGlobal = true } },
+            });
 
             // Act
-            var pluginQueryPairs = QueryBuilder.Build(ref searchQuery);
+            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
+            searchQuery = pluginQueryPairs.Values.First().RawQuery;
 
             // Assert
             Assert.AreEqual("file.txt file2 file3", searchQuery);
@@ -87,10 +76,10 @@ namespace Wox.Test
             var secondQueryText = "a search";
 
             // Act
-            var firstPluginQueryPair = QueryBuilder.Build(ref firstQueryText);
+            var firstPluginQueryPair = QueryBuilder.Build(firstQueryText);
             var firstQuery = firstPluginQueryPair.GetValueOrDefault(plugin);
 
-            var secondPluginQueryPairs = QueryBuilder.Build(ref secondQueryText);
+            var secondPluginQueryPairs = QueryBuilder.Build(secondQueryText);
             var secondQuery = secondPluginQueryPairs.GetValueOrDefault(plugin);
 
             // Assert
@@ -113,14 +102,14 @@ namespace Wox.Test
             });
 
             // Act
-            var pluginQueryPairs = QueryBuilder.Build(ref searchQuery);
+            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
 
             var firstQuery = pluginQueryPairs.GetValueOrDefault(firstPlugin);
             var secondQuery = pluginQueryPairs.GetValueOrDefault(secondPlugin);
 
             // Assert
-            Assert.IsTrue(AreEqual(firstQuery, new Query { RawQuery = searchQuery, Search = searchQuery.Substring(firstPlugin.Metadata.ActionKeyword.Length), ActionKeyword = firstPlugin.Metadata.ActionKeyword } ));
-            Assert.IsTrue(AreEqual(secondQuery, new Query { RawQuery = searchQuery, Search = searchQuery.Substring(secondPlugin.Metadata.ActionKeyword.Length), ActionKeyword = secondPlugin.Metadata.ActionKeyword }));
+            Assert.IsTrue(AreEqual(firstQuery, new Query(searchQuery, firstPlugin.Metadata.ActionKeyword)));
+            Assert.IsTrue(AreEqual(secondQuery, new Query(searchQuery, secondPlugin.Metadata.ActionKeyword)));
         }
 
         [Test]
@@ -137,7 +126,7 @@ namespace Wox.Test
             });
 
             // Act
-            var pluginQueryPairs = QueryBuilder.Build(ref searchQuery);
+            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
 
             var firstQuery = pluginQueryPairs.GetValueOrDefault(firstPlugin);
             var secondQuery = pluginQueryPairs.GetValueOrDefault(secondPlugin);
@@ -146,6 +135,26 @@ namespace Wox.Test
             // Using Ordinal since this is used internally
             Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.Ordinal) && firstQuery.Terms[1].Equals("efgh", StringComparison.Ordinal) && firstQuery.Terms.Count == 2);
             Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.Ordinal) && secondQuery.Terms.Count == 1);
+        }
+
+        [Test]
+        public void QueryBuilderShouldReturnAllPluginsWithTheActionWord()
+        {
+            // Arrange
+            string searchQuery = "!efgh";
+            var firstPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "!", ID = "plugin1" } };
+            var secondPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "!", ID = "plugin2" } };
+            PluginManager.SetAllPlugins(new List<PluginPair>()
+            {
+                firstPlugin,
+                secondPlugin,
+            });
+
+            // Act
+            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
+
+            // Assert
+            Assert.AreEqual(2, pluginQueryPairs.Count);
         }
     }
 }

@@ -43,6 +43,10 @@ namespace Microsoft.Plugin.Uri
 
         public PluginInitContext Context { get; protected set; }
 
+        public string Name => Properties.Resources.Microsoft_plugin_uri_plugin_name;
+
+        public string Description => Properties.Resources.Microsoft_plugin_uri_plugin_description;
+
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             return new List<ContextMenuResult>(0);

@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Manages Windows services.
+        ///   Looks up a localized string similar to Manages Windows services..
         /// </summary>
         internal static string wox_plugin_service_plugin_description {
             get {

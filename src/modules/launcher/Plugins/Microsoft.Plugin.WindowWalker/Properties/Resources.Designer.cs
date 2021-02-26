@@ -61,7 +61,7 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Alt-Tab alternative enabling searching through your windows..
+        ///   Looks up a localized string similar to Switches between open windows..
         /// </summary>
         public static string wox_plugin_windowwalker_plugin_description {
             get {
