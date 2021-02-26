@@ -97,6 +97,21 @@ namespace PowerToys.Settings
                     oobe.Show();
                 });
 
+                OobeShellPage.SetOpenMainWindowCallback((Type type) =>
+                {
+                    if (isOpen)
+                    {
+                        this.Activate();
+                    }
+                    else
+                    {
+                        var newWindow = new MainWindow();
+                        newWindow.Show();
+                    }
+
+                    ShellPage.Navigate(type);
+                });
+
                 // receive IPC Message
                 Program.IPCMessageReceivedCallback = (string msg) =>
                 {
