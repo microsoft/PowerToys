@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+using Microsoft.PowerToys.Telemetry;
+
 namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
 {
     public class OobePowerToysModule
@@ -47,6 +50,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             Description = other.Description;
             Link = other.Link;
             DescriptionLink = other.DescriptionLink;
+        }
+
+        public void LogOpeningSettingsEvent()
+        {
+            PowerToysTelemetry.Log.WriteEvent(new OobeSettingsEvent() { ModuleName = this.ModuleName });
+        }
+
+        public void LogRunningModuleEvent()
+        {
+            PowerToysTelemetry.Log.WriteEvent(new OobeModuleRunEvent() { ModuleName = this.ModuleName });
         }
     }
 }

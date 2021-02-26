@@ -21,5 +21,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.ShortcutGuide]);
             DataContext = ViewModel;
         }
+
+        private void SettingsLaunchButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.LogOpeningSettingsEvent();
+        }
+
+        private void LaunchModuleButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.LogRunningModuleEvent();
+        }
     }
 }
