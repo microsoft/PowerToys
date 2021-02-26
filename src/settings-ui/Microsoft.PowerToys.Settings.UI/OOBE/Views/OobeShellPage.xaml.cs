@@ -37,6 +37,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ShortcutGuideSharedEvent = implementation;
         }
 
+        public static Action<Type> OpenMainWindowCallback { get; set; }
+
+        public static void SetOpenMainWindowCallback(Action<Type> implementation)
+        {
+            OpenMainWindowCallback = implementation;
+        }
+
         /// <summary>
         /// Gets view model.
         /// </summary>

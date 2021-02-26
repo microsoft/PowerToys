@@ -4,6 +4,7 @@
 
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
@@ -24,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void SettingsLaunchButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
+            OobeShellPage.OpenMainWindowCallback(typeof(PowerPreviewPage));
             ViewModel.LogOpeningSettingsEvent();
         }
     }
