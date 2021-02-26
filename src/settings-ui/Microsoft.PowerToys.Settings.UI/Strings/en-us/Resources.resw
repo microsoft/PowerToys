@@ -1043,7 +1043,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Win + ? to open Shortcut Guide. You can also launch it by holding the Win key for one second!</value>
   </data>
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
-    <value>Tips &amp;amp; tricks</value>
+    <value>Tips &amp; tricks</value>
   </data>
   <data name="Oobe_VideoConference_HowToLaunch.Text" xml:space="preserve">
     <value>Win + N to toggle both your microphone and video 
