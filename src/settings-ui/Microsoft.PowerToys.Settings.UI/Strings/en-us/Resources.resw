@@ -291,9 +291,6 @@
   <data name="PowerLauncher_IgnoreHotkeysInFullScreen.Content" xml:space="preserve">
     <value>Ignore shortcuts in fullscreen mode</value>
   </data>
-  <data name="PowerLauncher_DisableDriveDetectionWarning.Content" xml:space="preserve">
-    <value>Disable drive detection warning for the file search plugin</value>
-  </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
@@ -330,7 +327,7 @@
     <value>To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
-    <value>Zone highlight opacity</value>
+    <value>Zone opacity</value>
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
@@ -936,5 +933,48 @@
   </data>
   <data name="ColorPicker_Editor.Text" xml:space="preserve">
     <value>Editor</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesLargest.Content" xml:space="preserve">
+    <value>Activate the largest zone by area</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesPositional.Content" xml:space="preserve">
+    <value>Split the overlapped area into multiple activation targets</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesSmallest.Content" xml:space="preserve">
+    <value>Activate the smallest zone by area</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesLabel.Text" xml:space="preserve">
+    <value>When multiple zones overlap:</value>
+  </data>
+  <data name="PowerLauncher_Plugins.Text" xml:space="preserve">
+    <value>Plugins</value>
+  </data>
+  <data name="PowerLauncher_ActionKeyword.Text" xml:space="preserve">
+    <value>Direct activation phrase</value>
+  </data>
+  <data name="PowerLauncher_AuthoredBy.Text" xml:space="preserve">
+    <value>Authored by</value>
+    <comment>example: Authored by Microsoft</comment>
+  </data>
+  <data name="PowerLauncher_IncludeInGlobalResult.Content" xml:space="preserve">
+    <value>Include in global result</value>
+  </data>
+  <data name="PowerLauncher_EnablePluginToggle.AutomationProperties.Name" xml:space="preserve">
+    <value>Enable plugin</value>
+  </data>
+  <data name="Run_AdditionalOptions.Text" xml:space="preserve">
+    <value>Additional options</value>
+  </data>
+  <data name="Run_NotAccessibleWarning.Text" xml:space="preserve">
+    <value>Please define an activation phrase or allow this plugin for the global results to use it.</value>
+  </data>
+  <data name="Run_AllPluginsDisabled.Text" xml:space="preserve">
+    <value>PowerToys Run can't provide any results without plugins. Please enable at least one plugin.</value>
+  </data>
+  <data name="Run_NotAllowedActionKeyword.Text" xml:space="preserve">
+    <value>This activation phrase overrides the behavior of other plugins. Please change it to something else.</value>
+  </data>
+  <data name="Run_PluginUseDescription.Text" xml:space="preserve">
+    <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options.</value>
   </data>
 </root>

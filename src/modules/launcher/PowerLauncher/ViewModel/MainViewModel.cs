@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -240,11 +239,6 @@ namespace PowerLauncher.ViewModel
 
             SelectFirstResultCommand = new RelayCommand(_ => SelectedResults.SelectFirstResult());
 
-            StartHelpCommand = new RelayCommand(_ =>
-            {
-                Process.Start("https://aka.ms/PowerToys/");
-            });
-
             OpenResultWithKeyboardCommand = new RelayCommand(index =>
             {
                 OpenResultsEvent(index, false);
@@ -459,8 +453,6 @@ namespace PowerLauncher.ViewModel
 
         public ICommand SelectFirstResultCommand { get; set; }
 
-        public ICommand StartHelpCommand { get; set; }
-
         public ICommand LoadContextMenuCommand { get; set; }
 
         public ICommand LoadHistoryCommand { get; set; }
@@ -501,7 +493,7 @@ namespace PowerLauncher.ViewModel
                     Title = string.Format(CultureInfo.InvariantCulture, title, h.Query),
                     SubTitle = string.Format(CultureInfo.InvariantCulture, time, h.ExecutedDateTime),
                     IcoPath = "Images\\history.png",
-                    OriginQuery = new Query { RawQuery = h.Query },
+                    OriginQuery = new Query(h.Query),
                     Action = _ =>
                     {
                         SelectedResults = Results;
@@ -539,9 +531,10 @@ namespace PowerLauncher.ViewModel
                 _updateToken = currentCancellationToken;
                 var queryText = QueryText.Trim();
 
-                var pluginQueryPairs = QueryBuilder.Build(ref queryText);
+                var pluginQueryPairs = QueryBuilder.Build(queryText);
                 if (pluginQueryPairs != null && pluginQueryPairs.Count > 0)
                 {
+                    queryText = pluginQueryPairs.Values.First().RawQuery;
                     _currentQuery = queryText;
                     Task.Run(
                         () =>
@@ -565,13 +558,9 @@ namespace PowerLauncher.ViewModel
                             {
                                 var plugin = pluginQueryItem.Key;
                                 var query = pluginQueryItem.Value;
-
-                                if (!plugin.Metadata.Disabled)
-                                {
-                                    var results = PluginManager.QueryForPlugin(plugin, query);
-                                    resultPluginPair.Add((results, plugin.Metadata));
-                                    currentCancellationToken.ThrowIfCancellationRequested();
-                                }
+                                var results = PluginManager.QueryForPlugin(plugin, query);
+                                resultPluginPair.Add((results, plugin.Metadata));
+                                currentCancellationToken.ThrowIfCancellationRequested();
                             }
 
                             lock (_addResultsLock)
@@ -603,39 +592,36 @@ namespace PowerLauncher.ViewModel
                                 {
                                     try
                                     {
-                                        if (!plugin.Metadata.Disabled)
+                                        Query query;
+                                        pluginQueryPairs.TryGetValue(plugin, out query);
+
+                                        var results = PluginManager.QueryForPlugin(plugin, query, true);
+                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                        if ((results?.Count ?? 0) != 0)
                                         {
-                                            Query query;
-                                            pluginQueryPairs.TryGetValue(plugin, out query);
-
-                                            var results = PluginManager.QueryForPlugin(plugin, query, true);
-                                            currentCancellationToken.ThrowIfCancellationRequested();
-                                            if ((results?.Count ?? 0) != 0)
+                                            lock (_addResultsLock)
                                             {
-                                                lock (_addResultsLock)
+                                                // Using CurrentCultureIgnoreCase since this is user facing
+                                                if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                                 {
-                                                    // Using CurrentCultureIgnoreCase since this is user facing
-                                                    if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
-                                                    {
-                                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                                    currentCancellationToken.ThrowIfCancellationRequested();
 
-                                                        // Remove the original results from the plugin
-                                                        Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
-                                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                                    // Remove the original results from the plugin
+                                                    Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
+                                                    currentCancellationToken.ThrowIfCancellationRequested();
 
-                                                        // Add the new results from the plugin
-                                                        UpdateResultView(results, queryText, currentCancellationToken);
+                                                    // Add the new results from the plugin
+                                                    UpdateResultView(results, queryText, currentCancellationToken);
 
-                                                        currentCancellationToken.ThrowIfCancellationRequested();
-                                                        numResults = Results.Results.Count;
-                                                        Results.Sort();
-                                                        Results.SelectedItem = Results.Results.FirstOrDefault();
-                                                    }
+                                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                                    numResults = Results.Results.Count;
+                                                    Results.Sort();
+                                                    Results.SelectedItem = Results.Results.FirstOrDefault();
                                                 }
-
-                                                currentCancellationToken.ThrowIfCancellationRequested();
-                                                UpdateResultsListViewAfterQuery(queryText, true);
                                             }
+
+                                            currentCancellationToken.ThrowIfCancellationRequested();
+                                            UpdateResultsListViewAfterQuery(queryText, true);
                                         }
                                     }
                                     catch (OperationCanceledException)
@@ -883,9 +869,8 @@ namespace PowerLauncher.ViewModel
             Results.Clear();
             MainWindowVisibility = System.Windows.Visibility.Collapsed;
 
-            // Fix Cold start for plugins
-            string s = "m";
-            var pluginQueryPairs = QueryBuilder.Build(ref s);
+            // Fix Cold start for plugins, "m" is just a random string needed to query results
+            var pluginQueryPairs = QueryBuilder.Build("m");
 
             // To execute a query corresponding to each plugin
             foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPairs)

@@ -3,7 +3,6 @@
   "ActionKeyword": "=",
   "IsGlobal": true,
   "Name": "Calculator",
-  "Description": "Provide mathematical calculations.(Try 5*3-2 in PowerToys)",
   "Author": "cxfksword",
   "Version": "1.0.0",
   "Language": "csharp",

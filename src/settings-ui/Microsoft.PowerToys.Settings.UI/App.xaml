@@ -18,7 +18,6 @@
             </ResourceDictionary.MergedDictionaries>
             <converters:ModuleEnabledToForegroundConverter x:Key="ModuleEnabledToForegroundConverter"/>
 
-
             <SolidColorBrush x:Key="DarkForegroundDisabledBrush">#66FFFFFF</SolidColorBrush>
             <SolidColorBrush x:Key="DarkForegroundBrush">#FFFFFFFF</SolidColorBrush>
 

@@ -4,9 +4,11 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -22,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            ViewModel = new PowerLauncherViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, (int)Windows.System.VirtualKey.Space);
+            ViewModel = new PowerLauncherViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, (int)Windows.System.VirtualKey.Space, App.IsDarkTheme);
             DataContext = ViewModel;
 
             var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
@@ -41,6 +43,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+        }
+
+        private void PluginsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedPlugin = (sender as ListView)?.SelectedItem;
+            foreach (var plugin in ViewModel.Plugins)
+            {
+                plugin.ShowAdditionalInfoPanel = plugin == selectedPlugin;
+            }
         }
 
         /*

@@ -32,8 +32,6 @@ namespace Wox.Plugin
 
         public string Language { get; set; }
 
-        public string Description { get; set; }
-
         public string Website { get; set; }
 
         public bool Disabled { get; set; }

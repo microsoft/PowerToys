@@ -4,7 +4,7 @@
 
 using System.Windows;
 
-namespace Microsoft.PowerToys.Settings.UI.Runner
+namespace PowerToys.Settings
 {
     /// <summary>
     /// Interaction logic for App.xaml.

@@ -12,7 +12,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
-using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -62,15 +61,11 @@ namespace PowerLauncher.Plugin
             }
         }
 
-        public static Dictionary<string, PluginPair> NonGlobalPlugins
+        public static IEnumerable<PluginPair> NonGlobalPlugins
         {
             get
             {
-                return AllPlugins
-                    .Where(x => !string.IsNullOrWhiteSpace(x.Metadata.ActionKeyword))
-                    .GroupBy(x => x.Metadata.ActionKeyword)
-                    .Select(x => x.First())
-                    .ToDictionary(x => x.Metadata.ActionKeyword);
+                return AllPlugins.Where(x => !string.IsNullOrWhiteSpace(x.Metadata.ActionKeyword));
             }
         }
 

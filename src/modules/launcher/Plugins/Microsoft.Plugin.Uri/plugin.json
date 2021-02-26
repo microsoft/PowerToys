@@ -3,7 +3,6 @@
   "ActionKeyword": "//",
   "IsGlobal": true,
   "Name": "Windows Uri Handler",
-  "Description": "Handles urls",
   "Author": "Microsoft",
   "Version": "1.0.0",
   "Language": "csharp",

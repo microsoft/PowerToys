@@ -4,66 +4,34 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Mono.Collections.Generic;
 using Wox.Plugin;
 
 namespace PowerLauncher.Plugin
 {
     public static class QueryBuilder
     {
-        public static Dictionary<PluginPair, Query> Build(ref string text)
+        public static Dictionary<PluginPair, Query> Build(string text)
         {
             if (text == null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
 
-            // replace multiple white spaces with one white space
-            var terms = text.Split(new[] { Query.TermSeparator }, StringSplitOptions.RemoveEmptyEntries);
-            if (terms.Length == 0)
-            { // nothing was typed
-                return null;
-            }
+            text = text.Trim();
 
             // This Dictionary contains the corresponding query for each plugin
             Dictionary<PluginPair, Query> pluginQueryPair = new Dictionary<PluginPair, Query>();
-
-            var rawQuery = string.Join(Query.TermSeparator, terms);
-
-            // This is the query on removing extra spaces which would be executed by global Plugins
-            text = rawQuery;
-
-            string possibleActionKeyword = terms[0];
-
-            foreach (string pluginActionKeyword in PluginManager.NonGlobalPlugins.Keys)
+            foreach (var plugin in PluginManager.NonGlobalPlugins)
             {
-                // Using Ordinal since this is used internally
-                if (possibleActionKeyword.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
+                var pluginActionKeyword = plugin.Metadata.ActionKeyword;
+                if (plugin.Metadata.Disabled || !text.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
                 {
-                    if (PluginManager.NonGlobalPlugins.TryGetValue(pluginActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
-                    {
-                        // The search string is the raw query excluding the action keyword
-                        string search = rawQuery.Substring(pluginActionKeyword.Length).Trim();
-
-                        // To set the terms of the query after removing the action keyword
-                        if (possibleActionKeyword.Length > pluginActionKeyword.Length)
-                        {
-                            // If the first term contains the action keyword, then set the remaining string to be the first term
-                            terms[0] = possibleActionKeyword.Substring(pluginActionKeyword.Length);
-                        }
-                        else
-                        {
-                            // If the first term is the action keyword, then skip it.
-                            terms = terms.Skip(1).ToArray();
-                        }
-
-                        // A new query is constructed for each plugin as they have different action keywords
-                        var query = new Query(rawQuery, search, new ReadOnlyCollection<string>(terms), pluginActionKeyword);
-
-                        pluginQueryPair.TryAdd(pluginPair, query);
-                    }
+                    continue;
                 }
+
+                // A new query is constructed for each plugin
+                var query = new Query(text, pluginActionKeyword);
+                pluginQueryPair.TryAdd(plugin, query);
             }
 
             // If the user has specified a matching action keyword, then do not
@@ -72,9 +40,9 @@ namespace PowerLauncher.Plugin
             {
                 foreach (PluginPair globalPlugin in PluginManager.GlobalPlugins)
                 {
-                    if (!pluginQueryPair.ContainsKey(globalPlugin))
+                    if (!globalPlugin.Metadata.Disabled && !pluginQueryPair.ContainsKey(globalPlugin))
                     {
-                        var query = new Query(rawQuery, rawQuery, new ReadOnlyCollection<string>(terms), string.Empty);
+                        var query = new Query(text);
                         pluginQueryPair.Add(globalPlugin, query);
                     }
                 }

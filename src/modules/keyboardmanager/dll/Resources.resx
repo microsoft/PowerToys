@@ -168,7 +168,7 @@
     <value>Target App:</value>
   </data>
   <data name="EditKeyboard_OrphanedDialogTitle" xml:space="preserve">
-    <value>The following keys are unassigned and you won't be able to use them:</value>
+    <value>The following keys have been reassigned and you won't be able to use them for their original assignment:</value>
   </data>
   <data name="EditKeyboard_PartialConfirmationDialogTitle" xml:space="preserve">
     <value>Some of the keys could not be remapped. Do you want to continue anyway?</value>

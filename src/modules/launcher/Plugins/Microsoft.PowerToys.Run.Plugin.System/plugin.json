@@ -3,7 +3,6 @@
   "ActionKeyword": "",
   "IsGlobal": true,
   "Name": "System Commands",
-  "Description": "Provide System related commands. e.g. shutdown,lock,setting etc.",
   "Author": "Wox",
   "Version": "1.0.0",
   "Language": "csharp",

@@ -125,6 +125,20 @@
                       Margin="{StaticResource XSmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
+            <TextBlock x:Uid="FancyZones_OverlappingZonesLabel"
+                       Margin="{StaticResource SmallTopMargin}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <ComboBox Name="FancyZones_OverlappingZonesComboBox"
+                      x:Uid="FancyZones_OverlappingZonesComboBox"
+                      SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}"
+                      VerticalAlignment="Center"
+                      Width="{StaticResource MaxComboBoxWidth}"
+                      Margin="{StaticResource SmallTopMargin}">
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesLargest" />
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesPositional" />
+            </ComboBox>
 
             <TextBlock x:Uid="FancyZones_WindowBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"

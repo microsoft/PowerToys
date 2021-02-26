@@ -189,7 +189,7 @@ namespace FancyZonesEditor
 
                         rect.Width = Math.Max(0, colInfo[maxCol].End - left);
                         rect.Height = Math.Max(0, rowInfo[maxRow].End - top);
-                        rect.Style = (Style)FindResource("GridLayoutPreviewActualSizeStyle");
+                        rect.Style = (Style)FindResource("GridLayoutActualScalePreviewStyle");
                         frame.Children.Add(rect);
                         _zones.Add(new Int32Rect(
                             (int)left, (int)top, (int)rect.Width, (int)rect.Height));
@@ -261,7 +261,7 @@ namespace FancyZonesEditor
 
                         Grid.SetColumnSpan(rect, span);
                         rect.Margin = margin;
-                        rect.Style = (Style)FindResource("GridLayoutPreviewStyle");
+                        rect.Style = (Style)FindResource("GridLayoutSmallScalePreviewStyle");
                         Body.Children.Add(rect);
                     }
                 }
@@ -310,11 +310,11 @@ namespace FancyZonesEditor
 
                 if (IsActualSize)
                 {
-                   rect.Style = (Style)FindResource("CanvasLayoutPreviewActualSizeStyle");
+                   rect.Style = (Style)FindResource("CanvasLayoutActualScalePreviewStyle");
                 }
                 else
                 {
-                   rect.Style = (Style)FindResource("CanvasLayoutPreviewStyle");
+                   rect.Style = (Style)FindResource("CanvasLayoutSmallScalePreviewStyle");
                 }
 
                 frame.Children.Add(rect);

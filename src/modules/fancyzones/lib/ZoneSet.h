@@ -152,24 +152,19 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
     IFACEMETHOD_(std::vector<size_t>, GetCombinedZoneRange)(const std::vector<size_t>& initialZones, const std::vector<size_t>& finalZones) const = 0;
 };
 
-enum struct ZoneSelectionAlgorithm
-{
-    SMALLEST = 0,
-    LARGEST = 1,
-    SUBREGION = 2,
-};
-
 struct ZoneSetConfig
 {
     ZoneSetConfig(
         GUID id,
         FancyZonesDataTypes::ZoneSetLayoutType layoutType,
         HMONITOR monitor,
-        int sensitivityRadius) noexcept :
+        int sensitivityRadius,
+        Settings::OverlappingZonesAlgorithm selectionAlgorithm = {}) noexcept :
             Id(id),
             LayoutType(layoutType),
             Monitor(monitor),
-            SensitivityRadius(sensitivityRadius)
+            SensitivityRadius(sensitivityRadius),
+            SelectionAlgorithm(selectionAlgorithm)
     {
     }
 
@@ -177,7 +172,7 @@ struct ZoneSetConfig
     FancyZonesDataTypes::ZoneSetLayoutType LayoutType{};
     HMONITOR Monitor{};
     int SensitivityRadius;
-    ZoneSelectionAlgorithm SelectionAlgorithm = ZoneSelectionAlgorithm::SMALLEST;
+    Settings::OverlappingZonesAlgorithm SelectionAlgorithm = Settings::OverlappingZonesAlgorithm::Smallest;
 };
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept;

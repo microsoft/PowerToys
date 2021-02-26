@@ -161,7 +161,7 @@
   </data>
   <data name="Note_Custom_Table" xml:space="preserve">
     <value>Hold down Shift key to change orientation of splitter.
-To merge zones, select the zones and click "merge".</value>
+To merge zones, hold down the left mouse button, drag the mouse to the zone to merge, release the mouse button and click "Merge zones".</value>
   </data>
   <data name="Save_Apply" xml:space="preserve">
     <value>Save &amp; apply</value>
@@ -176,10 +176,10 @@ To merge zones, select the zones and click "merge".</value>
     <value>Templates</value>
   </data>
   <data name="Zone_Count_Decrement" xml:space="preserve">
-    <value>Decrement number of zones in template layout</value>
+    <value>Decrement number of zones</value>
   </data>
   <data name="Zone_Count_Increment" xml:space="preserve">
-    <value>Increment number of zones in template layout</value>
+    <value>Increment number of zones</value>
   </data>
   <data name="Error_Invalid_Arguments" xml:space="preserve">
     <value>FancyZones Editor arguments are invalid.</value>
@@ -298,7 +298,7 @@ To merge zones, select the zones and click "merge".</value>
     <value>Are you sure you want to delete this layout?</value>
   </data>
   <data name="Edit_zones" xml:space="preserve">
-    <value>Edit zones</value>
+    <value>Edit zone layout</value>
   </data>
   <data name="No_Custom_Layouts_Message" xml:space="preserve">
     <value>Create or duplicate a layout to get started</value>

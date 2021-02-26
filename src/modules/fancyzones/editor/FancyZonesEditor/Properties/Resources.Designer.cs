@@ -286,7 +286,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit zones.
+        ///   Looks up a localized string similar to Edit zone layout.
         /// </summary>
         public static string Edit_zones {
             get {
@@ -665,7 +665,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Decrement number of zones in template layout.
+        ///   Looks up a localized string similar to Decrement number of zones.
         /// </summary>
         public static string Zone_Count_Decrement {
             get {
@@ -674,7 +674,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Increment number of zones in template layout.
+        ///   Looks up a localized string similar to Increment number of zones.
         /// </summary>
         public static string Zone_Count_Increment {
             get {

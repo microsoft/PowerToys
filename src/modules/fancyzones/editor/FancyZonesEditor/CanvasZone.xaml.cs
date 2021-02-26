@@ -27,7 +27,8 @@ namespace FancyZonesEditor
 
         private void CanvasZone_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            LabelSize.Content = "(" + Width.ToString() + "x" + Height.ToString() + ")";
+            WidthLabel.Text = Width.ToString();
+            HeightLabel.Text = Height.ToString();
         }
 
         private CanvasLayoutModel model;

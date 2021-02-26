@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
-     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
 
   <?define FancyZonesProjectName="FancyZones"?>
   <?define ImageResizerProjectName="ImageResizer"?>
@@ -268,7 +267,7 @@
               <Directory Id="LauncherPropertiesFolder" Name="Properties" />
             </Directory>
           </Directory>
-          <Directory Id="SettingsV2InstallFolder" Name="SettingsUIRunner">
+          <Directory Id="SettingsV2InstallFolder" Name="Settings">
             <Directory Id="SettingsV2ViewsInstallFolder" Name="Views"/>
             <Directory Id="SettingsV2StylesInstallFolder" Name="Styles"/>
             <Directory Id="SettingsV2PropertiesInstallFolder" Name="Properties"/>
@@ -475,9 +474,7 @@
 
     <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)">
       <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe">
-          <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
-        </File>
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Newtonsoft.Json.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.dll" />
@@ -639,89 +636,89 @@
     </DirectoryRef>
 
     <!-- SettingsV2 components -->
-    <DirectoryRef Id="SettingsV2InstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\">
+    <DirectoryRef Id="SettingsV2InstallFolder" FileSource="$(var.BinX64Dir)Settings\">
       <Component Id="SettingsV2" Guid="4B108DC0-4B2C-4AC4-AAA9-1B2DC8399F7C" Win64="yes">
         <!-- exe -->
-        <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Runner.exe"/>
-        <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.exe"/>
+        <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.exe"/>
+        <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.exe"/>
         <!-- dll -->
-        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.PowerToys.Settings.UI.Runner.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;ManagedTelemetry.dll;ManagedCommon.dll?>
-          <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\$(var.File)" />
+        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToys.Settings.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;ManagedTelemetry.dll;ManagedCommon.dll?>
+          <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)Settings\$(var.File)" />
         <?endforeach?>
         <!-- json -->
-        <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Runner.deps.json"/>
-        <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Runner.runtimeconfig.json"/>
+        <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.deps.json"/>
+        <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.runtimeconfig.json"/>
         <!-- png -->
-        <File Id="SettingsV2_NoiseAsset_256x256_PNG.png" Source="$(var.BinX64Dir)SettingsUIRunner\NoiseAsset_256x256_PNG.png"/>
+        <File Id="SettingsV2_NoiseAsset_256x256_PNG.png" Source="$(var.BinX64Dir)Settings\NoiseAsset_256x256_PNG.png"/>
         <!-- pri -->
         <?foreach File in Microsoft.Toolkit.Uwp.pri;Microsoft.Toolkit.Uwp.UI.pri;Microsoft.Toolkit.Win32.UI.XamlHost.pri;Microsoft.UI.Xaml.pri;Microsoft.Xaml.Interactions.pri;Microsoft.Xaml.Interactivity.pri;resources.pri?>
-          <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\$(var.File)" />
+          <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)Settings\$(var.File)" />
         <?endforeach?>
         <!-- winmd -->
-        <File Id="SettingsV2_Microsoft.Toolkit.Win32.UI.XamlHost.winmd" Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.Toolkit.Win32.UI.XamlHost.winmd"/>
-        <File Id="SettingsV2_Microsoft.UI.Xaml.winmd" Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.UI.Xaml.winmd"/>
+        <File Id="SettingsV2_Microsoft.Toolkit.Win32.UI.XamlHost.winmd" Source="$(var.BinX64Dir)Settings\Microsoft.Toolkit.Win32.UI.XamlHost.winmd"/>
+        <File Id="SettingsV2_Microsoft.UI.Xaml.winmd" Source="$(var.BinX64Dir)Settings\Microsoft.UI.Xaml.winmd"/>
         <!-- xbf -->
-        <File Id="SettingsV2_App.xbf" Source="$(var.BinX64Dir)SettingsUIRunner\App.xbf"/>
+        <File Id="SettingsV2_App.xbf" Source="$(var.BinX64Dir)Settings\App.xbf"/>
         <!-- xml -->
-        <File Id="SettingsV2_Microsoft.PowerToys.Settings.UI.xr.xml" Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.xr.xml"/>
-        <File Id="SettingsV2_Microsoft.Toolkit.Win32.UI.XamlHost.xml" Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.Toolkit.Win32.UI.XamlHost.xml"/>
+        <File Id="SettingsV2_Microsoft.PowerToys.Settings.UI.xr.xml" Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.xr.xml"/>
+        <File Id="SettingsV2_Microsoft.Toolkit.Win32.UI.XamlHost.xml" Source="$(var.BinX64Dir)Settings\Microsoft.Toolkit.Win32.UI.XamlHost.xml"/>
         <!-- VCRuntime -->
         <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
           <File Id="SettingsV2_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
-    <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\Assets">
+    <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets">
       <Component Id="SettingsV2Assets" Guid="705B863B-D813-49B9-BAA1-210DA913F765" Win64="yes">
         <?foreach File in Logo.scale-200.png;SplashScreen.png;StoreLogo.scale-100.png?>
-          <File Source="$(var.BinX64Dir)SettingsUIRunner\Assets\$(var.File)" />
+          <File Source="$(var.BinX64Dir)Settings\Assets\$(var.File)" />
         <?endforeach?>
-        <File Id="SettingsV2_StoreLogo" Source="$(var.BinX64Dir)SettingsUIRunner\Assets\StoreLogo.png" />
-        <File Id="Square150x150Logo" Source="$(var.BinX64Dir)SettingsUIRunner\Assets\Square150x150Logo.scale-200.png" />
-        <File Id="Square44x44Logo_targetsize_24_altform_unplated" Source="$(var.BinX64Dir)SettingsUIRunner\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-        <File Id="Wide310x150Logo" Source="$(var.BinX64Dir)SettingsUIRunner\Assets\Wide310x150Logo.scale-200.png" />
-        <File Id="Square44x44Logo" Source="$(var.BinX64Dir)SettingsUIRunner\Assets\Square44x44Logo.scale-200.png" />
+        <File Id="SettingsV2_StoreLogo" Source="$(var.BinX64Dir)Settings\Assets\StoreLogo.png" />
+        <File Id="Square150x150Logo" Source="$(var.BinX64Dir)Settings\Assets\Square150x150Logo.scale-200.png" />
+        <File Id="Square44x44Logo_targetsize_24_altform_unplated" Source="$(var.BinX64Dir)Settings\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+        <File Id="Wide310x150Logo" Source="$(var.BinX64Dir)Settings\Assets\Wide310x150Logo.scale-200.png" />
+        <File Id="Square44x44Logo" Source="$(var.BinX64Dir)Settings\Assets\Square44x44Logo.scale-200.png" />
       </Component>
     </DirectoryRef>
-    <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\Assets\Modules">
+    <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules">
       <Component Id="SettingsV2AssetsModules" Guid="A0B961A9-77D0-4223-88A9-E3B41BD9C329" Win64="yes">
         <?foreach File in ColorPicker.png;FancyZones.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png?>
-          <File Source="$(var.BinX64Dir)SettingsUIRunner\Assets\Modules\$(var.File)" />
+          <File Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
-    <DirectoryRef Id="SettingsV2ControlsInstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\Controls">
+    <DirectoryRef Id="SettingsV2ControlsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Controls">
       <Component Id="SettingsV2Controls" Guid="05C55C88-B59A-4450-A07C-EB7626E0781A" Win64="yes">
         <?foreach File in HotkeySettingsControl.xbf?>
-          <File Id="SettingsV2_Controls_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\Controls\$(var.File)" />
+          <File Id="SettingsV2_Controls_$(var.File)" Source="$(var.BinX64Dir)Settings\Controls\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
-    <DirectoryRef Id="SettingsV2PropertiesInstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\Properties">
+    <DirectoryRef Id="SettingsV2PropertiesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Properties">
       <Component Id="SettingsV2Properties" Guid="8F910A41-B27B-4289-8FAC-9AB34F070CF6" Win64="yes">
         <?foreach File in Default.rd.xml?>
-          <File Id="SettingsV2_Properties_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\Properties\$(var.File)" />
+          <File Id="SettingsV2_Properties_$(var.File)" Source="$(var.BinX64Dir)Settings\Properties\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
-    <DirectoryRef Id="SettingsV2StylesInstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\Styles">
+    <DirectoryRef Id="SettingsV2StylesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Styles">
       <Component Id="SettingsV2Styles" Guid="44B5C0E0-76DA-4604-BB86-FCD27A00EB71" Win64="yes">
         <?foreach File in Page.xbf;TextBlock.xbf;_Colors.xbf;_FontSizes.xbf;_Sizes.xbf;_Thickness.xbf;Button.xbf?>
-          <File Id="SettingsV2_Styles_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\Styles\$(var.File)" />
+          <File Id="SettingsV2_Styles_$(var.File)" Source="$(var.BinX64Dir)Settings\Styles\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
-    <DirectoryRef Id="SettingsV2ViewsInstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\Views">
+    <DirectoryRef Id="SettingsV2ViewsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Views">
       <Component Id="SettingsV2Views" Guid="C140BFBA-6370-4F67-862C-5B42660385CD" Win64="yes">
         <?foreach File in FancyZonesPage.xbf;GeneralPage.xbf;ImageResizerPage.xbf;KeyboardManagerPage.xbf;PowerLauncherPage.xbf;PowerPreviewPage.xbf;PowerRenamePage.xbf;ShellPage.xbf;ShortcutGuidePage.xbf?>
-          <File Id="SettingsV2_Views_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\Views\$(var.File)" />
+          <File Id="SettingsV2_Views_$(var.File)" Source="$(var.BinX64Dir)Settings\Views\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
-    <DirectoryRef Id="SettingsV2XamlAssetsInstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\Microsoft.UI.Xaml\Assets">
+    <DirectoryRef Id="SettingsV2XamlAssetsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Microsoft.UI.Xaml\Assets">
       <Component Id="SettingsV2XamlAssets" Guid="98A136DB-C1BD-42B1-9AB4-0E16F0ECE86A" Win64="yes">
         <?foreach File in NoiseAsset_256X256_PNG.png?>
-          <File Id="SettingsV2_XamlAssets_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.UI.Xaml\Assets\$(var.File)" />
+          <File Id="SettingsV2_XamlAssets_$(var.File)" Source="$(var.BinX64Dir)Settings\Microsoft.UI.Xaml\Assets\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
@@ -914,7 +911,7 @@
         <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
-        <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />
+        <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.Lib.dll" />
         <!-- VCRuntime -->
         <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
           <File Id="File_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />

@@ -32,6 +32,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             MoveWindowBasedOnPosition,
         }
 
+        private enum OverlappingZonesAlgorithm
+        {
+            Smallest = 0,
+            Largest = 1,
+            Positional = 2,
+        }
+
         public FancyZonesViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // To obtain the general settings configurations of PowerToys Settings.
@@ -58,6 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
             _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             _moveWindowBehaviour = Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value ? MoveWindowBehaviour.MoveWindowBasedOnPosition : MoveWindowBehaviour.MoveWindowBasedOnZoneIndex;
+            _overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value;
             _displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
             _zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
             _appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
@@ -92,6 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _overrideSnapHotkeys;
         private bool _moveWindowsAcrossMonitors;
         private MoveWindowBehaviour _moveWindowBehaviour;
+        private OverlappingZonesAlgorithm _overlappingZonesAlgorithm;
         private bool _displayChangemoveWindows;
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
@@ -252,6 +261,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _moveWindowBehaviour = value ? MoveWindowBehaviour.MoveWindowBasedOnZoneIndex : MoveWindowBehaviour.MoveWindowBasedOnPosition;
                     Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value = !value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int OverlappingZonesAlgorithmIndex
+        {
+            get
+            {
+                return (int)_overlappingZonesAlgorithm;
+            }
+
+            set
+            {
+                if (value != (int)_overlappingZonesAlgorithm)
+                {
+                    _overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)value;
+                    Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value = value;
                     NotifyPropertyChanged();
                 }
             }

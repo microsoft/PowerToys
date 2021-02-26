@@ -1,18 +1,22 @@
 <Page
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:ViewModels="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
-    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
+    <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+    </Page.Resources>
 
-    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}" >
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
@@ -144,15 +148,9 @@
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
             />
 
-            <CheckBox x:Uid="PowerLauncher_DisableDriveDetectionWarning"
-	                Margin="{StaticResource SmallTopMargin}"
-	                IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableDriveDetectionWarning}"
-	                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-	                />
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
-
             <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
             The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
             Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
@@ -176,6 +174,158 @@
                     <TextBlock x:Uid="Windows_Color_Settings" />
                 </HyperlinkButton>
             </StackPanel>
+
+            <TextBlock x:Uid="PowerLauncher_Plugins"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <TextBlock x:Uid="Run_PluginUseDescription"
+                       FontSize="12"
+                       Foreground="{ThemeResource SystemBaseMediumColor}"
+                       TextWrapping="Wrap"/>
+            
+            <TextBlock x:Uid="Run_AllPluginsDisabled"
+                       FontSize="12"
+                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                       Visibility="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                       TextWrapping="Wrap"
+                       Margin="{StaticResource SmallTopMargin}"/>
+
+            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
+                      IsItemClickEnabled="True"
+                      SelectionChanged="PluginsListView_SelectionChanged"
+                      x:Name="PluginsListView"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                      Margin="-12,12,0,0">
+                <ListView.Resources>
+                    <SolidColorBrush x:Key="ListViewItemBackgroundSelected"
+                                     Color="{ThemeResource SystemChromeLowColor}" />
+                    <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver"
+                                     Color="{ThemeResource SystemChromeLowColor}" />
+                    <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed"
+                                     Color="{ThemeResource SystemChromeLowColor}" />
+                </ListView.Resources>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment"
+                                Value="Stretch" />
+                        <Setter Property="VerticalContentAlignment"
+                                Value="Stretch" />
+                        <Setter Property="Padding"
+                                Value="0,0,0,0" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
+                        <StackPanel Orientation="Vertical" Background="Transparent"
+                                    Padding="0,12,0,12">
+                            <Grid ColumnSpacing="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="52" />
+                                </Grid.ColumnDefinitions>
+
+                                <Image Source="{x:Bind IconPath}"
+                                       Width="36"
+                                       Opacity="{x:Bind DisabledOpacity, Mode=OneWay}"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Top"
+                                       Margin="12,0,12,0"
+                                       Height="36" />
+
+                                <StackPanel Orientation="Vertical"
+                                            Grid.Column="1" Margin="0,0,12,0">
+                                    <TextBlock FontSize="18"
+                                               Text="{x:Bind Path=Name}"
+                                               Opacity="{x:Bind DisabledOpacity}"/>
+                                    <TextBlock FontSize="12"
+                                               Opacity="{x:Bind DisabledOpacity}"
+                                               Foreground="{ThemeResource SystemBaseMediumColor}"
+                                               Text="{x:Bind Description}"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock 
+                                        x:Uid="Run_NotAccessibleWarning"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                                        Visibility="{x:Bind ShowNotAccessibleWarning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        TextWrapping="Wrap" />
+
+                                    <TextBlock 
+                                        x:Uid="Run_NotAllowedActionKeyword"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                                        Visibility="{x:Bind ShowNotAllowedKeywordWarning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
+                                              x:Name="ToggleSwitch"
+                                              HorizontalAlignment="Center"
+                                              IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"
+                                              Grid.Column="2" />
+                            </Grid>
+
+                            <StackPanel Margin="60,24,0,24" 
+                                        x:Name="AdditionalInfoPanel" 
+                                        Visibility="{x:Bind ShowAdditionalInfoPanel, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
+                                          IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
+                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}"/>
+
+                                <TextBlock x:Uid="PowerLauncher_ActionKeyword"
+                                           x:Name="ActionKeywordHeaderTextBlock"
+                                           Margin="{StaticResource SmallTopMargin}"
+                                           Opacity="{x:Bind DisabledOpacity}"/>
+                                <TextBox x:Uid="PowerLauncher_ActionKeyword"
+                                         Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}"
+                                         Width="86"
+                                         Margin="0,6,0,0"
+                                         AutomationProperties.LabeledBy="{Binding ElementName=ActionKeywordHeaderTextBlock}"
+                                         HorizontalAlignment="Left"
+                                         IsEnabled="{x:Bind Enabled, Mode=OneWay}"/>
+
+                                <TextBlock x:Name="AdditionalOptionsTextBlock"
+                                           x:Uid="Run_AdditionalOptions"
+                                           Margin="{StaticResource SmallTopMargin}"
+                                           Visibility="{x:Bind ShowAdditionalOptions, Converter={StaticResource BoolToVisibilityConverter}}"
+                                           Style="{StaticResource SettingsGroupTitleStyle}"
+                                           Opacity="{x:Bind DisabledOpacity}"/>
+
+                                <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
+                                          SelectionMode="None"
+                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalContentAlignment"
+                                                Value="Stretch" />
+                                            <Setter Property="VerticalContentAlignment"
+                                                Value="Stretch" />
+                                            <Setter Property="Padding"
+                                                Value="0,0,0,0" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+                                            <CheckBox Content="{x:Bind Path=DisplayLabel}" 
+                                                      IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+
+                                <TextBlock FontSize="12"
+                                           Opacity="{x:Bind DisabledOpacity}"
+                                           Foreground="{ThemeResource SystemBaseMediumColor}"
+                                           HorizontalAlignment="Right"
+                                           Margin="0,0,12,0">
+                                           <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                           <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
+                                </TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 

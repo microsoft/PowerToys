@@ -121,7 +121,7 @@
     <value>Registry Plugin</value>
   </data>
   <data name="PluginDescription" xml:space="preserve">
-    <value>Search inside the Windows Registry</value>
+    <value>Navigates inside the Windows Registry.</value>
     <comment>"this built into Windows the OS. translate accordingly, https://docs.microsoft.com/de-de/troubleshoot/windows-server/performance/windows-registry-advanced-users is an example of it translated in German"</comment>
   </data>
   <data name="CopyKeyNamePath" xml:space="preserve">

@@ -32,8 +32,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
             // Setup
             Mock<Main> main = new Mock<Main>();
             main.Object.IconTheme = "dark";
-            string[] terms = { typedString };
-            Query expectedQuery = new Query(typedString, typedString, new ReadOnlyCollection<string>(terms), string.Empty);
+            Query expectedQuery = new Query(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().IcoPath;
@@ -54,8 +53,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
             // Setup
             Mock<Main> main = new Mock<Main>();
             main.Object.IconTheme = "light";
-            string[] terms = { typedString };
-            Query expectedQuery = new Query(typedString, typedString, new ReadOnlyCollection<string>(terms), string.Empty);
+            Query expectedQuery = new Query(typedString);
 
             // Act
             var result = main.Object.Query(expectedQuery).FirstOrDefault().IcoPath;

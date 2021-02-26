@@ -121,7 +121,7 @@
     <value>Window Walker</value>
   </data>
   <data name="wox_plugin_windowwalker_plugin_description" xml:space="preserve">
-    <value>Alt-Tab alternative enabling searching through your windows.</value>
+    <value>Switches between open windows.</value>
   </data>
   <data name="wox_plugin_windowwalker_running" xml:space="preserve">
     <value>Running</value>
