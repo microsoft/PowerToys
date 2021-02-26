@@ -26,5 +26,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             ViewModel.LogOpeningSettingsEvent();
         }
+
+        private void LaunchModuleButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.LogRunningModuleEvent();
+        }
     }
 }

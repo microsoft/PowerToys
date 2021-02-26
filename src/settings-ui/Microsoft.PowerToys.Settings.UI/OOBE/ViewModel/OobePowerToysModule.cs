@@ -56,5 +56,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
         {
             PowerToysTelemetry.Log.WriteEvent(new OobeSettingsEvent() { ModuleName = this.ModuleName });
         }
+
+        public void LogRunningModuleEvent()
+        {
+            PowerToysTelemetry.Log.WriteEvent(new OobeModuleRunEvent() { ModuleName = this.ModuleName });
+        }
     }
 }

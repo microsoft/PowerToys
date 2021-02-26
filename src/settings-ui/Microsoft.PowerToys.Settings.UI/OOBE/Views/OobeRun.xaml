@@ -45,7 +45,8 @@
             <StackPanel Orientation="Horizontal"
                         Margin="32,48,0,0"
                         Spacing="4">
-                <Button Style="{StaticResource AccentButtonStyle}">
+                <Button Style="{StaticResource AccentButtonStyle}"
+                        Click="LaunchModuleButton_Click">
                     <TextBlock>
                         <Run x:Uid="Oobe_Launch"/>
                         <Run Text="{x:Bind ViewModel.ModuleName}"/>
