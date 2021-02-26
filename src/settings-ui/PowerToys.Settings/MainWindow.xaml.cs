@@ -4,8 +4,10 @@
 
 using System;
 using System.Windows;
+using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
@@ -71,6 +73,21 @@ namespace PowerToys.Settings
                 ShellPage.SetCheckForUpdatesMessageCallback(msg =>
                 {
                     Program.GetTwoWayIPCManager().Send(msg);
+                });
+
+                OobeShellPage.SetRunSharedEventCallback(() =>
+                {
+                    return Constants.PowerLauncherSharedEvent();
+                });
+
+                OobeShellPage.SetColorPickerSharedEventCallback(() =>
+                {
+                    return Constants.ShowColorPickerSharedEvent();
+                });
+
+                OobeShellPage.SetShortcutGuideSharedEvent(() =>
+                {
+                    return Constants.ShowShortcutGuideSharedEvent();
                 });
 
                 // open oobe
