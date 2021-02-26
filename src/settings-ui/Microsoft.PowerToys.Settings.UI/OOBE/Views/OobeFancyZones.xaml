@@ -9,53 +9,57 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <StackPanel Orientation="Vertical">
-            <Image Stretch="UniformToFill"
-                   Height="320"
-                   Source="{x:Bind ViewModel.PreviewImageSource}" />
-            <TextBlock Text="{x:Bind ViewModel.ModuleName}"
-                       FontWeight="SemiBold"
-                       FontSize="32"
-                       Margin="32,32,32,16" />
-            <TextBlock Margin="32,0,32,0"
-                       TextWrapping="Wrap"
-                       Opacity="0.8"
-                       Text="{x:Bind ViewModel.Description}" />
-            <HyperlinkButton Margin="32,0,32,0" NavigateUri="{x:Bind ViewModel.Link}">
-                <TextBlock>
-                    <Run x:Uid="Oobe_LearnMore"/>
-                    <Run Text="{x:Bind ViewModel.ModuleName}"/>
-                </TextBlock>
-            </HyperlinkButton>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="280" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <TextBlock x:Uid="Oobe_HowToUse"
-                       Style="{StaticResource OobeSubtitleStyle}"/>
-            <TextBlock x:Uid="Oobe_FancyZones_HowToUse"
-                       Margin="32,0,32,0"
-                       TextWrapping="Wrap"
-                       Opacity="0.8" />
+        <Image Stretch="UniformToFill"
+               Height="280"
+               Source="{x:Bind ViewModel.PreviewImageSource}" />
 
-            <TextBlock x:Uid="Oobe_TipsAndTricks"
-                       Style="{StaticResource OobeSubtitleStyle}"/>
-            <TextBlock x:Uid="Oobe_FancyZones_TipsAndTricks"
-                       Margin="32,0,32,0"
-                       TextWrapping="Wrap"
-                       Opacity="0.8" />
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Orientation="Vertical"
+                        Margin="32,24,32,24"
+                        VerticalAlignment="Top">
+                <TextBlock Text="{x:Bind ViewModel.ModuleName}"
+                           Style="{StaticResource PageTitleStyle}" />
+                <TextBlock TextWrapping="Wrap"
+                           Margin="0,4,0,0"
+                           Text="{x:Bind ViewModel.Description}" />
 
-            <Button Foreground="{ThemeResource SystemControlBackgroundAccentBrush}"
-                    Margin="32,48,0,0"
-                    VerticalAlignment="Bottom"
-                    HorizontalAlignment="Left"
-                    Style="{StaticResource TextBlockButtonStyle}"
-                    Click="SettingsLaunchButton_Click">
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}"
+                                 Margin="0,0,0,4">
+                    <TextBlock>
+                                <Run x:Uid="Oobe_LearnMore" />
+                                <Run Text="{x:Bind ViewModel.ModuleName}" />
+                    </TextBlock>
+                </HyperlinkButton>
+                
+                <TextBlock x:Uid="Oobe_HowToUse"
+                           Style="{StaticResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_FancyZones_HowToUse"
+                           TextWrapping="Wrap" />
+
+                <TextBlock x:Uid="Oobe_TipsAndTricks"
+                           Style="{StaticResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_FancyZones_TipsAndTricks"
+                           TextWrapping="Wrap" />
+
                 <StackPanel Orientation="Horizontal"
-                                Spacing="8">
-                    <TextBlock Text="&#xE115;"
-                                   Margin="0,3,0,0"
-                                   FontFamily="Segoe MDL2 Assets" />
-                    <TextBlock Text="Settings" />
+                            Spacing="4"
+                            Margin="0,32,0,0">
+                    <Button Click="SettingsLaunchButton_Click">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="8">
+                            <TextBlock Text="&#xE115;"
+                                       Margin="0,3,0,0"
+                                       FontFamily="Segoe MDL2 Assets" />
+                            <TextBlock x:Uid="OOBE_Settings" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
-            </Button>
-        </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

@@ -937,14 +937,8 @@
   <data name="ColorPicker_Editor.Text" xml:space="preserve">
     <value>Editor</value>
   </data>
-  <data name="Oobe_GetStarted.Text" xml:space="preserve">
-    <value>Let's get started!</value>
-  </data>
-  <data name="Oobe_PowerToysDescription.Text" xml:space="preserve">
-    <value>Welcome to PowerToys!  These overviews will help you quickly learn the basics of all our utilities.</value>
-  </data>
   <data name="Oobe_GettingStarted.Text" xml:space="preserve">
-    <value>Getting Started</value>
+    <value>Getting started</value>
   </data>
   <data name="Oobe_Launch.Text" xml:space="preserve">
     <value>Launch</value>
@@ -968,7 +962,7 @@
     <value>Keyboard Manager allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.</value>
   </data>
   <data name="Oobe_PowerRename_Description" xml:space="preserve">
-    <value>PowerRename enables you to perform simple bulk renaming, searching, and replacing file names.</value>
+    <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
   </data>
   <data name="Oobe_PowerRun_Description" xml:space="preserve">
     <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
@@ -983,7 +977,8 @@
     <value>For returning users, check out what is new on this latest version of</value>
   </data>
   <data name="Oobe_Overview_Description.Text" xml:space="preserve">
-    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity. Take a moment to preview the various utilities listed or view our comprehensive documentation on</value>
+    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.
+Take a moment to preview the various utilities listed or view our comprehensive documentation on</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Microsoft Docs.</value>
@@ -992,10 +987,10 @@
     <value>PowerToys in our release notes.</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
-    <value>Win + Shift + C to open the Color Picker.</value>
+    <value>Win + Shift + C to open Color Picker.</value>
   </data>
   <data name="Oobe_ColorPicker_TipsAndTricks.Text" xml:space="preserve">
-    <value>To select a color with more precision, scrolling the mouse wheel to zoom in.</value>
+    <value>To select a color with more precision, scroll the mouse wheel to zoom in.</value>
   </data>
   <data name="Oobe_FancyZones_HowToUse.Text" xml:space="preserve">
     <value>Shift + drag while dragging the window to snap a window to a zone, and release the window in the desired zone.
@@ -1015,7 +1010,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>How to enable</value>
   </data>
   <data name="Oobe_HowToLaunch.Text" xml:space="preserve">
-    <value>How to Launch</value>
+    <value>How to launch</value>
   </data>
   <data name="Oobe_HowToUse.Text" xml:space="preserve">
     <value>How to use</value>
@@ -1048,7 +1043,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Win + ? to open Shortcut Guide. You can also launch it by holding the Win key for one second!</value>
   </data>
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
-    <value>Tips and Tricks</value>
+    <value>Tips &amp; tricks</value>
   </data>
   <data name="Oobe_VideoConference_HowToLaunch.Text" xml:space="preserve">
     <value>Win + N to toggle both your microphone and video 
@@ -1097,5 +1092,8 @@ Win + Shift + O to toggle your video</value>
   <data name="Oobe_Welcome" xml:space="preserve">
     <value>Welcome to PowerToys</value>
     <comment>Do not localize 'PowerToys'</comment>
+  </data>
+  <data name="OOBE_Settings.Text" xml:space="preserve">
+    <value>Settings</value>
   </data>
 </root>
