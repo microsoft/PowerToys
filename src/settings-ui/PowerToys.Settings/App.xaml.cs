@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+using Microsoft.PowerToys.Telemetry;
 
 namespace PowerToys.Settings
 {
@@ -22,6 +24,8 @@ namespace PowerToys.Settings
             }
             else
             {
+                PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
+
                 OobeWindow otherWindow = new OobeWindow();
                 otherWindow.Show();
             }
