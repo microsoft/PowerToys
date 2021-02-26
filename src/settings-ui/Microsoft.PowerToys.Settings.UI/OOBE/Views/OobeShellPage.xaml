@@ -11,7 +11,6 @@
     Loaded="UserControl_Loaded">
 
     <UserControl.Resources>
-
         <DataTemplate x:Key="NavigationViewMenuItem" x:DataType="localModels:OobePowerToysModule">
             <winui:NavigationViewItem Content="{x:Bind ModuleName}" Tag="{x:Bind Tag}">
                 <winui:NavigationViewItem.Icon>
@@ -37,14 +36,8 @@
                     <TextBlock x:Uid="Oobe_GettingStarted"
                                TextWrapping="Wrap"
                                FontWeight="SemiBold"
-                               FontSize="24"
+                               Style="{StaticResource PageTitleStyle}"
                                Margin="0,0,0,16" />
-                    <TextBlock x:Uid="Oobe_PowerToysDescription"
-                               TextWrapping="Wrap" 
-                               Margin="0, 0, 0, 8"/>
-                    <TextBlock x:Uid="Oobe_GetStarted"
-                               Margin="0,8,0,0"
-                               TextWrapping="Wrap" />
                 </StackPanel>
             </winui:NavigationView.PaneCustomContent>
             <winui:NavigationView.Content>
