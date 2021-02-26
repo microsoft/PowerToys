@@ -138,5 +138,9 @@ public
         static String ^ PowerLauncherSharedEvent() {
             return gcnew String(CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
         }
+
+        static String ^ ShowColorPickerSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
+        }
     };
 }
