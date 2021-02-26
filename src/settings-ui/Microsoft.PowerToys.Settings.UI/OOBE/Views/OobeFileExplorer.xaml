@@ -40,7 +40,8 @@
                     VerticalAlignment="Bottom"
                     HorizontalAlignment="Left"
                     Margin="32,48,0,0"
-                    Style="{StaticResource TextBlockButtonStyle}">
+                    Style="{StaticResource TextBlockButtonStyle}"
+                    Click="SettingsLaunchButton_Click">
                 <StackPanel Orientation="Horizontal"
                             Spacing="8">
                     <TextBlock Text="&#xE115;"
