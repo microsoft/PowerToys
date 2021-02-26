@@ -46,8 +46,9 @@
             <StackPanel Orientation="Horizontal"
                         Margin="32,48,0,0"
                         Spacing="4">
-                <Button Style="{StaticResource AccentButtonStyle}"
-                        Click="LaunchModuleButton_Click">
+                <Button x:Name="Start_ColorPicker"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Click="Start_ColorPicker_Click">
                     <TextBlock>
                         <Run x:Uid="Oobe_Launch"/>
                         <Run Text="{x:Bind ViewModel.ModuleName}"/>

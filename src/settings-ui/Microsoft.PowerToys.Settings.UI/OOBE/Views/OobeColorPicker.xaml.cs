@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Threading;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Windows.UI.Xaml.Controls;
@@ -22,14 +23,19 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             DataContext = ViewModel;
         }
 
+        private void Start_ColorPicker_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeShellPage.ColorPickerSharedEventCallback()))
+            {
+                eventHandle.Set();
+            }
+
+            ViewModel.LogRunningModuleEvent();
+        }
+
         private void SettingsLaunchButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             ViewModel.LogOpeningSettingsEvent();
-        }
-
-        private void LaunchModuleButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
-        {
-            ViewModel.LogRunningModuleEvent();
         }
     }
 }
