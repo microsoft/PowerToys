@@ -143,7 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/ShortcutGuide.png",
                 Link = "https://aka.ms/PowerToysOverview_ShortcutGuide",
             });
-            /*Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
+            /* Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_VideoConference"),
                 Tag = "VideoConference",
@@ -154,7 +154,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Description = loader.GetString("Oobe_VideoConference_Description"),
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/VideoConferenceMute.png",
                 Link = "https://aka.ms/PowerToysOverview_VideoConference",
-            });*/
+            }); */
         }
 
         private void UserControl_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)

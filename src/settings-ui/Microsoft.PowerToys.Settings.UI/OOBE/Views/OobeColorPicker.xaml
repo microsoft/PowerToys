@@ -28,7 +28,14 @@
                 <TextBlock TextWrapping="Wrap"
                            Margin="0,4,0,0"
                            Text="{x:Bind ViewModel.Description}" />
-                
+
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}" Margin="0,0,0,4">
+                    <TextBlock>
+                                <Run x:Uid="Oobe_LearnMore" />
+                                <Run Text="{x:Bind ViewModel.ModuleName}" />
+                    </TextBlock>
+                </HyperlinkButton>
+
                 <TextBlock x:Uid="Oobe_HowToUse"
                            Style="{StaticResource OobeSubtitleStyle}"/>
                 
@@ -50,22 +57,15 @@
                         <Run Text="{x:Bind ViewModel.ModuleName}"/>
                     </TextBlock>
                 </Button>
-                <Button>
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="8">
-                        <TextBlock Text="&#xE115;"
-                                   Margin="0,3,0,0"
-                                   FontFamily="Segoe MDL2 Assets" />
+                    <Button>
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="8">
+                            <TextBlock Text="&#xE115;"
+                                       Margin="0,3,0,0"
+                                       FontFamily="Segoe MDL2 Assets" />
                             <TextBlock x:Uid="OOBE_Settings" />
                         </StackPanel>
                     </Button>
-                    <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}"
-                                     Margin="4,0,0,0">
-                        <TextBlock>
-                                <Run x:Uid="Oobe_LearnMore" />
-                                <Run Text="{x:Bind ViewModel.ModuleName}" />
-                        </TextBlock>
-                    </HyperlinkButton>
                 </StackPanel>
         </StackPanel>
         </ScrollViewer>

@@ -28,6 +28,14 @@
                            TextWrapping="Wrap"
                            Text="{x:Bind ViewModel.Description}" />
 
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}"
+                                 Margin="0,0,0,4">
+                    <TextBlock>
+                                <Run x:Uid="Oobe_LearnMore" />
+                                <Run Text="{x:Bind ViewModel.ModuleName}" />
+                    </TextBlock>
+                </HyperlinkButton>
+
                 <TextBlock x:Uid="Oobe_HowToCreateMappings"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
@@ -52,14 +60,6 @@
                             <TextBlock Text="Settings" />
                         </StackPanel>
                     </Button>
-
-                    <HyperlinkButton  Margin="4,0,0,0"
-                                      NavigateUri="{x:Bind ViewModel.Link}">
-                        <TextBlock>
-                            <Run x:Uid="Oobe_LearnMore" />
-                            <Run Text="{x:Bind ViewModel.ModuleName}" />
-                        </TextBlock>
-                    </HyperlinkButton>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
