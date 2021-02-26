@@ -51,7 +51,7 @@
                 <StackPanel Orientation="Horizontal"
                             Spacing="4"
                             Margin="0,32,0,0">
-                    <Button>
+                    <Button Click="SettingsLaunchButton_Click">
                         <StackPanel Orientation="Horizontal"
                                     Spacing="8">
                             <TextBlock Text="&#xE115;"

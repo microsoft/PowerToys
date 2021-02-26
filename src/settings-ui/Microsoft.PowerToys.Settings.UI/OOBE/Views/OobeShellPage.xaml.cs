@@ -2,10 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
+using Microsoft.PowerToys.Telemetry;
 using Windows.ApplicationModel.Resources;
 using Windows.UI.Xaml.Controls;
 
@@ -13,6 +16,27 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
     public sealed partial class OobeShellPage : UserControl
     {
+        public static Func<string> RunSharedEventCallback { get; set; }
+
+        public static void SetRunSharedEventCallback(Func<string> implementation)
+        {
+            RunSharedEventCallback = implementation;
+        }
+
+        public static Func<string> ColorPickerSharedEventCallback { get; set; }
+
+        public static void SetColorPickerSharedEventCallback(Func<string> implementation)
+        {
+            ColorPickerSharedEventCallback = implementation;
+        }
+
+        public static Func<string> ShortcutGuideSharedEvent { get; set; }
+
+        public static void SetShortcutGuideSharedEvent(Func<string> implementation)
+        {
+            ShortcutGuideSharedEvent = implementation;
+        }
+
         /// <summary>
         /// Gets view model.
         /// </summary>
@@ -169,6 +193,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             OobePowerToysModule selectedItem = args.SelectedItem as OobePowerToysModule;
+            PowerToysTelemetry.Log.WriteEvent(new OobeSectionEvent() { SectionEntered = selectedItem.ModuleName });
+
             switch (selectedItem.Tag)
             {
                 case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;

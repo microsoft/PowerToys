@@ -46,17 +46,16 @@
                 <TextBlock x:Uid="Oobe_FancyZones_TipsAndTricks"
                            TextWrapping="Wrap" />
 
-
                 <StackPanel Orientation="Horizontal"
                             Spacing="4"
                             Margin="0,32,0,0">
-                    <Button>
+                    <Button Click="SettingsLaunchButton_Click">
                         <StackPanel Orientation="Horizontal"
                                     Spacing="8">
                             <TextBlock Text="&#xE115;"
                                        Margin="0,3,0,0"
                                        FontFamily="Segoe MDL2 Assets" />
-                            <TextBlock Text="Settings" />
+                            <TextBlock x:Uid="OOBE_Settings" />
                         </StackPanel>
                     </Button>
                 </StackPanel>

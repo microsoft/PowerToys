@@ -31,6 +31,7 @@
 
                 <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}"
                                  Margin="0,0,0,4">
+
                     <TextBlock>
                                 <Run x:Uid="Oobe_LearnMore" />
                                 <Run Text="{x:Bind ViewModel.ModuleName}" />
@@ -46,13 +47,13 @@
                 <StackPanel Orientation="Horizontal"
                             Margin="0,32,0,0"
                             Spacing="8">
-                    <Button Style="{StaticResource AccentButtonStyle}">
+                    <Button Click="Start_ShortcutGuide_Click" Style="{StaticResource AccentButtonStyle}">
                         <TextBlock>
                         <Run x:Uid="Oobe_Launch" />
                         <Run Text="{x:Bind ViewModel.ModuleName}" />
                         </TextBlock>
                     </Button>
-                    <Button>
+                    <Button Click="SettingsLaunchButton_Click">
                         <StackPanel Orientation="Horizontal"
                                     Spacing="8">
                             <TextBlock Text="&#xE115;"

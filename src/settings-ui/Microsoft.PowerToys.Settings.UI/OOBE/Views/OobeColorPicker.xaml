@@ -51,13 +51,13 @@
             <StackPanel Orientation="Horizontal"
                         Spacing="4"
                         Margin="0,32,0,0">
-                <Button Style="{StaticResource AccentButtonStyle}">
+                <Button Style="{StaticResource AccentButtonStyle}" Click="Start_ColorPicker_Click">
                     <TextBlock>
                         <Run x:Uid="Oobe_Launch"/>
                         <Run Text="{x:Bind ViewModel.ModuleName}"/>
                     </TextBlock>
                 </Button>
-                    <Button>
+                    <Button Click="SettingsLaunchButton_Click">
                         <StackPanel Orientation="Horizontal"
                                     Spacing="8">
                             <TextBlock Text="&#xE115;"
