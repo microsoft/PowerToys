@@ -188,7 +188,7 @@
                         Orientation="Vertical" >
 
                 <HyperlinkButton Click="OobeButton_Click">
-                    <TextBlock Text="OOBE"/>
+                    <TextBlock x:Uid="Oobe_Button"/>
                 </HyperlinkButton>
                 
                 <HyperlinkButton x:Uid="GeneralPage_ImageHyperlinkToDocs">
