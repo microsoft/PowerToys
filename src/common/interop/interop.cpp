@@ -141,6 +141,10 @@ public
 
         static String ^ ShowColorPickerSharedEvent() {
             return gcnew String(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
+        } 
+        
+        static String ^ ShowShortcutGuideSharedEvent() {
+            return gcnew String(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT);
         }
     };
 }
