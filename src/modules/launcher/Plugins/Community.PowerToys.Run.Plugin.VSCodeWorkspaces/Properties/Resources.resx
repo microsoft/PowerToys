@@ -122,6 +122,7 @@
   </data>
   <data name="In" xml:space="preserve">
     <value>in</value>
+    <comment>Used to indicate the location where something is</comment>
   </data>
   <data name="PluginDescription" xml:space="preserve">
     <value>Open VSCode previously opened workspaces, remote machines (SSH or Codespaces) and containers.</value>
@@ -131,11 +132,14 @@
   </data>
   <data name="TypeWorkspaceContainer" xml:space="preserve">
     <value>Container</value>
+    <comment>As in "Visual Studio Code workspace container type</comment>
   </data>
   <data name="TypeWorkspaceLocal" xml:space="preserve">
     <value>Local</value>
+    <comment>As in "The workspace is on the local machine"</comment>
   </data>
   <data name="Workspace" xml:space="preserve">
     <value>Workspace</value>
+    <comment>It refers to the "Visual Studio Code  workspace"</comment>
   </data>
 </root>
