@@ -148,12 +148,6 @@
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
             />
 
-            <CheckBox x:Uid="PowerLauncher_DisableDriveDetectionWarning"
-	                Margin="{StaticResource SmallTopMargin}"
-	                IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableDriveDetectionWarning}"
-	                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-	                />
-
             <TextBlock x:Uid="Run_PositionAppearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
