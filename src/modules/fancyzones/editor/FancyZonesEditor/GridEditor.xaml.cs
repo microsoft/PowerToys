@@ -79,11 +79,12 @@ namespace FancyZonesEditor
                 zonePanel.MinHeight = actualSize.Height * (zone.Bottom - zone.Top) / _data.Multiplier;
             }
 
-            Preview.Children.Add(new Button());
-
             foreach (var resizer in _data.Resizers)
             {
                 var resizerThumb = new GridResizer();
+                resizerThumb.DragStarted += Resizer_DragStarted;
+                resizerThumb.DragDelta += Resizer_DragDelta;
+                resizerThumb.DragCompleted += Resizer_DragCompleted;
                 resizerThumb.Orientation = resizer.Orientation;
                 AdornerLayer.Children.Add(resizerThumb);
 
@@ -171,6 +172,12 @@ namespace FancyZonesEditor
         private double _dragX = 0;
         private double _dragY = 0;
 
+        private void Resizer_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            _dragX = 0;
+            _dragY = 0;
+        }
+
         private void Resizer_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
             MergeCancelClick(null, null);
@@ -203,12 +210,14 @@ namespace FancyZonesEditor
                     {
                         var zone = Preview.Children[zoneIndex];
                         Canvas.SetLeft(zone, Canvas.GetLeft(zone) + e.HorizontalChange);
+                        (zone as GridZone).MinWidth -= e.HorizontalChange;
                     });
 
                     _data.Resizers[resizerIndex].NegativeSideIndices.ForEach((zoneIndex) =>
                     {
                         var zone = Preview.Children[zoneIndex];
                         Canvas.SetRight(zone, Canvas.GetRight(zone) + e.HorizontalChange);
+                        (zone as GridZone).MinWidth += e.HorizontalChange;
                     });
 
                     Canvas.SetLeft(resizer, Canvas.GetLeft(resizer) + e.HorizontalChange);
@@ -219,21 +228,40 @@ namespace FancyZonesEditor
                     {
                         var zone = Preview.Children[zoneIndex];
                         Canvas.SetTop(zone, Canvas.GetTop(zone) + e.VerticalChange);
+                        (zone as GridZone).MinHeight -= e.VerticalChange;
                     });
 
                     _data.Resizers[resizerIndex].NegativeSideIndices.ForEach((zoneIndex) =>
                     {
                         var zone = Preview.Children[zoneIndex];
                         Canvas.SetBottom(zone, Canvas.GetBottom(zone) + e.VerticalChange);
+                        (zone as GridZone).MinHeight += e.VerticalChange;
                     });
 
                     Canvas.SetTop(resizer, Canvas.GetTop(resizer) + e.VerticalChange);
                 }
             }
+            else
+            {
+                // Undo changes
+                _dragX -= e.HorizontalChange;
+                _dragY -= e.VerticalChange;
+            }
         }
 
         private void Resizer_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
+            GridResizer resizer = (GridResizer)sender;
+            int resizerIndex = AdornerLayer.Children.IndexOf(resizer);
+            Size actualSize = WorkAreaSize();
+
+            double pixelDelta = resizer.Orientation == Orientation.Vertical ?
+                _dragX / actualSize.Width * _data.Multiplier :
+                _dragY / actualSize.Height * _data.Multiplier;
+
+            _data.Drag(resizerIndex, Convert.ToInt32(pixelDelta));
+
+            SetupUI();
         }
 
         private Point _startDragPos = new Point(-1, -1);

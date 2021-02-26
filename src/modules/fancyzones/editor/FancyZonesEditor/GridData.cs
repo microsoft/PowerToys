@@ -525,5 +525,51 @@ namespace FancyZonesEditor
 
             return true;
         }
+
+        public void Drag(int resizerIndex, int delta)
+        {
+            if (!CanDrag(resizerIndex, delta))
+            {
+                return;
+            }
+
+            var resizer = _resizers[resizerIndex];
+
+            foreach (int zoneIndex in resizer.PositiveSideIndices)
+            {
+                var zone = _zones[zoneIndex];
+
+                if (resizer.Orientation == Orientation.Horizontal)
+                {
+                    zone.Top += delta;
+                }
+                else
+                {
+                    zone.Left += delta;
+                }
+
+                _zones[zoneIndex] = zone;
+            }
+
+            foreach (int zoneIndex in resizer.NegativeSideIndices)
+            {
+                var zone = _zones[zoneIndex];
+
+                if (resizer.Orientation == Orientation.Horizontal)
+                {
+                    zone.Bottom += delta;
+                }
+                else
+                {
+                    zone.Right += delta;
+                }
+
+                _zones[zoneIndex] = zone;
+            }
+
+            // Restore invariants
+            ZonesToModel(_model);
+            FromModel(_model);
+        }
     }
 }
