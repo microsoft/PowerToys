@@ -36,6 +36,9 @@
     <ClCompile Include="tasklist_positions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="native_event_waiter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -71,6 +74,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="start_visible.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="native_event_waiter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

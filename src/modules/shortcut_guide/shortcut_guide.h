@@ -1,6 +1,7 @@
 #pragma once
 #include <interface/powertoy_module_interface.h>
 #include "overlay_window.h"
+#include "native_event_waiter.h"
 
 #include "Generated Files/resource.h"
 
@@ -44,6 +45,7 @@ private:
     std::unique_ptr<D2DOverlayWindow> winkey_popup;
     bool _enabled = false;
     HHOOK hook_handle;
+    std::unique_ptr<NativeEventWaiter> event_waiter;
 
     void init_settings();
     void disable(bool trace_event);
