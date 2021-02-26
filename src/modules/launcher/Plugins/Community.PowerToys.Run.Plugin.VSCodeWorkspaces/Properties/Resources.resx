@@ -124,7 +124,7 @@
     <value>in</value>
   </data>
   <data name="PluginDescription" xml:space="preserve">
-    <value>Show VSCode Workspaces and Remote machines</value>
+    <value>Open VSCode previously opened workspaces, remote machines (SSH or Codespaces) and containers.</value>
   </data>
   <data name="SSHRemoteMachine" xml:space="preserve">
     <value>SSH remote machine</value>
