@@ -239,21 +239,21 @@
                                     <TextBlock FontSize="18"
                                                Text="{x:Bind Path=Name}"
                                                Opacity="{x:Bind DisabledOpacity}"/>
-                                    <TextBlock FontSize="12"
+                                    <TextBlock 
                                                Opacity="{x:Bind DisabledOpacity}"
                                                Foreground="{ThemeResource SystemBaseMediumColor}"
                                                Text="{x:Bind Description}"
                                                TextWrapping="Wrap"/>
                                     <TextBlock 
                                         x:Uid="Run_NotAccessibleWarning"
-                                        FontSize="12"
+                                        
                                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                                         Visibility="{x:Bind ShowNotAccessibleWarning, Converter={StaticResource BoolToVisibilityConverter}}"
                                         TextWrapping="Wrap" />
 
                                     <TextBlock 
                                         x:Uid="Run_NotAllowedActionKeyword"
-                                        FontSize="12"
+                                      
                                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                                         Visibility="{x:Bind ShowNotAllowedKeywordWarning, Converter={StaticResource BoolToVisibilityConverter}}"
                                         TextWrapping="Wrap" />
