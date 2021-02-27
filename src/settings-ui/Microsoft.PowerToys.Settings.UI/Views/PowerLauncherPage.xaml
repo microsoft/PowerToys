@@ -181,7 +181,8 @@
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <TextBlock x:Uid="Run_PluginUseDescription"
-                       Margin="{StaticResource SmallTopMargin}" 
+                       Margin="{StaticResource SmallTopMargin}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
                        TextWrapping="Wrap"/>
             
             <TextBlock x:Uid="Run_AllPluginsDisabled"
