@@ -1040,7 +1040,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>PowerToys runs supports various action keys to funnel search queries for a specific subset of results. Typing &lt; searches for running processes only, ? will search only for file, or . for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
   </data>
   <data name="Oobe_ShortcutGuide_HowToLaunch.Text" xml:space="preserve">
-    <value>Win + ? to open Shortcut Guide. You can also launch it by holding the Win key for one second!</value>
+    <value>Win + ? to open Shortcut Guide, press it again to close or press Esc. You can also launch it by holding the Win key for one second!</value>
   </data>
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
     <value>Tips &amp; tricks</value>
