@@ -227,8 +227,16 @@ namespace Microsoft.Plugin.Indexer
 
         public void UpdateSettings(PowerLauncherPluginSettings settings)
         {
-            var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == DisableDriveDetectionWarning);
-            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = option == null ? false : option.Value;
+            var driveDetection = false;
+
+            if (settings.AdditionalOptions != null)
+            {
+                var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == DisableDriveDetectionWarning);
+
+                driveDetection = option == null ? false : option.Value;
+            }
+
+            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = driveDetection;
         }
 
         public Control CreateSettingPanel()
