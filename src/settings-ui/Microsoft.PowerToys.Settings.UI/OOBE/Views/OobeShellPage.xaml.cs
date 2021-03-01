@@ -198,7 +198,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             if (Modules.Count > 0)
             {
-                NavigationView.SelectedItem = Modules[0];
+                NavigationView.SelectedItem = Modules[(int)PowerToysModulesEnum.Overview];
             }
         }
 
