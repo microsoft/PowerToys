@@ -95,6 +95,8 @@ namespace
                            ((style & WS_THICKFRAME) == WS_THICKFRAME);
         return result;
     }
+
+    const LPARAM eventActivateWindow = 1;
 }
 
 OverlayWindow::OverlayWindow()
@@ -213,6 +215,13 @@ void OverlayWindow::enable()
             instance->target_state->toggle_force_shown();
             return 0;
         }
+
+        if (msg == WM_APP && lparam == eventActivateWindow)
+        {
+            instance->target_state->toggle_force_shown();
+            return 0;
+        }
+
         if (msg != WM_HOTKEY)
         {
             return 0;
@@ -263,7 +272,7 @@ void OverlayWindow::enable()
         RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);
 
         auto show_action = [&]() {
-            target_state->toggle_force_shown();
+            SendMessageW(winkey_popup->get_window_handle(), WM_APP, 0, eventActivateWindow);
         };
 
         event_waiter = std::make_unique<NativeEventWaiter>(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT, show_action);
