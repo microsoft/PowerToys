@@ -85,15 +85,18 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 **General**
 - Updated overview links to be language agnostic to the docs site.
+- 'First time load' experience.  The hope is a quick, light way to learn about basic functionality.  We have some more work to do and want to also use the same framework for teaching about updates as well.
+- Localization corrections
 
 **Color Picker** 
 - 
 
 **FancyZones**
-- 
+- Adjusted editor UX based on feedback.  Thanks @niels9001!
 
 **File Explorer**
-- 
+- Improved how SVG images are previewed in the preview pane, thanks @Drakula44!
+- @Aaron-Junker has created a proof of concept for using [Monaco editor](https://github.com/microsoft/monaco-editor) for previewing dev files.  This will enable over 125+ file types.
 
 **Image Resizer**
 - 
@@ -105,7 +108,13 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - 
 
 **PowerToys Run**
-- 
+- Plugin Manager now is in settings.  You can directly turn on / off, include items in general search, and change the action key!
+- Improved support for additional window managers by abstracting out shell process calls. Thanks @davidegiacometti!
+- Fix for PT Run registering the hotkey on non-supported OS versions.
+- ~ will not act as the user home directory.  Thanks @davide
+
+**Settings**
+- When restarting as admin, the settings now will reopen. Thanks @davidegiacometti!
 
 **Installer**
 - 
@@ -117,22 +126,21 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
-CRUTKAS, CREATE LIST
-[@crutkas](https://github.com/crutkas), 
-[@crutkas](https://github.com/crutkas), 
+[@Aaron-Junker](Aaron-Junker), 
+[@davidegiacometti](https://github.com/davidegiacometti), 
+[@Drakula44](https://github.com/Drakula44), 
+[@niels9001](https://github.com/niels9001),
 and 
-[@crutkas](https://github.com/crutkas), 
+[notDevagya](https://github.com/notDevagya)
 
-#### What is being planned for v0.33 - February 2021
+#### What is being planned for v0.35 - March 2021
 
-For [v0.33][github-next-release-work], we are proactively working on:
+For [v0.35][github-next-release-work], we are proactively working on:
 
 - Stability
-- Video conference mute's new DirectShow filter should be ready shortly for testing and we hope to have the utility inside the official 0.33 build
-- OOBE dialog
-- Plugin Manager
-
-For 0.35, we aim to focus mainly on getting all the parts needed to support ARM64 support.  This includes our installer, CI system, build server, and upgrading all projects to .NET Core projects to .NET 5.
+- FZ Editor hotkey layout swap support
+- OOBE dialog and making it generic so we can enable upgrade scenario dialogs
+- Integrating VCM in main release 
 
 ## PowerToys Community
 
