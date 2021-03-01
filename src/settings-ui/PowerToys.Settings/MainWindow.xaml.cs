@@ -6,6 +6,7 @@ using System;
 using System.Windows;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -87,6 +88,7 @@ namespace PowerToys.Settings
 
                 OobeShellPage.SetShortcutGuideSharedEvent(() =>
                 {
+                    NativeMethods.AllowSetForegroundWindow(PowerToys.Settings.Program.PowerToysPID);
                     return Constants.ShowShortcutGuideSharedEvent();
                 });
 
