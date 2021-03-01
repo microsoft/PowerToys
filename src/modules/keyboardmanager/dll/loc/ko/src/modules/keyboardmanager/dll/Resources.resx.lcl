@@ -114,10 +114,13 @@
       </Item>
       <Item ItemId=";EditKeyboard_OrphanedDialogTitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The following keys are unassigned and you won't be able to use them:]]></Val>
+          <Val><![CDATA[The following keys have been reassigned and you won't be able to use them for their original assignment:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[다음 키가 할당되지 않았으므로 사용할 수 없습니다.]]></Val>
+            <Val><![CDATA[다음 키가 다시 할당되었으며 원래 할당에 사용할 수 없습니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The following keys are unassigned and you won't be able to use them:]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

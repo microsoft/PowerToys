@@ -114,10 +114,13 @@
       </Item>
       <Item ItemId=";EditKeyboard_OrphanedDialogTitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The following keys are unassigned and you won't be able to use them:]]></Val>
+          <Val><![CDATA[The following keys have been reassigned and you won't be able to use them for their original assignment:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[以下键未被分配，你将无法使用它们:]]></Val>
+            <Val><![CDATA[以下键已被重新分配，你将不能把它们用于原始分配:]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The following keys are unassigned and you won't be able to use them:]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
