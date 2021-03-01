@@ -4,6 +4,8 @@
 
 using System;
 using System.Windows;
+using Microsoft.PowerToys.Settings.UI.OOBE.Views;
+using Microsoft.Toolkit.Wpf.UI.XamlHost;
 
 namespace PowerToys.Settings
 {
@@ -13,6 +15,7 @@ namespace PowerToys.Settings
     public partial class OobeWindow : Window
     {
         private static Window inst;
+        private OobeShellPage shellPage;
 
         public static bool IsOpened
         {
@@ -29,6 +32,11 @@ namespace PowerToys.Settings
 
         private void Window_Closed(object sender, EventArgs e)
         {
+            if (shellPage != null)
+            {
+                shellPage.OnClosing();
+            }
+
             inst = null;
             MainWindow.CloseHiddenWindow();
         }
@@ -41,6 +49,17 @@ namespace PowerToys.Settings
             }
 
             inst = this;
+        }
+
+        private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
+        {
+            if (sender == null)
+            {
+                return;
+            }
+
+            WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
+            shellPage = windowsXamlHost.GetUwpInternalObject() as OobeShellPage;
         }
     }
 }

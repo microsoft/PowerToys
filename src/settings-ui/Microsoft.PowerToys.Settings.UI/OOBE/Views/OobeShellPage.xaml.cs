@@ -186,6 +186,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }); */
         }
 
+        public void OnClosing()
+        {
+            if (NavigationView.SelectedItem != null)
+            {
+                ((OobePowerToysModule)NavigationView.SelectedItem).LogClosingModuleEvent();
+            }
+        }
+
         private void UserControl_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             if (Modules.Count > 0)
