@@ -41,6 +41,17 @@
                     <Run x:Uid="Oobe_Overview_LatestVersionLink" />
                 </Hyperlink>
                 </TextBlock>
+
+                <Button Click="SettingsLaunchButton_Click"
+                            Margin="0,32,0,0">
+                    <StackPanel Orientation="Horizontal"
+                                    Spacing="8">
+                        <TextBlock Text="&#xE115;"
+                                       Margin="0,3,0,0"
+                                       FontFamily="Segoe MDL2 Assets" />
+                        <TextBlock x:Uid="OOBE_Settings" />
+                    </StackPanel>
+                </Button>
             </StackPanel>
         </ScrollViewer>
     </Grid>

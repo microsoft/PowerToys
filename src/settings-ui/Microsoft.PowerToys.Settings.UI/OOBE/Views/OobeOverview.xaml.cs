@@ -4,6 +4,7 @@
 
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
@@ -18,6 +19,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             this.InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.Overview]);
             DataContext = ViewModel;
+        }
+
+        private void SettingsLaunchButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            OobeShellPage.OpenMainWindowCallback(typeof(GeneralPage));
+            ViewModel.LogOpeningSettingsEvent();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
