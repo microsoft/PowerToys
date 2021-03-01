@@ -41,6 +41,7 @@ void D2DWindow::show(UINT x, UINT y, UINT width, UINT height)
     on_show();
     SetWindowPos(hwnd, HWND_TOPMOST, x, y, width, height, 0);
     ShowWindow(hwnd, SW_SHOWNORMAL);
+    SetForegroundWindow(hwnd);
     UpdateWindow(hwnd);
 }
 
