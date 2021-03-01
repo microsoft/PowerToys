@@ -52,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             Description = other.Description;
             Link = other.Link;
             DescriptionLink = other.DescriptionLink;
+            timeOpened = other.timeOpened;
         }
 
         public void LogOpeningSettingsEvent()
