@@ -5,10 +5,8 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
-using Microsoft.PowerToys.Telemetry;
 using Windows.ApplicationModel.Resources;
 using Windows.UI.Xaml.Controls;
 
@@ -200,7 +198,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             OobePowerToysModule selectedItem = args.SelectedItem as OobePowerToysModule;
-            PowerToysTelemetry.Log.WriteEvent(new OobeSectionEvent() { SectionEntered = selectedItem.ModuleName });
 
             switch (selectedItem.Tag)
             {
