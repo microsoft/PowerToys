@@ -14,14 +14,12 @@ Acceleratorkeys
 ACCEPTFILES
 accessibile
 accessibilityinsights
-acf
 Acl
 aclapi
 AColumn
 acos
 acrt
 Actioncenter
-Actionkeyword
 activatable
 ACTIVATEAPP
 activationaction
@@ -144,10 +142,8 @@ bc
 bcc
 bck
 Bcl
-bdaa
 bddac
 BEGINLABELEDIT
-benjamhooper
 betadele
 betsegaw
 BGR
@@ -184,7 +180,6 @@ bricelam
 BRIGHTGREEN
 Browsable
 bsd
-bsearch
 BSODs
 bstr
 BText
@@ -439,7 +434,6 @@ DELA
 deletethis
 delims
 DENORMAL
-deondre
 depersist
 deprioritized
 deps
@@ -637,7 +631,6 @@ EFFE
 efgh
 EFile
 egistry
-Elems
 ELogo
 elseif
 Emoji
@@ -660,7 +653,6 @@ epicgames
 ERASEBKGND
 EREOF
 EResize
-eriawan
 errc
 errorlevel
 ERRORMESSAGE
@@ -717,9 +709,7 @@ Favicon
 fcharset
 fd
 fda
-FDFC
 feimage
-FFB
 ffcd
 ffd
 FFDDDDDD
@@ -731,7 +721,6 @@ FILEFLAGS
 FILEFLAGSMASK
 FILEOP
 FILEOS
-filesfolder
 FILESUBTYPE
 FILESYSPATH
 filesystem
@@ -799,7 +788,6 @@ Giftbox
 github
 githubusercontent
 gitignore
-globalplugins
 globals
 gmx
 google
@@ -817,7 +805,6 @@ HACCEL
 hangeul
 hanja
 hanselman
-happlebao
 hardcoded
 HARDWAREINPUT
 hashcode
@@ -853,9 +840,8 @@ hitinfo
 HIWORD
 hk
 HKCC
-HKCU
 HKCR
-HKE
+HKCU
 hkey
 HKL
 HKLM
@@ -929,6 +915,7 @@ IComparer
 ICONERROR
 ICONINFORMATION
 ICONQUESTION
+Iconsempty
 Iconset
 IContext
 ICONWARNING
@@ -1099,10 +1086,10 @@ ITemplate
 ITEMSTATEICONCLICK
 ITest
 ith
-itsme
 IThrottled
 IThumbnail
 ITrigger
+itsme
 IUI
 IUnknown
 IUri
@@ -1122,7 +1109,6 @@ Jarryd
 javascript
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
-jhutchings
 jjw
 jobject
 jp
@@ -1133,7 +1119,6 @@ JPN
 json
 JSONOf
 jsonval
-jsoref
 jsx
 junja
 jxr
@@ -1366,7 +1351,6 @@ moz
 mozilla
 mpmc
 mru
-msazure
 msbuild
 msc
 msclr
@@ -1375,7 +1359,6 @@ mscorlib
 msdata
 msdn
 msedge
-MSGBOX
 mshtmdid
 msi
 MSIHANDLE
@@ -1438,7 +1421,7 @@ NESW
 netcore
 netcoreapp
 netframework
-netfx
+NETFX
 netsh
 netstandard
 Neue
@@ -1550,7 +1533,7 @@ onedrive
 onedrivelogo
 ONITEM
 onstd
-OOBE
+oobe
 opencode
 opensource
 Openthe
@@ -1745,7 +1728,7 @@ queryfocus
 QUERYOPEN
 QUEUESYNC
 qwertyuiopasdfghjklzxcvbnm
-QWORD
+qword
 qwrtyuiopsghjklzxvnm
 Radiobuttons
 RAII
@@ -1791,7 +1774,6 @@ REMAPUNSUCCESSFUL
 Remotable
 REMOTEDISPLAY
 REMOTESESSION
-removefolder
 Removelnk
 renamable
 RENAMEONCOLLISION
@@ -1858,8 +1840,7 @@ RUNLEVEL
 runsettings
 runtimeclass
 runtimeconfig
-Runtimes
-Rutkas
+runtimes
 rv
 rvalue
 rvm
@@ -1889,10 +1870,9 @@ SEARCHFOR
 searchqueryhelper
 SEARCHREPLACEGROUP
 searchterm
-Searcn
 Secur
 securityoverview
-Segoe
+segoe
 Sekan
 SENDCHANGE
 sendinput
@@ -1995,7 +1975,6 @@ SLogo
 SMALLICON
 SMTO
 snd
-snickler
 somil
 SORTDOWN
 SOURCECLIENTAREAONLY
@@ -2114,7 +2093,6 @@ syslog
 SYSMENU
 systemd
 SYSTEMTIME
-systray
 sz
 tadele
 Tahoma
@@ -2315,7 +2293,6 @@ VDId
 vec
 VERBSONLY
 VERBW
-verifybothfolderfilesequal
 verrsrc
 VERSIONINFO
 Versioning
@@ -2382,7 +2359,6 @@ webpage
 website
 webview
 wekyb
-welcomeoverview
 Whichdoes
 whitespaces
 WIC
@@ -2497,7 +2473,6 @@ XElement
 XFile
 XIncrement
 XInstance
-XJson
 xlink
 XLoc
 xml
@@ -2518,7 +2493,6 @@ YDiff
 YESNO
 YIncrement
 yinwang
-YJson
 YLogo
 yml
 YOffset
