@@ -9,6 +9,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
 {
     public class OobePowerToysModule
     {
+        private System.Diagnostics.Stopwatch timeOpened = new System.Diagnostics.Stopwatch();
+
         public string ModuleName { get; set; }
 
         public string Tag { get; set; }
@@ -50,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             Description = other.Description;
             Link = other.Link;
             DescriptionLink = other.DescriptionLink;
+            timeOpened = other.timeOpened;
         }
 
         public void LogOpeningSettingsEvent()
@@ -60,6 +63,17 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
         public void LogRunningModuleEvent()
         {
             PowerToysTelemetry.Log.WriteEvent(new OobeModuleRunEvent() { ModuleName = this.ModuleName });
+        }
+
+        public void LogOpeningModuleEvent()
+        {
+            timeOpened.Start();
+        }
+
+        public void LogClosingModuleEvent()
+        {
+            timeOpened.Stop();
+            PowerToysTelemetry.Log.WriteEvent(new OobeSectionEvent() { Section = this.ModuleName, TimeOpenedMs = timeOpened.ElapsedMilliseconds });
         }
     }
 }

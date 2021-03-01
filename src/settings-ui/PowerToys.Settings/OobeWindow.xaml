@@ -14,6 +14,6 @@
         Loaded="Window_Loaded"
         Closed="Window_Closed">
     <Grid>
-        <xaml:WindowsXamlHost InitialTypeName="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeShellPage" />
+        <xaml:WindowsXamlHost InitialTypeName="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeShellPage" ChildChanged="WindowsXamlHost_ChildChanged" />
     </Grid>
 </Window>

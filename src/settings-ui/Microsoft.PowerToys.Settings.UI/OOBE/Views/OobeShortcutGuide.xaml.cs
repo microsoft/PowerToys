@@ -7,6 +7,7 @@ using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -38,6 +39,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             OobeShellPage.OpenMainWindowCallback(typeof(ShortcutGuidePage));
             ViewModel.LogOpeningSettingsEvent();
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            ViewModel.LogOpeningModuleEvent();
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            ViewModel.LogClosingModuleEvent();
         }
     }
 }
