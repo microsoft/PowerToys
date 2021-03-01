@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <StartupObject>PowerLauncher.App</StartupObject>
-    <ApplicationIcon>Resources\placeholderLauncher.ico</ApplicationIcon>
+    <ApplicationIcon>Images\Run.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>    
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -63,6 +63,7 @@
     <None Remove="Images\app.light1.png" />
     <None Remove="Images\app_error.dark.png" />
     <None Remove="Images\app_error.light.png" />
+    <None Remove="Images\Run.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -171,9 +172,6 @@
     <None Update="Images\history.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Images\icon.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Images\image.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -274,6 +272,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\" />
+    <Resource Include="Images\Run.ico" />
   </ItemGroup>
 </Project>
