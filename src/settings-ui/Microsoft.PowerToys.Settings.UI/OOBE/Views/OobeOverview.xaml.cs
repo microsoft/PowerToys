@@ -5,6 +5,7 @@
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -17,6 +18,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             this.InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModulesEnum.Overview]);
             DataContext = ViewModel;
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            ViewModel.LogOpeningModuleEvent();
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            ViewModel.LogClosingModuleEvent();
         }
     }
 }
