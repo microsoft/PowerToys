@@ -243,10 +243,13 @@
       </Item>
       <Item ItemId=";Edit_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Edit zones]]></Val>
+          <Val><![CDATA[Edit zone layout]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zonen bearbeiten]]></Val>
+            <Val><![CDATA[Zonenlayout bearbeiten]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Edit zones]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -486,12 +489,12 @@
       </Item>
       <Item ItemId=";Note_Custom_Table" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
+          <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, hold down the left mouse button, drag the mouse to the zone to merge, release the mouse button and click "Merge zones".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Halten Sie die UMSCHALTTASTE gedrückt, um die Ausrichtung des Splitters zu ändern.]D;]A;Wählen Sie zum Zusammenführen von Zonen die betreffenden Zonen aus, und klicken Sie auf "Zusammenführen".]]></Val>
+            <Val><![CDATA[Halten Sie die UMSCHALTTASTE gedrückt, um die Ausrichtung des Splitters zu ändern.]D;]A;Um Zonen zusammenzuführen, halten Sie die linke Maustaste gedrückt, ziehen Sie die Maustaste auf die zusammenzuführende Zone, lassen Sie die Maustaste los, und klicken Sie auf "Zonen zusammenführen".]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click "merge".]]></Val>
+            <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -627,19 +630,25 @@
       </Item>
       <Item ItemId=";Zone_Count_Decrement" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Decrement number of zones in template layout]]></Val>
+          <Val><![CDATA[Decrement number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Anzahl von Zonen im Vorlagenlayout verringern]]></Val>
+            <Val><![CDATA[Anzahl von Zonen verringern]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Decrement number of zones in template layout]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Zone_Count_Increment" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Increment number of zones in template layout]]></Val>
+          <Val><![CDATA[Increment number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Anzahl von Zonen im Vorlagenlayout erhöhen]]></Val>
+            <Val><![CDATA[Anzahl von Zonen erhöhen]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Increment number of zones in template layout]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

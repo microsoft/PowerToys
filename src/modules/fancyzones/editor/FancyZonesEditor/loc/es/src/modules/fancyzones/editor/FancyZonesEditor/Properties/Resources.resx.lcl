@@ -91,9 +91,6 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Elija el tipo de diseño]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Choose your layout for this desktop]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -246,10 +243,13 @@
       </Item>
       <Item ItemId=";Edit_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Edit zones]]></Val>
+          <Val><![CDATA[Edit zone layout]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Editar zonas]]></Val>
+            <Val><![CDATA[Editar diseño de zona]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Edit zones]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -489,12 +489,12 @@
       </Item>
       <Item ItemId=";Note_Custom_Table" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
+          <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, hold down the left mouse button, drag the mouse to the zone to merge, release the mouse button and click "Merge zones".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mantenga presionada la tecla Mayús para cambiar la orientación del separador.]D;]A;Para combinar zonas, selecciónelas y haga clic en "Combinar".]]></Val>
+            <Val><![CDATA[Mantenga presionada la tecla Mayús para cambiar la orientación del separador.]D;]A;Para combinar zonas, mantenga presionado el botón primario del mouse, arrastre el mouse a la zona que quiera combinar, suelte el botón del mouse y haga clic en "Merge zones".]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click "merge".]]></Val>
+            <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -505,9 +505,6 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Número de zonas]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click "merge".]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -533,8 +530,11 @@
         <Str Cat="Text">
           <Val><![CDATA[Save & apply]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Guardar]]></Val>
+            <Val><![CDATA[Guardar y aplicar]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Save and apply]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -630,19 +630,25 @@
       </Item>
       <Item ItemId=";Zone_Count_Decrement" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Decrement number of zones in template layout]]></Val>
+          <Val><![CDATA[Decrement number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Disminuir el número de zonas en el diseño de plantilla]]></Val>
+            <Val><![CDATA[Reducir el número de zonas]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Decrement number of zones in template layout]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Zone_Count_Increment" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Increment number of zones in template layout]]></Val>
+          <Val><![CDATA[Increment number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aumentar el número de zonas en el diseño de la plantilla]]></Val>
+            <Val><![CDATA[Aumentar el número de zonas]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Increment number of zones in template layout]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

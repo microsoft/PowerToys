@@ -243,10 +243,13 @@
       </Item>
       <Item ItemId=";Edit_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Edit zones]]></Val>
+          <Val><![CDATA[Edit zone layout]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[영역 편집]]></Val>
+            <Val><![CDATA[영역 레이아웃 편집]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Edit zones]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -486,12 +489,12 @@
       </Item>
       <Item ItemId=";Note_Custom_Table" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
+          <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, hold down the left mouse button, drag the mouse to the zone to merge, release the mouse button and click "Merge zones".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[분할기의 방향을 변경하려면 <Shift> 키를 누르고 있습니다.]D;]A;영역을 병합하려면 영역을 선택하고 "병합"을 클릭합니다.]]></Val>
+            <Val><![CDATA[&lt;Shift&gt; 키를 길게 눌러 분할기의 방향을 변경합니다.]D;]A;영역을 병합하려면 왼쪽 마우스 단추를 누른 상태에서 병합할 영역으로 마우스를 끌고 마우스 단추를 놓은 후 "영역 병합"을 클릭합니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click "merge".]]></Val>
+            <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -627,19 +630,25 @@
       </Item>
       <Item ItemId=";Zone_Count_Decrement" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Decrement number of zones in template layout]]></Val>
+          <Val><![CDATA[Decrement number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[템플릿 레이아웃의 영역 수 감소]]></Val>
+            <Val><![CDATA[영역 수 감소]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Decrement number of zones in template layout]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Zone_Count_Increment" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Increment number of zones in template layout]]></Val>
+          <Val><![CDATA[Increment number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[템플릿 레이아웃의 영역 수 증가]]></Val>
+            <Val><![CDATA[영역 수 증가]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Increment number of zones in template layout]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
