@@ -272,7 +272,7 @@ void OverlayWindow::enable()
         RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);
 
         auto show_action = [&]() {
-            SendMessageW(winkey_popup->get_window_handle(), WM_APP, 0, eventActivateWindow);
+            PostMessageW(winkey_popup->get_window_handle(), WM_APP, 0, eventActivateWindow);
         };
 
         event_waiter = std::make_unique<NativeEventWaiter>(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT, show_action);
@@ -292,11 +292,11 @@ void OverlayWindow::disable(bool trace_event)
             Trace::EnableShortcutGuide(false);
         }
         UnregisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id);
+        event_waiter.reset();
         winkey_popup->hide();
         target_state->exit();
         target_state.reset();
         winkey_popup.reset();
-        event_waiter.reset();
         if (hook_handle)
         {
             bool success = UnhookWindowsHookEx(hook_handle);
