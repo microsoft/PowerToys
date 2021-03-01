@@ -92,11 +92,11 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - 
 
 **FancyZones**
-- Adjusted editor UX based on feedback.  Thanks @niels9001!
+- Adjusted editor UX based on feedback.  Thanks [@niels9001](https://github.com/niels9001)!
 
 **File Explorer**
-- Improved how SVG images are previewed in the preview pane, thanks @Drakula44!
-- @Aaron-Junker has created a proof of concept for using [Monaco editor](https://github.com/microsoft/monaco-editor) for previewing dev files.  This will enable over 125+ file types.
+- Improved how SVG images are previewed in the preview pane, thanks[@Drakula44](https://github.com/Drakula44)!
+- [@Aaron-Junker](Aaron-Junker) has created a proof of concept for using [Monaco editor](https://github.com/microsoft/monaco-editor) for previewing dev files.  This will enable over 125+ file types.
 
 **Image Resizer**
 - 
@@ -111,10 +111,10 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - Plugin Manager now is in settings.  You can directly turn on / off, include items in general search, and change the action key!
 - Improved support for additional window managers by abstracting out shell process calls. Thanks @davidegiacometti!
 - Fix for PT Run registering the hotkey on non-supported OS versions.
-- ~ will not act as the user home directory.  Thanks @davide
+- ~ will not act as the user home directory.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
 
 **Settings**
-- When restarting as admin, the settings now will reopen. Thanks @davidegiacometti!
+- When restarting as admin, the settings now will reopen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 **Installer**
 - 
