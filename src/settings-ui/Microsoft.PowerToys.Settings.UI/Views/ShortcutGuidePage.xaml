@@ -107,7 +107,8 @@
                 <RadioButton x:Uid="Radio_Theme_Light" />
                 <RadioButton x:Uid="Radio_Theme_Default"/>
             </muxc:RadioButtons>
-            <HyperlinkButton Click="OpenColorsSettings_Click">
+            <HyperlinkButton Click="OpenColorsSettings_Click"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <TextBlock x:Uid="Windows_Color_Settings" />
             </HyperlinkButton>
         </StackPanel>

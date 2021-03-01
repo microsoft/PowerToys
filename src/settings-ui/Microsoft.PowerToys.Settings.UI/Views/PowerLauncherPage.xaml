@@ -170,7 +170,8 @@
                 <RadioButton x:Uid="Radio_Theme_Default"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
                              IsChecked="{Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}" />
-                <HyperlinkButton Click="OpenColorsSettings_Click">
+                <HyperlinkButton Click="OpenColorsSettings_Click"
+                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                     <TextBlock x:Uid="Windows_Color_Settings" />
                 </HyperlinkButton>
             </StackPanel>
@@ -180,12 +181,11 @@
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <TextBlock x:Uid="Run_PluginUseDescription"
-                       FontSize="12"
-                       Foreground="{ThemeResource SystemBaseMediumColor}"
+                       Margin="{StaticResource SmallTopMargin}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
                        TextWrapping="Wrap"/>
             
             <TextBlock x:Uid="Run_AllPluginsDisabled"
-                       FontSize="12"
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                        Visibility="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                        TextWrapping="Wrap"
@@ -218,7 +218,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
                         <StackPanel Orientation="Vertical" Background="Transparent"
-                                    Padding="0,12,0,12">
+                                    Padding="0,12,12,12">
                             <Grid ColumnSpacing="0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="60" />
@@ -235,25 +235,23 @@
                                        Height="36" />
 
                                 <StackPanel Orientation="Vertical"
-                                            Grid.Column="1" Margin="0,0,12,0">
+                                            Grid.Column="1" Margin="0,0,16,0">
                                     <TextBlock FontSize="18"
                                                Text="{x:Bind Path=Name}"
                                                Opacity="{x:Bind DisabledOpacity}"/>
-                                    <TextBlock FontSize="12"
+                                    <TextBlock 
                                                Opacity="{x:Bind DisabledOpacity}"
                                                Foreground="{ThemeResource SystemBaseMediumColor}"
                                                Text="{x:Bind Description}"
                                                TextWrapping="Wrap"/>
                                     <TextBlock 
                                         x:Uid="Run_NotAccessibleWarning"
-                                        FontSize="12"
                                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                                         Visibility="{x:Bind ShowNotAccessibleWarning, Converter={StaticResource BoolToVisibilityConverter}}"
                                         TextWrapping="Wrap" />
 
                                     <TextBlock 
                                         x:Uid="Run_NotAllowedActionKeyword"
-                                        FontSize="12"
                                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                                         Visibility="{x:Bind ShowNotAllowedKeywordWarning, Converter={StaticResource BoolToVisibilityConverter}}"
                                         TextWrapping="Wrap" />
@@ -266,24 +264,28 @@
                                               Grid.Column="2" />
                             </Grid>
 
-                            <StackPanel Margin="60,24,0,24" 
+                            <StackPanel Margin="60,0,0,0" 
                                         x:Name="AdditionalInfoPanel" 
                                         Visibility="{x:Bind ShowAdditionalInfoPanel, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
-                                          IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
-                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}"/>
-
                                 <TextBlock x:Uid="PowerLauncher_ActionKeyword"
                                            x:Name="ActionKeywordHeaderTextBlock"
                                            Margin="{StaticResource SmallTopMargin}"
-                                           Opacity="{x:Bind DisabledOpacity}"/>
+                                           Opacity="{x:Bind DisabledOpacity}" />
+
                                 <TextBox x:Uid="PowerLauncher_ActionKeyword"
                                          Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}"
                                          Width="86"
                                          Margin="0,6,0,0"
                                          AutomationProperties.LabeledBy="{Binding ElementName=ActionKeywordHeaderTextBlock}"
                                          HorizontalAlignment="Left"
-                                         IsEnabled="{x:Bind Enabled, Mode=OneWay}"/>
+                                         IsEnabled="{x:Bind Enabled, Mode=OneWay}" />
+                                
+                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
+                                          IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
+                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}"
+                                          Margin="{StaticResource SmallTopMargin}"/>
+
+
 
                                 <TextBlock x:Name="AdditionalOptionsTextBlock"
                                            x:Uid="Run_AdditionalOptions"
@@ -313,8 +315,7 @@
                                     </ListView.ItemTemplate>
                                 </ListView>
 
-                                <TextBlock FontSize="12"
-                                           Opacity="{x:Bind DisabledOpacity}"
+                                <TextBlock Opacity="{x:Bind DisabledOpacity}"
                                            Foreground="{ThemeResource SystemBaseMediumColor}"
                                            HorizontalAlignment="Right"
                                            Margin="0,0,12,0">
