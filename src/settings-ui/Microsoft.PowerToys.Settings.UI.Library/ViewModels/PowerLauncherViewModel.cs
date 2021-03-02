@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _isSystemThemeRadioButtonChecked;
 
         private bool _isCursorPositionRadioButtonChecked;
-        private bool _isPrimaryPositionRadioButtonChecked;
+        private bool _isPrimaryMonitorPositionRadioButtonChecked;
         private bool _isFocusPositionRadioButtonChecked;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -95,13 +95,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             switch (settings.Properties.Position)
             {
-                case Position.Cursor:
+                case StartupPosition.Cursor:
                     _isCursorPositionRadioButtonChecked = true;
                     break;
-                case Position.Primary:
-                    _isPrimaryPositionRadioButtonChecked = true;
+                case StartupPosition.PrimaryMonitor:
+                    _isPrimaryMonitorPositionRadioButtonChecked = true;
                     break;
-                case Position.Focus:
+                case StartupPosition.Focus:
                     _isFocusPositionRadioButtonChecked = true;
                     break;
             }
@@ -271,7 +271,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (value == true)
                 {
-                    settings.Properties.Position = Position.Cursor;
+                    settings.Properties.Position = StartupPosition.Cursor;
                 }
 
                 _isCursorPositionRadioButtonChecked = value;
@@ -280,21 +280,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool IsPrimaryPositionRadioButtonChecked
+        public bool IsPrimaryMonitorPositionRadioButtonChecked
         {
             get
             {
-                return _isPrimaryPositionRadioButtonChecked;
+                return _isPrimaryMonitorPositionRadioButtonChecked;
             }
 
             set
             {
                 if (value == true)
                 {
-                    settings.Properties.Position = Position.Primary;
+                    settings.Properties.Position = StartupPosition.PrimaryMonitor;
                 }
 
-                _isPrimaryPositionRadioButtonChecked = value;
+                _isPrimaryMonitorPositionRadioButtonChecked = value;
 
                 UpdateSettings();
             }
@@ -311,7 +311,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (value == true)
                 {
-                    settings.Properties.Position = Position.Focus;
+                    settings.Properties.Position = StartupPosition.Focus;
                 }
 
                 _isFocusPositionRadioButtonChecked = value;

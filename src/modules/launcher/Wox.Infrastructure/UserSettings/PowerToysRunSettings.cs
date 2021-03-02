@@ -47,7 +47,7 @@ namespace Wox.Infrastructure.UserSettings
 
         public Theme Theme { get; set; } = Theme.System;
 
-        public Position Position { get; set; } = Position.Cursor;
+        public StartupPosition StartupPosition { get; set; } = StartupPosition.Cursor;
 
         public string QueryBoxFont { get; set; } = FontFamily.GenericSansSerif.Name;
 

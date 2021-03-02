@@ -126,9 +126,9 @@ namespace PowerLauncher
                         _themeManager.ChangeTheme(_settings.Theme, true);
                     }
 
-                    if (_settings.Position != overloadSettings.Properties.Position)
+                    if (_settings.StartupPosition != overloadSettings.Properties.Position)
                     {
-                        _settings.Position = overloadSettings.Properties.Position;
+                        _settings.StartupPosition = overloadSettings.Properties.Position;
                     }
 
                     retry = false;

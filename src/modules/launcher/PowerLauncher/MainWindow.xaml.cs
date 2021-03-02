@@ -225,16 +225,16 @@ namespace PowerLauncher
 
         private Screen GetScreen()
         {
-            ManagedCommon.Position position = _settings.Position;
+            ManagedCommon.StartupPosition position = _settings.StartupPosition;
             switch (position)
             {
-                case ManagedCommon.Position.Primary:
+                case ManagedCommon.StartupPosition.PrimaryMonitor:
                     return Screen.PrimaryScreen;
-                case ManagedCommon.Position.Focus:
+                case ManagedCommon.StartupPosition.Focus:
                     IntPtr foregroundWindowHandle = NativeMethods.GetForegroundWindow();
                     Screen activeScreen = Screen.FromHandle(foregroundWindowHandle);
                     return activeScreen;
-                case ManagedCommon.Position.Cursor:
+                case ManagedCommon.StartupPosition.Cursor:
                 default:
                     return Screen.FromPoint(System.Windows.Forms.Cursor.Position);
             }

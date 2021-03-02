@@ -157,9 +157,9 @@
                        Margin="{StaticResource SmallTopMargin}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
 
-            <RadioButton x:Uid="Run_Radio_Position_Primary"
+            <RadioButton x:Uid="Run_Radio_Position_Primary_Monitor"
                          GroupName="Run_Position"
-                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsPrimaryPositionRadioButtonChecked}"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsPrimaryMonitorPositionRadioButtonChecked}"
                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
             <RadioButton x:Uid="Run_Radio_Position_Cursor"

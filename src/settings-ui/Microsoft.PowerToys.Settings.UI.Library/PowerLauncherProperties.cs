@@ -45,8 +45,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("theme")]
         public Theme Theme { get; set; }
 
-        [JsonPropertyName("position")]
-        public Position Position { get; set; }
+        [JsonPropertyName("startupPosition")]
+        public StartupPosition Position { get; set; }
 
         public PowerLauncherProperties()
         {
@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ClearInputOnLaunch = false;
             MaximumNumberOfResults = 4;
             Theme = Theme.System;
-            Position = Position.Cursor;
+            Position = StartupPosition.Cursor;
         }
     }
 }

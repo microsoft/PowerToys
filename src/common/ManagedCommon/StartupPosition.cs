@@ -4,10 +4,10 @@
 
 namespace ManagedCommon
 {
-    public enum Position
+    public enum StartupPosition
     {
         Cursor,
-        Primary,
+        PrimaryMonitor,
         Focus,
     }
 }

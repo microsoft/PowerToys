@@ -1166,7 +1166,7 @@ Win + Shift + O to toggle your video</value>
   <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
     <value>Monitor with focused window</value>
   </data>
-  <data name="Run_Radio_Position_Primary.Content" xml:space="preserve">
+  <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
     <value>Primary monitor</value>
   </data>
 </root>
