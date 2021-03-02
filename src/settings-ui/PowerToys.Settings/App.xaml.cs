@@ -25,7 +25,8 @@ namespace PowerToys.Settings
                 settingsWindow = new MainWindow();
             }
 
-            settingsWindow.Open(type);
+            settingsWindow.Show();
+            settingsWindow.NavigateToSection(type);
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)

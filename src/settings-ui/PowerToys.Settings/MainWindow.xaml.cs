@@ -39,18 +39,13 @@ namespace PowerToys.Settings
             }
         }
 
-        public void Open(Type type)
+        public void NavigateToSection(Type type)
         {
             if (inst != null)
             {
-                this.Activate();
+                Activate();
+                ShellPage.Navigate(type);
             }
-            else
-            {
-                this.Show();
-            }
-
-            ShellPage.Navigate(type);
         }
 
         private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
