@@ -4,11 +4,8 @@
 
 using System;
 using System.Windows;
-using interop;
 using Microsoft.PowerLauncher.Telemetry;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
@@ -39,6 +36,15 @@ namespace PowerToys.Settings
             if (inst != null && inst.Visibility == Visibility.Hidden)
             {
                 inst.Close();
+            }
+        }
+
+        public void NavigateToSection(Type type)
+        {
+            if (inst != null)
+            {
+                Activate();
+                ShellPage.Navigate(type);
             }
         }
 
@@ -76,42 +82,11 @@ namespace PowerToys.Settings
                     Program.GetTwoWayIPCManager().Send(msg);
                 });
 
-                OobeShellPage.SetRunSharedEventCallback(() =>
-                {
-                    return Constants.PowerLauncherSharedEvent();
-                });
-
-                OobeShellPage.SetColorPickerSharedEventCallback(() =>
-                {
-                    return Constants.ShowColorPickerSharedEvent();
-                });
-
-                OobeShellPage.SetShortcutGuideSharedEvent(() =>
-                {
-                    NativeMethods.AllowSetForegroundWindow(PowerToys.Settings.Program.PowerToysPID);
-                    return Constants.ShowShortcutGuideSharedEvent();
-                });
-
                 // open oobe
                 ShellPage.SetOpenOobeCallback(() =>
                 {
                     var oobe = new OobeWindow();
                     oobe.Show();
-                });
-
-                OobeShellPage.SetOpenMainWindowCallback((Type type) =>
-                {
-                    if (isOpen)
-                    {
-                        this.Activate();
-                    }
-                    else
-                    {
-                        var newWindow = new MainWindow();
-                        newWindow.Show();
-                    }
-
-                    ShellPage.Navigate(type);
                 });
 
                 // receive IPC Message
