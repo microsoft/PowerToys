@@ -20,7 +20,7 @@
 
         <ScrollViewer Grid.Row="1">
             <StackPanel Orientation="Vertical"
-                        Margin="32,24,0,0"
+                        Margin="32,24,32,24"
                         VerticalAlignment="Top">
 
                 <TextBlock Text="{x:Bind ViewModel.ModuleName}"
