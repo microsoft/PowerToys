@@ -26,7 +26,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void SettingsLaunchButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            OobeShellPage.OpenMainWindowCallback(typeof(FancyZonesPage));
+            if (OobeShellPage.OpenMainWindowCallback != null)
+            {
+                OobeShellPage.OpenMainWindowCallback(typeof(FancyZonesPage));
+            }
+
             ViewModel.LogOpeningSettingsEvent();
         }
 
