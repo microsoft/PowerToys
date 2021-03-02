@@ -133,7 +133,7 @@ We'd like to directly mention (in alphabetical order) for their continued commun
 [@Jay-o-Way](https://github.com/Jay-o-Way),
 [@niels9001](https://github.com/niels9001),
 and 
-[notDevagya](https://github.com/notDevagya)
+[@notDevagya](https://github.com/notDevagya)
 
 #### What is being planned for v0.35 - March 2021
 
