@@ -54,7 +54,6 @@
                               MenuItemTemplate="{StaticResource NavigationViewMenuItem}">
             <winui:NavigationView.PaneCustomContent>
                 <StackPanel Grid.Column="0" Margin="16"
-                            x:Name="HEaderContent"
                             Orientation="Vertical">
                     <TextBlock x:Uid="Oobe_GettingStarted"
                                TextWrapping="Wrap"
