@@ -27,9 +27,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Start_Run_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeShellPage.RunSharedEventCallback()))
+            if (OobeShellPage.RunSharedEventCallback != null)
             {
-                eventHandle.Set();
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeShellPage.RunSharedEventCallback()))
+                {
+                    eventHandle.Set();
+                }
             }
 
             ViewModel.LogRunningModuleEvent();

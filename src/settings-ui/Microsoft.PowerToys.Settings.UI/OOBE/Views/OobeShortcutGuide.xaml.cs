@@ -27,9 +27,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Start_ShortcutGuide_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeShellPage.ShortcutGuideSharedEvent()))
+            if (OobeShellPage.ShortcutGuideSharedEventCallback != null)
             {
-                eventHandle.Set();
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeShellPage.ShortcutGuideSharedEventCallback()))
+                {
+                    eventHandle.Set();
+                }
             }
 
             ViewModel.LogRunningModuleEvent();
