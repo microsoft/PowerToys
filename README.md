@@ -31,7 +31,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 #### Stable version
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.31.2-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.33.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -93,6 +93,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 **FancyZones**
 - Adjusted editor UX based on feedback.  Thanks [@niels9001](https://github.com/niels9001)!
+- New options to change zone activation algorithm.
 
 **File Explorer**
 - Improved how SVG images are previewed in the preview pane, thanks[@Drakula44](https://github.com/Drakula44)!
@@ -111,7 +112,8 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - Plugin Manager now is in settings.  You can directly turn on / off, include items in general search, and change the action key!  Thanks [@htcfreek](https://github.com/htcfreek) for the great feedback!
 - Improved support for additional window managers by abstracting out shell process calls. Thanks @davidegiacometti!
 - Fix for PT Run registering the hotkey on non-supported OS versions.
-- ~ will not act as the user home directory.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
+- `~` will now act as the user home directory in Folder plugin.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
+- Service plugin has adjusted status messages
 
 **Settings**
 - When restarting as admin, the settings now will reopen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
@@ -167,5 +169,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://docs.microsoft.com/windows/powertoys/
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F17
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F18
 [github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.28.0
