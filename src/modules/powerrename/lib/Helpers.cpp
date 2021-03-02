@@ -159,6 +159,56 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
             {
                 hr = StringCchCopy(result, cchMax, source);
             }
+        } 
+        else if (flags & Camelcase)
+        {
+            if (!(flags & ExtensionOnly))
+            {
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::wstring extension = fs::path(source).extension().wstring();
+
+                size_t stemLength = stem.length();
+                bool isFirstWord = true;
+
+                while (stemLength > 0 && (iswspace(stem[stemLength - 1]) || iswpunct(stem[stemLength - 1])))
+                {
+                    stemLength--;
+                }
+
+                for (size_t i = 0; i < stemLength; i++)
+                {
+                    if (!i || iswspace(stem[i - 1]) || iswpunct(stem[i - 1]))
+                    {
+                        if (iswspace(stem[i]) || iswpunct(stem[i]))
+                        {
+                            continue;
+                        }
+                        size_t wordLength = 0;
+                        while (i + wordLength < stemLength && !iswspace(stem[i + wordLength]) && !iswpunct(stem[i + wordLength]))
+                        {
+                            wordLength++;
+                        }
+                        if (!isFirstWord || i + wordLength == stemLength)
+                        {
+                            stem[i] = towupper(stem[i]);
+                        }
+                        else
+                        {
+                            stem[i] = towlower(stem[i]);
+                            isFirstWord = false;
+                        }
+                    }
+                    else
+                    {
+                        stem[i] = towlower(stem[i]);
+                    }
+                }
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), extension.c_str());
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+            }
         }
         else
         {

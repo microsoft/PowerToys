@@ -14,7 +14,8 @@ enum PowerRenameFlags
     ExtensionOnly = 0x100,
     Uppercase = 0x200,
     Lowercase = 0x400,
-    Titlecase = 0x800
+    Titlecase = 0x800,
+    Camelcase = 0x1000
 };
 
 enum PowerRenameFilters
