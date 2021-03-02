@@ -134,19 +134,9 @@ public:
     IFACEMETHOD(AddMRUString)(_In_ PCWSTR entry) = 0;
 };
 
-interface __declspec(uuid("010CE791-731A-4409-9118-E2F0DB0104D3")) IPowerRenameEnumEvents : public IUnknown
-{
-public:
-    IFACEMETHOD(OnStarted)() = 0;
-    IFACEMETHOD(OnCompleted)(_In_ bool canceled) = 0;
-    IFACEMETHOD(OnFoundItem)(_In_ IPowerRenameItem* pItem) = 0;
-};
-
 interface __declspec(uuid("CE8C8616-C1A8-457A-9601-10570F5B9F1F")) IPowerRenameEnum : public IUnknown
 {
 public:
-    IFACEMETHOD(Advise)(_In_ IPowerRenameEnumEvents* renameEnumEvents, _Out_ DWORD* cookie) = 0;
-    IFACEMETHOD(UnAdvise)(_In_ DWORD cookie) = 0;
     IFACEMETHOD(Start)() = 0;
     IFACEMETHOD(Cancel)() = 0;
 };

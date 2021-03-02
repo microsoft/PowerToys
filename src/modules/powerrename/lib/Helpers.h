@@ -15,3 +15,4 @@ BOOL GetEnumeratedFileName(
     __in_opt PCWSTR pszDir,
     unsigned long ulMinLong,
     __inout unsigned long* pulNumUsed);
+HWND CreateMsgWindow(_In_ HINSTANCE hInst, _In_ WNDPROC pfnWndProc, _In_ void* p);
