@@ -39,7 +39,7 @@ namespace PowerToys.Settings
             }
         }
 
-        public void OpenMainWindow(Type type)
+        public void Open(Type type)
         {
             if (inst != null)
             {

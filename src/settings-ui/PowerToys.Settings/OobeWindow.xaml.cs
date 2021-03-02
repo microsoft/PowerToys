@@ -81,7 +81,7 @@ namespace PowerToys.Settings
 
             OobeShellPage.SetOpenMainWindowCallback((Type type) =>
             {
-                ((App)Application.Current).OpenMainWindow(type);
+                ((App)Application.Current).OpenSettingsWindow(type);
             });
         }
     }

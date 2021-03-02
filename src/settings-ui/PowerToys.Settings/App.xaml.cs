@@ -14,26 +14,26 @@ namespace PowerToys.Settings
     /// </summary>
     public partial class App : Application
     {
-        private MainWindow mainWindow;
+        private MainWindow settingsWindow;
 
         public bool ShowOobe { get; set; }
 
-        public void OpenMainWindow(Type type)
+        public void OpenSettingsWindow(Type type)
         {
-            if (mainWindow == null)
+            if (settingsWindow == null)
             {
-                mainWindow = new MainWindow();
+                settingsWindow = new MainWindow();
             }
 
-            mainWindow.OpenMainWindow(type);
+            settingsWindow.Open(type);
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             if (!ShowOobe)
             {
-                mainWindow = new MainWindow();
-                mainWindow.Show();
+                settingsWindow = new MainWindow();
+                settingsWindow.Show();
             }
             else
             {
