@@ -77,11 +77,11 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.33 - February 2021 Update
 
-Our goals for [v0.31 release cycle][github-release-link] were to focus on improving the FancyZones editor, adding in some new features into PowerToys Run, some ARM64 work, and stability. 
+Our goals for [v0.33 release cycle][github-release-link] was to add in some critical new functionality into the new user experience as well as a plug-in manager for PowerToys run.  In addition, we feel we are near ready to add in Video Conference mute into the stable release pending feedback from the 0.34 experimental  release.
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
 
-#### Highlights from v0.33
+#### Highlights from v0.33 Stable/0.34 Experimental 
 
 **General**
 - Updated overview links to be language agnostic to the docs site.
@@ -102,6 +102,9 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - Fix for PT Run registering the hotkey on non-supported OS versions.
 - `~` will now act as the user home directory in Folder plugin.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
 - Service plugin has adjusted status messages
+
+**Video Conference Mute**
+- Adjust video muting to leverage DirectShow
 
 **Settings**
 - When restarting as admin, the settings now will reopen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
@@ -124,12 +127,13 @@ and
 
 #### What is being planned for v0.35 - March 2021
 
-For [v0.35][github-next-release-work], we are proactively working on:
+For [v0.35][github-next-release-work], we are planning to work on:
 
 - Stability
 - FZ Editor hotkey layout swap support
 - OOBE dialog and making it generic so we can enable upgrade scenario dialogs
 - Integrating VCM in main release 
+- Remove support for old settings system
 
 ## PowerToys Community
 
