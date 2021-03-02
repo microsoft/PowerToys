@@ -103,8 +103,8 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - `~` will now act as the user home directory in Folder plugin.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
 - Service plugin has adjusted status messages
 
-**Video Conference Mute**
-- Adjust video muting to leverage DirectShow
+**Video Conference Mute (Experimental)**
+- Adjust video muting to leverage DirectShow.
 
 **Settings**
 - When restarting as admin, the settings now will reopen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
