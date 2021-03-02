@@ -4,6 +4,8 @@
 
 using System;
 using System.Windows;
+using interop;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 
@@ -60,6 +62,27 @@ namespace PowerToys.Settings
 
             WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
             shellPage = windowsXamlHost.GetUwpInternalObject() as OobeShellPage;
+
+            OobeShellPage.SetRunSharedEventCallback(() =>
+            {
+                return Constants.PowerLauncherSharedEvent();
+            });
+
+            OobeShellPage.SetColorPickerSharedEventCallback(() =>
+            {
+                return Constants.ShowColorPickerSharedEvent();
+            });
+
+            OobeShellPage.SetShortcutGuideSharedEventCallback(() =>
+            {
+                NativeMethods.AllowSetForegroundWindow(PowerToys.Settings.Program.PowerToysPID);
+                return Constants.ShowShortcutGuideSharedEvent();
+            });
+
+            OobeShellPage.SetOpenMainWindowCallback((Type type) =>
+            {
+                ((App)Application.Current).OpenMainWindow(type);
+            });
         }
     }
 }

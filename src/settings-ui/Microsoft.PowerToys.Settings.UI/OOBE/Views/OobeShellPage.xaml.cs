@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public static Func<string> ShortcutGuideSharedEventCallback { get; set; }
 
-        public static void SetShortcutGuideSharedEvent(Func<string> implementation)
+        public static void SetShortcutGuideSharedEventCallback(Func<string> implementation)
         {
             ShortcutGuideSharedEventCallback = implementation;
         }
