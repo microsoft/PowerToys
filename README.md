@@ -88,9 +88,6 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - 'First time load' experience.  The hope is a quick, light way to learn about basic functionality.  We have some more work to do and want to also use the same framework for teaching about updates as well.
 - Localization corrections
 
-**Color Picker** 
-- 
-
 **FancyZones**
 - Adjusted editor UX based on feedback.  Thanks [@niels9001](https://github.com/niels9001)!
 - New options to change zone activation algorithm.
@@ -98,15 +95,6 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 **File Explorer**
 - Improved how SVG images are previewed in the preview pane, thanks[@Drakula44](https://github.com/Drakula44)!
 - [@Aaron-Junker](Aaron-Junker) has created a proof of concept for using [Monaco editor](https://github.com/microsoft/monaco-editor) for previewing dev files.  This will enable over 125+ file types.
-
-**Image Resizer**
-- 
-
-**Keyboard manager**
-- 
-
-**PowerRename**
-- 
 
 **PowerToys Run**
 - Plugin Manager now is in settings.  You can directly turn on / off, include items in general search, and change the action key!  Thanks [@htcfreek](https://github.com/htcfreek) for the great feedback!
@@ -117,9 +105,6 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 **Settings**
 - When restarting as admin, the settings now will reopen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-
-**Installer**
-- 
 
 **ARM64 Progress**
 - Investigation on how we'll accomplish Settings with the XAML Island and WPF app.
