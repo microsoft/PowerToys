@@ -5,6 +5,7 @@
 
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/debug_control.h>
+#include <common/interop/shared_constants.h>
 #include <sstream>
 #include <modules/shortcut_guide/ShortcutGuideConstants.h>
 
@@ -94,6 +95,8 @@ namespace
                            ((style & WS_THICKFRAME) == WS_THICKFRAME);
         return result;
     }
+
+    const LPARAM eventActivateWindow = 1;
 }
 
 OverlayWindow::OverlayWindow()
@@ -212,6 +215,13 @@ void OverlayWindow::enable()
             instance->target_state->toggle_force_shown();
             return 0;
         }
+
+        if (msg == WM_APP && lparam == eventActivateWindow)
+        {
+            instance->target_state->toggle_force_shown();
+            return 0;
+        }
+
         if (msg != WM_HOTKEY)
         {
             return 0;
@@ -260,6 +270,12 @@ void OverlayWindow::enable()
             }
         }
         RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);
+
+        auto show_action = [&]() {
+            PostMessageW(winkey_popup->get_window_handle(), WM_APP, 0, eventActivateWindow);
+        };
+
+        event_waiter = std::make_unique<NativeEventWaiter>(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT, show_action);
     }
     _enabled = true;
 }
@@ -276,6 +292,7 @@ void OverlayWindow::disable(bool trace_event)
             Trace::EnableShortcutGuide(false);
         }
         UnregisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id);
+        event_waiter.reset();
         winkey_popup->hide();
         target_state->exit();
         target_state.reset();

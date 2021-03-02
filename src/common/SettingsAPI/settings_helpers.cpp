@@ -5,6 +5,7 @@ namespace PTSettingsHelper
 {
     constexpr inline const wchar_t* settings_filename = L"\\settings.json";
     constexpr inline const wchar_t* log_settings_filename = L"log_settings.json";
+    constexpr inline const wchar_t* oobe_filename = L"oobe_settings.json";
 
     std::wstring get_root_save_folder_location()
     {
@@ -76,5 +77,35 @@ namespace PTSettingsHelper
         std::filesystem::path result(PTSettingsHelper::get_root_save_folder_location());
         result = result.append(log_settings_filename);
         return result.wstring();
+    }
+
+    bool get_oobe_opened_state()
+    {
+        std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
+        oobePath = oobePath.append(oobe_filename);
+        if (std::filesystem::exists(oobePath))
+        {
+            auto saved_settings = json::from_file(oobePath.c_str());
+            if (!saved_settings.has_value())
+            {
+                return false;
+            }
+
+            bool opened = saved_settings->GetNamedBoolean(L"openedAtFirstLaunch", false);
+            return opened;
+        }
+        
+        return false;
+    }
+
+    void save_oobe_opened_state()
+    {
+        std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
+        oobePath = oobePath.append(oobe_filename);
+
+        json::JsonObject obj;
+        obj.SetNamedValue(L"openedAtFirstLaunch", json::value(true));
+
+        json::to_file(oobePath.c_str(), obj);      
     }
 }

@@ -26,6 +26,7 @@ namespace ColorPicker.ViewModels
         private readonly ZoomWindowHelper _zoomWindowHelper;
         private readonly AppStateHandler _appStateHandler;
         private readonly IUserSettings _userSettings;
+        private readonly NativeEventWaiter _nativeEventWaiter;
 
         /// <summary>
         /// Backing field for <see cref="OtherColor"/>
@@ -48,11 +49,13 @@ namespace ColorPicker.ViewModels
             ZoomWindowHelper zoomWindowHelper,
             AppStateHandler appStateHandler,
             KeyboardMonitor keyboardMonitor,
+            NativeEventWaiter nativeEventWaiter,
             IUserSettings userSettings)
         {
             _zoomWindowHelper = zoomWindowHelper;
             _appStateHandler = appStateHandler;
             _userSettings = userSettings;
+            _nativeEventWaiter = nativeEventWaiter;
 
             if (mouseInfoProvider != null)
             {

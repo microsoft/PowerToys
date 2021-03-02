@@ -268,7 +268,10 @@
             <Directory Id="SettingsV2StylesInstallFolder" Name="Styles"/>
             <Directory Id="SettingsV2PropertiesInstallFolder" Name="Properties"/>
             <Directory Id="SettingsV2AssetsInstallFolder" Name="Assets">
-              <Directory Id="SettingsV2AssetsModulesInstallFolder" Name="Modules" />
+              <Directory Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" Name="FluentIcons" />
+              <Directory Id="SettingsV2AssetsModulesInstallFolder" Name="Modules" >
+                <Directory Id="SettingsV2OOBEAssetsModulesInstallFolder" Name="OOBE" />
+              </Directory>
             </Directory>
             <Directory Id="SettingsV2ControlsInstallFolder" Name="Controls"/>
             <Directory Id="SettingsV2XamlInstallFolder" Name="Microsoft.UI.Xaml">
@@ -683,6 +686,20 @@
         <?endforeach?>
       </Component>
     </DirectoryRef>
+    <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules\OOBE">
+      <Component Id="SettingsV2OOBEAssetsModules" Guid="E2360A83-6694-4B33-B5F6-641A906359EE" Win64="yes">
+        <?foreach File in ColorPicker.gif;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png?>
+          <File Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\FluentIcons">
+      <Component Id="SettingsV2OOBEAssetsFluentIcons" Guid="6A380D5A-DA63-45B5-B68F-06D57CDD1B9C" Win64="yes">
+        <?foreach File in ColorPicker.png;FancyZones.png;FileExplorerPreview.png;ImageResizer.png;KeyboardManager.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ShortcutGuide.png;VideoConferenceMute.png ?>
+          <File Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
     <DirectoryRef Id="SettingsV2ControlsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Controls">
       <Component Id="SettingsV2Controls" Guid="05C55C88-B59A-4450-A07C-EB7626E0781A" Win64="yes">
         <?foreach File in HotkeySettingsControl.xbf?>
@@ -778,6 +795,8 @@
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2AssetsModules" />
+      <ComponentRef Id="SettingsV2OOBEAssetsFluentIcons" />
+      <ComponentRef Id="SettingsV2OOBEAssetsModules" />
       <ComponentRef Id="SettingsV2Controls" />
       <ComponentRef Id="SettingsV2Properties" />
       <ComponentRef Id="SettingsV2Styles" />

@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Windows.Data.Json;
 using Windows.UI.Xaml.Controls;
@@ -20,6 +22,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         /// <param name="msg">message.</param>
         public delegate void IPCMessageCallback(string msg);
+
+        /// <summary>
+        /// Declaration for the opening oobe window callback function.
+        /// </summary>
+        public delegate void OobeOpeningCallback();
 
         /// <summary>
         /// Gets or sets a shell handler to be used to update contents of the shell dynamically from page within the frame.
@@ -40,6 +47,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets iPC callback function for checking updates.
         /// </summary>
         public static IPCMessageCallback CheckForUpdatesMsgCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets callback function for opening oobe window
+        /// </summary>
+        public static OobeOpeningCallback OpenOobeWindowCallback { get; set; }
 
         /// <summary>
         /// Gets view model.
@@ -114,6 +126,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             CheckForUpdatesMsgCallback = implementation;
         }
 
+        /// <summary>
+        /// Set oobe opening callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetOpenOobeCallback(OobeOpeningCallback implementation)
+        {
+            OpenOobeWindowCallback = implementation;
+        }
+
         public static void SetElevationStatus(bool isElevated)
         {
             IsElevated = isElevated;
@@ -122,6 +143,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static void SetIsUserAnAdmin(bool isAdmin)
         {
             IsUserAnAdmin = isAdmin;
+        }
+
+        public static void Navigate(Type type)
+        {
+            NavigationService.Navigate(type);
         }
 
         public void Refresh()

@@ -5,7 +5,7 @@
     <!--Common texts-->
     <Style x:Key="PageTitleStyle" TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="FontWeight" Value="SemiLight" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="{StaticResource LargeFontSize}" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         <Setter Property="TextWrapping" Value="NoWrap" />
@@ -27,5 +27,10 @@
 
     <Style x:Key="SettingsGroupTitleStyleAsHeader" TargetType="TextBlock" BasedOn="{StaticResource SettingsGroupTitleStyle}">
         <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+
+    <Style x:Key="OobeSubtitleStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,16,0,0" />
     </Style>
 </ResourceDictionary>

@@ -111,6 +111,42 @@
     <Compile Include="Helpers\StartProcessHelper.cs" />
     <Compile Include="ICoreWindowInterop.cs" />
     <Compile Include="Interop.cs" />
+    <Compile Include="OOBE\Enums\PowerToysModulesEnum.cs" />
+    <Compile Include="OOBE\ViewModel\OobeShellViewModel.cs" />
+    <Compile Include="OOBE\ViewModel\OobePowerToysModule.cs" />
+    <Compile Include="OOBE\Views\OobeColorPicker.xaml.cs">
+      <DependentUpon>OobeColorPicker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeFancyZones.xaml.cs">
+      <DependentUpon>OobeFancyZones.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeFileExplorer.xaml.cs">
+      <DependentUpon>OobeFileExplorer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeImageResizer.xaml.cs">
+      <DependentUpon>OobeImageResizer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeKBM.xaml.cs">
+      <DependentUpon>OobeKBM.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeOverview.xaml.cs">
+      <DependentUpon>OobeOverview.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobePowerRename.xaml.cs">
+      <DependentUpon>OobePowerRename.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeRun.xaml.cs">
+      <DependentUpon>OobeRun.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeShellPage.xaml.cs">
+      <DependentUpon>OobeShellPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeShortcutGuide.xaml.cs">
+      <DependentUpon>OobeShortcutGuide.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="OOBE\Views\OobeVideoConference.xaml.cs">
+      <DependentUpon>OobeVideoConference.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
@@ -153,11 +189,30 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\FluentIcons\FluentIconsColorPicker.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsFancyZones.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsFileExplorerPreview.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsImageResizer.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsKeyboardManager.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsPowerRename.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsPowerToys.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsPowerToysRun.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsShortcutGuide.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsVideoConferenceMute.png" />
     <Content Include="Assets\Logo.scale-200.png" />
     <Content Include="Assets\Modules\ColorPicker.png" />
     <Content Include="Assets\Modules\FancyZones.png" />
     <Content Include="Assets\Modules\ImageResizer.png" />
     <Content Include="Assets\Modules\KBM.png" />
+    <Content Include="Assets\Modules\OOBE\ColorPicker.gif" />
+    <Content Include="Assets\Modules\OOBE\FancyZones.gif" />
+    <Content Include="Assets\Modules\OOBE\FileExplorer.png" />
+    <Content Include="Assets\Modules\OOBE\ImageResizer.gif" />
+    <Content Include="Assets\Modules\OOBE\KBM.gif" />
+    <Content Include="Assets\Modules\OOBE\PowerRename.gif" />
+    <Content Include="Assets\Modules\OOBE\Run.gif" />
+    <Content Include="Assets\Modules\OOBE\OOBEShortcutGuide.png" />
+    <Content Include="Assets\Modules\OOBE\VideoConferenceMute.png" />
     <Content Include="Assets\Modules\PowerLauncher.png" />
     <Content Include="Assets\Modules\PowerPreview.png" />
     <Content Include="Assets\Modules\PowerRename.png" />
@@ -215,6 +270,50 @@
     <Page Include="Controls\HotkeySettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="OOBE\Views\OobeColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeFancyZones.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeFileExplorer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeImageResizer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeKBM.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeOverview.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobePowerRename.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeRun.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeShellPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeShortcutGuide.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeVideoConference.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\Button.xaml">
       <SubType>Designer</SubType>
@@ -300,6 +399,7 @@
       <Name>Microsoft.PowerToys.Settings.UI.Library</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

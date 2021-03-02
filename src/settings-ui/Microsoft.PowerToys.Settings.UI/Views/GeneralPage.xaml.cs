@@ -122,5 +122,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
         }
+
+        private void OobeButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShellPage.OpenOobeWindowCallback();
+        }
     }
 }
