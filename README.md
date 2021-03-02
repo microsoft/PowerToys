@@ -77,7 +77,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.33 - February 2021 Update
 
-Our goals for [v0.33 release cycle][github-release-link] was to add in some critical new functionality into the new user experience as well as a plug-in manager for PowerToys run.  In addition, we feel we are near ready to add in Video Conference mute into the stable release pending feedback from the 0.34 experimental  release.
+Our goals for [v0.33 release cycle][github-release-link] was to add in some critical new functionality into the new user experience as well as a plug-in manager for PowerToys Run.  In addition, we feel we are near ready to add in Video Conference mute into the stable release pending feedback from the 0.34 experimental  release.
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
 
@@ -98,7 +98,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 **PowerToys Run**
 - Plugin Manager now is in settings.  You can directly turn on / off, include items in general search, and change the action key!  Thanks [@htcfreek](https://github.com/htcfreek) for the great feedback!
-- Improved support for additional window managers by abstracting out shell process calls. Thanks @davidegiacometti!
+- Improved support for additional window managers by abstracting out shell process calls. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Fix for PT Run registering the hotkey on non-supported OS versions.
 - `~` will now act as the user home directory in Folder plugin.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
 - Service plugin has adjusted status messages
@@ -116,7 +116,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
-[@Aaron-Junker](Aaron-Junker), 
+[@Aaron-Junker](https://github.com/Aaron-Junker), 
 [@davidegiacometti](https://github.com/davidegiacometti), 
 [@Drakula44](https://github.com/Drakula44), 
 [@htcfreek](https://github.com/htcfreek),
@@ -129,11 +129,10 @@ and
 
 For [v0.35][github-next-release-work], we are planning to work on:
 
-- Stability
+- Stability and bug fixes
 - FZ Editor hotkey layout swap support
-- OOBE dialog and making it generic so we can enable upgrade scenario dialogs
 - Integrating VCM in main release 
-- Remove support for old settings system
+- Start process for removal support for old settings system and migrating our minimum OS version to Windows 10 1903.
 
 ## PowerToys Community
 
