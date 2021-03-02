@@ -47,8 +47,7 @@ namespace PowerToys.Settings
             }
             else
             {
-                var newWindow = new MainWindow();
-                newWindow.Show();
+                this.Show();
             }
 
             ShellPage.Navigate(type);
