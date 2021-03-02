@@ -17,7 +17,8 @@
                Height="320"
                Source="{x:Bind ViewModel.PreviewImageSource}" />
 
-        <ScrollViewer Grid.Row="1">
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto">
             <StackPanel Orientation="Vertical"
                         Margin="32,24,32,24"
                         VerticalAlignment="Top">

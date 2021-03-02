@@ -21,15 +21,37 @@
     </UserControl.Resources>
     
     <Grid>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="NavigationView.PaneDisplayMode"
+                                Value="LeftMinimal" />
+                        <Setter Target="NavigationView.IsPaneToggleButtonVisible"
+                                Value="True" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <winui:NavigationView IsSettingsVisible="False"
-                        IsPaneToggleButtonVisible="False"
-                        IsPaneOpen="True"
-                        x:Name="NavigationView"
-                        OpenPaneLength="296"
-                        SelectionChanged="NavigationView_SelectionChanged"
-                        IsBackButtonVisible="Collapsed"
-                        MenuItemsSource="{x:Bind Modules, Mode=OneTime}"
-                        MenuItemTemplate="{StaticResource NavigationViewMenuItem}">
+                              IsPaneToggleButtonVisible="False"
+                              IsPaneOpen="True"
+                              x:Name="NavigationView"
+                              OpenPaneLength="296"
+                              PaneDisplayMode="Left"
+                              SelectionChanged="NavigationView_SelectionChanged"
+                              IsBackButtonVisible="Collapsed"
+                              MenuItemsSource="{x:Bind Modules, Mode=OneTime}"
+                              MenuItemTemplate="{StaticResource NavigationViewMenuItem}">
             <winui:NavigationView.PaneCustomContent>
                 <StackPanel Grid.Column="0" Margin="16"
                             Orientation="Vertical">
