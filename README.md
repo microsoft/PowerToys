@@ -108,7 +108,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - 
 
 **PowerToys Run**
-- Plugin Manager now is in settings.  You can directly turn on / off, include items in general search, and change the action key!
+- Plugin Manager now is in settings.  You can directly turn on / off, include items in general search, and change the action key!  Thanks [@htcfreek](https://github.com/htcfreek) for the great feedback!
 - Improved support for additional window managers by abstracting out shell process calls. Thanks @davidegiacometti!
 - Fix for PT Run registering the hotkey on non-supported OS versions.
 - ~ will not act as the user home directory.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
@@ -129,6 +129,8 @@ We'd like to directly mention (in alphabetical order) for their continued commun
 [@Aaron-Junker](Aaron-Junker), 
 [@davidegiacometti](https://github.com/davidegiacometti), 
 [@Drakula44](https://github.com/Drakula44), 
+[@htcfreek](https://github.com/htcfreek),
+[@Jay-o-Way](https://github.com/Jay-o-Way),
 [@niels9001](https://github.com/niels9001),
 and 
 [notDevagya](https://github.com/notDevagya)
