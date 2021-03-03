@@ -15,13 +15,12 @@
         </Grid.RowDefinitions>
 
         <Image Stretch="UniformToFill"
-               Height="280"
                Source="{x:Bind ViewModel.PreviewImageSource}" />
 
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Orientation="Vertical"
-                        Margin="32,24,32,24"
+                        Margin="{StaticResource OobePageContentMargin}"
                         VerticalAlignment="Top">
                 <TextBlock Text="{x:Bind ViewModel.ModuleName}"
                            Style="{StaticResource PageTitleStyle}" />
