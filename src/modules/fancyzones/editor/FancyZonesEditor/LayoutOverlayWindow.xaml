@@ -12,4 +12,5 @@
         ResizeMode="NoResize"
         WindowStyle="None"
         AllowsTransparency="True"
+        Loaded="Window_Loaded"
         Background="{DynamicResource BackdropBrush}"/>
