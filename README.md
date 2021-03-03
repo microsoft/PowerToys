@@ -77,7 +77,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.33 - February 2021 Update
 
-Our goals for [v0.33 release cycle][github-release-link] was to add in some critical new functionality into the new user experience as well as a plug-in manager for PowerToys Run.  In addition, we feel we are near ready to add in Video Conference mute into the stable release pending feedback from the 0.34 experimental  release.
+Our goals for [v0.33 release cycle][github-release-link] was to add in some critical new functionality into the new user experience as well as a plug-in manager for PowerToys Run.  In addition, we feel we are near ready to add in Video Conference mute into the stable release pending feedback from the pending 0.34 experimental release.  The 0.34 experimental release will happen week of March 8th toward the end of the week pending testing.
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
 
@@ -105,6 +105,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 **Video Conference Mute (Experimental)**
 - Adjust video muting to leverage DirectShow.
+- Goal is to have 0.34 experimental release week of March 8th.
 
 **Settings**
 - When restarting as admin, the settings now will reopen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
