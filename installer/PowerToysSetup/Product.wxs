@@ -688,7 +688,7 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules\OOBE">
       <Component Id="SettingsV2OOBEAssetsModules" Guid="E2360A83-6694-4B33-B5F6-641A906359EE" Win64="yes">
-        <?foreach File in ColorPicker.gif;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png?>
+        <?foreach File in ColorPicker.gif;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
           <File Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
         <?endforeach?>
       </Component>
