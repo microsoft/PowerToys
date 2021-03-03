@@ -189,9 +189,6 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\..\doc\images\overview\PT hero image.png">
-      <Link>Assets\Modules\OOBE\PT hero image.png</Link>
-    </Content>
     <Content Include="Assets\FluentIcons\FluentIconsColorPicker.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFancyZones.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFileExplorerPreview.png" />
@@ -212,6 +209,7 @@
     <Content Include="Assets\Modules\OOBE\FileExplorer.png" />
     <Content Include="Assets\Modules\OOBE\ImageResizer.gif" />
     <Content Include="Assets\Modules\OOBE\KBM.gif" />
+    <Content Include="Assets\Modules\OOBE\OOBEPTHero.png" />
     <Content Include="Assets\Modules\OOBE\PowerRename.gif" />
     <Content Include="Assets\Modules\OOBE\Run.gif" />
     <Content Include="Assets\Modules\OOBE\OOBEShortcutGuide.png" />
