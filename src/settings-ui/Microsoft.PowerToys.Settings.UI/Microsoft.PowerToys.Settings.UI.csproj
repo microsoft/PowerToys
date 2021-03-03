@@ -189,6 +189,9 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\..\doc\images\overview\PT hero image.png">
+      <Link>Assets\Modules\OOBE\PT hero image.png</Link>
+    </Content>
     <Content Include="Assets\FluentIcons\FluentIconsColorPicker.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFancyZones.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFileExplorerPreview.png" />
