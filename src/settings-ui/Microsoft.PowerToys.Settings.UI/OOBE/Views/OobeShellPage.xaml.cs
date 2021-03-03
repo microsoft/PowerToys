@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uEF3C",
                 Image = "ms-appx:///Assets/Modules/ColorPicker.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToys.png",
-                PreviewImageSource = "https://github.com/microsoft/PowerToys/raw/master/doc/images/overview/PT%20hero%20image.png",
+                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/PT%20hero%20image.png",
                 DescriptionLink = "https://aka.ms/PowerToysOverview",
                 Link = "https://github.com/microsoft/PowerToys/releases/",
             });
