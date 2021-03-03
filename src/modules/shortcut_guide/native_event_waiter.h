@@ -6,15 +6,14 @@ class NativeEventWaiter
 {
     static const int timeout = 1000;
 
-    HANDLE event_handle;
-    std::function<void()> action;
-    std::atomic<bool> aborting;
+    HANDLE event_handle = nullptr;
+    std::function<void()> action = nullptr;
+    std::atomic<bool> aborting = false;
 
     void run();
     std::thread running_thread;
 
 public:
-
     NativeEventWaiter(const std::wstring& event_name, std::function<void()> action);
     ~NativeEventWaiter();
 };
