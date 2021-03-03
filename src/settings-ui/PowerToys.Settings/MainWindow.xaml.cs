@@ -73,6 +73,7 @@ namespace PowerToys.Settings
                 ShellPage.SetRestartAdminSndMessageCallback(msg =>
                 {
                     Program.GetTwoWayIPCManager().Send(msg);
+                    isOpen = false;
                     System.Windows.Application.Current.Shutdown(); // close application
                 });
 
@@ -117,7 +118,13 @@ namespace PowerToys.Settings
             // XAML Islands: If the window is open, explicitly force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384
             if (isOpen)
             {
-                Show();
+                try
+                {
+                    Show();
+                }
+                catch (InvalidOperationException)
+                {
+                }
             }
         }
 
