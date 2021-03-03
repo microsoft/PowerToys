@@ -247,6 +247,10 @@
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
+                <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
+                  <Directory Id="UnitConverterImagesFolder" Name="Images" />
+                  <Directory Id="UnitConverterLanguagesFolder" Name="Languages" />
+                </Directory>
                 <Directory Id="VSCodeWorkspacesPluginFolder" Name="VSCodeWorkspace">
                   <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
                   <Directory Id="VSCodeWorkspaceLanguagesFolder" Name="Languages" />
@@ -822,7 +826,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
@@ -894,6 +898,9 @@
                 </Component>
                 <Component Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder">
                     <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
+                </Component>
+                <Component Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)UnitConverterPluginFolder">
+                    <File Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\$(var.Language)\Community.PowerToys.Run.Plugin.UnitConverter.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Uri_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
                     <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
@@ -1003,6 +1010,17 @@
         <?foreach File in indexer.dark.png;indexer.light.png;Warning.light.png;Warning.dark.png?>
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
         <?endforeach?>
+      </Component>
+
+      <!-- UnitConverter Plugin -->
+      <Component Id="UnitConverterComponent" Directory="UnitConverterPluginFolder" Guid="D4F429E3-C619-49D6-9416-88A757D18E02">
+        <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.UnitConverter.dll;ManagedTelemetry.dll?>
+        <File Id="UnitConverter_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="UnitConverterImagesComponent" Directory="UnitConverterImagesFolder" Guid="16ABD217-0898-47B2-89D9-AF1ABF00F543">
+        <File Id="UnitConverterPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\calculator.light.png" />
+        <File Id="UnitConverterPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\calculator.dark.png" />
       </Component>
 
       <!-- Uri Plugin -->

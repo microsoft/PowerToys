@@ -241,10 +241,10 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         private static void UpdateIconPath(Theme theme) {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite) {
-                _icon_path = "Images/Warning.light.png";
+                _icon_path = "Images/calculator.light.png";
             }
             else {
-                _icon_path = "Images/Warning.dark.png";
+                _icon_path = "Images/calculator.dark.png";
             }
         }
 
