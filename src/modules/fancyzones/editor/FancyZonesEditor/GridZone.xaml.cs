@@ -31,11 +31,10 @@ namespace FancyZonesEditor
         public event MouseButtonEventHandler MergeComplete;
 
         private readonly Rectangle _splitter;
-        private bool _switchOrientation;
+        private bool _switchOrientation = false;
         private Point _lastPos = new Point(-1, -1);
         private Point _mouseDownPos = new Point(-1, -1);
         private bool _inMergeDrag;
-        private Orientation _splitOrientation;
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -81,6 +80,7 @@ namespace FancyZonesEditor
             if (e.PropertyName == PropertyIsShiftKeyPressedID)
             {
                 _switchOrientation = ((App)Application.Current).MainWindowSettings.IsShiftKeyPressed;
+
                 if (_lastPos.X != -1)
                 {
                     UpdateSplitter();
@@ -88,24 +88,9 @@ namespace FancyZonesEditor
             }
         }
 
-        protected override Size ArrangeOverride(Size size)
-        {
-            _splitOrientation = (size.Width > size.Height) ? Orientation.Vertical : Orientation.Horizontal;
-            return base.ArrangeOverride(size);
-        }
-
         private bool IsVerticalSplit
         {
-            get
-            {
-                bool isVertical = _splitOrientation == Orientation.Vertical;
-                if (_switchOrientation)
-                {
-                    isVertical = !isVertical;
-                }
-
-                return isVertical;
-            }
+            get => (ActualWidth > ActualHeight) ^ _switchOrientation;
         }
 
         private int Spacing { get; set; }

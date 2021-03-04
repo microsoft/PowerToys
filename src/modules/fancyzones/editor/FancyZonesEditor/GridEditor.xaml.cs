@@ -35,7 +35,6 @@ namespace FancyZonesEditor
             InitializeComponent();
             Loaded += GridEditor_Loaded;
             Unloaded += GridEditor_Unloaded;
-            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
             gridEditorUniqueId = ++gridEditorUniqueIdCounter;
         }
 
@@ -89,8 +88,9 @@ namespace FancyZonesEditor
             Preview.Width = actualSize.Width;
             Preview.Height = actualSize.Height;
 
-            foreach (var zone in _data.Zones)
+            for (int zoneIndex = 0; zoneIndex < _data.Zones.Count(); zoneIndex++)
             {
+                var zone = _data.Zones[zoneIndex];
                 var zonePanel = new GridZone(Model.ShowSpacing ? Model.Spacing : 0);
                 Preview.Children.Add(zonePanel);
                 zonePanel.Split += OnSplit;
@@ -100,6 +100,7 @@ namespace FancyZonesEditor
                 Canvas.SetLeft(zonePanel, actualSize.Width * zone.Left / _data.Multiplier);
                 zonePanel.MinWidth = actualSize.Width * (zone.Right - zone.Left) / _data.Multiplier;
                 zonePanel.MinHeight = actualSize.Height * (zone.Bottom - zone.Top) / _data.Multiplier;
+                zonePanel.LabelID.Content = zoneIndex + 1;
             }
 
             foreach (var resizer in _data.Resizers)
@@ -159,17 +160,6 @@ namespace FancyZonesEditor
         {
             Rect workingArea = App.Overlay.WorkArea;
             return new Size(workingArea.Width, workingArea.Height);
-        }
-
-        private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            var actualSize = WorkAreaSize();
-
-            // Only enter if this is the newest instance
-            if (actualSize.Width > 0 && gridEditorUniqueId == gridEditorUniqueIdCounter)
-            {
-                SetupUI();
-            }
         }
 
         public GridLayoutModel Model
@@ -308,6 +298,8 @@ namespace FancyZonesEditor
 
         private void OnMergeComplete(object o, MouseButtonEventArgs e)
         {
+            _inMergeDrag = false;
+
             var selectedIndices = new List<int>();
             for (int zoneIndex = 0; zoneIndex < _data.Zones.Count; zoneIndex++)
             {
@@ -400,7 +392,6 @@ namespace FancyZonesEditor
             }
 
             ClearSelection();
-
             _data.DoMerge(selectedIndices);
             SetupUI();
         }
