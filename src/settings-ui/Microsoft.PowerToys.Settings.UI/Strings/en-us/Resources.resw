@@ -134,7 +134,7 @@
     <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
-    <value>File Explorer</value>
+    <value>File Explorer add-ons</value>
     <comment>Product name: Navigation view item name for File Explorer Preview</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
@@ -1143,6 +1143,6 @@ Win + Shift + O to toggle your video</value>
     <value>Settings</value>
   </data>
   <data name="Oobe_Button.Text" xml:space="preserve">
-    <value>PowerToys Tour</value>
+    <value>Welcome to PowerToys</value>
   </data>
 </root>
