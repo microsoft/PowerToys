@@ -100,6 +100,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Description = loader.GetString("Oobe_FancyZones_Description"),
                 Link = "https://aka.ms/PowerToysOverview_FancyZones",
             });
+            Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
+            {
+                ModuleName = loader.GetString("Oobe_FileExplorer"),
+                Tag = "FileExplorer",
+                IsNew = false,
+                Icon = "\uEC50",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsFileExplorerPreview.png",
+                Image = "ms-appx:///Assets/Modules/PowerPreview.png",
+                Description = loader.GetString("Oobe_FileExplorer_Description"),
+                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/FileExplorer.png",
+                Link = "https://aka.ms/PowerToysOverview_FileExplorerAddOns",
+            });
             Modules.Insert((int)PowerToysModulesEnum.ImageResizer, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_ImageResizer"),
@@ -147,18 +159,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Description = loader.GetString("Oobe_PowerRename_Description"),
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/PowerRename.gif",
                 Link = "https://aka.ms/PowerToysOverview_PowerRename",
-            });
-            Modules.Insert((int)PowerToysModulesEnum.FileExplorer, new OobePowerToysModule()
-            {
-                ModuleName = loader.GetString("Oobe_FileExplorer"),
-                Tag = "FileExplorer",
-                IsNew = false,
-                Icon = "\uEC50",
-                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsFileExplorerPreview.png",
-                Image = "ms-appx:///Assets/Modules/PowerPreview.png",
-                Description = loader.GetString("Oobe_FileExplorer_Description"),
-                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/FileExplorer.png",
-                Link = "https://aka.ms/PowerToysOverview_FileExplorerAddOns",
             });
             Modules.Insert((int)PowerToysModulesEnum.ShortcutGuide, new OobePowerToysModule()
             {
