@@ -181,7 +181,7 @@ namespace FancyZonesEditor
             var rowPrefixSum = PrefixSum(model.RowPercents);
             var colPrefixSum = PrefixSum(model.ColumnPercents);
 
-            if (rowPrefixSum[rows] != _multiplier || colPrefixSum[rows] != _multiplier)
+            if (rowPrefixSum[rows] != _multiplier || colPrefixSum[cols] != _multiplier)
             {
                 throw new ArgumentException();
             }
@@ -279,6 +279,10 @@ namespace FancyZonesEditor
                         _resizers.Add(resizer);
 
                         startRow = endRow + 1;
+                    }
+                    else
+                    {
+                        startRow++;
                     }
                 }
             }

@@ -26,8 +26,6 @@ namespace FancyZonesEditor
 
         public event SplitEventHandler Split;
 
-        public event SplitEventHandler FullSplit;
-
         public event MouseEventHandler MergeDrag;
 
         public event MouseButtonEventHandler MergeComplete;
@@ -283,16 +281,6 @@ namespace FancyZonesEditor
         private void DoSplit(Orientation orientation, double offset)
         {
             Split?.Invoke(this, new SplitEventArgs(orientation, offset, Spacing));
-        }
-
-        private void FullSplit_Click(object sender, RoutedEventArgs e)
-        {
-            DoFullSplit();
-        }
-
-        private void DoFullSplit()
-        {
-            FullSplit?.Invoke(this, new SplitEventArgs());
         }
     }
 }

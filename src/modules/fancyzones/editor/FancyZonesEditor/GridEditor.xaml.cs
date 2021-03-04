@@ -93,6 +93,7 @@ namespace FancyZonesEditor
             {
                 var zonePanel = new GridZone(Model.ShowSpacing ? Model.Spacing : 0);
                 Preview.Children.Add(zonePanel);
+                zonePanel.Split += ZonePanel_Split;
                 Canvas.SetTop(zonePanel, actualSize.Height * zone.Top / _data.Multiplier);
                 Canvas.SetLeft(zonePanel, actualSize.Width * zone.Left / _data.Multiplier);
                 zonePanel.MinWidth = actualSize.Width * (zone.Right - zone.Left) / _data.Multiplier;
@@ -125,6 +126,24 @@ namespace FancyZonesEditor
 
                 PlaceResizer(resizerThumb);
             }
+        }
+
+        private void ZonePanel_Split(object sender, SplitEventArgs args)
+        {
+            Size actualSize = WorkAreaSize();
+            int zoneIndex = Preview.Children.IndexOf(sender as GridZone);
+
+            int splitBase = args.Orientation == Orientation.Horizontal ? _data.Zones[zoneIndex].Top : _data.Zones[zoneIndex].Left;
+            double screenSize = args.Orientation == Orientation.Horizontal ? actualSize.Height : actualSize.Width;
+
+            int dataOffset = splitBase + Convert.ToInt32(args.Offset * _data.Multiplier / screenSize);
+
+            if (_data.CanSplit(zoneIndex, dataOffset, args.Orientation))
+            {
+                _data.Split(zoneIndex, dataOffset, args.Orientation);
+            }
+
+            SetupUI();
         }
 
         private void GridEditor_Unloaded(object sender, RoutedEventArgs e)
