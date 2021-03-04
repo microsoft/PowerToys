@@ -128,6 +128,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{4AFC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Calculator", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.csproj", "{59BD9891-3837-438A-958D-ADC7F91F6F7E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.VSCodeWorkspaces", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.csproj", "{4D971245-7A70-41D5-BAA0-DDB5684CAF51}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.WindowWalker", "src\modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Microsoft.Plugin.WindowWalker.csproj", "{74F1B9ED-F59C-4FE7-B473-7B453E30837E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Program", "src\modules\launcher\Plugins\Microsoft.Plugin.Program\Microsoft.Plugin.Program.csproj", "{FDB3555B-58EF-4AE6-B5F1-904719637AB4}"
@@ -418,6 +420,10 @@ Global
 		{59BD9891-3837-438A-958D-ADC7F91F6F7E}.Debug|x64.Build.0 = Debug|x64
 		{59BD9891-3837-438A-958D-ADC7F91F6F7E}.Release|x64.ActiveCfg = Release|x64
 		{59BD9891-3837-438A-958D-ADC7F91F6F7E}.Release|x64.Build.0 = Release|x64
+		{4D971245-7A70-41D5-BAA0-DDB5684CAF51}.Debug|x64.ActiveCfg = Debug|x64
+		{4D971245-7A70-41D5-BAA0-DDB5684CAF51}.Debug|x64.Build.0 = Debug|x64
+		{4D971245-7A70-41D5-BAA0-DDB5684CAF51}.Release|x64.ActiveCfg = Release|x64
+		{4D971245-7A70-41D5-BAA0-DDB5684CAF51}.Release|x64.Build.0 = Release|x64
 		{74F1B9ED-F59C-4FE7-B473-7B453E30837E}.Debug|x64.ActiveCfg = Debug|x64
 		{74F1B9ED-F59C-4FE7-B473-7B453E30837E}.Debug|x64.Build.0 = Debug|x64
 		{74F1B9ED-F59C-4FE7-B473-7B453E30837E}.Release|x64.ActiveCfg = Release|x64
@@ -665,6 +671,7 @@ Global
 		{FF742965-9A80-41A5-B042-D6C7D3A21708} = {C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}
 		{4AFC9975-2456-4C70-94A4-84073C1CED93} = {C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}
 		{59BD9891-3837-438A-958D-ADC7F91F6F7E} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{4D971245-7A70-41D5-BAA0-DDB5684CAF51} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{74F1B9ED-F59C-4FE7-B473-7B453E30837E} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{FDB3555B-58EF-4AE6-B5F1-904719637AB4} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{C21BFF9C-2C99-4B5F-B7C9-A5E6DDDB37B0} = {4AFC9975-2456-4C70-94A4-84073C1CED93}

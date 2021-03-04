@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
+namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties {
     using System;
     
     
@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Resources {
+    internal class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,22 +36,22 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Resources.ResourceManager ResourceManager {
+        internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.PowerToys.Run.Plugin.Calculator.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Globalization.CultureInfo Culture {
+        internal static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -61,57 +61,65 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy failed, please try later.
+        ///   Looks up a localized string similar to in.
         /// </summary>
-        public static string wox_plugin_calculator_copy_failed {
+        internal static string In {
             get {
-                return ResourceManager.GetString("wox_plugin_calculator_copy_failed", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Copy this number to the clipboard.
-        /// </summary>
-        public static string wox_plugin_calculator_copy_number_to_clipboard {
-            get {
-                return ResourceManager.GetString("wox_plugin_calculator_copy_number_to_clipboard", resourceCulture);
+                return ResourceManager.GetString("In", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Expression wrong or incomplete (Did you forget some parentheses?).
+        ///   Looks up a localized string similar to Open VSCode previously opened workspaces, remote machines (SSH or Codespaces) and containers..
         /// </summary>
-        public static string wox_plugin_calculator_expression_not_complete {
+        internal static string PluginDescription {
             get {
-                return ResourceManager.GetString("wox_plugin_calculator_expression_not_complete", resourceCulture);
+                return ResourceManager.GetString("PluginDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not a number (NaN).
+        ///   Looks up a localized string similar to VSCode Workspaces.
         /// </summary>
-        public static string wox_plugin_calculator_not_a_number {
+        internal static string PluginTitle {
             get {
-                return ResourceManager.GetString("wox_plugin_calculator_not_a_number", resourceCulture);
+                return ResourceManager.GetString("PluginTitle", resourceCulture);
             }
         }
-
         
         /// <summary>
-        ///   Looks up a localized string similar to Does mathematical calculations (e.g. 5*3-2)..
+        ///   Looks up a localized string similar to SSH remote machine.
         /// </summary>
-        public static string wox_plugin_calculator_plugin_description {
+        internal static string SSHRemoteMachine {
             get {
-                return ResourceManager.GetString("wox_plugin_calculator_plugin_description", resourceCulture);
+                return ResourceManager.GetString("SSHRemoteMachine", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Calculator.
+        ///   Looks up a localized string similar to Container.
         /// </summary>
-        public static string wox_plugin_calculator_plugin_name {
+        internal static string TypeWorkspaceContainer {
             get {
-                return ResourceManager.GetString("wox_plugin_calculator_plugin_name", resourceCulture);
+                return ResourceManager.GetString("TypeWorkspaceContainer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Local.
+        /// </summary>
+        internal static string TypeWorkspaceLocal {
+            get {
+                return ResourceManager.GetString("TypeWorkspaceLocal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workspace.
+        /// </summary>
+        internal static string Workspace {
+            get {
+                return ResourceManager.GetString("Workspace", resourceCulture);
             }
         }
     }

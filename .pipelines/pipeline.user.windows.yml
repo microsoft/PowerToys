@@ -131,6 +131,7 @@ build:
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Telemetry.dll'
+            - 'modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll'
             - 'modules\launcher\Plugins\Service\Microsoft.PowerToys.Run.Plugin.Service.dll'
             - 'modules\launcher\Plugins\System\Microsoft.PowerToys.Run.Plugin.System.dll'
             - 'modules\launcher\PowerLauncher.dll'
