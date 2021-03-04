@@ -30,6 +30,7 @@ namespace PowerToys.Settings
         public OobeWindow()
         {
             InitializeComponent();
+            Utils.FitToScreen(this);
         }
 
         private void Window_Closed(object sender, EventArgs e)

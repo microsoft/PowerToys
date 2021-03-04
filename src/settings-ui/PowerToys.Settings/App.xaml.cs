@@ -33,20 +33,8 @@ namespace PowerToys.Settings
         {
             settingsWindow = new MainWindow();
 
-            // To avoid visual flickering, show the window with a size of 0,0
-            // and don't show it in the taskbar
-            var originalHight = settingsWindow.Height;
-            var originalWidth = settingsWindow.Width;
-            settingsWindow.Height = 0;
-            settingsWindow.Width = 0;
-            settingsWindow.ShowInTaskbar = false;
-
-            settingsWindow.Show();
-            settingsWindow.Hide();
-
-            settingsWindow.Height = originalHight;
-            settingsWindow.Width = originalWidth;
-            settingsWindow.ShowInTaskbar = true;
+            Utils.ShowHide(settingsWindow);
+            Utils.CenterToScreen(settingsWindow);
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
