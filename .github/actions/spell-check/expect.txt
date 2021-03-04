@@ -450,6 +450,7 @@ desktopshorcutinstalled
 desktopwindowxamlsource
 dest
 DEU
+Devagya
 devblogs
 devdocs
 devenv
@@ -497,6 +498,7 @@ DPolicy
 DPopup
 DPSAPI
 Draggen
+Drakula
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
