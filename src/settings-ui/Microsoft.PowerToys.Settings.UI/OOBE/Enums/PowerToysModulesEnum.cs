@@ -9,11 +9,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         Overview = 0,
         ColorPicker,
         FancyZones,
+        FileExplorer,
         ImageResizer,
         KBM,
         Run,
         PowerRename,
-        FileExplorer,
         ShortcutGuide,
         VideoConference,
     }
