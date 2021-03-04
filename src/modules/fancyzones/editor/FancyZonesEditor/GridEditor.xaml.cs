@@ -73,6 +73,22 @@ namespace FancyZonesEditor
             Canvas.SetTop(resizerThumb, y - 24);
         }
 
+        private void SetZonePanelSize(GridZone panel, GridData.Zone zone)
+        {
+            Size actualSize = WorkAreaSize();
+            double spacing = Model.ShowSpacing ? Model.Spacing : 0;
+
+            double topSpacing = zone.Top == 0 ? spacing : spacing / 2;
+            double bottomSpacing = zone.Bottom == _data.Multiplier ? spacing : spacing / 2;
+            double leftSpacing = zone.Left == 0 ? spacing : spacing / 2;
+            double rightSpacing = zone.Right == _data.Multiplier ? spacing : spacing / 2;
+
+            Canvas.SetTop(panel, (actualSize.Height * zone.Top / _data.Multiplier) + topSpacing);
+            Canvas.SetLeft(panel, (actualSize.Width * zone.Left / _data.Multiplier) + leftSpacing);
+            panel.MinWidth = (actualSize.Width * (zone.Right - zone.Left) / _data.Multiplier) - leftSpacing - rightSpacing;
+            panel.MinHeight = (actualSize.Height * (zone.Bottom - zone.Top) / _data.Multiplier) - topSpacing - bottomSpacing;
+        }
+
         private void SetupUI()
         {
             Size actualSize = WorkAreaSize();
@@ -96,10 +112,7 @@ namespace FancyZonesEditor
                 zonePanel.Split += OnSplit;
                 zonePanel.MergeDrag += OnMergeDrag;
                 zonePanel.MergeComplete += OnMergeComplete;
-                Canvas.SetTop(zonePanel, actualSize.Height * zone.Top / _data.Multiplier);
-                Canvas.SetLeft(zonePanel, actualSize.Width * zone.Left / _data.Multiplier);
-                zonePanel.MinWidth = actualSize.Width * (zone.Right - zone.Left) / _data.Multiplier;
-                zonePanel.MinHeight = actualSize.Height * (zone.Bottom - zone.Top) / _data.Multiplier;
+                SetZonePanelSize(zonePanel, zone);
                 zonePanel.LabelID.Content = zoneIndex + 1;
             }
 
