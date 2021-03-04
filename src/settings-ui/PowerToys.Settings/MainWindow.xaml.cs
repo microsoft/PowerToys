@@ -26,6 +26,9 @@ namespace PowerToys.Settings
             bootTime.Start();
 
             this.InitializeComponent();
+
+            Utils.FitToScreen(this);
+
             bootTime.Stop();
 
             PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
