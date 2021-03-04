@@ -95,8 +95,11 @@ namespace FancyZonesEditor
 
         private List<Zone> _zones;
         private List<Resizer> _resizers;
-        private int _minZoneWidth;
-        private int _minZoneHeight;
+
+        public int MinZoneWidth { get; set; }
+
+        public int MinZoneHeight { get; set; }
+
         private GridLayoutModel _model;
 
         public int Multiplier
@@ -294,17 +297,12 @@ namespace FancyZonesEditor
             ModelToResizers(model);
         }
 
-        public GridData(GridLayoutModel model, int minZoneWidth = 1, int minZoneHeight = 1)
+        public GridData(GridLayoutModel model)
         {
             _model = model;
 
-            if (minZoneWidth < 1 || minZoneHeight < 1)
-            {
-                throw new ArgumentException();
-            }
-
-            _minZoneWidth = minZoneWidth;
-            _minZoneHeight = minZoneHeight;
+            MinZoneWidth = 1;
+            MinZoneHeight = 1;
             FromModel(model);
         }
 
@@ -458,11 +456,11 @@ namespace FancyZonesEditor
 
             if (orientation == Orientation.Horizontal)
             {
-                return zone.Top + _minZoneHeight <= position && position <= zone.Bottom - _minZoneHeight;
+                return zone.Top + MinZoneHeight <= position && position <= zone.Bottom - MinZoneHeight;
             }
             else
             {
-                return zone.Left + _minZoneWidth <= position && position <= zone.Right - _minZoneWidth;
+                return zone.Left + MinZoneWidth <= position && position <= zone.Right - MinZoneWidth;
             }
         }
 
@@ -509,7 +507,7 @@ namespace FancyZonesEditor
                 return resizer.Orientation == Orientation.Vertical ? zone.Right - zone.Left : zone.Bottom - zone.Top;
             };
 
-            int minZoneSize = resizer.Orientation == Orientation.Vertical ? _minZoneWidth : _minZoneHeight;
+            int minZoneSize = resizer.Orientation == Orientation.Vertical ? MinZoneWidth : MinZoneHeight;
 
             foreach (int zoneIndex in resizer.PositiveSideIndices)
             {

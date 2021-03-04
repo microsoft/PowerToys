@@ -22,6 +22,8 @@ namespace FancyZonesEditor
         private const string PropertyColumnsChangedID = "Columns";
         private const string ObjectDependencyID = "Model";
 
+        private const int MinZoneSize = 100;
+
         public static readonly DependencyProperty ModelProperty = DependencyProperty.Register(ObjectDependencyID, typeof(GridLayoutModel), typeof(GridEditor), new PropertyMetadata(null, OnGridDimensionsChanged));
 
         private static int gridEditorUniqueIdCounter;
@@ -93,10 +95,15 @@ namespace FancyZonesEditor
         {
             Size actualSize = WorkAreaSize();
 
-            if (actualSize.Width < 1 || _data == null)
+            if (actualSize.Width < 1 || _data == null || Model == null)
             {
                 return;
             }
+
+            int spacing = Model.ShowSpacing ? Model.Spacing : 0;
+
+            _data.MinZoneWidth = Convert.ToInt32(_data.Multiplier / actualSize.Width * (MinZoneSize + (2 * spacing)));
+            _data.MinZoneHeight = Convert.ToInt32(_data.Multiplier / actualSize.Height * (MinZoneSize + (2 * spacing)));
 
             Preview.Children.Clear();
             AdornerLayer.Children.Clear();
@@ -107,7 +114,7 @@ namespace FancyZonesEditor
             for (int zoneIndex = 0; zoneIndex < _data.Zones.Count(); zoneIndex++)
             {
                 var zone = _data.Zones[zoneIndex];
-                var zonePanel = new GridZone(Model.ShowSpacing ? Model.Spacing : 0);
+                var zonePanel = new GridZone(spacing);
                 Preview.Children.Add(zonePanel);
                 zonePanel.Split += OnSplit;
                 zonePanel.MergeDrag += OnMergeDrag;
