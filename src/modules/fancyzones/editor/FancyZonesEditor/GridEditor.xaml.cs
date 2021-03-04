@@ -308,12 +308,71 @@ namespace FancyZonesEditor
 
         private void OnMergeComplete(object o, MouseButtonEventArgs e)
         {
-            // merge is only one zone. cancel merge;
-            ClearSelection();
+            var selectedIndices = new List<int>();
+            for (int zoneIndex = 0; zoneIndex < _data.Zones.Count; zoneIndex++)
+            {
+                if ((Preview.Children[zoneIndex] as GridZone).IsSelected)
+                {
+                    selectedIndices.Add(zoneIndex);
+                }
+            }
+
+            if (selectedIndices.Count <= 1)
+            {
+                ClearSelection();
+            }
+            else
+            {
+                Point mousePoint = e.GetPosition(Preview);
+                MergePanel.Visibility = Visibility.Visible;
+                Canvas.SetLeft(MergeButtons, mousePoint.X);
+                Canvas.SetTop(MergeButtons, mousePoint.Y);
+            }
         }
+
+        private bool _inMergeDrag;
+        private Point _mergeDragStart;
 
         private void OnMergeDrag(object o, MouseEventArgs e)
         {
+            Point dragPosition = e.GetPosition(Preview);
+            Size actualSize = WorkAreaSize();
+
+            if (!_inMergeDrag)
+            {
+                _inMergeDrag = true;
+                _mergeDragStart = dragPosition;
+            }
+
+            // Find the new zone, if any
+            int dataXLow = Convert.ToInt32(Math.Min(_mergeDragStart.X, dragPosition.X) / actualSize.Width * _data.Multiplier);
+            int dataXHigh = Convert.ToInt32(Math.Max(_mergeDragStart.X, dragPosition.X) / actualSize.Width * _data.Multiplier);
+            int dataYLow = Convert.ToInt32(Math.Min(_mergeDragStart.Y, dragPosition.Y) / actualSize.Height * _data.Multiplier);
+            int dataYHigh = Convert.ToInt32(Math.Max(_mergeDragStart.Y, dragPosition.Y) / actualSize.Height * _data.Multiplier);
+
+            var selectedIndices = new List<int>();
+
+            for (int zoneIndex = 0; zoneIndex < _data.Zones.Count(); zoneIndex++)
+            {
+                var zoneData = _data.Zones[zoneIndex];
+
+                bool selected = Math.Max(zoneData.Left, dataXLow) <= Math.Min(zoneData.Right, dataXHigh) &&
+                                Math.Max(zoneData.Top, dataYLow) <= Math.Min(zoneData.Bottom, dataYHigh);
+
+                // Check whether the zone intersects the selected rectangle
+                (Preview.Children[zoneIndex] as GridZone).IsSelected = selected;
+
+                if (selected)
+                {
+                    selectedIndices.Add(zoneIndex);
+                }
+            }
+
+            // Compute the closure
+            _data.MergeClosureIndices(selectedIndices).ForEach((zoneIndex) =>
+            {
+                (Preview.Children[zoneIndex] as GridZone).IsSelected = true;
+            });
         }
 
         private void ClearSelection()
@@ -322,13 +381,28 @@ namespace FancyZonesEditor
             {
                 ((GridZone)zone).IsSelected = false;
             }
+
+            _inMergeDrag = false;
         }
 
         private void MergeClick(object sender, RoutedEventArgs e)
         {
             MergePanel.Visibility = Visibility.Collapsed;
-            OnGridDimensionsChanged();
+
+            var selectedIndices = new List<int>();
+
+            for (int zoneIndex = 0; zoneIndex < _data.Zones.Count(); zoneIndex++)
+            {
+                if ((Preview.Children[zoneIndex] as GridZone).IsSelected)
+                {
+                    selectedIndices.Add(zoneIndex);
+                }
+            }
+
             ClearSelection();
+
+            _data.DoMerge(selectedIndices);
+            SetupUI();
         }
 
         private void MergeCancelClick(object sender, RoutedEventArgs e)
