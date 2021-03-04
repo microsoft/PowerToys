@@ -54,6 +54,26 @@ namespace FancyZonesEditor
             SetupUI();
         }
 
+        private void PlaceResizer(GridResizer resizerThumb)
+        {
+            var leftZone = Preview.Children[resizerThumb.LeftReferenceZone];
+            var rightZone = Preview.Children[resizerThumb.RightReferenceZone];
+            var topZone = Preview.Children[resizerThumb.TopReferenceZone];
+            var bottomZone = Preview.Children[resizerThumb.BottomReferenceZone];
+
+            double left = Canvas.GetLeft(leftZone);
+            double right = Canvas.GetLeft(rightZone) + (rightZone as GridZone).MinWidth;
+
+            double top = Canvas.GetTop(topZone);
+            double bottom = Canvas.GetTop(bottomZone) + (bottomZone as GridZone).MinHeight;
+
+            double x = (left + right) / 2.0;
+            double y = (top + bottom) / 2.0;
+
+            Canvas.SetLeft(resizerThumb, x - 24);
+            Canvas.SetTop(resizerThumb, y - 24);
+        }
+
         private void SetupUI()
         {
             Size actualSize = WorkAreaSize();
@@ -88,21 +108,22 @@ namespace FancyZonesEditor
                 resizerThumb.Orientation = resizer.Orientation;
                 AdornerLayer.Children.Add(resizerThumb);
 
-                double x, y;
-
                 if (resizer.Orientation == Orientation.Horizontal)
                 {
-                    x = (_data.Zones[resizer.PositiveSideIndices[0]].Left + _data.Zones[resizer.PositiveSideIndices.Last()].Right) / 2.0;
-                    y = _data.Zones[resizer.PositiveSideIndices[0]].Top;
+                    resizerThumb.LeftReferenceZone = resizer.PositiveSideIndices[0];
+                    resizerThumb.RightReferenceZone = resizer.PositiveSideIndices.Last();
+                    resizerThumb.TopReferenceZone = resizer.PositiveSideIndices[0];
+                    resizerThumb.BottomReferenceZone = resizer.NegativeSideIndices[0];
                 }
                 else
                 {
-                    x = _data.Zones[resizer.PositiveSideIndices[0]].Left;
-                    y = (_data.Zones[resizer.PositiveSideIndices[0]].Top + _data.Zones[resizer.PositiveSideIndices.Last()].Bottom) / 2.0;
+                    resizerThumb.LeftReferenceZone = resizer.PositiveSideIndices[0];
+                    resizerThumb.RightReferenceZone = resizer.NegativeSideIndices[0];
+                    resizerThumb.TopReferenceZone = resizer.PositiveSideIndices[0];
+                    resizerThumb.BottomReferenceZone = resizer.PositiveSideIndices.Last();
                 }
 
-                Canvas.SetLeft(resizerThumb, (x * actualSize.Width / _data.Multiplier) - 24);
-                Canvas.SetTop(resizerThumb, (y * actualSize.Height / _data.Multiplier) - 24);
+                PlaceResizer(resizerThumb);
             }
         }
 
@@ -239,6 +260,15 @@ namespace FancyZonesEditor
                     });
 
                     Canvas.SetTop(resizer, Canvas.GetTop(resizer) + e.VerticalChange);
+                }
+
+                foreach (var child in AdornerLayer.Children)
+                {
+                    GridResizer resizerThumb = child as GridResizer;
+                    if (resizerThumb != resizer)
+                    {
+                        PlaceResizer(resizerThumb);
+                    }
                 }
             }
             else
