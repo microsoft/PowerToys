@@ -276,6 +276,7 @@ codecvt
 codeofconduct
 codeql
 codereview
+Codespaces
 COINIT
 colorconv
 colorhistory
@@ -1808,6 +1809,7 @@ rgelt
 Rgn
 rgs
 rhs
+ricardosantos
 Riched
 Richtext
 RIGHTSCROLLBAR
@@ -2005,6 +2007,7 @@ srre
 srw
 srwlock
 ssf
+ssh
 sstream
 STACKFRAME
 stackoverflow
@@ -2224,6 +2227,7 @@ uncompilable
 UNCPRIORITY
 undef
 UNDNAME
+unescape
 Ungroup
 unicode
 Unindent
@@ -2320,8 +2324,10 @@ VOS
 VREDRAW
 VSC
 VSCBD
+vscode
 VSCROLL
 vse
+vsonline
 vstemplate
 VSTHRD
 VSTS
@@ -2432,6 +2438,7 @@ wofstream
 wordpad
 workaround
 workflow
+workspaces
 wostream
 wox
 wparam
@@ -2444,6 +2451,7 @@ WResize
 wrl
 wsf
 wsh
+wsl
 wss
 wstr
 wstring
