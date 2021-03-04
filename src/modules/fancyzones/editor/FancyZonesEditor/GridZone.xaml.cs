@@ -30,10 +30,6 @@ namespace FancyZonesEditor
 
         public event MouseButtonEventHandler MergeComplete;
 
-        public double[] VerticalSnapPoints { get; set; }
-
-        public double[] HorizontalSnapPoints { get; set; }
-
         private readonly Rectangle _splitter;
         private bool _switchOrientation;
         private Point _lastPos = new Point(-1, -1);
@@ -183,38 +179,6 @@ namespace FancyZonesEditor
             else
             {
                 _lastPos = e.GetPosition(Body);
-
-                if (IsVerticalSplit)
-                {
-                    if (VerticalSnapPoints != null)
-                    {
-                        int thickness = SplitterThickness;
-                        foreach (double snapPoint in VerticalSnapPoints)
-                        {
-                            if (Math.Abs(_lastPos.X - snapPoint) <= (thickness * 2))
-                            {
-                                _lastPos.X = snapPoint;
-                                break;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // horizontal split
-                    if (HorizontalSnapPoints != null)
-                    {
-                        int thickness = SplitterThickness;
-                        foreach (double snapPoint in HorizontalSnapPoints)
-                        {
-                            if (Math.Abs(_lastPos.Y - snapPoint) <= (thickness * 2))
-                            {
-                                _lastPos.Y = snapPoint;
-                                break;
-                            }
-                        }
-                    }
-                }
 
                 if (_mouseDownPos.X == -1)
                 {

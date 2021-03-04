@@ -93,7 +93,9 @@ namespace FancyZonesEditor
             {
                 var zonePanel = new GridZone(Model.ShowSpacing ? Model.Spacing : 0);
                 Preview.Children.Add(zonePanel);
-                zonePanel.Split += ZonePanel_Split;
+                zonePanel.Split += OnSplit;
+                zonePanel.MergeDrag += OnMergeDrag;
+                zonePanel.MergeComplete += OnMergeComplete;
                 Canvas.SetTop(zonePanel, actualSize.Height * zone.Top / _data.Multiplier);
                 Canvas.SetLeft(zonePanel, actualSize.Width * zone.Left / _data.Multiplier);
                 zonePanel.MinWidth = actualSize.Width * (zone.Right - zone.Left) / _data.Multiplier;
@@ -128,8 +130,10 @@ namespace FancyZonesEditor
             }
         }
 
-        private void ZonePanel_Split(object sender, SplitEventArgs args)
+        private void OnSplit(object sender, SplitEventArgs args)
         {
+            MergeCancelClick(null, null);
+
             Size actualSize = WorkAreaSize();
             int zoneIndex = Preview.Children.IndexOf(sender as GridZone);
 
@@ -177,17 +181,6 @@ namespace FancyZonesEditor
         public Panel PreviewPanel
         {
             get { return Preview; }
-        }
-
-        private void OnSplit(object o, int position, Orientation orientation)
-        {
-            MergeCancelClick(null, null);
-
-            UIElementCollection previewChildren = Preview.Children;
-            GridZone splitee = (GridZone)o;
-
-            _data.Split(previewChildren.IndexOf(splitee), position, orientation);
-            SetupUI();
         }
 
         private void OnGridDimensionsChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -312,8 +305,6 @@ namespace FancyZonesEditor
 
             SetupUI();
         }
-
-        private Point _startDragPos = new Point(-1, -1);
 
         private void OnMergeComplete(object o, MouseButtonEventArgs e)
         {
