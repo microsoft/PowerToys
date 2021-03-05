@@ -357,10 +357,10 @@ namespace FancyZonesEditor
             }
 
             // Find the new zone, if any
-            int dataXLow = Convert.ToInt32(Math.Min(_mergeDragStart.X, dragPosition.X) / actualSize.Width * GridData.Multiplier);
-            int dataXHigh = Convert.ToInt32(Math.Max(_mergeDragStart.X, dragPosition.X) / actualSize.Width * GridData.Multiplier);
-            int dataYLow = Convert.ToInt32(Math.Min(_mergeDragStart.Y, dragPosition.Y) / actualSize.Height * GridData.Multiplier);
-            int dataYHigh = Convert.ToInt32(Math.Max(_mergeDragStart.Y, dragPosition.Y) / actualSize.Height * GridData.Multiplier);
+            int dataLowX = Convert.ToInt32(Math.Min(_mergeDragStart.X, dragPosition.X) / actualSize.Width * GridData.Multiplier);
+            int dataHighX = Convert.ToInt32(Math.Max(_mergeDragStart.X, dragPosition.X) / actualSize.Width * GridData.Multiplier);
+            int dataLowY = Convert.ToInt32(Math.Min(_mergeDragStart.Y, dragPosition.Y) / actualSize.Height * GridData.Multiplier);
+            int dataHighY = Convert.ToInt32(Math.Max(_mergeDragStart.Y, dragPosition.Y) / actualSize.Height * GridData.Multiplier);
 
             var selectedIndices = new List<int>();
 
@@ -368,8 +368,8 @@ namespace FancyZonesEditor
             {
                 var zoneData = _data.Zones[zoneIndex];
 
-                bool selected = Math.Max(zoneData.Left, dataXLow) <= Math.Min(zoneData.Right, dataXHigh) &&
-                                Math.Max(zoneData.Top, dataYLow) <= Math.Min(zoneData.Bottom, dataYHigh);
+                bool selected = Math.Max(zoneData.Left, dataLowX) <= Math.Min(zoneData.Right, dataHighX) &&
+                                Math.Max(zoneData.Top, dataLowY) <= Math.Min(zoneData.Bottom, dataHighY);
 
                 // Check whether the zone intersects the selected rectangle
                 (Preview.Children[zoneIndex] as GridZone).IsSelected = selected;
