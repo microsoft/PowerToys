@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <StartupObject>PowerLauncher.App</StartupObject>
-    <ApplicationIcon>Images\Run.ico</ApplicationIcon>
+    <ApplicationIcon>Images\RunResource.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>    
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -63,7 +63,7 @@
     <None Remove="Images\app.light1.png" />
     <None Remove="Images\app_error.dark.png" />
     <None Remove="Images\app_error.light.png" />
-    <None Remove="Images\Run.ico" />
+    <None Remove="Images\RunResource.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -202,6 +202,9 @@
     <None Update="Images\restart.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Images\RunAsset.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Images\search.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -265,13 +268,13 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\RunResource.ico" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Run.ico" />
   </ItemGroup>
 </Project>
