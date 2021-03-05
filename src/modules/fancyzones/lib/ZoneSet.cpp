@@ -825,8 +825,8 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 
 bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing)
 {
-    long totalWidth = workArea.width() - (spacing * (gridLayoutInfo.columns() + 1));
-    long totalHeight = workArea.height() - (spacing * (gridLayoutInfo.rows() + 1));
+    long totalWidth = workArea.width();
+    long totalHeight = workArea.height();
     struct Info
     {
         long Extent;
@@ -841,18 +841,18 @@ bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutI
     int totalPercents = 0;
     for (int row = 0; row < gridLayoutInfo.rows(); row++)
     {
-        rowInfo[row].Start = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;
+        rowInfo[row].Start = totalPercents * totalHeight / C_MULTIPLIER;
         totalPercents += gridLayoutInfo.rowsPercents()[row];
-        rowInfo[row].End = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;
+        rowInfo[row].End = totalPercents * totalHeight / C_MULTIPLIER;
         rowInfo[row].Extent = rowInfo[row].End - rowInfo[row].Start;
     }
 
     totalPercents = 0;
     for (int col = 0; col < gridLayoutInfo.columns(); col++)
     {
-        columnInfo[col].Start = totalPercents * totalWidth / C_MULTIPLIER + (col + 1) * spacing;
+        columnInfo[col].Start = totalPercents * totalWidth / C_MULTIPLIER;
         totalPercents += gridLayoutInfo.columnsPercents()[col];
-        columnInfo[col].End = totalPercents * totalWidth / C_MULTIPLIER + (col + 1) * spacing;
+        columnInfo[col].End = totalPercents * totalWidth / C_MULTIPLIER;
         columnInfo[col].Extent = columnInfo[col].End - columnInfo[col].Start;
     }
 
@@ -880,6 +880,11 @@ bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutI
 
                 long right = columnInfo[maxCol].End;
                 long bottom = rowInfo[maxRow].End;
+
+                top += row == 0 ? spacing : spacing / 2;
+                bottom -= row == gridLayoutInfo.rows() - 1 ? spacing : spacing / 2;
+                left += col == 0 ? spacing : spacing / 2;
+                right -= col == gridLayoutInfo.columns() - 1 ? spacing : spacing / 2;
 
                 auto zone = MakeZone(RECT{ left, top, right, bottom }, i);
                 if (zone)
