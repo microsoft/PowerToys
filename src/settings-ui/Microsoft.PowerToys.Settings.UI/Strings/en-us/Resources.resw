@@ -1046,7 +1046,7 @@ Win + ` to open the FancyZones editor.</value>
     <value>Snap a window to multiple zones by holding the Ctrl key (while also holding Shift) when dragging a window.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
-    <value>Open Windows File Explorer, select the View tab in the File Explorer ribbon, then select Preview Pane.
+    <value>Open Windows File Explorer, select the View tab in the File Explorer ribbon, then select Preview Pane. 
 From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
@@ -1092,8 +1092,8 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Tips &amp; tricks</value>
   </data>
   <data name="Oobe_VideoConference_HowToLaunch.Text" xml:space="preserve">
-    <value>Win + N to toggle both your microphone and video
-Win + Shift + A to toggle your microphone
+    <value>Win + N to toggle both your microphone and video 
+Win + Shift + A to toggle your microphone 
 Win + Shift + O to toggle your video</value>
   </data>
   <data name="Oobe_ColorPicker" xml:space="preserve">
