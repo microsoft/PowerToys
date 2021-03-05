@@ -1021,7 +1021,8 @@
         <?endforeach?>
       </Component>
       <Component Id="VSCodeWorkspacesImagesComponent" Directory="VSCodeWorkspaceImagesFolder" Guid="6F3C0CF1-7024-4333-BFA1-850D340AEE69">
-        <File Id="VSCodeWorkspacePluginIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\vscode_plugin.png" />
+        <File Id="VSCodeWorkspacePluginIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-light.png" />
+        <File Id="VSCodeWorkspacePluginIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-dark.png" />
         <File Id="VSCodeWorkspaceFolder" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\folder.png" />
         <File Id="VSCodeWorkspaceRemote" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\monitor.png" />
       </Component>
