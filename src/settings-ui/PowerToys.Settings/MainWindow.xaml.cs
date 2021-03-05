@@ -9,6 +9,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
+using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
 
 namespace PowerToys.Settings
@@ -28,6 +29,9 @@ namespace PowerToys.Settings
             this.InitializeComponent();
 
             Utils.FitToScreen(this);
+
+            ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
+            Title = loader.GetString("SettingsWindow_Title");
 
             bootTime.Stop();
 

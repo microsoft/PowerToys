@@ -7,7 +7,6 @@
         xmlns:Controls="clr-namespace:Microsoft.Toolkit.Wpf.UI.Controls;assembly=Microsoft.Toolkit.Wpf.UI.Controls"
         xmlns:xaml="clr-namespace:Microsoft.Toolkit.Wpf.UI.XamlHost;assembly=Microsoft.Toolkit.Wpf.UI.XamlHost"
         mc:Ignorable="d"
-        Title="PowerToys Settings"
         Height="860"
         MinHeight="400"
         Width="1180"
