@@ -1,5 +1,6 @@
 {
   "ID": "525995402BEF4A8CA860D92F6D108092",
+  "Disabled": true,
   "ActionKeyword": "{",
   "Name": "VSCode Workspaces",
   "Description": "Opened VSCode Workspaces",

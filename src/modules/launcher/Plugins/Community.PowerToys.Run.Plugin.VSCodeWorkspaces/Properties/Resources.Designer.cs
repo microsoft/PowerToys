@@ -79,7 +79,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to VSCode Workspaces.
+        ///   Looks up a localized string similar to Visual Studio Code Workspaces.
         /// </summary>
         internal static string PluginTitle {
             get {
