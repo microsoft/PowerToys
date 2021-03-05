@@ -116,8 +116,11 @@ namespace FancyZonesEditor
 
             for (int zoneIndex = 0; zoneIndex < _data.Zones.Count(); zoneIndex++)
             {
+                // this is needed for the lambda
+                int zoneIndexCopy = zoneIndex;
+
                 var zone = _data.Zones[zoneIndex];
-                var zonePanel = new GridZone(spacing, snapX, snapY);
+                var zonePanel = new GridZone(spacing, snapX, snapY, (orientation, offset) => _data.CanSplit(zoneIndexCopy, offset, orientation));
                 Preview.Children.Add(zonePanel);
                 zonePanel.Split += OnSplit;
                 zonePanel.MergeDrag += OnMergeDrag;

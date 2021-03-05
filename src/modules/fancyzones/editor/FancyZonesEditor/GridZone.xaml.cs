@@ -20,6 +20,7 @@ namespace FancyZonesEditor
         // Non-localizable strings
         private const string ObjectDependencyID = "IsSelected";
         private const string GridZoneBackgroundBrushID = "GridZoneBackgroundBrush";
+        private const string SecondaryForegroundBrushID = "SecondaryForegroundBrush";
         private const string PropertyIsShiftKeyPressedID = "IsShiftKeyPressed";
 
         public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
@@ -39,6 +40,7 @@ namespace FancyZonesEditor
         private bool _inMergeDrag;
         private MagneticSnap _snapX;
         private MagneticSnap _snapY;
+        private Func<Orientation, int, bool> _canSplit;
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -56,7 +58,7 @@ namespace FancyZonesEditor
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        public GridZone(int spacing, MagneticSnap snapX, MagneticSnap snapY)
+        public GridZone(int spacing, MagneticSnap snapX, MagneticSnap snapY, Func<Orientation, int, bool> canSplit)
         {
             InitializeComponent();
             OnSelectionChanged();
@@ -73,6 +75,7 @@ namespace FancyZonesEditor
 
             _snapX = snapX;
             _snapY = snapY;
+            _canSplit = canSplit;
         }
 
         private void GridZone_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -103,6 +106,8 @@ namespace FancyZonesEditor
 
         private void UpdateSplitter()
         {
+            bool enabled;
+
             if (IsVerticalSplit)
             {
                 double bodyWidth = Body.ActualWidth;
@@ -120,6 +125,8 @@ namespace FancyZonesEditor
                 Canvas.SetTop(_splitter, 0);
                 _splitter.MinWidth = SplitterThickness;
                 _splitter.MinHeight = Body.ActualHeight;
+
+                enabled = _canSplit(Orientation.Vertical, _snappedPositionX);
             }
             else
             {
@@ -138,7 +145,13 @@ namespace FancyZonesEditor
                 Canvas.SetTop(_splitter, pos);
                 _splitter.MinWidth = Body.ActualWidth;
                 _splitter.MinHeight = SplitterThickness;
+
+                enabled = _canSplit(Orientation.Horizontal, _snappedPositionY);
             }
+
+            Brush disabledBrush = App.Current.Resources[SecondaryForegroundBrushID] as SolidColorBrush;
+            Brush enabledBrush = SystemParameters.WindowGlassBrush;
+            _splitter.Fill = enabled ? enabledBrush : disabledBrush;
         }
 
         protected override void OnMouseEnter(MouseEventArgs e)
