@@ -8,6 +8,7 @@ using interop;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
+using Windows.ApplicationModel.Resources;
 
 namespace PowerToys.Settings
 {
@@ -31,6 +32,9 @@ namespace PowerToys.Settings
         {
             InitializeComponent();
             Utils.FitToScreen(this);
+
+            ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
+            Title = loader.GetString("OobeWindow_Title");
         }
 
         private void Window_Closed(object sender, EventArgs e)

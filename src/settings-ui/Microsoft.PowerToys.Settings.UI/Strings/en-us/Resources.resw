@@ -1145,4 +1145,10 @@ Win + Shift + O to toggle your video</value>
   <data name="Oobe_Button.Text" xml:space="preserve">
     <value>Welcome to PowerToys</value>
   </data>
+  <data name="OobeWindow_Title" xml:space="preserve">
+    <value>Welcome to PowerToys</value>
+  </data>
+  <data name="SettingsWindow_Title" xml:space="preserve">
+    <value>PowerToys Settings</value>
+  </data>
 </root>

@@ -7,7 +7,6 @@
         xmlns:Controls="clr-namespace:Microsoft.Toolkit.Wpf.UI.Controls;assembly=Microsoft.Toolkit.Wpf.UI.Controls"
         xmlns:xaml="clr-namespace:Microsoft.Toolkit.Wpf.UI.XamlHost;assembly=Microsoft.Toolkit.Wpf.UI.XamlHost"
         mc:Ignorable="d"
-        Title="Welcome to PowerToys"
         MinWidth="480" Height="700" Width="1100"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
