@@ -125,7 +125,7 @@
     <comment>Used to indicate the location where something is</comment>
   </data>
   <data name="PluginDescription" xml:space="preserve">
-    <value>Opens VS Code previously opened workspaces, remote machines (SSH or Codespaces) and containers.</value>
+    <value>Opens VS Code's previously opened workspaces, remote machines (SSH or Codespaces) and containers.</value>
   </data>
   <data name="SSHRemoteMachine" xml:space="preserve">
     <value>SSH remote machine</value>
