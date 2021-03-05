@@ -75,10 +75,10 @@ namespace PowerLauncher
 
                     var overloadSettings = _settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
 
-                    if (overloadSettings.Plugins == null || !overloadSettings.Plugins.Any())
+                    if (overloadSettings.Plugins == null || overloadSettings.Plugins.Count() != PluginManager.AllPlugins.Count)
                     {
                         // Needed to be consistent with old settings
-                        overloadSettings.Plugins = GetDefaultPluginsSettings();
+                        overloadSettings.Plugins = CombineWithDefaultSettings(overloadSettings.Plugins);
                         _settingsUtils.SaveSettings(overloadSettings.ToJsonString(), PowerLauncherSettings.ModuleName);
                     }
                     else
@@ -171,6 +171,20 @@ namespace PowerLauncher
             Key key = KeyInterop.KeyFromVirtualKey(hotkey.Code);
             HotkeyModel model = new HotkeyModel(hotkey.Alt, hotkey.Shift, hotkey.Win, hotkey.Ctrl, key);
             return model.ToString();
+        }
+
+        private static List<PowerLauncherPluginSettings> CombineWithDefaultSettings(IEnumerable<PowerLauncherPluginSettings> plugins)
+        {
+            var results = GetDefaultPluginsSettings().ToDictionary(x => x.Id);
+            foreach (var plugin in plugins)
+            {
+                if (results.ContainsKey(plugin.Id))
+                {
+                    results[plugin.Id] = plugin;
+                }
+            }
+
+            return results.Values.ToList();
         }
 
         private static IEnumerable<PowerLauncherPluginSettings> GetDefaultPluginsSettings()
