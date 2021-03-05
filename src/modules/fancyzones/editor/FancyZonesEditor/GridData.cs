@@ -14,7 +14,7 @@ namespace FancyZonesEditor
     public class GridData
     {
         // result[k] is the sum of the first k elements of the given list.
-        private static List<int> PrefixSum(List<int> list)
+        public static List<int> PrefixSum(List<int> list)
         {
             var result = new List<int>(list.Count + 1);
             result.Add(0);
@@ -74,9 +74,6 @@ namespace FancyZonesEditor
             return result;
         }
 
-        // The sum of row/column percents should be equal to this number
-        private const int _multiplier = 10000;
-
         public struct Zone
         {
             public int Index;
@@ -102,9 +99,10 @@ namespace FancyZonesEditor
 
         private GridLayoutModel _model;
 
-        public int Multiplier
+        // The sum of row/column percents should be equal to this number
+        public static int Multiplier
         {
-            get => _multiplier;
+            get => 10000;
         }
 
         private void ModelToZones(GridLayoutModel model)
@@ -184,7 +182,7 @@ namespace FancyZonesEditor
             var rowPrefixSum = PrefixSum(model.RowPercents);
             var colPrefixSum = PrefixSum(model.ColumnPercents);
 
-            if (rowPrefixSum[rows] != _multiplier || colPrefixSum[cols] != _multiplier)
+            if (rowPrefixSum[rows] != Multiplier || colPrefixSum[cols] != Multiplier)
             {
                 throw new ArgumentException();
             }

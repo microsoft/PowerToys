@@ -81,14 +81,14 @@ namespace FancyZonesEditor
             double spacing = Model.ShowSpacing ? Model.Spacing : 0;
 
             double topSpacing = zone.Top == 0 ? spacing : spacing / 2;
-            double bottomSpacing = zone.Bottom == _data.Multiplier ? spacing : spacing / 2;
+            double bottomSpacing = zone.Bottom == GridData.Multiplier ? spacing : spacing / 2;
             double leftSpacing = zone.Left == 0 ? spacing : spacing / 2;
-            double rightSpacing = zone.Right == _data.Multiplier ? spacing : spacing / 2;
+            double rightSpacing = zone.Right == GridData.Multiplier ? spacing : spacing / 2;
 
-            Canvas.SetTop(panel, (actualSize.Height * zone.Top / _data.Multiplier) + topSpacing);
-            Canvas.SetLeft(panel, (actualSize.Width * zone.Left / _data.Multiplier) + leftSpacing);
-            panel.MinWidth = (actualSize.Width * (zone.Right - zone.Left) / _data.Multiplier) - leftSpacing - rightSpacing;
-            panel.MinHeight = (actualSize.Height * (zone.Bottom - zone.Top) / _data.Multiplier) - topSpacing - bottomSpacing;
+            Canvas.SetTop(panel, (actualSize.Height * zone.Top / GridData.Multiplier) + topSpacing);
+            Canvas.SetLeft(panel, (actualSize.Width * zone.Left / GridData.Multiplier) + leftSpacing);
+            panel.MinWidth = (actualSize.Width * (zone.Right - zone.Left) / GridData.Multiplier) - leftSpacing - rightSpacing;
+            panel.MinHeight = (actualSize.Height * (zone.Bottom - zone.Top) / GridData.Multiplier) - topSpacing - bottomSpacing;
         }
 
         private void SetupUI()
@@ -102,8 +102,8 @@ namespace FancyZonesEditor
 
             int spacing = Model.ShowSpacing ? Model.Spacing : 0;
 
-            _data.MinZoneWidth = Convert.ToInt32(_data.Multiplier / actualSize.Width * (MinZoneSize + (2 * spacing)));
-            _data.MinZoneHeight = Convert.ToInt32(_data.Multiplier / actualSize.Height * (MinZoneSize + (2 * spacing)));
+            _data.MinZoneWidth = Convert.ToInt32(GridData.Multiplier / actualSize.Width * (MinZoneSize + (2 * spacing)));
+            _data.MinZoneHeight = Convert.ToInt32(GridData.Multiplier / actualSize.Height * (MinZoneSize + (2 * spacing)));
 
             Preview.Children.Clear();
             AdornerLayer.Children.Clear();
@@ -161,7 +161,7 @@ namespace FancyZonesEditor
             int splitBase = args.Orientation == Orientation.Horizontal ? _data.Zones[zoneIndex].Top : _data.Zones[zoneIndex].Left;
             double screenSize = args.Orientation == Orientation.Horizontal ? actualSize.Height : actualSize.Width;
 
-            int dataOffset = splitBase + Convert.ToInt32(args.Offset * _data.Multiplier / screenSize);
+            int dataOffset = splitBase + Convert.ToInt32(args.Offset * GridData.Multiplier / screenSize);
 
             if (_data.CanSplit(zoneIndex, dataOffset, args.Orientation))
             {
@@ -237,11 +237,11 @@ namespace FancyZonesEditor
 
             if (resizer.Orientation == Orientation.Vertical)
             {
-                delta = Convert.ToInt32(_dragX / actualSize.Width * _data.Multiplier);
+                delta = Convert.ToInt32(_dragX / actualSize.Width * GridData.Multiplier);
             }
             else
             {
-                delta = Convert.ToInt32(_dragY / actualSize.Height * _data.Multiplier);
+                delta = Convert.ToInt32(_dragY / actualSize.Height * GridData.Multiplier);
             }
 
             if (_data.CanDrag(resizerIndex, delta))
@@ -308,8 +308,8 @@ namespace FancyZonesEditor
             Size actualSize = WorkAreaSize();
 
             double pixelDelta = resizer.Orientation == Orientation.Vertical ?
-                _dragX / actualSize.Width * _data.Multiplier :
-                _dragY / actualSize.Height * _data.Multiplier;
+                _dragX / actualSize.Width * GridData.Multiplier :
+                _dragY / actualSize.Height * GridData.Multiplier;
 
             _data.Drag(resizerIndex, Convert.ToInt32(pixelDelta));
 
@@ -357,10 +357,10 @@ namespace FancyZonesEditor
             }
 
             // Find the new zone, if any
-            int dataXLow = Convert.ToInt32(Math.Min(_mergeDragStart.X, dragPosition.X) / actualSize.Width * _data.Multiplier);
-            int dataXHigh = Convert.ToInt32(Math.Max(_mergeDragStart.X, dragPosition.X) / actualSize.Width * _data.Multiplier);
-            int dataYLow = Convert.ToInt32(Math.Min(_mergeDragStart.Y, dragPosition.Y) / actualSize.Height * _data.Multiplier);
-            int dataYHigh = Convert.ToInt32(Math.Max(_mergeDragStart.Y, dragPosition.Y) / actualSize.Height * _data.Multiplier);
+            int dataXLow = Convert.ToInt32(Math.Min(_mergeDragStart.X, dragPosition.X) / actualSize.Width * GridData.Multiplier);
+            int dataXHigh = Convert.ToInt32(Math.Max(_mergeDragStart.X, dragPosition.X) / actualSize.Width * GridData.Multiplier);
+            int dataYLow = Convert.ToInt32(Math.Min(_mergeDragStart.Y, dragPosition.Y) / actualSize.Height * GridData.Multiplier);
+            int dataYHigh = Convert.ToInt32(Math.Max(_mergeDragStart.Y, dragPosition.Y) / actualSize.Height * GridData.Multiplier);
 
             var selectedIndices = new List<int>();
 
