@@ -100,10 +100,7 @@ namespace FancyZonesEditor
         private GridLayoutModel _model;
 
         // The sum of row/column percents should be equal to this number
-        public static int Multiplier
-        {
-            get => 10000;
-        }
+        public const int Multiplier = 10000;
 
         private void ModelToZones(GridLayoutModel model)
         {

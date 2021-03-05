@@ -111,10 +111,13 @@ namespace FancyZonesEditor
             Preview.Width = actualSize.Width;
             Preview.Height = actualSize.Height;
 
+            MagneticSnap snapX = new MagneticSnap(GridData.PrefixSum(Model.ColumnPercents).GetRange(1, Model.ColumnPercents.Count - 1), actualSize.Width);
+            MagneticSnap snapY = new MagneticSnap(GridData.PrefixSum(Model.RowPercents).GetRange(1, Model.RowPercents.Count - 1), actualSize.Height);
+
             for (int zoneIndex = 0; zoneIndex < _data.Zones.Count(); zoneIndex++)
             {
                 var zone = _data.Zones[zoneIndex];
-                var zonePanel = new GridZone(spacing);
+                var zonePanel = new GridZone(spacing, snapX, snapY);
                 Preview.Children.Add(zonePanel);
                 zonePanel.Split += OnSplit;
                 zonePanel.MergeDrag += OnMergeDrag;
@@ -155,20 +158,14 @@ namespace FancyZonesEditor
         {
             MergeCancelClick(null, null);
 
-            Size actualSize = WorkAreaSize();
-            int zoneIndex = Preview.Children.IndexOf(sender as GridZone);
+            var zonePanel = sender as GridZone;
+            int zoneIndex = Preview.Children.IndexOf(zonePanel);
 
-            int splitBase = args.Orientation == Orientation.Horizontal ? _data.Zones[zoneIndex].Top : _data.Zones[zoneIndex].Left;
-            double screenSize = args.Orientation == Orientation.Horizontal ? actualSize.Height : actualSize.Width;
-
-            int dataOffset = splitBase + Convert.ToInt32(args.Offset * GridData.Multiplier / screenSize);
-
-            if (_data.CanSplit(zoneIndex, dataOffset, args.Orientation))
+            if (_data.CanSplit(zoneIndex, args.Offset, args.Orientation))
             {
-                _data.Split(zoneIndex, dataOffset, args.Orientation);
+                _data.Split(zoneIndex, args.Offset, args.Orientation);
+                SetupUI();
             }
-
-            SetupUI();
         }
 
         private void GridEditor_Unloaded(object sender, RoutedEventArgs e)

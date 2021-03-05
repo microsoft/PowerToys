@@ -33,8 +33,12 @@ namespace FancyZonesEditor
         private readonly Rectangle _splitter;
         private bool _switchOrientation = false;
         private Point _lastPos = new Point(-1, -1);
+        private int _snappedPositionX;
+        private int _snappedPositionY;
         private Point _mouseDownPos = new Point(-1, -1);
         private bool _inMergeDrag;
+        private MagneticSnap _snapX;
+        private MagneticSnap _snapY;
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -52,7 +56,7 @@ namespace FancyZonesEditor
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        public GridZone(int spacing)
+        public GridZone(int spacing, MagneticSnap snapX, MagneticSnap snapY)
         {
             InitializeComponent();
             OnSelectionChanged();
@@ -62,11 +66,13 @@ namespace FancyZonesEditor
             };
             Body.Children.Add(_splitter);
 
-            Spacing = spacing;
             SplitterThickness = Math.Max(spacing, 1);
 
             ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
             SizeChanged += GridZone_SizeChanged;
+
+            _snapX = snapX;
+            _snapY = snapY;
         }
 
         private void GridZone_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -93,8 +99,6 @@ namespace FancyZonesEditor
             get => (ActualWidth > ActualHeight) ^ _switchOrientation;
         }
 
-        private int Spacing { get; set; }
-
         private int SplitterThickness { get; set; }
 
         private void UpdateSplitter()
@@ -102,7 +106,7 @@ namespace FancyZonesEditor
             if (IsVerticalSplit)
             {
                 double bodyWidth = Body.ActualWidth;
-                double pos = _lastPos.X - (SplitterThickness / 2);
+                double pos = _snapX.DataToPixelWithoutSnapping(_snappedPositionX) - Canvas.GetLeft(this) - (SplitterThickness / 2);
                 if (pos < 0)
                 {
                     pos = 0;
@@ -120,7 +124,7 @@ namespace FancyZonesEditor
             else
             {
                 double bodyHeight = Body.ActualHeight;
-                double pos = _lastPos.Y - (SplitterThickness / 2);
+                double pos = _snapY.DataToPixelWithoutSnapping(_snappedPositionY) - Canvas.GetTop(this) - (SplitterThickness / 2);
                 if (pos < 0)
                 {
                     pos = 0;
@@ -164,6 +168,8 @@ namespace FancyZonesEditor
             else
             {
                 _lastPos = e.GetPosition(Body);
+                _snappedPositionX = _snapX.PixelToDataWithSnapping(e.GetPosition(Parent as GridEditor).X);
+                _snappedPositionY = _snapY.PixelToDataWithSnapping(e.GetPosition(Parent as GridEditor).Y);
 
                 if (_mouseDownPos.X == -1)
                 {
@@ -204,11 +210,11 @@ namespace FancyZonesEditor
                 {
                     if (IsVerticalSplit)
                     {
-                        DoSplit(Orientation.Vertical, _lastPos.X - (thickness / 2));
+                        DoSplit(Orientation.Vertical, _snappedPositionX);
                     }
                     else
                     {
-                        DoSplit(Orientation.Horizontal, _lastPos.Y - (thickness / 2));
+                        DoSplit(Orientation.Horizontal, _snappedPositionY);
                     }
                 }
             }
@@ -227,9 +233,9 @@ namespace FancyZonesEditor
             MergeComplete?.Invoke(this, e);
         }
 
-        private void DoSplit(Orientation orientation, double offset)
+        private void DoSplit(Orientation orientation, int offset)
         {
-            Split?.Invoke(this, new SplitEventArgs(orientation, offset, Spacing));
+            Split?.Invoke(this, new SplitEventArgs(orientation, offset));
         }
     }
 }
