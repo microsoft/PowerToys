@@ -21,6 +21,7 @@ namespace FancyZonesEditor
         private const string PropertyRowsChangedID = "Rows";
         private const string PropertyColumnsChangedID = "Columns";
         private const string ObjectDependencyID = "Model";
+        private const string PropertyIsShiftKeyPressedID = "IsShiftKeyPressed";
 
         private const int MinZoneSize = 100;
 
@@ -38,6 +39,7 @@ namespace FancyZonesEditor
             Loaded += GridEditor_Loaded;
             Unloaded += GridEditor_Unloaded;
             gridEditorUniqueId = ++gridEditorUniqueIdCounter;
+            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
         }
 
         private void GridEditor_Loaded(object sender, RoutedEventArgs e)
@@ -199,6 +201,18 @@ namespace FancyZonesEditor
             if (((e.PropertyName == PropertyRowsChangedID) || (e.PropertyName == PropertyColumnsChangedID)) && gridEditorUniqueId == gridEditorUniqueIdCounter)
             {
                 OnGridDimensionsChanged();
+            }
+        }
+
+        private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if ((e.PropertyName == PropertyIsShiftKeyPressedID) && gridEditorUniqueId == gridEditorUniqueIdCounter)
+            {
+                foreach (var child in Preview.Children)
+                {
+                    var zone = child as GridZone;
+                    zone.UpdateShiftState(((App)Application.Current).MainWindowSettings.IsShiftKeyPressed);
+                }
             }
         }
 

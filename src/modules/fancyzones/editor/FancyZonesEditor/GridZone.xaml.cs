@@ -21,7 +21,6 @@ namespace FancyZonesEditor
         private const string ObjectDependencyID = "IsSelected";
         private const string GridZoneBackgroundBrushID = "GridZoneBackgroundBrush";
         private const string SecondaryForegroundBrushID = "SecondaryForegroundBrush";
-        private const string PropertyIsShiftKeyPressedID = "IsShiftKeyPressed";
 
         public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
 
@@ -70,7 +69,6 @@ namespace FancyZonesEditor
 
             SplitterThickness = Math.Max(spacing, 1);
 
-            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
             SizeChanged += GridZone_SizeChanged;
 
             _snapX = snapX;
@@ -84,16 +82,13 @@ namespace FancyZonesEditor
             HeightLabel.Text = Math.Round(ActualHeight).ToString();
         }
 
-        private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        public void UpdateShiftState(bool shiftState)
         {
-            if (e.PropertyName == PropertyIsShiftKeyPressedID)
-            {
-                _switchOrientation = ((App)Application.Current).MainWindowSettings.IsShiftKeyPressed;
+            _switchOrientation = shiftState;
 
-                if (_lastPos.X != -1)
-                {
-                    UpdateSplitter();
-                }
+            if (_lastPos.X != -1)
+            {
+                UpdateSplitter();
             }
         }
 
