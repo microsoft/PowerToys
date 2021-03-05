@@ -12,8 +12,11 @@ using System.Text.RegularExpressions;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
-    public class Main : IPlugin, /*IPluginI18n,*/ IDisposable
+    public class Main : IPlugin, IPluginI18n, IDisposable
     {
+        public string Name => Properties.Resources.wox_plugin_unitconverter_plugin_name;
+        public string Description => Properties.Resources.wox_plugin_unitconverter_plugin_description;
+
         private PluginInitContext _context;
         private static string _icon_path;
         private bool _disposed;
@@ -38,8 +41,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             string[] split = query.Search.Split(' ');
             split = Array.ConvertAll(split, x => x.ToLower());
 
-            shorthandFeetInchHandler(ref split);
-            degreePrefixer(ref split);
+            ShorthandFeetInchHandler(ref split);
+            DegreePrefixer(ref split);
 
             if (split.Length < 4 || split.Length > 4) {
                 // deny any other queries than:
@@ -109,7 +112,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// Replaces a split input array with shorthand feet/inch notation (1', 1'2" etc) to 'x foot in cm'. 
         /// </summary>
         /// <param name="split"></param>
-        private void shorthandFeetInchHandler(ref string[] split) {
+        private void ShorthandFeetInchHandler(ref string[] split) {
             // catches 1' || 1" || 1'2 || 1'2" in cm
             // by converting it to "x foot in cm"
             if (split.Length == 3) {
@@ -139,8 +142,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                                 // one of either could not be parsed correctly
                                 break;
                             }
-                            
-                            double totalInFeet = Length.FromFeetInches(feet, inches).Feet; 
+
+                            double totalInFeet = Length.FromFeetInches(feet, inches).Feet;
                             string convertedTotalInFeet = totalInFeet.ToString();
 
                             if (_currentCulture == CultureInfo.InvariantCulture) {
@@ -163,7 +166,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' to '10 °c in degreeFahrenheit'. 
         /// </summary>
         /// <param name="split"></param>
-        private void degreePrefixer(ref string[] split) {
+        private void DegreePrefixer(ref string[] split) {
             switch (split[1]) {
                 case "celsius":
                     split[1] = "degreeCelsius";
@@ -233,6 +236,14 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     return ret;
                 }
             });
+        }
+
+        public string GetTranslatedPluginTitle() {
+            return Properties.Resources.wox_plugin_unitconverter_plugin_name;
+        }
+
+        public string GetTranslatedPluginDescription() {
+            return Properties.Resources.wox_plugin_unitconverter_plugin_description;
         }
 
         private void OnThemeChanged(Theme _, Theme newTheme) {
