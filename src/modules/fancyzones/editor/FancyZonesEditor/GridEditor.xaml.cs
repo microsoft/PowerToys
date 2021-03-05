@@ -87,8 +87,8 @@ namespace FancyZonesEditor
 
             Canvas.SetTop(panel, (actualSize.Height * zone.Top / GridData.Multiplier) + topSpacing);
             Canvas.SetLeft(panel, (actualSize.Width * zone.Left / GridData.Multiplier) + leftSpacing);
-            panel.MinWidth = (actualSize.Width * (zone.Right - zone.Left) / GridData.Multiplier) - leftSpacing - rightSpacing;
-            panel.MinHeight = (actualSize.Height * (zone.Bottom - zone.Top) / GridData.Multiplier) - topSpacing - bottomSpacing;
+            panel.MinWidth = Math.Max(1, (actualSize.Width * (zone.Right - zone.Left) / GridData.Multiplier) - leftSpacing - rightSpacing);
+            panel.MinHeight = Math.Max(1, (actualSize.Height * (zone.Bottom - zone.Top) / GridData.Multiplier) - topSpacing - bottomSpacing);
         }
 
         private void SetupUI()
