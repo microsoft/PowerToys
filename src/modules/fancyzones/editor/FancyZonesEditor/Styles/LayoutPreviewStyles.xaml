@@ -14,10 +14,9 @@
 
     <Style x:Key="GridLayoutActualScalePreviewStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource LayoutPreviewActualScaleZoneBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
-        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="Effect" Value="{StaticResource ZoneDropShadow}" />
     </Style>
 
     <Style x:Key="CanvasLayoutSmallScalePreviewStyle" TargetType="Border">
@@ -29,9 +28,8 @@
 
     <Style x:Key="CanvasLayoutActualScalePreviewStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource LayoutPreviewActualScaleZoneBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
-        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="Effect" Value="{StaticResource ZoneDropShadow}" />
     </Style>
 </ResourceDictionary>
