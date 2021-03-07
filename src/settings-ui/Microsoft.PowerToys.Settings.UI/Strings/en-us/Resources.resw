@@ -943,7 +943,7 @@
   <data name="FancyZones_OverlappingZonesSmallest.Content" xml:space="preserve">
     <value>Activate the smallest zone by area</value>
   </data>
-  <data name="FancyZones_OverlappingZonesLabel.Text" xml:space="preserve">
+  <data name="FancyZones_OverlappingZones.Header" xml:space="preserve">
     <value>When multiple zones overlap:</value>
   </data>
   <data name="PowerLauncher_Plugins.Text" xml:space="preserve">
