@@ -245,7 +245,7 @@
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="VSCodeWorkspacePluginFolder" Name="VSCodeWorkspace">
+                <Directory Id="VSCodeWorkspacesPluginFolder" Name="VSCodeWorkspace">
                   <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
                   <Directory Id="VSCodeWorkspaceLanguagesFolder" Name="Languages" />
                 </Directory>
@@ -822,7 +822,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacePluginFolder;ServicePluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
@@ -1014,7 +1014,7 @@
       </Component>
 
       <!-- VSCodeWorkspaces Plugin -->
-      <Component Id="VSCodeWorkspacesComponent" Directory="VSCodeWorkspacePluginFolder" Guid="78363DBD-7E38-4D5F-8987-9963DF609B94">
+      <Component Id="VSCodeWorkspacesComponent" Directory="VSCodeWorkspacesPluginFolder" Guid="78363DBD-7E38-4D5F-8987-9963DF609B94">
         <File Id="VSCodeWorkspaceFolder_deps" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json" />
         <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll?>
           <File Id="VSCodeWorkspaces_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.File)" />
