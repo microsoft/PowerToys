@@ -430,6 +430,8 @@ namespace FancyZonesEditor
                 return;
             }
 
+            int lowestIndex = indices.Min();
+
             // make sure the set of indices is closed.
             var closure = ComputeClosure(indices);
             var closureIndices = closure.Item1.ToHashSet();
@@ -438,7 +440,7 @@ namespace FancyZonesEditor
             // Erase zones with these indices
             _zones = _zones.FindAll((zone) => !closureIndices.Contains(zone.Index)).ToList();
 
-            _zones.Add(closureZone);
+            _zones.Insert(lowestIndex, closureZone);
 
             // Restore invariants
             ZonesToModel(_model);
@@ -483,8 +485,8 @@ namespace FancyZonesEditor
                 zone2.Left = position;
             }
 
-            _zones.Add(zone1);
-            _zones.Add(zone2);
+            _zones.Insert(zoneIndex, zone1);
+            _zones.Insert(zoneIndex + 1, zone2);
 
             // Restore invariants
             ZonesToModel(_model);
