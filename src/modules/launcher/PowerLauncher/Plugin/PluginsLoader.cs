@@ -27,7 +27,9 @@ namespace PowerLauncher.Plugin
         public static IEnumerable<PluginPair> CSharpPlugins(List<PluginMetadata> source)
         {
             var plugins = new List<PluginPair>();
-            var metadatas = source.Where(o => o.Language.ToUpperInvariant() == AllowedLanguage.CSharp);
+            var metadatas = source
+                .Where(o => o.Language.ToUpperInvariant() == AllowedLanguage.CSharp)
+                .ToList();
 
             foreach (var metadata in metadatas)
             {
