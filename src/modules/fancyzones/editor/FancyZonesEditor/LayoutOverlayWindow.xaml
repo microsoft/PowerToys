@@ -13,4 +13,10 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Loaded="Window_Loaded"
-        Background="{DynamicResource BackdropBrush}"/>
+        Background="{DynamicResource BackdropBrush}" 
+	Opacity="0.75" 
+	AllowsTransparency="True">
+        <Window.Effect>
+                <BlurEffect/>
+        </Window.Effect>
+</Window>
