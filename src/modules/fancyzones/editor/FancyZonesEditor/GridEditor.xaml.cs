@@ -123,6 +123,7 @@ namespace FancyZonesEditor
 
                 var zone = _data.Zones[zoneIndex];
                 var zonePanel = new GridZone(spacing, snapX, snapY, (orientation, offset) => _data.CanSplit(zoneIndexCopy, offset, orientation));
+                zonePanel.UpdateShiftState(((App)Application.Current).MainWindowSettings.IsShiftKeyPressed);
                 Preview.Children.Add(zonePanel);
                 zonePanel.Split += OnSplit;
                 zonePanel.MergeDrag += OnMergeDrag;
