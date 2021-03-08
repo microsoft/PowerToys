@@ -40,6 +40,7 @@ namespace FancyZonesEditor
         private MagneticSnap _snapX;
         private MagneticSnap _snapY;
         private Func<Orientation, int, bool> _canSplit;
+        private bool _hovering;
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -101,6 +102,12 @@ namespace FancyZonesEditor
 
         private void UpdateSplitter()
         {
+            if (!_hovering)
+            {
+                _splitter.Fill = Brushes.Transparent;
+                return;
+            }
+
             bool enabled;
 
             if (IsVerticalSplit)
@@ -145,19 +152,21 @@ namespace FancyZonesEditor
             }
 
             Brush disabledBrush = App.Current.Resources[SecondaryForegroundBrushID] as SolidColorBrush;
-            Brush enabledBrush = SystemParameters.WindowGlassBrush;
+            Brush enabledBrush = SystemParameters.WindowGlassBrush; // Active Accent color
             _splitter.Fill = enabled ? enabledBrush : disabledBrush;
         }
 
         protected override void OnMouseEnter(MouseEventArgs e)
         {
-            _splitter.Fill = SystemParameters.WindowGlassBrush; // Active Accent color
-            base.OnMouseEnter(e);
+            _hovering = true;
+            UpdateSplitter();
+            _splitter.Fill = SystemParameters.WindowGlassBrush;
         }
 
         protected override void OnMouseLeave(MouseEventArgs e)
         {
-            _splitter.Fill = Brushes.Transparent;
+            _hovering = false;
+            UpdateSplitter();
             base.OnMouseLeave(e);
         }
 
