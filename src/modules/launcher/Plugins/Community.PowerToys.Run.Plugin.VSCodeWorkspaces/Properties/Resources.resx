@@ -118,14 +118,14 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PluginTitle" xml:space="preserve">
-    <value>VSCode Workspaces</value>
+    <value>Visual Studio Code Workspaces</value>
   </data>
   <data name="In" xml:space="preserve">
     <value>in</value>
     <comment>Used to indicate the location where something is</comment>
   </data>
   <data name="PluginDescription" xml:space="preserve">
-    <value>Open VSCode previously opened workspaces, remote machines (SSH or Codespaces) and containers.</value>
+    <value>Opens workspaces, remote machines (SSH or Codespaces) and containers, previously opened in VS Code.</value>
   </data>
   <data name="SSHRemoteMachine" xml:space="preserve">
     <value>SSH remote machine</value>
