@@ -70,7 +70,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Opens VS Code&apos;s previously opened workspaces, remote machines (SSH or Codespaces) and containers..
+        ///   Looks up a localized string similar to Opens workspaces, remote machines (SSH or Codespaces) and containers, previously opened in VS Code..
         /// </summary>
         internal static string PluginDescription {
             get {
