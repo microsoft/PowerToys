@@ -27,9 +27,9 @@
     <!-- Currently unused -->
     <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF555454" />
 
-    <SolidColorBrush x:Key="LayoutPreviewActualScaleZoneBackgroundBrush" Color="#80202020" />
+    <SolidColorBrush x:Key="LayoutPreviewActualScaleZoneBackgroundBrush" Color="#B0202020" />
     <SolidColorBrush x:Key="LayoutPreviewSmallScaleZoneBackgroundBrush" Color="#FF202020" />
 
-    <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#A5202020" />
-    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#A5202020" />
+    <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#B0202020" />
+    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#B0202020" />
 </ResourceDictionary>
