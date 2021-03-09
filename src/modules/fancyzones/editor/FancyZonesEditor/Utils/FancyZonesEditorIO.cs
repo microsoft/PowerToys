@@ -707,13 +707,16 @@ namespace FancyZonesEditor.Utils
             // Serialize fast access layout keys
             foreach (var pair in FastAccessKeysModel.SelectedKeys)
             {
-                FastAccessLayoutKeysWrapper wrapper = new FastAccessLayoutKeysWrapper
+                if (pair.Value != string.Empty)
                 {
-                    Key = pair.Key,
-                    Uuid = pair.Value,
-                };
+                    FastAccessLayoutKeysWrapper wrapper = new FastAccessLayoutKeysWrapper
+                    {
+                        Key = pair.Key,
+                        Uuid = pair.Value,
+                    };
 
-                zoneSettings.FastAccessLayoutKeys.Add(wrapper);
+                    zoneSettings.FastAccessLayoutKeys.Add(wrapper);
+                }
             }
 
             try
