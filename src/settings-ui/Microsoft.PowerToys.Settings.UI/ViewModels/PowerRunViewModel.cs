@@ -447,7 +447,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_plugins == null)
                 {
-                    _plugins = new ObservableCollection<PowerRunPluginViewModel>(settings.Plugins.Select(x => new PowerRunPluginViewModel(x, isDark)));
+                    _plugins = new ObservableCollection<PowerRunPluginViewModel>(settings.Plugins.Select(x => new PowerRunPluginViewModel(x)));
                 }
 
                 return _plugins;
