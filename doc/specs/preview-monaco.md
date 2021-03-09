@@ -1,4 +1,4 @@
-# **Priview pane - Adding previews with monaco**
+# **Preview pane - Adding previews with monaco**
 
 <img align="right" src="../images/Logo.png" />
 
@@ -10,7 +10,7 @@
 
 Creating a new preview handler for all Developer files. For this we use [Microsoft Monaco editor](https://github.com/microsoft/monaco-editor). 
 
-## 1.1 Technical implemention 
+## 1.1 Technical implementation
 
 A WebView2 window implements shows HTML file with Monaco integrated.
 
@@ -61,4 +61,4 @@ If we implement this we could close the issues:
 |User can choose file previews|Users can attach their own filetypes.|P2|
 |OOBE|Description for the OOBE.|P1|
 |On/Off in settings|The user can turn it on and off.|P0|
-|User can choose in the installer which File extensions should get registred|P1|
+|User can choose in the installer which File extensions should get registered|P1|
