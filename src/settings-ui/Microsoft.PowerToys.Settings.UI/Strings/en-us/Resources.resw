@@ -1159,6 +1159,7 @@ Win + Shift + O to toggle your video</value>
   </data>
   <data name="Run_PositionHeader.Text" xml:space="preserve">
     <value>Show PowerToys Run on</value>
+    <comment>as in Show PowerToys Run on primary monitor</comment>
   </data>
   <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
     <value>Monitor with mouse cursor</value>
