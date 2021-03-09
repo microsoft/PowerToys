@@ -16,7 +16,12 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Thumb}">
-                        <Border x:Name="ThumbBorder" Opacity="0" BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                        <Border x:Name="ThumbBorder"
+                                Opacity="0"
+                                CornerRadius="0"
+                                BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="{TemplateBinding Background}">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates" >
                                     <VisualStateGroup.Transitions>
@@ -64,7 +69,9 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsDefaulted" Value="true">
-                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource SystemControlBackgroundAccentBrush}"/>
+                                <Setter Property="BorderBrush"
+                                        TargetName="border"
+                                        Value="{DynamicResource SystemControlBackgroundAccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter Property="Opacity" TargetName="contentPresenter" Value="0.6"/>
@@ -79,10 +86,9 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="{DynamicResource LayoutPreviewZoneBorderBrush}"
+    <Border BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
             Background="{DynamicResource CanvasZoneBackgroundBrush}"
-            CornerRadius="4"
-            Effect="{StaticResource ZoneDropShadow}"
+            CornerRadius="0"
             BorderThickness="1">
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
@@ -129,15 +135,15 @@
 
             <Thumb x:Name="Caption" Cursor="SizeAll" Background="Transparent" BorderThickness="3" Padding="4" Grid.Column="0" Grid.ColumnSpan="5" Margin="-1" Grid.Row="0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="Caption_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
 
-            <Thumb x:Name="NResize" Cursor="SizeNS" BorderThickness="0,3,0,0" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="NResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="SResize" Cursor="SizeNS" BorderThickness="0,0,0,3" Grid.Row="4" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="SResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="WResize" Cursor="SizeWE" BorderThickness="3,0,0,0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="WResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="EResize" Cursor="SizeWE" BorderThickness="0,0,3,0" Grid.Column="4" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="EResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="NResize" Cursor="SizeNS" BorderThickness="0,2,0,0" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="NResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="SResize" Cursor="SizeNS" BorderThickness="0,0,0,2" Grid.Row="4" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="SResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="WResize" Cursor="SizeWE" BorderThickness="2,0,0,0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="WResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="EResize" Cursor="SizeWE" BorderThickness="0,0,2,0" Grid.Column="4" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="EResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
 
-            <Thumb x:Name="NWResize" Cursor="SizeNWSE" BorderThickness="3,3,0,0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="NWResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="NEResize" Cursor="SizeNESW" BorderThickness="0,3,3,0" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="NEResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="SWResize" Cursor="SizeNESW" BorderThickness="3,0,0,3" Grid.Row="3" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="SWResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="SEResize" Cursor="SizeNWSE" BorderThickness="0,0,3,3" Grid.Row="3" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="SEResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="NWResize" Cursor="SizeNWSE" BorderThickness="2,2,0,0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="NWResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="NEResize" Cursor="SizeNESW" BorderThickness="0,2,2,0" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="NEResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="SWResize" Cursor="SizeNESW" BorderThickness="2,0,0,2" Grid.Row="3" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="SWResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="SEResize" Cursor="SizeNWSE" BorderThickness="0,0,2,2" Grid.Row="3" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="SEResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
 
             <Button Content="&#xE894;"
                     BorderThickness="0"
