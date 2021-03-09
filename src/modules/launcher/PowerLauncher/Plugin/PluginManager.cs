@@ -24,6 +24,7 @@ namespace PowerLauncher.Plugin
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IDirectory Directory = FileSystem.Directory;
+        private static readonly object AllPluginsLock = new object();
 
         private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
 
@@ -44,7 +45,13 @@ namespace PowerLauncher.Plugin
             {
                 if (_allPlugins == null)
                 {
-                    _allPlugins = PluginsLoader.Plugins(PluginConfig.Parse(Directories));
+                    lock (AllPluginsLock)
+                    {
+                        if (_allPlugins == null)
+                        {
+                            _allPlugins = PluginsLoader.Plugins(PluginConfig.Parse(Directories));
+                        }
+                    }
                 }
 
                 return _allPlugins;
