@@ -41,6 +41,7 @@ namespace FancyZonesEditor
         private MagneticSnap _snapY;
         private Func<Orientation, int, bool> _canSplit;
         private bool _hovering;
+        private GridData.Zone _zone;
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -58,7 +59,7 @@ namespace FancyZonesEditor
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        public GridZone(int spacing, MagneticSnap snapX, MagneticSnap snapY, Func<Orientation, int, bool> canSplit)
+        public GridZone(int spacing, MagneticSnap snapX, MagneticSnap snapY, Func<Orientation, int, bool> canSplit, GridData.Zone zone)
         {
             InitializeComponent();
             OnSelectionChanged();
@@ -75,6 +76,7 @@ namespace FancyZonesEditor
             _snapX = snapX;
             _snapY = snapY;
             _canSplit = canSplit;
+            _zone = zone;
         }
 
         private void GridZone_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -114,14 +116,7 @@ namespace FancyZonesEditor
             {
                 double bodyWidth = Body.ActualWidth;
                 double pos = _snapX.DataToPixelWithoutSnapping(_snappedPositionX) - Canvas.GetLeft(this) - (SplitterThickness / 2);
-                if (pos < 0)
-                {
-                    pos = 0;
-                }
-                else if (pos > (bodyWidth - SplitterThickness))
-                {
-                    pos = bodyWidth - SplitterThickness;
-                }
+                pos = Math.Clamp(pos, 0, bodyWidth - SplitterThickness);
 
                 Canvas.SetLeft(_splitter, pos);
                 Canvas.SetTop(_splitter, 0);
@@ -134,14 +129,7 @@ namespace FancyZonesEditor
             {
                 double bodyHeight = Body.ActualHeight;
                 double pos = _snapY.DataToPixelWithoutSnapping(_snappedPositionY) - Canvas.GetTop(this) - (SplitterThickness / 2);
-                if (pos < 0)
-                {
-                    pos = 0;
-                }
-                else if (pos > (bodyHeight - SplitterThickness))
-                {
-                    pos = bodyHeight - SplitterThickness;
-                }
+                pos = Math.Clamp(pos, 0, bodyHeight - SplitterThickness);
 
                 Canvas.SetLeft(_splitter, 0);
                 Canvas.SetTop(_splitter, pos);
@@ -185,8 +173,8 @@ namespace FancyZonesEditor
             else
             {
                 _lastPos = e.GetPosition(Body);
-                _snappedPositionX = _snapX.PixelToDataWithSnapping(e.GetPosition(Parent as GridEditor).X);
-                _snappedPositionY = _snapY.PixelToDataWithSnapping(e.GetPosition(Parent as GridEditor).Y);
+                _snappedPositionX = _snapX.PixelToDataWithSnapping(e.GetPosition(Parent as GridEditor).X, _zone.Left, _zone.Right);
+                _snappedPositionY = _snapY.PixelToDataWithSnapping(e.GetPosition(Parent as GridEditor).Y, _zone.Top, _zone.Bottom);
 
                 if (_mouseDownPos.X == -1)
                 {

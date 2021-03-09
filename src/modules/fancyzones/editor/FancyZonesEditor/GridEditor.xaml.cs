@@ -122,7 +122,7 @@ namespace FancyZonesEditor
                 int zoneIndexCopy = zoneIndex;
 
                 var zone = _data.Zones[zoneIndex];
-                var zonePanel = new GridZone(spacing, snapX, snapY, (orientation, offset) => _data.CanSplit(zoneIndexCopy, offset, orientation));
+                var zonePanel = new GridZone(spacing, snapX, snapY, (orientation, offset) => _data.CanSplit(zoneIndexCopy, offset, orientation), zone);
                 zonePanel.UpdateShiftState(((App)Application.Current).MainWindowSettings.IsShiftKeyPressed);
                 Preview.Children.Add(zonePanel);
                 zonePanel.Split += OnSplit;

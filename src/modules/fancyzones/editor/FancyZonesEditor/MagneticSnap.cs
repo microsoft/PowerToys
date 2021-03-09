@@ -4,13 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FancyZonesEditor
 {
     public class MagneticSnap
     {
         private List<int> _keyPoints;
-        private List<int> _magnetZoneSizes;
         private double _workAreaSize;
 
         private const int MagnetZoneMaxSize = GridData.Multiplier / 12;
@@ -19,26 +19,28 @@ namespace FancyZonesEditor
         {
             _keyPoints = keyPoints;
             _workAreaSize = workAreaSize;
-
-            _magnetZoneSizes = new List<int>();
-
-            for (int i = 0; i < _keyPoints.Count; i++)
-            {
-                int previous = i == 0 ? 0 : _keyPoints[i - 1];
-                int next = i == _keyPoints.Count - 1 ? GridData.Multiplier : _keyPoints[i + 1];
-                _magnetZoneSizes.Add(Math.Min(_keyPoints[i] - previous, Math.Min(next - _keyPoints[i], MagnetZoneMaxSize)) / 2);
-            }
         }
 
-        public int PixelToDataWithSnapping(double pixel)
+        public int PixelToDataWithSnapping(double pixel, int low, int high)
         {
+            var keyPoints = _keyPoints.Where(x => low < x && x < high).ToList();
+            var magnetZoneSizes = new List<int>();
+
+            for (int i = 0; i < keyPoints.Count; i++)
+            {
+                int previous = i == 0 ? low : keyPoints[i - 1];
+                int next = i == keyPoints.Count - 1 ? high : keyPoints[i + 1];
+                magnetZoneSizes.Add(Math.Min(keyPoints[i] - previous, Math.Min(next - keyPoints[i], MagnetZoneMaxSize)) / 2);
+            }
+
             int data = Convert.ToInt32(pixel / _workAreaSize * GridData.Multiplier);
+            data = Math.Clamp(data, low, high);
             int result;
             int snapId = -1;
 
-            for (int i = 0; i < _keyPoints.Count; ++i)
+            for (int i = 0; i < keyPoints.Count; ++i)
             {
-                if (Math.Abs(data - _keyPoints[i]) <= _magnetZoneSizes[i])
+                if (Math.Abs(data - keyPoints[i]) <= magnetZoneSizes[i])
                 {
                     snapId = i;
                     break;
@@ -51,22 +53,22 @@ namespace FancyZonesEditor
             }
             else
             {
-                int deadZoneWidth = (_magnetZoneSizes[snapId] + 1) / 2;
-                if (Math.Abs(data - _keyPoints[snapId]) <= deadZoneWidth)
+                int deadZoneWidth = (magnetZoneSizes[snapId] + 1) / 2;
+                if (Math.Abs(data - keyPoints[snapId]) <= deadZoneWidth)
                 {
-                    result = _keyPoints[snapId];
+                    result = keyPoints[snapId];
                 }
-                else if (data < _keyPoints[snapId])
+                else if (data < keyPoints[snapId])
                 {
-                    result = data + (data - (_keyPoints[snapId] - _magnetZoneSizes[snapId]));
+                    result = data + (data - (keyPoints[snapId] - magnetZoneSizes[snapId]));
                 }
                 else
                 {
-                    result = data - ((_keyPoints[snapId] + _magnetZoneSizes[snapId]) - data);
+                    result = data - ((keyPoints[snapId] + magnetZoneSizes[snapId]) - data);
                 }
             }
 
-            return Math.Max(Math.Min(GridData.Multiplier, result), 0);
+            return Math.Clamp(result, low, high);
         }
 
         public double DataToPixelWithoutSnapping(int data)
