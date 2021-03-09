@@ -207,7 +207,7 @@ namespace PowerLauncher
         /// <returns>X co-ordinate of main window top left corner</returns>
         private double WindowLeft()
         {
-            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            var screen = GetScreen();
             var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
             var left = ((dip2.X - ActualWidth) / 2) + dip1.X;
@@ -216,11 +216,28 @@ namespace PowerLauncher
 
         private double WindowTop()
         {
-            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            var screen = GetScreen();
             var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
             var top = ((dip2.Y - SearchBox.ActualHeight) / 4) + dip1.Y;
             return top;
+        }
+
+        private Screen GetScreen()
+        {
+            ManagedCommon.StartupPosition position = _settings.StartupPosition;
+            switch (position)
+            {
+                case ManagedCommon.StartupPosition.PrimaryMonitor:
+                    return Screen.PrimaryScreen;
+                case ManagedCommon.StartupPosition.Focus:
+                    IntPtr foregroundWindowHandle = NativeMethods.GetForegroundWindow();
+                    Screen activeScreen = Screen.FromHandle(foregroundWindowHandle);
+                    return activeScreen;
+                case ManagedCommon.StartupPosition.Cursor:
+                default:
+                    return Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            }
         }
 
         private void Launcher_KeyDown(object sender, KeyEventArgs e)
