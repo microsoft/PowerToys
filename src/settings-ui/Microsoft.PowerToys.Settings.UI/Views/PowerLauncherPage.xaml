@@ -148,9 +148,30 @@
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
             />
 
-            <TextBlock x:Uid="Appearance_GroupSettings"
+            <TextBlock x:Uid="Run_PositionAppearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+
+            <TextBlock x:Uid="Run_PositionHeader"
+                       x:Name="RadioButtons_Name_Position"
+                       Margin="{StaticResource SmallTopMargin}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+
+            <RadioButton x:Uid="Run_Radio_Position_Primary_Monitor"
+                         GroupName="Run_Position"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsPrimaryMonitorPositionRadioButtonChecked}"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+
+            <RadioButton x:Uid="Run_Radio_Position_Cursor"
+                         GroupName="Run_Position"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsCursorPositionRadioButtonChecked}"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+
+            <RadioButton x:Uid="Run_Radio_Position_Focus"
+                         GroupName="Run_Position"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsFocusPositionRadioButtonChecked}"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+
             <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
             The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
             Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
