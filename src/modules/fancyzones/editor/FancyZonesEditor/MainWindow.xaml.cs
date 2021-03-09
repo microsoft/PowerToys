@@ -420,5 +420,12 @@ namespace FancyZonesEditor
         {
             _openedDialog = null;
         }
+
+        private void TEST_Click(object sender, RoutedEventArgs e)
+        {
+            FastAccessKeysModel.SelectKey(1, "{9AD7FC3A-0A6C-4373-B523-4958FC50C46C}");
+            FastAccessKeysModel.SelectKey(7, "{15052398-7250-404F-9AA6-9966704EEDE1}");
+            FastAccessKeysModel.FreeKey(2);
+        }
     }
 }
