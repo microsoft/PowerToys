@@ -14,16 +14,22 @@
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFeeeeee" />
     <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#FFF3F3F3" />
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF949494" />
-    <SolidColorBrush x:Key="BackdropBrush" Color="#E5949494" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF6A6A6A" />
+    <SolidColorBrush x:Key="BackdropBrush" Color="#85F0F0F0" />
     <SolidColorBrush x:Key="TitleBarSecondaryForegroundBrush" Color="#FF949494" />
+
+    <!-- Used for layouts and monitors -->
     <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FFffffff"/>
     <SolidColorBrush x:Key="LayoutItemBackgroundPointerOverBrush" Color="#FFf2f2f2" />
+
+    <!-- Used for the fullscreen preview (ActualScale) and for the thumbnail preview (SmallScale) -->
     <SolidColorBrush x:Key="LayoutPreviewBackgroundBrush" Color="#19949494" />
+    <!-- Currently unused -->
     <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FFC3BEBE" />
 
-    <SolidColorBrush x:Key="LayoutPreviewActualScaleZoneBackgroundBrush" Color="#E5F3F3F3" />
+    <SolidColorBrush x:Key="LayoutPreviewActualScaleZoneBackgroundBrush" Color="#C5F8F8F8" />
     <SolidColorBrush x:Key="LayoutPreviewSmallScaleZoneBackgroundBrush" Color="#FFDCDCDC" />
-    <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#E5F3F3F3" />
-    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#E5F3F3F3" />
+    
+    <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#C5F8F8F8" />
+    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#C5F8F8F8" />
 </ResourceDictionary>
