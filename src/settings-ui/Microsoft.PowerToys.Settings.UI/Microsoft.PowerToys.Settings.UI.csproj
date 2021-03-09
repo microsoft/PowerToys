@@ -150,6 +150,9 @@
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
+    <Compile Include="ViewModels\PluginAdditionalOptionViewModel.cs" />
+    <Compile Include="ViewModels\PowerLauncherPluginViewModel.cs" />
+    <Compile Include="ViewModels\PowerLauncherViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
     <Compile Include="Views\ColorPickerPage.xaml.cs">
       <DependentUpon>ColorPickerPage.xaml</DependentUpon>
@@ -391,6 +394,10 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj">
+      <Project>{4AED67B6-55FD-486F-B917-E543DEE2CB3C}</Project>
+      <Name>ManagedCommon</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj">
       <Project>{5d00d290-4016-4cfe-9e41-1e7c724509ba}</Project>
       <Name>ManagedTelemetry</Name>
