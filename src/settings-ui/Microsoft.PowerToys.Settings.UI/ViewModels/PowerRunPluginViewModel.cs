@@ -11,12 +11,12 @@ using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerLauncherPluginViewModel : INotifyPropertyChanged
+    public class PowerRunPluginViewModel : INotifyPropertyChanged
     {
         private readonly PowerLauncherPluginSettings settings;
         private readonly Func<bool> isDark;
 
-        public PowerLauncherPluginViewModel(PowerLauncherPluginSettings settings, Func<bool> isDark)
+        public PowerRunPluginViewModel(PowerLauncherPluginSettings settings, Func<bool> isDark)
         {
             if (settings == null)
             {

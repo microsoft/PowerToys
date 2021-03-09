@@ -237,7 +237,7 @@
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
+                    <DataTemplate x:DataType="ViewModels:PowerRunPluginViewModel" x:DefaultBindMode="OneWay">
                         <StackPanel Orientation="Vertical" Background="Transparent"
                                     Padding="0,12,12,12">
                             <Grid ColumnSpacing="0">

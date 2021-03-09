@@ -16,7 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerLauncherViewModel : Observable
+    public class PowerRunViewModel : Observable
     {
         private bool _isDarkThemeRadioButtonChecked;
         private bool _isLightThemeRadioButtonChecked;
@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode, Func<bool> isDark)
+        public PowerRunViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode, Func<bool> isDark)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             this.isDark = isDark;
@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             UpdateSettings();
         }
 
-        public PowerLauncherViewModel(PowerLauncherSettings settings, SendCallback callback)
+        public PowerRunViewModel(PowerLauncherSettings settings, SendCallback callback)
         {
             this.settings = settings;
             this.callback = callback;
@@ -439,15 +439,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
+        private ObservableCollection<PowerRunPluginViewModel> _plugins;
 
-        public ObservableCollection<PowerLauncherPluginViewModel> Plugins
+        public ObservableCollection<PowerRunPluginViewModel> Plugins
         {
             get
             {
                 if (_plugins == null)
                 {
-                    _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(settings.Plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
+                    _plugins = new ObservableCollection<PowerRunPluginViewModel>(settings.Plugins.Select(x => new PowerRunPluginViewModel(x, isDark)));
                 }
 
                 return _plugins;

@@ -151,8 +151,8 @@
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
     <Compile Include="ViewModels\PluginAdditionalOptionViewModel.cs" />
-    <Compile Include="ViewModels\PowerLauncherPluginViewModel.cs" />
-    <Compile Include="ViewModels\PowerLauncherViewModel.cs" />
+    <Compile Include="ViewModels\PowerRunPluginViewModel.cs" />
+    <Compile Include="ViewModels\PowerRunViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
     <Compile Include="Views\ColorPickerPage.xaml.cs">
       <DependentUpon>ColorPickerPage.xaml</DependentUpon>
@@ -166,8 +166,8 @@
     <Compile Include="Views\KeyboardManagerPage.xaml.cs">
       <DependentUpon>KeyboardManagerPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PowerLauncherPage.xaml.cs">
-      <DependentUpon>PowerLauncherPage.xaml</DependentUpon>
+    <Compile Include="Views\PowerRunPage.xaml.cs">
+      <DependentUpon>PowerRunPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PowerPreviewPage.xaml.cs">
       <DependentUpon>PowerPreviewPage.xaml</DependentUpon>
@@ -363,7 +363,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\PowerLauncherPage.xaml">
+    <Page Include="Views\PowerRunPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
