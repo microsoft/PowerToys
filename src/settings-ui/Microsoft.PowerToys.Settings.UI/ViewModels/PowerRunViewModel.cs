@@ -36,14 +36,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly SendCallback callback;
 
-        private readonly Func<bool> isDark;
-
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerRunViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode, Func<bool> isDark)
+        public PowerRunViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-            this.isDark = isDark;
 
             // To obtain the general Settings configurations of PowerToys
             if (settingsRepository == null)
