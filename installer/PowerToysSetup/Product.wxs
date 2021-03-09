@@ -727,7 +727,7 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2ViewsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Views">
       <Component Id="SettingsV2Views" Guid="C140BFBA-6370-4F67-862C-5B42660385CD" Win64="yes">
-        <?foreach File in FancyZonesPage.xbf;GeneralPage.xbf;ImageResizerPage.xbf;KeyboardManagerPage.xbf;PowerLauncherPage.xbf;PowerPreviewPage.xbf;PowerRenamePage.xbf;ShellPage.xbf;ShortcutGuidePage.xbf?>
+        <?foreach File in FancyZonesPage.xbf;GeneralPage.xbf;ImageResizerPage.xbf;KeyboardManagerPage.xbf;PowerRunPage.xbf;PowerPreviewPage.xbf;PowerRenamePage.xbf;ShellPage.xbf;ShortcutGuidePage.xbf?>
           <File Id="SettingsV2_Views_$(var.File)" Source="$(var.BinX64Dir)Settings\Views\$(var.File)" />
         <?endforeach?>
       </Component>
