@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Windows.Input;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
