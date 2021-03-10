@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Windows.Controls;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
