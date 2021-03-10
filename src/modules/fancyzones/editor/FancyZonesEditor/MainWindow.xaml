@@ -284,6 +284,7 @@
                    
                 </Grid>
             </ScrollViewer>
+            
             <Button x:Name="NewLayoutButton"
                     Click="NewLayoutButton_Click"
                     HorizontalAlignment="Right"

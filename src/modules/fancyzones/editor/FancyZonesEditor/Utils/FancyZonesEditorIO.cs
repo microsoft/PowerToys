@@ -57,6 +57,7 @@ namespace FancyZonesEditor.Utils
             MonitorTop,
         }
 
+        // parsing cmd args
         private struct NativeMonitorData
         {
             public string MonitorId { get; set; }
@@ -87,6 +88,7 @@ namespace FancyZonesEditor.Utils
             }
         }
 
+        // zones-settings: devices
         private struct DeviceWrapper
         {
             public struct ActiveZoneSetWrapper
@@ -109,6 +111,7 @@ namespace FancyZonesEditor.Utils
             public int EditorSensitivityRadius { get; set; }
         }
 
+        // zones-settings: custom-zone-sets
         private class CanvasInfoWrapper
         {
             public struct CanvasZoneWrapper
@@ -131,6 +134,7 @@ namespace FancyZonesEditor.Utils
             public int SensitivityRadius { get; set; } = LayoutSettings.DefaultSensitivityRadius;
         }
 
+        // zones-settings: custom-zone-sets
         private class GridInfoWrapper
         {
             public int Rows { get; set; }
@@ -150,6 +154,7 @@ namespace FancyZonesEditor.Utils
             public int SensitivityRadius { get; set; } = LayoutSettings.DefaultSensitivityRadius;
         }
 
+        // zones-settings: custom-zone-sets
         private struct CustomLayoutWrapper
         {
             public string Uuid { get; set; }
@@ -161,6 +166,7 @@ namespace FancyZonesEditor.Utils
             public JsonElement Info { get; set; } // CanvasInfoWrapper or GridInfoWrapper
         }
 
+        // zones-settings: templates
         private struct TemplateLayoutWrapper
         {
             public string Type { get; set; }
@@ -174,6 +180,15 @@ namespace FancyZonesEditor.Utils
             public int SensitivityRadius { get; set; }
         }
 
+        // zones-settings: fast-access-layout-keys-wrapper
+        private struct FastAccessLayoutKeysWrapper
+        {
+            public int Key { get; set; }
+
+            public string Uuid { get; set; }
+        }
+
+        // zones-settings
         private struct ZoneSettingsWrapper
         {
             public List<DeviceWrapper> Devices { get; set; }
@@ -181,6 +196,8 @@ namespace FancyZonesEditor.Utils
             public List<CustomLayoutWrapper> CustomZoneSets { get; set; }
 
             public List<TemplateLayoutWrapper> Templates { get; set; }
+
+            public List<FastAccessLayoutKeysWrapper> FastAccessLayoutKeys { get; set; }
         }
 
         private struct EditorParams
@@ -528,6 +545,7 @@ namespace FancyZonesEditor.Utils
                     bool devicesParsingResult = SetDevices(zoneSettings.Devices);
                     bool customZonesParsingResult = SetCustomLayouts(zoneSettings.CustomZoneSets);
                     bool templatesParsingResult = SetTemplateLayouts(zoneSettings.Templates);
+                    bool fastAccessKeysParsingResult = SetFastAccessKeys(zoneSettings.FastAccessLayoutKeys);
 
                     if (!devicesParsingResult || !customZonesParsingResult)
                     {
@@ -549,6 +567,7 @@ namespace FancyZonesEditor.Utils
             zoneSettings.Devices = new List<DeviceWrapper>();
             zoneSettings.CustomZoneSets = new List<CustomLayoutWrapper>();
             zoneSettings.Templates = new List<TemplateLayoutWrapper>();
+            zoneSettings.FastAccessLayoutKeys = new List<FastAccessLayoutKeysWrapper>();
 
             // Serialize used devices
             foreach (var monitor in App.Overlay.Monitors)
@@ -683,6 +702,21 @@ namespace FancyZonesEditor.Utils
                 }
 
                 zoneSettings.Templates.Add(wrapper);
+            }
+
+            // Serialize fast access layout keys
+            foreach (var pair in FastAccessKeysModel.SelectedKeys)
+            {
+                if (pair.Value != string.Empty)
+                {
+                    FastAccessLayoutKeysWrapper wrapper = new FastAccessLayoutKeysWrapper
+                    {
+                        Key = pair.Key,
+                        Uuid = pair.Value,
+                    };
+
+                    zoneSettings.FastAccessLayoutKeys.Add(wrapper);
+                }
             }
 
             try
@@ -841,6 +875,22 @@ namespace FancyZonesEditor.Utils
                         layout.InitTemplateZones();
                     }
                 }
+            }
+
+            return true;
+        }
+
+        private bool SetFastAccessKeys(List<FastAccessLayoutKeysWrapper> fastAccessKeys)
+        {
+            if (fastAccessKeys == null)
+            {
+                return false;
+            }
+
+            FastAccessKeysModel.CleanUp();
+            foreach (var wrapper in fastAccessKeys)
+            {
+                FastAccessKeysModel.SelectKey(wrapper.Key, wrapper.Uuid);
             }
 
             return true;
