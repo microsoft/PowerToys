@@ -304,7 +304,8 @@ namespace FancyZonesEditor
             }
             else
             {
-                CanvasLayoutModel canvasModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Custom);
+                var area = App.Overlay.WorkArea;
+                CanvasLayoutModel canvasModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Custom, (int)area.Width, (int)area.Height);
                 canvasModel.AddZone();
                 selectedLayoutModel = canvasModel;
             }
