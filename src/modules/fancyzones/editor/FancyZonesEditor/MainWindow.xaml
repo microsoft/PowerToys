@@ -496,6 +496,26 @@
                                   SpinButtonPlacementMode="Compact"
                                   HorizontalAlignment="Left"
                                   AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}" />
+
+                    <TextBlock Text="{x:Static props:Resources.FastAccessKey_Select}"
+                               Margin="0,16,0,0"
+                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                    <StackPanel Margin="0,6,0,0"
+                                Orientation="Horizontal">
+                        <ComboBox x:Name="fastAccessKeySelectionComboBox" 
+                                  ItemsSource="{Binding FastAccessAvailableKeys}"
+                                  SelectedIndex="{Binding FastAccessKey}"
+                                  Text=" -- Select --"
+                                  SelectionChanged="FastAccessKeyComboBox_SelectionChanged"/>
+                        <Button Margin="6,0,0,0"
+                                Click="ClearFastAccessKeyButton_Click"
+                                Content="&#xE8BB;"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="14">
+                        </Button>
+                    </StackPanel>
+                    
+
                 </StackPanel>
             </Grid>
         </ui:ContentDialog>

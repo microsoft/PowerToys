@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -16,6 +17,20 @@ namespace FancyZonesEditor.Models
         {
             _guid = Guid.NewGuid();
             Type = LayoutType.Custom;
+
+            MainWindowSettingsModel.FastAccessKeys.PropertyChanged += FastAccessKeys_PropertyChanged;
+        }
+
+        private void FastAccessKeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            foreach (var pair in MainWindowSettingsModel.FastAccessKeys.SelectedKeys)
+            {
+                if (pair.Value == Uuid)
+                {
+                    FastAccessKey = pair.Key;
+                    break;
+                }
+            }
         }
 
         protected LayoutModel(string name)
@@ -158,6 +173,51 @@ namespace FancyZonesEditor.Models
 
         private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
 
+        public List<int> FastAccessAvailableKeys
+        {
+            get
+            {
+                List<int> result = new List<int>();
+                foreach (var pair in MainWindowSettingsModel.FastAccessKeys.SelectedKeys)
+                {
+                    if (pair.Value == string.Empty || pair.Value == Uuid)
+                    {
+                        result.Add(pair.Key);
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        public int FastAccessKey
+        {
+            get
+            {
+                return _fastAccessKey;
+            }
+
+            set
+            {
+                if (value != _fastAccessKey)
+                {
+                    if (value != -1)
+                    {
+                        MainWindowSettingsModel.FastAccessKeys.SelectKey(value, Uuid);
+                    }
+                    else
+                    {
+                        MainWindowSettingsModel.FastAccessKeys.FreeKey(_fastAccessKey);
+                    }
+
+                    _fastAccessKey = value;
+                    FirePropertyChanged(nameof(FastAccessKey));
+                }
+            }
+        }
+
+        private int _fastAccessKey = -1;
+
         // TemplateZoneCount - number of zones selected in the picker window for template layouts
         public int TemplateZoneCount
         {
@@ -200,6 +260,11 @@ namespace FancyZonesEditor.Models
         // Removes this Layout from the registry and the loaded CustomModels list
         public void Delete()
         {
+            if (_fastAccessKey != -1)
+            {
+                MainWindowSettingsModel.FastAccessKeys.FreeKey(_fastAccessKey);
+            }
+
             var customModels = MainWindowSettingsModel.CustomModels;
             int i = customModels.IndexOf(this);
             if (i != -1)
