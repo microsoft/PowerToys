@@ -284,23 +284,6 @@
                    
                 </Grid>
             </ScrollViewer>
-
-            <Button x:Name="TEST"
-                    Click="TEST_Click"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Bottom"
-                    Padding="0"
-                    Height="36"
-                    Margin="16"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Grid.Row="3">
-                <TextBlock Text="test fast-access-layout-keys" Foreground="White" Margin="8" />
-                <Button.Effect>
-                    <DropShadowEffect BlurRadius="6"
-                                      Opacity="0.32"
-                                      ShadowDepth="1" />
-                </Button.Effect>
-            </Button>
             
             <Button x:Name="NewLayoutButton"
                     Click="NewLayoutButton_Click"
