@@ -47,6 +47,21 @@ namespace FancyZonesEditor.Models
                 return false;
             }
 
+            if (SelectedKeys[key] == uuid)
+            {
+                return true;
+            }
+
+            // clean previous value
+            foreach (var pair in SelectedKeys)
+            {
+                if (pair.Value == uuid)
+                {
+                    SelectedKeys[pair.Key] = string.Empty;
+                    break;
+                }
+            }
+
             SelectedKeys[key] = uuid;
             FirePropertyChanged();
             return true;
