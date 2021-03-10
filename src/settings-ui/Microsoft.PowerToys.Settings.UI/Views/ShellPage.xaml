@@ -80,7 +80,7 @@
 
                 <winui:NavigationViewItem x:Uid="Shell_Espresso" helpers:NavHelper.NavigateTo="views:EspressoPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE773;"/>
+                        <FontIcon Glyph="&#xEC32;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
