@@ -30,6 +30,7 @@ namespace NonLocalizable
     const wchar_t EditorSpacingStr[] = L"editor-spacing";
     const wchar_t EditorZoneCountStr[] = L"editor-zone-count";
     const wchar_t EditorSensitivityRadiusStr[] = L"editor-sensitivity-radius";
+    const wchar_t FastAccessLayoutKeys[] = L"fast-access-layout-keys";
     const wchar_t GridStr[] = L"grid";
     const wchar_t HeightStr[] = L"height";
     const wchar_t HistoryStr[] = L"history";
@@ -533,12 +534,18 @@ namespace JSONHelpers
 
         json::JsonObject root{};
         json::JsonArray templates{};
+        json::JsonArray fastAccessLayoutKeys{};
 
         try
         {
             if (before.has_value() && before->HasKey(NonLocalizable::Templates))
             {
                 templates = before->GetNamedArray(NonLocalizable::Templates);
+            }
+
+            if (before.has_value() && before->HasKey(NonLocalizable::FastAccessLayoutKeys))
+            {
+                fastAccessLayoutKeys = before->GetNamedArray(NonLocalizable::FastAccessLayoutKeys);
             }
         }
         catch (const winrt::hresult_error&)
@@ -549,6 +556,7 @@ namespace JSONHelpers
         root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
         root.SetNamedValue(NonLocalizable::CustomZoneSetsStr, JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
         root.SetNamedValue(NonLocalizable::Templates, templates);
+        root.SetNamedValue(NonLocalizable::FastAccessLayoutKeys, fastAccessLayoutKeys);
         
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
         {

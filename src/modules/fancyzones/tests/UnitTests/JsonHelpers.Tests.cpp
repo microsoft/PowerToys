@@ -1763,6 +1763,36 @@ namespace FancyZonesUnitTests
                 compareJsonObjects(expectedJsonObj, actualJson);
             }
 
+            TEST_METHOD (SaveFancyZonesDataWithFastAccessLayoutKeys)
+            {
+                FancyZonesData data;
+                data.SetSettingsModulePath(m_moduleName);
+                const auto& jsonPath = data.zonesSettingsFileName;
+
+                // json with fast-access-layout-keys
+                json::JsonObject expectedJsonObj;
+                json::JsonObject fastAccessKeyObj = json::JsonObject::Parse(L"{\"key\": 1, \"uuid\": \"{9AD7FC3A-0A6C-4373-B523-4958FC50C46C}\"}");
+                json::JsonArray fastAccessKeysArray{};
+                fastAccessKeysArray.Append(fastAccessKeyObj);
+                expectedJsonObj.SetNamedValue(L"devices", json::JsonArray{});
+                expectedJsonObj.SetNamedValue(L"custom-zone-sets", json::JsonArray{});
+                expectedJsonObj.SetNamedValue(L"fast-access-layout-keys", fastAccessKeysArray);
+
+                // write json with fast-access-layout-keys to file
+                json::to_file(jsonPath, expectedJsonObj);
+
+                data.SaveAppZoneHistoryAndZoneSettings();
+
+                // verify that file was written successfully
+                Assert::IsTrue(std::filesystem::exists(jsonPath));
+
+                // verify that fast-access-layout-keys were not changed after calling SaveFancyZonesData()
+                std::wstring str;
+                std::wifstream{ jsonPath, std::ios::binary } >> str;
+                json::JsonObject actualJson = json::JsonObject::Parse(str);
+                compareJsonObjects(expectedJsonObj, actualJson);
+            }
+
             TEST_METHOD (AppLastZoneIndex)
             {
                 const std::wstring deviceId = L"device-id";
