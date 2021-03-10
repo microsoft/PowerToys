@@ -149,6 +149,8 @@ namespace FancyZonesEditor
 
         private static ObservableCollection<LayoutModel> _customModels = new ObservableCollection<LayoutModel>();
 
+        public static FastAccessKeysModel FastAccessKeys { get; } = new FastAccessKeysModel();
+
         public LayoutModel SelectedModel
         {
             get

@@ -3,13 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace FancyZonesEditor.Models
 {
-    public class FastAccessKeysModel
+    public class FastAccessKeysModel : INotifyPropertyChanged
     {
-        public static SortedDictionary<int, string> SelectedKeys { get; } = new SortedDictionary<int, string>()
+        public SortedDictionary<int, string> SelectedKeys { get; } = new SortedDictionary<int, string>()
         {
             { 0, string.Empty },
             { 1, string.Empty },
@@ -27,15 +29,18 @@ namespace FancyZonesEditor.Models
         {
         }
 
-        public static void FreeKey(int key)
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public void FreeKey(int key)
         {
             if (SelectedKeys.ContainsKey(key))
             {
                 SelectedKeys[key] = string.Empty;
+                FirePropertyChanged();
             }
         }
 
-        public static bool SelectKey(int key, string uuid)
+        public bool SelectKey(int key, string uuid)
         {
             if (!SelectedKeys.ContainsKey(key))
             {
@@ -43,16 +48,24 @@ namespace FancyZonesEditor.Models
             }
 
             SelectedKeys[key] = uuid;
+            FirePropertyChanged();
             return true;
         }
 
-        public static void CleanUp()
+        public void CleanUp()
         {
             var keys = SelectedKeys.Keys.ToList();
             foreach (var key in keys)
             {
                 SelectedKeys[key] = string.Empty;
             }
+
+            FirePropertyChanged();
+        }
+
+        protected virtual void FirePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

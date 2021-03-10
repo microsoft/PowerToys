@@ -705,7 +705,7 @@ namespace FancyZonesEditor.Utils
             }
 
             // Serialize fast access layout keys
-            foreach (var pair in FastAccessKeysModel.SelectedKeys)
+            foreach (var pair in MainWindowSettingsModel.FastAccessKeys.SelectedKeys)
             {
                 if (pair.Value != string.Empty)
                 {
@@ -887,10 +887,10 @@ namespace FancyZonesEditor.Utils
                 return false;
             }
 
-            FastAccessKeysModel.CleanUp();
+            MainWindowSettingsModel.FastAccessKeys.CleanUp();
             foreach (var wrapper in fastAccessKeys)
             {
-                FastAccessKeysModel.SelectKey(wrapper.Key, wrapper.Uuid);
+                MainWindowSettingsModel.FastAccessKeys.SelectKey(wrapper.Key, wrapper.Uuid);
             }
 
             return true;
