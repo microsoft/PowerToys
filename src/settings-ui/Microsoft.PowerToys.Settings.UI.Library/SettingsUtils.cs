@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 throw new FileNotFoundException();
             }
 
-            // Given the file already exists, to deserialize the file and read it's content.
+            // Given the file already exists, to deserialize the file and read its content.
             T deserializedSettings = GetFile<T>(powertoy, fileName);
 
             // If the file needs to be modified, to save the new configurations accordingly.
