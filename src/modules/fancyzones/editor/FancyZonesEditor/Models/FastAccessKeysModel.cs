@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FancyZonesEditor.Models
 {
@@ -43,6 +44,15 @@ namespace FancyZonesEditor.Models
 
             SelectedKeys[key] = uuid;
             return true;
+        }
+
+        public static void CleanUp()
+        {
+            var keys = SelectedKeys.Keys.ToList();
+            foreach (var key in keys)
+            {
+                SelectedKeys[key] = string.Empty;
+            }
         }
     }
 }

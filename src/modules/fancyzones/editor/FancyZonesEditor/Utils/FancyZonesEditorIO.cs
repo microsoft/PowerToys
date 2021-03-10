@@ -887,6 +887,7 @@ namespace FancyZonesEditor.Utils
                 return false;
             }
 
+            FastAccessKeysModel.CleanUp();
             foreach (var wrapper in fastAccessKeys)
             {
                 FastAccessKeysModel.SelectKey(wrapper.Key, wrapper.Uuid);
