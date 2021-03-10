@@ -121,6 +121,10 @@
     <value>General</value>
     <comment>Navigation view item name for General</comment>
   </data>
+  <data name="Shell_Espresso.Content" xml:space="preserve">
+    <value>Espresso</value>
+    <comment>Product name: Navigation view item name for Espresso</comment>
+  </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
     <comment>Product name: Navigation view item name for PowerToys Run</comment>

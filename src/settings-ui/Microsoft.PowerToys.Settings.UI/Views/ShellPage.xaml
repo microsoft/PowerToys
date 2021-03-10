@@ -78,6 +78,12 @@
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
+                <winui:NavigationViewItem x:Uid="Shell_Espresso" helpers:NavHelper.NavigateTo="views:EspressoPage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE773;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
                 <winui:NavigationViewItem x:Uid="Shell_ShortcutGuide" helpers:NavHelper.NavigateTo="views:ShortcutGuidePage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEDA7;"/>

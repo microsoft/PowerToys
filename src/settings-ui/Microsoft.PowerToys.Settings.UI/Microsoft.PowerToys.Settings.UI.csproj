@@ -151,6 +151,9 @@
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
+    <Compile Include="Views\EspressoPage.xaml.cs">
+      <DependentUpon>EspressoPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ColorPickerPage.xaml.cs">
       <DependentUpon>ColorPickerPage.xaml</DependentUpon>
     </Compile>
@@ -341,6 +344,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\_Thickness.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\EspressoPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
