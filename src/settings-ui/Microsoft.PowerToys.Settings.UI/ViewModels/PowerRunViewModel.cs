@@ -13,6 +13,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Views;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -38,20 +39,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerRunViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        public PowerRunViewModel()
         {
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-
-            // To obtain the general Settings configurations of PowerToys
-            if (settingsRepository == null)
-            {
-                throw new ArgumentNullException(nameof(settingsRepository));
-            }
-
+            _settingsUtils = new SettingsUtils();
+            var settingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
+            SendConfigMSG = ShellPage.SendDefaultIPCMessage;
             callback = (PowerLauncherSettings settings) =>
             {
                 // Propagate changes to Power Launcher through IPC
@@ -72,7 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 settings = new PowerLauncherSettings();
                 settings.Properties.OpenPowerLauncher.Alt = true;
-                settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
+                settings.Properties.OpenPowerLauncher.Code = (int)Windows.System.VirtualKey.Space;
                 settings.Properties.MaximumNumberOfResults = 4;
                 callback(settings);
             }
