@@ -63,6 +63,7 @@ namespace FancyZonesEditor.Models
             _isApplied = other._isApplied;
             _sensitivityRadius = other._sensitivityRadius;
             _zoneCount = other._zoneCount;
+            _fastAccessKey = other._fastAccessKey;
         }
 
         // Name - the display name for this layout model - is also used as the key in the registry

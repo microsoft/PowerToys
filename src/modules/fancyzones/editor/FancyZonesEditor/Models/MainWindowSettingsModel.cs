@@ -257,6 +257,7 @@ namespace FancyZonesEditor
             SelectedModel.IsSelected = model.IsSelected;
             SelectedModel.IsApplied = model.IsApplied;
             SelectedModel.Name = model.Name;
+            SelectedModel.FastAccessKey = model.FastAccessKey;
 
             if (model is GridLayoutModel grid)
             {
