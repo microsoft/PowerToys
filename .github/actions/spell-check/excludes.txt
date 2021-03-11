@@ -1,3 +1,13 @@
+# See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-excludes
+(?:^|/)(?i)COPYRIGHT
+(?:^|/)(?i)LICEN[CS]E
+(?:^|/)package(?:-lock)\.json$
+(?:^|/)vendor/
+/package(?:-lock|)\.json$
+/pinyindb/
+/settings-html/
+ignore$
+[/.][a-z]{2}(?:-[a-zA-Z]{2}|)\.
 \.ai$
 \.bmp$
 \.dat$
@@ -7,13 +17,13 @@
 \.ico$
 \.jpg$
 \.lcl$
+\.lock$
+\.min\.
+\.mod$
 \.pdf$
 \.png$
 \.PNG$
 \.woff$
 \.zip$
+^\.github/
 ^\.github/actions/spell-check/
-/package(?:-lock|)\.json$
-/pinyindb/
-/settings-html/
-[/.][a-z]{2}(?:-[a-zA-Z]{2}|)\.
