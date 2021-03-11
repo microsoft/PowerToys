@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ZoneWindowDrawing.h"
+#include "CallTracer.h"
 
 #include <algorithm>
 #include <map>
@@ -102,6 +103,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     m_renderThread = std::thread([this]() {
         while (!m_abortThread)
         {
+            CallTracer callTracer(__FUNCTION__ "(renderLoop)");
             // Force repeated rendering while in the animation loop.
             // Yield if low latency locking was requested
             if (!m_lowLatencyLock)
@@ -125,6 +127,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
 
 void ZoneWindowDrawing::Render()
 {
+    CallTracer callTracer(__FUNCTION__);
     std::unique_lock lock(m_mutex);
 
     if (!m_renderTarget)
@@ -202,6 +205,7 @@ void ZoneWindowDrawing::Render()
 
 void ZoneWindowDrawing::Hide()
 {
+    CallTracer callTracer(__FUNCTION__);
     m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
     m_lowLatencyLock = false;
@@ -215,6 +219,7 @@ void ZoneWindowDrawing::Hide()
 
 void ZoneWindowDrawing::Show(unsigned animationMillis)
 {
+    CallTracer callTracer(__FUNCTION__);
     m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
     m_lowLatencyLock = false;
@@ -235,6 +240,7 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                        const std::vector<size_t>& highlightZones,
                        winrt::com_ptr<IZoneWindowHost> host)
 {
+    CallTracer callTracer(__FUNCTION__);
     m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
     m_lowLatencyLock = false;
@@ -302,6 +308,7 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
 
 void ZoneWindowDrawing::ForceRender()
 {
+    CallTracer callTracer(__FUNCTION__);
     m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
     m_lowLatencyLock = false;
@@ -311,6 +318,7 @@ void ZoneWindowDrawing::ForceRender()
 
 ZoneWindowDrawing::~ZoneWindowDrawing()
 {
+    CallTracer callTracer(__FUNCTION__);
     {
         std::unique_lock lock(m_mutex);
         m_abortThread = true;

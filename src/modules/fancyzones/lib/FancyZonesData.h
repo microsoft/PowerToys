@@ -1,6 +1,7 @@
 #pragma once
 
 #include "JsonHelpers.h"
+#include "CallTracer.h"
 
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/json.h>
@@ -44,18 +45,21 @@ public:
 
     inline const JSONHelpers::TDeviceInfoMap & GetDeviceInfoMap() const
     {
+        CallTracer callTracer(__FUNCTION__);
         std::scoped_lock lock{ dataLock };
         return deviceInfoMap;
     }
 
     inline const JSONHelpers::TCustomZoneSetsMap & GetCustomZoneSetsMap() const
     {
+        CallTracer callTracer(__FUNCTION__);
         std::scoped_lock lock{ dataLock };
         return customZoneSetsMap;
     }
 
     inline const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const
     {
+        CallTracer callTracer(__FUNCTION__);
         std::scoped_lock lock{ dataLock };
         return appZoneHistoryMap;
     }
