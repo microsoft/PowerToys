@@ -169,6 +169,8 @@ namespace FancyZonesEditor.Utils
         // zones-settings: templates
         private struct TemplateLayoutWrapper
         {
+            public string Uuid { get; set; }
+
             public string Type { get; set; }
 
             public bool ShowSpacing { get; set; }
@@ -690,6 +692,7 @@ namespace FancyZonesEditor.Utils
             {
                 TemplateLayoutWrapper wrapper = new TemplateLayoutWrapper
                 {
+                    Uuid = layout.Uuid,
                     Type = LayoutTypeToJsonTag(layout.Type),
                     SensitivityRadius = layout.SensitivityRadius,
                     ZoneCount = layout.TemplateZoneCount,
@@ -859,22 +862,33 @@ namespace FancyZonesEditor.Utils
             {
                 var type = JsonTagToLayoutType(wrapper.Type);
 
-                foreach (var layout in MainWindowSettingsModel.DefaultModels)
+                switch (type)
                 {
-                    if (layout.Type == type)
-                    {
-                        layout.SensitivityRadius = wrapper.SensitivityRadius;
-                        layout.TemplateZoneCount = wrapper.ZoneCount;
+                    case LayoutType.Blank:
+                    case LayoutType.Focus:
+                        MainWindowSettingsModel.DefaultModels[(int)type] = new CanvasLayoutModel(wrapper.Uuid, (CanvasLayoutModel)MainWindowSettingsModel.DefaultModels[(int)type]);
+                        break;
 
-                        if (layout is GridLayoutModel grid)
-                        {
-                            grid.ShowSpacing = wrapper.ShowSpacing;
-                            grid.Spacing = wrapper.Spacing;
-                        }
-
-                        layout.InitTemplateZones();
-                    }
+                    case LayoutType.Columns:
+                    case LayoutType.Rows:
+                    case LayoutType.Grid:
+                    case LayoutType.PriorityGrid:
+                        MainWindowSettingsModel.DefaultModels[(int)type] = new GridLayoutModel(wrapper.Uuid, (GridLayoutModel)MainWindowSettingsModel.DefaultModels[(int)type]);
+                        break;
                 }
+
+                LayoutModel layout = MainWindowSettingsModel.DefaultModels[(int)type];
+
+                layout.SensitivityRadius = wrapper.SensitivityRadius;
+                layout.TemplateZoneCount = wrapper.ZoneCount;
+
+                if (layout is GridLayoutModel grid)
+                {
+                    grid.ShowSpacing = wrapper.ShowSpacing;
+                    grid.Spacing = wrapper.Spacing;
+                }
+
+                layout.InitTemplateZones();
             }
 
             return true;
