@@ -68,7 +68,7 @@ namespace Wox.Plugin
         private ReadOnlyCollection<string> _terms;
 
         /// <summary>
-        /// Gets the raw query splited into a string array.
+        /// Gets the raw query split into a string array.
         /// </summary>
         public ReadOnlyCollection<string> Terms
         {
@@ -89,7 +89,7 @@ namespace Wox.Plugin
         }
 
         /// <summary>
-        /// Query can be splited into multiple terms by whitespace
+        /// Query can be split into multiple terms by whitespace
         /// </summary>
         public const string TermSeparator = " ";
 
