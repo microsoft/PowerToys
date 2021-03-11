@@ -460,60 +460,57 @@
                                         </Button.Content>
                                     </Button>
                                 </StackPanel>
-                                <TextBox Text="{Binding Name}"
-                                         ui:ControlHelper.Header="{x:Static props:Resources.Name}"
-                                         Margin="0,16,0,0"
-                                         Visibility="{Binding IsCustom, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                         HorizontalAlignment="Stretch" />
+                    <TextBox Text="{Binding Name}"
+                            ui:ControlHelper.Header="{x:Static props:Resources.Name}"
+                            Margin="0,16,0,0"
+                            Visibility="{Binding IsCustom, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            HorizontalAlignment="Stretch" />
 
-                                <CheckBox x:Name="spaceAroundSetting"
-                                          Content="{x:Static props:Resources.Show_Space_Zones}"
-                                          IsChecked="{Binding ShowSpacing}"
-                                          Margin="0,16,0,0"
-                                          Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
+                    <CheckBox x:Name="spaceAroundSetting"
+                                Content="{x:Static props:Resources.Show_Space_Zones}"
+                                IsChecked="{Binding ShowSpacing}"
+                                Margin="0,16,0,0"
+                                Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
 
-                                <ui:NumberBox Margin="0,6,0,0"
-                                              IsEnabled="{Binding ShowSpacing}"
-                                              Text="{Binding Spacing}"
-                                              Width="106"
-                                              Minimum="-20"
-                                              Maximum="1000"
-                                              SpinButtonPlacementMode="Compact"
-                                              HorizontalAlignment="Left"
-                                              AutomationProperties.LabeledBy="{Binding ElementName=spaceAroundSetting}"
-                                              Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
+                    <ui:NumberBox Margin="0,6,0,0"
+                                    IsEnabled="{Binding ShowSpacing}"
+                                    Text="{Binding Spacing}"
+                                    Width="106"
+                                    Minimum="-20"
+                                    Maximum="1000"
+                                    SpinButtonPlacementMode="Compact"
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.LabeledBy="{Binding ElementName=spaceAroundSetting}"
+                                    Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
 
-                                <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
-                                           IsEnabled="{Binding ShowSpacing}"
-                                           Margin="0,16,0,0"
-                                           Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                           x:Name="sensitivityRadiusValue" />
+                    <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
+                                IsEnabled="{Binding ShowSpacing}"
+                                Margin="0,16,0,0"
+                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                x:Name="sensitivityRadiusValue" />
 
-                                <ui:NumberBox Margin="0,6,0,0"
-                                              Text="{Binding SensitivityRadius}"
-                                              Width="106"
-                                              Minimum="0"
-                                              Maximum="1000"
-                                              SpinButtonPlacementMode="Compact"
-                                              HorizontalAlignment="Left"
-                                              AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}" />
+                    <ui:NumberBox Margin="0,6,0,0"
+                                    Text="{Binding SensitivityRadius}"
+                                    Width="106"
+                                    Minimum="0"
+                                    Maximum="1000"
+                                    SpinButtonPlacementMode="Compact"
+                                    HorizontalAlignment="Left"
+                                    AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}" />
 
-                                <TextBlock Text="{x:Static props:Resources.FastAccessKey_Select}"
-                                           Margin="0,16,0,0"
-                                           Foreground="{DynamicResource PrimaryForegroundBrush}" />
-                                <StackPanel Margin="0,6,0,0"
-                                            Orientation="Horizontal">
-                                    <ComboBox x:Name="fastAccessKeySelectionComboBox" 
-                                              ItemsSource="{Binding FastAccessAvailableKeys}"
-                                              SelectedIndex="{Binding FastAccessKey}"
-                                              Text=" -- Select --"
-                                              SelectionChanged="FastAccessKeyComboBox_SelectionChanged"/>
-                                    <Button Margin="6,0,0,0"
-                                            Click="ClearFastAccessKeyButton_Click"
-                                            Content="&#xE8BB;"
-                                            FontFamily="Segoe MDL2 Assets"
-                                FontSize="14">
-                        </Button>
+                    <TextBlock Text="{x:Static props:Resources.FastAccessKey_Select}"
+                                Margin="0,16,0,0"
+                                Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                    <StackPanel Margin="0,6,0,0"
+                                Orientation="Horizontal">
+                        <ComboBox x:Name="fastAccessKeySelectionComboBox" 
+                                  ItemsSource="{Binding FastAccessAvailableKeys}"
+                                  SelectedItem="{Binding FastAccessKey}" />
+                        <Button Margin="6,0,0,0"
+                                Click="ClearFastAccessKeyButton_Click"
+                                Content="&#xE8BB;"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="14" />
                     </StackPanel>
                     
 

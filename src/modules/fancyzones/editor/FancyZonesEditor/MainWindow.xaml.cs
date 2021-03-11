@@ -421,17 +421,6 @@ namespace FancyZonesEditor
             _openedDialog = null;
         }
 
-        private void FastAccessKeyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            FrameworkElement element = (FrameworkElement)e.Source;
-
-            if (e.AddedItems.Count > 0 && element.DataContext is LayoutModel layoutModel)
-            {
-                int key = (int)e.AddedItems[0];
-                layoutModel.FastAccessKey = key;
-            }
-        }
-
         private void ClearFastAccessKeyButton_Click(object sender, RoutedEventArgs e)
         {
             FrameworkElement element = (FrameworkElement)e.Source;
