@@ -202,16 +202,18 @@ namespace FancyZonesEditor.Models
             {
                 if (value != _fastAccessKey)
                 {
+                    var prev = _fastAccessKey;
+                    _fastAccessKey = value;
+
                     if (value != -1)
                     {
                         MainWindowSettingsModel.FastAccessKeys.SelectKey(value, Uuid);
                     }
                     else
                     {
-                        MainWindowSettingsModel.FastAccessKeys.FreeKey(_fastAccessKey);
+                        MainWindowSettingsModel.FastAccessKeys.FreeKey(prev);
                     }
 
-                    _fastAccessKey = value;
                     FirePropertyChanged(nameof(FastAccessKey));
                 }
             }
