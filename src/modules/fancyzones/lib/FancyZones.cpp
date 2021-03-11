@@ -19,6 +19,7 @@
 #include "VirtualDesktopUtils.h"
 #include "MonitorWorkAreaHandler.h"
 #include "util.h"
+#include "CallTracer.h"
 
 #include <lib/SecondaryMouseButtonsHook.h>
 
