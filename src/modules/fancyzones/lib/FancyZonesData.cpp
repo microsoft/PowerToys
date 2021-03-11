@@ -154,6 +154,27 @@ FancyZonesData::FancyZonesData()
     editorParametersFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesEditorParametersFile);
 }
 
+const JSONHelpers::TDeviceInfoMap& FancyZonesData::GetDeviceInfoMap() const
+{
+    CallTracer callTracer(__FUNCTION__);
+    std::scoped_lock lock{ dataLock };
+    return deviceInfoMap;
+}
+
+const JSONHelpers::TCustomZoneSetsMap& FancyZonesData::GetCustomZoneSetsMap() const
+{
+    CallTracer callTracer(__FUNCTION__);
+    std::scoped_lock lock{ dataLock };
+    return customZoneSetsMap;
+}
+
+const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& FancyZonesData::GetAppZoneHistoryMap() const
+{
+    CallTracer callTracer(__FUNCTION__);
+    std::scoped_lock lock{ dataLock };
+    return appZoneHistoryMap;
+}
+
 std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const std::wstring& zoneWindowId) const
 {
     CallTracer callTracer(__FUNCTION__);
