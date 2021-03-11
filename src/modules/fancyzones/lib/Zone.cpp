@@ -21,46 +21,6 @@ namespace
                rect.bottom >= ZoneConstants::MAX_NEGATIVE_SPACING &&
                width >= 0 && height >= 0;
     }
-
-    BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
-    {
-        reinterpret_cast<std::vector<HMONITOR>*>(data)->emplace_back(monitor);
-        return true;
-    }
-
-    bool allMonitorsHaveSameDpiScaling()
-    {
-        std::vector<HMONITOR> monitors;
-        EnumDisplayMonitors(NULL, NULL, saveDisplayToVector, reinterpret_cast<LPARAM>(&monitors));
-
-        if (monitors.size() < 2)
-        {
-            return true;
-        }
-
-        UINT firstMonitorDpiX;
-        UINT firstMonitorDpiY;
-
-        if (S_OK != GetDpiForMonitor(monitors[0], MDT_EFFECTIVE_DPI, &firstMonitorDpiX, &firstMonitorDpiY))
-        {
-            return false;
-        }
-
-        for (int i = 1; i < monitors.size(); i++)
-        {
-            UINT iteratedMonitorDpiX;
-            UINT iteratedMonitorDpiY;
-
-            if (S_OK != GetDpiForMonitor(monitors[i], MDT_EFFECTIVE_DPI, &iteratedMonitorDpiX, &iteratedMonitorDpiY) ||
-                iteratedMonitorDpiX != firstMonitorDpiX)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
 }
 
 struct Zone : winrt::implements<Zone, IZone>
@@ -92,9 +52,6 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept
 
     RECT frameRect{};
 
-    const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
-    const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
-
     if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
     {
         LONG leftMargin = frameRect.left - windowRect.left;
@@ -107,22 +64,6 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept
 
     // Map to screen coords
     MapWindowRect(zoneWindow, nullptr, &newWindowRect);
-
-    MONITORINFO mi{ sizeof(mi) };
-    if (GetMonitorInfoW(MonitorFromWindow(zoneWindow, MONITOR_DEFAULTTONEAREST), &mi))
-    {
-        const auto taskbar_left_size = std::abs(mi.rcMonitor.left - mi.rcWork.left);
-        const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
-        OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
-
-        if (accountForUnawareness && !allMonitorsHaveSameDpiScaling())
-        {
-            newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
-            newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);
-            newWindowRect.top = max(mi.rcMonitor.top, newWindowRect.top);
-            newWindowRect.bottom = min(mi.rcMonitor.bottom - taskbar_top_size, newWindowRect.bottom);
-        }
-    }
 
     if ((::GetWindowLong(window, GWL_STYLE) & WS_SIZEBOX) == 0)
     {
