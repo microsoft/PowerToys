@@ -1,4 +1,5 @@
 #pragma once
+
 #include "common/logger/logger.h"
 
 class CallTracer
