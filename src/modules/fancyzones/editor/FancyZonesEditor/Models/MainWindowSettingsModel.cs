@@ -58,11 +58,11 @@ namespace FancyZonesEditor
                 TemplateZoneCount = 0,
                 SensitivityRadius = 0,
             };
-            DefaultModels.Add(_blankModel);
+            DefaultModels.Insert((int)LayoutType.Blank, _blankModel);
 
             _focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
             _focusModel.InitTemplateZones();
-            DefaultModels.Add(_focusModel);
+            DefaultModels.Insert((int)LayoutType.Focus, _focusModel);
 
             _columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
             {
@@ -70,7 +70,7 @@ namespace FancyZonesEditor
                 RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
             _columnsModel.InitTemplateZones();
-            DefaultModels.Add(_columnsModel);
+            DefaultModels.Insert((int)LayoutType.Columns, _columnsModel);
 
             _rowsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Rows, LayoutType.Rows)
             {
@@ -78,15 +78,15 @@ namespace FancyZonesEditor
                 ColumnPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
             _rowsModel.InitTemplateZones();
-            DefaultModels.Add(_rowsModel);
+            DefaultModels.Insert((int)LayoutType.Rows, _rowsModel);
 
             _gridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Grid, LayoutType.Grid);
             _gridModel.InitTemplateZones();
-            DefaultModels.Add(_gridModel);
+            DefaultModels.Insert((int)LayoutType.Grid, _gridModel);
 
             _priorityGridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Priority_Grid, LayoutType.PriorityGrid);
             _priorityGridModel.InitTemplateZones();
-            DefaultModels.Add(_priorityGridModel);
+            DefaultModels.Insert((int)LayoutType.PriorityGrid, _priorityGridModel);
         }
 
         // IsShiftKeyPressed - is the shift key currently being held down
