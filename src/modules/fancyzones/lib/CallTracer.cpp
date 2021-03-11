@@ -4,17 +4,17 @@
 namespace
 {
     // Non-localizable
-    const std::string entering = "Entering: ";
-    const std::string exiting = "Exiting: ";
+    const std::string entering = " Enter";
+    const std::string exiting = " Exit";
 }
 
 CallTracer::CallTracer(const char* functionName) :
     functionName(functionName)
 {
-    Logger::trace((entering + functionName).c_str());
+    Logger::trace((functionName + entering).c_str());
 }
 
 CallTracer::~CallTracer()
 {
-    Logger::trace((exiting + functionName).c_str());
+    Logger::trace((functionName + exiting).c_str());
 }

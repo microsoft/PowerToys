@@ -156,28 +156,24 @@ FancyZonesData::FancyZonesData()
 
 const JSONHelpers::TDeviceInfoMap& FancyZonesData::GetDeviceInfoMap() const
 {
-    CallTracer callTracer(__FUNCTION__);
     std::scoped_lock lock{ dataLock };
     return deviceInfoMap;
 }
 
 const JSONHelpers::TCustomZoneSetsMap& FancyZonesData::GetCustomZoneSetsMap() const
 {
-    CallTracer callTracer(__FUNCTION__);
     std::scoped_lock lock{ dataLock };
     return customZoneSetsMap;
 }
 
 const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& FancyZonesData::GetAppZoneHistoryMap() const
 {
-    CallTracer callTracer(__FUNCTION__);
     std::scoped_lock lock{ dataLock };
     return appZoneHistoryMap;
 }
 
 std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const std::wstring& zoneWindowId) const
 {
-    CallTracer callTracer(__FUNCTION__);
     std::scoped_lock lock{ dataLock };
     auto it = deviceInfoMap.find(zoneWindowId);
     return it != end(deviceInfoMap) ? std::optional{ it->second } : std::nullopt;
@@ -185,7 +181,6 @@ std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInf
 
 std::optional<FancyZonesDataTypes::CustomZoneSetData> FancyZonesData::FindCustomZoneSet(const std::wstring& guid) const
 {
-    CallTracer callTracer(__FUNCTION__);
     std::scoped_lock lock{ dataLock };
     auto it = customZoneSetsMap.find(guid);
     return it != end(customZoneSetsMap) ? std::optional{ it->second } : std::nullopt;
@@ -193,7 +188,7 @@ std::optional<FancyZonesDataTypes::CustomZoneSetData> FancyZonesData::FindCustom
 
 bool FancyZonesData::AddDevice(const std::wstring& deviceId)
 {
-    CallTracer callTracer(__FUNCTION__);
+    _TRACER_
     using namespace FancyZonesDataTypes;
 
     std::scoped_lock lock{ dataLock };
@@ -222,7 +217,6 @@ bool FancyZonesData::AddDevice(const std::wstring& deviceId)
 
 void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstring& destination)
 {
-    CallTracer callTracer(__FUNCTION__);
     if (source == destination)
     {
         return;
@@ -240,7 +234,7 @@ void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstr
 
 void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
 {
-    CallTracer callTracer(__FUNCTION__);
+    _TRACER_
     // Explorer persists current virtual desktop identifier to registry on a per session basis,
     // but only after first virtual desktop switch happens. If the user hasn't switched virtual
     // desktops in this session value in registry will be empty and we will use default GUID in
@@ -293,7 +287,6 @@ void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
 
 void FancyZonesData::RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops)
 {
-    CallTracer callTracer(__FUNCTION__);
     std::unordered_set<std::wstring> active(std::begin(activeDesktops), std::end(activeDesktops));
     std::scoped_lock lock{ dataLock };
     bool dirtyFlag = false;
@@ -323,7 +316,6 @@ void FancyZonesData::RemoveDeletedDesktops(const std::vector<std::wstring>& acti
 
 bool FancyZonesData::IsAnotherWindowOfApplicationInstanceZoned(HWND window, const std::wstring_view& deviceId) const
 {
-    CallTracer callTracer(__FUNCTION__);
     std::scoped_lock lock{ dataLock };
     auto processPath = get_process_path(window);
     if (!processPath.empty())
@@ -359,7 +351,6 @@ bool FancyZonesData::IsAnotherWindowOfApplicationInstanceZoned(HWND window, cons
 
 void FancyZonesData::UpdateProcessIdToHandleMap(HWND window, const std::wstring_view& deviceId)
 {
-    CallTracer callTracer(__FUNCTION__);
     std::scoped_lock lock{ dataLock };
     auto processPath = get_process_path(window);
     if (!processPath.empty())
@@ -384,7 +375,6 @@ void FancyZonesData::UpdateProcessIdToHandleMap(HWND window, const std::wstring_
 
 std::vector<size_t> FancyZonesData::GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
 {
-    CallTracer callTracer(__FUNCTION__);
     std::scoped_lock lock{ dataLock };
     auto processPath = get_process_path(window);
     if (!processPath.empty())
@@ -408,7 +398,7 @@ std::vector<size_t> FancyZonesData::GetAppLastZoneIndexSet(HWND window, const st
 
 bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId)
 {
-    CallTracer callTracer(__FUNCTION__);
+    _TRACER_
     std::scoped_lock lock{ dataLock };
     auto processPath = get_process_path(window);
     if (!processPath.empty())
@@ -461,7 +451,7 @@ bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& dev
 
 bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<size_t>& zoneIndexSet)
 {
-    CallTracer callTracer(__FUNCTION__);
+    _TRACER_
     std::scoped_lock lock{ dataLock };
 
     if (IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
@@ -520,7 +510,6 @@ bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, 
 
 void FancyZonesData::SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& data)
 {
-    CallTracer callTracer(__FUNCTION__);
     std::scoped_lock lock{ dataLock };
     auto it = deviceInfoMap.find(deviceId);
     if (it != deviceInfoMap.end())
@@ -558,14 +547,14 @@ void FancyZonesData::SaveAppZoneHistoryAndZoneSettings() const
 
 void FancyZonesData::SaveZoneSettings() const
 {
-    CallTracer callTracer(__FUNCTION__);
+    _TRACER_
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
 }
 
 void FancyZonesData::SaveAppZoneHistory() const
 {
-    CallTracer callTracer(__FUNCTION__);
+    _TRACER_
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
 }

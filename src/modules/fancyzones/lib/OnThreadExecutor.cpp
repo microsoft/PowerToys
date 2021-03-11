@@ -10,7 +10,6 @@ OnThreadExecutor::OnThreadExecutor() :
 
 std::future<void> OnThreadExecutor::submit(task_t task)
 {
-    CallTracer callTracer(__FUNCTION__);
     auto future = task.get_future();
     std::lock_guard lock{ _task_mutex };
     _task_queue.emplace(std::move(task));
@@ -20,7 +19,6 @@ std::future<void> OnThreadExecutor::submit(task_t task)
 
 void OnThreadExecutor::cancel()
 {
-    CallTracer callTracer(__FUNCTION__);
     std::lock_guard lock{ _task_mutex };
     _task_queue = {};
     _task_cv.notify_one();
