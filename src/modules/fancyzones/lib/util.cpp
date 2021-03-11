@@ -305,6 +305,88 @@ namespace FancyZonesUtils
         monitorInfo = std::move(sortedMonitorInfo);
     }
 
+    BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+    {
+        reinterpret_cast<std::vector<HMONITOR>*>(data)->emplace_back(monitor);
+        return true;
+    }
+
+    bool allMonitorsHaveSameDpiScaling()
+    {
+        std::vector<HMONITOR> monitors;
+        EnumDisplayMonitors(NULL, NULL, saveDisplayToVector, reinterpret_cast<LPARAM>(&monitors));
+
+        if (monitors.size() < 2)
+        {
+            return true;
+        }
+
+        UINT firstMonitorDpiX;
+        UINT firstMonitorDpiY;
+
+        if (S_OK != GetDpiForMonitor(monitors[0], MDT_EFFECTIVE_DPI, &firstMonitorDpiX, &firstMonitorDpiY))
+        {
+            return false;
+        }
+
+        for (int i = 1; i < monitors.size(); i++)
+        {
+            UINT iteratedMonitorDpiX;
+            UINT iteratedMonitorDpiY;
+
+            if (S_OK != GetDpiForMonitor(monitors[i], MDT_EFFECTIVE_DPI, &iteratedMonitorDpiX, &iteratedMonitorDpiY) ||
+                iteratedMonitorDpiX != firstMonitorDpiX)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void ScreenToWorkAreaCoords(HWND window, RECT& rect)
+    {
+        // First, find the correct monitor. The monitor cannot be found using the given rect itself, we must first
+        // translate it to relative workspace coordinates.
+        HMONITOR monitor = MonitorFromRect(&rect, MONITOR_DEFAULTTOPRIMARY);
+        MONITORINFOEXW monitorInfo{ sizeof(MONITORINFOEXW) };
+        GetMonitorInfoW(monitor, &monitorInfo);
+
+        auto xOffset = monitorInfo.rcWork.left - monitorInfo.rcMonitor.left;
+        auto yOffset = monitorInfo.rcWork.top - monitorInfo.rcMonitor.top;
+
+        auto referenceRect = rect;
+
+        referenceRect.left -= xOffset;
+        referenceRect.right -= xOffset;
+        referenceRect.top -= yOffset;
+        referenceRect.bottom -= yOffset;
+
+        // Now, this rect should be used to determine the monitor and thus taskbar size. This fixes
+        // scenarios where the zone lies approximately between two monitors, and the taskbar is on the left.
+        monitor = MonitorFromRect(&referenceRect, MONITOR_DEFAULTTOPRIMARY);
+        GetMonitorInfoW(monitor, &monitorInfo);
+
+        xOffset = monitorInfo.rcWork.left - monitorInfo.rcMonitor.left;
+        yOffset = monitorInfo.rcWork.top - monitorInfo.rcMonitor.top;
+
+        rect.left -= xOffset;
+        rect.right -= xOffset;
+        rect.top -= yOffset;
+        rect.bottom -= yOffset;
+
+        const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
+        const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
+
+        if (accountForUnawareness && !allMonitorsHaveSameDpiScaling())
+        {
+            rect.left = max(monitorInfo.rcMonitor.left, rect.left);
+            rect.right = min(monitorInfo.rcMonitor.right - xOffset, rect.right);
+            rect.top = max(monitorInfo.rcMonitor.top, rect.top);
+            rect.bottom = min(monitorInfo.rcMonitor.bottom - yOffset, rect.bottom);
+        }
+    }
+
     void SizeWindowToRect(HWND window, RECT rect) noexcept
     {
         WINDOWPLACEMENT placement{};
@@ -330,6 +412,8 @@ namespace FancyZonesUtils
             placement.showCmd = SW_RESTORE;
             placement.flags &= ~WPF_RESTORETOMAXIMIZED;
         }
+
+        ScreenToWorkAreaCoords(window, rect);
 
         placement.rcNormalPosition = rect;
         placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
