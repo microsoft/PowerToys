@@ -294,7 +294,7 @@ void VideoConferenceModule::init_settings()
         {
             toolbar.setHideToolbarWhenUnmuted(val.value());
         }
-        if (const auto val = powerToysSettings.get_string_value(L"selected_mic"); *val != settings.selectedMicrophone)
+        if (const auto val = powerToysSettings.get_string_value(L"selected_mic"); val && *val != settings.selectedMicrophone)
         {
             settings.selectedMicrophone = *val;
             updateControlledMicrophones(settings.selectedMicrophone);
