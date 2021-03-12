@@ -505,13 +505,14 @@
                                 Orientation="Horizontal">
                         <ComboBox x:Name="fastAccessKeySelectionComboBox" 
                                   ItemsSource="{Binding FastAccessAvailableKeys}"
-                                  SelectedItem="{Binding FastAccessKey}" />
+                                  SelectedItem="{Binding FastAccessKey}"
+                                  Width="106" />
                         <Button Click="ClearFastAccessKeyButton_Click"
                                 Content="&#xE8BB;"
                                 FontFamily="Segoe MDL2 Assets"
+                                FontSize="12" 
                                 Background="Transparent"
-                                Opacity="0.8"
-                                FontSize="12" />
+                                Opacity="0.8" />
                     </StackPanel>
                     
 
