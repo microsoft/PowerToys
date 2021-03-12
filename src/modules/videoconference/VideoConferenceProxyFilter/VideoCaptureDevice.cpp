@@ -371,6 +371,7 @@ const char* GetMediaSubTypeString(const GUID& guid)
 
 std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>& pin)
 {
+    VERBOSE_LOG;
     wil::com_ptr_nothrow<IEnumMediaTypes> mediaTypeEnum;
     if (pin->EnumMediaTypes(&mediaTypeEnum); !mediaTypeEnum)
     {
@@ -385,23 +386,28 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
         {
             continue;
         }
+        LOG("Inspecting media type");
         auto format = reinterpret_cast<VIDEOINFOHEADER*>(mt->pbFormat);
-        if (!format->AvgTimePerFrame)
+        if (!format || !format->AvgTimePerFrame)
         {
+            LOG("VideoInfoHeader not found");
             continue;
         }
         const auto formatAvgFPS = 10000000LL / format->AvgTimePerFrame;
         if (format->AvgTimePerFrame > bestFormat.avgFrameTime || formatAvgFPS < MINIMAL_FPS_ALLOWED)
         {
+            LOG("Skipping mediatype due to low fps");
             continue;
         }
         if (format->bmiHeader.biWidth < bestFormat.width || format->bmiHeader.biHeight < bestFormat.height)
         {
+            LOG("Skipping mediatype due to low fps");
             continue;
         }
 
         if (mt->subtype != MEDIASUBTYPE_YUY2 && mt->subtype != MEDIASUBTYPE_MJPG && mt->subtype != MEDIASUBTYPE_NV12)
         {
+            LOG("Skipping mediatype due to unsupported subtype");
             continue;
         }
         bestFormat.avgFrameTime = format->AvgTimePerFrame;
@@ -413,7 +419,7 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
     {
         return std::nullopt;
     }
-    LOG("Selected media format:");
+    LOG(L"Selected media format:");
     LOG(GetMediaSubTypeString(bestFormat.mediaType->subtype));
     return std::move(bestFormat);
 }
@@ -440,6 +446,7 @@ std::vector<VideoCaptureDeviceInfo> VideoCaptureDevice::ListAll()
     wil::com_ptr_nothrow<IMoniker> moniker;
     while (enumMoniker->Next(1, &moniker, &_) == S_OK)
     {
+        LOG("Inspecting moniker");
         VideoCaptureDeviceInfo deviceInfo;
 
         wil::com_ptr_nothrow<IPropertyBag> propertyData;
@@ -488,6 +495,7 @@ std::vector<VideoCaptureDeviceInfo> VideoCaptureDevice::ListAll()
 
         while (pinsEnum->Next(1, &pin, &_) == S_OK)
         {
+            LOG("Inspecting pin");
             // Skip pins which do not belong to capture category
             GUID category{};
             DWORD __;
@@ -505,6 +513,7 @@ std::vector<VideoCaptureDeviceInfo> VideoCaptureDevice::ListAll()
                 continue;
             }
 
+            LOG("Found a pin of suitable category and direction, selecting format");
             auto bestFormat = SelectBestMediaType(pin);
             if (!bestFormat)
             {

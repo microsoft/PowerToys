@@ -468,7 +468,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
     VERBOSE_LOG;
     if (!ppEnum)
     {
-        LOG("EnumPins: null arg provided!");
+        LOG("EnumPins: null arg provided");
         return E_POINTER;
     }
     std::unique_lock<std::mutex> lock{ _worker_mutex };

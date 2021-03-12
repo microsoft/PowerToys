@@ -37,6 +37,7 @@ akamaihd
 ALarger
 alekhyareddy
 alertsolid
+alignas
 ALIGNLEFT
 ALLAPPS
 Alloc
@@ -127,6 +128,8 @@ Autorun
 AUTOSIZECOLUMNS
 autoupdate
 AValid
+avialable
+AYUV
 azurecr
 azurewebsites
 backend
@@ -191,6 +194,7 @@ buildtransitive
 BValue
 bytearray
 callbackptr
+Camer
 CANRENAME
 Captureascreenshot
 CAPTURECHANGED
@@ -400,6 +404,7 @@ dcomp
 DComposition
 ddd
 ddee
+ddf
 Deact
 declspec
 decltype
@@ -444,6 +449,7 @@ DFactory
 Dialpad
 diffing
 difftime
+DIIRFLAG
 dimm
 dirname
 dirs
@@ -499,6 +505,10 @@ dupenv
 dutil
 DVASPECT
 DVASPECTINFO
+DVH
+DVHD
+DVSD
+DVSL
 DVTARGETDEVICE
 dw
 DWindow
@@ -518,6 +528,8 @@ dword
 dworigin
 dwrite
 dxgi
+dxgiformat
+dxguid
 EABF
 EAC
 EACB
@@ -621,6 +633,7 @@ EFFE
 efgh
 EFile
 egistry
+elif
 ELogo
 elseif
 Emoji
@@ -629,6 +642,7 @@ ENABLEDPOPUP
 endforeach
 endif
 endl
+endpointvolume
 endregion
 Enque
 ENTERSIZEMOVE
@@ -715,7 +729,9 @@ filesystem
 FILETIME
 FILETYPE
 FILEVERSION
+Filtergraph
 Filterkeyboard
+Filterx
 finalizer
 findstr
 FIXEDFILEINFO
@@ -744,6 +760,7 @@ FTYPE
 FULLNAME
 fullscreen
 func
+Functiondiscoverykeys
 fwlink
 fwrite
 fx
@@ -753,6 +770,7 @@ GAC
 gacutil
 Gamebar
 GBs
+GCLP
 gcnew
 gdi
 gdiplus
@@ -795,9 +813,11 @@ hashcode
 hbitmap
 hbmp
 hbr
+HBRBACKGROUND
 HBRUSH
 hc
 hcblack
+HCERTSTORE
 hcwhite
 hdc
 HDF
@@ -809,7 +829,9 @@ hdrop
 HDS
 HEB
 helptext
-HGLOBAL
+HEVC
+hfile
+hglobal
 hh
 hhk
 HHmmss
@@ -883,11 +905,13 @@ IApp
 IApplication
 IAppx
 IAsync
+IAudio
 IAuto
 IBackground
 IBase
 IBeam
 IBind
+ICapture
 icase
 iccex
 ICEBLUE
@@ -940,9 +964,11 @@ IFancy
 ifdef
 IFeatures
 IFile
+IFilter
 ifndef
 IFolder
 ifstream
+IGraph
 IIcon
 iid
 IImage
@@ -961,6 +987,8 @@ IMAGERESIZEREXT
 IMain
 IMarkdown
 ime
+IMedia
+IMem
 imeutil
 img
 IMoniker
@@ -1019,6 +1047,7 @@ IObject
 iobjectwithsitesetsite
 IOle
 iolewindowcontextsensitivehelp
+iomanip
 iostream
 ip
 IPackage
@@ -1040,6 +1069,7 @@ IProperty
 IPublic
 IQuery
 IRead
+IReference
 IReflect
 IRegistered
 IRegistration
@@ -1082,7 +1112,9 @@ IVector
 IView
 IVirtual
 IWeb
+IWIC
 ixx
+IYUV
 IZone
 IZoom
 JArray
@@ -1129,6 +1161,7 @@ keyup
 Kf
 KILLFOCUS
 Knownfolders
+KSPROPERTY
 Kybd
 LAlt
 lambson
@@ -1151,6 +1184,7 @@ Ldone
 LEFTSCROLLBAR
 lego
 len
+LEQ
 LError
 Lessthan
 LEVELID
@@ -1253,6 +1287,7 @@ MAINICON
 Mainwindow
 majortype
 makeappx
+makecab
 MAKEINTRESOURCE
 MAKEINTRESOURCEW
 MAKELPARAM
@@ -1270,6 +1305,7 @@ MATCHMODE
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
+MBs
 MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
@@ -1281,6 +1317,7 @@ mdpreviewhandler
 MEDIASUBTYPE
 MEDIATYPE
 Melman
+memcmp
 memcpy
 memset
 Mensching
@@ -1292,8 +1329,17 @@ messageboxes
 METACHARSET
 metadata
 metafile
+mfapi
 mfc
 mfcribbon
+mfidl
+mfobjects
+mfplat
+mfreadwrite
+Mfsensorgroup
+mftransform
+mfuuid
+mic
 microsoft
 Midl
 mii
@@ -1305,10 +1351,12 @@ MINIMIZEBOX
 miniz
 MINMAXINFO
 Miracast
+mirophone
 mixin
 MJPG
 mkdir
 MLogo
+mmdeviceapi
 MMI
 mockapi
 MODECHANGE
@@ -1372,6 +1420,7 @@ mutex
 mutexes
 muxc
 mvvm
+myfile
 MYICON
 myuri
 NAMECHANGE
@@ -1409,6 +1458,7 @@ netsh
 netstandard
 Neue
 newcolor
+newdev
 newitem
 newpath
 newrow
@@ -1433,6 +1483,7 @@ nodoc
 noexcept
 NOFRAMES
 NOINHERITLAYOUT
+NOINTERFACE
 NOLINKINFO
 NOMINMAX
 NOMOVE
@@ -1520,6 +1571,7 @@ Openthe
 openxmlformats
 OPTIMIZEFORINVOKE
 OPTIONSGROUP
+ORAW
 ORPHANEDDIALOGTITLE
 oss
 ostr
@@ -1530,6 +1582,7 @@ osx
 otating
 OUTOFCONTEXT
 OUTOFMEMORY
+outpin
 Outptr
 outro
 OVERLAPPEDWINDOW
@@ -1589,6 +1642,7 @@ Pipelinhttps
 pipename
 pitem
 PKBDLLHOOKSTRUCT
+PKEY
 placeholders
 plib
 PLK
@@ -1610,6 +1664,7 @@ popd
 popup
 POPUPWINDOW
 posix
+Postion
 powerappscds
 powerlauncher
 powerpreview
@@ -1622,6 +1677,7 @@ powertoyssetup
 Powrprof
 ppenum
 ppidl
+ppmt
 pprm
 pproc
 ppsi
@@ -1638,11 +1694,13 @@ precomp
 Preinstalled
 preload
 PREMULTIPLIED
+preperty
 prevhost
 previewer
 PREVIEWGROUP
 PREVIEWHANDLERFRAMEINFO
 previewpane
+previouscamera
 PREVIOUSVERSIONSINSTALLED
 prevpane
 prgms
@@ -1689,6 +1747,7 @@ pw
 pwa
 pwcs
 PWSTR
+pwsz
 pwtd
 px
 Qand
@@ -1734,13 +1793,17 @@ refactor
 refactoring
 REFCLSID
 refcount
+REFGUID
 REFIID
 REGCLS
 regedit
 regex
+REGFILTER
+REGFILTERPINS
 REGISTERCLASSFAILED
 registrypath
 regkey
+REGPINTYPES
 reimplementing
 reloadable
 Remapper
@@ -1791,6 +1854,7 @@ RKey
 RMENU
 RNumber
 roadmap
+robocopy
 Roboto
 roslyn
 royvou
@@ -1890,6 +1954,7 @@ Shl
 shldisp
 shlobj
 shlwapi
+shmem
 shobjidl
 SHORTCUTATLEAST
 shortcutcontrol
@@ -1927,6 +1992,7 @@ SIZENESW
 SIZENS
 SIZENWSE
 sizeof
+sizeread
 SIZEWE
 sketchapp
 SKIPOWNPROCESS
@@ -1952,6 +2018,7 @@ spesi
 spinbuttonref
 splitwstring
 spoprod
+sprintf
 spsi
 spsia
 spsrif
@@ -2044,6 +2111,7 @@ swprintf
 SYMED
 Symlink
 SYMOPT
+SYNCMFT
 SYNCPAINT
 sys
 SYSCHAR
@@ -2116,6 +2184,7 @@ TLayout
 tlb
 tlbimp
 tmp
+TMPVAR
 TNP
 todo
 toggleleft
@@ -2136,12 +2205,14 @@ towlower
 towupper
 tracelogging
 traies
+transparrent
 TRAYMOUSEMESSAGE
 TRK
 trl
 truetype
 trunc
 tslint
+tspan
 TStr
 tsx
 tt
@@ -2176,6 +2247,7 @@ ul
 ULARGE
 ULLONG
 ulong
+ULONGLONG
 umd
 unchecks
 uncomment
@@ -2203,6 +2275,7 @@ unknwn
 UNLEN
 unlicense
 Unmap
+unmute
 UNORM
 Unpublish
 unregister
@@ -2239,16 +2312,20 @@ uv
 uwp
 UWPUI
 uxtheme
+UYVY
 validmodulename
 vcamp
 vccorlib
+vcdl
 VCINSTALLDIR
+vcm
 vcomp
 vcredist
 VCRT
 vcruntime
 vcvars
 vcxproj
+vdi
 VDId
 vec
 VERBSONLY
@@ -2262,6 +2339,7 @@ vid
 VIDEOINFOHEADER
 viewbox
 viewmodel
+vih
 virtualization
 Visibletrue
 Visio
@@ -2305,6 +2383,9 @@ wcscpy
 wcslen
 wcsncmp
 wcsnicmp
+wdk
+wdksetup
+wdkvsix
 wdp
 wdupenv
 weakme
@@ -2377,6 +2458,7 @@ wmonk
 wmp
 WMSYSKEYDOWN
 WMSYSKEYUP
+WMV
 wnd
 WNDCLASS
 WNDCLASSEX
@@ -2406,8 +2488,10 @@ wstring
 wstringstream
 wsz
 WTS
+wtsapi
 WTSAT
 wu
+WVC
 Wwan
 www
 wxs
@@ -2421,7 +2505,7 @@ XBUTTON
 XBUTTONDBLCLK
 XBUTTONDOWN
 XBUTTONUP
-XCOPY
+xcopy
 XDiff
 XDocument
 XElement
