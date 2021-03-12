@@ -16,7 +16,7 @@ namespace
         std::unique_lock lock(indentLevelMutex);
         int level = indentLevel[std::this_thread::get_id()];
 
-        if (level == 0)
+        if (level <= 0)
         {
             return {};
         }
@@ -25,15 +25,29 @@ namespace
             return std::string(2 * min(level, 64) - 1, ' ') + " - ";
         }
     }
+
+    void Indent()
+    {
+        std::unique_lock lock(indentLevelMutex);
+        indentLevel[std::this_thread::get_id()]++;
+    }
+
+    void Unindent()
+    {
+        std::unique_lock lock(indentLevelMutex);
+        indentLevel[std::this_thread::get_id()]--;
+    }
 }
 
 CallTracer::CallTracer(const char* functionName) :
     functionName(functionName)
-{ 
+{
+    Indent();
     Logger::trace((GetIndentation() + functionName + entering).c_str());
 }
 
 CallTracer::~CallTracer()
 {
     Logger::trace((GetIndentation() + functionName + exiting).c_str());
+    Unindent();
 }
