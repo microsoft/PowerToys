@@ -77,8 +77,7 @@
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.18362.0
 SET PTRoot=..\..\..\..
 call "..\..\publish.cmd"
-)
-call "..\..\build_vcm_x86.cmd"</PreBuildEvent>
+)</PreBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

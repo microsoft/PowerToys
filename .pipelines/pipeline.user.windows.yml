@@ -61,6 +61,10 @@ build:
             - 'x64/**/*.pdb'
           exclude:
             - 'x64/Release/obj/**/*.pdb'
+        - from: 'x86/Release'
+        - to: 'Build_Output'
+          include:
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
@@ -147,8 +151,7 @@ build:
             - 'modules\PowerRename\PowerRenameExt.dll'
             - 'modules\ShortcutGuide\ShortcutGuide.dll'
             - 'modules\VideoConference\VideoConferenceModule.dll'
-            - 'modules\VideoConference\VideoConferenceProxyFilter.dll'
-            - 'modules\VideoConference\VideoConferenceProxyFilterx86.dll'
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
             - 'Notifications.dll'
             - 'os-detection.dll'
             - 'PowerToys.exe'

@@ -12,7 +12,7 @@
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
-  <?define BinX32Dir="$(var.RepoDir)Win32\$(var.Configuration)\" ?>
+  <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
 
 	<Product Id="*"
        Name="PowerToys (Preview)"
@@ -596,10 +596,10 @@
     <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
      <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
       <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
-      <File SelfRegCost="1" Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter.dll" KeyPath="yes">
+      <File SelfRegCost="1" Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter_x64.dll" KeyPath="yes">
         <Class Id="{31AD75E9-8C3A-49C8-B9ED-5880D6B4A764}" Context="InprocServer32" ThreadingModel="apartment" Description="PowerToys VideoConference Mute" />
       </File>
-      <File SelfRegCost="1" Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilterx86.dll">
+      <File SelfRegCost="1" Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter_x86.dll">
         <Class Id="{31AD75E9-8C3A-49C8-B9ED-5880D6B4A732}" Context="InprocServer32" ThreadingModel="apartment" Description="PowerToys VideoConference Mute" />
       </File>
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceModule.dll" />
