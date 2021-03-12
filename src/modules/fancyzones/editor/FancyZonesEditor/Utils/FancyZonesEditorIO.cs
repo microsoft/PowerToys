@@ -860,25 +860,10 @@ namespace FancyZonesEditor.Utils
 
             foreach (var wrapper in templateLayouts)
             {
-                var type = JsonTagToLayoutType(wrapper.Type);
-
-                switch (type)
-                {
-                    case LayoutType.Blank:
-                    case LayoutType.Focus:
-                        MainWindowSettingsModel.DefaultModels[(int)type] = new CanvasLayoutModel(wrapper.Uuid, (CanvasLayoutModel)MainWindowSettingsModel.DefaultModels[(int)type]);
-                        break;
-
-                    case LayoutType.Columns:
-                    case LayoutType.Rows:
-                    case LayoutType.Grid:
-                    case LayoutType.PriorityGrid:
-                        MainWindowSettingsModel.DefaultModels[(int)type] = new GridLayoutModel(wrapper.Uuid, (GridLayoutModel)MainWindowSettingsModel.DefaultModels[(int)type]);
-                        break;
-                }
-
+                LayoutType type = JsonTagToLayoutType(wrapper.Type);
                 LayoutModel layout = MainWindowSettingsModel.DefaultModels[(int)type];
 
+                layout.Uuid = wrapper.Uuid;
                 layout.SensitivityRadius = wrapper.SensitivityRadius;
                 layout.TemplateZoneCount = wrapper.ZoneCount;
 
