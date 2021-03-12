@@ -31,7 +31,9 @@ IWICImagingFactory* _GetWIC() noexcept
     static IWICImagingFactory* s_Factory = nullptr;
 
     if (s_Factory)
+    {
         return s_Factory;
+    }
 
     HRESULT hr = CoCreateInstance(
         CLSID_WICImagingFactory,
@@ -136,6 +138,7 @@ wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> 
     {
         return nullptr;
     }
+
     std::copy(jpgStreamMemory, jpgStreamMemory + jpgStreamSize, inputBuf);
     unlockJpgStreamMemory.reset();
     inputMediaBuffer->Unlock();
@@ -166,15 +169,18 @@ wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> 
         }
         ppVDActivate[i]->Release();
     }
+
     if (count)
     {
         CoTaskMemFree(ppVDActivate);
     }
+
     if (!videoDecoderActivated)
     {
         //LOG("No converter avialable for the selected format");
         return nullptr;
     }
+
     auto shutdownVideoDecoder = wil::scope_exit([&videoDecoder] { MFShutdownObject(videoDecoder.get()); });
     // Set input/output types for the decoder
     wil::com_ptr_nothrow<IMFMediaType> jpgFrameMediaType;
@@ -220,5 +226,6 @@ wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> 
     {
         outputSamples.pEvents->Release();
     }
+
     return outputSamples.pSample;
 }

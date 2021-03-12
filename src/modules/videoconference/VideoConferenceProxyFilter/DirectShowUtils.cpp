@@ -11,6 +11,7 @@ unique_media_type_ptr CopyMediaType(const AM_MEDIA_TYPE* source)
         target->pbFormat = static_cast<BYTE*>(CoTaskMemAlloc(source->cbFormat));
         std::copy(source->pbFormat, source->pbFormat + source->cbFormat, target->pbFormat);
     }
+
     if (target->pUnk)
     {
         target->pUnk->AddRef();
@@ -44,6 +45,7 @@ void MyFreeMediaType(AM_MEDIA_TYPE& mt)
         mt.cbFormat = 0;
         mt.pbFormat = nullptr;
     }
+
     if (mt.pUnk != nullptr)
     {
         mt.pUnk->Release();
@@ -57,6 +59,7 @@ void MyDeleteMediaType(AM_MEDIA_TYPE* pmt)
     {
         return;
     }
+
     MyFreeMediaType(*pmt);
     CoTaskMemFree(const_cast<AM_MEDIA_TYPE*>(pmt));
 }
@@ -75,10 +78,12 @@ HRESULT MediaTypeEnumerator::Next(ULONG cObjects, AM_MEDIA_TYPE** outObjects, UL
         auto copy = CopyMediaType(_objects[_pos++]);
         outObjects[fetched++] = copy.release();
     }
+
     if (pcFetched)
     {
         *pcFetched = fetched;
     }
+
     return fetched == cObjects ? S_OK : S_FALSE;
 }
 

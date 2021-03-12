@@ -171,6 +171,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         {
             return VFW_E_NOT_CONNECTED;
         }
+
         _captureInputPin.copy_to(pPin);
         return S_OK;
     }
@@ -186,6 +187,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         {
             return VFW_E_NOT_CONNECTED;
         }
+
         *pmt = *CopyMediaType(_inputCaptureMediaType).release();
         return S_OK;
     }
@@ -196,11 +198,13 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         {
             return E_POINTER;
         }
+
         pInfo->pFilter = _owningFilter;
         if (_owningFilter)
         {
             _owningFilter->AddRef();
         }
+        
         pInfo->dir = PINDIR_INPUT;
         std::copy(std::begin(NAME), std::end(NAME), pInfo->achName);
         return S_OK;
@@ -212,6 +216,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         {
             return E_POINTER;
         }
+
         *pPinDir = PINDIR_INPUT;
         return S_OK;
     }
@@ -222,6 +227,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         {
             return E_POINTER;
         }
+
         *lpId = static_cast<LPWSTR>(CoTaskMemAlloc(sizeof(NAME)));
 
         std::copy(std::begin(NAME), std::end(NAME), *lpId);
@@ -254,6 +260,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         {
             return E_POINTER;
         }
+
         auto enumerator = winrt::make_self<MediaTypeEnumerator>();
         enumerator->_objects.emplace_back(CopyMediaType(_expectedMediaType));
         *ppEnum = enumerator.detach();
@@ -286,6 +293,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         {
             return VFW_E_NO_ALLOCATOR;
         }
+
         _allocator.copy_to(allocator);
         return S_OK;
     }
@@ -306,6 +314,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         {
             return S_FALSE;
         }
+
         if (!pSample)
         {
             return E_POINTER;
@@ -315,6 +324,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         {
             _frameCallback(pSample);
         }
+
         return S_OK;
     }
 
@@ -354,18 +364,22 @@ const char* GetMediaSubTypeString(const GUID& guid)
     {
         return "MEDIASUBTYPE_RGB24";
     }
+
     if (guid == MEDIASUBTYPE_YUY2)
     {
         return "MEDIASUBTYPE_YUY2";
     }
+
     if (guid == MEDIASUBTYPE_MJPG)
     {
         return "MEDIASUBTYPE_MJPG";
     }
+
     if (guid == MEDIASUBTYPE_NV12)
     {
         return "MEDIASUBTYPE_NV12";
     }
+
     return "MEDIASUBTYPE_UNKNOWN";
 }
 
@@ -377,6 +391,7 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
     {
         return std::nullopt;
     }
+
     ULONG _ = 0;
     VideoStreamFormat bestFormat;
     unique_media_type_ptr mt;
@@ -386,6 +401,7 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
         {
             continue;
         }
+
         LOG("Inspecting media type");
         auto format = reinterpret_cast<VIDEOINFOHEADER*>(mt->pbFormat);
         if (!format || !format->AvgTimePerFrame)
@@ -393,12 +409,14 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
             LOG("VideoInfoHeader not found");
             continue;
         }
+
         const auto formatAvgFPS = 10000000LL / format->AvgTimePerFrame;
         if (format->AvgTimePerFrame > bestFormat.avgFrameTime || formatAvgFPS < MINIMAL_FPS_ALLOWED)
         {
             LOG("Skipping mediatype due to low fps");
             continue;
         }
+        
         if (format->bmiHeader.biWidth < bestFormat.width || format->bmiHeader.biHeight < bestFormat.height)
         {
             LOG("Skipping mediatype due to low fps");
@@ -410,15 +428,18 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
             LOG("Skipping mediatype due to unsupported subtype");
             continue;
         }
+
         bestFormat.avgFrameTime = format->AvgTimePerFrame;
         bestFormat.width = format->bmiHeader.biWidth;
         bestFormat.height = format->bmiHeader.biHeight;
         bestFormat.mediaType = std::move(mt);
     }
+
     if (!bestFormat.mediaType)
     {
         return std::nullopt;
     }
+
     LOG(L"Selected media format:");
     LOG(GetMediaSubTypeString(bestFormat.mediaType->subtype));
     return std::move(bestFormat);
@@ -465,7 +486,9 @@ std::vector<VideoCaptureDeviceInfo> VideoCaptureDevice::ListAll()
             LOG("Couldn't obtain FriendlyName property");
             continue;
         }
+
         deviceInfo.friendlyName = { propVal.bstrVal, SysStringLen(propVal.bstrVal) };
+        LOG(deviceInfo.friendlyName);
 
         propVal.reset();
         propVal.vt = VT_BSTR;
@@ -491,8 +514,8 @@ std::vector<VideoCaptureDeviceInfo> VideoCaptureDevice::ListAll()
             LOG("BindToObject EnumPins");
             continue;
         }
-        wil::com_ptr_nothrow<IPin> pin;
 
+        wil::com_ptr_nothrow<IPin> pin;
         while (pinsEnum->Next(1, &pin, &_) == S_OK)
         {
             LOG("Inspecting pin");
@@ -541,10 +564,12 @@ std::optional<VideoCaptureDevice> VideoCaptureDevice::Create(VideoCaptureDeviceI
     {
         return std::nullopt;
     }
+
     if (FAILED(result._builder->SetFiltergraph(result._graph.get())))
     {
         return std::nullopt;
     }
+
     result._control = result._graph.try_query<IMediaControl>();
     if (!result._control)
     {
@@ -563,8 +588,7 @@ std::optional<VideoCaptureDevice> VideoCaptureDevice::Create(VideoCaptureDeviceI
     }
 
     auto captureInputFilter = winrt::make_self<VideoCaptureReceiverFilter>();
-    auto receiverPin =
-        winrt::make_self<VideoCaptureReceiverPin>(std::move(vdi.bestFormat.mediaType), captureInputFilter.get());
+    auto receiverPin = winrt::make_self<VideoCaptureReceiverPin>(std::move(vdi.bestFormat.mediaType), captureInputFilter.get());
     receiverPin->_frameCallback = std::move(callback);
     captureInputFilter->_videoReceiverPin.attach(receiverPin.get());
     auto detachReceiverPin = wil::scope_exit([&receiverPin]() { receiverPin.detach(); });
@@ -579,8 +603,7 @@ std::optional<VideoCaptureDevice> VideoCaptureDevice::Create(VideoCaptureDeviceI
         return std::nullopt;
     }
 
-    if (FAILED(
-            result._graph->ConnectDirect(vdi.captureOutputPin.get(), captureInputFilter->_videoReceiverPin.get(), nullptr)))
+    if (FAILED(result._graph->ConnectDirect(vdi.captureOutputPin.get(), captureInputFilter->_videoReceiverPin.get(), nullptr)))
     {
         return std::nullopt;
     }

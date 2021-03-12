@@ -67,6 +67,7 @@ HRESULT VideoCaptureProxyPin::Connect(IPin* pReceivePin, const AM_MEDIA_TYPE*)
     {
         return VFW_E_NO_TRANSPORT;
     }
+
     auto allocator = FindAllocator();
     memInput->NotifyAllocator(allocator.get(), false);
 
@@ -84,6 +85,7 @@ HRESULT VideoCaptureProxyPin::Disconnect(void)
     {
         return S_FALSE;
     }
+
     _connectedInputPin.reset();
     return S_OK;
 }
@@ -95,6 +97,7 @@ HRESULT VideoCaptureProxyPin::ConnectedTo(IPin** pPin)
         *pPin = nullptr;
         return VFW_E_NOT_CONNECTED;
     }
+
     VERBOSE_LOG;
     _connectedInputPin.try_copy_to(pPin);
     return S_OK;
@@ -107,6 +110,7 @@ HRESULT VideoCaptureProxyPin::ConnectionMediaType(AM_MEDIA_TYPE* pmt)
     {
         return VFW_E_NOT_CONNECTED;
     }
+
     *pmt = *CopyMediaType(_mediaFormat).release();
     return S_OK;
 }
@@ -117,6 +121,7 @@ HRESULT VideoCaptureProxyPin::QueryPinInfo(PIN_INFO* pInfo)
     {
         return E_POINTER;
     }
+
     VERBOSE_LOG;
     pInfo->pFilter = _owningFilter;
     if (_owningFilter)
@@ -139,6 +144,7 @@ HRESULT VideoCaptureProxyPin::QueryDirection(PIN_DIRECTION* pPinDir)
     {
         return E_POINTER;
     }
+
     *pPinDir = PINDIR_OUTPUT;
     return S_OK;
 }
@@ -149,8 +155,8 @@ HRESULT VideoCaptureProxyPin::QueryId(LPWSTR* Id)
     {
         return E_POINTER;
     }
-    *Id = static_cast<LPWSTR>(CoTaskMemAlloc(sizeof(PIN_NAME)));
 
+    *Id = static_cast<LPWSTR>(CoTaskMemAlloc(sizeof(PIN_NAME)));
     std::copy(std::begin(PIN_NAME), std::end(PIN_NAME), *Id);
     return S_OK;
 }
@@ -167,6 +173,7 @@ HRESULT VideoCaptureProxyPin::EnumMediaTypes(IEnumMediaTypes** ppEnum)
     {
         return E_POINTER;
     }
+
     VERBOSE_LOG;
     auto enumerator = winrt::make_self<MediaTypeEnumerator>();
     enumerator->_objects.emplace_back(CopyMediaType(_mediaFormat));
@@ -229,6 +236,7 @@ HRESULT VideoCaptureProxyPin::GetNumberOfCapabilities(int* piCount, int* piSize)
     {
         return E_POINTER;
     }
+
     VERBOSE_LOG;
     *piCount = 1;
     *piSize = sizeof(VIDEO_STREAM_CONFIG_CAPS);
@@ -241,10 +249,12 @@ HRESULT VideoCaptureProxyPin::GetStreamCaps(int iIndex, AM_MEDIA_TYPE** ppmt, BY
     {
         return E_POINTER;
     }
+
     if (iIndex != 0)
     {
         return S_FALSE;
     }
+
     VERBOSE_LOG;
     VIDEOINFOHEADER* vih = reinterpret_cast<decltype(vih)>(_mediaFormat->pbFormat);
 
@@ -288,26 +298,32 @@ HRESULT VideoCaptureProxyPin::Get(
     {
         return E_PROP_SET_UNSUPPORTED;
     }
+
     if (dwPropID != AMPROPERTY_PIN_CATEGORY)
     {
         return E_PROP_ID_UNSUPPORTED;
     }
+
     if (!pPropData || !pcbReturned)
     {
         return E_POINTER;
     }
+
     if (pcbReturned)
     {
         *pcbReturned = sizeof(GUID);
     }
+
     if (!pPropData)
     {
         return S_OK;
     }
+
     if (cbPropData < sizeof(GUID))
     {
         return E_UNEXPECTED;
     }
+
     VERBOSE_LOG;
     *(GUID*)pPropData = PIN_CATEGORY_CAPTURE;
     return S_OK;
@@ -319,14 +335,17 @@ HRESULT VideoCaptureProxyPin::QuerySupported(REFGUID guidPropSet, DWORD dwPropID
     {
         return E_PROP_SET_UNSUPPORTED;
     }
+
     if (dwPropID != AMPROPERTY_PIN_CATEGORY)
     {
         return E_PROP_ID_UNSUPPORTED;
     }
+
     if (pTypeSupport)
     {
         *pTypeSupport = KSPROPERTY_SUPPORT_GET;
     }
+
     return S_OK;
 }
 
@@ -336,6 +355,7 @@ void OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
     {
         return;
     }
+
     BYTE* data = nullptr;
     frame->GetPointer(&data);
     if (!data)
@@ -343,6 +363,7 @@ void OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
         LOG("Couldn't get sample pointer");
         return;
     }
+
     wil::com_ptr_nothrow<IMFMediaBuffer> buf;
     const long nBytes = frame->GetSize();
 
@@ -375,16 +396,19 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
             {
                 continue;
             }
+
             IMediaSample* sample = _pending_frame;
             if (!sample)
             {
                 continue;
             }
+
             const auto newSettings = SyncCurrentSettings();
             if (newSettings.webcamDisabled)
             {
                 OverwriteFrame(_pending_frame, _overlayImage ? _overlayImage : _blankImage);
             }
+
             _pending_frame = nullptr;
             input->Receive(sample);
             sample->Release();
@@ -471,6 +495,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
         LOG("EnumPins: null arg provided");
         return E_POINTER;
     }
+
     std::unique_lock<std::mutex> lock{ _worker_mutex };
 
     // We cannot initialize capture device and outpin during VideoCaptureProxyFilter ctor
@@ -486,6 +511,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
             LOG("No physical webcams found");
             return S_OK;
         }
+
         std::optional<size_t> selectedCamIdx;
         for (size_t i = 0; i < size(webcams); ++i)
         {
@@ -496,6 +522,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
                 break;
             }
         }
+
         if (!selectedCamIdx)
         {
             for (size_t i = 0; i < size(webcams); ++i)
@@ -508,11 +535,13 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
                 }
             }
         }
+
         if (!selectedCamIdx)
         {
             LOG("Webcam couldn't be selected");
             return S_OK;
         }
+
         auto& webcam = webcams[*selectedCamIdx];
 
         auto pin = winrt::make_self<VideoCaptureProxyPin>();
@@ -535,10 +564,12 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
             wil::com_ptr_nothrow<IStream> blackBMPImage = SHCreateMemStream(bmpPixelData, sizeof(bmpPixelData));
             _blankImage = LoadImageAsSample(blackBMPImage, targetMediaType.get());
         }
+
         if (newSettings.overlayImage && !_overlayImage)
         {
             _overlayImage = LoadImageAsSample(newSettings.overlayImage, targetMediaType.get());
         }
+
         LOG("Loaded images");
         auto frameCallback = [this](IMediaSample* sample) {
             std::unique_lock<std::mutex> lock{ _worker_mutex };
@@ -575,6 +606,7 @@ HRESULT VideoCaptureProxyFilter::QueryFilterInfo(FILTER_INFO* pInfo)
     {
         return E_POINTER;
     }
+
     VERBOSE_LOG;
     std::copy(std::begin(FILTER_NAME), std::end(FILTER_NAME), pInfo->achName);
 
@@ -627,10 +659,12 @@ VideoCaptureProxyFilter::SyncedSettings VideoCaptureProxyFilter::SyncCurrentSett
     {
         _settingsUpdateChannel = SerializedSharedMemory::open(CameraSettingsUpdateChannel::endpoint(), sizeof(CameraSettingsUpdateChannel), false);
     }
+
     if (!_settingsUpdateChannel)
     {
         return result;
     }
+
     _settingsUpdateChannel->access([this, &result](auto settingsMemory) {
         auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory._data);
         bool cameraNameUpdated = false;
@@ -661,6 +695,7 @@ VideoCaptureProxyFilter::SyncedSettings VideoCaptureProxyFilter::SyncCurrentSett
             {
                 return;
             }
+
             imageChannel->access([this, settings, &result](auto imageMemory) {
                 result.overlayImage = SHCreateMemStream(imageMemory._data, static_cast<UINT>(imageMemory._size));
                 if (!result.overlayImage)
