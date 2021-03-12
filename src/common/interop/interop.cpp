@@ -150,7 +150,7 @@ public
                 for (UINT32 i = 0; i < vcdl.Count(); ++i)
                 {
                     auto name = gcnew String(vcdl.GetDeviceName(i).data());
-                    if (name != L"PowerToys VideoConference")
+                    if (name != L"PowerToys VideoConference Mute")
                     {
                         names->Add(name);
                     }
