@@ -64,6 +64,8 @@ namespace FancyZonesEditor.Models
             _sensitivityRadius = other._sensitivityRadius;
             _zoneCount = other._zoneCount;
             _fastAccessKey = other._fastAccessKey;
+
+            MainWindowSettingsModel.FastAccessKeys.PropertyChanged += FastAccessKeys_PropertyChanged;
         }
 
         // Name - the display name for this layout model - is also used as the key in the registry
