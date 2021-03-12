@@ -419,13 +419,17 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
         
         if (format->bmiHeader.biWidth < bestFormat.width || format->bmiHeader.biHeight < bestFormat.height)
         {
-            LOG("Skipping mediatype due to low fps");
+            LOG("Skipping mediatype due to low mode");
             continue;
         }
 
         if (mt->subtype != MEDIASUBTYPE_YUY2 && mt->subtype != MEDIASUBTYPE_MJPG && mt->subtype != MEDIASUBTYPE_NV12)
         {
-            LOG("Skipping mediatype due to unsupported subtype");
+            OLECHAR* guidString;
+            StringFromCLSID(mt->subtype, &guidString);
+            LOG("Skipping mediatype due to unsupported subtype" );
+            LOG(guidString);
+            ::CoTaskMemFree(guidString);
             continue;
         }
 
