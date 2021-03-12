@@ -42,7 +42,7 @@ namespace
 
         HWND ExtractWindow()
         {
-            _TRACER_
+            _TRACER_;
             std::unique_lock lock(m_mutex);
 
             if (m_pool.empty())
@@ -82,7 +82,7 @@ namespace
 
         void FreeZoneWindow(HWND window)
         {
-            _TRACER_
+            _TRACER_;
             Logger::info("Freeing zone window, hWnd = {}", (void*)window);
             SetWindowLongPtrW(window, GWLP_USERDATA, 0);
             ShowWindow(window, SW_HIDE);

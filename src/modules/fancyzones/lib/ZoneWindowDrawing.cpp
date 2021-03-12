@@ -203,7 +203,7 @@ void ZoneWindowDrawing::Render()
 
 void ZoneWindowDrawing::Hide()
 {
-    _TRACER_
+    _TRACER_;
     m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
     m_lowLatencyLock = false;
@@ -217,7 +217,7 @@ void ZoneWindowDrawing::Hide()
 
 void ZoneWindowDrawing::Show(unsigned animationMillis)
 {
-    _TRACER_
+    _TRACER_;
     m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
     m_lowLatencyLock = false;
@@ -238,7 +238,7 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                        const std::vector<size_t>& highlightZones,
                        winrt::com_ptr<IZoneWindowHost> host)
 {
-    _TRACER_
+    _TRACER_;
     m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
     m_lowLatencyLock = false;
