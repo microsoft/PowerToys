@@ -5,6 +5,7 @@
 #include <system_error>
 
 void LogToFile(std::string what, const bool verbose = false);
+void LogToFile(std::wstring what, const bool verbose = false);
 std::string toMediaTypeString(GUID subtype);
 
 #define RETURN_IF_FAILED_WITH_LOGGING(val)                                                             \

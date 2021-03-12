@@ -8,7 +8,7 @@ MicrophoneDevice::MicrophoneDevice(wil::com_ptr_nothrow<IMMDevice> device, wil::
 {
     if (!_device || !_endpoint)
     {
-        throw std::logic_error("MicrophoneDevice was initialized with null objects!");
+        throw std::logic_error("MicrophoneDevice was initialized with null objects");
     }
     _device->GetId(&_id);
     wil::com_ptr_nothrow<IPropertyStore> props;

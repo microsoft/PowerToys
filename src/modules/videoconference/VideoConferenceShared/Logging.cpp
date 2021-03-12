@@ -9,17 +9,20 @@
 
 #include <mfapi.h>
 
+#pragma warning(disable: 4127)
+
 static std::mutex logMutex;
 constexpr inline size_t maxLogSizeMegabytes = 10;
+constexpr inline bool alwaysLogVerbose = true;
 
-void LogToFile(std::string what, const bool verbose)
+void LogToFile(std::wstring what, const bool verbose)
 {
     std::error_code _;
     const auto tempPath = std::filesystem::temp_directory_path(_);
     if (verbose)
     {
         const bool verboseIndicatorFilePresent = std::filesystem::exists(tempPath / L"PowerToysVideoConferenceVerbose.flag", _);
-        if (!verboseIndicatorFilePresent)
+        if (!alwaysLogVerbose && !verboseIndicatorFilePresent)
         {
             return;
         }
@@ -49,7 +52,7 @@ void LogToFile(std::string what, const bool verbose)
         // Truncate the log file to zero
         std::filesystem::resize_file(logFilePath, 0, __);
     }
-    std::ofstream myfile;
+    std::wofstream myfile;
     myfile.open(logFilePath, std::fstream::app);
 
     static const auto newLaunch = [&] {
@@ -59,6 +62,12 @@ void LogToFile(std::string what, const bool verbose)
 
     myfile << prefix << what << "\n";
     myfile.close();
+}
+
+void LogToFile(std::string what, const bool verbose)
+{
+    std::wstring native{ begin(what), end(what) };
+    LogToFile(std::move(native), verbose);
 }
 
 std::string toMediaTypeString(GUID subtype)
