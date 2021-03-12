@@ -56,6 +56,7 @@ struct __declspec(uuid("9DCAF869-9C13-4BDF-BD0D-3592C5579DD6")) VideoCaptureProx
         {
             --winrt::get_module_lock();
         }
+
         return S_OK;
     }
 };
@@ -77,14 +78,17 @@ HRESULT STDMETHODCALLTYPE DllGetClassObject(GUID const& clsid, GUID const& iid, 
     {
         return E_POINTER;
     }
+
     if (iid != IID_IClassFactory && iid != IID_IUnknown)
     {
         return E_NOINTERFACE;
     }
+
     if (clsid != CLSID_POWERTOYS_VCM)
     {
         return E_INVALIDARG;
     }
+
     try
     {
         *result = nullptr;
@@ -131,6 +135,7 @@ bool RegisterServer()
     {
         return false;
     }
+
     if (RegSetValueW(key.get(), nullptr, REG_SZ, CAMERA_NAME, sizeof(CAMERA_NAME)))
     {
         return false;
@@ -141,8 +146,7 @@ bool RegisterServer()
         return false;
     }
 
-    if (RegSetValueW(
-            subkey.get(), nullptr, REG_SZ, dllPath.c_str(), static_cast<DWORD>((dllPath.length() + 1) * sizeof(wchar_t))))
+    if (RegSetValueW(subkey.get(), nullptr, REG_SZ, dllPath.c_str(), static_cast<DWORD>((dllPath.length() + 1) * sizeof(wchar_t))))
     {
         return false;
     }
@@ -165,6 +169,7 @@ bool RegisterFilter()
     {
         return false;
     }
+
     REGFILTER2 regFilter{ .dwVersion = 1, .dwMerit = MERIT_DO_NOT_USE, .cPins = 1, .rgPins = &PINS_REGISTRATION };
 
     wil::com_ptr_nothrow<IMoniker> moniker;
@@ -180,6 +185,7 @@ bool UnregisterFilter()
     {
         return false;
     }
+
     return SUCCEEDED(filterMapper->UnregisterFilter(&CLSID_VideoInputDeviceCategory, nullptr, CLSID_POWERTOYS_VCM));
 }
 
@@ -231,5 +237,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)
     {
         DLLInstance = hinstDLL;
     }
+
     return true;
 }

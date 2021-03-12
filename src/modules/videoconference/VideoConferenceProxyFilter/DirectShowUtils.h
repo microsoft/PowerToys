@@ -32,16 +32,19 @@ struct ObjectEnumerator : public winrt::implements<ObjectEnumerator<ObjectInterf
         {
             return E_POINTER;
         }
+
         ULONG fetched = 0;
         ULONG toFetch = cObjects;
         while (toFetch-- && _pos < _objects.size())
         {
             _objects[_pos++].copy_to(&outObjects[fetched++]);
         }
+
         if (pcFetched)
         {
             *pcFetched = fetched;
         }
+
         return fetched == cObjects ? S_OK : S_FALSE;
     }
 
