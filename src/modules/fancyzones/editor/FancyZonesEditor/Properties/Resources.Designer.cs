@@ -448,7 +448,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select a key for fast access.
+        ///   Looks up a localized string similar to Select a key to quickly apply the layout (Win + Alt + key).
         /// </summary>
         public static string FastAccessKey_Select {
             get {

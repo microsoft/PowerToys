@@ -335,6 +335,6 @@ To merge zones, hold down the left mouse button, drag the mouse to the zone to m
     <value>Custom layout</value>
   </data>
   <data name="FastAccessKey_Select" xml:space="preserve">
-    <value>Select a key for fast access</value>
+    <value>Select a key to quickly apply the layout (Win + Alt + key)</value>
   </data>
 </root>
