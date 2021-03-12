@@ -509,7 +509,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
         if (webcams.empty())
         {
             LOG("No physical webcams found");
-            return S_OK;
+            return E_FAIL;
         }
 
         std::optional<size_t> selectedCamIdx;
@@ -539,7 +539,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
         if (!selectedCamIdx)
         {
             LOG("Webcam couldn't be selected");
-            return S_OK;
+            return E_FAIL;
         }
 
         auto& webcam = webcams[*selectedCamIdx];
