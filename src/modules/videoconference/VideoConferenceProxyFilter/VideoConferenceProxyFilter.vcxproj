@@ -63,10 +63,11 @@
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Platform)'!='Win32'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>
+    <TargetName>VideoConferenceProxyFilter_x64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='Win32'">
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>
-    <TargetName>VideoConferenceProxyFilterx86</TargetName>
+    <OutDir>..\..\..\..\x86\$(Configuration)\modules\VideoConference\</OutDir>
+    <TargetName>VideoConferenceProxyFilter_x86</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

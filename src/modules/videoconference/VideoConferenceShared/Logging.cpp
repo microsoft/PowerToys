@@ -9,7 +9,7 @@
 
 #include <mfapi.h>
 
-#pragma warning(disable: 4127)
+#pragma warning(disable : 4127)
 
 static std::mutex logMutex;
 constexpr inline size_t maxLogSizeMegabytes = 10;
@@ -37,7 +37,11 @@ void LogToFile(std::wstring what, const bool verbose)
 
     std::lock_guard lock{ logMutex };
     std::wstring logFilePath = tempPath;
-    logFilePath += L"\\PowerToysVideoConference.log";
+#if defined(_WIN64)
+    logFilePath += L"\\PowerToysVideoConference_x64.log";
+#elif defined(_WIN32)
+    logFilePath += L"\\PowerToysVideoConference_x86.log";
+#endif
     size_t logSizeMBs = 0;
     try
     {
