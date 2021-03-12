@@ -360,7 +360,7 @@
                           Opened="Dialog_Opened"
                           Closed="Dialog_Closed">
             <Grid DataContext="{Binding SelectedModel}"
-                    MinWidth="320" Margin="0,0,0,32">
+                  MinWidth="320" Margin="0,0,0,32">
 
                 <StackPanel Margin="0,-37,0,0"
                             HorizontalAlignment="Right"
@@ -397,23 +397,23 @@
 
                 <StackPanel>
                     <local:LayoutPreview Width="216"
-                                             Height="132"
-                                             Margin="0,16,0,16" />
+                                         Height="132"
+                                         Margin="0,16,0,16" />
                     <Button Click="EditZones_Click"
-                                            x:Name="editZoneLayoutButton"
-                                            HorizontalAlignment="Stretch"
-                                            AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
-                                            HorizontalContentAlignment="Center"
-                                            Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
-                                            Style="{StaticResource IconOnlyButtonStyle}"
-                                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
-                            <Button.Content>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE104;"
-                                               Margin="0,2,8,0"
-                                               FontFamily="Segoe MDL2 Assets" />
-                                    <TextBlock Text="{x:Static props:Resources.Edit_zones}" />
-                                </StackPanel>
+                                        x:Name="editZoneLayoutButton"
+                                        HorizontalAlignment="Stretch"
+                                        AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
+                                        HorizontalContentAlignment="Center"
+                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                        Style="{StaticResource IconOnlyButtonStyle}"
+                                        Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE104;"
+                                           Margin="0,2,8,0"
+                                           FontFamily="Segoe MDL2 Assets" />
+                                <TextBlock Text="{x:Static props:Resources.Edit_zones}" />
+                            </StackPanel>
                         </Button.Content>
                     </Button>
 
@@ -461,46 +461,46 @@
                                     </Button>
                                 </StackPanel>
                     <TextBox Text="{Binding Name}"
-                            ui:ControlHelper.Header="{x:Static props:Resources.Name}"
-                            Margin="0,16,0,0"
-                            Visibility="{Binding IsCustom, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            HorizontalAlignment="Stretch" />
-
+                             ui:ControlHelper.Header="{x:Static props:Resources.Name}"
+                             Margin="0,16,0,0"
+                             Visibility="{Binding IsCustom, Converter={StaticResource BooleanToVisibilityConverter}}"
+                             HorizontalAlignment="Stretch" />
+                    
                     <CheckBox x:Name="spaceAroundSetting"
-                                Content="{x:Static props:Resources.Show_Space_Zones}"
-                                IsChecked="{Binding ShowSpacing}"
-                                Margin="0,16,0,0"
-                                Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
+                              Content="{x:Static props:Resources.Show_Space_Zones}"
+                              IsChecked="{Binding ShowSpacing}"
+                              Margin="0,16,0,0"
+                              Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
 
                     <ui:NumberBox Margin="0,6,0,0"
-                                    IsEnabled="{Binding ShowSpacing}"
-                                    Text="{Binding Spacing}"
-                                    Width="106"
-                                    Minimum="-20"
-                                    Maximum="1000"
-                                    SpinButtonPlacementMode="Compact"
-                                    HorizontalAlignment="Left"
-                                    AutomationProperties.LabeledBy="{Binding ElementName=spaceAroundSetting}"
-                                    Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
+                                  IsEnabled="{Binding ShowSpacing}"
+                                  Text="{Binding Spacing}"
+                                  Width="106"
+                                  Minimum="-20"
+                                  Maximum="1000"
+                                  SpinButtonPlacementMode="Compact"
+                                  HorizontalAlignment="Left"
+                                  AutomationProperties.LabeledBy="{Binding ElementName=spaceAroundSetting}"
+                                  Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
 
                     <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
-                                IsEnabled="{Binding ShowSpacing}"
-                                Margin="0,16,0,0"
-                                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                x:Name="sensitivityRadiusValue" />
+                               IsEnabled="{Binding ShowSpacing}"
+                               Margin="0,16,0,0"
+                               Foreground="{DynamicResource PrimaryForegroundBrush}"
+                               x:Name="sensitivityRadiusValue" />
 
                     <ui:NumberBox Margin="0,6,0,0"
-                                    Text="{Binding SensitivityRadius}"
-                                    Width="106"
-                                    Minimum="0"
-                                    Maximum="1000"
-                                    SpinButtonPlacementMode="Compact"
-                                    HorizontalAlignment="Left"
-                                    AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}" />
+                                  Text="{Binding SensitivityRadius}"
+                                  Width="106"
+                                  Minimum="0"
+                                  Maximum="1000"
+                                  SpinButtonPlacementMode="Compact"
+                                  HorizontalAlignment="Left"
+                                  AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}" />
 
                     <TextBlock Text="{x:Static props:Resources.FastAccessKey_Select}"
-                                Margin="0,16,0,0"
-                                Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                               Margin="0,16,0,0"
+                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
                     <StackPanel Margin="0,6,0,0"
                                 Orientation="Horizontal">
                         <ComboBox x:Name="fastAccessKeySelectionComboBox" 
