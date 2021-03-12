@@ -21,18 +21,6 @@ namespace FancyZonesEditor.Models
             MainWindowSettingsModel.FastAccessKeys.PropertyChanged += FastAccessKeys_PropertyChanged;
         }
 
-        private void FastAccessKeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            foreach (var pair in MainWindowSettingsModel.FastAccessKeys.SelectedKeys)
-            {
-                if (pair.Value == Uuid)
-                {
-                    FastAccessKey = pair.Key;
-                    break;
-                }
-            }
-        }
-
         protected LayoutModel(string name)
             : this()
         {
@@ -310,6 +298,18 @@ namespace FancyZonesEditor.Models
         public void Persist()
         {
             PersistData();
+        }
+
+        private void FastAccessKeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            foreach (var pair in MainWindowSettingsModel.FastAccessKeys.SelectedKeys)
+            {
+                if (pair.Value == Uuid)
+                {
+                    FastAccessKey = pair.Key;
+                    break;
+                }
+            }
         }
     }
 }
