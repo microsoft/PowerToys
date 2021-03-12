@@ -29,7 +29,7 @@ namespace
 
 CallTracer::CallTracer(const char* functionName) :
     functionName(functionName)
-{  
+{ 
     Logger::trace((GetIndentation() + functionName + entering).c_str());
 }
 
