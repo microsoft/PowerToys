@@ -32,7 +32,8 @@
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
                     AutomationProperties.Name="Color shade 1"
-                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+                    Style="{DynamicResource ColorShadeButtonStyle}"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}"/>
             <Button x:Name="colorVariation2Button"
                     Grid.Column="1"
                     ui:ControlHelper.CornerRadius="0"
@@ -40,7 +41,8 @@
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
                     AutomationProperties.Name="Color shade 2"
-                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+                    Style="{DynamicResource ColorShadeButtonStyle}"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}"/>
             <Button x:Name="colorVariation3Button"
                     Grid.Column="3"
                     TabIndex="7"
@@ -48,7 +50,8 @@
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
                     AutomationProperties.Name="Color shade 3"
-                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+                    Style="{DynamicResource ColorShadeButtonStyle}"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}"/>
             <Button x:Name="colorVariation4Button"
                     Grid.Column="4"
                     TabIndex="8"
@@ -56,7 +59,8 @@
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
                     AutomationProperties.Name="Color shade 5"
-                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+                    Style="{DynamicResource ColorShadeButtonStyle}"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}"/>
             <Button x:Name="CurrentColorButton"
                     HorizontalAlignment="Left"
                     Grid.Column="0"
