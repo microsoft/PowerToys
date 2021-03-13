@@ -76,7 +76,11 @@
                     AutomationProperties.HelpText="{x:Static p:Resources.Selected_color_helptext}"
                     ToolTipService.ToolTip="{x:Static p:Resources.Selected_color_tooltip}"
                     Click="CurrentColorButton_Click"
-                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+                    Style="{DynamicResource ColorShadeButtonStyle}">
+                <TextBlock Foreground="White"
+                           Text="&#xE104;"
+                           FontFamily="Segoe MDL2 Assets" />
+            </Button>
         </Grid>
 
         <!--Details panel-->
