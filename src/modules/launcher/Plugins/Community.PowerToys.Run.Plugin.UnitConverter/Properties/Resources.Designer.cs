@@ -61,6 +61,24 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy failed.
+        /// </summary>
+        public static string wox_plugin_unitconvert_copy_failed {
+            get {
+                return ResourceManager.GetString("wox_plugin_unitconvert_copy_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy to clipboard.
+        /// </summary>
+        public static string wox_plugin_unitconvert_copy_to_clipboard {
+            get {
+                return ResourceManager.GetString("wox_plugin_unitconvert_copy_to_clipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provides unit conversion..
         /// </summary>
         public static string wox_plugin_unitconverter_plugin_description {

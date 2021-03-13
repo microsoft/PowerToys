@@ -7,8 +7,6 @@ using System.Threading;
 using System.Windows;
 using UnitsNet;
 using Wox.Plugin;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
@@ -41,8 +39,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             string[] split = query.Search.Split(' ');
             split = Array.ConvertAll(split, x => x.ToLower());
 
-            ShorthandFeetInchHandler(ref split);
-            DegreePrefixer(ref split);
+            InputInterpreter.ShorthandFeetInchHandler(ref split, _currentCulture);
+            InputInterpreter.DegreePrefixer(ref split);
 
             if (split.Length < 4 || split.Length > 4) {
                 // deny any other queries than:
@@ -108,117 +106,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             return final_list;
         }
 
-        /// <summary>
-        /// Replaces a split input array with shorthand feet/inch notation (1', 1'2" etc) to 'x foot in cm'. 
-        /// </summary>
-        /// <param name="split"></param>
-        private void ShorthandFeetInchHandler(ref string[] split) {
-            // catches 1' || 1" || 1'2 || 1'2" in cm
-            // by converting it to "x foot in cm"
-            if (split.Length == 3) {
-                string[] shortsplit = Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)"); // todo ',' or '.' should depend on culture
-
-                switch (shortsplit.Length) {
-                    case 2:
-                        // ex: 1' & 1"
-                        if (shortsplit[1] == "\'") {
-                            string[] newInput = new string[] { shortsplit[0], "foot", split[1], split[2] };
-                            split = newInput;
-                        }
-                        else if (shortsplit[1] == "\"") {
-                            string[] newInput = new string[] { shortsplit[0], "inch", split[1], split[2] };
-                            split = newInput;
-                        }
-                        break;
-
-                    case 3:
-                    case 4:
-                        // ex: 1'2 and 1'2"
-                        if (shortsplit[1] == "\'") {
-                            bool isFeet = double.TryParse(shortsplit[0], NumberStyles.AllowDecimalPoint, _currentCulture, out double feet);
-                            bool isInches = double.TryParse(shortsplit[2], NumberStyles.AllowDecimalPoint, _currentCulture, out double inches);
-
-                            if (!isFeet || !isInches) {
-                                // one of either could not be parsed correctly
-                                break;
-                            }
-
-                            double totalInFeet = Length.FromFeetInches(feet, inches).Feet;
-                            string convertedTotalInFeet = totalInFeet.ToString();
-
-                            if (_currentCulture == CultureInfo.InvariantCulture) {
-                                // todo: actually make this work for more cultures where decimal parsing could break (e.g. '1,5' != 15)
-                                convertedTotalInFeet = totalInFeet.ToString().Replace(',', '.');
-                            }
-
-                            string[] newInput = new string[] { convertedTotalInFeet, "foot", split[1], split[2] };
-                            split = newInput;
-                        }
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' to '10 °c in degreeFahrenheit'. 
-        /// </summary>
-        /// <param name="split"></param>
-        private void DegreePrefixer(ref string[] split) {
-            switch (split[1]) {
-                case "celsius":
-                    split[1] = "degreeCelsius";
-                    break;
-
-                case "fahrenheit":
-                    split[1] = "degreeFahrenheit";
-                    break;
-
-                case "c":
-                    split[1] = "°c";
-                    break;
-
-                case "f":
-                    split[1] = "°f";
-                    break;
-
-                default:
-                    break;
-            }
-
-            switch (split[3]) {
-                case "celsius":
-                    split[3] = "degreeCelsius";
-                    break;
-
-                case "fahrenheit":
-                    split[3] = "degreeFahrenheit";
-                    break;
-
-                case "c":
-                    split[3] = "°c";
-                    break;
-
-                case "f":
-                    split[3] = "°f";
-                    break;
-
-                default:
-                    break;
-            }
-
-
-        }
-
         private void AddToResult(List<Result> currentList, double converted_value, string unit_name) {
             // answer found, add result to list
             currentList.Add(new Result {
                 Title = string.Format("{0} {1}", converted_value, unit_name),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = "Copy to clipboard", //Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
+                SubTitle = Properties.Resources.wox_plugin_unitconvert_copy_to_clipboard,
                 Action = c => {
                     var ret = false;
                     var thread = new Thread(() => {
@@ -227,7 +121,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                             ret = true;
                         }
                         catch (ExternalException) {
-                            MessageBox.Show("Copy failed, please try later");
+                            MessageBox.Show(Properties.Resources.wox_plugin_unitconvert_copy_failed);
                         }
                     });
                     thread.SetApartmentState(ApartmentState.STA);

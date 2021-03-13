@@ -123,4 +123,10 @@
   <data name="wox_plugin_unitconverter_plugin_name" xml:space="preserve">
     <value>UnitConverter</value>
   </data>
+  <data name="wox_plugin_unitconvert_copy_failed" xml:space="preserve">
+    <value>Copy failed</value>
+  </data>
+  <data name="wox_plugin_unitconvert_copy_to_clipboard" xml:space="preserve">
+    <value>Copy to clipboard</value>
+  </data>
 </root>
