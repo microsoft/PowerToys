@@ -183,12 +183,8 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                         {
                             continue;
                         }
-                        size_t wordLength = 0;
-                        while (i + wordLength < stemLength && !iswspace(stem[i + wordLength]) && !iswpunct(stem[i + wordLength]))
-                        {
-                            wordLength++;
-                        }
-                        if (!isFirstWord || i + wordLength == stemLength)
+                        
+                        if (!isFirstWord)
                         {
                             stem[i] = towupper(stem[i]);
                         }
