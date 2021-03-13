@@ -725,6 +725,7 @@ void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
     case IDC_CHECK_NAMEONLY:
     case IDC_TRANSFORM_UPPERCASE:
     case IDC_TRANSFORM_LOWERCASE:
+    case IDC_TRANSFORM_CAMELCASE:
     case IDC_TRANSFORM_TITLECASE:
         if (BN_CLICKED == HIWORD(wParam))
         {
@@ -732,7 +733,6 @@ void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
             _GetFlagsFromCheckboxes();
         }
         break;
-    case IDC_TRANSFORM_CAMELCASE:
     }
 }
 
@@ -972,7 +972,8 @@ void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAMELCASE), FALSE);
         }
     }
-    else if (checkBoxId == IDC_TRANSFORM_CAMELCASE) {
+    else if (checkBoxId == IDC_TRANSFORM_CAMELCASE) 
+    {
         if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAMELCASE) == BST_CHECKED)
         {
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE), FALSE);
