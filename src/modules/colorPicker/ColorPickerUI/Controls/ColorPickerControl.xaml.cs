@@ -64,9 +64,9 @@ namespace ColorPicker.Controls
             ((ColorPickerControl)d)._ignoreHexChanges = true;
             ((ColorPickerControl)d)._ignoreRGBChanges = true;
             ((ColorPickerControl)d).HexCode.Text = ColorToHex(newColor);
-            ((ColorPickerControl)d).RTextBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
-            ((ColorPickerControl)d).GTextBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
-            ((ColorPickerControl)d).BTextBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
+            ((ColorPickerControl)d).RNumberBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
+            ((ColorPickerControl)d).GNumberBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
+            ((ColorPickerControl)d).BNumberBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
             ((ColorPickerControl)d).SetColorFromTextBoxes(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
             ((ColorPickerControl)d)._ignoreRGBChanges = false;
             ((ColorPickerControl)d)._ignoreHexChanges = false;
@@ -161,9 +161,9 @@ namespace ColorPicker.Controls
 
             if (!_ignoreRGBChanges)
             {
-                RTextBox.Text = currentColor.R.ToString(CultureInfo.InvariantCulture);
-                GTextBox.Text = currentColor.G.ToString(CultureInfo.InvariantCulture);
-                BTextBox.Text = currentColor.B.ToString(CultureInfo.InvariantCulture);
+                RNumberBox.Text = currentColor.R.ToString(CultureInfo.InvariantCulture);
+                GNumberBox.Text = currentColor.G.ToString(CultureInfo.InvariantCulture);
+                BNumberBox.Text = currentColor.B.ToString(CultureInfo.InvariantCulture);
             }
 
             _currentColor = currentColor;
@@ -357,19 +357,15 @@ namespace ColorPicker.Controls
             }
         }
 
-        private void RGBTextBoxes_TextChanged(object sender, TextChangedEventArgs e)
+#pragma warning disable CA1801 // Review unused parameters
+        private void RGBNumberBox_ValueChanged(ModernWpf.Controls.NumberBox sender, ModernWpf.Controls.NumberBoxValueChangedEventArgs args)
+#pragma warning restore CA1801 // Review unused parameters
         {
-            var validNumber = int.TryParse((sender as TextBox).Text, out int result);
-            if (!validNumber || result < 0 || result > 255)
-            {
-                return;
-            }
-
             if (!_ignoreRGBChanges)
             {
-                var r = byte.Parse(RTextBox.Text, CultureInfo.InvariantCulture);
-                var g = byte.Parse(GTextBox.Text, CultureInfo.InvariantCulture);
-                var b = byte.Parse(BTextBox.Text, CultureInfo.InvariantCulture);
+                var r = byte.Parse(RNumberBox.Text, CultureInfo.InvariantCulture);
+                var g = byte.Parse(GNumberBox.Text, CultureInfo.InvariantCulture);
+                var b = byte.Parse(BNumberBox.Text, CultureInfo.InvariantCulture);
                 _ignoreRGBChanges = true;
                 SetColorFromTextBoxes(System.Drawing.Color.FromArgb(r, g, b));
                 _ignoreRGBChanges = false;
@@ -396,6 +392,11 @@ namespace ColorPicker.Controls
         private static string ColorToHex(Color color)
         {
             return "#" + BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty, StringComparison.InvariantCulture);
+        }
+
+        private void HexCode_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            (sender as TextBox).SelectAll();
         }
     }
 }

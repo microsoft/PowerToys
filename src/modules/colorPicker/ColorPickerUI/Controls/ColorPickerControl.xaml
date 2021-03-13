@@ -210,71 +210,73 @@
                     </Border>
                 </Grid>
 
-                <Grid HorizontalAlignment="Stretch" Margin="12,16,12,8">
+                <Grid HorizontalAlignment="Stretch"
+                      Margin="12,16,12,8">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="68"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="86" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="36"/>
-                        <RowDefinition Height="36"/>
-                        <RowDefinition Height="36"/>
+                        <RowDefinition Height="36" />
+                        <RowDefinition Height="36" />
+                        <RowDefinition Height="36" />
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="R"
                                FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
-                    <TextBox x:Name="RTextBox"
-                             Margin="0,0,0,0"
-                             Grid.Column="1"
-                             Height="32"
-                             AutomationProperties.Name="{x:Static p:Resources.Red_value}"
-                             TextChanged="RGBTextBoxes_TextChanged"
-                             TextWrapping="Wrap"/>
+                               VerticalAlignment="Center" />
+                    <ui:NumberBox x:Name="RNumberBox"
+                                  Grid.Column="1"
+                                  Height="32"
+                                  AutomationProperties.Name="{x:Static p:Resources.Red_value}"
+                                  ValueChanged="RGBNumberBox_ValueChanged"
+                                  Minimum="0"
+                                  Maximum="255" />
 
                     <TextBlock Text="G"
                                FontWeight="SemiBold"
                                Grid.Row="1"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center" />
 
-                    <TextBox x:Name="GTextBox"
-                             Width="68"
-                             Height="32"
-                             Grid.Row="1"
-                             Grid.Column="1"
-                             AutomationProperties.Name="{x:Static p:Resources.Green_value}"
-                             TextChanged="RGBTextBoxes_TextChanged"
-                             TextWrapping="Wrap"/>
+                    <ui:NumberBox x:Name="GNumberBox"
+                                  Height="32"
+                                  Grid.Row="1"
+                                  Grid.Column="1"
+                                  AutomationProperties.Name="{x:Static p:Resources.Green_value}"
+                                  ValueChanged="RGBNumberBox_ValueChanged"
+                                  Minimum="0"
+                                  Maximum="255" />
 
                     <TextBlock Text="B"
                                FontWeight="SemiBold"
                                Grid.Row="2"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center" />
 
-                    <TextBox x:Name="BTextBox"
-                             Width="68"
-                             Height="32"
-                             Grid.Column="1"
-                             Grid.Row="2"
-                             AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
-                             TextChanged="RGBTextBoxes_TextChanged"
-                             TextWrapping="Wrap"/>
+                    <ui:NumberBox x:Name="BNumberBox"
+                                  Height="32"
+                                  Grid.Column="1"
+                                  Grid.Row="2"
+                                  AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
+                                  ValueChanged="RGBNumberBox_ValueChanged"
+                                  Minimum="0"
+                                  Maximum="255" />
 
                     <TextBlock Text="HEX"
                                Grid.Column="2"
                                HorizontalAlignment="Right"
                                FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center" />
                     <TextBox x:Name="HexCode"
                              HorizontalAlignment="Stretch"
                              Margin="8,0,0,0"
                              Height="32"
                              Grid.Column="3"
                              AutomationProperties.Name="{x:Static p:Resources.Hex_value}"
+                             GotKeyboardFocus="HexCode_GotKeyboardFocus"
                              TextChanged="HexCode_TextChanged"
-                             TextWrapping="Wrap"/>
+                             TextWrapping="Wrap" />
                 </Grid>
                 <WrapPanel HorizontalAlignment="Right"
                            Margin="0,0,0,0"
