@@ -169,6 +169,7 @@ BLURREGION
 bmi
 bmp
 bms
+BNumber
 Bokm
 BOKMAL
 bootstrapper
@@ -794,6 +795,7 @@ githubusercontent
 gitignore
 globals
 gmx
+GNumber
 google
 GPTR
 grayscale
@@ -1820,6 +1822,7 @@ riid
 riverar
 RKey
 RMENU
+RNumber
 roadmap
 Roboto
 roslyn
