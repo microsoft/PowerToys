@@ -1167,4 +1167,7 @@ Win + Shift + O to toggle your video</value>
   <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
     <value>Primary monitor</value>
   </data>
+  <data name="Run_PluginsLoading.Text" xml:space="preserve">
+    <value>Plugins are loading...</value>
+  </data>
 </root>

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -28,8 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
-
         private PowerLauncherSettings settings;
 
         public delegate void SendCallback(PowerLauncherSettings settings);
@@ -40,9 +37,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode, Func<bool> isDark)
+        public PowerLauncherViewModel(PowerLauncherSettings settings, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<bool> isDark)
         {
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+            if (settings == null)
+            {
+                throw new ArgumentException("settings argument can not be null");
+            }
+
+            this.settings = settings;
             this.isDark = isDark;
 
             // To obtain the general Settings configurations of PowerToys
@@ -55,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-            callback = (PowerLauncherSettings settings) =>
+            callback = (PowerLauncherSettings s) =>
             {
                 // Propagate changes to Power Launcher through IPC
                 // Using InvariantCulture as this is an IPC message
@@ -64,21 +66,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                         CultureInfo.InvariantCulture,
                         "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                         PowerLauncherSettings.ModuleName,
-                        JsonSerializer.Serialize(settings)));
+                        JsonSerializer.Serialize(s)));
             };
-
-            if (_settingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
-            {
-                settings = _settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
-            }
-            else
-            {
-                settings = new PowerLauncherSettings();
-                settings.Properties.OpenPowerLauncher.Alt = true;
-                settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
-                settings.Properties.MaximumNumberOfResults = 4;
-                callback(settings);
-            }
 
             switch (settings.Properties.Theme)
             {
@@ -146,6 +135,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     GeneralSettingsConfig.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
                     OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
+                    OnPropertyChanged(nameof(ShowPluginsLoadingMessage));
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -456,7 +446,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public bool ShowAllPluginsDisabledWarning
         {
-            get => EnablePowerLauncher && Plugins.All(x => x.Disabled);
+            get => EnablePowerLauncher && Plugins.Any() && Plugins.All(x => x.Disabled);
+        }
+
+        public bool ShowPluginsLoadingMessage
+        {
+            get => EnablePowerLauncher && !Plugins.Any();
         }
     }
 }
