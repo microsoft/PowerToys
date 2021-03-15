@@ -65,10 +65,13 @@
       </Item>
       <Item ItemId=";Microsoft_plugin_sys_plugin_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Provides Windows related commands, shutdown, lock, sleep ....]]></Val>
+          <Val><![CDATA[Executes system commands (e.g. 'shutdown', 'lock', 'sleep').]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[提供 Windows 相關命令、關機、鎖定、睡眠 ....]]></Val>
+            <Val><![CDATA[執行系統命令 (例如「關機」、「鎖定」、「睡眠」)。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Provides Windows related commands, shutdown, lock, sleep ....]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

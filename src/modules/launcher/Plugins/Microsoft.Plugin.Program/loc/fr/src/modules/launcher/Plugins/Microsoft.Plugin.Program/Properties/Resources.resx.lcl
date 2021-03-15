@@ -129,10 +129,13 @@
       </Item>
       <Item ItemId=";wox_plugin_program_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Search programs in PowerToys Run]]></Val>
+          <Val><![CDATA[Searches programs.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Explorer les programmes dans PowerToys Run]]></Val>
+            <Val><![CDATA[Recherche dans les programmes.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Search programs in PowerToys Run]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

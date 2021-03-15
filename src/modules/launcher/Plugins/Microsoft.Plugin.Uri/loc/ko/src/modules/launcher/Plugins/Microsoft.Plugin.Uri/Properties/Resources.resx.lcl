@@ -21,19 +21,25 @@
       </Item>
       <Item ItemId=";Microsoft_plugin_uri_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Handles urls]]></Val>
+          <Val><![CDATA[Opens URLs and UNC network shares.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[URL을 처리합니다.]]></Val>
+            <Val><![CDATA[URL 및 UNC 네트워크 공유를 엽니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Handles urls]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_uri_plugin_name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Url Handler]]></Val>
+          <Val><![CDATA[URI Handler]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[URL 처리기]]></Val>
+            <Val><![CDATA[URI 처리기]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Url Handler]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
