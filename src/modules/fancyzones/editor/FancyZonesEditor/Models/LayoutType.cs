@@ -6,7 +6,7 @@ namespace FancyZonesEditor.Models
 {
     public enum LayoutType
     {
-        Blank = -1,
+        Blank = 0,
         Focus,
         Columns,
         Rows,
