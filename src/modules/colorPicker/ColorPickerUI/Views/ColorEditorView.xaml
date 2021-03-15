@@ -88,15 +88,42 @@
                     ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
                     AutomationProperties.Name="{x:Static p:Resources.Open_settings}" />-->
             
-            <Button Width="64"
-                    Height="32"
+            <ui:CommandBar
+                Background="Transparent"
+                HorizontalAlignment="Left"
+                Height="32">
+                
+                <ui:AppBarButton
+                    Width="64"
                     TabIndex="1"
-                    Content="&#xEF3C;"
                     Command="{Binding OpenColorPickerCommand}"
                     Background="Transparent"
                     FontFamily="Segoe MDL2 Assets"
                     ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}"
-                    AutomationProperties.Name="{x:Static p:Resources.Pick_color}"/>
+                    AutomationProperties.Name="{x:Static p:Resources.Pick_color}">
+                    
+                    <ui:AppBarButton.Icon>
+                        <ui:FontIcon Glyph="&#xEF3C;"/>
+                    </ui:AppBarButton.Icon>
+                </ui:AppBarButton>
+
+                <ui:CommandBar.SecondaryCommands>
+                    <ui:AppBarButton Label="{x:Static p:Resources.Export_colors}" Command="{Binding ExportColorsCommand}">
+                        <ui:AppBarButton.Icon>
+                            <ui:FontIcon Glyph="&#xE74E;"/>
+                        </ui:AppBarButton.Icon>
+                    </ui:AppBarButton>
+
+                    <ui:AppBarSeparator/>
+
+                    <ui:AppBarButton Label="{x:Static p:Resources.Remove_all_colors}" Command="{Binding RemoveAllColorsCommand}">
+                        <ui:AppBarButton.Icon>
+                            <ui:FontIcon Glyph="&#xE107;"/>
+                        </ui:AppBarButton.Icon>
+                    </ui:AppBarButton>
+                </ui:CommandBar.SecondaryCommands>
+
+            </ui:CommandBar>
         </Grid>
 
         <!-- Main grid -->
