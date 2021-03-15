@@ -448,15 +448,6 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select a key to quickly apply the layout (Win + Alt + key).
-        /// </summary>
-        public static string FastAccessKey_Select {
-            get {
-                return ResourceManager.GetString("FastAccessKey_Select", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Grid layout editor.
         /// </summary>
         public static string Grid_Layout_Editor {
@@ -553,6 +544,24 @@ namespace FancyZonesEditor.Properties {
         public static string NumberOfZones {
             get {
                 return ResourceManager.GetString("NumberOfZones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        public static string Quick_Key_None {
+            get {
+                return ResourceManager.GetString("Quick_Key_None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a key to quickly apply the layout (Win + Alt + key).
+        /// </summary>
+        public static string QuickKey_Select {
+            get {
+                return ResourceManager.GetString("QuickKey_Select", resourceCulture);
             }
         }
         

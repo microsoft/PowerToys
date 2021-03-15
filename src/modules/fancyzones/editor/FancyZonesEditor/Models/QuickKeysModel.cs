@@ -9,29 +9,30 @@ using System.Runtime.CompilerServices;
 
 namespace FancyZonesEditor.Models
 {
-    public class FastAccessKeysModel : INotifyPropertyChanged
+    public class QuickKeysModel : INotifyPropertyChanged
     {
-        public SortedDictionary<int, string> SelectedKeys { get; } = new SortedDictionary<int, string>()
+        public SortedDictionary<string, string> SelectedKeys { get; } = new SortedDictionary<string, string>()
         {
-            { 0, string.Empty },
-            { 1, string.Empty },
-            { 2, string.Empty },
-            { 3, string.Empty },
-            { 4, string.Empty },
-            { 5, string.Empty },
-            { 6, string.Empty },
-            { 7, string.Empty },
-            { 8, string.Empty },
-            { 9, string.Empty },
+            { Properties.Resources.Quick_Key_None, string.Empty },
+            { "0", string.Empty },
+            { "1", string.Empty },
+            { "2", string.Empty },
+            { "3", string.Empty },
+            { "4", string.Empty },
+            { "5", string.Empty },
+            { "6", string.Empty },
+            { "7", string.Empty },
+            { "8", string.Empty },
+            { "9", string.Empty },
         };
 
-        public FastAccessKeysModel()
+        public QuickKeysModel()
         {
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public void FreeKey(int key)
+        public void FreeKey(string key)
         {
             if (SelectedKeys.ContainsKey(key))
             {
@@ -40,7 +41,7 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        public bool SelectKey(int key, string uuid)
+        public bool SelectKey(string key, string uuid)
         {
             if (!SelectedKeys.ContainsKey(key))
             {

@@ -18,7 +18,7 @@ namespace FancyZonesEditor.Models
             _guid = Guid.NewGuid();
             Type = LayoutType.Custom;
 
-            MainWindowSettingsModel.FastAccessKeys.PropertyChanged += FastAccessKeys_PropertyChanged;
+            MainWindowSettingsModel.QuickKeys.PropertyChanged += FastAccessKeys_PropertyChanged;
         }
 
         protected LayoutModel(string name)
@@ -51,9 +51,9 @@ namespace FancyZonesEditor.Models
             _isApplied = other._isApplied;
             _sensitivityRadius = other._sensitivityRadius;
             _zoneCount = other._zoneCount;
-            _fastAccessKey = other._fastAccessKey;
+            _quickKey = other._quickKey;
 
-            MainWindowSettingsModel.FastAccessKeys.PropertyChanged += FastAccessKeys_PropertyChanged;
+            MainWindowSettingsModel.QuickKeys.PropertyChanged += FastAccessKeys_PropertyChanged;
         }
 
         // Name - the display name for this layout model - is also used as the key in the registry
@@ -175,12 +175,12 @@ namespace FancyZonesEditor.Models
 
         private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
 
-        public List<int> FastAccessAvailableKeys
+        public List<string> QuickKeysAvailable
         {
             get
             {
-                List<int> result = new List<int>();
-                foreach (var pair in MainWindowSettingsModel.FastAccessKeys.SelectedKeys)
+                List<string> result = new List<string>();
+                foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
                 {
                     if (pair.Value == string.Empty || pair.Value == Uuid)
                     {
@@ -192,35 +192,37 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        public int FastAccessKey
+        public string QuickKey
         {
             get
             {
-                return _fastAccessKey;
+                return _quickKey == -1 ? Properties.Resources.Quick_Key_None : _quickKey.ToString();
             }
 
             set
             {
-                if (value != _fastAccessKey)
+                string none = Properties.Resources.Quick_Key_None;
+                var intValue = value == none ? -1 : int.Parse(value);
+                if (intValue != _quickKey)
                 {
-                    var prev = _fastAccessKey;
-                    _fastAccessKey = value;
+                    string prev = _quickKey == -1 ? none : _quickKey.ToString();
+                    _quickKey = intValue;
 
-                    if (value != -1)
+                    if (intValue != -1)
                     {
-                        MainWindowSettingsModel.FastAccessKeys.SelectKey(value, Uuid);
+                        MainWindowSettingsModel.QuickKeys.SelectKey(value, Uuid);
                     }
                     else
                     {
-                        MainWindowSettingsModel.FastAccessKeys.FreeKey(prev);
+                        MainWindowSettingsModel.QuickKeys.FreeKey(prev);
                     }
 
-                    FirePropertyChanged(nameof(FastAccessKey));
+                    FirePropertyChanged(nameof(QuickKey));
                 }
             }
         }
 
-        private int _fastAccessKey = -1;
+        private int _quickKey = -1;
 
         // TemplateZoneCount - number of zones selected in the picker window for template layouts
         public int TemplateZoneCount
@@ -264,9 +266,9 @@ namespace FancyZonesEditor.Models
         // Removes this Layout from the registry and the loaded CustomModels list
         public void Delete()
         {
-            if (_fastAccessKey != -1)
+            if (_quickKey != -1)
             {
-                MainWindowSettingsModel.FastAccessKeys.FreeKey(_fastAccessKey);
+                MainWindowSettingsModel.QuickKeys.FreeKey(QuickKey);
             }
 
             var customModels = MainWindowSettingsModel.CustomModels;
@@ -313,11 +315,11 @@ namespace FancyZonesEditor.Models
 
         private void FastAccessKeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            foreach (var pair in MainWindowSettingsModel.FastAccessKeys.SelectedKeys)
+            foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
             {
                 if (pair.Value == Uuid)
                 {
-                    FastAccessKey = pair.Key;
+                    QuickKey = pair.Key.ToString();
                     break;
                 }
             }

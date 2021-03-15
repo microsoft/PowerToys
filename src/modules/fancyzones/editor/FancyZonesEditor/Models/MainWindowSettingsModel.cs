@@ -142,7 +142,7 @@ namespace FancyZonesEditor
 
         private static ObservableCollection<LayoutModel> _customModels = new ObservableCollection<LayoutModel>();
 
-        public static FastAccessKeysModel FastAccessKeys { get; } = new FastAccessKeysModel();
+        public static QuickKeysModel QuickKeys { get; } = new QuickKeysModel();
 
         public LayoutModel SelectedModel
         {
@@ -250,7 +250,7 @@ namespace FancyZonesEditor
             SelectedModel.IsSelected = model.IsSelected;
             SelectedModel.IsApplied = model.IsApplied;
             SelectedModel.Name = model.Name;
-            SelectedModel.FastAccessKey = model.FastAccessKey;
+            SelectedModel.QuickKey = model.QuickKey;
 
             if (model is GridLayoutModel grid)
             {

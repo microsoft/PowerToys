@@ -182,8 +182,8 @@ namespace FancyZonesEditor.Utils
             public int SensitivityRadius { get; set; }
         }
 
-        // zones-settings: fast-access-layout-keys-wrapper
-        private struct FastAccessLayoutKeysWrapper
+        // zones-settings: quick-layout-keys-wrapper
+        private struct QuickLayoutKeysWrapper
         {
             public int Key { get; set; }
 
@@ -199,7 +199,7 @@ namespace FancyZonesEditor.Utils
 
             public List<TemplateLayoutWrapper> Templates { get; set; }
 
-            public List<FastAccessLayoutKeysWrapper> FastAccessLayoutKeys { get; set; }
+            public List<QuickLayoutKeysWrapper> QuickLayoutKeys { get; set; }
         }
 
         private struct EditorParams
@@ -547,7 +547,7 @@ namespace FancyZonesEditor.Utils
                     bool devicesParsingResult = SetDevices(zoneSettings.Devices);
                     bool customZonesParsingResult = SetCustomLayouts(zoneSettings.CustomZoneSets);
                     bool templatesParsingResult = SetTemplateLayouts(zoneSettings.Templates);
-                    bool fastAccessKeysParsingResult = SetFastAccessKeys(zoneSettings.FastAccessLayoutKeys);
+                    bool fastAccessKeysParsingResult = SetFastAccessKeys(zoneSettings.QuickLayoutKeys);
 
                     if (!devicesParsingResult || !customZonesParsingResult)
                     {
@@ -569,7 +569,7 @@ namespace FancyZonesEditor.Utils
             zoneSettings.Devices = new List<DeviceWrapper>();
             zoneSettings.CustomZoneSets = new List<CustomLayoutWrapper>();
             zoneSettings.Templates = new List<TemplateLayoutWrapper>();
-            zoneSettings.FastAccessLayoutKeys = new List<FastAccessLayoutKeysWrapper>();
+            zoneSettings.QuickLayoutKeys = new List<QuickLayoutKeysWrapper>();
 
             // Serialize used devices
             foreach (var monitor in App.Overlay.Monitors)
@@ -708,17 +708,23 @@ namespace FancyZonesEditor.Utils
             }
 
             // Serialize fast access layout keys
-            foreach (var pair in MainWindowSettingsModel.FastAccessKeys.SelectedKeys)
+            foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
             {
                 if (pair.Value != string.Empty)
                 {
-                    FastAccessLayoutKeysWrapper wrapper = new FastAccessLayoutKeysWrapper
+                    try
                     {
-                        Key = pair.Key,
-                        Uuid = pair.Value,
-                    };
+                        QuickLayoutKeysWrapper wrapper = new QuickLayoutKeysWrapper
+                        {
+                            Key = int.Parse(pair.Key),
+                            Uuid = pair.Value,
+                        };
 
-                    zoneSettings.FastAccessLayoutKeys.Add(wrapper);
+                        zoneSettings.QuickLayoutKeys.Add(wrapper);
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
 
@@ -879,17 +885,17 @@ namespace FancyZonesEditor.Utils
             return true;
         }
 
-        private bool SetFastAccessKeys(List<FastAccessLayoutKeysWrapper> fastAccessKeys)
+        private bool SetFastAccessKeys(List<QuickLayoutKeysWrapper> fastAccessKeys)
         {
             if (fastAccessKeys == null)
             {
                 return false;
             }
 
-            MainWindowSettingsModel.FastAccessKeys.CleanUp();
+            MainWindowSettingsModel.QuickKeys.CleanUp();
             foreach (var wrapper in fastAccessKeys)
             {
-                MainWindowSettingsModel.FastAccessKeys.SelectKey(wrapper.Key, wrapper.Uuid);
+                MainWindowSettingsModel.QuickKeys.SelectKey(wrapper.Key.ToString(), wrapper.Uuid);
             }
 
             return true;

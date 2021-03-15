@@ -420,17 +420,5 @@ namespace FancyZonesEditor
         {
             _openedDialog = null;
         }
-
-        private void ClearFastAccessKeyButton_Click(object sender, RoutedEventArgs e)
-        {
-            FrameworkElement element = (FrameworkElement)e.Source;
-
-            var item = fastAccessKeySelectionComboBox.SelectedItem;
-            if (item != null && element.DataContext is LayoutModel layoutModel)
-            {
-                layoutModel.FastAccessKey = -1;
-                fastAccessKeySelectionComboBox.SelectedItem = null;
-            }
-        }
     }
 }

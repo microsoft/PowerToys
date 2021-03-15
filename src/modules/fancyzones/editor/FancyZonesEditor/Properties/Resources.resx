@@ -334,7 +334,10 @@ To merge zones, hold down the left mouse button, drag the mouse to the zone to m
   <data name="Default_Custom_Layout_Name" xml:space="preserve">
     <value>Custom layout</value>
   </data>
-  <data name="FastAccessKey_Select" xml:space="preserve">
+  <data name="QuickKey_Select" xml:space="preserve">
     <value>Select a key to quickly apply the layout (Win + Alt + key)</value>
+  </data>
+  <data name="Quick_Key_None" xml:space="preserve">
+    <value>None</value>
   </data>
 </root>

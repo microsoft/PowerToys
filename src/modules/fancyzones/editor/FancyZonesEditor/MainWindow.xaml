@@ -498,24 +498,14 @@
                                   HorizontalAlignment="Left"
                                   AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}" />
 
-                    <TextBlock Text="{x:Static props:Resources.FastAccessKey_Select}"
+                    <TextBlock Text="{x:Static props:Resources.QuickKey_Select}"
                                Margin="0,16,0,0"
                                Foreground="{DynamicResource PrimaryForegroundBrush}" />
-                    <StackPanel Margin="0,6,0,0"
-                                Orientation="Horizontal">
-                        <ComboBox x:Name="fastAccessKeySelectionComboBox" 
-                                  ItemsSource="{Binding FastAccessAvailableKeys}"
-                                  SelectedItem="{Binding FastAccessKey}"
-                                  Width="106" />
-                        <Button Click="ClearFastAccessKeyButton_Click"
-                                Content="&#xE8BB;"
-                                FontFamily="Segoe MDL2 Assets"
-                                FontSize="12" 
-                                Background="Transparent"
-                                Opacity="0.8" />
-                    </StackPanel>
-                    
-
+                    <ComboBox x:Name="quickKeySelectionComboBox" 
+                              Margin="0,6,0,0"
+                              ItemsSource="{Binding QuickKeysAvailable}"
+                              SelectedItem="{Binding QuickKey}"
+                              Width="106" />
                 </StackPanel>
             </Grid>
         </ui:ContentDialog>
