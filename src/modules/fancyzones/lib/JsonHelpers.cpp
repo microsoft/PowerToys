@@ -30,7 +30,6 @@ namespace NonLocalizable
     const wchar_t EditorSpacingStr[] = L"editor-spacing";
     const wchar_t EditorZoneCountStr[] = L"editor-zone-count";
     const wchar_t EditorSensitivityRadiusStr[] = L"editor-sensitivity-radius";
-    const wchar_t FastAccessLayoutKeys[] = L"fast-access-layout-keys";
     const wchar_t GridStr[] = L"grid";
     const wchar_t HeightStr[] = L"height";
     const wchar_t HistoryStr[] = L"history";
@@ -38,6 +37,7 @@ namespace NonLocalizable
     const wchar_t NameStr[] = L"name";
     const wchar_t QuickAccessKey[] = L"key";
     const wchar_t QuickAccessUuid[] = L"uuid";
+    const wchar_t QuickLayoutKeys[] = L"quick-layout-keys";
     const wchar_t RefHeightStr[] = L"ref-height";
     const wchar_t RefWidthStr[] = L"ref-width";
     const wchar_t RowsPercentageStr[] = L"rows-percentage";
@@ -584,7 +584,7 @@ namespace JSONHelpers
         root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
         root.SetNamedValue(NonLocalizable::CustomZoneSetsStr, JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
         root.SetNamedValue(NonLocalizable::Templates, templates);
-        root.SetNamedValue(NonLocalizable::FastAccessLayoutKeys, JSONHelpers::SerializeQuickKeys(quickKeysMap));
+        root.SetNamedValue(NonLocalizable::QuickLayoutKeys, JSONHelpers::SerializeQuickKeys(quickKeysMap));
         
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
         {
@@ -717,7 +717,7 @@ namespace JSONHelpers
         try
         {
             TLayoutQuickKeysMap quickKeysMap{};
-            auto quickKeys = fancyZonesDataJSON.GetNamedArray(NonLocalizable::FastAccessLayoutKeys);
+            auto quickKeys = fancyZonesDataJSON.GetNamedArray(NonLocalizable::QuickLayoutKeys);
 
             for (uint32_t i = 0; i < quickKeys.Size(); ++i)
             {
