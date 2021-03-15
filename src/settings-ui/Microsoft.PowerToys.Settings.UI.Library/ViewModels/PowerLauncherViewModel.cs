@@ -135,7 +135,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     GeneralSettingsConfig.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
                     OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
-                    OnPropertyChanged(nameof(ShowPluginsLoadingWarning));
+                    OnPropertyChanged(nameof(ShowPluginsLoadingMessage));
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -449,7 +449,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get => EnablePowerLauncher && Plugins.Any() && Plugins.All(x => x.Disabled);
         }
 
-        public bool ShowPluginsLoadingWarning
+        public bool ShowPluginsLoadingMessage
         {
             get => EnablePowerLauncher && !Plugins.Any();
         }

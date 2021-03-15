@@ -213,8 +213,7 @@
                        Margin="{StaticResource SmallTopMargin}"/>
 
             <TextBlock x:Uid="Run_PluginsLoading"
-                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                       Visibility="{x:Bind ViewModel.ShowPluginsLoadingWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                        TextWrapping="Wrap"
                        Margin="{StaticResource SmallTopMargin}"/>
 
