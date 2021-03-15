@@ -109,18 +109,13 @@ steps:
       **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
       **\UnitTest-ColorPickerUI.dll
       **\Microsoft.Interop.Tests.dll
-      !**\obj\**
-- task: VSTest@2
-  displayName: 'Run .Net Core Tests 2'
-  inputs:
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    testSelector: 'testAssemblies'
-    testAssemblyVer2: |
-      **\PreviewPaneUnitTests.dll #this is the markdown tests
+      **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
+      **\PreviewPaneUnitTests.dll
       **\UnitTests-PreviewHandlerCommon.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\ImageResizer.Test.dll
+      **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll
+      **\UnitTests-SvgThumbnailProvider.dll
       !**\obj\**
 
 # Native dlls
