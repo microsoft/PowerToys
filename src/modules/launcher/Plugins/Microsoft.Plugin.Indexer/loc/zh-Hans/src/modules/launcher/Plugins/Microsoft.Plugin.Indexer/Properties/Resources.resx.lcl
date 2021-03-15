@@ -105,19 +105,25 @@
       </Item>
       <Item ItemId=";Microsoft_plugin_indexer_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Returns files and folders]]></Val>
+          <Val><![CDATA[Searches files and folders.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[返回文件和文件夹]]></Val>
+            <Val><![CDATA[搜索文件和文件夹。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Returns files and folders]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_indexer_plugin_name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Windows Indexer]]></Val>
+          <Val><![CDATA[Windows Search]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Windows 索引器]]></Val>
+            <Val><![CDATA[Windows 搜索]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Windows Indexer]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -135,6 +141,15 @@
           <Val><![CDATA[Search]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[搜索]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";disable_drive_detection_warning" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Disable drive detection warning]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[禁用驱动器检测警告]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

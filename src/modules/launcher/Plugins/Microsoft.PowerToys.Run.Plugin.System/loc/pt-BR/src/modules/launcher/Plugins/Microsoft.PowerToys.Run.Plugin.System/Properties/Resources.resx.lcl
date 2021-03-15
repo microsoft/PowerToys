@@ -65,10 +65,13 @@
       </Item>
       <Item ItemId=";Microsoft_plugin_sys_plugin_description" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Provides Windows related commands, shutdown, lock, sleep ....]]></Val>
+          <Val><![CDATA[Executes system commands (e.g. 'shutdown', 'lock', 'sleep').]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fornece os comandos relacionados ao Windows, como desligar, bloquear, suspender...]]></Val>
+            <Val><![CDATA[Executa comandos do sistema (por exemplo, 'shutdown', 'lock', 'sleep').]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Provides Windows related commands, shutdown, lock, sleep ....]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

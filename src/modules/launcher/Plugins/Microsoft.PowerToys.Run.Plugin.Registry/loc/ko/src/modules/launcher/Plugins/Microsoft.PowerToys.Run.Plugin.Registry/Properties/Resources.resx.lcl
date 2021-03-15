@@ -83,10 +83,13 @@
       </Item>
       <Item ItemId=";PluginDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Search inside the Windows Registry]]></Val>
+          <Val><![CDATA[Navigates inside the Windows Registry.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Windows 레지스트리 내에서 검색]]></Val>
+            <Val><![CDATA[Windows 레지스트리 내에서 탐색합니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Search inside the Windows Registry]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
