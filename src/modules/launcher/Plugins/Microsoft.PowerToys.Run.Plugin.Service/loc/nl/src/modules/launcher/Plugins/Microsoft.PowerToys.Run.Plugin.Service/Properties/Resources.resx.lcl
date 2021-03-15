@@ -47,10 +47,13 @@
       </Item>
       <Item ItemId=";wox_plugin_service_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Manages Windows services]]></Val>
+          <Val><![CDATA[Manages Windows services.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Hiermee worden Windows-services beheerd]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Manages Windows services]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -72,12 +75,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";wox_plugin_service_restart_error_notification" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while restarting the service]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Er is een fout opgetreden tijdens het opnieuw starten van de service]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";wox_plugin_service_restarted_notification" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{0} has been restarted]]></Val>
+          <Val><![CDATA[The service has been restarted]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{0} is opnieuw gestart]]></Val>
+            <Val><![CDATA[De service is opnieuw gestart]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[{0} has been restarted]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -95,6 +110,15 @@
           <Val><![CDATA[Start (Enter)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Starten (Enter)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";wox_plugin_service_start_error_notification" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while starting the service]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Er is een fout opgetreden tijdens het starten van de service]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -164,10 +188,13 @@
       </Item>
       <Item ItemId=";wox_plugin_service_started_notification" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{0} has been started]]></Val>
+          <Val><![CDATA[The service has been started]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{0} is gestart]]></Val>
+            <Val><![CDATA[De service is gestart]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[{0} has been started]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -198,6 +225,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";wox_plugin_service_stop_error_notification" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An error occurred while stopping the service]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Er is een fout opgetreden tijdens het stoppen van de service]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";wox_plugin_service_stop_pending" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Stopping]]></Val>
@@ -218,10 +254,13 @@
       </Item>
       <Item ItemId=";wox_plugin_service_stopped_notification" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{0} has been stopped]]></Val>
+          <Val><![CDATA[The service has been stopped]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{0} is gestopt]]></Val>
+            <Val><![CDATA[De service is gestopt]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[{0} has been stopped]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

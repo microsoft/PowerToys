@@ -47,10 +47,13 @@
       </Item>
       <Item ItemId=";wox_plugin_calculator_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Allows you to do mathematical calculations. (Try 5*3-2 in PowerToys Run)]]></Val>
+          <Val><![CDATA[Does mathematical calculations (e.g. 5*3-2).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[可讓您執行數學計算 (在 PowerToys Run 中請使用 5*3-2)。]]></Val>
+            <Val><![CDATA[執行數學計算 (例如 5*3-2)。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Allows you to do mathematical calculations. (Try 5*3-2 in PowerToys Run)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
