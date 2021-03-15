@@ -42,12 +42,12 @@ namespace
 CallTracer::CallTracer(const char* functionName) :
     functionName(functionName)
 {
-    Indent();
     Logger::trace((GetIndentation() + functionName + entering).c_str());
+    Indent();
 }
 
 CallTracer::~CallTracer()
 {
-    Logger::trace((GetIndentation() + functionName + exiting).c_str());
     Unindent();
+    Logger::trace((GetIndentation() + functionName + exiting).c_str());
 }
