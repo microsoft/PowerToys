@@ -60,7 +60,7 @@ public:
         return appZoneHistoryMap;
     }
 
-    inline const JSONHelpers::TLayoutQuickKeysMap& GetLayotQuickKeys() const
+    inline const JSONHelpers::TLayoutQuickKeysMap& GetLayoutQuickKeys() const
     {
         std::scoped_lock lock{ dataLock };
         return quickKeysMap;

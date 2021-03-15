@@ -1571,7 +1571,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (QuickLayoutKeysParseInvalid)
             {
-                const std::wstring invalidZoneUuid = L"{33A2B101-06E0-437B-A61ECDBECF502906}";
+                const std::wstring invalidZoneUuid = L"{33A2B101-06E0-437B-}";
                 LayoutQuickKeyJSON expected{ invalidZoneUuid, 2 };
                 json::JsonArray array;
                 array.Append(LayoutQuickKeyJSON::ToJson(expected));
@@ -1734,7 +1734,7 @@ namespace FancyZonesUnitTests
                 Assert::IsFalse(fancyZonesData.GetCustomZoneSetsMap().empty());
                 Assert::IsFalse(fancyZonesData.GetCustomZoneSetsMap().empty());
                 Assert::IsFalse(fancyZonesData.GetCustomZoneSetsMap().empty());
-                Assert::IsFalse(fancyZonesData.GetLayotQuickKeys().empty());
+                Assert::IsFalse(fancyZonesData.GetLayoutQuickKeys().empty());
             }
 
             TEST_METHOD (LoadFancyZonesDataFromCroppedJson)

@@ -129,7 +129,7 @@ void Trace::FancyZones::DataChanged() noexcept
     int appsHistorySize = static_cast<int>(data.GetAppZoneHistoryMap().size());
     const auto& customZones = data.GetCustomZoneSetsMap();
     const auto& devices = data.GetDeviceInfoMap();
-    const auto& quickKeys = data.GetLayotQuickKeys();
+    const auto& quickKeys = data.GetLayoutQuickKeys();
 
     std::unique_ptr<INT32[]> customZonesArray(new (std::nothrow) INT32[customZones.size()]);
     if (!customZonesArray)
