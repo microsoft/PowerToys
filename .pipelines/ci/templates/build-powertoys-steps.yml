@@ -93,16 +93,6 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
-- task: VSTest@2
-  displayName: 'UnitTests-PreviewHandlerCommon tests'
-  inputs:
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    testSelector: 'testAssemblies'
-    testAssemblyVer2: |
-      **\UnitTests-PreviewHandlerCommon.dll
-      !**\obj\**
-
 # directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'Run .Net Core Tests 1'
