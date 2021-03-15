@@ -974,7 +974,7 @@ void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
     }
     else if (checkBoxId == IDC_TRANSFORM_CAMELCASE) 
     {
-        if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAMELCASE) == BST_CHECKED)
+        if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAMELCASE)) == BST_CHECKED)
         {
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE), FALSE);
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE), FALSE);
