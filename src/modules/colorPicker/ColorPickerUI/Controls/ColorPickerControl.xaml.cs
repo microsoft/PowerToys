@@ -56,20 +56,24 @@ namespace ColorPicker.Controls
 
         private static void SelectedColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+            var control = (ColorPickerControl)d;
             var newColor = (Color)e.NewValue;
-            ((ColorPickerControl)d)._originalColor = ((ColorPickerControl)d)._currentColor = newColor;
-            var newColorBackground = new SolidColorBrush(newColor);
-            ((ColorPickerControl)d).CurrentColorButton.Background = newColorBackground;
 
-            ((ColorPickerControl)d)._ignoreHexChanges = true;
-            ((ColorPickerControl)d)._ignoreRGBChanges = true;
-            ((ColorPickerControl)d).HexCode.Text = ColorToHex(newColor);
-            ((ColorPickerControl)d).RNumberBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
-            ((ColorPickerControl)d).GNumberBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
-            ((ColorPickerControl)d).BNumberBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
-            ((ColorPickerControl)d).SetColorFromTextBoxes(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
-            ((ColorPickerControl)d)._ignoreRGBChanges = false;
-            ((ColorPickerControl)d)._ignoreHexChanges = false;
+            control._originalColor = control._currentColor = newColor;
+            var newColorBackground = new SolidColorBrush(newColor);
+            control.CurrentColorButton.Background = newColorBackground;
+
+            control._ignoreHexChanges = true;
+            control._ignoreRGBChanges = true;
+
+            control.HexCode.Text = ColorToHex(newColor);
+            control.RNumberBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
+            control.GNumberBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
+            control.BNumberBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
+            control.SetColorFromTextBoxes(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
+
+            control._ignoreRGBChanges = false;
+            control._ignoreHexChanges = false;
 
             var hsv = ColorHelper.ConvertToHSVColor(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
 
@@ -107,12 +111,13 @@ namespace ColorPicker.Controls
             }
 
             var s = hsv.saturation;
+            var control = (ColorPickerControl)d;
 
-            ((ColorPickerControl)d).colorVariation1Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 8), 360), s, Math.Min(hsv.value + 0.3, 1)));
-            ((ColorPickerControl)d).colorVariation2Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 4), 360), s, Math.Min(hsv.value + 0.15, 1)));
+            control.colorVariation1Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 8), 360), s, Math.Min(hsv.value + 0.3, 1)));
+            control.colorVariation2Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 4), 360), s, Math.Min(hsv.value + 0.15, 1)));
 
-            ((ColorPickerControl)d).colorVariation3Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 4), 0), s, Math.Max(hsv.value - 0.2, 0)));
-            ((ColorPickerControl)d).colorVariation4Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
+            control.colorVariation3Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 4), 0), s, Math.Max(hsv.value - 0.2, 0)));
+            control.colorVariation4Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
         }
 
         private void UpdateValueColorGradient(double posX)
