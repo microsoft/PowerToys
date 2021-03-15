@@ -66,7 +66,7 @@ namespace ViewModelTests
 
             // Initialise View Model with test Config files
             Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
-            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(mockSettingsUtils, generalSettingsRepository, sendMockIPCConfigMSG, 32, () => true);
+            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(originalSettings, generalSettingsRepository, sendMockIPCConfigMSG, () => true);
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.PowerLauncher, viewModel.EnablePowerLauncher);
@@ -82,7 +82,6 @@ namespace ViewModelTests
 
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, PowerLauncherSettings.ModuleName, expectedCallCount);
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 

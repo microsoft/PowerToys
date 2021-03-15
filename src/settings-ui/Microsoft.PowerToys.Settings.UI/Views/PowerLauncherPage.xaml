@@ -212,6 +212,11 @@
                        TextWrapping="Wrap"
                        Margin="{StaticResource SmallTopMargin}"/>
 
+            <TextBlock x:Uid="Run_PluginsLoading"
+                       Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                       TextWrapping="Wrap"
+                       Margin="{StaticResource SmallTopMargin}"/>
+
             <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
                       IsItemClickEnabled="True"
                       SelectionChanged="PluginsListView_SelectionChanged"
