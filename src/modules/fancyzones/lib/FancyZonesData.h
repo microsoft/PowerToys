@@ -42,23 +42,11 @@ public:
 
     std::optional<FancyZonesDataTypes::CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
 
-    inline const JSONHelpers::TDeviceInfoMap & GetDeviceInfoMap() const
-    {
-        std::scoped_lock lock{ dataLock };
-        return deviceInfoMap;
-    }
+    const JSONHelpers::TDeviceInfoMap& GetDeviceInfoMap() const;
 
-    inline const JSONHelpers::TCustomZoneSetsMap & GetCustomZoneSetsMap() const
-    {
-        std::scoped_lock lock{ dataLock };
-        return customZoneSetsMap;
-    }
+    const JSONHelpers::TCustomZoneSetsMap& GetCustomZoneSetsMap() const;
 
-    inline const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const
-    {
-        std::scoped_lock lock{ dataLock };
-        return appZoneHistoryMap;
-    }
+    const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const;
 
     inline const std::wstring& GetZonesSettingsFileName() const 
     {

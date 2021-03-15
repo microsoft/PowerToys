@@ -19,6 +19,7 @@
 #include "VirtualDesktopUtils.h"
 #include "MonitorWorkAreaHandler.h"
 #include "util.h"
+#include "CallTracer.h"
 
 #include <lib/SecondaryMouseButtonsHook.h>
 
@@ -89,6 +90,7 @@ public:
 
     void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
     {
+        _TRACER_;
         std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
@@ -421,6 +423,7 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> FancyZones::GetAppZo
 
 void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<size_t>& zoneIndexSet) noexcept
 {
+    _TRACER_;
     auto& fancyZonesData = FancyZonesDataInstance();
     if (!fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window, zoneWindow->UniqueId()))
     {
@@ -592,6 +595,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 // IFancyZonesCallback
 void FancyZones::ToggleEditor() noexcept
 {
+    _TRACER_;
     {
         std::shared_lock readLock(m_lock);
         if (m_terminateEditorEvent)
@@ -883,6 +887,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
+    _TRACER_;
     if (changeType == DisplayChangeType::VirtualDesktop ||
         changeType == DisplayChangeType::Initialization)
     {
@@ -920,6 +925,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
 void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) noexcept
 {
+    _TRACER_;
     std::unique_lock writeLock(m_lock);
 
     if (m_workAreaHandler.IsNewWorkArea(m_currentDesktopId, monitor))
@@ -1005,7 +1011,9 @@ void FancyZones::UpdateZoneWindows() noexcept
 
 void FancyZones::UpdateWindowsPositions() noexcept
 {
+    _TRACER_;
     auto callback = [](HWND window, LPARAM data) -> BOOL {
+        _TRACER_;
         size_t bitmask = reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID));
 
         if (bitmask != 0)
@@ -1034,6 +1042,7 @@ void FancyZones::UpdateWindowsPositions() noexcept
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 {
+    _TRACER_;
     auto window = GetForegroundWindow();
     if (FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
     {
@@ -1053,6 +1062,7 @@ void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 
 bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept
 {
+    _TRACER_;
     HMONITOR current;
 
     if (m_settings->GetSettings()->spanZonesAcrossMonitors)
@@ -1283,6 +1293,7 @@ bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle
 
 void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
 {
+    _TRACER_;
     std::unique_lock writeLock(m_lock);
 
     m_workAreaHandler.RegisterUpdates(ids);
@@ -1368,6 +1379,7 @@ std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
 
 std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
 {
+    _TRACER_;
     std::shared_lock readLock(m_lock);
 
     std::vector<std::pair<HMONITOR, RECT>> monitorInfo;
