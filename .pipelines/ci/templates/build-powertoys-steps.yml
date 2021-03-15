@@ -95,6 +95,34 @@ steps:
 
 # directly not doing WinAppDriver testing
 - task: VSTest@2
+  displayName: 'Run MS Test'
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
+      **\UnitTests-SvgThumbnailProvider.dll
+      **\UnitTests-SvgPreviewHandler.dll
+      **\UnitTests-PreviewHandlerCommon.dll
+      **\PreviewPaneUnitTests.dll
+      **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll
+      **\UnitTest-ColorPickerUI.dll
+      **\Microsoft.Interop.Tests.dll
+      !**\obj\**
+
+- task: VSTest@2
+  displayName: 'Run xUnit test'
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\ImageResizer.Test.dll
+      !**\obj\**
+
+# directly not doing WinAppDriver testing
+- task: VSTest@2
   displayName: 'Run .Net Core Tests 1'
   inputs:
     platform: '$(BuildPlatform)'
@@ -106,16 +134,7 @@ steps:
       **\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.dll
       **\Microsoft.Plugin.Uri.UnitTests.dll
       **\Wox.Test.dll
-      **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
-      **\UnitTest-ColorPickerUI.dll
-      **\Microsoft.Interop.Tests.dll
       **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
-      **\PreviewPaneUnitTests.dll
-      **\UnitTests-PreviewHandlerCommon.dll
-      **\UnitTests-SvgPreviewHandler.dll
-      **\ImageResizer.Test.dll
-      **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll
-      **\UnitTests-SvgThumbnailProvider.dll
       !**\obj\**
 
 # Native dlls
