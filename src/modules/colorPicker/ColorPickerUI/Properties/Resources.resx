@@ -361,4 +361,12 @@
     <value>Plum</value>
     <comment>Plum color</comment>
   </data>
+  <data name="Export_colors" xml:space="preserve">
+    <value>Export Colors</value>
+    <comment>Secondary command text for action that allows user to export currently selected colors</comment>
+  </data>
+  <data name="Remove_all_colors" xml:space="preserve">
+    <value>Remove All Colors</value>
+    <comment>Secondary command text for action that clears all colors from the color list</comment>
+  </data>
 </root>

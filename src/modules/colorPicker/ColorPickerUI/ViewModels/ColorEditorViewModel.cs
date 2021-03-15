@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using ColorPicker.Common;
@@ -16,6 +17,7 @@ using ColorPicker.Models;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+using Microsoft.Win32;
 
 namespace ColorPicker.ViewModels
 {
@@ -33,6 +35,8 @@ namespace ColorPicker.ViewModels
         {
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
             RemoveColorCommand = new RelayCommand(DeleteSelectedColor);
+            RemoveAllColorsCommand = new RelayCommand(RemoveAllColors);
+            ExportColorsCommand = new RelayCommand(ExportColors);
 
             SelectedColorChangedCommand = new RelayCommand((newColor) =>
             {
@@ -49,7 +53,11 @@ namespace ColorPicker.ViewModels
 
         public ICommand OpenColorPickerCommand { get; }
 
+        public ICommand ExportColorsCommand { get; }
+
         public ICommand RemoveColorCommand { get; }
+
+        public ICommand RemoveAllColorsCommand { get; }
 
         public ICommand SelectedColorChangedCommand { get; }
 
@@ -134,6 +142,35 @@ namespace ColorPicker.ViewModels
             var indexToSelect = SelectedColorIndex == ColorsHistory.Count - 1 ? ColorsHistory.Count - 2 : SelectedColorIndex;
             ColorsHistory.RemoveAt(SelectedColorIndex);
             SelectedColorIndex = indexToSelect;
+        }
+
+        private void RemoveAllColors()
+        {
+            while (ColorsHistory.Count > 0)
+            {
+                ColorsHistory.RemoveAt(0);
+            }
+        }
+
+        private void ExportColors()
+        {
+            var saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "JSON files (*.json)|All files (*.*)";
+            saveFileDialog.DefaultExt = "json";
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    ColorCollectionSerializer.Save(saveFileDialog.FileName, ColorsHistory, ColorRepresentations[0]);
+                    MessageBox.Show($"Successfully exported {ColorsHistory.Count} colors");
+                }
+                catch
+                {
+                    MessageBox.Show("Unable to save");
+                    throw;
+                }
+            }
         }
 
         private void SetupAllColorRepresentations()

@@ -106,6 +106,15 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Export Colors.
+        /// </summary>
+        public static string Export_colors {
+            get {
+                return ResourceManager.GetString("Export_colors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Green value.
         /// </summary>
         public static string Green_value {
@@ -183,6 +192,15 @@ namespace ColorPicker.Properties {
         public static string Remove {
             get {
                 return ResourceManager.GetString("Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove All Colors.
+        /// </summary>
+        public static string Remove_all_colors {
+            get {
+                return ResourceManager.GetString("Remove_all_colors", resourceCulture);
             }
         }
         
