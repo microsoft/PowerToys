@@ -104,5 +104,5 @@ namespace JSONHelpers
     json::JsonArray SerializeCustomZoneSets(const TCustomZoneSetsMap& customZoneSetsMap);
 
     TLayoutQuickKeysMap ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON);
-    json::JsonArray SerializeQuickKeys(const TLayoutQuickKeysMap& customZoneSetsMap);
+    json::JsonArray SerializeQuickKeys(const TLayoutQuickKeysMap& quickKeysMap);
 }
