@@ -93,6 +93,15 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
+- task: VSTest@2
+  displayName: 'UnitTests-PreviewHandlerCommon tests'
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\UnitTests-PreviewHandlerCommon.dll
+      !**\obj\**
 
 # directly not doing WinAppDriver testing
 - task: VSTest@2
@@ -102,7 +111,7 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      **\Microsoft.Plugin.Folder.UnitTest.dll
+      **\Microsoft.Plugin.Folder.UnitTests.dll
       **\Microsoft.Plugin.Program.UnitTests.dll
       **\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.dll
       **\Microsoft.Plugin.Uri.UnitTests.dll
@@ -122,8 +131,8 @@ steps:
       **\UnitTests-PreviewHandlerCommon.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\ImageResizer.Test.dll
-      **\powerpreviewTest.dll
       !**\obj\**
+
 # Native dlls
 - task: VSTest@2
   displayName: 'Run Native Tests'
@@ -135,4 +144,5 @@ steps:
       **\KeyboardManagerTest.dll
       **\UnitTests-CommonLib.dll
       **\PowerRenameUnitTests.dll
+      **\powerpreviewTest.dll
       !**\obj\**
