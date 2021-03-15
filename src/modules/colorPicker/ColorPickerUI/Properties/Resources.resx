@@ -361,4 +361,7 @@
     <value>Plum</value>
     <comment>Plum color</comment>
   </data>
+  <data name="Select_color" xml:space="preserve">
+    <value>Select color</value>
+  </data>
 </root>
