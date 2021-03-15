@@ -10,6 +10,7 @@
 #include "util.h"
 #include "on_thread_executor.h"
 #include "Settings.h"
+#include "CallTracer.h"
 
 #include <ShellScalingApi.h>
 #include <mutex>
@@ -41,6 +42,7 @@ namespace
 
         HWND ExtractWindow()
         {
+            _TRACER_;
             std::unique_lock lock(m_mutex);
 
             if (m_pool.empty())
@@ -80,6 +82,7 @@ namespace
 
         void FreeZoneWindow(HWND window)
         {
+            _TRACER_;
             Logger::info("Freeing zone window, hWnd = {}", (void*)window);
             SetWindowLongPtrW(window, GWLP_USERDATA, 0);
             ShowWindow(window, SW_HIDE);

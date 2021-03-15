@@ -4,6 +4,7 @@
 #include "JsonHelpers.h"
 #include "ZoneSet.h"
 #include "Settings.h"
+#include "CallTracer.h"
 
 #include <common/utils/json.h>
 #include <fancyzones/lib/util.h>
@@ -153,6 +154,24 @@ FancyZonesData::FancyZonesData()
     editorParametersFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesEditorParametersFile);
 }
 
+const JSONHelpers::TDeviceInfoMap& FancyZonesData::GetDeviceInfoMap() const
+{
+    std::scoped_lock lock{ dataLock };
+    return deviceInfoMap;
+}
+
+const JSONHelpers::TCustomZoneSetsMap& FancyZonesData::GetCustomZoneSetsMap() const
+{
+    std::scoped_lock lock{ dataLock };
+    return customZoneSetsMap;
+}
+
+const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& FancyZonesData::GetAppZoneHistoryMap() const
+{
+    std::scoped_lock lock{ dataLock };
+    return appZoneHistoryMap;
+}
+
 std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const std::wstring& zoneWindowId) const
 {
     std::scoped_lock lock{ dataLock };
@@ -169,6 +188,7 @@ std::optional<FancyZonesDataTypes::CustomZoneSetData> FancyZonesData::FindCustom
 
 bool FancyZonesData::AddDevice(const std::wstring& deviceId)
 {
+    _TRACER_;
     using namespace FancyZonesDataTypes;
 
     std::scoped_lock lock{ dataLock };
@@ -214,6 +234,7 @@ void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstr
 
 void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
 {
+    _TRACER_;
     // Explorer persists current virtual desktop identifier to registry on a per session basis,
     // but only after first virtual desktop switch happens. If the user hasn't switched virtual
     // desktops in this session value in registry will be empty and we will use default GUID in
@@ -377,6 +398,7 @@ std::vector<size_t> FancyZonesData::GetAppLastZoneIndexSet(HWND window, const st
 
 bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId)
 {
+    _TRACER_;
     std::scoped_lock lock{ dataLock };
     auto processPath = get_process_path(window);
     if (!processPath.empty())
@@ -429,6 +451,7 @@ bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& dev
 
 bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<size_t>& zoneIndexSet)
 {
+    _TRACER_;
     std::scoped_lock lock{ dataLock };
 
     if (IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
@@ -524,14 +547,14 @@ void FancyZonesData::SaveAppZoneHistoryAndZoneSettings() const
 
 void FancyZonesData::SaveZoneSettings() const
 {
-    Logger::trace("FancyZonesData::SaveZoneSettings()");
+    _TRACER_;
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
 }
 
 void FancyZonesData::SaveAppZoneHistory() const
 {
-    Logger::trace("FancyZonesData::SaveAppZoneHistory()");
+    _TRACER_;
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
 }

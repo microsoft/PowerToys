@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "on_thread_executor.h"
+#include "CallTracer.h"
 
 OnThreadExecutor::OnThreadExecutor() :
     _shutdown_request{ false }, _worker_thread{ [this] { worker_thread(); } }
@@ -30,6 +31,7 @@ void OnThreadExecutor::worker_thread()
     {
         task_t task;
         {
+            CallTracer callTracer(__FUNCTION__ "(loop)");
             std::unique_lock task_lock{ _task_mutex };
             _task_cv.wait(task_lock, [this] { return !_task_queue.empty() || _shutdown_request; });
             if (_shutdown_request)
