@@ -287,8 +287,10 @@
           </Directory>
         </Directory>
       </Directory>
-      <Directory Id="ProgramMenuFolder"/>
-      <Directory Id="DesktopFolder" Name="Desktop"/>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="PowerToys (Preview)"/>
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />        
    </Directory>
   </Fragment>
 
@@ -302,20 +304,7 @@
         </RegistryKey>
       </Component>
       <Component Id="powertoys_exe" Guid="A2C66D91-3485-4D00-B04D-91844E6B345B" Win64="yes">
-        <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes">
-          <Shortcut Id="ApplicationStartMenuShortcut"
-                    Name="PowerToys (Preview)"
-                    Description="PowerToys - Windows system utilities to maximize productivity"
-                    Directory="ProgramMenuFolder"
-                    Icon="powertoys.exe"
-                    IconIndex="0"
-                    Advertise="yes">
-            <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
-            <!-- ToastActivatorCLSID is used only by toast background activation, which currently isn't used, but causes MSI warning 1946 to display for a small share of users -->
-            <!-- <ShortcutProperty Key="System.AppUserModel.ToastActivatorCLSID" Value="{DD5CACDA-7C2E-4997-A62A-04A597B58F76}"/> -->
-          </Shortcut>
-        </File>
-
+        <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes" />
         <RegistryKey Root="HKCR" Key="powertoys">
           <RegistryValue Type="string" Name="URL Protocol" Value=""/>
           <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol"/>
@@ -326,11 +315,7 @@
             <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]PowerToys.exe&quot; &quot;%1&quot;" />
           </RegistryKey>
         </RegistryKey>
-
-
       </Component>
-
-
       <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
         <File Id="PowerToysSettings.exe" KeyPath="yes" Checksum="yes" />
       </Component>
@@ -356,6 +341,25 @@
         <?endforeach?>
       </Component>
     </DirectoryRef>
+
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="PowerToysStartMenuShortcut" Guid="336AB4F9-078C-4DCA-B69F-3808A9FFD758">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+          Name="PowerToys (Preview)"
+          Description="PowerToys - Windows system utilities to maximize productivity"
+          Icon="powertoys.exe"
+          IconIndex="0"
+          Target="[!PowerToys.exe]"
+          WorkingDirectory="INSTALLFOLDER">
+          <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
+          <!-- ToastActivatorCLSID is used only by toast background activation, which currently isn't used, but causes MSI warning 1946 to display for a small share of users -->
+          <!-- <ShortcutProperty Key="System.AppUserModel.ToastActivatorCLSID" Value="{DD5CACDA-7C2E-4997-A62A-04A597B58F76}"/> -->
+        </Shortcut>
+        <RemoveFolder Id="CleanUpStartMenuShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\PowerToys" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+    
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">
       <Component Id="PowerToysSvgs" Guid="7C4D4EED-9338-423D-992C-DCE02F3E2D35" Win64="yes">
         <File Source="$(var.BinX64Dir)svgs\0.svg" />
@@ -777,6 +781,7 @@
   <Fragment>
     <ComponentGroup Id="CoreComponents" Directory="INSTALLFOLDER">
       <ComponentRef Id="powertoys_exe" />
+      <ComponentRef Id="PowerToysStartMenuShortcut"/>
       <ComponentRef Id="BackgroundActivator_dll" />
       <ComponentRef Id="action_runner_exe" />
       <ComponentRef Id="powertoys_toast_clsid" />
