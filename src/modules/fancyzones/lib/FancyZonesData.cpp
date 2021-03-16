@@ -536,6 +536,7 @@ void FancyZonesData::LoadFancyZonesData()
         appZoneHistoryMap = JSONHelpers::ParseAppZoneHistory(fancyZonesDataJSON);
         deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
         customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
+        quickKeysMap = JSONHelpers::ParseQuickKeys(fancyZonesDataJSON);
     }
 }
 
@@ -549,7 +550,7 @@ void FancyZonesData::SaveZoneSettings() const
 {
     _TRACER_;
     std::scoped_lock lock{ dataLock };
-    JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
+    JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap, quickKeysMap);
 }
 
 void FancyZonesData::SaveAppZoneHistory() const
