@@ -736,6 +736,7 @@ finalizer
 findstr
 FIXEDFILEINFO
 FLASHZONES
+FLASHZONESONQUICKSWITCH
 Fle
 fluentui
 flyout
