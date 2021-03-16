@@ -729,8 +729,9 @@ namespace JSONHelpers
 
             return std::move(quickKeysMap);
         }
-        catch (const winrt::hresult_error&)
+        catch (const winrt::hresult_error& e)
         {
+            Logger::error(L"Parsing quick keys error: {}", e.message());
             return {};
         }
     }
