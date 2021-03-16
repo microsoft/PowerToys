@@ -20,7 +20,7 @@ The installer needs to install [WebView2](https://developer.microsoft.com/en-us/
 
 ### 1.1.2 Why WebView2
 
-Experiments with a POC showed that only WebView2 is displaying Monaco the right way.
+Experiments with a POC showed that only WebView2 is displaying Monaco the right way. WebView and WebBrowser elements are using too old versions of IE/Edge who don't support JS functions like `require()`, which are needed for monaco to work. The other option would be to import many JS liabarys, but they don't guarantee 100% coverage with JS and they take more space.
 
 ## 1.2 Why?
 
@@ -35,10 +35,9 @@ Many people asking us for supporting new file types in the preview panes. With i
 
 # 2 What does this implement
 
-If we implement this we could close the issues:
+If we implement this we could close the issue:
 
-* [#1527](https://github.com/microsoft/PowerToys/issues/1527)
-* [#1841](https://github.com/microsoft/PowerToys/issues/1841)
+* Use Monaco to load developer based files for Preview Pane [(#1527)](https://github.com/microsoft/PowerToys/issues/1527)
  
 # 3 Goals and non-goals
 ## 3.1 Goals
@@ -56,9 +55,9 @@ If we implement this we could close the issues:
 |Name|Description|Priority|
 |----|-----------|--------|
 |Working Preview pane|It's simply working.|P0|
-|Installer can install filetypes|When the user installs PowerToys the Installer registers the preview handlers.|P0|
-|Style code|Monaco recognizes the File extensions and colors the code the right way.|P0|
-|User can choose file previews|Users can attach costum filetypes to preview.|P2|
+|Settinga can install filetypes|When the user activates MonacoPreview in settings it registers the preview handlers.|P0|
+|Style code|Monaco recognizes the file extensions and highlights the syntax the right way.|P0|
+|User can choose file previews|Users can attach custom filetypes to preview. For example `.phptest` files to the `.php` handler.|P2|
 |OOBE|Description for the OOBE.|P1|
 |On/Off in settings|The user can turn it on and off.|P0|
-|Installer selection for file extensions|User can choose in the installer which File extensions should get registered.|P1|
+|Settings: selection for file extensions|User can choose in the settings which File extensions should get registered.|P1|
