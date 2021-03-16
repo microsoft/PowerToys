@@ -21,6 +21,7 @@ namespace FancyZonesEditor
         private const string ObjectDependencyID = "IsSelected";
         private const string GridZoneBackgroundBrushID = "GridZoneBackgroundBrush";
         private const string SecondaryForegroundBrushID = "SecondaryForegroundBrush";
+        private const string AccentColorBrushID = "SystemControlBackgroundAccentBrush";
 
         public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
 
@@ -50,7 +51,7 @@ namespace FancyZonesEditor
 
         private void OnSelectionChanged()
         {
-            Background = IsSelected ? SystemParameters.WindowGlassBrush : App.Current.Resources[GridZoneBackgroundBrushID] as SolidColorBrush;
+            Background = IsSelected ? Application.Current.Resources[AccentColorBrushID] as SolidColorBrush : Application.Current.Resources[GridZoneBackgroundBrushID] as SolidColorBrush;
         }
 
         public bool IsSelected
@@ -65,7 +66,7 @@ namespace FancyZonesEditor
             OnSelectionChanged();
             _splitter = new Rectangle
             {
-                Fill = SystemParameters.WindowGlassBrush,
+                Fill = Application.Current.Resources[AccentColorBrushID] as SolidColorBrush,
             };
             Body.Children.Add(_splitter);
 
@@ -139,8 +140,8 @@ namespace FancyZonesEditor
                 enabled = _canSplit(Orientation.Horizontal, _snappedPositionY);
             }
 
-            Brush disabledBrush = App.Current.Resources[SecondaryForegroundBrushID] as SolidColorBrush;
-            Brush enabledBrush = SystemParameters.WindowGlassBrush; // Active Accent color
+            Brush disabledBrush = Application.Current.Resources[SecondaryForegroundBrushID] as SolidColorBrush;
+            Brush enabledBrush = Application.Current.Resources[AccentColorBrushID] as SolidColorBrush;
             _splitter.Fill = enabled ? enabledBrush : disabledBrush;
         }
 
@@ -148,7 +149,7 @@ namespace FancyZonesEditor
         {
             _hovering = true;
             UpdateSplitter();
-            _splitter.Fill = SystemParameters.WindowGlassBrush;
+            _splitter.Fill = Application.Current.Resources[AccentColorBrushID] as SolidColorBrush;
         }
 
         protected override void OnMouseLeave(MouseEventArgs e)
