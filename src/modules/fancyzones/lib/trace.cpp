@@ -25,6 +25,7 @@
 #define MoveSizeActionKey "InMoveSize"
 #define AppsInHistoryCountKey "AppsInHistoryCount"
 #define CustomZoneSetCountKey "CustomZoneSetCount"
+#define LayoutUsingQuickKeyCountKey "LayoutUsingQuickKeyCount"
 #define NumberOfZonesForEachCustomZoneSetKey "NumberOfZonesForEachCustomZoneSet"
 #define ActiveZoneSetsCountKey "ActiveZoneSetsCount"
 #define ActiveZoneSetsListKey "ActiveZoneSetsList"
@@ -128,6 +129,7 @@ void Trace::FancyZones::DataChanged() noexcept
     int appsHistorySize = static_cast<int>(data.GetAppZoneHistoryMap().size());
     const auto& customZones = data.GetCustomZoneSetsMap();
     const auto& devices = data.GetDeviceInfoMap();
+    const auto& quickKeys = data.GetLayoutQuickKeys();
 
     std::unique_ptr<INT32[]> customZonesArray(new (std::nothrow) INT32[customZones.size()]);
     if (!customZonesArray)
@@ -201,7 +203,8 @@ void Trace::FancyZones::DataChanged() noexcept
         TraceLoggingInt32(static_cast<int>(customZones.size()), CustomZoneSetCountKey),
         TraceLoggingInt32Array(customZonesArray.get(), static_cast<int>(customZones.size()), NumberOfZonesForEachCustomZoneSetKey),
         TraceLoggingInt32(static_cast<int>(devices.size()), ActiveZoneSetsCountKey),
-        TraceLoggingWideString(activeZoneSetInfo.c_str(), ActiveZoneSetsListKey));
+        TraceLoggingWideString(activeZoneSetInfo.c_str(), ActiveZoneSetsListKey),
+        TraceLoggingInt32(static_cast<int>(quickKeys.size()), LayoutUsingQuickKeyCountKey));
 }
 
 void Trace::FancyZones::EditorLaunched(int value) noexcept

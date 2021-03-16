@@ -30,12 +30,14 @@ namespace NonLocalizable
     const wchar_t EditorSpacingStr[] = L"editor-spacing";
     const wchar_t EditorZoneCountStr[] = L"editor-zone-count";
     const wchar_t EditorSensitivityRadiusStr[] = L"editor-sensitivity-radius";
-    const wchar_t FastAccessLayoutKeys[] = L"fast-access-layout-keys";
     const wchar_t GridStr[] = L"grid";
     const wchar_t HeightStr[] = L"height";
     const wchar_t HistoryStr[] = L"history";
     const wchar_t InfoStr[] = L"info";
     const wchar_t NameStr[] = L"name";
+    const wchar_t QuickAccessKey[] = L"key";
+    const wchar_t QuickAccessUuid[] = L"uuid";
+    const wchar_t QuickLayoutKeys[] = L"quick-layout-keys";
     const wchar_t RefHeightStr[] = L"ref-height";
     const wchar_t RefWidthStr[] = L"ref-width";
     const wchar_t RowsPercentageStr[] = L"rows-percentage";
@@ -472,6 +474,38 @@ namespace JSONHelpers
         }
     }
 
+    json::JsonObject LayoutQuickKeyJSON::ToJson(const LayoutQuickKeyJSON& layoutQuickKey)
+    {
+        json::JsonObject result{};
+
+        result.SetNamedValue(NonLocalizable::QuickAccessUuid, json::value(layoutQuickKey.layoutUuid));
+        result.SetNamedValue(NonLocalizable::QuickAccessKey, json::value(layoutQuickKey.key));
+
+        return result;
+    }
+    
+    std::optional<LayoutQuickKeyJSON> LayoutQuickKeyJSON::FromJson(const json::JsonObject& layoutQuickKey)
+    {
+        try
+        {
+            LayoutQuickKeyJSON result;
+
+            result.layoutUuid = layoutQuickKey.GetNamedString(NonLocalizable::QuickAccessUuid);
+            if (!FancyZonesUtils::IsValidGuid(result.layoutUuid))
+            {
+                return std::nullopt;
+            }
+
+            result.key = static_cast<int>(layoutQuickKey.GetNamedNumber(NonLocalizable::QuickAccessKey));
+            
+            return result;
+        }
+        catch (const winrt::hresult_error&)
+        {
+            return std::nullopt;
+        }
+    }
+
     json::JsonObject MonitorInfo::ToJson(const MonitorInfo& monitor)
     {
         json::JsonObject result{};
@@ -528,24 +562,18 @@ namespace JSONHelpers
         }
     }
 
-    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap, const TCustomZoneSetsMap& customZoneSetsMap)
+    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap, const TCustomZoneSetsMap& customZoneSetsMap, const TLayoutQuickKeysMap& quickKeysMap)
     {
         auto before = json::from_file(zonesSettingsFileName);
 
         json::JsonObject root{};
         json::JsonArray templates{};
-        json::JsonArray fastAccessLayoutKeys{};
 
         try
         {
             if (before.has_value() && before->HasKey(NonLocalizable::Templates))
             {
                 templates = before->GetNamedArray(NonLocalizable::Templates);
-            }
-
-            if (before.has_value() && before->HasKey(NonLocalizable::FastAccessLayoutKeys))
-            {
-                fastAccessLayoutKeys = before->GetNamedArray(NonLocalizable::FastAccessLayoutKeys);
             }
         }
         catch (const winrt::hresult_error&)
@@ -556,7 +584,7 @@ namespace JSONHelpers
         root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
         root.SetNamedValue(NonLocalizable::CustomZoneSetsStr, JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
         root.SetNamedValue(NonLocalizable::Templates, templates);
-        root.SetNamedValue(NonLocalizable::FastAccessLayoutKeys, fastAccessLayoutKeys);
+        root.SetNamedValue(NonLocalizable::QuickLayoutKeys, JSONHelpers::SerializeQuickKeys(quickKeysMap));
         
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
         {
@@ -682,5 +710,41 @@ namespace JSONHelpers
         }
 
         return customZoneSetsJSON;
+    }
+    
+    TLayoutQuickKeysMap ParseQuickKeys(const json::JsonObject& fancyZonesDataJSON)
+    {
+        try
+        {
+            TLayoutQuickKeysMap quickKeysMap{};
+            auto quickKeys = fancyZonesDataJSON.GetNamedArray(NonLocalizable::QuickLayoutKeys);
+
+            for (uint32_t i = 0; i < quickKeys.Size(); ++i)
+            {
+                if (auto quickKey = LayoutQuickKeyJSON::FromJson(quickKeys.GetObjectAt(i)); quickKey.has_value())
+                {
+                    quickKeysMap[quickKey->layoutUuid] = std::move(quickKey->key);
+                }
+            }
+
+            return std::move(quickKeysMap);
+        }
+        catch (const winrt::hresult_error& e)
+        {
+            Logger::error(L"Parsing quick keys error: {}", e.message());
+            return {};
+        }
+    }
+
+    json::JsonArray SerializeQuickKeys(const TLayoutQuickKeysMap& quickKeysMap)
+    {
+        json::JsonArray quickKeysJSON{};
+
+        for (const auto& [uuid, key] : quickKeysMap)
+        {
+            quickKeysJSON.Append(LayoutQuickKeyJSON::ToJson(LayoutQuickKeyJSON{ uuid, key }));
+        }
+
+        return quickKeysJSON;
     }
 }
