@@ -101,8 +101,8 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
       **\UnitTests-SvgThumbnailProvider.dll
+      **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
       **\PreviewPaneUnitTests.dll
