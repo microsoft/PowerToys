@@ -12,6 +12,7 @@ using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
 {
+    [TestFixture]
     public class ImageTests
     {
         [SetUp]

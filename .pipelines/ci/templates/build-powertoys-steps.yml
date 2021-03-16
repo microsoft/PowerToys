@@ -93,40 +93,52 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
-
 # directly not doing WinAppDriver testing
 - task: VSTest@2
-  displayName: 'Run .Net Core Tests 1'
+  displayName: 'MS Tests'
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      **\Microsoft.Plugin.Folder.UnitTest.dll
+      **\UnitTests-SvgThumbnailProvider.dll
+      **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
+      **\UnitTests-SvgPreviewHandler.dll
+      **\UnitTests-PreviewHandlerCommon.dll
+      **\PreviewPaneUnitTests.dll
+      **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll
+      **\UnitTest-ColorPickerUI.dll
+      **\Microsoft.Interop.Tests.dll
+      !**\obj\**
+
+- task: VSTest@2
+  displayName: 'XUnit Tests'
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\ImageResizer.Test.dll
+      !**\obj\**
+
+- task: VSTest@2
+  displayName: 'NUnit Tests'
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\Microsoft.Plugin.Folder.UnitTests.dll
       **\Microsoft.Plugin.Program.UnitTests.dll
       **\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.dll
       **\Microsoft.Plugin.Uri.UnitTests.dll
       **\Wox.Test.dll
-      **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
-      **\UnitTest-ColorPickerUI.dll
-      **\Microsoft.Interop.Tests.dll
+      **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
       !**\obj\**
-- task: VSTest@2
-  displayName: 'Run .Net Core Tests 2'
-  inputs:
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    testSelector: 'testAssemblies'
-    testAssemblyVer2: |
-      **\PreviewPaneUnitTests.dll #this is the markdown tests
-      **\UnitTests-PreviewHandlerCommon.dll
-      **\UnitTests-SvgPreviewHandler.dll
-      **\ImageResizer.Test.dll
-      **\powerpreviewTest.dll
-      !**\obj\**
+
 # Native dlls
 - task: VSTest@2
-  displayName: 'Run Native Tests'
+  displayName: 'Native Tests'
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
@@ -135,4 +147,5 @@ steps:
       **\KeyboardManagerTest.dll
       **\UnitTests-CommonLib.dll
       **\PowerRenameUnitTests.dll
+      **\powerpreviewTest.dll
       !**\obj\**
