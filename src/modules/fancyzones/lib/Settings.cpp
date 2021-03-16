@@ -22,6 +22,7 @@ namespace NonLocalizable
     const wchar_t OpenWindowOnActiveMonitorID[] = L"fancyzones_openWindowOnActiveMonitor";
     const wchar_t RestoreSizeID[] = L"fancyzones_restoreSize";
     const wchar_t QuickLayoutSwitch[] = L"fancyzones_quickLayoutSwitch";
+    const wchar_t FlashZonesOnQuickSwitch[] = L"fancyzones_flashZonesOnQuickSwitch";
     const wchar_t UseCursorPosEditorStartupScreenID[] = L"use_cursorpos_editor_startupscreen";
     const wchar_t ShowOnAllMonitorsID[] = L"fancyzones_show_on_all_monitors";
     const wchar_t SpanZonesAcrossMonitorsID[] = L"fancyzones_span_zones_across_monitors";
@@ -81,7 +82,7 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[15] = {
+    } m_configBools[16] = {
         { NonLocalizable::ShiftDragID, &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { NonLocalizable::MouseSwitchID, &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { NonLocalizable::OverrideSnapHotKeysID, &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
@@ -93,6 +94,7 @@ private:
         { NonLocalizable::OpenWindowOnActiveMonitorID, &m_settings.openWindowOnActiveMonitor, IDS_SETTING_DESCRIPTION_OPEN_WINDOW_ON_ACTIVE_MONITOR },
         { NonLocalizable::RestoreSizeID, &m_settings.restoreSize, IDS_SETTING_DESCRIPTION_RESTORESIZE },
         { NonLocalizable::QuickLayoutSwitch, &m_settings.quickLayoutSwitch, IDS_SETTING_DESCRIPTION_QUICKLAYOUTSWITCH },
+        { NonLocalizable::FlashZonesOnQuickSwitch, &m_settings.flashZonesOnQuickSwitch, IDS_SETTING_DESCRIPTION_FLASHZONESONQUICKSWITCH },
         { NonLocalizable::UseCursorPosEditorStartupScreenID, &m_settings.use_cursorpos_editor_startupscreen, IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN },
         { NonLocalizable::ShowOnAllMonitorsID, &m_settings.showZonesOnAllMonitors, IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS },
         { NonLocalizable::SpanZonesAcrossMonitorsID, &m_settings.spanZonesAcrossMonitors, IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS },

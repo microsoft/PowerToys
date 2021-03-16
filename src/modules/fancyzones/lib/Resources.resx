@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -249,5 +249,8 @@
   </data>
   <data name="Setting_Description_QuickLayoutSwitch" xml:space="preserve">
     <value>Enable quick layout switch</value>
+  </data>
+  <data name="Setting_Description_FlashZonesOnQuickSwitch" xml:space="preserve">
+    <value>Flash zones when switching layout</value>
   </data>
 </root>

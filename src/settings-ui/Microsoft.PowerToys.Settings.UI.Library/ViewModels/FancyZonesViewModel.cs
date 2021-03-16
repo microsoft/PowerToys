@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -72,6 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
             _restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
             _quickLayoutSwitch = Settings.Properties.FancyzonesQuickLayoutSwitch.Value;
+            _flashZones = Settings.Properties.FancyzonesFlashZonesOnQuickSwitch.Value;
             _useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             _showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
             _spanZonesAcrossMonitors = Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value;
@@ -109,6 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _spanZonesAcrossMonitors;
         private bool _restoreSize;
         private bool _quickLayoutSwitch;
+        private bool _flashZones;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
         private bool _makeDraggedWindowTransparent;
@@ -140,6 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged(nameof(IsEnabled));
                     OnPropertyChanged(nameof(SnapHotkeysCategoryEnabled));
+                    OnPropertyChanged(nameof(QuickSwitchEnabled));
                 }
             }
         }
@@ -149,6 +152,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get
             {
                 return _isEnabled && _overrideSnapHotkeys;
+            }
+        }
+
+        public bool QuickSwitchEnabled
+        {
+            get
+            {
+                return _isEnabled && _quickLayoutSwitch;
             }
         }
 
@@ -389,6 +400,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _quickLayoutSwitch = value;
                     Settings.Properties.FancyzonesQuickLayoutSwitch.Value = value;
+                    NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(QuickSwitchEnabled));
+                }
+            }
+        }
+
+        public bool FlashZones
+        {
+            get
+            {
+                return _flashZones;
+            }
+
+            set
+            {
+                if (value != _flashZones)
+                {
+                    _flashZones = value;
+                    Settings.Properties.FancyzonesFlashZonesOnQuickSwitch.Value = value;
                     NotifyPropertyChanged();
                 }
             }
