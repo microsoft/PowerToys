@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesAppLastZoneMoveWindows = new BoolProperty();
             FancyzonesOpenWindowOnActiveMonitor = new BoolProperty();
             FancyzonesRestoreSize = new BoolProperty();
+            FancyzonesQuickLayoutSwitch = new BoolProperty();
             UseCursorposEditorStartupscreen = new BoolProperty(ConfigDefaults.DefaultUseCursorposEditorStartupscreen);
             FancyzonesShowOnAllMonitors = new BoolProperty();
             FancyzonesSpanZonesAcrossMonitors = new BoolProperty();
@@ -68,6 +69,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("fancyzones_restoreSize")]
         public BoolProperty FancyzonesRestoreSize { get; set; }
+
+        [JsonPropertyName("fancyzones_quickLayoutSwitch")]
+        public BoolProperty FancyzonesQuickLayoutSwitch { get; set; }
 
         [JsonPropertyName("use_cursorpos_editor_startupscreen")]
         public BoolProperty UseCursorposEditorStartupscreen { get; set; }

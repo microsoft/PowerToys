@@ -34,6 +34,7 @@ struct Settings
     bool appLastZone_moveWindows = false;
     bool openWindowOnActiveMonitor = false;
     bool restoreSize = false;
+    bool quickLayoutSwitch = false;
     bool use_cursorpos_editor_startupscreen = true;
     bool showZonesOnAllMonitors = false;
     bool spanZonesAcrossMonitors = false;
