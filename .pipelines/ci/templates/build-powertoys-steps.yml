@@ -95,7 +95,7 @@ steps:
 
 # directly not doing WinAppDriver testing
 - task: VSTest@2
-  displayName: 'Run MS Test'
+  displayName: 'MS Tests'
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
@@ -112,7 +112,7 @@ steps:
       !**\obj\**
 
 - task: VSTest@2
-  displayName: 'Run xUnit test'
+  displayName: 'XUnit Tests'
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
@@ -121,9 +121,8 @@ steps:
       **\ImageResizer.Test.dll
       !**\obj\**
 
-# directly not doing WinAppDriver testing
 - task: VSTest@2
-  displayName: 'Run .Net Core Tests 1'
+  displayName: 'NUnit Tests'
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
@@ -139,7 +138,7 @@ steps:
 
 # Native dlls
 - task: VSTest@2
-  displayName: 'Run Native Tests'
+  displayName: 'Native Tests'
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
