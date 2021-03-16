@@ -1732,6 +1732,7 @@ QUERYENDSESSION
 queryfocus
 QUERYOPEN
 QUEUESYNC
+QUICKLAYOUTSWITCH
 qwertyuiopasdfghjklzxcvbnm
 qword
 qwrtyuiopsghjklzxvnm
