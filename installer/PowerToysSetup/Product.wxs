@@ -352,8 +352,6 @@
           Target="[!PowerToys.exe]"
           WorkingDirectory="INSTALLFOLDER">
           <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
-          <!-- ToastActivatorCLSID is used only by toast background activation, which currently isn't used, but causes MSI warning 1946 to display for a small share of users -->
-          <!-- <ShortcutProperty Key="System.AppUserModel.ToastActivatorCLSID" Value="{DD5CACDA-7C2E-4997-A62A-04A597B58F76}"/> -->
         </Shortcut>
         <RemoveFolder Id="CleanUpStartMenuShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
         <RegistryValue Root="HKCU" Key="Software\Microsoft\PowerToys" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
