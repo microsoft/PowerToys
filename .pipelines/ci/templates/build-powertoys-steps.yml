@@ -93,6 +93,16 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
+- task: VSTest@2
+  displayName: 'FancyZones Tests'
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\UnitTests-FancyZones.dll
+      !**\obj\**
+
 # directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'MS Tests'
