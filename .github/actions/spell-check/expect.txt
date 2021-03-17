@@ -1606,6 +1606,8 @@ pguid
 phbm
 phbmp
 Phishing
+php
+phptest
 phwnd
 pici
 pid
@@ -1719,6 +1721,7 @@ pwcs
 PWSTR
 pwtd
 px
+py
 Qand
 QI
 qianlifeng
@@ -1846,6 +1849,7 @@ runsettings
 runtimeclass
 runtimeconfig
 runtimes
+rutkas
 rv
 rvalue
 rvm
