@@ -573,6 +573,8 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         if ('0' <= info->vkCode && info->vkCode <= '9')
         {
             PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, static_cast<LPARAM>(info->vkCode));
+            // Do not swallow the key press
+            return false;
         }
     }
 
