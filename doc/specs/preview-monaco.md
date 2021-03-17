@@ -24,7 +24,7 @@ Experiments with a POC showed that only WebView2 is displaying Monaco the right 
 
 ## 1.2 Why?
 
-Many people asking us for supporting new file types in the preview panes. With implementing this we will support many developer files (for Example .py, .php,.cs, and many more).
+Many people asking us for supporting new file types in the preview panes. With implementing this we will support many developer files (over 125, for example .py, .php, .cs, and many more).
 
 ### 1.2.1 Why Monaco?
 
@@ -32,6 +32,7 @@ Many people asking us for supporting new file types in the preview panes. With i
 * It supports dark mode
 * Clickable links
 * Monaco has also the MIT-license
+* Monaco powers VS Code.  If it works there, pretty sure it can knock it out of the park here :)
 
 # 2 What does this implement
 
@@ -54,10 +55,10 @@ If we implement this we could close the issue:
 
 |Name|Description|Priority|
 |----|-----------|--------|
-|Working Preview pane|It's simply working.|P0|
-|Settinga can install filetypes|When the user activates MonacoPreview in settings it registers the preview handlers.|P0|
-|Style code|Monaco recognizes the file extensions and highlights the syntax the right way.|P0|
-|User can choose file previews|Users can attach custom filetypes to preview. For example `.phptest` files to the `.php` handler.|P2|
-|OOBE|Description for the OOBE.|P1|
-|On/Off in settings|The user can turn it on and off.|P0|
-|Settings: selection for file extensions|User can choose in the settings which File extensions should get registered.|P1|
+| Working Preview pane | It's simply working. |P0|
+| Settings can install filetypes | When the user activates MonacoPreview in settings it registers the preview handlers. |P0|
+| Style code | Monaco recognizes the file extensions and highlights the syntax the right way. |P0|
+| User can choose file previews|Users can attach custom filetypes to preview. For example `.phptest` files to the `.php` handler. |P2|
+| OOBE | Description for the OOBE. |P1|
+| On/Off in settings | The user can turn it on and off. |P0|
+| Settings: selection for file extensions|User can choose in the settings which File extensions should get registered. |P1|
