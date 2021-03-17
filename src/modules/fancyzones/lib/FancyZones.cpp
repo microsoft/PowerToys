@@ -568,7 +568,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
     }
 
-    if (shift && alt && !win && !ctrl)
+    if (!shift && win && ctrl && alt)
     {
         if ('0' <= info->vkCode && info->vkCode <= '9')
         {
@@ -1367,8 +1367,12 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
     return false;
 }
 
-void FancyZones::ApplyQuickLayout(int key) noexcept
+void FancyZones::ApplyQuickLayout(int vKey) noexcept
 {
+    std::unique_lock writeLock(m_lock);
+
+    int key = vKey - '0';
+
     HMONITOR monitor;
     if (m_settings->GetSettings()->spanZonesAcrossMonitors)
     {
@@ -1384,7 +1388,30 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
 
         monitor = MonitorFromPoint(cursorPoint, MONITOR_DEFAULTTOPRIMARY);
     }
-    // TODO
+
+    std::wstring uuid;
+    for (auto [zoneUuid, hotkey] : FancyZonesDataInstance().GetLayoutQuickKeys())
+    {
+        if (hotkey == key)
+        {
+            uuid = zoneUuid;
+        }
+    }
+
+    auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+
+    // Find a custom zone set with this uuid and apply it
+    auto customZoneSets = FancyZonesDataInstance().GetCustomZoneSetsMap();
+
+    if (!customZoneSets.contains(uuid))
+    {
+        return;
+    }
+
+    FancyZonesDataTypes::ZoneSetData data{ .uuid = uuid, .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom };
+    FancyZonesDataInstance().SetActiveZoneSet(workArea->UniqueId(), data);
+    FancyZonesDataInstance().SaveZoneSettings();
+    UpdateZoneSets();
 }
 
 std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
