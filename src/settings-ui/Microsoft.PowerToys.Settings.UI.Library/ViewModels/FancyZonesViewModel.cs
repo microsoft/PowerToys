@@ -71,6 +71,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
             _openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
             _restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
+            _quickLayoutSwitch = Settings.Properties.FancyzonesQuickLayoutSwitch.Value;
+            _flashZonesOnQuickLayoutSwitch = Settings.Properties.FancyzonesFlashZonesOnQuickSwitch.Value;
             _useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             _showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
             _spanZonesAcrossMonitors = Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value;
@@ -107,6 +109,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _openWindowOnActiveMonitor;
         private bool _spanZonesAcrossMonitors;
         private bool _restoreSize;
+        private bool _quickLayoutSwitch;
+        private bool _flashZonesOnQuickLayoutSwitch;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
         private bool _makeDraggedWindowTransparent;
@@ -138,6 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged(nameof(IsEnabled));
                     OnPropertyChanged(nameof(SnapHotkeysCategoryEnabled));
+                    OnPropertyChanged(nameof(QuickSwitchEnabled));
                 }
             }
         }
@@ -147,6 +152,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get
             {
                 return _isEnabled && _overrideSnapHotkeys;
+            }
+        }
+
+        public bool QuickSwitchEnabled
+        {
+            get
+            {
+                return _isEnabled && _quickLayoutSwitch;
             }
         }
 
@@ -369,6 +382,43 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _restoreSize = value;
                     Settings.Properties.FancyzonesRestoreSize.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool QuickLayoutSwitch
+        {
+            get
+            {
+                return _quickLayoutSwitch;
+            }
+
+            set
+            {
+                if (value != _quickLayoutSwitch)
+                {
+                    _quickLayoutSwitch = value;
+                    Settings.Properties.FancyzonesQuickLayoutSwitch.Value = value;
+                    NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(QuickSwitchEnabled));
+                }
+            }
+        }
+
+        public bool FlashZonesOnQuickSwitch
+        {
+            get
+            {
+                return _flashZonesOnQuickLayoutSwitch;
+            }
+
+            set
+            {
+                if (value != _flashZonesOnQuickLayoutSwitch)
+                {
+                    _flashZonesOnQuickLayoutSwitch = value;
+                    Settings.Properties.FancyzonesFlashZonesOnQuickSwitch.Value = value;
                     NotifyPropertyChanged();
                 }
             }
