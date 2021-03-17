@@ -77,7 +77,7 @@ namespace updating
             const VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
             VersionHelper github_version = current_version;
 
-            // Block updates to 0.37+ on a <1903 system
+            // On a <1903 system, block updates to 0.36+ 
             const bool blockNonPatchReleases = current_version.major == 0 && current_version.minor == 35 && !Is19H1OrHigher();
 
             if (prerelease)
