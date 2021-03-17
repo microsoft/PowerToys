@@ -568,13 +568,17 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
     }
 
-    if (win && alt && !shift && !ctrl)
+    if (shift && alt && !win && !ctrl)
     {
         if ('0' <= info->vkCode && info->vkCode <= '9')
         {
-            PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, static_cast<LPARAM>(info->vkCode));
-            // Do not swallow the key press
-            return false;
+            auto quickKeysMap = FancyZonesDataInstance().GetLayoutQuickKeys();
+            if (std::any_of(quickKeysMap.begin(), quickKeysMap.end(), [=](auto item) {
+                return item.second == info->vkCode - '0'; }))
+            {
+                PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, static_cast<LPARAM>(info->vkCode));
+                return true;
+            }
         }
     }
 
