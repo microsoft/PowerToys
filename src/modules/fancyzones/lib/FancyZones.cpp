@@ -235,6 +235,7 @@ private:
     void OnEditorExitEvent() noexcept;
     void UpdateZoneSets() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
+    void ApplyQuickLayout(int key) noexcept;
 
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
@@ -266,6 +267,7 @@ private:
     static UINT WM_PRIV_FILE_UPDATE; // Scheduled when the a watched file is updated
 
     static UINT WM_PRIV_SNAP_HOTKEY; // Scheduled when we receive a snap hotkey key down press
+    static UINT WM_PRIV_QUICK_LAYOUT_KEY; // Scheduled when we receive a key down press to quickly apply a layout
 
     // Did we terminate the editor or was it closed cleanly?
     enum class EditorExitKind : byte
@@ -283,6 +285,7 @@ UINT FancyZones::WM_PRIV_VD_UPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26
 UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
 UINT FancyZones::WM_PRIV_FILE_UPDATE = RegisterWindowMessage(L"{632f17a9-55a7-45f1-a4db-162e39271d92}");
 UINT FancyZones::WM_PRIV_SNAP_HOTKEY = RegisterWindowMessage(L"{763c03a3-03d9-4cde-8d71-f0358b0b4b52}");
+UINT FancyZones::WM_PRIV_QUICK_LAYOUT_KEY = RegisterWindowMessage(L"{72f4fd8e-23f1-43ab-bbbc-029363df9a84}");
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -553,18 +556,6 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
     if ((win && !shift && !ctrl) || (win && ctrl && alt))
     {
-        // Temporarily disable Win+Ctrl+Number functionality
-        // if (ctrl)
-        // {
-        //    if ((info->vkCode >= '0') && (info->vkCode <= '9'))
-        //    {
-        //        // Win+Ctrl+Number will cycle through ZoneSets
-        //        Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
-        //        CycleActiveZoneSet(info->vkCode);
-        //        return true;
-        //    }
-        // }
-        // else
         if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT) || (info->vkCode == VK_UP) || (info->vkCode == VK_DOWN))
         {
             if (ShouldProcessSnapHotkey(info->vkCode))
@@ -576,14 +567,14 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
             }
         }
     }
-    // Temporarily disable Win+Ctrl+Number functionality
-    //else if (m_inMoveSize && (info->vkCode >= '0') && (info->vkCode <= '9'))
-    //{
-    //    // This allows you to cycle through ZoneSets while dragging a window
-    //    Trace::FancyZones::OnKeyDown(info->vkCode, win, false /*control*/, true /*inMoveSize*/);
-    //    CycleActiveZoneSet(info->vkCode);
-    //    return false;
-    //}
+
+    if (win && alt && !shift && !ctrl)
+    {
+        if ('0' <= info->vkCode && info->vkCode <= '9')
+        {
+            PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, static_cast<LPARAM>(info->vkCode));
+        }
+    }
 
     if (m_windowMoveHandler.IsDragEnabled() && shift)
     {
@@ -874,6 +865,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             FancyZonesDataInstance().LoadFancyZonesData();
             UpdateZoneSets();
+        }
+        else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
+        {
+            ApplyQuickLayout(static_cast<int>(lparam));
         }
         else
         {
@@ -1364,6 +1359,26 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
         }
     }
     return false;
+}
+
+void FancyZones::ApplyQuickLayout(int key) noexcept
+{
+    HMONITOR monitor;
+    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
+    {
+        monitor = NULL;
+    }
+    else
+    {
+        POINT cursorPoint;
+        if (!GetCursorPos(&cursorPoint))
+        {
+            return;
+        }
+
+        monitor = MonitorFromPoint(cursorPoint, MONITOR_DEFAULTTOPRIMARY);
+    }
+    // TODO
 }
 
 std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
