@@ -32,12 +32,12 @@ namespace
         UNKNOWN,
         MINIMIZED,
         MAXIMIZED,
-        SNAPED_TOP_LEFT,
-        SNAPED_LEFT,
-        SNAPED_BOTTOM_LEFT,
-        SNAPED_TOP_RIGHT,
-        SNAPED_RIGHT,
-        SNAPED_BOTTOM_RIGHT,
+        SNAPPED_TOP_LEFT,
+        SNAPPED_LEFT,
+        SNAPPED_BOTTOM_LEFT,
+        SNAPPED_TOP_RIGHT,
+        SNAPPED_RIGHT,
+        SNAPPED_BOTTOM_RIGHT,
         RESTORED
     };
 
@@ -78,17 +78,17 @@ namespace
         bool bottom_right = monitor.rcWork.bottom == rect.bottom && monitor.rcWork.right == rect.right;
 
         if (top_left && bottom_left)
-            return SNAPED_LEFT;
+            return SNAPPED_LEFT;
         if (top_left)
-            return SNAPED_TOP_LEFT;
+            return SNAPPED_TOP_LEFT;
         if (bottom_left)
-            return SNAPED_BOTTOM_LEFT;
+            return SNAPPED_BOTTOM_LEFT;
         if (top_right && bottom_right)
-            return SNAPED_RIGHT;
+            return SNAPPED_RIGHT;
         if (top_right)
-            return SNAPED_TOP_RIGHT;
+            return SNAPPED_TOP_RIGHT;
         if (bottom_right)
-            return SNAPED_BOTTOM_RIGHT;
+            return SNAPPED_BOTTOM_RIGHT;
 
         return RESTORED;
     }
@@ -900,37 +900,37 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         up_disabled = true;
         down = GET_RESOURCE_STRING(IDS_RESTORE);
         break;
-    case SNAPED_TOP_LEFT:
+    case SNAPPED_TOP_LEFT:
         left = GET_RESOURCE_STRING(IDS_SNAP_UPPER_RIGHT);
         right = GET_RESOURCE_STRING(IDS_SNAP_UPPER_RIGHT);
         up = GET_RESOURCE_STRING(IDS_MAXIMIZE);
         down = GET_RESOURCE_STRING(IDS_SNAP_LEFT);
         break;
-    case SNAPED_LEFT:
+    case SNAPPED_LEFT:
         left = GET_RESOURCE_STRING(IDS_SNAP_RIGHT);
         right = GET_RESOURCE_STRING(IDS_RESTORE);
         up = GET_RESOURCE_STRING(IDS_SNAP_UPPER_LEFT);
         down = GET_RESOURCE_STRING(IDS_SNAP_LOWER_LEFT);
         break;
-    case SNAPED_BOTTOM_LEFT:
+    case SNAPPED_BOTTOM_LEFT:
         left = GET_RESOURCE_STRING(IDS_SNAP_LOWER_RIGHT);
         right = GET_RESOURCE_STRING(IDS_SNAP_LOWER_RIGHT);
         up = GET_RESOURCE_STRING(IDS_SNAP_LEFT);
         down = GET_RESOURCE_STRING(IDS_MINIMIZE);
         break;
-    case SNAPED_TOP_RIGHT:
+    case SNAPPED_TOP_RIGHT:
         left = GET_RESOURCE_STRING(IDS_SNAP_UPPER_LEFT);
         right = GET_RESOURCE_STRING(IDS_SNAP_UPPER_LEFT);
         up = GET_RESOURCE_STRING(IDS_MAXIMIZE);
         down = GET_RESOURCE_STRING(IDS_SNAP_RIGHT);
         break;
-    case SNAPED_RIGHT:
+    case SNAPPED_RIGHT:
         left = GET_RESOURCE_STRING(IDS_RESTORE);
         right = GET_RESOURCE_STRING(IDS_SNAP_LEFT);
         up = GET_RESOURCE_STRING(IDS_SNAP_UPPER_RIGHT);
         down = GET_RESOURCE_STRING(IDS_SNAP_LOWER_RIGHT);
         break;
-    case SNAPED_BOTTOM_RIGHT:
+    case SNAPPED_BOTTOM_RIGHT:
         left = GET_RESOURCE_STRING(IDS_SNAP_LOWER_LEFT);
         right = GET_RESOURCE_STRING(IDS_SNAP_LOWER_LEFT);
         up = GET_RESOURCE_STRING(IDS_SNAP_RIGHT);
