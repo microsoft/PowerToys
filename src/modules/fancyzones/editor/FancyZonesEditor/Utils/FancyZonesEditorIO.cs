@@ -824,7 +824,15 @@ namespace FancyZonesEditor.Utils
                         zones.Add(new Int32Rect { X = (int)zone.X, Y = (int)zone.Y, Width = (int)zone.Width, Height = (int)zone.Height });
                     }
 
-                    layout = new CanvasLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, zones, info.RefWidth, info.RefHeight);
+                    try
+                    {
+                        layout = new CanvasLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, zones, info.RefWidth, info.RefHeight);
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+
                     layout.SensitivityRadius = info.SensitivityRadius;
                 }
                 else if (zoneSet.Type == GridLayoutModel.ModelTypeID)
@@ -840,7 +848,15 @@ namespace FancyZonesEditor.Utils
                         }
                     }
 
-                    layout = new GridLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, info.Rows, info.Columns, info.RowsPercentage, info.ColumnsPercentage, cells);
+                    try
+                    {
+                        layout = new GridLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, info.Rows, info.Columns, info.RowsPercentage, info.ColumnsPercentage, cells);
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+
                     layout.SensitivityRadius = info.SensitivityRadius;
                     (layout as GridLayoutModel).ShowSpacing = info.ShowSpacing;
                     (layout as GridLayoutModel).Spacing = info.Spacing;

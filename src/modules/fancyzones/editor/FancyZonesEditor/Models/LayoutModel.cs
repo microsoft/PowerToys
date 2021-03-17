@@ -30,7 +30,7 @@ namespace FancyZonesEditor.Models
         protected LayoutModel(string uuid, string name, LayoutType type)
             : this()
         {
-            Uuid = uuid;
+            _guid = Guid.Parse(uuid);
             Name = name;
             Type = type;
         }
@@ -93,17 +93,6 @@ namespace FancyZonesEditor.Models
             get
             {
                 return "{" + Guid.ToString().ToUpperInvariant() + "}";
-            }
-
-            set
-            {
-                try
-                {
-                    _guid = Guid.Parse(value);
-                }
-                catch (Exception)
-                {
-                }
             }
         }
 
