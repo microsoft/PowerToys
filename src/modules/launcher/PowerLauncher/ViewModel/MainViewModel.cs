@@ -817,10 +817,14 @@ namespace PowerLauncher.ViewModel
                 if (_settings.ClearInputOnLaunch && Results.Visibility == Visibility.Visible)
                 {
                     ClearQueryCommand.Execute(null);
-                    Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                    Task.Run(() =>
                     {
-                        MainWindowVisibility = Visibility.Collapsed;
-                    }));
+                        Thread.Sleep(100);
+                        Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+                        {
+                            MainWindowVisibility = Visibility.Collapsed;
+                        }));
+                    });
                 }
                 else
                 {
