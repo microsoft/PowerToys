@@ -714,6 +714,7 @@ finalizer
 findstr
 FIXEDFILEINFO
 FLASHZONES
+FLASHZONESONQUICKSWITCH
 Fle
 fluentui
 flyout
@@ -1685,6 +1686,7 @@ Queryable
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
+QUICKLAYOUTSWITCH
 qwertyuiopasdfghjklzxcvbnm
 qword
 qwrtyuiopsghjklzxvnm
