@@ -198,8 +198,8 @@
                       Margin="{StaticResource XSmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <CheckBox x:Uid="FancyZones_FlashZones"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZones}"
+            <CheckBox x:Uid="FancyZones_FlashZonesOnQuickSwitch"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZonesOnQuickSwitch}"
                       Margin="24,8,0,0"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.QuickSwitchEnabled}"/>
 

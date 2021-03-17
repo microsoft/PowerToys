@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
             _restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
             _quickLayoutSwitch = Settings.Properties.FancyzonesQuickLayoutSwitch.Value;
-            _flashZones = Settings.Properties.FancyzonesFlashZonesOnQuickSwitch.Value;
+            _flashZonesOnQuickLayoutSwitch = Settings.Properties.FancyzonesFlashZonesOnQuickSwitch.Value;
             _useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             _showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
             _spanZonesAcrossMonitors = Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value;
@@ -110,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _spanZonesAcrossMonitors;
         private bool _restoreSize;
         private bool _quickLayoutSwitch;
-        private bool _flashZones;
+        private bool _flashZonesOnQuickLayoutSwitch;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
         private bool _makeDraggedWindowTransparent;
@@ -406,18 +406,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool FlashZones
+        public bool FlashZonesOnQuickSwitch
         {
             get
             {
-                return _flashZones;
+                return _flashZonesOnQuickLayoutSwitch;
             }
 
             set
             {
-                if (value != _flashZones)
+                if (value != _flashZonesOnQuickLayoutSwitch)
                 {
-                    _flashZones = value;
+                    _flashZonesOnQuickLayoutSwitch = value;
                     Settings.Properties.FancyzonesFlashZonesOnQuickSwitch.Value = value;
                     NotifyPropertyChanged();
                 }

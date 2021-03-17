@@ -1167,7 +1167,7 @@ Win + Shift + O to toggle your video</value>
   <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
     <value>Primary monitor</value>
   </data>
-  <data name="FancyZones_FlashZones.Content" xml:space="preserve">
+  <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
     <value>Flash zones when switching layout</value>
   </data>
   <data name="FancyZones_QuickLayoutSwitch.Content" xml:space="preserve">
