@@ -35,12 +35,23 @@
                 Margin="0,4,0,0" />
         </Grid>
         <StackPanel Margin="16">
-            <TextBlock Text="{x:Static props:Resources.Note_Custom_Table}"
-                       Foreground="{DynamicResource SecondaryForegroundBrush}"
-                       Style="{StaticResource CaptionTextBlockStyle}"
-                       Margin="0,8,0,0"
-                       TextWrapping="Wrap" />
-      
+            <StackPanel Margin="0,8,0,0">
+                <TextBlock 
+                    TextWrapping="Wrap">
+                    <Run 
+                        FontWeight="Bold" 
+                        Text="{x:Static props:Resources.SplitterName}" />
+                    <Run Text="{x:Static props:Resources.SplitterDescription}" />
+                </TextBlock>
+                <TextBlock 
+                    Margin="0,8,0,0"
+                    TextWrapping="Wrap">
+                    <Run 
+                        FontWeight="Bold" 
+                        Text="{x:Static props:Resources.MergeName}" />
+                    <Run Text="{x:Static props:Resources.MergeDescription}" />
+                </TextBlock>
+            </StackPanel>
             <Grid Margin="0,24,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

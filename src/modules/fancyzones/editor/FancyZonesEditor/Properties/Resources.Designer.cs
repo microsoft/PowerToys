@@ -502,6 +502,24 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Click and drag across zones..
+        /// </summary>
+        public static string MergeDescription {
+            get {
+                return ResourceManager.GetString("MergeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Merge/Delete:.
+        /// </summary>
+        public static string MergeName {
+            get {
+                return ResourceManager.GetString("MergeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Monitor.
         /// </summary>
         public static string Monitor {
@@ -525,16 +543,6 @@ namespace FancyZonesEditor.Properties {
         public static string No_Custom_Layouts_Message {
             get {
                 return ResourceManager.GetString("No_Custom_Layouts_Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hold down Shift key to change orientation of splitter.
-        ///To merge zones, select the zones and click &quot;merge&quot;..
-        /// </summary>
-        public static string Note_Custom_Table {
-            get {
-                return ResourceManager.GetString("Note_Custom_Table", resourceCulture);
             }
         }
         
@@ -598,6 +606,24 @@ namespace FancyZonesEditor.Properties {
         public static string Space_Around_Zones {
             get {
                 return ResourceManager.GetString("Space_Around_Zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hold Shift key for vertical split..
+        /// </summary>
+        public static string SplitterDescription {
+            get {
+                return ResourceManager.GetString("SplitterDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Splitter:.
+        /// </summary>
+        public static string SplitterName {
+            get {
+                return ResourceManager.GetString("SplitterName", resourceCulture);
             }
         }
         
