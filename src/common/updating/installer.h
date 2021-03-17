@@ -16,4 +16,6 @@ namespace updating
 
     std::optional<VersionHelper> get_installed_powertoys_version();
     std::future<bool> uninstall_previous_msix_version_async();
+
+    bool is_old_windows_version();
 }
