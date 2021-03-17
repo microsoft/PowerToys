@@ -247,4 +247,10 @@
     <value>Failed to save the FancyZones settings. Please retry again later, if the problem persists report the bug to</value>
     <comment>"Report bug to" will have a URL after. FancyZone is a product name, keep as is.</comment>
   </data>
+  <data name="Setting_Description_QuickLayoutSwitch" xml:space="preserve">
+    <value>Enable quick layout switch</value>
+  </data>
+  <data name="Setting_Description_FlashZonesOnQuickSwitch" xml:space="preserve">
+    <value>Flash zones when switching layout</value>
+  </data>
 </root>

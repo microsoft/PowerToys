@@ -1170,4 +1170,13 @@ Win + Shift + O to toggle your video</value>
   <data name="Run_PluginsLoading.Text" xml:space="preserve">
     <value>Plugins are loading...</value>
   </data>
+  <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
+    <value>Flash zones when switching layout</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch.Content" xml:space="preserve">
+    <value>Enable quick layout switch</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
+    <value>Quick layout switch</value>
+  </data>
 </root>
