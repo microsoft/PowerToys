@@ -169,8 +169,6 @@ namespace FancyZonesEditor.Utils
         // zones-settings: templates
         private struct TemplateLayoutWrapper
         {
-            public string Uuid { get; set; }
-
             public string Type { get; set; }
 
             public bool ShowSpacing { get; set; }
@@ -692,7 +690,6 @@ namespace FancyZonesEditor.Utils
             {
                 TemplateLayoutWrapper wrapper = new TemplateLayoutWrapper
                 {
-                    Uuid = layout.Uuid,
                     Type = LayoutTypeToJsonTag(layout.Type),
                     SensitivityRadius = layout.SensitivityRadius,
                     ZoneCount = layout.TemplateZoneCount,
@@ -885,7 +882,6 @@ namespace FancyZonesEditor.Utils
                 LayoutType type = JsonTagToLayoutType(wrapper.Type);
                 LayoutModel layout = MainWindowSettingsModel.DefaultModels[(int)type];
 
-                layout.Uuid = wrapper.Uuid;
                 layout.SensitivityRadius = wrapper.SensitivityRadius;
                 layout.TemplateZoneCount = wrapper.ZoneCount;
 
