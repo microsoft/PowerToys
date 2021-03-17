@@ -3,6 +3,7 @@
 #include "installer.h"
 #include <common/version/version.h>
 #include <common/notifications/notifications.h>
+#include <common/utils/os-detect.h>
 #include "utils/winapi_error.h"
 
 namespace // Strings in this namespace should not be localized
@@ -192,4 +193,8 @@ namespace updating
         co_return false;
     }
 
+    bool is_old_windows_version()
+    {
+        return !Is19H1OrHigher();
+    }
 }

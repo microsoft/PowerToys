@@ -39,3 +39,14 @@ std::wstring VersionHelper::toWstring() const
     result += std::to_wstring(revision);
     return result;
 }
+
+std::string VersionHelper::toString() const
+{
+    std::string result{ "v" };
+    result += std::to_string(major);
+    result += '.';
+    result += std::to_string(minor);
+    result += '.';
+    result += std::to_string(revision);
+    return result;
+}

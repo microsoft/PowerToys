@@ -158,4 +158,7 @@
    <data name="NEWER_VERSION_ERROR" xml:space="preserve">
     <value>A newer version is already installed.</value>
   </data>
+  <data name="OLD_WINDOWS_ERROR" xml:space="preserve">
+    <value>PowerToys requires Windows 10 version 1903 (May 2019 Update) or newer to run.</value>
+  </data>
 </root>

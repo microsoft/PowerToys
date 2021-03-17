@@ -152,8 +152,6 @@ int Bootstrapper(HINSTANCE hInstance)
     const auto installDirArg = cmdArgs["install_dir"].as<std::string>();
     const bool extract_msi_only = cmdArgs["extract_msi"].as<bool>();
 
-    spdlog::level::level_enum severity = spdlog::level::off;
-
     std::wstring installFolderProp;
     if (!installDirArg.empty())
     {
@@ -185,6 +183,7 @@ int Bootstrapper(HINSTANCE hInstance)
     {
     }
 
+    spdlog::level::level_enum severity = spdlog::level::off;
     if (logLevel == "debug")
     {
         severity = spdlog::level::debug;
@@ -197,6 +196,16 @@ int Bootstrapper(HINSTANCE hInstance)
     SetupLogger(logDir, severity);
     spdlog::debug("PowerToys Bootstrapper is launched\nnoFullUI: {}\nsilent: {}\nno_start_pt: {}\nskip_dotnet_install: {}\nlog_level: {}\ninstall_dir: {}\nextract_msi: {}\n", noFullUI, g_Silent, noStartPT, skipDotnetInstall, logLevel, installDirArg, extract_msi_only);
     
+    const VersionHelper myVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+
+    // Do not support installing on Windows < 1903
+    if (myVersion >= VersionHelper{0, 36, 0} && updating::is_old_windows_version())
+    {
+      ShowMessageBoxError(IDS_OLD_WINDOWS_ERROR);
+      spdlog::error("PowerToys {} requires at least Windows 1903 to run.", myVersion.toString());
+      return 1;
+    }
+
     // If a user requested an MSI -> extract it and exit
     if (extract_msi_only)
     {
@@ -212,7 +221,6 @@ int Bootstrapper(HINSTANCE hInstance)
     }
 
     // Check if there's a newer version installed
-    const VersionHelper myVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
     const auto installedVersion = updating::get_installed_powertoys_version();
     if (installedVersion && *installedVersion >= myVersion)
     {

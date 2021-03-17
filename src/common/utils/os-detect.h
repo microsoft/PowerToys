@@ -2,7 +2,7 @@
 
 #include <winrt/Windows.Foundation.Metadata.h>
 
-// The following three helper functions determine if the user has a build version higher than or equal to 19h1, as that is a requirement for xaml islands
+// The following three helper functions determine if the user has a build version higher than or equal to 19h1 (aka 1903), as that is a requirement for xaml islands
 // Source : Microsoft-ui-xaml github
 // Link: https://github.com/microsoft/microsoft-ui-xaml/blob/c045cde57c5c754683d674634a0baccda34d58c4/dev/dll/SharedHelpers.cpp
 template<uint16_t APIVersion>
