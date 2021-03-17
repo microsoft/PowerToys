@@ -547,7 +547,7 @@ namespace FancyZonesEditor.Utils
                     bool devicesParsingResult = SetDevices(zoneSettings.Devices);
                     bool customZonesParsingResult = SetCustomLayouts(zoneSettings.CustomZoneSets);
                     bool templatesParsingResult = SetTemplateLayouts(zoneSettings.Templates);
-                    bool fastAccessKeysParsingResult = SetFastAccessKeys(zoneSettings.QuickLayoutKeys);
+                    bool quickLayoutSwitchKeysParsingResult = SetQuickLayoutSwitchKeys(zoneSettings.QuickLayoutKeys);
 
                     if (!devicesParsingResult || !customZonesParsingResult)
                     {
@@ -707,7 +707,7 @@ namespace FancyZonesEditor.Utils
                 zoneSettings.Templates.Add(wrapper);
             }
 
-            // Serialize fast access layout keys
+            // Serialize quick layout switch keys
             foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
             {
                 if (pair.Value != string.Empty)
@@ -885,15 +885,15 @@ namespace FancyZonesEditor.Utils
             return true;
         }
 
-        private bool SetFastAccessKeys(List<QuickLayoutKeysWrapper> fastAccessKeys)
+        private bool SetQuickLayoutSwitchKeys(List<QuickLayoutKeysWrapper> quickSwitchKeys)
         {
-            if (fastAccessKeys == null)
+            if (quickSwitchKeys == null)
             {
                 return false;
             }
 
             MainWindowSettingsModel.QuickKeys.CleanUp();
-            foreach (var wrapper in fastAccessKeys)
+            foreach (var wrapper in quickSwitchKeys)
             {
                 MainWindowSettingsModel.QuickKeys.SelectKey(wrapper.Key.ToString(), wrapper.Uuid);
             }
