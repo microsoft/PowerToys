@@ -61,7 +61,7 @@ Many people asking us for supporting new file types in the preview panes. With i
 | OOBE | Description for the OOBE. | P1 |
 | On/Off in settings | The user can turn it on and off. | P0 |
 | Settings: selection for file extensions | User can choose in the settings which File extensions should get registered. | P1 |
-| Preview pane Handler registrataion logic in app, not installer | Logic is migrated out so we deduplicate logic now we're adding 125 files.  The uninstaller needs to be run a script of some sort to remove the registration.  | P1 |
+| Preview pane Handler registration logic in app, not installer | Logic is migrated out so we deduplicate logic now we're adding 125 files.  The uninstaller needs to be run a script of some sort to remove the registration.  | P1 |
 
 ## 5. Open questions
 
