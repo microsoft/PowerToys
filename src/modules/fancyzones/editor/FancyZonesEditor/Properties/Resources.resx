@@ -159,10 +159,6 @@
   <data name="Name" xml:space="preserve">
     <value>Name</value>
   </data>
-  <data name="Note_Custom_Table" xml:space="preserve">
-    <value>Hold down Shift key to change orientation of splitter.
-To merge zones, hold down the left mouse button, drag the mouse to the zone to merge, release the mouse button and click "Merge zones".</value>
-  </data>
   <data name="Save_Apply" xml:space="preserve">
     <value>Save &amp; apply</value>
   </data>
@@ -333,5 +329,21 @@ To merge zones, hold down the left mouse button, drag the mouse to the zone to m
   </data>
   <data name="Default_Custom_Layout_Name" xml:space="preserve">
     <value>Custom layout</value>
+  </data>
+  <data name="MergeDescription" xml:space="preserve">
+    <value>Click and drag across zones.</value>
+    <comment>Click mouse, hold button down and drag across multiple zones in tool</comment>
+  </data>
+  <data name="MergeName" xml:space="preserve">
+    <value>Merge/Delete:</value>
+    <comment>Title for concept behind Merging two zones together or removing an zone</comment>
+  </data>
+  <data name="SplitterDescription" xml:space="preserve">
+    <value>Hold Shift key for vertical split.</value>
+    <comment>A segmenter visual for splitting one item into two.  This would be the vertical line. Shift key is referring to key on keyboard</comment>
+  </data>
+  <data name="SplitterName" xml:space="preserve">
+    <value>Splitter:</value>
+    <comment>Title for concept: A segmenter visual for splitting one item into two.  This would be the vertical line</comment>
   </data>
 </root>
