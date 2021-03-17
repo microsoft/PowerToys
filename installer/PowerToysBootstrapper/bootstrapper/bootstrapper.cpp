@@ -199,7 +199,7 @@ int Bootstrapper(HINSTANCE hInstance)
     const VersionHelper myVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
 
     // Do not support installing on Windows < 1903
-    if (myVersion >= VersionHelper{0, 37, 0} && updating::is_old_windows_version())
+    if (myVersion >= VersionHelper{0, 36, 0} && updating::is_old_windows_version())
     {
       ShowMessageBoxError(IDS_OLD_WINDOWS_ERROR);
       spdlog::error("PowerToys {} requires at least Windows 1903 to run.", myVersion.toString());
