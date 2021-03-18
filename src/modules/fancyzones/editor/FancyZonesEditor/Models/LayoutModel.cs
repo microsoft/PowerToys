@@ -18,7 +18,7 @@ namespace FancyZonesEditor.Models
             _guid = Guid.NewGuid();
             Type = LayoutType.Custom;
 
-            MainWindowSettingsModel.QuickKeys.PropertyChanged += FastAccessKeys_PropertyChanged;
+            MainWindowSettingsModel.QuickKeys.PropertyChanged += QuickSwitchKeys_PropertyChanged;
         }
 
         protected LayoutModel(string name)
@@ -30,7 +30,7 @@ namespace FancyZonesEditor.Models
         protected LayoutModel(string uuid, string name, LayoutType type)
             : this()
         {
-            Uuid = uuid;
+            _guid = Guid.Parse(uuid);
             Name = name;
             Type = type;
         }
@@ -53,7 +53,7 @@ namespace FancyZonesEditor.Models
             _zoneCount = other._zoneCount;
             _quickKey = other._quickKey;
 
-            MainWindowSettingsModel.QuickKeys.PropertyChanged += FastAccessKeys_PropertyChanged;
+            MainWindowSettingsModel.QuickKeys.PropertyChanged += QuickSwitchKeys_PropertyChanged;
         }
 
         // Name - the display name for this layout model - is also used as the key in the registry
@@ -93,17 +93,6 @@ namespace FancyZonesEditor.Models
             get
             {
                 return "{" + Guid.ToString().ToUpperInvariant() + "}";
-            }
-
-            set
-            {
-                try
-                {
-                    _guid = Guid.Parse(value);
-                }
-                catch (Exception)
-                {
-                }
             }
         }
 
@@ -313,7 +302,7 @@ namespace FancyZonesEditor.Models
             PersistData();
         }
 
-        private void FastAccessKeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void QuickSwitchKeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
             {

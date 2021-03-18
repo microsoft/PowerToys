@@ -169,8 +169,6 @@ namespace FancyZonesEditor.Utils
         // zones-settings: templates
         private struct TemplateLayoutWrapper
         {
-            public string Uuid { get; set; }
-
             public string Type { get; set; }
 
             public bool ShowSpacing { get; set; }
@@ -547,7 +545,7 @@ namespace FancyZonesEditor.Utils
                     bool devicesParsingResult = SetDevices(zoneSettings.Devices);
                     bool customZonesParsingResult = SetCustomLayouts(zoneSettings.CustomZoneSets);
                     bool templatesParsingResult = SetTemplateLayouts(zoneSettings.Templates);
-                    bool fastAccessKeysParsingResult = SetFastAccessKeys(zoneSettings.QuickLayoutKeys);
+                    bool quickLayoutSwitchKeysParsingResult = SetQuickLayoutSwitchKeys(zoneSettings.QuickLayoutKeys);
 
                     if (!devicesParsingResult || !customZonesParsingResult)
                     {
@@ -692,7 +690,6 @@ namespace FancyZonesEditor.Utils
             {
                 TemplateLayoutWrapper wrapper = new TemplateLayoutWrapper
                 {
-                    Uuid = layout.Uuid,
                     Type = LayoutTypeToJsonTag(layout.Type),
                     SensitivityRadius = layout.SensitivityRadius,
                     ZoneCount = layout.TemplateZoneCount,
@@ -707,7 +704,7 @@ namespace FancyZonesEditor.Utils
                 zoneSettings.Templates.Add(wrapper);
             }
 
-            // Serialize fast access layout keys
+            // Serialize quick layout switch keys
             foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
             {
                 if (pair.Value != string.Empty)
@@ -824,7 +821,15 @@ namespace FancyZonesEditor.Utils
                         zones.Add(new Int32Rect { X = (int)zone.X, Y = (int)zone.Y, Width = (int)zone.Width, Height = (int)zone.Height });
                     }
 
-                    layout = new CanvasLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, zones, info.RefWidth, info.RefHeight);
+                    try
+                    {
+                        layout = new CanvasLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, zones, info.RefWidth, info.RefHeight);
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+
                     layout.SensitivityRadius = info.SensitivityRadius;
                 }
                 else if (zoneSet.Type == GridLayoutModel.ModelTypeID)
@@ -840,7 +845,15 @@ namespace FancyZonesEditor.Utils
                         }
                     }
 
-                    layout = new GridLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, info.Rows, info.Columns, info.RowsPercentage, info.ColumnsPercentage, cells);
+                    try
+                    {
+                        layout = new GridLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, info.Rows, info.Columns, info.RowsPercentage, info.ColumnsPercentage, cells);
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+
                     layout.SensitivityRadius = info.SensitivityRadius;
                     (layout as GridLayoutModel).ShowSpacing = info.ShowSpacing;
                     (layout as GridLayoutModel).Spacing = info.Spacing;
@@ -869,7 +882,6 @@ namespace FancyZonesEditor.Utils
                 LayoutType type = JsonTagToLayoutType(wrapper.Type);
                 LayoutModel layout = MainWindowSettingsModel.DefaultModels[(int)type];
 
-                layout.Uuid = wrapper.Uuid;
                 layout.SensitivityRadius = wrapper.SensitivityRadius;
                 layout.TemplateZoneCount = wrapper.ZoneCount;
 
@@ -885,15 +897,15 @@ namespace FancyZonesEditor.Utils
             return true;
         }
 
-        private bool SetFastAccessKeys(List<QuickLayoutKeysWrapper> fastAccessKeys)
+        private bool SetQuickLayoutSwitchKeys(List<QuickLayoutKeysWrapper> quickSwitchKeys)
         {
-            if (fastAccessKeys == null)
+            if (quickSwitchKeys == null)
             {
                 return false;
             }
 
             MainWindowSettingsModel.QuickKeys.CleanUp();
-            foreach (var wrapper in fastAccessKeys)
+            foreach (var wrapper in quickSwitchKeys)
             {
                 MainWindowSettingsModel.QuickKeys.SelectKey(wrapper.Key.ToString(), wrapper.Uuid);
             }
