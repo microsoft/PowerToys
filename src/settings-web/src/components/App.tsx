@@ -2,7 +2,6 @@ import React from 'react';
 import {Stack, Text, Nav, DefaultButton, PrimaryButton, ScrollablePane, INavLink, Spinner, SpinnerSize, Dialog, DialogType, DialogFooter, getTheme} from 'office-ui-fabric-react';
 import {GeneralSettings} from './GeneralSettings';
 import {ModuleSettings} from './ModuleSettings';
-import '../css/layout.css';
 import {setup_powertoys_icons} from '../setup_icons';
 
 // Register fabric UI icons and powertoys logos as icons.
