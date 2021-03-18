@@ -500,12 +500,14 @@
 
                     <TextBlock Text="{x:Static props:Resources.QuickKey_Select}"
                                Margin="0,16,0,0"
-                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                               Foreground="{DynamicResource PrimaryForegroundBrush}"
+                               Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"/>
                     <ComboBox x:Name="quickKeySelectionComboBox" 
                               Margin="0,6,0,0"
                               ItemsSource="{Binding QuickKeysAvailable}"
                               SelectedItem="{Binding QuickKey}"
-                              Width="106" />
+                              Width="106"
+                              Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"/>
                 </StackPanel>
             </Grid>
         </ui:ContentDialog>
