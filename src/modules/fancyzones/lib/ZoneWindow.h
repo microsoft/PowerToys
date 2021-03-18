@@ -118,6 +118,10 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * Clear the selected zones when this ZoneWindow loses focus.
      */
     IFACEMETHOD_(void, ClearSelectedZones)() = 0;
+    /*
+     * Display the layout on the screen and then hide it.
+     */
+    IFACEMETHOD_(void, FlashZones)() = 0;
 };
 
 winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor,

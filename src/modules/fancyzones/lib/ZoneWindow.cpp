@@ -140,6 +140,8 @@ public:
     UpdateActiveZoneSet() noexcept;
     IFACEMETHODIMP_(void)
     ClearSelectedZones() noexcept;
+    IFACEMETHODIMP_(void)
+    FlashZones() noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -437,6 +439,13 @@ ZoneWindow::ClearSelectedZones() noexcept
         m_highlightZone.clear();
         m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
     }
+}
+
+IFACEMETHODIMP_(void)
+ZoneWindow::FlashZones() noexcept
+{
+    m_zoneWindowDrawing->Flash(m_flashDuration);
+    m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), {}, m_host);
 }
 
 #pragma region private

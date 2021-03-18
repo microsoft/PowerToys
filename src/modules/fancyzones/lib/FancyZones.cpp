@@ -236,6 +236,7 @@ private:
     void UpdateZoneSets() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
     void ApplyQuickLayout(int key) noexcept;
+    void FlashZones() noexcept;
 
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
@@ -1412,6 +1413,14 @@ void FancyZones::ApplyQuickLayout(int vKey) noexcept
     FancyZonesDataInstance().SetActiveZoneSet(workArea->UniqueId(), data);
     FancyZonesDataInstance().SaveZoneSettings();
     UpdateZoneSets();
+
+    if (m_settings->GetSettings()->flashZonesOnQuickSwitch)
+    {
+        for (auto [monitor, workArea] : m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId))
+        {
+            workArea->FlashZones();
+        }
+    }
 }
 
 std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept

@@ -26,6 +26,7 @@ class ZoneWindowDrawing
     {
         std::chrono::steady_clock::time_point tStart;
         unsigned duration;
+        bool fadeIn;
     };
 
     HWND m_window = nullptr;
@@ -55,6 +56,7 @@ public:
     ZoneWindowDrawing(HWND window);
     void Hide();
     void Show(unsigned animationMillis);
+    void Flash(unsigned animationMillis);
     void ForceRender();
     void DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                            const std::vector<size_t>& highlightZones,

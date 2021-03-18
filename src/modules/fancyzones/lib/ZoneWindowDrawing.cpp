@@ -24,13 +24,14 @@ float ZoneWindowDrawing::GetAnimationAlpha()
 
     auto tNow = std::chrono::steady_clock().now();
     auto alpha = (tNow - m_animation->tStart).count() / (1e6f * m_animation->duration);
-    if (alpha < 1.f)
+
+    if (m_animation->fadeIn)
     {
-        return alpha;
+        return min(alpha, 1.f);
     }
     else
     {
-        return 1.f;
+        return 1.f - alpha;
     }
 }
 
@@ -113,7 +114,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
                     animationAlpha = GetAnimationAlpha();
                 }
 
-                if (animationAlpha < 1.f)
+                if (0.f < animationAlpha && animationAlpha < 1.f)
                 {
                     m_shouldRender = true;
                 }
@@ -135,9 +136,17 @@ void ZoneWindowDrawing::Render()
 
     m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
 
-    m_renderTarget->BeginDraw();
-    
     float animationAlpha = GetAnimationAlpha();
+    if (animationAlpha < 0.f)
+    {
+        // Fade-out expired, hide the window.
+        // Free the lock, allowing Hide() to take it
+        lock.unlock();
+        Hide();
+        return;
+    }
+
+    m_renderTarget->BeginDraw();
 
     // Draw backdrop
     m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
@@ -225,14 +234,37 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
     if (!m_animation)
     {
         ShowWindow(m_window, SW_SHOWNA);
-        if (animationMillis > 0)
-        {
-            m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis });
-        }
-        m_shouldRender = true;
-        m_cv.notify_all();
     }
+
+    if (animationMillis > 0)
+    {
+        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, true });
+    }
+
+    m_shouldRender = true;
+    m_cv.notify_all();
 }
+
+void ZoneWindowDrawing::Flash(unsigned animationMillis)
+{
+    m_lowLatencyLock = true;
+    std::unique_lock lock(m_mutex);
+    m_lowLatencyLock = false;
+
+    if (!m_animation)
+    {
+        ShowWindow(m_window, SW_SHOWNA);
+    }
+
+    if (animationMillis > 0)
+    {
+        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
+    }
+
+    m_shouldRender = true;
+    m_cv.notify_all();
+}
+
 
 void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                        const std::vector<size_t>& highlightZones,
