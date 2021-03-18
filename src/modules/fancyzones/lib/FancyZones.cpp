@@ -568,7 +568,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
     }
 
-    if (!shift && win && ctrl && alt)
+    if (!shift && win && ctrl && alt && m_settings->GetSettings()->quickLayoutSwitch)
     {
         if ('0' <= info->vkCode && info->vkCode <= '9')
         {
