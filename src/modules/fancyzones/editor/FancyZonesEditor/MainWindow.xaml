@@ -462,14 +462,14 @@
                                 </StackPanel>
                     <TextBox Text="{Binding Name}"
                              ui:ControlHelper.Header="{x:Static props:Resources.Name}"
-                             Margin="0,16,0,0"
+                             Margin="0,16,2,0"
                              Visibility="{Binding IsCustom, Converter={StaticResource BooleanToVisibilityConverter}}"
                              HorizontalAlignment="Stretch" />
                     
                     <CheckBox x:Name="spaceAroundSetting"
                               Content="{x:Static props:Resources.Show_Space_Zones}"
                               IsChecked="{Binding ShowSpacing}"
-                              Margin="0,16,0,0"
+                              Margin="0,16,12,0"
                               Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
 
                     <ui:NumberBox Margin="0,6,0,0"
@@ -485,7 +485,8 @@
 
                     <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
                                IsEnabled="{Binding ShowSpacing}"
-                               Margin="0,16,0,0"
+                               Margin="0,16,12,0"
+                               TextWrapping="Wrap"
                                Foreground="{DynamicResource PrimaryForegroundBrush}"
                                x:Name="sensitivityRadiusValue" />
 
@@ -499,8 +500,9 @@
                                   AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}" />
 
                     <TextBlock Text="{x:Static props:Resources.QuickKey_Select}"
-                               Margin="0,16,0,0"
+                               Margin="0,16,12,0"
                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                               TextWrapping="Wrap"
                                Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"/>
                     <ComboBox x:Name="quickKeySelectionComboBox" 
                               Margin="0,6,0,0"
