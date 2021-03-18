@@ -1,5 +1,5 @@
 const path = require('path')
-const { webpackMerge, basicWebpackConfig, stylesOverlay, tsOverlay } = require('just-scripts');
+const { webpackMerge, basicWebpackConfig, tsOverlay } = require('just-scripts');
 
 // Overrides the Just file overlay so that SVGs can be used as a React Component.
 powertoys_fileOverlay = {
@@ -20,4 +20,4 @@ powertoys_fileOverlay = {
   }
 };
 
-module.exports = webpackMerge(basicWebpackConfig, stylesOverlay, tsOverlay, powertoys_fileOverlay);
+module.exports = webpackMerge(basicWebpackConfig, tsOverlay, powertoys_fileOverlay);
