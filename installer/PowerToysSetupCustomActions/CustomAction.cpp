@@ -3,6 +3,7 @@
 #include <ProjectTelemetry.h>
 
 #include "../../src/common/updating/installer.h"
+#include "../../src/common/version/version.h"
 
 using namespace std;
 
@@ -416,6 +417,7 @@ UINT __stdcall TelemetryLogInstallSuccessCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "Install_Success",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -436,6 +438,7 @@ UINT __stdcall TelemetryLogInstallCancelCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "Install_Cancel",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -456,6 +459,7 @@ UINT __stdcall TelemetryLogInstallFailCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "Install_Fail",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -476,6 +480,7 @@ UINT __stdcall TelemetryLogUninstallSuccessCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "UnInstall_Success",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -496,6 +501,7 @@ UINT __stdcall TelemetryLogUninstallCancelCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "UnInstall_Cancel",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -516,6 +522,7 @@ UINT __stdcall TelemetryLogUninstallFailCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "UnInstall_Fail",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -536,6 +543,7 @@ UINT __stdcall TelemetryLogRepairCancelCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "Repair_Cancel",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -556,6 +564,7 @@ UINT __stdcall TelemetryLogRepairFailCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "Repair_Fail",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
