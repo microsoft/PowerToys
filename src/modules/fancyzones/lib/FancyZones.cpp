@@ -236,7 +236,6 @@ private:
     void UpdateZoneSets() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
     void ApplyQuickLayout(int key) noexcept;
-    void FlashZones() noexcept;
 
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
