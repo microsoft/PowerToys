@@ -114,16 +114,16 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
 
             // Force repeated rendering while in the animation loop.
             // Yield if low latency locking was requested
-            if (animationAlpha > 0.f)
+            if (!m_lowLatencyLock)
             {
-                if (!m_lowLatencyLock)
+                if (animationAlpha > 0.f)
                 {
                     m_shouldRender = true;
                 }
-            }
-            else
-            {
-                Hide();
+                else
+                {
+                    Hide();
+                }
             }
 
             Render();
@@ -231,7 +231,7 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
 
     if (!m_animation)
     {
-        ShowWindowAsync(m_window, SW_SHOWNA);
+        ShowWindow(m_window, SW_SHOWNA);
     }
 
     animationMillis = max(animationMillis, 1);
@@ -254,11 +254,15 @@ void ZoneWindowDrawing::Flash(unsigned animationMillis)
 
     if (!m_animation)
     {
-        ShowWindowAsync(m_window, SW_SHOWNA);
+        ShowWindow(m_window, SW_SHOWNA);
     }
 
     animationMillis = max(animationMillis, 1);
-    m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
+
+    if (!m_animation || m_animation->fadeIn)
+    {
+        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
+    }
 
     m_shouldRender = true;
     m_cv.notify_all();
