@@ -167,7 +167,7 @@ private:
     WPARAM m_keyLast{};
     size_t m_keyCycle{};
     static const UINT m_showAnimationDuration = 200; // ms
-    static const UINT m_flashDuration = 700; // ms
+    static const UINT m_flashDuration = 1000; // ms
     std::unique_ptr<ZoneWindowDrawing> m_zoneWindowDrawing;
 };
 
@@ -444,8 +444,11 @@ ZoneWindow::ClearSelectedZones() noexcept
 IFACEMETHODIMP_(void)
 ZoneWindow::FlashZones() noexcept
 {
-    m_zoneWindowDrawing->Flash(m_flashDuration);
-    m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), {}, m_host);
+    if (m_window)
+    {
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), {}, m_host);
+        m_zoneWindowDrawing->Flash(m_flashDuration);
+    }
 }
 
 #pragma region private

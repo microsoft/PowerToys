@@ -19,7 +19,7 @@ float ZoneWindowDrawing::GetAnimationAlpha()
     // Lock is being held
     if (!m_animation)
     {
-        return 1.f;
+        return 0.f;
     }
 
     auto tNow = std::chrono::steady_clock().now();
@@ -27,11 +27,13 @@ float ZoneWindowDrawing::GetAnimationAlpha()
 
     if (m_animation->fadeIn)
     {
-        return min(alpha, 1.f);
+        // Return a positive value to avoid hiding
+        return std::clamp(alpha, 0.001f, 1.f);
     }
     else
     {
-        return 1.f - alpha;
+        // Quadratic function looks better
+        return std::clamp(1.f - alpha * alpha, 0.f, 1.f);
     }
 }
 
@@ -104,20 +106,24 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     m_renderThread = std::thread([this]() {
         while (!m_abortThread)
         {
+            float animationAlpha;
+            {
+                std::unique_lock lock(m_mutex);
+                animationAlpha = GetAnimationAlpha();
+            }
+
             // Force repeated rendering while in the animation loop.
             // Yield if low latency locking was requested
-            if (!m_lowLatencyLock)
+            if (animationAlpha > 0.f)
             {
-                float animationAlpha;
-                {
-                    std::unique_lock lock(m_mutex);
-                    animationAlpha = GetAnimationAlpha();
-                }
-
-                if (0.f < animationAlpha && animationAlpha < 1.f)
+                if (!m_lowLatencyLock)
                 {
                     m_shouldRender = true;
                 }
+            }
+            else
+            {
+                Hide();
             }
 
             Render();
@@ -137,14 +143,6 @@ void ZoneWindowDrawing::Render()
     m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
 
     float animationAlpha = GetAnimationAlpha();
-    if (animationAlpha < 0.f)
-    {
-        // Fade-out expired, hide the window.
-        // Free the lock, allowing Hide() to take it
-        lock.unlock();
-        Hide();
-        return;
-    }
 
     m_renderTarget->BeginDraw();
 
@@ -220,7 +218,7 @@ void ZoneWindowDrawing::Hide()
     if (m_animation)
     {
         m_animation.reset();
-        ShowWindow(m_window, SW_HIDE);
+        ShowWindowAsync(m_window, SW_HIDE);
     }
 }
 
@@ -233,10 +231,12 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
 
     if (!m_animation)
     {
-        ShowWindow(m_window, SW_SHOWNA);
+        ShowWindowAsync(m_window, SW_SHOWNA);
     }
 
-    if (animationMillis > 0)
+    animationMillis = max(animationMillis, 1);
+
+    if (!m_animation || !m_animation->fadeIn)
     {
         m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, true });
     }
@@ -253,13 +253,11 @@ void ZoneWindowDrawing::Flash(unsigned animationMillis)
 
     if (!m_animation)
     {
-        ShowWindow(m_window, SW_SHOWNA);
+        ShowWindowAsync(m_window, SW_SHOWNA);
     }
 
-    if (animationMillis > 0)
-    {
-        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
-    }
+    animationMillis = max(animationMillis, 1);
+    m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
 
     m_shouldRender = true;
     m_cv.notify_all();
