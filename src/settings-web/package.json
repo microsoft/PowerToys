@@ -15,7 +15,7 @@
     "preinstall": "npx npm-force-resolutions",
     "just": "just-scripts",
     "clean": "rimraf build lib lib-commonjs && just-scripts clean",
-    "build": "rimraf build && just-scripts build --min --production && copy *.html build && react-snap && xcopy build\\* ..\\settings\\settings-html /sy",
+    "build": "rimraf build && just-scripts build --min --production && copy *.html build && copy src\\css\\layout.css build\\dist && react-snap && xcopy build\\* ..\\settings\\settings-html /sy",
     "test": "just-scripts test",
     "test:update": "just-scripts jest -u",
     "test:start": "just-scripts start-test",
@@ -43,7 +43,10 @@
     "just-scripts": "^0.18.0",
     "just-stack-uifabric": "^1.0.2",
     "react-snap": "^1.23.0",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "ts-loader": "^8.0.18",
+    "typescript": "^4.2.3",
+    "webpack": "^5.26.3"
   },
   "just": {
     "stack": "just-stack-uifabric"

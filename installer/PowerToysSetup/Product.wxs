@@ -754,6 +754,9 @@
       <Component Id="settings_js_bundle" Guid="9EF539C1-2F50-421E-B074-C58ED3A9785C" Win64="yes">
         <File Source="$(var.RepoDir)\src\settings\settings-html\dist\bundle.js" KeyPath="yes" />
       </Component>
+      <Component Id="settings_css" Guid="9B8EBF56-A7A7-4D83-B53C-75A692E2F95A" Win64="yes">
+        <File Source="$(var.RepoDir)\src\settings\settings-html\dist\layout.css" KeyPath="yes" />
+      </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="DesktopFolder">
@@ -814,6 +817,7 @@
       <ComponentRef Id="settings_html" />
       <ComponentRef Id="settings_dark_html" />
       <ComponentRef Id="settings_js_bundle" />
+      <ComponentRef Id="settings_css" />
     </ComponentGroup>
     <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
       <ComponentRef Id="BugReportTool_exe" />
