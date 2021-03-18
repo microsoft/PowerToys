@@ -247,6 +247,7 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
 
 void ZoneWindowDrawing::Flash(unsigned animationMillis)
 {
+    _TRACER_;
     m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
     m_lowLatencyLock = false;
