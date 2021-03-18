@@ -7,6 +7,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Community.PowerToys.Run.Plugin.VSCodeWorkspaces</RootNamespace>
     <AssemblyName>Community.PowerToys.Run.Plugin.VSCodeWorkspaces</AssemblyName>
+    <Version>$(Version).0</Version>
     <useWPF>true</useWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
