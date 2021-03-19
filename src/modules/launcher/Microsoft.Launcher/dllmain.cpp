@@ -82,6 +82,16 @@ private:
     HANDLE m_hEvent;
 
     HANDLE send_telemetry_event;
+
+    SECURITY_ATTRIBUTES getDefaultSecurityAttribute() 
+    {
+        SECURITY_ATTRIBUTES sa;
+        sa.nLength = sizeof(sa);
+        sa.bInheritHandle = false;
+        sa.lpSecurityDescriptor = NULL;
+        return sa;
+    }
+
 public:
     // Constructor
     Microsoft_Launcher()
@@ -94,12 +104,10 @@ public:
         Logger::info("Launcher object is constructing");
         init_settings();
 
-        SECURITY_ATTRIBUTES sa;
-        sa.nLength = sizeof(sa);
-        sa.bInheritHandle = false;
-        sa.lpSecurityDescriptor = NULL;
-        m_hEvent = CreateEventW(&sa, FALSE, FALSE, CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
-        send_telemetry_event = CreateEventW(&sa, FALSE, FALSE, CommonSharedConstants::SEND_RUN_SETTINGS_TELEMETRY_EVENT);
+        auto sa1 = getDefaultSecurityAttribute();
+        m_hEvent = CreateEventW(&sa1, FALSE, FALSE, CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
+        auto sa2 = getDefaultSecurityAttribute();
+        send_telemetry_event = CreateEventW(&sa2, FALSE, FALSE, CommonSharedConstants::SEND_RUN_SETTINGS_TELEMETRY_EVENT);
     };
 
     ~Microsoft_Launcher()

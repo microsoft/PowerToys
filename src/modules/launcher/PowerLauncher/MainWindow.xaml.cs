@@ -50,17 +50,15 @@ namespace PowerLauncher
         private void SendSettingsTelemetry()
         {
             Log.Info("Send Run settings telemetry", this.GetType());
-            var telemetryEvent = new RunSettingsEvent()
+            var plugins = PluginManager.AllPlugins.ToDictionary(x => x.Metadata.Name, x => new PluginModel()
             {
-                PluginManager = PluginManager.AllPlugins.ToDictionary(x => x.Metadata.Name, x => new PluginModel()
-                {
-                    Name = x.Metadata.Name,
-                    Disabled = x.Metadata.Disabled,
-                    ActionKeyword = x.Metadata.ActionKeyword,
-                    IsGlobal = x.Metadata.IsGlobal,
-                }),
-            };
+                Name = x.Metadata.Name,
+                Disabled = x.Metadata.Disabled,
+                ActionKeyword = x.Metadata.ActionKeyword,
+                IsGlobal = x.Metadata.IsGlobal,
+            });
 
+            var telemetryEvent = new RunPluginsSettingsEvent(plugins);
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
         }
 

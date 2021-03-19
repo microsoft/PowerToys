@@ -3,16 +3,21 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
 namespace PowerLauncher.Telemetry.Events
 {
-    public class RunSettingsEvent : EventBase, IEvent
+    [EventData]
+    public class RunPluginsSettingsEvent : EventBase, IEvent
     {
-#pragma warning disable CA2227 // Collection properties should be read only
-        public IDictionary<string, PluginModel> PluginManager { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
+        public RunPluginsSettingsEvent(IDictionary<string, PluginModel> pluginManager)
+        {
+            PluginManager = pluginManager;
+        }
+
+        public IDictionary<string, PluginModel> PluginManager { get; private set; }
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
