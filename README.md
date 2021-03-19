@@ -158,6 +158,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct][oss-conduct
 
 The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has the trends from the telemetry. Please read the [Microsoft privacy statement][privacy-link] for more information.
 
+<!-- links -->
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
 [community-link]: COMMUNITY.md
