@@ -81,6 +81,17 @@ private:
     // Handle to event used to invoke the Runner
     HANDLE m_hEvent;
 
+    HANDLE send_telemetry_event;
+
+    SECURITY_ATTRIBUTES getDefaultSecurityAttribute() 
+    {
+        SECURITY_ATTRIBUTES sa;
+        sa.nLength = sizeof(sa);
+        sa.bInheritHandle = false;
+        sa.lpSecurityDescriptor = NULL;
+        return sa;
+    }
+
 public:
     // Constructor
     Microsoft_Launcher()
@@ -93,11 +104,10 @@ public:
         Logger::info("Launcher object is constructing");
         init_settings();
 
-        SECURITY_ATTRIBUTES sa;
-        sa.nLength = sizeof(sa);
-        sa.bInheritHandle = false;
-        sa.lpSecurityDescriptor = NULL;
-        m_hEvent = CreateEventW(&sa, FALSE, FALSE, CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
+        auto sa1 = getDefaultSecurityAttribute();
+        m_hEvent = CreateEventW(&sa1, FALSE, FALSE, CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
+        auto sa2 = getDefaultSecurityAttribute();
+        send_telemetry_event = CreateEventW(&sa2, FALSE, FALSE, CommonSharedConstants::RUN_SEND_SETTINGS_TELEMETRY_EVENT);
     };
 
     ~Microsoft_Launcher()
@@ -185,6 +195,7 @@ public:
     {
         Logger::info("Launcher is enabling");
         ResetEvent(m_hEvent);
+        ResetEvent(send_telemetry_event);
         // Start PowerLauncher.exe only if the OS is 19H1 or higher
         if (UseNewSettings())
         {
@@ -265,6 +276,7 @@ public:
         if (m_enabled)
         {
             ResetEvent(m_hEvent);
+            ResetEvent(send_telemetry_event);
             terminateProcess();
         }
 
@@ -346,6 +358,12 @@ public:
             TerminateProcess(m_hProcess, 1);
         }
         */
+    }
+
+    virtual void send_settings_telemetry() override
+    {
+        Logger::info("Send settings telemetry");
+        SetEvent(send_telemetry_event);
     }
 };
 
