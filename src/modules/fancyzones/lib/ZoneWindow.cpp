@@ -124,8 +124,6 @@ public:
     MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
     ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
-    IFACEMETHODIMP_(void)
-    CycleActiveZoneSet(DWORD vkCode) noexcept;
     IFACEMETHODIMP_(std::wstring)
     UniqueId() noexcept { return { m_uniqueId }; }
     IFACEMETHODIMP_(void)
@@ -151,9 +149,8 @@ private:
     void CalculateZoneSet() noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    void OnKeyUp(WPARAM wparam) noexcept;
     std::vector<size_t> ZonesFromPoint(POINT pt) noexcept;
-    void CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept;
+    void SetAsTopmostWindow() noexcept;
 
     winrt::com_ptr<IZoneWindowHost> m_host;
     HMONITOR m_monitor{};
@@ -362,17 +359,6 @@ ZoneWindow::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexce
 }
 
 IFACEMETHODIMP_(void)
-ZoneWindow::CycleActiveZoneSet(DWORD wparam) noexcept
-{
-    CycleActiveZoneSetInternal(wparam, Trace::ZoneWindow::InputMode::Keyboard);
-
-    if (m_windowMoveSize)
-    {
-        InvalidateRect(m_window, nullptr, true);
-    }
-}
-
-IFACEMETHODIMP_(void)
 ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
 {
     if (m_activeZoneSet)
@@ -394,23 +380,12 @@ ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
 IFACEMETHODIMP_(void)
 ZoneWindow::ShowZoneWindow() noexcept
 {
-    auto window = m_window;
-    if (!window)
+    if (m_window)
     {
-        return;
+        SetAsTopmostWindow();
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
+        m_zoneWindowDrawing->Show(m_showAnimationDuration);
     }
-
-    UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
-
-    HWND windowInsertAfter = m_windowMoveSize;
-    if (windowInsertAfter == nullptr)
-    {
-        windowInsertAfter = HWND_TOPMOST;
-    }
-
-    SetWindowPos(window, windowInsertAfter, 0, 0, 0, 0, flags);
-    m_zoneWindowDrawing->Show(m_showAnimationDuration);
-    m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
 }
 
 IFACEMETHODIMP_(void)
@@ -446,6 +421,7 @@ ZoneWindow::FlashZones() noexcept
 {
     if (m_window)
     {
+        SetAsTopmostWindow();
         m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), {}, m_host);
         m_zoneWindowDrawing->Flash(m_flashDuration);
     }
@@ -553,30 +529,12 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     case WM_ERASEBKGND:
         return 1;
 
-    case WM_PAINT:
-    {
-        m_zoneWindowDrawing->ForceRender();
-        break;
-    }
-
     default:
     {
         return DefWindowProc(m_window, message, wparam, lparam);
     }
     }
     return 0;
-}
-
-void ZoneWindow::OnKeyUp(WPARAM wparam) noexcept
-{
-    bool fRedraw = false;
-    Trace::ZoneWindow::KeyUp(wparam);
-
-    if ((wparam >= '0') && (wparam <= '9'))
-    {
-        CycleActiveZoneSetInternal(static_cast<DWORD>(wparam), Trace::ZoneWindow::InputMode::Keyboard);
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
-    }
 }
 
 std::vector<size_t> ZoneWindow::ZonesFromPoint(POINT pt) noexcept
@@ -588,52 +546,22 @@ std::vector<size_t> ZoneWindow::ZonesFromPoint(POINT pt) noexcept
     return {};
 }
 
-void ZoneWindow::CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept
+void ZoneWindow::SetAsTopmostWindow() noexcept
 {
-    Trace::ZoneWindow::CycleActiveZoneSet(m_activeZoneSet, mode);
-    if (m_keyLast != wparam)
+    if (!m_window)
     {
-        m_keyCycle = 0;
+        return;
     }
 
-    m_keyLast = wparam;
+    UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
 
-    bool loopAround = true;
-    size_t const val = static_cast<size_t>(wparam - L'0');
-    size_t i = 0;
-    for (auto zoneSet : m_zoneSets)
+    HWND windowInsertAfter = m_windowMoveSize;
+    if (windowInsertAfter == nullptr)
     {
-        if (zoneSet->GetZones().size() == val)
-        {
-            if (i < m_keyCycle)
-            {
-                i++;
-            }
-            else
-            {
-                UpdateActiveZoneSet(zoneSet.get());
-                loopAround = false;
-                break;
-            }
-        }
+        windowInsertAfter = HWND_TOPMOST;
     }
 
-    if ((m_keyCycle > 0) && loopAround)
-    {
-        // Cycling through a non-empty group and hit the end
-        m_keyCycle = 0;
-        OnKeyUp(wparam);
-    }
-    else
-    {
-        m_keyCycle++;
-    }
-
-    if (m_host)
-    {
-        m_host->MoveWindowsOnActiveZoneSetChange();
-    }
-    m_highlightZone = {};
+    SetWindowPos(m_window, windowInsertAfter, 0, 0, 0, 0, flags);
 }
 
 #pragma endregion

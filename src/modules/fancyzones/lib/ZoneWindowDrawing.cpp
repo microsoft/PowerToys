@@ -103,32 +103,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
         return;
     }
 
-    m_renderThread = std::thread([this]() {
-        while (!m_abortThread)
-        {
-            float animationAlpha;
-            {
-                std::unique_lock lock(m_mutex);
-                animationAlpha = GetAnimationAlpha();
-            }
-
-            // Force repeated rendering while in the animation loop.
-            // Yield if low latency locking was requested
-            if (!m_lowLatencyLock)
-            {
-                if (animationAlpha > 0.f)
-                {
-                    m_shouldRender = true;
-                }
-                else
-                {
-                    Hide();
-                }
-            }
-
-            Render();
-        }
-    });
+    m_renderThread = std::thread([this]() { RenderLoop(); });
 }
 
 void ZoneWindowDrawing::Render()
@@ -140,9 +115,12 @@ void ZoneWindowDrawing::Render()
         return;
     }
 
-    m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
-
     float animationAlpha = GetAnimationAlpha();
+
+    if (animationAlpha <= 0.f)
+    {
+        return;
+    }
 
     m_renderTarget->BeginDraw();
 
@@ -204,32 +182,59 @@ void ZoneWindowDrawing::Render()
         textBrush->Release();
     }
 
+    // The lock must be released here, as EndDraw() will wait for Vsync
+    lock.unlock();
+
     m_renderTarget->EndDraw();
-    m_shouldRender = false;
+}
+
+void ZoneWindowDrawing::RenderLoop()
+{
+    while (!m_abortThread)
+    {
+        float animationAlpha;
+        {
+            // The lock must be held by the caller when calling GetAnimationAlpha
+            std::unique_lock lock(m_mutex);
+            animationAlpha = GetAnimationAlpha();
+        }
+
+        // Check whether the animation expired and we need to hide the window
+        if (animationAlpha <= 0.f)
+        {
+            Hide();
+        }
+
+        {
+            // Wait here while rendering is disabled
+            std::unique_lock lock(m_mutex);
+            m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
+        }
+        
+        Render();
+    }
 }
 
 void ZoneWindowDrawing::Hide()
 {
     _TRACER_;
-    m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
-    m_lowLatencyLock = false;
 
-    if (m_animation)
+    m_animation.reset();
+
+    if (m_shouldRender)
     {
-        m_animation.reset();
-        ShowWindowAsync(m_window, SW_HIDE);
+        m_shouldRender = false;
+        ShowWindow(m_window, SW_HIDE);
     }
 }
 
 void ZoneWindowDrawing::Show(unsigned animationMillis)
 {
     _TRACER_;
-    m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
-    m_lowLatencyLock = false;
-
-    if (!m_animation)
+    
+    if (!m_shouldRender)
     {
         ShowWindow(m_window, SW_SHOWNA);
     }
@@ -248,35 +253,27 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
 void ZoneWindowDrawing::Flash(unsigned animationMillis)
 {
     _TRACER_;
-    m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
-    m_lowLatencyLock = false;
 
-    if (!m_animation)
+    if (!m_shouldRender)
     {
         ShowWindow(m_window, SW_SHOWNA);
     }
 
     animationMillis = max(animationMillis, 1);
 
-    if (!m_animation || m_animation->fadeIn)
-    {
-        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
-    }
+    m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
 
     m_shouldRender = true;
     m_cv.notify_all();
 }
-
 
 void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                        const std::vector<size_t>& highlightZones,
                        winrt::com_ptr<IZoneWindowHost> host)
 {
     _TRACER_;
-    m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
-    m_lowLatencyLock = false;
 
     m_sceneRects = {};
 
@@ -334,18 +331,6 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
             m_sceneRects.push_back(drawableRect);
         }
     }
-
-    m_shouldRender = true;
-    m_cv.notify_all();
-}
-
-void ZoneWindowDrawing::ForceRender()
-{
-    m_lowLatencyLock = true;
-    std::unique_lock lock(m_mutex);
-    m_lowLatencyLock = false;
-    m_shouldRender = true;
-    m_cv.notify_all();
 }
 
 ZoneWindowDrawing::~ZoneWindowDrawing()

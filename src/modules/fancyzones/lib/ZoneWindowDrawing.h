@@ -43,10 +43,10 @@ class ZoneWindowDrawing
     static D2D1_COLOR_F ConvertColor(COLORREF color);
     static D2D1_RECT_F ConvertRect(RECT rect);
     void Render();
+    void RenderLoop();
 
     std::atomic<bool> m_shouldRender = false;
     std::atomic<bool> m_abortThread = false;
-    std::atomic<bool> m_lowLatencyLock = false;
     std::condition_variable m_cv;
     std::thread m_renderThread;
 
@@ -57,7 +57,6 @@ public:
     void Hide();
     void Show(unsigned animationMillis);
     void Flash(unsigned animationMillis);
-    void ForceRender();
     void DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                            const std::vector<size_t>& highlightZones,
                            winrt::com_ptr<IZoneWindowHost> host);

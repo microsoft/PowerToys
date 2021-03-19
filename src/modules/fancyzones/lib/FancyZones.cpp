@@ -217,7 +217,6 @@ private:
 
     void UpdateZoneWindows() noexcept;
     void UpdateWindowsPositions() noexcept;
-    void CycleActiveZoneSet(DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
@@ -1039,26 +1038,6 @@ void FancyZones::UpdateWindowsPositions() noexcept
         return TRUE;
     };
     EnumWindows(callback, reinterpret_cast<LPARAM>(this));
-}
-
-void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
-{
-    _TRACER_;
-    auto window = GetForegroundWindow();
-    if (FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
-    {
-        const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-        if (monitor)
-        {
-            std::shared_lock readLock(m_lock);
-
-            auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
-            if (zoneWindow)
-            {
-                zoneWindow->CycleActiveZoneSet(vkCode);
-            }
-        }
-    }
 }
 
 bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept
