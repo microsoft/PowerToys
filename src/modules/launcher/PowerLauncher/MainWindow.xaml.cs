@@ -52,7 +52,6 @@ namespace PowerLauncher
             Log.Info("Send Run settings telemetry", this.GetType());
             var plugins = PluginManager.AllPlugins.ToDictionary(x => x.Metadata.Name, x => new PluginModel()
             {
-                Name = x.Metadata.Name,
                 Disabled = x.Metadata.Disabled,
                 ActionKeyword = x.Metadata.ActionKeyword,
                 IsGlobal = x.Metadata.IsGlobal,
