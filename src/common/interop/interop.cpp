@@ -139,6 +139,10 @@ public
             return gcnew String(CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
         }
 
+        static String ^ SendRunSettingsTelemetryEvent() {
+            return gcnew String(CommonSharedConstants::SEND_RUN_SETTINGS_TELEMETRY_EVENT);
+        }
+
         static String ^ ShowColorPickerSharedEvent() {
             return gcnew String(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
         } 

@@ -82,6 +82,10 @@ public:
      * if the key press is to be swallowed.
      */
     virtual bool on_hotkey(size_t hotkeyId) { return false; }
+
+    virtual void send_settings_telemetry()
+    {
+    }
 };
 
 /*
