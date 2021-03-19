@@ -9,6 +9,7 @@
 #include "restart_elevated.h"
 #include "RestartManagement.h"
 #include "Generated files/resource.h"
+#include "settings_telemetry.h"
 
 #include <common/comUtils/comUtils.h>
 #include <common/display/dpi_aware.h>
@@ -163,6 +164,7 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
             open_oobe_window(); 
         }
 
+        settings_telemetry::init();
         result = run_message_loop();
     }
     catch (std::runtime_error& err)
