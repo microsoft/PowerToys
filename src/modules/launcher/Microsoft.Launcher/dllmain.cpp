@@ -107,7 +107,7 @@ public:
         auto sa1 = getDefaultSecurityAttribute();
         m_hEvent = CreateEventW(&sa1, FALSE, FALSE, CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
         auto sa2 = getDefaultSecurityAttribute();
-        send_telemetry_event = CreateEventW(&sa2, FALSE, FALSE, CommonSharedConstants::SEND_RUN_SETTINGS_TELEMETRY_EVENT);
+        send_telemetry_event = CreateEventW(&sa2, FALSE, FALSE, CommonSharedConstants::RUN_SEND_SETTINGS_TELEMETRY_EVENT);
     };
 
     ~Microsoft_Launcher()
