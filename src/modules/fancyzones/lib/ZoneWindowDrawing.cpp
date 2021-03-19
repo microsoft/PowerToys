@@ -182,7 +182,7 @@ void ZoneWindowDrawing::Render()
         textBrush->Release();
     }
 
-    // The lock must be released here, as EndDraw() will wait for Vsync
+    // The lock must be released here, as EndDraw() will wait for vertical sync
     lock.unlock();
 
     m_renderTarget->EndDraw();
