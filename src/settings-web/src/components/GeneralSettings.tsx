@@ -58,6 +58,9 @@ export class GeneralSettings extends React.Component <any, any> {
     return (
       <Stack tokens={{childrenGap:20}}>
         <Text variant='xLarge'>Available PowerToys</Text>
+        {
+            <span style={{color:"#c50500", fontWeight: "bold", fontSize: "17px" }} dangerouslySetInnerHTML={{__html: "Next release of PowerToys will require Windows 10 version 1903 (May 2019 Update) or newer to run." }} />
+        }        
         { Object.keys(power_toys_enabled).map(
           (key) => {
             let enabled_value=power_toys_enabled[key];
@@ -259,6 +262,9 @@ export class GeneralSettings extends React.Component <any, any> {
         <Stack>
           <Text variant='xLarge'>About PowerToys (Preview)</Text>
           <Label>Version {this.state.settings.general.powertoys_version}</Label>
+          {
+            <span style={{color:"#c50500", fontWeight: "bold", fontSize: "17px" }} dangerouslySetInnerHTML={{__html: "Next release of PowerToys will require Windows 10 version 1903 (May 2019 Update) or newer to run." }} />
+          }
             <PrimaryButton
               styles={{
                   root: {
