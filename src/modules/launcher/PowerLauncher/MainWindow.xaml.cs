@@ -44,7 +44,7 @@ namespace PowerLauncher
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
-            NativeEventWaiter.WaitForEventLoop(Constants.SendRunSettingsTelemetryEvent(), SendSettingsTelemetry);
+            NativeEventWaiter.WaitForEventLoop(Constants.RunSendSettingsTelemetryEvent(), SendSettingsTelemetry);
         }
 
         private void SendSettingsTelemetry()
