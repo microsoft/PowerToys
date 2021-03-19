@@ -72,8 +72,16 @@ namespace ColorPicker.Keyboard
             // ESC pressed
             if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape))
             {
-                _appStateHandler.HideColorPicker();
-                PowerToysTelemetry.Log.WriteEvent(new ColorPickerCancelledEvent());
+                if (_appStateHandler.IsColorPickerEditorVisible())
+                {
+                    _appStateHandler.HideColorPickerEditor();
+                }
+                else
+                {
+                    _appStateHandler.HideColorPicker();
+                    PowerToysTelemetry.Log.WriteEvent(new ColorPickerCancelledEvent());
+                }
+
                 return;
             }
 
