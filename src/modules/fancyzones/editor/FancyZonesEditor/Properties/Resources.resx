@@ -171,12 +171,6 @@
   <data name="Templates" xml:space="preserve">
     <value>Templates</value>
   </data>
-  <data name="Zone_Count_Decrement" xml:space="preserve">
-    <value>Decrement number of zones</value>
-  </data>
-  <data name="Zone_Count_Increment" xml:space="preserve">
-    <value>Increment number of zones</value>
-  </data>
   <data name="Error_Invalid_Arguments" xml:space="preserve">
     <value>FancyZones Editor arguments are invalid.</value>
   </data>
@@ -346,10 +340,16 @@
     <value>Splitter:</value>
     <comment>Title for concept: A segmenter visual for splitting one item into two.  This would be the vertical line</comment>
   </data>
-  <data name="QuickKey_Select" xml:space="preserve">
-    <value>Select a key to quickly apply the layout (Win + Alt + key)</value>
+  <data name="QuickKey_Tooltip" xml:space="preserve">
+    <value>Layout shortcut</value>
+  </data>
+  <data name="QuickKey_Description" xml:space="preserve">
+    <value>Press Win + Alt + key to apply this layout</value>
   </data>
   <data name="Quick_Key_None" xml:space="preserve">
-    <value>None</value>
+    <value />
+  </data>
+  <data name="Number_of_zones" xml:space="preserve">
+    <value>Number of zones</value>
   </data>
 </root>
