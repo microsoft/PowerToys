@@ -236,6 +236,7 @@ private:
     void UpdateZoneSets(require_write_lock) noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
     void ApplyQuickLayout(int key) noexcept;
+    void FlashZones(require_write_lock) noexcept;
 
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
@@ -568,15 +569,28 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
     }
 
-    if (!shift && win && ctrl && alt && m_settings->GetSettings()->quickLayoutSwitch)
+    if (m_settings->GetSettings()->quickLayoutSwitch)
     {
+        int digitPressed = -1;
         if ('0' <= info->vkCode && info->vkCode <= '9')
         {
+            digitPressed = info->vkCode - '0';
+        }
+        else if (VK_NUMPAD0 <= info->vkCode && info->vkCode <= VK_NUMPAD9)
+        {
+            digitPressed = info->vkCode - VK_NUMPAD0;
+        }
+
+        bool dragging = m_windowMoveHandler.IsDragEnabled();
+        bool changeLayoutWhileNotDragging = !dragging && !shift && win && ctrl && alt && digitPressed != -1;
+        bool changeLayoutWhileDragging = dragging && digitPressed != -1;
+
+        if (changeLayoutWhileNotDragging || changeLayoutWhileDragging)
+        {
             auto quickKeysMap = FancyZonesDataInstance().GetLayoutQuickKeys();
-            if (std::any_of(quickKeysMap.begin(), quickKeysMap.end(), [=](auto item) {
-                return item.second == info->vkCode - '0'; }))
+            if (std::any_of(quickKeysMap.begin(), quickKeysMap.end(), [=](auto item) { return item.second == digitPressed; }))
             {
-                PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, static_cast<LPARAM>(info->vkCode));
+                PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, static_cast<LPARAM>(digitPressed));
                 return true;
             }
         }
@@ -1353,11 +1367,9 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
     return false;
 }
 
-void FancyZones::ApplyQuickLayout(int vKey) noexcept
+void FancyZones::ApplyQuickLayout(int key) noexcept
 {
     std::unique_lock writeLock(m_lock);
-
-    int key = vKey - '0';
 
     HMONITOR monitor;
     if (m_settings->GetSettings()->spanZonesAcrossMonitors)
@@ -1399,6 +1411,14 @@ void FancyZones::ApplyQuickLayout(int vKey) noexcept
     FancyZonesDataInstance().SaveZoneSettings();
     UpdateZoneSets(writeLock);
 
+    if (!m_windowMoveHandler.IsDragEnabled())
+    {
+        FlashZones(writeLock);
+    }
+}
+
+void FancyZones::FlashZones(require_write_lock) noexcept
+{
     if (m_settings->GetSettings()->flashZonesOnQuickSwitch)
     {
         for (auto [monitor, workArea] : m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId))

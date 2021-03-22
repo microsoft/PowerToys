@@ -404,6 +404,10 @@ IFACEMETHODIMP_(void)
 ZoneWindow::UpdateActiveZoneSet() noexcept
 {
     CalculateZoneSet();
+    if (m_window)
+    {
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
+    }
 }
 
 IFACEMETHODIMP_(void)
