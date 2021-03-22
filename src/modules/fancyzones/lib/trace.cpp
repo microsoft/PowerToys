@@ -155,7 +155,7 @@ void Trace::FancyZones::DataChanged() noexcept
         return 0;
     };
 
-    //NumberOfZonesForEachCustomZoneSet
+    // NumberOfZonesForEachCustomZoneSet
     int i = 0;
     for (const auto& [id, customZoneSetData] : customZones)
     {
@@ -163,7 +163,7 @@ void Trace::FancyZones::DataChanged() noexcept
         i++;
     }
 
-    //ActiveZoneSetsList
+    // ActiveZoneSetsList
     std::wstring activeZoneSetInfo;
     for (const auto& [id, device] : devices)
     {
