@@ -38,11 +38,44 @@
                 </HyperlinkButton>
 
                 <TextBlock x:Uid="Oobe_HowToUse"
-                           Style="{StaticResource OobeSubtitleStyle}"/>
+                           Style="{StaticResource OobeSubtitleStyle}" />
                 
-            <TextBlock x:Uid="Oobe_ColorPicker_HowToUse"
-                       TextWrapping="Wrap"/>
-            
+                <StackPanel Orientation="Horizontal" Spacing="2" Margin="0,6,0,0">
+
+                    <Border BorderBrush="#CFCFCF"
+                            BorderThickness="1"
+                            Height="32"
+                            CornerRadius="2">
+                        <Viewbox Width="16"
+                                 Height="16"
+                                 Margin="8,0,8,0"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center">
+                            <PathIcon Data="M0,4.248,12.26,2.583l.005,11.789-12.254.07ZM12.254,15.731l.01,11.8L.01,25.851v-10.2ZM13.74,2.365,30,0V14.222l-16.256.129ZM30,15.842,30,30,13.74,27.713l-.023-11.9Z" />
+                        </Viewbox>
+                    </Border>
+                    
+                    <Border BorderBrush="#CFCFCF"
+                            BorderThickness="1"
+                            Height="32"
+                            Padding="12,0,12,0"
+                            CornerRadius="2">
+                        <TextBlock Text="Shift"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    <Border BorderBrush="#CFCFCF"
+                            BorderThickness="1"
+                            Height="32"
+                            Padding="12,0,12,0"
+                            CornerRadius="2">
+                        <TextBlock Text="C"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    
+                    <TextBlock Text="Open Color Picker" VerticalAlignment="Center"
+                               TextWrapping="Wrap" Margin="12,0,0,0" />
+                </StackPanel>
+                
             <TextBlock x:Uid="Oobe_TipsAndTricks"
                        Style="{StaticResource OobeSubtitleStyle}"/>
                 
