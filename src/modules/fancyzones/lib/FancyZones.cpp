@@ -241,7 +241,6 @@ private:
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
-    HMONITOR WorkAreaKeyFromCursor() noexcept;
 
     const HINSTANCE m_hinstance{};
 
@@ -1347,8 +1346,6 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
 {
     std::unique_lock writeLock(m_lock);
 
-    HMONITOR monitor = WorkAreaKeyFromCursor();
-
     std::wstring uuid;
     for (auto [zoneUuid, hotkey] : FancyZonesDataInstance().GetLayoutQuickKeys())
     {
@@ -1358,7 +1355,7 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
         }
     }
 
-    auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+    auto workArea = m_workAreaHandler.GetWorkAreaFromCursor(m_currentDesktopId);
 
     // Find a custom zone set with this uuid and apply it
     auto customZoneSets = FancyZonesDataInstance().GetCustomZoneSetsMap();
@@ -1426,24 +1423,6 @@ HMONITOR FancyZones::WorkAreaKeyFromWindow(HWND window) noexcept
     else
     {
         return MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-    }
-}
-
-HMONITOR FancyZones::WorkAreaKeyFromCursor() noexcept
-{
-    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
-    {
-        return NULL;
-    }
-    else
-    {
-        POINT cursorPoint;
-        if (!GetCursorPos(&cursorPoint))
-        {
-            return NULL;
-        }
-
-        return MonitorFromPoint(cursorPoint, MONITOR_DEFAULTTONULL);
     }
 }
 
