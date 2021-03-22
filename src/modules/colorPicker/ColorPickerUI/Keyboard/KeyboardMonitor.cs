@@ -21,7 +21,7 @@ namespace ColorPicker.Keyboard
     {
         private readonly AppStateHandler _appStateHandler;
         private readonly IUserSettings _userSettings;
-        private List<string> _previouslyPressedKeys;
+        private List<string> _previouslyPressedKeys = new List<string>();
 
         private List<string> _activationKeys = new List<string>();
         private GlobalKeyboardHook _keyboardHook;
