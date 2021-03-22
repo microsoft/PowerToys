@@ -240,6 +240,8 @@ private:
 
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
+    HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
+    HMONITOR WorkAreaKeyFromCursor() noexcept;
 
     const HINSTANCE m_hinstance{};
 
@@ -1064,16 +1066,7 @@ void FancyZones::UpdateWindowsPositions(require_write_lock) noexcept
 bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept
 {
     _TRACER_;
-    HMONITOR current;
-
-    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
-    {
-        current = NULL;
-    }
-    else
-    {
-        current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-    }
+    HMONITOR current = WorkAreaKeyFromWindow(window);
 
     std::vector<HMONITOR> monitorInfo = GetMonitorsSorted();
     if (current && monitorInfo.size() > 1 && m_settings->GetSettings()->moveWindowAcrossMonitors)
@@ -1131,16 +1124,7 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
 
 bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
 {
-    HMONITOR current;
-
-    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
-    {
-        current = NULL;
-    }
-    else
-    {
-        current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-    }
+    HMONITOR current = WorkAreaKeyFromWindow(window);
 
     auto allMonitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
 
@@ -1341,15 +1325,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
     auto window = GetForegroundWindow();
     if (m_settings->GetSettings()->overrideSnapHotkeys && FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
     {
-        HMONITOR monitor;
-        if (m_settings->GetSettings()->spanZonesAcrossMonitors)
-        {
-            monitor = NULL;
-        }
-        else
-        {
-            monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-        }
+        HMONITOR monitor = WorkAreaKeyFromWindow(window);
 
         auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
         if (zoneWindow && zoneWindow->ActiveZoneSet() && zoneWindow->ActiveZoneSet()->LayoutType() != FancyZonesDataTypes::ZoneSetLayoutType::Blank)
@@ -1371,21 +1347,7 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
 {
     std::unique_lock writeLock(m_lock);
 
-    HMONITOR monitor;
-    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
-    {
-        monitor = NULL;
-    }
-    else
-    {
-        POINT cursorPoint;
-        if (!GetCursorPos(&cursorPoint))
-        {
-            return;
-        }
-
-        monitor = MonitorFromPoint(cursorPoint, MONITOR_DEFAULTTOPRIMARY);
-    }
+    HMONITOR monitor = WorkAreaKeyFromCursor();
 
     std::wstring uuid;
     for (auto [zoneUuid, hotkey] : FancyZonesDataInstance().GetLayoutQuickKeys())
@@ -1457,6 +1419,36 @@ std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
         }
     }
     return monitorInfo;
+}
+
+HMONITOR FancyZones::WorkAreaKeyFromWindow(HWND window) noexcept
+{
+    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
+    {
+        return NULL;
+    }
+    else
+    {
+        return MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+    }
+}
+
+HMONITOR FancyZones::WorkAreaKeyFromCursor() noexcept
+{
+    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
+    {
+        return NULL;
+    }
+    else
+    {
+        POINT cursorPoint;
+        if (!GetCursorPos(&cursorPoint))
+        {
+            return NULL;
+        }
+
+        return MonitorFromPoint(cursorPoint, MONITOR_DEFAULTTONULL);
+    }
 }
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance,
