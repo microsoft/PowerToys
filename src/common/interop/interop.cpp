@@ -135,6 +135,10 @@ public
     public:
         literal int VK_WIN_BOTH = CommonSharedConstants::VK_WIN_BOTH;
 
+        static String ^ AppDataPath() {
+            return gcnew String(CommonSharedConstants::APPDATA_PATH);
+        }
+
         static String ^ PowerLauncherSharedEvent() {
             return gcnew String(CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
         }

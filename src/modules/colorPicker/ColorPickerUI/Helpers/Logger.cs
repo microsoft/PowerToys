@@ -7,14 +7,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
+using interop;
 
 namespace ColorPicker.Helpers
 {
     public static class Logger
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
-        private const string ModuleLocation = "Microsoft\\PowerToys\\ColorPicker";
-        private static readonly string ApplicationLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ModuleLocation, "Logs");
+        private static readonly string ApplicationLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Constants.AppDataPath(), "ColorPicker\\Logs");
 
         static Logger()
         {
