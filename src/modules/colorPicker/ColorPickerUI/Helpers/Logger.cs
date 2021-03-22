@@ -14,7 +14,7 @@ namespace ColorPicker.Helpers
     public static class Logger
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
-        private static readonly string ApplicationLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Constants.AppDataPath(), "ColorPicker\\Logs");
+        private static readonly string ApplicationLogPath = Path.Combine(Constants.AppDataPath(), "ColorPicker\\Logs");
 
         static Logger()
         {

@@ -136,7 +136,9 @@ public
         literal int VK_WIN_BOTH = CommonSharedConstants::VK_WIN_BOTH;
 
         static String ^ AppDataPath() {
-            return gcnew String(CommonSharedConstants::APPDATA_PATH);
+            auto localPath = Environment::GetFolderPath(Environment::SpecialFolder::LocalApplicationData);
+            auto powerToysPath = gcnew String(CommonSharedConstants::APPDATA_PATH);
+            return System::IO::Path::Combine(localPath, powerToysPath);
         }
 
         static String ^ PowerLauncherSharedEvent() {
