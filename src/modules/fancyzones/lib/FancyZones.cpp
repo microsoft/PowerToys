@@ -1372,16 +1372,12 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
     FancyZonesDataInstance().SetActiveZoneSet(workArea->UniqueId(), data);
     FancyZonesDataInstance().SaveZoneSettings();
     UpdateZoneSets(writeLock);
-
-    if (!m_windowMoveHandler.IsDragEnabled())
-    {
-        FlashZones(writeLock);
-    }
+    FlashZones(writeLock);
 }
 
 void FancyZones::FlashZones(require_write_lock) noexcept
 {
-    if (m_settings->GetSettings()->flashZonesOnQuickSwitch)
+    if (m_settings->GetSettings()->flashZonesOnQuickSwitch && !m_windowMoveHandler.IsDragEnabled())
     {
         for (auto [monitor, workArea] : m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId))
         {
