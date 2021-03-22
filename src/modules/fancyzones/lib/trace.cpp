@@ -17,6 +17,7 @@
 #define EventZoneWindowKeyUpKey "FancyZones_ZoneWindowKeyUp"
 #define EventMoveSizeEndKey "FancyZones_MoveSizeEnd"
 #define EventCycleActiveZoneSetKey "FancyZones_CycleActiveZoneSet"
+#define EventQuickLayoutSwitchKey "FancyZones_QuickLayoutSwitch"
 
 #define EventEnabledKey "Enabled"
 #define PressedKeyCodeKey "Hotkey"
@@ -59,6 +60,7 @@
 #define NumberOfWindowsKey "NumberOfWindows"
 #define InputModeKey "InputMode"
 #define OverlappingZonesAlgorithmKey "OverlappingZonesAlgorithm"
+#define QuickLayoutSwitchedWithShortcutUsed "ShortcutUsed"
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
@@ -230,6 +232,16 @@ void Trace::FancyZones::Error(const DWORD errorCode, std::wstring errorMessage, 
         TraceLoggingValue(methodName.c_str(), "MethodName"),
         TraceLoggingValue(errorCode, "ErrorCode"),
         TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));
+}
+
+void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        EventQuickLayoutSwitchKey,
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(shortcutUsed, QuickLayoutSwitchedWithShortcutUsed));
 }
 
 void Trace::SettingsChanged(const Settings& settings) noexcept
