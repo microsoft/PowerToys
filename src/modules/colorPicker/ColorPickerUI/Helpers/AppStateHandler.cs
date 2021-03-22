@@ -71,6 +71,25 @@ namespace ColorPicker.Helpers
             _colorEditorWindow.Show();
         }
 
+        public void HideColorPickerEditor()
+        {
+            if (_colorEditorWindow != null)
+            {
+                _colorEditorWindow.Hide();
+            }
+        }
+
+        public bool IsColorPickerEditorVisible()
+        {
+            if (_colorEditorWindow != null)
+            {
+                // Check if we are visible and on top. Using focus producing unreliable results the first time the picker is opened.
+                return _colorEditorWindow.Topmost && _colorEditorWindow.IsVisible;
+            }
+
+            return false;
+        }
+
         public static void SetTopMost()
         {
             Application.Current.MainWindow.Topmost = false;
