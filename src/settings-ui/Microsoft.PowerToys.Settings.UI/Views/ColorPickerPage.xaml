@@ -196,7 +196,7 @@
                                        FontFamily="Segoe MDL2 Assets" /> -->
 
                             <Button x:Uid="ColorPicker_ButtonUp"
-                                    Content="&#xE971;"
+                                    Content="&#xE74A;"
                                     Grid.Row="0"
                                     HorizontalAlignment="Right"
                                     Margin="0,0,36,0"
@@ -204,7 +204,7 @@
                                     FontFamily="Segoe MDL2 Assets"
                                     Click="ReorderButtonUp_Click"/>
                             <Button x:Uid="ColorPicker_ButtonDown"
-                                    Content="&#xE972;"
+                                    Content="&#xE74B;"
                                     Grid.Row="1"
                                     HorizontalAlignment="Right"
                                     Margin="0,0,36,0"
