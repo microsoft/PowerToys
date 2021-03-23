@@ -147,7 +147,7 @@
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
                        Margin="{StaticResource SmallTopMargin}"/>
             
-            <!-- Disabled reordering -->
+            <!-- Disabled reordering by dragging -->
             <!-- CanReorderItems="True" AllowDrop="True" -->
             <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
                       MaxWidth="466"
@@ -158,7 +158,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Width="466" Background="Transparent">
-                            <!-- Disabled reordering
+                            <!-- Disabled reordering by dragging
                             
                             <Interactivity:Interaction.Behaviors>
                                 <Core:EventTriggerBehavior EventName="PointerEntered">
@@ -183,7 +183,7 @@
                             <ToggleSwitch IsOn="{Binding IsShown, Mode=TwoWay}"
                                           Grid.RowSpan="2"
                                           HorizontalAlignment="Right" />
-                            <!-- Disabled reordering
+                            <!-- Disabled reordering by dragging
                             
                             <TextBlock Text="&#xE76F;"
                                        Visibility="Collapsed"
