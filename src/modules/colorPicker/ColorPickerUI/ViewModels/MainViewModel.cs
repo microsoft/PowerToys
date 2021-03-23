@@ -146,8 +146,10 @@ namespace ColorPicker.ViewModels
             {
                 _appStateHandler.ShowColorPickerEditor();
             }
-
-            PowerToysTelemetry.Log.WriteEvent(new ColorPickerShowEvent());
+            else
+            {
+                SessionEventHelper.End();
+            }
         }
 
         private string GetColorString()

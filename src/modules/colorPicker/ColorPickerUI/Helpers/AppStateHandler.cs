@@ -65,6 +65,10 @@ namespace ColorPicker.Helpers
                 _colorEditorWindow = new ColorEditorWindow();
                 _colorEditorWindow.Content = _colorEditorViewModel;
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
+                _colorEditorViewModel.OpenColorPickerRequested += (object sender, EventArgs e) =>
+                {
+                    SessionEventHelper.Event.OpenedPickerFromEditor = true;
+                };
             }
 
             _colorEditorViewModel.Initialize();

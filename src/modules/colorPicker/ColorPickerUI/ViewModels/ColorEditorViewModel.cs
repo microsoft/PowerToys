@@ -82,13 +82,16 @@ namespace ColorPicker.ViewModels
 
             set
             {
-                _selectedColorIndex = value;
-                if (value >= 0)
+                if (_selectedColorIndex != value)
                 {
-                    SelectedColor = ColorsHistory[_selectedColorIndex];
-                }
+                    _selectedColorIndex = value;
+                    if (value >= 0)
+                    {
+                        SelectedColor = ColorsHistory[_selectedColorIndex];
+                    }
 
-                OnPropertyChanged();
+                    OnPropertyChanged();
+                }
             }
         }
 
@@ -134,6 +137,7 @@ namespace ColorPicker.ViewModels
             var indexToSelect = SelectedColorIndex == ColorsHistory.Count - 1 ? ColorsHistory.Count - 2 : SelectedColorIndex;
             ColorsHistory.RemoveAt(SelectedColorIndex);
             SelectedColorIndex = indexToSelect;
+            SessionEventHelper.Event.RemovedColorFromHistory = true;
         }
 
         private void SetupAllColorRepresentations()

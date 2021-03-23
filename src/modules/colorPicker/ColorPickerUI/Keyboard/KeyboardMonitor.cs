@@ -79,9 +79,9 @@ namespace ColorPicker.Keyboard
                 else
                 {
                     _appStateHandler.HideColorPicker();
-                    PowerToysTelemetry.Log.WriteEvent(new ColorPickerCancelledEvent());
                 }
 
+                SessionEventHelper.End();
                 return;
             }
 
@@ -122,6 +122,8 @@ namespace ColorPicker.Keyboard
                     {
                         _appStateHandler.ShowColorPicker();
                     }
+
+                    SessionEventHelper.Start(_userSettings.ActivationAction.Value);
                 }
             }
         }

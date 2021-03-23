@@ -56,6 +56,7 @@ namespace ColorPicker.Controls
         private void CopyToClipboardButton_Click(object sender, RoutedEventArgs e)
         {
             ClipboardHelper.CopyToClipboard(ColorTextRepresentationTextBlock.Text);
+            SessionEventHelper.Event.CopiedColorToClipboard = true;
             if (!_copyIndicatorVisible)
             {
                 AppearCopiedIndicator();
