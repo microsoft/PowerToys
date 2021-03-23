@@ -1170,4 +1170,10 @@ Win + Shift + O to toggle your video</value>
   <data name="Run_PluginsLoading.Text" xml:space="preserve">
     <value>Plugins are loading...</value>
   </data>
+  <data name="ColorPicker_ButtonDown.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color down</value>
+  </data>
+  <data name="ColorPicker_ButtonUp.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color up</value>
+  </data>
 </root>
