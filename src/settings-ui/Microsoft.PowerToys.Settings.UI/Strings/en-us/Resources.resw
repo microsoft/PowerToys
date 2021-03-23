@@ -1155,4 +1155,28 @@ Win + Shift + O to toggle your video</value>
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
   </data>
+  <data name="About_Espresso.Text" xml:space="preserve">
+    <value>About Espresso</value>
+  </data>
+  <data name="Espresso_Description.Text" xml:space="preserve">
+    <value>A convenient way to keep your computer awake on-demand.</value>
+  </data>
+  <data name="Espresso_EnableEspresso.Header" xml:space="preserve">
+    <value>Enable Espresso</value>
+  </data>
+  <data name="Espresso_IndefiniteKeepAwakeContent.Text" xml:space="preserve">
+    <value>Keep awake indefinitely</value>
+  </data>
+  <data name="Espresso_TemporaryKeepAwakeContent.Text" xml:space="preserve">
+    <value>Keep awake temporarily</value>
+  </data>
+  <data name="Espresso_IndefiniteKeepAwakeDescription.Text" xml:space="preserve">
+    <value>Keeps the computer awake until the setting is disabled.</value>
+  </data>
+  <data name="Espresso_TemporaryKeepAwakeDescription.Text" xml:space="preserve">
+    <value>Keeps the computer awake until the set time elapses.</value>
+  </data>
+  <data name="Espresso_EnableDisplayKeepAwake.Header" xml:space="preserve">
+    <value>Keep display on</value>
+  </data>
 </root>

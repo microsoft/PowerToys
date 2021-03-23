@@ -53,20 +53,46 @@
                     HorizontalAlignment="Left"
                     Margin="0,0,48,0"
                     MaxWidth="{StaticResource MaxContentWidth}">
+            <ToggleSwitch x:Uid="Espresso_EnableEspresso" IsOn="True" />
+            <ToggleSwitch x:Uid="Espresso_EnableDisplayKeepAwake" IsOn="True" />
+            <!--IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"/>-->
 
-        </StackPanel>
+                <!--<TextBlock x:Uid="Shortcuts"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>-->
+            <RadioButton x:Uid="Espresso_IndefiniteKeepAwake">
+                <RadioButton.Content>
+                    <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="Espresso_IndefiniteKeepAwakeContent"/>
+                        <LineBreak/>
+                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                             x:Uid="Espresso_IndefiniteKeepAwakeDescription"/>
+                    </TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton x:Uid="Espresso_TemporaryKeepAwake">
+                <RadioButton.Content>
+                    <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="Espresso_TemporaryKeepAwakeContent"/>
+                        <LineBreak/>
+                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                             x:Uid="Espresso_TemporaryKeepAwakeDescription"/>
+                    </TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
+            </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 
                     HorizontalAlignment="Left"
                     Width="{StaticResource SidePanelWidth}"
                     Grid.Column="1">
             <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="About_ColorPicker"
+                <TextBlock x:Uid="About_Espresso"
                            x:Name="AboutTitle"
                            Grid.ColumnSpan="2"
                            Style="{StaticResource SettingsGroupTitleStyle}"
                            Margin="{StaticResource XSmallBottomMargin}"/>
-                <TextBlock x:Uid="ColorPicker_Description"
+                <TextBlock x:Uid="Espresso_Description"
                            TextWrapping="Wrap"
                            Grid.Row="1" />
             </StackPanel>
@@ -78,15 +104,15 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="ColorPicker_ImageHyperlinkToDocs">
-                    <Image x:Uid="ColorPicker_Image" Source="ms-appx:///Assets/Modules/ColorPicker.png" />
+                <HyperlinkButton x:Uid="Espresso_ImageHyperlinkToDocs">
+                    <Image x:Uid="Espresso_Image" Source="ms-appx:///Assets/Modules/ColorPicker.png" />
                 </HyperlinkButton>
             </Border>
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton x:Uid="ColorPicker_ImageHyperlinkToDocs">
+                <HyperlinkButton x:Uid="Espresso_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
@@ -98,8 +124,8 @@
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
                 <HyperlinkButton Margin="0,-3,0,0"
-                                NavigateUri="https://github.com/martinchrzan/ColorPicker/">
-                    <TextBlock Text="Martin Chrzan's Color Picker" TextWrapping="Wrap" />
+                                NavigateUri="https://github.com/microsoft/PowerToys/">
+                    <TextBlock Text="Den Delimarsky's Espresso" TextWrapping="Wrap" />
                 </HyperlinkButton>
 
                 <HyperlinkButton Margin="0,-3,0,0"
