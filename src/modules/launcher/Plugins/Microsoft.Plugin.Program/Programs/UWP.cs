@@ -79,6 +79,11 @@ namespace Microsoft.Plugin.Program.Programs
 
                     return valid;
                 }).ToArray();
+
+                if (Marshal.ReleaseComObject(stream) > 0)
+                {
+                    Log.Error("AppxManifest.xml was leaked", MethodBase.GetCurrentMethod().DeclaringType);
+                }
             }
             else
             {
