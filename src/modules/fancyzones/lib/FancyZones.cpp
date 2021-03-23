@@ -582,7 +582,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
             digitPressed = info->vkCode - VK_NUMPAD0;
         }
 
-        bool dragging = m_windowMoveHandler.IsDragEnabled();
+        bool dragging = m_windowMoveHandler.InMoveSize();
         bool changeLayoutWhileNotDragging = !dragging && !shift && win && ctrl && alt && digitPressed != -1;
         bool changeLayoutWhileDragging = dragging && digitPressed != -1;
 
