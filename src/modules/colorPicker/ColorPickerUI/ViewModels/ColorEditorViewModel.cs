@@ -137,7 +137,7 @@ namespace ColorPicker.ViewModels
             var indexToSelect = SelectedColorIndex == ColorsHistory.Count - 1 ? ColorsHistory.Count - 2 : SelectedColorIndex;
             ColorsHistory.RemoveAt(SelectedColorIndex);
             SelectedColorIndex = indexToSelect;
-            SessionEventHelper.Event.RemovedColorFromHistory = true;
+            SessionEventHelper.Event.EditorRemovedColorFromHistory = true;
         }
 
         private void SetupAllColorRepresentations()

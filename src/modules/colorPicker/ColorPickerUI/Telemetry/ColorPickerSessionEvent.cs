@@ -18,17 +18,17 @@ namespace ColorPicker.Telemetry
 
         public bool OpenedPickerFromEditor { get; set; }
 
-        public bool OpenedAdjustColor { get; set; }
+        public bool EditorOpenedAdjustColor { get; set; }
 
-        public bool AdjustedColor { get; set; }
+        public bool EditorAdjustedColor { get; set; }
 
-        public bool PickedSimilarColor { get; set; }
+        public bool EditorPickedSimilarColor { get; set; }
 
-        public bool PickedColorFromHistory { get; set; }
+        public bool EditorPickedColorFromHistory { get; set; }
 
-        public bool RemovedColorFromHistory { get; set; }
+        public bool EditorRemovedColorFromHistory { get; set; }
 
-        public bool CopiedColorToClipboard { get; set; }
+        public bool EditorCopiedColorToClipboard { get; set; }
 
         public TimeSpan Duration { get; set; }
 
