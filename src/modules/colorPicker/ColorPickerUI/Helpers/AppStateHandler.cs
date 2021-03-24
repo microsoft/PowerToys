@@ -36,36 +36,53 @@ namespace ColorPicker.Helpers
 
         public void StartUserSession()
         {
-            SessionEventHelper.Start(_userSettings.ActivationAction.Value);
-            if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+            lock (_colorPickerVisibilityLock)
             {
-                ShowColorPickerEditor();
-            }
-            else
-            {
-                ShowColorPicker();
+                if (!_colorPickerShown && !IsColorPickerEditorVisible())
+                {
+                    SessionEventHelper.Start(_userSettings.ActivationAction.Value);
+                }
+
+                if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+                {
+                    ShowColorPickerEditor();
+                }
+                else
+                {
+                    ShowColorPicker();
+                }
             }
         }
 
         public void EndUserSession()
         {
-            if (IsColorPickerEditorVisible())
+            lock (_colorPickerVisibilityLock)
             {
-                HideColorPickerEditor();
-            }
-            else
-            {
-                HideColorPicker();
-            }
+                if (IsColorPickerEditorVisible() || _colorPickerShown)
+                {
+                    if (IsColorPickerEditorVisible())
+                    {
+                        HideColorPickerEditor();
+                    }
+                    else
+                    {
+                        HideColorPicker();
+                    }
 
-            SessionEventHelper.End();
+                    SessionEventHelper.End();
+                }
+            }
         }
 
         public void OnColorPickerMouseDown()
         {
             if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenColorPickerAndThenEditor || _userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
             {
-                HideColorPicker();
+                lock (_colorPickerVisibilityLock)
+                {
+                    HideColorPicker();
+                }
+
                 ShowColorPickerEditor();
             }
             else
@@ -82,29 +99,23 @@ namespace ColorPicker.Helpers
 
         private void ShowColorPicker()
         {
-            lock (_colorPickerVisibilityLock)
+            if (!_colorPickerShown)
             {
-                if (!_colorPickerShown)
-                {
-                    AppShown?.Invoke(this, EventArgs.Empty);
-                    Application.Current.MainWindow.Opacity = 0;
-                    Application.Current.MainWindow.Visibility = Visibility.Visible;
-                    _colorPickerShown = true;
-                }
+                AppShown?.Invoke(this, EventArgs.Empty);
+                Application.Current.MainWindow.Opacity = 0;
+                Application.Current.MainWindow.Visibility = Visibility.Visible;
+                _colorPickerShown = true;
             }
         }
 
         private void HideColorPicker()
         {
-            lock (_colorPickerVisibilityLock)
+            if (_colorPickerShown)
             {
-                if (_colorPickerShown)
-                {
-                    Application.Current.MainWindow.Opacity = 0;
-                    Application.Current.MainWindow.Visibility = Visibility.Collapsed;
-                    AppHidden?.Invoke(this, EventArgs.Empty);
-                    _colorPickerShown = false;
-                }
+                Application.Current.MainWindow.Opacity = 0;
+                Application.Current.MainWindow.Visibility = Visibility.Collapsed;
+                AppHidden?.Invoke(this, EventArgs.Empty);
+                _colorPickerShown = false;
             }
         }
 
@@ -152,7 +163,11 @@ namespace ColorPicker.Helpers
 
         private void ColorEditorViewModel_OpenColorPickerRequested(object sender, EventArgs e)
         {
-            ShowColorPicker();
+            lock (_colorPickerVisibilityLock)
+            {
+                ShowColorPicker();
+            }
+
             _colorEditorWindow.Hide();
         }
     }
