@@ -453,5 +453,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get => EnablePowerLauncher && !Plugins.Any();
         }
+
+        public bool IsUpToDate(PowerLauncherSettings settings)
+        {
+            return this.settings.Equals(settings);
+        }
     }
 }
