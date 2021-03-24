@@ -52,26 +52,30 @@ body:
   validations:
     required: true
 - type: textarea
-  attributes: 📝 Provide where the issue is / 📷 Screenshots
-    label: Where did you found the affected phrase(s)?
+  attributes:
+     Label: 📝 Provide where the issue is / 📷 Screenshots
+    description: Where did you found the affected phrase(s)?
     placeholder: Provide some screenshots or describe where you found the phrase(s).
   validations:
     required: true
 - type: textarea
-  attributes: ❌ Actual phrase(s)
-    label: What is there?
+  attributes: 
+    Label: ❌ Actual phrase(s)
+    description: What is there?
     placeholder: Example phrase
   validations:
     required: true
 - type: textarea
-  attributes: ✔️ Expected phrase(s)
-    label: Where did you found the affected phrase(s)?
+  attributes: 
+    Label: ✔️ Expected phrase(s)
+    description: Where did you found the affected phrase(s)?
     placeholder: What do you expect?
   validations:
     required: true
 - type: textarea
-  attributes: ℹ Why is the current translation wrong
-    label: If it is opinion based issue, why do you feel this is incorrect?
+  attributes:
+    Label: ℹ Why is the current translation wrong
+    description: If it is opinion based issue, why do you feel this is incorrect?
     placeholder: term is outdated
   validations:
     required: true
