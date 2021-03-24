@@ -10,7 +10,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace ColorPicker.Telemetry
 {
     [EventData]
-    public class ColorPickerSessionEvent : EventBase, IEvent
+    public class ColorPickerSession : EventBase, IEvent
     {
         public string StartedAs { get; set; }
 
@@ -18,19 +18,19 @@ namespace ColorPicker.Telemetry
 
         public bool EditorOpened { get; set; }
 
-        public bool OpenedPickerFromEditor { get; set; }
+        public bool EditorColorPickerOpened { get; set; }
 
-        public bool EditorOpenedAdjustColor { get; set; }
+        public bool EditorAdjustColorOpened { get; set; }
 
-        public bool EditorAdjustedColor { get; set; }
+        public bool EditorColorAdjusted { get; set; }
 
-        public bool EditorPickedSimilarColor { get; set; }
+        public bool EditorSimilarColorPicked { get; set; }
 
-        public bool EditorPickedColorFromHistory { get; set; }
+        public bool EditorHistoryColorPicked { get; set; }
 
-        public bool EditorRemovedColorFromHistory { get; set; }
+        public bool EditorHistoryColorRemoved { get; set; }
 
-        public bool EditorCopiedColorToClipboard { get; set; }
+        public bool EditorColorCopiedToClipboard { get; set; }
 
         public TimeSpan Duration { get; set; }
 

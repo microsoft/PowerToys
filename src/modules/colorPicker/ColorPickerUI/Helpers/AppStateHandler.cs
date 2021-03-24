@@ -117,7 +117,7 @@ namespace ColorPicker.Helpers
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
                 _colorEditorViewModel.OpenColorPickerRequested += (object sender, EventArgs e) =>
                 {
-                    SessionEventHelper.Event.OpenedPickerFromEditor = true;
+                    SessionEventHelper.Event.EditorColorPickerOpened = true;
                 };
             }
 

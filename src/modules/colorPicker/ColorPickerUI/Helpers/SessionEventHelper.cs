@@ -11,11 +11,11 @@ namespace ColorPicker.Helpers
 {
     public static class SessionEventHelper
     {
-        public static ColorPickerSessionEvent Event { get; private set; }
+        public static ColorPickerSession Event { get; private set; }
 
         public static void Start(ColorPickerActivationAction startedAs)
         {
-            Event = new ColorPickerSessionEvent();
+            Event = new ColorPickerSession();
             Event.StartedAs = startedAs.ToString();
             _startTime = DateTime.Now;
         }

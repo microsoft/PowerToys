@@ -19,7 +19,7 @@ namespace ColorPicker.Views
         {
             // Note: it does not handle clicking on the same color.
             // More appropriate event would be SelectionChanged but we can not distinguish between user action and program action inside of it.
-            SessionEventHelper.Event.EditorPickedColorFromHistory = true;
+            SessionEventHelper.Event.EditorHistoryColorPicked = true;
         }
     }
 }
