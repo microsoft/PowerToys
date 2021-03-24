@@ -86,6 +86,8 @@ namespace FancyZonesDataTypes
         inline int spacing() const { return m_spacing; }
         inline int sensitivityRadius() const { return m_sensitivityRadius; }
 
+        int zoneCount() const;
+
         int m_rows;
         int m_columns;
         std::vector<int> m_rowsPercents;
