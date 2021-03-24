@@ -155,6 +155,9 @@
                       AutomationProperties.LabeledBy="{Binding ElementName=ColorFormatsListViewLabel}"
                       HorizontalAlignment="Left"
                       Margin="-12,6,0,0">
+                <ItemsControl.ItemContainerTransitions>
+                    <TransitionCollection/>
+                </ItemsControl.ItemContainerTransitions>
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Width="466" Background="Transparent">
