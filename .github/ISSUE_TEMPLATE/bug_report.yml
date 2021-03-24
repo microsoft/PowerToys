@@ -49,6 +49,7 @@ body:
       - SVG Thumbnail
       - Installer
       - System tray interaction
+      - Settings window
   validations:
     required: true
     
