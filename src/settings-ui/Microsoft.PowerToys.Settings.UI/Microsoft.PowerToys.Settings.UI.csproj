@@ -98,6 +98,10 @@
     <Compile Include="Controls\HotkeySettingsControl.xaml.cs">
       <DependentUpon>HotkeySettingsControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\KeyVisual\KeyVisual.cs" />
+    <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
+      <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -241,6 +245,9 @@
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI">
       <Version>6.1.1</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
+      <Version>6.1.1</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Win32.UI.XamlApplication">
       <Version>6.1.2</Version>
     </PackageReference>
@@ -271,6 +278,14 @@
     <Page Include="Controls\HotkeySettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\KeyVisual\KeyVisual.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ShortcutVisualControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="OOBE\Views\OobeColorPicker.xaml">
       <SubType>Designer</SubType>

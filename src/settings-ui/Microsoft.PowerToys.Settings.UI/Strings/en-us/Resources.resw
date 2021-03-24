@@ -1033,17 +1033,16 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>PowerToys in our release notes.</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
-    <value>Win + Shift + C to open Color Picker.</value>
+    <value>Open Color Picker.</value>
   </data>
   <data name="Oobe_ColorPicker_TipsAndTricks.Text" xml:space="preserve">
     <value>To select a color with more precision, scroll the mouse wheel to zoom in.</value>
   </data>
   <data name="Oobe_FancyZones_HowToUse.Text" xml:space="preserve">
-    <value>Shift + drag while dragging the window to snap a window to a zone, and release the window in the desired zone.
-Win + ` to open the FancyZones editor.</value>
+    <value>{Shift} + drag while dragging the window to snap a window to a zone, and release the window in the desired zone. {Win} + ` to open the FancyZones editor.</value>
   </data>
   <data name="Oobe_FancyZones_TipsAndTricks.Text" xml:space="preserve">
-    <value>Snap a window to multiple zones by holding the Ctrl key (while also holding Shift) when dragging a window.</value>
+    <value>Snap a window to multiple zones by holding the {Ctrl} key (while also holding {Shift}) when dragging a window.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
     <value>Open Windows File Explorer, select the View tab in the File Explorer ribbon, then select Preview Pane. 
@@ -1080,21 +1079,21 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
   </data>
   <data name="Oobe_Run_HowToLaunch.Text" xml:space="preserve">
-    <value>Alt + Space to open PowerToys and just start typing.</value>
+    <value>{Alt} {Space} to open Run and just start typing.</value>
   </data>
   <data name="Oobe_Run_TipsAndTricks.Text" xml:space="preserve">
     <value>PowerToys runs supports various action keys to funnel search queries for a specific subset of results. Typing &lt; searches for running processes only, ? will search only for file, or . for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
   </data>
   <data name="Oobe_ShortcutGuide_HowToLaunch.Text" xml:space="preserve">
-    <value>Win + ? to open Shortcut Guide, press it again to close or press Esc. You can also launch it by holding the Win key for one second!</value>
+    <value>{Win} {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!</value>
   </data>
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
     <value>Tips &amp; tricks</value>
   </data>
   <data name="Oobe_VideoConference_HowToLaunch.Text" xml:space="preserve">
-    <value>Win + N to toggle both your microphone and video 
-Win + Shift + A to toggle your microphone 
-Win + Shift + O to toggle your video</value>
+    <value>{Win} {N} to toggle both your microphone and video
+{Win} {Shift} {A} to toggle your microphone 
+{Win} {Shift} {O} to toggle your video</value>
   </data>
   <data name="Oobe_ColorPicker" xml:space="preserve">
     <value>Color Picker</value>

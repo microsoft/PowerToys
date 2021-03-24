@@ -5,7 +5,8 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
+      xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+      mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
@@ -38,14 +39,14 @@
                 
                 <TextBlock x:Uid="Oobe_HowToUse"
                            Style="{StaticResource OobeSubtitleStyle}" />
-                <TextBlock x:Uid="Oobe_FancyZones_HowToUse"
-                           TextWrapping="Wrap" />
 
+                <controls:ShortcutVisualControl x:Uid="Oobe_FancyZones_HowToUse" />
+                
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            Style="{StaticResource OobeSubtitleStyle}" />
-                <TextBlock x:Uid="Oobe_FancyZones_TipsAndTricks"
-                           TextWrapping="Wrap" />
 
+                <controls:ShortcutVisualControl x:Uid="Oobe_FancyZones_TipsAndTricks" />
+                
                 <StackPanel Orientation="Horizontal"
                             Spacing="4"
                             Margin="0,32,0,0">
