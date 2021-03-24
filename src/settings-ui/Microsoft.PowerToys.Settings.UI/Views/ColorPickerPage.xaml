@@ -184,8 +184,11 @@
                                        Grid.Row="1"
                                        Margin="0,0,0,8"/>
                             <ToggleSwitch IsOn="{Binding IsShown, Mode=TwoWay}"
+                                          OnContent=""
+                                          OffContent=""
                                           Grid.RowSpan="2"
-                                          HorizontalAlignment="Right" />
+                                          HorizontalAlignment="Right"
+                                          Margin="0,0,-36,0"/>
                             <!-- Disabled reordering by dragging
                             
                             <TextBlock Text="&#xE76F;"
@@ -203,7 +206,7 @@
                                     IsEnabled="{Binding CanMoveUp}"
                                     Grid.Row="0"
                                     HorizontalAlignment="Right"
-                                    Margin="0,0,36,0"
+                                    Margin="0,0,24,0"
                                     Background="Transparent"
                                     FontFamily="Segoe MDL2 Assets"
                                     Click="ReorderButtonUp_Click"/>
@@ -212,7 +215,7 @@
                                     IsEnabled="{Binding CanMoveDown}"
                                     Grid.Row="1"
                                     HorizontalAlignment="Right"
-                                    Margin="0,0,36,0"
+                                    Margin="0,0,24,0"
                                     Background="Transparent"
                                     FontFamily="Segoe MDL2 Assets"
                                     Click="ReorderButtonDown_Click"/>
