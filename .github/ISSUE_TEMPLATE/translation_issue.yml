@@ -1,7 +1,7 @@
 name: "📖 Localization/Translation issue"
 about: Report incorrect translations.
 title: ''
-labels: 
+label: 
   -Issue-Bug
   -Area-Localization
   -Issue-Translation
