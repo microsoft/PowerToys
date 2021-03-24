@@ -143,6 +143,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool espresso = true;
+
+        [JsonPropertyName("Espresso")]
+        public bool Espresso
+        {
+            get => espresso;
+            set
+            {
+                if (espresso != value)
+                {
+                    LogTelemetryEvent(value);
+                    espresso = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

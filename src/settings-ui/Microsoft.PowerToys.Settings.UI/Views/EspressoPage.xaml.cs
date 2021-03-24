@@ -11,9 +11,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class EspressoPage : Page
     {
+        private EspressoViewModel ViewModel { get; set; }
+
         public EspressoPage()
         {
             var settingsUtils = new SettingsUtils();
+            ViewModel = new EspressoViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<EspressoSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            DataContext = ViewModel;
             InitializeComponent();
         }
     }

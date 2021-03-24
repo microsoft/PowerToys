@@ -60,6 +60,10 @@
                 <!--<TextBlock x:Uid="Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>-->
+
+            <TextBlock x:Uid="FancyZones_Editor_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <!--Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"-->
             <RadioButton x:Uid="Espresso_IndefiniteKeepAwake">
                 <RadioButton.Content>
                     <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
