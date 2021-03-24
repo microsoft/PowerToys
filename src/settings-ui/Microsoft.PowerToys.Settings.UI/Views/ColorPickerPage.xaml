@@ -223,7 +223,14 @@
                                     Background="Transparent"
                                     Visibility="Collapsed"
                                     FontFamily="Segoe MDL2 Assets"
-                                    Click="ReorderButtonUp_Click"/>
+                                    Click="ReorderButtonUp_Click">
+                                <Interactivity:Interaction.Behaviors>
+                                    <Core:EventTriggerBehavior EventName="Click">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonUp}" PropertyName="Visibility" Value="Collapsed" />
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonDown}" PropertyName="Visibility" Value="Collapsed" />
+                                </Core:EventTriggerBehavior>
+                                </Interactivity:Interaction.Behaviors>
+                            </Button>
                             <Button x:Uid="ColorPicker_ButtonDown"
                                     x:Name="ButtonDown"
                                     Content="&#xE74B;"
