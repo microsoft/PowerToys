@@ -592,6 +592,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
             if (std::any_of(quickKeysMap.begin(), quickKeysMap.end(), [=](auto item) { return item.second == digitPressed; }))
             {
                 PostMessageW(m_window, WM_PRIV_QUICK_LAYOUT_KEY, 0, static_cast<LPARAM>(digitPressed));
+                Trace::FancyZones::QuickLayoutSwitched(changeLayoutWhileNotDragging);
                 return true;
             }
         }
