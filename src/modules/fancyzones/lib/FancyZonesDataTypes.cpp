@@ -112,4 +112,18 @@ namespace FancyZonesDataTypes
             cellRow.resize(m_columns, 0);
         }
     }
+
+    int GridLayoutInfo::zoneCount() const
+    {
+        int high = 0;
+        for (const auto& row : m_cellChildMap)
+        {
+            for (int val : row)
+            {
+                high = max(high, val);
+            }
+        }
+
+        return high + 1;
+    }
 }
