@@ -347,7 +347,7 @@
     <comment>Title for concept: A segmenter visual for splitting one item into two.  This would be the vertical line</comment>
   </data>
   <data name="QuickKey_Select" xml:space="preserve">
-    <value>Select a key to quickly apply the layout (Win + Alt + key)</value>
+    <value>Select a key to quickly apply the layout (Ctrl + Win + Alt + key)</value>
   </data>
   <data name="Quick_Key_None" xml:space="preserve">
     <value>None</value>
