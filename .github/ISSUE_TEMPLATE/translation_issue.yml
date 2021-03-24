@@ -1,11 +1,11 @@
 name: "📖 Localization/Translation issue"
 about: Report incorrect translations.
 title: ''
-label: 
-  -Issue-Bug
-  -Area-Localization
-  -Issue-Translation
-  -Triage-Needed 
+labels: 
+- Issue-Bug
+-Area-Localization
+-Issue-Translation
+-Triage-Needed 
 assignees: ''
 issue_body: true
 body:
