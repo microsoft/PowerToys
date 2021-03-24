@@ -171,6 +171,18 @@
                                     <Core:ChangePropertyAction TargetObject="{Binding ElementName=GripperIcon}" PropertyName="Visibility" Value="Collapsed" />
                                 </Core:EventTriggerBehavior>
                             </Interactivity:Interaction.Behaviors> -->
+
+                            <Interactivity:Interaction.Behaviors>
+                                <Core:EventTriggerBehavior EventName="PointerEntered">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonUp}" PropertyName="Visibility" Value="Visible" />
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonDown}" PropertyName="Visibility" Value="Visible" />
+                                </Core:EventTriggerBehavior>
+                                <Core:EventTriggerBehavior EventName="PointerExited">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonUp}" PropertyName="Visibility" Value="Collapsed" />
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonDown}" PropertyName="Visibility" Value="Collapsed" />
+                                </Core:EventTriggerBehavior>
+                            </Interactivity:Interaction.Behaviors>
+                            
                             <Grid.RowDefinitions>
                                 <RowDefinition/>
                                 <RowDefinition/>
@@ -202,21 +214,25 @@
                                        FontFamily="Segoe MDL2 Assets" /> -->
 
                             <Button x:Uid="ColorPicker_ButtonUp"
+                                    x:Name="ButtonUp"
                                     Content="&#xE74A;"
                                     IsEnabled="{Binding CanMoveUp}"
                                     Grid.Row="0"
                                     HorizontalAlignment="Right"
                                     Margin="0,0,24,0"
                                     Background="Transparent"
+                                    Visibility="Collapsed"
                                     FontFamily="Segoe MDL2 Assets"
                                     Click="ReorderButtonUp_Click"/>
                             <Button x:Uid="ColorPicker_ButtonDown"
+                                    x:Name="ButtonDown"
                                     Content="&#xE74B;"
                                     IsEnabled="{Binding CanMoveDown}"
                                     Grid.Row="1"
                                     HorizontalAlignment="Right"
                                     Margin="0,0,24,0"
                                     Background="Transparent"
+                                    Visibility="Collapsed"
                                     FontFamily="Segoe MDL2 Assets"
                                     Click="ReorderButtonDown_Click"/>
                         </Grid>
