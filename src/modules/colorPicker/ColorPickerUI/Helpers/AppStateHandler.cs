@@ -36,6 +36,7 @@ namespace ColorPicker.Helpers
 
         public void StartUserSession()
         {
+            SessionEventHelper.Start(_userSettings.ActivationAction.Value);
             if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
             {
                 ShowColorPickerEditor();
@@ -44,8 +45,6 @@ namespace ColorPicker.Helpers
             {
                 ShowColorPicker();
             }
-
-            SessionEventHelper.Start(_userSettings.ActivationAction.Value);
         }
 
         public void EndUserSession()
