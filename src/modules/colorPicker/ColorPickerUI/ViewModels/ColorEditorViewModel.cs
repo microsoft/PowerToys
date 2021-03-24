@@ -82,16 +82,13 @@ namespace ColorPicker.ViewModels
 
             set
             {
-                if (_selectedColorIndex != value)
+                _selectedColorIndex = value;
+                if (value >= 0)
                 {
-                    _selectedColorIndex = value;
-                    if (value >= 0)
-                    {
-                        SelectedColor = ColorsHistory[_selectedColorIndex];
-                    }
-
-                    OnPropertyChanged();
+                    SelectedColor = ColorsHistory[_selectedColorIndex];
                 }
+
+                OnPropertyChanged();
             }
         }
 
