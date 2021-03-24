@@ -16,6 +16,8 @@ namespace ColorPicker.Telemetry
 
         public bool ZoomUsed { get; set; }
 
+        public bool EditorOpened { get; set; }
+
         public bool OpenedPickerFromEditor { get; set; }
 
         public bool EditorOpenedAdjustColor { get; set; }

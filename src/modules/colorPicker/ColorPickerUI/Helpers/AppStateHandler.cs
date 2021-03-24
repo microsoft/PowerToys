@@ -124,6 +124,7 @@ namespace ColorPicker.Helpers
 
             _colorEditorViewModel.Initialize();
             _colorEditorWindow.Show();
+            SessionEventHelper.Event.EditorOpened = true;
         }
 
         private void HideColorPickerEditor()
