@@ -37,7 +37,8 @@ body:
     options:
       - General
       - ColorPicker
-      - FancyZone
+      - FancyZones
+      - FancyZones Editor 
       - Image Resizer
       - Keyboard manager
       - MD Preview
