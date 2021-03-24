@@ -2,10 +2,10 @@ name: "📖 Localization/Translation issue"
 about: Report incorrect translations.
 title: ''
 labels: 
--Issue-Bug
--Area-Localization
--Issue-Translation
--Triage-Needed 
+- Issue-Bug
+- Area-Localization
+- Issue-Translation
+- Triage-Needed 
 assignees: ''
 issue_body: true
 body:
