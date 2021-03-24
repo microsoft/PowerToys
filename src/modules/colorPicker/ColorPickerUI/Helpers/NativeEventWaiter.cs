@@ -19,7 +19,7 @@ namespace ColorPicker.Helpers
         public NativeEventWaiter(AppStateHandler appStateHandler)
         {
             _appStateHandler = appStateHandler;
-            WaitForEventLoop(Constants.ShowColorPickerSharedEvent(), _appStateHandler.ShowColorPicker);
+            WaitForEventLoop(Constants.ShowColorPickerSharedEvent(), _appStateHandler.StartUserSession);
         }
 
         public static void WaitForEventLoop(string eventName, Action callback)

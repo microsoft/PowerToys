@@ -12,17 +12,19 @@ namespace ColorPicker
     /// </summary>
     public partial class ColorEditorWindow : Window
     {
-        public ColorEditorWindow()
+        private readonly AppStateHandler _appStateHandler;
+
+        public ColorEditorWindow(AppStateHandler appStateHandler)
         {
             InitializeComponent();
+            _appStateHandler = appStateHandler;
             Closing += ColorEditorWindow_Closing;
         }
 
         private void ColorEditorWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;
-            this.Hide();
-            SessionEventHelper.End();
+            _appStateHandler.EndUserSession();
         }
     }
 }

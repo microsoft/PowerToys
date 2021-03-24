@@ -5,7 +5,9 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Windows;
+using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace ColorPicker.Helpers
 {
@@ -13,15 +15,17 @@ namespace ColorPicker.Helpers
     public class AppStateHandler
     {
         private readonly IColorEditorViewModel _colorEditorViewModel;
+        private readonly IUserSettings _userSettings;
         private ColorEditorWindow _colorEditorWindow;
         private bool _colorPickerShown;
         private object _colorPickerVisibilityLock = new object();
 
         [ImportingConstructor]
-        public AppStateHandler(IColorEditorViewModel colorEditorViewModel)
+        public AppStateHandler(IColorEditorViewModel colorEditorViewModel, IUserSettings userSettings)
         {
             Application.Current.MainWindow.Closed += MainWindow_Closed;
             _colorEditorViewModel = colorEditorViewModel;
+            _userSettings = userSettings;
         }
 
         public event EventHandler AppShown;
@@ -30,7 +34,54 @@ namespace ColorPicker.Helpers
 
         public event EventHandler AppClosed;
 
-        public void ShowColorPicker()
+        public void StartUserSession()
+        {
+            if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+            {
+                ShowColorPickerEditor();
+            }
+            else
+            {
+                ShowColorPicker();
+            }
+
+            SessionEventHelper.Start(_userSettings.ActivationAction.Value);
+        }
+
+        public void EndUserSession()
+        {
+            if (IsColorPickerEditorVisible())
+            {
+                HideColorPickerEditor();
+            }
+            else
+            {
+                HideColorPicker();
+            }
+
+            SessionEventHelper.End();
+        }
+
+        public void OnColorPickerMouseDown()
+        {
+            if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenColorPickerAndThenEditor || _userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+            {
+                HideColorPicker();
+                ShowColorPickerEditor();
+            }
+            else
+            {
+                EndUserSession();
+            }
+        }
+
+        public static void SetTopMost()
+        {
+            Application.Current.MainWindow.Topmost = false;
+            Application.Current.MainWindow.Topmost = true;
+        }
+
+        private void ShowColorPicker()
         {
             lock (_colorPickerVisibilityLock)
             {
@@ -44,7 +95,7 @@ namespace ColorPicker.Helpers
             }
         }
 
-        public void HideColorPicker()
+        private void HideColorPicker()
         {
             lock (_colorPickerVisibilityLock)
             {
@@ -58,11 +109,11 @@ namespace ColorPicker.Helpers
             }
         }
 
-        public void ShowColorPickerEditor()
+        private void ShowColorPickerEditor()
         {
             if (_colorEditorWindow == null)
             {
-                _colorEditorWindow = new ColorEditorWindow();
+                _colorEditorWindow = new ColorEditorWindow(this);
                 _colorEditorWindow.Content = _colorEditorViewModel;
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
                 _colorEditorViewModel.OpenColorPickerRequested += (object sender, EventArgs e) =>
@@ -75,7 +126,7 @@ namespace ColorPicker.Helpers
             _colorEditorWindow.Show();
         }
 
-        public void HideColorPickerEditor()
+        private void HideColorPickerEditor()
         {
             if (_colorEditorWindow != null)
             {
@@ -83,7 +134,7 @@ namespace ColorPicker.Helpers
             }
         }
 
-        public bool IsColorPickerEditorVisible()
+        private bool IsColorPickerEditorVisible()
         {
             if (_colorEditorWindow != null)
             {
@@ -92,12 +143,6 @@ namespace ColorPicker.Helpers
             }
 
             return false;
-        }
-
-        public static void SetTopMost()
-        {
-            Application.Current.MainWindow.Topmost = false;
-            Application.Current.MainWindow.Topmost = true;
         }
 
         private void MainWindow_Closed(object sender, EventArgs e)

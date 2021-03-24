@@ -140,16 +140,7 @@ namespace ColorPicker.ViewModels
                 _userSettings.ColorHistory.RemoveAt(_userSettings.ColorHistory.Count - 1);
             }
 
-            _appStateHandler.HideColorPicker();
-
-            if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenColorPickerAndThenEditor || _userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
-            {
-                _appStateHandler.ShowColorPickerEditor();
-            }
-            else
-            {
-                SessionEventHelper.End();
-            }
+            _appStateHandler.OnColorPickerMouseDown();
         }
 
         private string GetColorString()
