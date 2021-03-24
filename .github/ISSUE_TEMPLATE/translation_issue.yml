@@ -1,1 +1,77 @@
-
+name: "📖 Localization/Translation issue"
+about: Report incorrect translations.
+title: ''
+labels: 
+  -Issue-Bug
+  -Area-Localization
+  -Issue-Translation
+  -Triage-Needed 
+assignees: ''
+issue_body: true
+body:
+- type: markdown
+  attributes:
+    value: |
+      Please make sure to [search for existing issues](https://github.com/microsoft/PowerTOys/issues) before filing a new one!
+- type: input
+  attributes:
+    label: Microsoft PowerToys version
+    placeholder: "0.33.1"
+    description: |
+      Hover over system tray icon or look at Settings
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: Utility with issue?
+    multiple: true
+    options:
+      - General
+      - ColorPicker
+      - FancyZones
+      - FancyZones Editor 
+      - Image Resizer
+      - Keyboard Manager
+      - MD Preview
+      - PowerRename
+      - PowerToys Run
+      - Shortcut Guide
+      - SVG Preview
+      - SVG Thumbnail
+      - Installer
+      - System tray interaction
+      - Settings window
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Language
+    placeholder: "German"
+    description: |
+      The language which is affected
+  validations:
+    required: true
+- type: textarea
+  attributes: 📝 Provide where the issue is / 📷 Screenshots
+    label: Where did you found the affected phrase(s)?
+    placeholder: Provide some screenshots or describe where you found the phrase(s).
+  validations:
+    required: true
+- type: textarea
+  attributes: ❌ Actual phrase(s)
+    label: What is there?
+    placeholder: Example phrase
+  validations:
+    required: true
+- type: textarea
+  attributes: ✔️ Expected phrase(s)
+    label: Where did you found the affected phrase(s)?
+    placeholder: What do you expect?
+  validations:
+    required: true
+- type: textarea
+  attributes: ℹ Why is the current translation wrong
+    label: If it is opinion based issue, why do you feel this is incorrect?
+    placeholder: term is outdated
+  validations:
+    required: true
