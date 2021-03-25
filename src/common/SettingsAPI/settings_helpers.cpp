@@ -4,7 +4,6 @@
 namespace PTSettingsHelper
 {
     constexpr inline const wchar_t* settings_filename = L"\\settings.json";
-    constexpr inline const wchar_t* log_settings_filename = L"log_settings.json";
     constexpr inline const wchar_t* oobe_filename = L"oobe_settings.json";
 
     std::wstring get_root_save_folder_location()
