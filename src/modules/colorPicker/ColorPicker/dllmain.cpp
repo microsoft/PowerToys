@@ -9,6 +9,7 @@
 #include <common/utils/resources.h>
 
 #include <colorPicker/ColorPicker/ColorPickerConstants.h>
+#include <common/interop/shared_constants.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule,
                       DWORD ul_reason_for_call,
@@ -47,11 +48,14 @@ private:
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
 
+    HANDLE send_telemetry_event;
+
 public:
     ColorPicker()
     {
         app_name = GET_RESOURCE_STRING(IDS_COLORPICKER_NAME);
         app_key = ColorPickerConstants::ModuleKey;
+        send_telemetry_event = CreateDefaultEvent(CommonSharedConstants::COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT);
     }
 
     ~ColorPicker()
@@ -119,6 +123,7 @@ public:
 
     virtual void enable()
     {
+        ResetEvent(send_telemetry_event);
         // use only with new settings?
         if (UseNewSettings())
         {
@@ -144,6 +149,7 @@ public:
     {
         if (m_enabled)
         {
+            ResetEvent(send_telemetry_event);
             TerminateProcess(m_hProcess, 1);
         }
 
@@ -153,6 +159,11 @@ public:
     virtual bool is_enabled() override
     {
         return m_enabled;
+    }
+
+    virtual void send_settings_telemetry() override
+    {
+        SetEvent(send_telemetry_event);
     }
 };
 
