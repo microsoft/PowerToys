@@ -17,6 +17,27 @@ winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkArea(const GUID& desk
     return nullptr;
 }
 
+winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkAreaFromCursor(const GUID& desktopId)
+{
+    auto allMonitorsWorkArea = GetWorkArea(desktopId, NULL);
+    if (allMonitorsWorkArea)
+    {
+        // First, check if there's a work area spanning all monitors (signalled by the NULL monitor handle)
+        return allMonitorsWorkArea;
+    }
+    else
+    {
+        // Otherwise, look for the work area based on cursor position
+        POINT cursorPoint;
+        if (!GetCursorPos(&cursorPoint))
+        {
+            return nullptr;
+        }
+
+        return GetWorkArea(desktopId, MonitorFromPoint(cursorPoint, MONITOR_DEFAULTTONULL));
+    }
+}
+
 winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkArea(HWND window)
 {
     GUID desktopId{};

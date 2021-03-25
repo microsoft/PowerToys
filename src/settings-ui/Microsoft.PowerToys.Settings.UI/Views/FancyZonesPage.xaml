@@ -189,6 +189,20 @@
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
 
+            <TextBlock x:Uid="FancyZones_QuickLayoutSwitch_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <CheckBox x:Uid="FancyZones_QuickLayoutSwitch"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}"
+                      Margin="{StaticResource XSmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_FlashZonesOnQuickSwitch"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZonesOnQuickSwitch}"
+                      Margin="24,8,0,0"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.QuickSwitchEnabled}"/>
+
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>

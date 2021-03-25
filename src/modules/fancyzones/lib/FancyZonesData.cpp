@@ -511,10 +511,33 @@ bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, 
 void FancyZonesData::SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& data)
 {
     std::scoped_lock lock{ dataLock };
-    auto it = deviceInfoMap.find(deviceId);
-    if (it != deviceInfoMap.end())
+
+    auto deviceIt = deviceInfoMap.find(deviceId);
+    if (deviceIt == deviceInfoMap.end())
     {
-        it->second.activeZoneSet = data;
+        return;
+    }
+
+    deviceIt->second.activeZoneSet = data;
+
+    // If the zone set is custom, we need to copy its properties to the device
+    auto zonesetIt = customZoneSetsMap.find(data.uuid);
+    if (zonesetIt != customZoneSetsMap.end())
+    {
+        if (zonesetIt->second.type == FancyZonesDataTypes::CustomLayoutType::Grid)
+        {
+            auto layoutInfo = std::get<FancyZonesDataTypes::GridLayoutInfo>(zonesetIt->second.info);
+            deviceIt->second.sensitivityRadius = layoutInfo.sensitivityRadius();
+            deviceIt->second.showSpacing = layoutInfo.showSpacing();
+            deviceIt->second.spacing = layoutInfo.spacing();
+            deviceIt->second.zoneCount = layoutInfo.zoneCount();
+        }
+        else if (zonesetIt->second.type == FancyZonesDataTypes::CustomLayoutType::Canvas)
+        {
+            auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(zonesetIt->second.info);
+            deviceIt->second.sensitivityRadius = layoutInfo.sensitivityRadius;
+            deviceIt->second.zoneCount = (int)layoutInfo.zones.size();
+        }
     }
 }
 
@@ -536,6 +559,7 @@ void FancyZonesData::LoadFancyZonesData()
         appZoneHistoryMap = JSONHelpers::ParseAppZoneHistory(fancyZonesDataJSON);
         deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
         customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
+        quickKeysMap = JSONHelpers::ParseQuickKeys(fancyZonesDataJSON);
     }
 }
 
@@ -549,7 +573,7 @@ void FancyZonesData::SaveZoneSettings() const
 {
     _TRACER_;
     std::scoped_lock lock{ dataLock };
-    JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
+    JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap, quickKeysMap);
 }
 
 void FancyZonesData::SaveAppZoneHistory() const
