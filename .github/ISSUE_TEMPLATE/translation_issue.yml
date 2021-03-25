@@ -60,21 +60,21 @@ body:
     required: true
 - type: textarea
   attributes: 
-    Label: ❌ Actual phrase(s)
+    label: ❌ Actual phrase(s)
     description: What is there?
     placeholder: Example phrase
   validations:
     required: true
 - type: textarea
   attributes: 
-    Label: ✔️ Expected phrase(s)
+    label: ✔️ Expected phrase(s)
     description: Where did you found the affected phrase(s)?
     placeholder: What do you expect?
   validations:
     required: true
 - type: textarea
   attributes:
-    Label: ℹ Why is the current translation wrong
+    label: ℹ Why is the current translation wrong
     description: If it is opinion based issue, why do you feel this is incorrect?
     placeholder: term is outdated
   validations:
