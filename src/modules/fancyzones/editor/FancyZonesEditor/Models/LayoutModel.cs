@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -16,6 +17,8 @@ namespace FancyZonesEditor.Models
         {
             _guid = Guid.NewGuid();
             Type = LayoutType.Custom;
+
+            MainWindowSettingsModel.QuickKeys.PropertyChanged += QuickSwitchKeys_PropertyChanged;
         }
 
         protected LayoutModel(string name)
@@ -48,6 +51,9 @@ namespace FancyZonesEditor.Models
             _isApplied = other._isApplied;
             _sensitivityRadius = other._sensitivityRadius;
             _zoneCount = other._zoneCount;
+            _quickKey = other._quickKey;
+
+            MainWindowSettingsModel.QuickKeys.PropertyChanged += QuickSwitchKeys_PropertyChanged;
         }
 
         // Name - the display name for this layout model - is also used as the key in the registry
@@ -158,6 +164,55 @@ namespace FancyZonesEditor.Models
 
         private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
 
+        public List<string> QuickKeysAvailable
+        {
+            get
+            {
+                List<string> result = new List<string>();
+                foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
+                {
+                    if (pair.Value == string.Empty || pair.Value == Uuid)
+                    {
+                        result.Add(pair.Key);
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        public string QuickKey
+        {
+            get
+            {
+                return _quickKey == -1 ? Properties.Resources.Quick_Key_None : _quickKey.ToString();
+            }
+
+            set
+            {
+                string none = Properties.Resources.Quick_Key_None;
+                var intValue = value == none ? -1 : int.Parse(value);
+                if (intValue != _quickKey)
+                {
+                    string prev = _quickKey == -1 ? none : _quickKey.ToString();
+                    _quickKey = intValue;
+
+                    if (intValue != -1)
+                    {
+                        MainWindowSettingsModel.QuickKeys.SelectKey(value, Uuid);
+                    }
+                    else
+                    {
+                        MainWindowSettingsModel.QuickKeys.FreeKey(prev);
+                    }
+
+                    FirePropertyChanged(nameof(QuickKey));
+                }
+            }
+        }
+
+        private int _quickKey = -1;
+
         // TemplateZoneCount - number of zones selected in the picker window for template layouts
         public int TemplateZoneCount
         {
@@ -200,6 +255,11 @@ namespace FancyZonesEditor.Models
         // Removes this Layout from the registry and the loaded CustomModels list
         public void Delete()
         {
+            if (_quickKey != -1)
+            {
+                MainWindowSettingsModel.QuickKeys.FreeKey(QuickKey);
+            }
+
             var customModels = MainWindowSettingsModel.CustomModels;
             int i = customModels.IndexOf(this);
             if (i != -1)
@@ -240,6 +300,18 @@ namespace FancyZonesEditor.Models
         public void Persist()
         {
             PersistData();
+        }
+
+        private void QuickSwitchKeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
+            {
+                if (pair.Value == Uuid)
+                {
+                    QuickKey = pair.Key.ToString();
+                    break;
+                }
+            }
         }
     }
 }

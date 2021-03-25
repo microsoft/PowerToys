@@ -556,6 +556,24 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        public static string Quick_Key_None {
+            get {
+                return ResourceManager.GetString("Quick_Key_None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a key to quickly apply the layout (Win + Ctrl + Alt + key).
+        /// </summary>
+        public static string QuickKey_Select {
+            get {
+                return ResourceManager.GetString("QuickKey_Select", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reset layout.
         /// </summary>
         public static string Reset_Layout {

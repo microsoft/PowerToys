@@ -87,13 +87,6 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      */
     IFACEMETHOD_(bool, ExtendWindowByDirectionAndPosition)(HWND window, DWORD vkCode) = 0;
     /**
-     * Cycle through active zone layouts (giving hints about each layout).
-     *
-     * @param   vkCode Pressed key representing layout index.
-     */
-    IFACEMETHOD_(void, CycleActiveZoneSet)(DWORD vkCode) = 0;
-
-    /**
      * Save information about zone in which window was assigned, when closing the window.
      * Used once we open same window again to assign it to its previous zone.
      *
@@ -118,6 +111,10 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * Clear the selected zones when this ZoneWindow loses focus.
      */
     IFACEMETHOD_(void, ClearSelectedZones)() = 0;
+    /*
+     * Display the layout on the screen and then hide it.
+     */
+    IFACEMETHOD_(void, FlashZones)() = 0;
 };
 
 winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor,

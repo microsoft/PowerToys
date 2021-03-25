@@ -48,6 +48,12 @@ public:
 
     const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const;
 
+    inline const JSONHelpers::TLayoutQuickKeysMap& GetLayoutQuickKeys() const
+    {
+        std::scoped_lock lock{ dataLock };
+        return quickKeysMap;
+    }
+
     inline const std::wstring& GetZonesSettingsFileName() const 
     {
         return zonesSettingsFileName;
@@ -121,6 +127,8 @@ private:
     JSONHelpers::TDeviceInfoMap deviceInfoMap{};
     // Maps custom zoneset UUID to it's data
     JSONHelpers::TCustomZoneSetsMap customZoneSetsMap{};
+    // Maps zoneset UUID with quick access keys
+    JSONHelpers::TLayoutQuickKeysMap quickKeysMap{};
 
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;
