@@ -428,7 +428,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open layout editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Öppen layoutredigeringsprogrammet]]></Val>
+            <Val><![CDATA[Öppna layoutredigeringsprogramme]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Open zones editor]]></Val>
