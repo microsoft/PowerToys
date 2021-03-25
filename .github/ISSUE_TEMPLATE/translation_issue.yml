@@ -53,7 +53,7 @@ body:
     required: true
 - type: textarea
   attributes:
-    Label: 📝 Provide where the issue is / 📷 Screenshots
+    label: 📝 Provide where the issue is / 📷 Screenshots
     description: Where did you found the affected phrase(s)?
     placeholder: Provide some screenshots or describe where you found the phrase(s).
   validations:
