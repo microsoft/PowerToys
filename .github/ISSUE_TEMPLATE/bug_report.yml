@@ -10,12 +10,14 @@ body:
 - type: markdown
   attributes:
     value: |
-      Please make sure to [search for existing issues](https://github.com/microsoft/PowerTOys/issues) before filing a new one!
-
+      Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
+      
+      We highly suggest including a screenshots and a bug report log (System tray->Report bug). To include, paste them into the markdown editor below the form or follow up with a separate comment.
 - type: input
   attributes:
     label: Microsoft PowerToys version
-    placeholder: "0.33.1"
+    placeholder: |
+      "0.33.1"
     description: |
       Hover over system tray icon or look at Settings
   validations:
@@ -24,15 +26,17 @@ body:
 - type: dropdown
   attributes:
     label: Running as admin
+    description: Are you running PowerToys as Admin?
     options:
-      - 'Yes'
       - 'No'
+      - 'Yes'
   validations:
     required: true
 
 - type: dropdown
   attributes:
-    label: Utility with issue?
+    label: Area(s) with issue?
+    description: What things had an issue?  Check all that apply.
     multiple: true
     options:
       - General
@@ -74,7 +78,6 @@ body:
 - type: textarea
   attributes:
     label: ✔️ Expected Behavior
-    description: If you want to include screenshots, paste them into the markdown editor below the form or follow up with a separate comment.
     placeholder: What were you expecting?
   validations:
     required: false
@@ -82,7 +85,6 @@ body:
 - type: textarea
   attributes:
     label: ❌ Actual Behavior
-    description: If you want to include screenshots, paste them into the markdown editor below the form or follow up with a separate comment.
     placeholder: What happened instead?
   validations:
     required: true
