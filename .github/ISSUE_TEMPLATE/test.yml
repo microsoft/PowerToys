@@ -6,18 +6,10 @@ assignees: ""
 issue_body: true
 body:
 - type: input
-id: 
-attributes:
-  label: "v"
-  description: "dasd"
-  placeholder: "sda"
-validations:
-  required: true
-- type: input
-id: f
-attributes:
-  label: "v"
-  description: ""
-  placeholder: ""
-validations:
-  required: true
+   id: 
+   attributes:
+      label: "v"
+      description: "u"
+      placeholder: "sda"
+      validations:
+         required: true
