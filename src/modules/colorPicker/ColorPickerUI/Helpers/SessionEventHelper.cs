@@ -28,7 +28,8 @@ namespace ColorPicker.Helpers
                 return;
             }
 
-            Event.Duration = DateTime.Now - _startTime.Value;
+            var duration = DateTime.Now - _startTime.Value;
+            Event.Duration = duration.Seconds + (duration.Milliseconds == 0 ? 0 : 1);
             _startTime = null;
             PowerToysTelemetry.Log.WriteEvent(Event);
         }

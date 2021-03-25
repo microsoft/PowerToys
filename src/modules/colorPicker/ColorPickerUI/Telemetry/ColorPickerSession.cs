@@ -32,7 +32,7 @@ namespace ColorPicker.Telemetry
 
         public bool EditorColorCopiedToClipboard { get; set; }
 
-        public TimeSpan Duration { get; set; }
+        public int Duration { get; set; }
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
