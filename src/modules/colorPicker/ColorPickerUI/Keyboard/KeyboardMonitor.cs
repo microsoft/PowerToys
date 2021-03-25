@@ -72,16 +72,7 @@ namespace ColorPicker.Keyboard
             // ESC pressed
             if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape))
             {
-                if (_appStateHandler.IsColorPickerEditorVisible())
-                {
-                    _appStateHandler.HideColorPickerEditor();
-                }
-                else
-                {
-                    _appStateHandler.HideColorPicker();
-                    PowerToysTelemetry.Log.WriteEvent(new ColorPickerCancelledEvent());
-                }
-
+                _appStateHandler.EndUserSession();
                 return;
             }
 
@@ -114,14 +105,7 @@ namespace ColorPicker.Keyboard
                 if (!_activationShortcutPressed)
                 {
                     _activationShortcutPressed = true;
-                    if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
-                    {
-                        _appStateHandler.ShowColorPickerEditor();
-                    }
-                    else
-                    {
-                        _appStateHandler.ShowColorPicker();
-                    }
+                    _appStateHandler.StartUserSession();
                 }
             }
         }

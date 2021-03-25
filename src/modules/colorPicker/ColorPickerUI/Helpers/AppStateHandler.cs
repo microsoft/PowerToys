@@ -5,7 +5,9 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Windows;
+using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace ColorPicker.Helpers
 {
@@ -13,15 +15,17 @@ namespace ColorPicker.Helpers
     public class AppStateHandler
     {
         private readonly IColorEditorViewModel _colorEditorViewModel;
+        private readonly IUserSettings _userSettings;
         private ColorEditorWindow _colorEditorWindow;
         private bool _colorPickerShown;
         private object _colorPickerVisibilityLock = new object();
 
         [ImportingConstructor]
-        public AppStateHandler(IColorEditorViewModel colorEditorViewModel)
+        public AppStateHandler(IColorEditorViewModel colorEditorViewModel, IUserSettings userSettings)
         {
             Application.Current.MainWindow.Closed += MainWindow_Closed;
             _colorEditorViewModel = colorEditorViewModel;
+            _userSettings = userSettings;
         }
 
         public event EventHandler AppShown;
@@ -30,48 +34,110 @@ namespace ColorPicker.Helpers
 
         public event EventHandler AppClosed;
 
-        public void ShowColorPicker()
+        public void StartUserSession()
         {
             lock (_colorPickerVisibilityLock)
             {
-                if (!_colorPickerShown)
+                if (!_colorPickerShown && !IsColorPickerEditorVisible())
                 {
-                    AppShown?.Invoke(this, EventArgs.Empty);
-                    Application.Current.MainWindow.Opacity = 0;
-                    Application.Current.MainWindow.Visibility = Visibility.Visible;
-                    _colorPickerShown = true;
+                    SessionEventHelper.Start(_userSettings.ActivationAction.Value);
+                }
+
+                if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+                {
+                    ShowColorPickerEditor();
+                }
+                else
+                {
+                    ShowColorPicker();
                 }
             }
         }
 
-        public void HideColorPicker()
+        public void EndUserSession()
         {
             lock (_colorPickerVisibilityLock)
             {
-                if (_colorPickerShown)
+                if (IsColorPickerEditorVisible() || _colorPickerShown)
                 {
-                    Application.Current.MainWindow.Opacity = 0;
-                    Application.Current.MainWindow.Visibility = Visibility.Collapsed;
-                    AppHidden?.Invoke(this, EventArgs.Empty);
-                    _colorPickerShown = false;
+                    if (IsColorPickerEditorVisible())
+                    {
+                        HideColorPickerEditor();
+                    }
+                    else
+                    {
+                        HideColorPicker();
+                    }
+
+                    SessionEventHelper.End();
                 }
             }
         }
 
-        public void ShowColorPickerEditor()
+        public void OnColorPickerMouseDown()
+        {
+            if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenColorPickerAndThenEditor || _userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+            {
+                lock (_colorPickerVisibilityLock)
+                {
+                    HideColorPicker();
+                }
+
+                ShowColorPickerEditor();
+            }
+            else
+            {
+                EndUserSession();
+            }
+        }
+
+        public static void SetTopMost()
+        {
+            Application.Current.MainWindow.Topmost = false;
+            Application.Current.MainWindow.Topmost = true;
+        }
+
+        private void ShowColorPicker()
+        {
+            if (!_colorPickerShown)
+            {
+                AppShown?.Invoke(this, EventArgs.Empty);
+                Application.Current.MainWindow.Opacity = 0;
+                Application.Current.MainWindow.Visibility = Visibility.Visible;
+                _colorPickerShown = true;
+            }
+        }
+
+        private void HideColorPicker()
+        {
+            if (_colorPickerShown)
+            {
+                Application.Current.MainWindow.Opacity = 0;
+                Application.Current.MainWindow.Visibility = Visibility.Collapsed;
+                AppHidden?.Invoke(this, EventArgs.Empty);
+                _colorPickerShown = false;
+            }
+        }
+
+        private void ShowColorPickerEditor()
         {
             if (_colorEditorWindow == null)
             {
-                _colorEditorWindow = new ColorEditorWindow();
+                _colorEditorWindow = new ColorEditorWindow(this);
                 _colorEditorWindow.Content = _colorEditorViewModel;
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
+                _colorEditorViewModel.OpenColorPickerRequested += (object sender, EventArgs e) =>
+                {
+                    SessionEventHelper.Event.EditorColorPickerOpened = true;
+                };
             }
 
             _colorEditorViewModel.Initialize();
             _colorEditorWindow.Show();
+            SessionEventHelper.Event.EditorOpened = true;
         }
 
-        public void HideColorPickerEditor()
+        private void HideColorPickerEditor()
         {
             if (_colorEditorWindow != null)
             {
@@ -79,7 +145,7 @@ namespace ColorPicker.Helpers
             }
         }
 
-        public bool IsColorPickerEditorVisible()
+        private bool IsColorPickerEditorVisible()
         {
             if (_colorEditorWindow != null)
             {
@@ -90,12 +156,6 @@ namespace ColorPicker.Helpers
             return false;
         }
 
-        public static void SetTopMost()
-        {
-            Application.Current.MainWindow.Topmost = false;
-            Application.Current.MainWindow.Topmost = true;
-        }
-
         private void MainWindow_Closed(object sender, EventArgs e)
         {
             AppClosed?.Invoke(this, EventArgs.Empty);
@@ -103,7 +163,11 @@ namespace ColorPicker.Helpers
 
         private void ColorEditorViewModel_OpenColorPickerRequested(object sender, EventArgs e)
         {
-            ShowColorPicker();
+            lock (_colorPickerVisibilityLock)
+            {
+                ShowColorPicker();
+            }
+
             _colorEditorWindow.Hide();
         }
     }
