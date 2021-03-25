@@ -4,7 +4,7 @@
 struct LogSettings
 {
     // The following strings are not localizable
-    inline const static std::wstring defaultLogLevel = L"warn";
+    inline const static std::wstring defaultLogLevel = L"trace";
     inline const static std::wstring logLevelOption = L"logLevel";
     inline const static std::string runnerLoggerName = "runner";
     inline const static std::wstring runnerLogPath = L"RunnerLogs\\runner-log.txt";
