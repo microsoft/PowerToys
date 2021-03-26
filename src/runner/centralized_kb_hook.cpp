@@ -2,6 +2,7 @@
 #include "centralized_kb_hook.h"
 #include <common/debug_control.h>
 #include <common/utils/winapi_error.h>
+#include <common/logger/logger.h>
 
 namespace CentralizedKeyboardHook
 {
@@ -79,12 +80,14 @@ namespace CentralizedKeyboardHook
 
     void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<bool()>&& action) noexcept
     {
+        Logger::trace(L"Register hotkey action for {}", moduleName);
         std::unique_lock lock{ mutex };
         hotkeyDescriptors.insert({ .hotkey = hotkey, .moduleName = moduleName, .action = std::move(action) });
     }
 
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept
     {
+        Logger::trace(L"UnRegister hotkey action for {}", moduleName);
         std::unique_lock lock{ mutex };
         auto it = hotkeyDescriptors.begin();
         while (it != hotkeyDescriptors.end())
