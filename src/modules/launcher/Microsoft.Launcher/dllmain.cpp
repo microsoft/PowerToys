@@ -345,6 +345,12 @@ public:
     void terminateProcess()
     {
         Logger::trace(L"Terminating PowerToys Run process. Handle {}.", m_hProcess);
+        if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
+        {
+            Logger::warn("PowerToys Run has exited unexpectedly, so there is no need to terminate it.");
+            return;
+        }
+
         DWORD processID = GetProcessId(m_hProcess);
         if (TerminateProcess(m_hProcess, 1) == 0)
         {
