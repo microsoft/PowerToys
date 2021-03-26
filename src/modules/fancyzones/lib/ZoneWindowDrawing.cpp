@@ -218,13 +218,16 @@ void ZoneWindowDrawing::RenderLoop()
 void ZoneWindowDrawing::Hide()
 {
     _TRACER_;
-    std::unique_lock lock(m_mutex);
-
-    m_animation.reset();
-
-    if (m_shouldRender)
+    bool shouldHideWindow;
     {
+        std::unique_lock lock(m_mutex);
+        m_animation.reset();
+        shouldHideWindow = m_shouldRender;
         m_shouldRender = false;
+    }
+
+    if (shouldHideWindow)
+    {
         ShowWindow(m_window, SW_HIDE);
     }
 }
@@ -232,39 +235,46 @@ void ZoneWindowDrawing::Hide()
 void ZoneWindowDrawing::Show(unsigned animationMillis)
 {
     _TRACER_;
-    std::unique_lock lock(m_mutex);
-    
-    if (!m_shouldRender)
+    bool shouldShowWindow;
+    {
+        std::unique_lock lock(m_mutex);
+        shouldShowWindow = !m_shouldRender;
+        m_shouldRender = true;
+
+        animationMillis = max(animationMillis, 1);
+        
+        if (!m_animation || !m_animation->fadeIn)
+        {
+            m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, true });
+        }
+    }
+
+    if (shouldShowWindow)
     {
         ShowWindow(m_window, SW_SHOWNA);
     }
 
-    animationMillis = max(animationMillis, 1);
-
-    if (!m_animation || !m_animation->fadeIn)
-    {
-        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, true });
-    }
-
-    m_shouldRender = true;
     m_cv.notify_all();
 }
 
 void ZoneWindowDrawing::Flash(unsigned animationMillis)
 {
     _TRACER_;
-    std::unique_lock lock(m_mutex);
+    bool shouldShowWindow;
+    {
+        std::unique_lock lock(m_mutex);
+        shouldShowWindow = !m_shouldRender;
+        m_shouldRender = true;
+    
+        animationMillis = max(animationMillis, 1);
+        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
+    }
 
-    if (!m_shouldRender)
+    if (shouldShowWindow)
     {
         ShowWindow(m_window, SW_SHOWNA);
     }
 
-    animationMillis = max(animationMillis, 1);
-
-    m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
-
-    m_shouldRender = true;
     m_cv.notify_all();
 }
 
