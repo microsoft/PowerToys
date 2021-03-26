@@ -406,6 +406,7 @@ ZoneWindow::UpdateActiveZoneSet() noexcept
     CalculateZoneSet();
     if (m_window)
     {
+        m_highlightZone.clear();
         m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
     }
 }
