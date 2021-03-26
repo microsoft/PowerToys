@@ -86,16 +86,7 @@ namespace PowerLauncher
                         foreach (var setting in overloadSettings.Plugins)
                         {
                             var plugin = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == setting.Id);
-                            if (plugin != null)
-                            {
-                                plugin.Metadata.Disabled = setting.Disabled;
-                                plugin.Metadata.ActionKeyword = setting.ActionKeyword;
-                                plugin.Metadata.IsGlobal = setting.IsGlobal;
-                                if (plugin.Plugin is ISettingProvider)
-                                {
-                                    (plugin.Plugin as ISettingProvider).UpdateSettings(setting);
-                                }
-                            }
+                            plugin?.Update(setting, App.API);
                         }
                     }
 

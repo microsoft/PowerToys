@@ -45,10 +45,9 @@ namespace Wox.Test
             var results = new List<Result>() { result };
             var pluginMock = new Mock<IPlugin>();
             pluginMock.Setup(r => r.Query(query)).Returns(results);
-            var pluginPair = new PluginPair
+            var pluginPair = new PluginPair(metadata)
             {
                 Plugin = pluginMock.Object,
-                Metadata = metadata,
             };
 
             // Act

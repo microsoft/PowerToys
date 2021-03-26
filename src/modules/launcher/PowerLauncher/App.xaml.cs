@@ -103,6 +103,8 @@ namespace PowerLauncher
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _themeManager);
+                _settingsWatcher = new SettingsWatcher(_settings, _themeManager);
+
                 PluginManager.InitializePlugins(API);
 
                 Current.MainWindow = _mainWindow;
@@ -112,8 +114,6 @@ namespace PowerLauncher
                 HttpClient.Proxy = _settings.Proxy;
 
                 RegisterExitEvents();
-
-                _settingsWatcher = new SettingsWatcher(_settings, _themeManager);
 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();

@@ -185,4 +185,10 @@
   <data name="deseralization_error_message" xml:space="preserve">
     <value>Settings will be reset to default and program will continue to function.</value>
   </data>
+  <data name="FailedToInitializePluginsDescription" xml:space="preserve">
+    <value>Plugins: {0} - fail to load and would be disabled, please contact plugins creator for help</value>
+  </data>
+  <data name="FailedToInitializePluginsTitle" xml:space="preserve">
+    <value>Fail to initialize plugins</value>
+  </data>
 </root>
