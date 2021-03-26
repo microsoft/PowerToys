@@ -25,8 +25,7 @@ class ZoneWindowDrawing
     struct AnimationInfo
     {
         std::chrono::steady_clock::time_point tStart;
-        unsigned duration;
-        bool fadeIn;
+        bool autoHide;
     };
 
     HWND m_window = nullptr;
@@ -42,7 +41,7 @@ class ZoneWindowDrawing
     static IDWriteFactory* GetWriteFactory();
     static D2D1_COLOR_F ConvertColor(COLORREF color);
     static D2D1_RECT_F ConvertRect(RECT rect);
-    void Render();
+    void Render(float animationAlpha);
     void RenderLoop();
 
     std::atomic<bool> m_shouldRender = false;
@@ -55,8 +54,8 @@ public:
     ~ZoneWindowDrawing();
     ZoneWindowDrawing(HWND window);
     void Hide();
-    void Show(unsigned animationMillis);
-    void Flash(unsigned animationMillis);
+    void Show();
+    void Flash();
     void DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                            const std::vector<size_t>& highlightZones,
                            winrt::com_ptr<IZoneWindowHost> host);

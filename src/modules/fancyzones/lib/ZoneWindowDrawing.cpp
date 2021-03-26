@@ -9,6 +9,12 @@
 
 #include <common/logger/logger.h>
 
+namespace
+{
+    const int FadeInDurationMillis = 200;
+    const int FlashZonesDurationMillis = 700;
+}
+
 namespace NonLocalizable
 {
     const wchar_t SegoeUiFont[] = L"Segoe ui";
@@ -16,25 +22,24 @@ namespace NonLocalizable
 
 float ZoneWindowDrawing::GetAnimationAlpha()
 {
-    // Lock is being held
+    _TRACER_;
+    std::unique_lock lock(m_mutex);
+
     if (!m_animation)
     {
         return 0.f;
     }
 
     auto tNow = std::chrono::steady_clock().now();
-    auto alpha = (tNow - m_animation->tStart).count() / (1e6f * m_animation->duration);
+    auto millis = (tNow - m_animation->tStart).count() / 1e6f;
 
-    if (m_animation->fadeIn)
+    if (m_animation->autoHide && millis > FlashZonesDurationMillis)
     {
-        // Return a positive value to avoid hiding
-        return std::clamp(alpha, 0.001f, 1.f);
+        return 0.f;
     }
-    else
-    {
-        // Quadratic function looks better
-        return std::clamp(1.f - alpha * alpha, 0.f, 1.f);
-    }
+
+    // Return a positive value to avoid hiding
+    return std::clamp(millis / FadeInDurationMillis, 0.001f, 1.f);
 }
 
 ID2D1Factory* ZoneWindowDrawing::GetD2DFactory()
@@ -106,7 +111,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     m_renderThread = std::thread([this]() { RenderLoop(); });
 }
 
-void ZoneWindowDrawing::Render()
+void ZoneWindowDrawing::Render(float animationAlpha)
 {
     std::unique_lock lock(m_mutex);
 
@@ -114,14 +119,7 @@ void ZoneWindowDrawing::Render()
     {
         return;
     }
-
-    float animationAlpha = GetAnimationAlpha();
-
-    if (animationAlpha <= 0.f)
-    {
-        return;
-    }
-
+    
     m_renderTarget->BeginDraw();
 
     // Draw backdrop
@@ -192,26 +190,23 @@ void ZoneWindowDrawing::RenderLoop()
 {
     while (!m_abortThread)
     {
-        float animationAlpha;
         {
-            // The lock must be held by the caller when calling GetAnimationAlpha
+            // Wait here while rendering is disabled
             std::unique_lock lock(m_mutex);
-            animationAlpha = GetAnimationAlpha();
+            m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
         }
+
+        float animationAlpha = GetAnimationAlpha();
 
         // Check whether the animation expired and we need to hide the window
         if (animationAlpha <= 0.f)
         {
             Hide();
         }
-
+        else
         {
-            // Wait here while rendering is disabled
-            std::unique_lock lock(m_mutex);
-            m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
+            Render(animationAlpha);
         }
-        
-        Render();
     }
 }
 
@@ -232,7 +227,7 @@ void ZoneWindowDrawing::Hide()
     }
 }
 
-void ZoneWindowDrawing::Show(unsigned animationMillis)
+void ZoneWindowDrawing::Show()
 {
     _TRACER_;
     bool shouldShowWindow{};
@@ -241,11 +236,14 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
         shouldShowWindow = !m_shouldRender;
         m_shouldRender = true;
 
-        animationMillis = max(animationMillis, 1);
-        
-        if (!m_animation || !m_animation->fadeIn)
+        if (!m_animation)
         {
-            m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, true });
+            m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), false });
+        }
+        else if (m_animation->autoHide)
+        {
+            // Do not change the starting time of the animation, just reset autoHide
+            m_animation->autoHide = false;
         }
     }
 
@@ -257,7 +255,7 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
     m_cv.notify_all();
 }
 
-void ZoneWindowDrawing::Flash(unsigned animationMillis)
+void ZoneWindowDrawing::Flash()
 {
     _TRACER_;
     bool shouldShowWindow{};
@@ -266,8 +264,7 @@ void ZoneWindowDrawing::Flash(unsigned animationMillis)
         shouldShowWindow = !m_shouldRender;
         m_shouldRender = true;
     
-        animationMillis = max(animationMillis, 1);
-        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
+        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), true });
     }
 
     if (shouldShowWindow)
