@@ -218,7 +218,7 @@ void ZoneWindowDrawing::RenderLoop()
 void ZoneWindowDrawing::Hide()
 {
     _TRACER_;
-    bool shouldHideWindow;
+    bool shouldHideWindow{};
     {
         std::unique_lock lock(m_mutex);
         m_animation.reset();
@@ -235,7 +235,7 @@ void ZoneWindowDrawing::Hide()
 void ZoneWindowDrawing::Show(unsigned animationMillis)
 {
     _TRACER_;
-    bool shouldShowWindow;
+    bool shouldShowWindow{};
     {
         std::unique_lock lock(m_mutex);
         shouldShowWindow = !m_shouldRender;
@@ -260,7 +260,7 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
 void ZoneWindowDrawing::Flash(unsigned animationMillis)
 {
     _TRACER_;
-    bool shouldShowWindow;
+    bool shouldShowWindow{};
     {
         std::unique_lock lock(m_mutex);
         shouldShowWindow = !m_shouldRender;
