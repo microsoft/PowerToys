@@ -28,6 +28,13 @@ class ZoneWindowDrawing
         bool autoHide;
     };
 
+    enum struct RenderResult
+    {
+        Ok,
+        AnimationEnded,
+        Failed,
+    };
+
     HWND m_window = nullptr;
     RECT m_clientRect{};
     ID2D1HwndRenderTarget* m_renderTarget = nullptr;
@@ -41,7 +48,7 @@ class ZoneWindowDrawing
     static IDWriteFactory* GetWriteFactory();
     static D2D1_COLOR_F ConvertColor(COLORREF color);
     static D2D1_RECT_F ConvertRect(RECT rect);
-    void Render(float animationAlpha);
+    RenderResult Render();
     void RenderLoop();
 
     std::atomic<bool> m_shouldRender = false;

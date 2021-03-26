@@ -22,7 +22,7 @@ namespace NonLocalizable
 
 float ZoneWindowDrawing::GetAnimationAlpha()
 {
-    std::unique_lock lock(m_mutex);
+    // Lock is held by the caller
 
     if (!m_animation)
     {
@@ -110,13 +110,20 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     m_renderThread = std::thread([this]() { RenderLoop(); });
 }
 
-void ZoneWindowDrawing::Render(float animationAlpha)
+ZoneWindowDrawing::RenderResult ZoneWindowDrawing::Render()
 {
     std::unique_lock lock(m_mutex);
 
     if (!m_renderTarget)
     {
-        return;
+        return RenderResult::Failed;
+    }
+
+    float animationAlpha = GetAnimationAlpha();
+
+    if (animationAlpha <= 0.f)
+    {
+        return RenderResult::AnimationEnded;
     }
     
     m_renderTarget->BeginDraw();
@@ -183,6 +190,7 @@ void ZoneWindowDrawing::Render(float animationAlpha)
     lock.unlock();
 
     m_renderTarget->EndDraw();
+    return RenderResult::Ok;
 }
 
 void ZoneWindowDrawing::RenderLoop()
@@ -195,16 +203,11 @@ void ZoneWindowDrawing::RenderLoop()
             m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
         }
 
-        float animationAlpha = GetAnimationAlpha();
+        auto result = Render();
 
-        // Check whether the animation expired and we need to hide the window
-        if (animationAlpha <= 0.f)
+        if (result == RenderResult::AnimationEnded)
         {
             Hide();
-        }
-        else
-        {
-            Render(animationAlpha);
         }
     }
 }
