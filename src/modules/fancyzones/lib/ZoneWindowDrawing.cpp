@@ -22,7 +22,6 @@ namespace NonLocalizable
 
 float ZoneWindowDrawing::GetAnimationAlpha()
 {
-    _TRACER_;
     std::unique_lock lock(m_mutex);
 
     if (!m_animation)
@@ -213,7 +212,7 @@ void ZoneWindowDrawing::RenderLoop()
 void ZoneWindowDrawing::Hide()
 {
     _TRACER_;
-    bool shouldHideWindow{};
+    bool shouldHideWindow = true;
     {
         std::unique_lock lock(m_mutex);
         m_animation.reset();
@@ -230,7 +229,7 @@ void ZoneWindowDrawing::Hide()
 void ZoneWindowDrawing::Show()
 {
     _TRACER_;
-    bool shouldShowWindow{};
+    bool shouldShowWindow = true;
     {
         std::unique_lock lock(m_mutex);
         shouldShowWindow = !m_shouldRender;
@@ -238,7 +237,7 @@ void ZoneWindowDrawing::Show()
 
         if (!m_animation)
         {
-            m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), false });
+            m_animation.emplace(AnimationInfo{ .tStart = std::chrono::steady_clock().now(), .autoHide = false });
         }
         else if (m_animation->autoHide)
         {
@@ -258,13 +257,13 @@ void ZoneWindowDrawing::Show()
 void ZoneWindowDrawing::Flash()
 {
     _TRACER_;
-    bool shouldShowWindow{};
+    bool shouldShowWindow = true;
     {
         std::unique_lock lock(m_mutex);
         shouldShowWindow = !m_shouldRender;
         m_shouldRender = true;
     
-        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), true });
+        m_animation.emplace(AnimationInfo{ .tStart = std::chrono::steady_clock().now(), .autoHide = true });
     }
 
     if (shouldShowWindow)
