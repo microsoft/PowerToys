@@ -111,6 +111,23 @@
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <TextBlock x:Uid="Windows_Color_Settings" />
             </HyperlinkButton>
+            
+            <TextBlock x:Uid="ShortcutGuide_DisabledApps"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
+            <TextBox x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
+                     Margin="{StaticResource SmallTopMargin}"
+                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps}"
+                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                     ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                     ScrollViewer.VerticalScrollMode="Enabled"
+                     ScrollViewer.IsVerticalRailEnabled="True"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     HorizontalAlignment="Left"
+                     MinWidth="240"
+                     MinHeight="160" />
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 
