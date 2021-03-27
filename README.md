@@ -75,40 +75,34 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.33 - February 2021 Update
+### 0.35 - March 2021 Update
 
-Our goals for [v0.33 release cycle][github-release-link] was to add in some critical new functionality into the new user experience as well as a plug-in manager for PowerToys Run.  In addition, we feel we are near ready to add in Video Conference mute into the stable release pending feedback from the pending 0.34 experimental release.  The 0.34 experimental release will happen week of March 8th toward the end of the week pending testing.
+Our goals for the [v0.35 release cycle][github-release-link] [NEW] were to add in new functionality to support quick swapping layouts for FancyZones and a new PowerToys Run plugin for launching Visual Studio Code workspaces. We are also close to integrating Video Conference Mute into the stable release, pending feedback. The 0.36 experimental release will happen the week of April 5th toward the end of the week pending testing. Throughout these efforts, we continue working towards stability across all PowerToys utilities. 
 
-Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
+Our [prioritized roadmap][roadmap] of features and utilities will dictate what the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
 
-#### Highlights from v0.33 Stable/0.34 Experimental 
+#### Highlights from v0.35 Stable/0.36 Experimental 
 
 **General**
-- Updated overview links to be language agnostic to the docs site.
-- 'First time load' experience.  The hope is a quick, light way to learn about basic functionality.  We have some more work to do and want to also use the same framework for teaching about updates as well.
+- New warning for users on versions of Windows older than 1903 Settings will no longer be supported on future releases of PowerToys unless they update to a newer version of Windows.
 - Localization corrections
 
-**FancyZones**
-- Adjusted editor UX based on feedback.  Thanks [@niels9001](https://github.com/niels9001)!
-- New options to change zone activation algorithm.
+**Color Picker**
+- UX fixes to editor. Thanks [@niels9001](https://github.com/niels9001)!
+- `esc` can now be used to exit the editor. Thanks [@BenConstable9](https://github.com/BenConstable9)!
 
-**File Explorer**
-- Improved how SVG images are previewed in the preview pane, thanks[@Drakula44](https://github.com/Drakula44)!
-- [@Aaron-Junker](Aaron-Junker) has created a proof of concept for using [Monaco editor](https://github.com/microsoft/monaco-editor) for previewing dev files.  This will enable over 125+ file types.
+**FancyZones**
+- Added hotkeys and quick swap functionality for custom layouts! Users can now assign a hotkey in the editor and use it to quickly set a desktop's zones with `ctrl + Win + alt + hotkey` keybinding, or by pressing the hotkey while dragging a window.
+- UX updates. Thanks [@niels9001](https://github.com/niels9001)!
+- Fixed zone placement algorithm for when the Taskbar is vertical
 
 **PowerToys Run**
-- Plugin Manager now is in settings.  You can directly turn on / off, include items in general search, and change the action key!  Thanks [@htcfreek](https://github.com/htcfreek) for the great feedback!
-- Improved support for additional window managers by abstracting out shell process calls. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fix for PT Run registering the hotkey on non-supported OS versions.
-- `~` will now act as the user home directory in Folder plugin.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)
-- Service plugin has adjusted status messages
+- New plugin added to support opening previously used Visual Studio Code workspaces, remote machines (SSH or Codespaces), and containers! When enabled, use `{` to query for available workspaces. Thanks [@ricardosantos9521](https://github.com/ricardosantos9521)!
+- Shell history now saves the raw command instead of the resolved command. A command like `%appdata%` would now save in the Shell history as is instead of `C:\Users\someuser\AppData\Roaming`. Thanks [@mayitbeegh](https://github.com/mayitbeegh)!
 
 **Video Conference Mute (Experimental)**
-- Adjust video muting to leverage DirectShow.
-- Goal is to have 0.34 experimental release week of March 8th.
-
-**Settings**
-- When restarting as admin, the settings now will reopen. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- ?????
+- Goal is to have 0.36 experimental release week of April 5th.
 
 **ARM64 Progress**
 - Investigation on how we'll accomplish Settings with the XAML Island and WPF app.
@@ -117,23 +111,21 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
-[@Aaron-Junker](https://github.com/Aaron-Junker), 
-[@davidegiacometti](https://github.com/davidegiacometti), 
-[@Drakula44](https://github.com/Drakula44), 
-[@htcfreek](https://github.com/htcfreek),
-[@Jay-o-Way](https://github.com/Jay-o-Way),
-[@niels9001](https://github.com/niels9001),
-and 
-[@notDevagya](https://github.com/notDevagya)
+[@BenConstable9](https://github.com/BenConstable9), 
+[@htcfreek](https://github.com/htcfreek), 
+[@Jay-o-Way](https://github.com/Jay-o-Way), 
+[@mayitbeegh](https://github.com/mayitbeegh),
+and
+[@niels9001](https://github.com/niels9001).
 
-#### What is being planned for v0.35 - March 2021
+#### What is being planned for v0.37 - April 2021
 
-For [v0.35][github-next-release-work], we are planning to work on:
+For [v0.37][github-next-release-work], we are planning to work on:
 
 - Stability and bug fixes
-- FZ Editor hotkey layout swap support
-- Integrating VCM in main release 
-- Start process for removal support for old settings system and migrating our minimum OS version to Windows 10 1903.
+- Adding VCM to the stable release
+- Removing old Settings
+- Post-update guidance prompt (SCOOBE)
 
 ## PowerToys Community
 
