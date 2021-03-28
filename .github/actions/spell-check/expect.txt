@@ -87,8 +87,8 @@ appx
 appxmanifest
 APSTUDIO
 AQS
-AResolution
 ARemapped
+AResolution
 argb
 argc
 args
