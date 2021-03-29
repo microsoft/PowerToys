@@ -205,7 +205,7 @@ void ZoneWindowDrawing::RenderLoop()
 
         auto result = Render();
 
-        if (result == RenderResult::AnimationEnded)
+        if (result == RenderResult::AnimationEnded || result == RenderResult::Failed)
         {
             Hide();
         }
