@@ -41,7 +41,7 @@ To install the Video Conference mute, please use the [v0.28 pre-release experime
 We hope to have an updated version in February 2021 with the new DirectShow driver.
 
 ### Via WinGet (Preview)
-Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/releases). To install PowerToys, run the following command from the command line / PowerShell:
+Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). To install PowerToys, run the following command from the command line / PowerShell:
 
 ```powershell
 WinGet install powertoys
