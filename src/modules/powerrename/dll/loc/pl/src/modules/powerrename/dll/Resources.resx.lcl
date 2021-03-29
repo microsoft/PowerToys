@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Only show the PowerRename menu item on the extended context menu (Shift + Right-click).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pokaż element menu narzędzia Zaawansowana zmiana nazw tylko w rozszerzonym menu kontekstowym (Shift + kliknięcie prawym przyciskiem myszy).]]></Val>
+            <Val><![CDATA[Pokaż element menu narzędzia PowerRename tylko w rozszerzonym menu kontekstowym (Shift + kliknięcie prawym przyciskiem myszy).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zaawansowana zmiana nazw]]></Val>
+            <Val><![CDATA[PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
