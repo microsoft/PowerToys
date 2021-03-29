@@ -20,6 +20,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         private bool _disposed;
         private readonly QuantityType[] _included = new QuantityType[] { QuantityType.Acceleration, QuantityType.Length, QuantityType.Mass, QuantityType.Speed, QuantityType.Temperature, QuantityType.Volume };
         private CultureInfo _currentCulture = CultureInfo.InvariantCulture;
+        private int _roundingFractionalDigits = 4;
 
         public void Init(PluginInitContext context) {
             if (context == null) {
@@ -109,7 +110,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         private void AddToResult(List<Result> currentList, double converted_value, string unit_name) {
             // answer found, add result to list
             currentList.Add(new Result {
-                Title = string.Format("{0} {1}", converted_value, unit_name),
+                Title = string.Format("{0} {1}", Math.Round(converted_value, _roundingFractionalDigits), unit_name),
                 IcoPath = _icon_path,
                 Score = 300,
                 SubTitle = Properties.Resources.wox_plugin_unitconvert_copy_to_clipboard,
