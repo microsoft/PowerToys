@@ -95,7 +95,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
         D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
         96.f,
         96.f);
-    
+
     auto renderTargetSize = D2D1::SizeU(m_clientRect.right - m_clientRect.left, m_clientRect.bottom - m_clientRect.top);
     auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(window, renderTargetSize);
 
@@ -125,7 +125,7 @@ ZoneWindowDrawing::RenderResult ZoneWindowDrawing::Render()
     {
         return RenderResult::AnimationEnded;
     }
-    
+
     m_renderTarget->BeginDraw();
 
     // Draw backdrop
@@ -265,7 +265,7 @@ void ZoneWindowDrawing::Flash()
         std::unique_lock lock(m_mutex);
         shouldShowWindow = !m_shouldRender;
         m_shouldRender = true;
-    
+
         m_animation.emplace(AnimationInfo{ .tStart = std::chrono::steady_clock().now(), .autoHide = true });
     }
 
@@ -278,8 +278,8 @@ void ZoneWindowDrawing::Flash()
 }
 
 void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
-                       const std::vector<size_t>& highlightZones,
-                       winrt::com_ptr<IZoneWindowHost> host)
+                                          const std::vector<size_t>& highlightZones,
+                                          winrt::com_ptr<IZoneWindowHost> host)
 {
     _TRACER_;
     std::unique_lock lock(m_mutex);
