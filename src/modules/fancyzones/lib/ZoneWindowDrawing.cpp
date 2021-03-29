@@ -9,6 +9,12 @@
 
 #include <common/logger/logger.h>
 
+namespace
+{
+    const int FadeInDurationMillis = 200;
+    const int FlashZonesDurationMillis = 700;
+}
+
 namespace NonLocalizable
 {
     const wchar_t SegoeUiFont[] = L"Segoe ui";
@@ -16,25 +22,23 @@ namespace NonLocalizable
 
 float ZoneWindowDrawing::GetAnimationAlpha()
 {
-    // Lock is being held
+    // Lock is held by the caller
+
     if (!m_animation)
     {
         return 0.f;
     }
 
     auto tNow = std::chrono::steady_clock().now();
-    auto alpha = (tNow - m_animation->tStart).count() / (1e6f * m_animation->duration);
+    auto millis = (tNow - m_animation->tStart).count() / 1e6f;
 
-    if (m_animation->fadeIn)
+    if (m_animation->autoHide && millis > FlashZonesDurationMillis)
     {
-        // Return a positive value to avoid hiding
-        return std::clamp(alpha, 0.001f, 1.f);
+        return 0.f;
     }
-    else
-    {
-        // Quadratic function looks better
-        return std::clamp(1.f - alpha * alpha, 0.f, 1.f);
-    }
+
+    // Return a positive value to avoid hiding
+    return std::clamp(millis / FadeInDurationMillis, 0.001f, 1.f);
 }
 
 ID2D1Factory* ZoneWindowDrawing::GetD2DFactory()
@@ -91,7 +95,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
         D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
         96.f,
         96.f);
-    
+
     auto renderTargetSize = D2D1::SizeU(m_clientRect.right - m_clientRect.left, m_clientRect.bottom - m_clientRect.top);
     auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(window, renderTargetSize);
 
@@ -106,20 +110,20 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     m_renderThread = std::thread([this]() { RenderLoop(); });
 }
 
-void ZoneWindowDrawing::Render()
+ZoneWindowDrawing::RenderResult ZoneWindowDrawing::Render()
 {
     std::unique_lock lock(m_mutex);
 
     if (!m_renderTarget)
     {
-        return;
+        return RenderResult::Failed;
     }
 
     float animationAlpha = GetAnimationAlpha();
 
     if (animationAlpha <= 0.f)
     {
-        return;
+        return RenderResult::AnimationEnded;
     }
 
     m_renderTarget->BeginDraw();
@@ -186,91 +190,96 @@ void ZoneWindowDrawing::Render()
     lock.unlock();
 
     m_renderTarget->EndDraw();
+    return RenderResult::Ok;
 }
 
 void ZoneWindowDrawing::RenderLoop()
 {
     while (!m_abortThread)
     {
-        float animationAlpha;
-        {
-            // The lock must be held by the caller when calling GetAnimationAlpha
-            std::unique_lock lock(m_mutex);
-            animationAlpha = GetAnimationAlpha();
-        }
-
-        // Check whether the animation expired and we need to hide the window
-        if (animationAlpha <= 0.f)
-        {
-            Hide();
-        }
-
         {
             // Wait here while rendering is disabled
             std::unique_lock lock(m_mutex);
             m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
         }
-        
-        Render();
+
+        auto result = Render();
+
+        if (result == RenderResult::AnimationEnded || result == RenderResult::Failed)
+        {
+            Hide();
+        }
     }
 }
 
 void ZoneWindowDrawing::Hide()
 {
     _TRACER_;
-    std::unique_lock lock(m_mutex);
-
-    m_animation.reset();
-
-    if (m_shouldRender)
+    bool shouldHideWindow = true;
     {
+        std::unique_lock lock(m_mutex);
+        m_animation.reset();
+        shouldHideWindow = m_shouldRender;
         m_shouldRender = false;
+    }
+
+    if (shouldHideWindow)
+    {
         ShowWindow(m_window, SW_HIDE);
     }
 }
 
-void ZoneWindowDrawing::Show(unsigned animationMillis)
+void ZoneWindowDrawing::Show()
 {
     _TRACER_;
-    std::unique_lock lock(m_mutex);
-    
-    if (!m_shouldRender)
+    bool shouldShowWindow = true;
+    {
+        std::unique_lock lock(m_mutex);
+        shouldShowWindow = !m_shouldRender;
+        m_shouldRender = true;
+
+        if (!m_animation)
+        {
+            m_animation.emplace(AnimationInfo{ .tStart = std::chrono::steady_clock().now(), .autoHide = false });
+        }
+        else if (m_animation->autoHide)
+        {
+            // Do not change the starting time of the animation, just reset autoHide
+            m_animation->autoHide = false;
+        }
+    }
+
+    if (shouldShowWindow)
     {
         ShowWindow(m_window, SW_SHOWNA);
     }
 
-    animationMillis = max(animationMillis, 1);
-
-    if (!m_animation || !m_animation->fadeIn)
-    {
-        m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, true });
-    }
-
-    m_shouldRender = true;
     m_cv.notify_all();
 }
 
-void ZoneWindowDrawing::Flash(unsigned animationMillis)
+void ZoneWindowDrawing::Flash()
 {
     _TRACER_;
-    std::unique_lock lock(m_mutex);
+    bool shouldShowWindow = true;
+    {
+        std::unique_lock lock(m_mutex);
+        shouldShowWindow = !m_shouldRender;
+        m_shouldRender = true;
 
-    if (!m_shouldRender)
+        m_animation.emplace(AnimationInfo{ .tStart = std::chrono::steady_clock().now(), .autoHide = true });
+    }
+
+    if (shouldShowWindow)
     {
         ShowWindow(m_window, SW_SHOWNA);
     }
 
-    animationMillis = max(animationMillis, 1);
-
-    m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis, false });
-
-    m_shouldRender = true;
     m_cv.notify_all();
 }
 
 void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
-                       const std::vector<size_t>& highlightZones,
-                       winrt::com_ptr<IZoneWindowHost> host)
+                                          const std::vector<size_t>& highlightZones,
+                                          winrt::com_ptr<IZoneWindowHost> host)
 {
     _TRACER_;
     std::unique_lock lock(m_mutex);
