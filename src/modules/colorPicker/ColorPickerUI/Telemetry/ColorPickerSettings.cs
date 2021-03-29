@@ -15,6 +15,7 @@ namespace ColorPicker.Telemetry
         public ColorPickerSettings(IDictionary<string, bool> editorFormats)
         {
             EditorFormats = editorFormats;
+            EventName = "ColorPicker_Settings";
         }
 
         public string ActivationShortcut { get; set; }
