@@ -12,6 +12,11 @@ namespace ColorPicker.Telemetry
     [EventData]
     public class ColorPickerSession : EventBase, IEvent
     {
+        public ColorPickerSession()
+        {
+            EventName = "ColorPicker_Session";
+        }
+
         public string StartedAs { get; set; }
 
         public bool ZoomUsed { get; set; }

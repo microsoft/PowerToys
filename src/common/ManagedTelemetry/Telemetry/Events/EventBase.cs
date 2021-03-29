@@ -16,6 +16,8 @@ namespace Microsoft.PowerToys.Telemetry.Events
     {
         public bool UTCReplace_AppSessionGuid => true;
 
+        public string EventName { get; set; }
+
         private string _version;
 
         public string Version
