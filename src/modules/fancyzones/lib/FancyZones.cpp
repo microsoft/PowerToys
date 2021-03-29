@@ -647,7 +647,7 @@ void FancyZones::ToggleEditor() noexcept
     wil::unique_cotaskmem_string virtualDesktopId;
     if (!SUCCEEDED(StringFromCLSID(m_currentDesktopId, &virtualDesktopId)))
     {
-        return;   
+        return;
     }
 
     /*
@@ -677,7 +677,7 @@ void FancyZones::ToggleEditor() noexcept
     {
         params += FancyZonesUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId.get()) + divider; /* Monitor id where the Editor should be opened */
     }
-   
+
     // device id map
     std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
 
