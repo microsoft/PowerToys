@@ -136,8 +136,6 @@ namespace FancyZonesEditor
                 sb.AppendLine(parseResult.MalformedData);
 
                 MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Title, MessageBoxButton.OK);
-
-                ShowExceptionReportMessageBox(sb.ToString());
             }
 
             MainWindowSettingsModel settings = ((App)Current).MainWindowSettings;
