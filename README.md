@@ -77,9 +77,9 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.35 - March 2021 Update
 
-Our goals for the [v0.35 release cycle][github-release-link] [NEW] were to add in new functionality to support quick swapping layouts for FancyZones and a new PowerToys Run plugin for launching Visual Studio Code workspaces. We are also close to integrating Video Conference Mute into the stable release, pending feedback. The 0.36 experimental release will happen the week of April 5th toward the end of the week pending testing. Throughout these efforts, we continue working towards stability across all PowerToys utilities. 
+Our goals for the [v0.35 release cycle][github-release-link] were to add in new functionality to support quick swapping layouts for FancyZones, wrap up work for the DirectShow migration for Video Conference Mute so we can migrate into the main dev branch as well as fixing bugs. The 0.36 experimental release will happen the week of April 5th toward the end of the week pending testing. Throughout these efforts, we continue working towards stability across all PowerToys utilities. 
 
-Our [prioritized roadmap][roadmap] of features and utilities will dictate what the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
+Our [prioritized roadmap][roadmap] of features and utilities will dictate what the core team is focusing on for the near future. 
 
 #### Highlights from v0.35 Stable/0.36 Experimental 
 
@@ -94,7 +94,7 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 - `esc` can now be used to exit the editor. Thanks [@BenConstable9](https://github.com/BenConstable9)!
 
 **FancyZones**
-- Added hotkeys and quick swap functionality for custom layouts! Users can now assign a hotkey in the editor and use it to quickly set a desktop's zones with `Ctrl + Win + Alt + NUM` key binding, or by pressing the hotkey while dragging a window.
+- Added hotkeys and quick swap functionality for custom layouts! Users can now assign a hotkey in the editor and use it to quickly set a desktop's zones with `Ctrl + Win + Alt + NUMBER` key binding, or by pressing the hotkey while dragging a window.
 - UX updates. Thanks [@niels9001](https://github.com/niels9001)!
 - Fixed zone placement algorithm for when the Taskbar is vertical
 - Bug fixes
