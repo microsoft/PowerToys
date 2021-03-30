@@ -16,7 +16,7 @@
 
 std::ofstream& log()
 {
-    static std::ofstream report{ "webcam_diag_report.txt" };
+    static std::ofstream report{ "WebcamReport.txt" };
     return report;
 }
 
