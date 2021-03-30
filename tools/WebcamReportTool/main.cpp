@@ -83,7 +83,7 @@ void LogMediaTypes(wil::com_ptr_nothrow<IPin>& pin)
         }
         const auto formatAvgFPS = 10000000LL / format->AvgTimePerFrame;
         log() << GetMediaSubTypeString(mt->subtype) << '\t' << format->bmiHeader.biWidth << "x"
-              << format->bmiHeader.biHeight << '\t' << formatAvgFPS << "fps\n";
+              << format->bmiHeader.biHeight << " - " << formatAvgFPS << "fps\n";
     }
     log() << '\n';
 }
