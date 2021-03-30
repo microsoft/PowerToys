@@ -101,7 +101,8 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 - Bug fixes
 
 **PowerToys Run**
-- New plugin added to support opening previously used Visual Studio Code workspaces, remote machines (SSH or Codespaces), and containers! When enabled, use `{` to query for available workspaces. Thanks [@ricardosantos9521](https://github.com/ricardosantos9521)!
+- Users to specify where to show the launcher window. Thanks [@addrum](https://github.com/addrum)!
+- New plugin added to support opening previously used Visual Studio Code workspaces, remote machines (SSH or Codespaces), and containers! When enabled, use `{` to query for available workspaces. Thanks [@ricardosantos9521](https://github.com/ricardosantos9521)!  Please note, this plugin is off by default.
 - Shell history now saves the raw command instead of the resolved command. A command like `%appdata%` would now save in the Shell history as is instead of `C:\Users\YourUserName\AppData\Roaming`. Thanks [@mayitbeegh](https://github.com/mayitbeegh)!
 - Better logging to try to track down some bugs
 - Bug fixes
@@ -119,6 +120,7 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
 [@Aaron-Junker](https://github.com/Aaron-Junker), 
+[@addrum](https://github.com/addrum), 
 [@BenConstable9](https://github.com/BenConstable9), 
 [@htcfreek](https://github.com/htcfreek), 
 [@Jay-o-Way](https://github.com/Jay-o-Way), 
