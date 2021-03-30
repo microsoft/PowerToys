@@ -16,7 +16,7 @@ std::ofstream& log();
 #define TRACE log() << __FUNCTION__ << '\n';
 #define LOG(msg) log() << msg << '\n';
 
-void MyDeleteMediaType(AM_MEDIA_TYPE* pmt);
+void MyDeleteMediaTypeHelper(AM_MEDIA_TYPE* pmt);
 
 using unique_media_type_ptr =
-    wistd::unique_ptr<AM_MEDIA_TYPE, wil::function_deleter<decltype(&MyDeleteMediaType), MyDeleteMediaType>>;
+    wistd::unique_ptr<AM_MEDIA_TYPE, wil::function_deleter<decltype(&MyDeleteMediaTypeHelper), MyDeleteMediaTypeHelper>>;

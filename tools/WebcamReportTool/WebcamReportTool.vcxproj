@@ -6,7 +6,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FC9599B4-68CD-E14B-71D7-456FDD8D0845}</ProjectGuid>
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
-    <RootNamespace>DShowWebcamReportTool</RootNamespace>
+    <RootNamespace>WebcamReportTool</RootNamespace>
+    <ProjectName>WebcamReportTool</ProjectName>
   </PropertyGroup>
   <PropertyGroup>
     <IntDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
@@ -23,14 +24,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>DShowWebcamReportTool</TargetName>
+    <TargetName>WebcamReportTool</TargetName>
     <TargetExt>.exe</TargetExt>
     <IncludePath>include;$(IncludePath)</IncludePath>
     <LibraryPath>lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>DShowWebcamReportTool</TargetName>
+    <TargetName>WebcamReportTool</TargetName>
     <TargetExt>.exe</TargetExt>
     <IncludePath>include;$(IncludePath)</IncludePath>
     <LibraryPath>lib;$(LibraryPath)</LibraryPath>
