@@ -11,12 +11,26 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <Shlobj.h> 
+#include <Shlobj_core.h> 
 
 #include "DirectShowUtils.h"
 
 std::ofstream& log()
 {
-    static std::ofstream report{ "WebcamReport.txt" };
+    static std::ofstream report = []{
+        char buffer[MAX_PATH]{};
+        if (SHGetSpecialFolderPathA(HWND_DESKTOP, buffer, CSIDL_DESKTOP, false))
+        {
+            std::string path = buffer;
+            path += "\\WebcamReport.txt";
+            return std::ofstream{ path };
+        }
+        else
+        {
+            return std::ofstream{ "WebcamReport.txt" };
+        }
+    }();
     return report;
 }
 
