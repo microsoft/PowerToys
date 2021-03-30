@@ -1086,6 +1086,7 @@ jp
 jpe
 jpeg
 jpg
+jsoref
 JPN
 json
 jsonval
@@ -2263,6 +2264,7 @@ VREDRAW
 VSC
 VSCBD
 vscode
+vsconfig
 VSCROLL
 vse
 vsonline
