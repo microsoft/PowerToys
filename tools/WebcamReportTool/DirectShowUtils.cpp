@@ -1,6 +1,6 @@
 #include "DirectShowUtils.h"
 
-void MyFreeMediaTypeHelper(AM_MEDIA_TYPE& mt)
+void FreeMediaTypeHelper(AM_MEDIA_TYPE& mt)
 {
     if (mt.cbFormat != 0)
     {
@@ -15,12 +15,12 @@ void MyFreeMediaTypeHelper(AM_MEDIA_TYPE& mt)
     }
 }
 
-void MyDeleteMediaTypeHelper(AM_MEDIA_TYPE* pmt)
+void DeleteMediaTypeHelper(AM_MEDIA_TYPE* pmt)
 {
     if (!pmt)
     {
         return;
     }
-    MyFreeMediaTypeHelper(*pmt);
+    FreeMediaTypeHelper(*pmt);
     CoTaskMemFree(const_cast<AM_MEDIA_TYPE*>(pmt));
 }

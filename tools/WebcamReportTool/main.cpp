@@ -20,7 +20,7 @@ std::ofstream& log()
     return report;
 }
 
-const char* GetMediaSubTypeString(const GUID& guid)
+std::string GetMediaSubTypeString(const GUID& guid)
 {
     if (guid == MEDIASUBTYPE_RGB24)
     {
@@ -56,7 +56,23 @@ const char* GetMediaSubTypeString(const GUID& guid)
     }
     else
     {
-        return "MEDIASUBTYPE_UNKNOWN";
+        OLECHAR* guidString = nullptr;
+        StringFromCLSID(guid, &guidString);
+        if (guidString)
+        {
+            std::wstring_view wideView{guidString};
+            std::string result;
+            for (const auto c :wideView)
+            {
+                result += static_cast<char>(c);
+            }
+            ::CoTaskMemFree(guidString);
+            return result;
+        }
+        else
+        {
+            return "MEDIASUBTYPE_UNKNOWN";
+        }
     }
 }
 
