@@ -385,20 +385,20 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Malformed layouts will be lost..
+        /// </summary>
+        public static string Error_Parsing_Zones_Settings_Message {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Zones_Settings_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Editor settings parsing error..
         /// </summary>
         public static string Error_Parsing_Zones_Settings_Title {
             get {
                 return ResourceManager.GetString("Error_Parsing_Zones_Settings_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Would you like to continue? Malformed data will be lost..
-        /// </summary>
-        public static string Error_Parsing_Zones_Settings_User_Choice {
-            get {
-                return ResourceManager.GetString("Error_Parsing_Zones_Settings_User_Choice", resourceCulture);
             }
         }
         
