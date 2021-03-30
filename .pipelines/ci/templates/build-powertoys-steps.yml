@@ -56,6 +56,25 @@ steps:
     maximumCpuCount: true
 
 - task: NuGetCommand@2
+  displayName: Restore NuGet packages for WebcamReportTool.sln
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: tools\WebcamReportTool\WebcamReportTool.sln
+    restoreDirectory: '$(Build.SourcesDirectory)\tools\WebcamReportTool\packages'
+
+- task: VSBuild@1
+  displayName: 'Build WebcamReportTool.sln'
+  inputs:
+    solution: '**\WebcamReportTool.sln'
+    vsVersion: 16.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    maximumCpuCount: true
+
+- task: NuGetCommand@2
   displayName: Restore NuGet packages for PowerToysSetup.sln
   inputs:
     command: restore
