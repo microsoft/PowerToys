@@ -549,7 +549,7 @@ namespace FancyZonesEditor.Utils
 
                     if (!devicesParsingResult || !customZonesParsingResult)
                     {
-                        return new ParsingResult(false, Properties.Resources.Error_Parsing_Zones_Settings_Malformed_Data, settingsString);
+                        return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Message, settingsString);
                     }
                 }
                 catch (Exception ex)

@@ -376,16 +376,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;zones-settings.json&apos; contains malformed data..
-        /// </summary>
-        public static string Error_Parsing_Zones_Settings_Malformed_Data {
-            get {
-                return ResourceManager.GetString("Error_Parsing_Zones_Settings_Malformed_Data", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Malformed layouts will be lost..
+        ///   Looks up a localized string similar to A layout that contained invalid data has been removed..
         /// </summary>
         public static string Error_Parsing_Zones_Settings_Message {
             get {

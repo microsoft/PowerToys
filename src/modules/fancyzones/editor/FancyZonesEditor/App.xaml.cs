@@ -135,8 +135,7 @@ namespace FancyZonesEditor
                 sb.AppendLine(ParsingErrorDataTag);
                 sb.AppendLine(parseResult.MalformedData);
 
-                string message = parseResult.Message + Environment.NewLine + Environment.NewLine + FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Message;
-                MessageBox.Show(message, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Title, MessageBoxButton.OK);
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Title, MessageBoxButton.OK);
 
                 ShowExceptionReportMessageBox(sb.ToString());
             }
