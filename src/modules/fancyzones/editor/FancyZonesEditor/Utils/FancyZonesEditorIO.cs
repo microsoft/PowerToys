@@ -818,15 +818,16 @@ namespace FancyZonesEditor.Utils
                     var zones = new List<Int32Rect>();
                     foreach (var zone in info.Zones)
                     {
-                        zones.Add(new Int32Rect { X = (int)zone.X, Y = (int)zone.Y, Width = (int)zone.Width, Height = (int)zone.Height });
+                        zones.Add(new Int32Rect { X = (int)zone.X, Y = (int)zone.Y, Width = Math.Max(zone.Width, 0), Height = Math.Max(zone.Height, 0) });
                     }
 
                     try
                     {
-                        layout = new CanvasLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, zones, info.RefWidth, info.RefHeight);
+                        layout = new CanvasLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, zones, Math.Max(info.RefWidth, 0), Math.Max(info.RefHeight, 0));
                     }
                     catch (Exception)
                     {
+                        result = false;
                         continue;
                     }
 
@@ -835,6 +836,13 @@ namespace FancyZonesEditor.Utils
                 else if (zoneSet.Type == GridLayoutModel.ModelTypeID)
                 {
                     var info = JsonSerializer.Deserialize<GridInfoWrapper>(zoneSet.Info.GetRawText(), _options);
+
+                    // Check if rows and cols are valid
+                    if (info.Rows <= 0 || info.Columns <= 0)
+                    {
+                        result = false;
+                        continue;
+                    }
 
                     var cells = new int[info.Rows, info.Columns];
                     for (int row = 0; row < info.Rows; row++)
@@ -845,12 +853,37 @@ namespace FancyZonesEditor.Utils
                         }
                     }
 
+                    // Check if percentage is valid. Overwise Editor could crash on render.
+                    foreach (int percent in info.RowsPercentage)
+                    {
+                        if (percent < 0)
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+
+                    foreach (int percent in info.ColumnsPercentage)
+                    {
+                        if (percent < 0)
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+
+                    if (!result)
+                    {
+                        continue;
+                    }
+
                     try
                     {
                         layout = new GridLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, info.Rows, info.Columns, info.RowsPercentage, info.ColumnsPercentage, cells);
                     }
                     catch (Exception)
                     {
+                        result = false;
                         continue;
                     }
 
