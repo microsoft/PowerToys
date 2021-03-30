@@ -837,7 +837,7 @@ namespace FancyZonesEditor.Utils
                 {
                     var info = JsonSerializer.Deserialize<GridInfoWrapper>(zoneSet.Info.GetRawText(), _options);
 
-                    // Check if rows and cols are valid
+                    // Check if rows and columns are valid
                     if (info.Rows <= 0 || info.Columns <= 0)
                     {
                         result = false;
@@ -853,7 +853,7 @@ namespace FancyZonesEditor.Utils
                         }
                     }
 
-                    // Check if percentage is valid. Overwise Editor could crash on render.
+                    // Check if percentage is valid. Otherwise, Editor could crash on layout rendering.
                     foreach (int percent in info.RowsPercentage)
                     {
                         if (percent < 0)
