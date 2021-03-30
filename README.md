@@ -92,13 +92,13 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 - `esc` can now be used to exit the editor. Thanks [@BenConstable9](https://github.com/BenConstable9)!
 
 **FancyZones**
-- Added hotkeys and quick swap functionality for custom layouts! Users can now assign a hotkey in the editor and use it to quickly set a desktop's zones with `ctrl + Win + alt + hotkey` keybinding, or by pressing the hotkey while dragging a window.
+- Added hotkeys and quick swap functionality for custom layouts! Users can now assign a hotkey in the editor and use it to quickly set a desktop's zones with `Ctrl + Win + Alt + NUM` key binding, or by pressing the hotkey while dragging a window.
 - UX updates. Thanks [@niels9001](https://github.com/niels9001)!
 - Fixed zone placement algorithm for when the Taskbar is vertical
 
 **PowerToys Run**
 - New plugin added to support opening previously used Visual Studio Code workspaces, remote machines (SSH or Codespaces), and containers! When enabled, use `{` to query for available workspaces. Thanks [@ricardosantos9521](https://github.com/ricardosantos9521)!
-- Shell history now saves the raw command instead of the resolved command. A command like `%appdata%` would now save in the Shell history as is instead of `C:\Users\someuser\AppData\Roaming`. Thanks [@mayitbeegh](https://github.com/mayitbeegh)!
+- Shell history now saves the raw command instead of the resolved command. A command like `%appdata%` would now save in the Shell history as is instead of `C:\Users\YourUserName\AppData\Roaming`. Thanks [@mayitbeegh](https://github.com/mayitbeegh)!
 
 **Video Conference Mute (Experimental)**
 - ?????
@@ -125,7 +125,7 @@ For [v0.37][github-next-release-work], we are planning to work on:
 - Stability and bug fixes
 - Adding VCM to the stable release
 - Removing old Settings
-- Post-update guidance prompt (SCOOBE)
+- Post-update guidance prompt
 
 ## PowerToys Community
 
