@@ -88,6 +88,7 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 - Localization corrections
 - Improved GitHub report bug template.
 - Increased .NET Core to 3.1.13
+- Fixed installer 'run as user' regression
 
 **Color Picker**
 - UX adjustments to editor. Thanks [@niels9001](https://github.com/niels9001)!
