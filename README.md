@@ -25,7 +25,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 ### Requirements
 
 - Windows 10 v1903 (build 18362) or better preferred, Windows 10 v1803 (build 17134) minimum.  
-- Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.11-windows-x64-installer). The installer should handle this but we want to directly make people aware.
+- Have [.NET Core 3.1.13 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.13-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
 
@@ -86,37 +86,47 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 **General**
 - New warning for users on versions of Windows older than 1903 Settings will no longer be supported on future releases of PowerToys unless they update to a newer version of Windows.
 - Localization corrections
+- Improved GitHub report bug template.
+- Increased .NET Core to 3.1.13
 
 **Color Picker**
-- UX fixes to editor. Thanks [@niels9001](https://github.com/niels9001)!
+- UX adjustments to editor. Thanks [@niels9001](https://github.com/niels9001)!
 - `esc` can now be used to exit the editor. Thanks [@BenConstable9](https://github.com/BenConstable9)!
 
 **FancyZones**
 - Added hotkeys and quick swap functionality for custom layouts! Users can now assign a hotkey in the editor and use it to quickly set a desktop's zones with `Ctrl + Win + Alt + NUM` key binding, or by pressing the hotkey while dragging a window.
 - UX updates. Thanks [@niels9001](https://github.com/niels9001)!
 - Fixed zone placement algorithm for when the Taskbar is vertical
+- Bug fixes
 
 **PowerToys Run**
 - New plugin added to support opening previously used Visual Studio Code workspaces, remote machines (SSH or Codespaces), and containers! When enabled, use `{` to query for available workspaces. Thanks [@ricardosantos9521](https://github.com/ricardosantos9521)!
 - Shell history now saves the raw command instead of the resolved command. A command like `%appdata%` would now save in the Shell history as is instead of `C:\Users\YourUserName\AppData\Roaming`. Thanks [@mayitbeegh](https://github.com/mayitbeegh)!
+- Better logging to try to track down some bugs
+- Bug fixes
 
 **Video Conference Mute (Experimental)**
-- ?????
-- Goal is to have 0.36 experimental release week of April 5th.
+- Tracking work remaining at issue [#7944](https://github.com/microsoft/PowerToys/issues/7944)
+- Goal is to have 0.36 experimental release week of April 5th (Yes, we've stated this before, we know)
 
-**ARM64 Progress**
-- Investigation on how we'll accomplish Settings with the XAML Island and WPF app.
+**Contributor workflow**
+- Main project now has a vsconfig which will prompt you to install needed items versus having to use a script.  This will aid in keeping you up-to-date when something changes.
+- Updated spell checker.  Thanks [@jsoref](https://github.com/jsoref)!
 
 #### Community contributions
 
 We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
+[@Aaron-Junker](https://github.com/Aaron-Junker), 
 [@BenConstable9](https://github.com/BenConstable9), 
 [@htcfreek](https://github.com/htcfreek), 
 [@Jay-o-Way](https://github.com/Jay-o-Way), 
+[@jsoref](https://github.com/jsoref),
 [@mayitbeegh](https://github.com/mayitbeegh),
+[@niels9001](https://github.com/niels9001),
+[@pc-v2](https://github.com/pc-v2),
 and
-[@niels9001](https://github.com/niels9001).
+[@ricardosantos9521](https://github.com/ricardosantos9521)
 
 #### What is being planned for v0.37 - April 2021
 
@@ -124,8 +134,8 @@ For [v0.37][github-next-release-work], we are planning to work on:
 
 - Stability and bug fixes
 - Adding VCM to the stable release
-- Removing old Settings
-- Post-update guidance prompt
+- Removing v1 Settings / PT minimum version will become Windows 10 v1903
+- Post-update guidance prompt work
 
 ## PowerToys Community
 
@@ -150,5 +160,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://docs.microsoft.com/windows/powertoys/
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F18
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F19
 [github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.28.0
