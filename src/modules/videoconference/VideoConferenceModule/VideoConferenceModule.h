@@ -1,5 +1,7 @@
 #pragma once
 
+#include <common/SettingsAPI/FileWatcher.h>
+
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
 
@@ -57,6 +59,9 @@ public:
     static bool getVirtualCameraInUse();
 
 private:
+    void onGeneralSettingsChanged();
+    void onModuleSettingsChanged();
+
     void init_settings();
     void updateControlledMicrophones(const std::wstring_view new_mic);
     //  all callback methods and used by callback have to be static
@@ -72,6 +77,9 @@ private:
 
     std::optional<SerializedSharedMemory> _imageOverlayChannel;
     std::optional<SerializedSharedMemory> _settingsUpdateChannel;
+
+    FileWatcher _generalSettingsWatcher;
+    FileWatcher _moduleSettingsWatcher;
 
     static VideoConferenceSettings settings;
     static Toolbar toolbar;

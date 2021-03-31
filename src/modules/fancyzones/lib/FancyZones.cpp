@@ -2,6 +2,7 @@
 
 #include <common/display/dpi_aware.h>
 #include <common/logger/logger.h>
+#include <common/SettingsAPI/FileWatcher.h>
 #include <common/utils/resources.h>
 #include <common/utils/window.h>
 
@@ -10,7 +11,6 @@
 #include "lib/ZoneWindow.h"
 #include "lib/FancyZonesData.h"
 #include "lib/ZoneSet.h"
-#include "lib/FileWatcher.h"
 #include "lib/WindowMoveHandler.h"
 #include "lib/FancyZonesWinHookEventIDs.h"
 #include "lib/util.h"

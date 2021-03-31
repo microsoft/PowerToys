@@ -5,9 +5,14 @@
 #include <WinUser.h>
 
 #include <gdiplus.h>
+#include <shellapi.h>
+
+#include <filesystem>
 
 #include <common/debug_control.h>
 #include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/elevation.h>
+#include <common/utils/process_path.h>
 
 #include <CameraStateUpdateChannels.h>
 
@@ -29,6 +34,8 @@ bool VideoConferenceModule::isKeyPressed(unsigned int keyCode)
 {
     return (GetKeyState(keyCode) & 0x8000);
 }
+
+namespace fs = std::filesystem;
 
 bool VideoConferenceModule::isHotkeyPressed(DWORD code, PowerToysSettings::HotkeyObject& hotkey)
 {
@@ -161,48 +168,48 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
     return CallNextHookEx(hook_handle, nCode, wParam, lParam);
 }
 
-VideoConferenceModule::VideoConferenceModule()
+void VideoConferenceModule::onGeneralSettingsChanged()
 {
-    init_settings();
-    _settingsUpdateChannel =
-        SerializedSharedMemory::create(CameraSettingsUpdateChannel::endpoint(), sizeof(CameraSettingsUpdateChannel), false);
-    if (_settingsUpdateChannel)
+    auto settings = PTSettingsHelper::load_general_settings();
+    bool enabled = false;
+    try
     {
-        _settingsUpdateChannel->access([](auto memory) {
-            auto updatesChannel = new (memory._data) CameraSettingsUpdateChannel{};
-        });
+        if (json::has(settings, L"enabled"))
+        {
+            for (const auto& mod : settings.GetNamedObject(L"enabled"))
+            {
+                const auto value = mod.Value();
+                if (value.ValueType() != json::JsonValueType::Boolean)
+                {
+                    continue;
+                }
+                if (mod.Key() == get_key())
+                {
+                    enabled = value.GetBoolean();
+                    break;
+                }
+            }
+        }
     }
-    sendSourceCameraNameUpdate();
-    sendOverlayImageUpdate();
+    catch (...)
+    {
+        //Logger::error("Couldn't get enabled state");
+    }
+    if (enabled)
+    {
+        enable();
+    }
+    else
+    {
+        disable();
+    }
 }
 
-inline VideoConferenceModule::~VideoConferenceModule()
-{
-    instance->unmuteAll();
-    toolbar.hide();
-}
-
-const wchar_t* VideoConferenceModule::get_name()
-{
-    return L"Video Conference";
-}
-
-const wchar_t * VideoConferenceModule::get_key()
-{
-  return L"Video Conference";
-}
-
-bool VideoConferenceModule::get_config(wchar_t* buffer, int* buffer_size)
-{
-    return true;
-}
-
-void VideoConferenceModule::set_config(const wchar_t* config)
+void VideoConferenceModule::onModuleSettingsChanged()
 {
     try
     {
-        PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
-        values.save_to_settings_file();
+        PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
         //Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
 
         if (_enabled)
@@ -254,6 +261,50 @@ void VideoConferenceModule::set_config(const wchar_t* config)
     {
         // Improper JSON. TODO: handle the error.
     }
+}
+
+VideoConferenceModule::VideoConferenceModule() :
+    _generalSettingsWatcher{ PTSettingsHelper::get_powertoys_general_save_file_location(), [this] {
+                                onGeneralSettingsChanged();
+                            } },
+    _moduleSettingsWatcher{ PTSettingsHelper::get_module_save_file_location(get_key()), [this] { onModuleSettingsChanged(); } }
+{
+    init_settings();
+    _settingsUpdateChannel =
+        SerializedSharedMemory::create(CameraSettingsUpdateChannel::endpoint(), sizeof(CameraSettingsUpdateChannel), false);
+    if (_settingsUpdateChannel)
+    {
+        _settingsUpdateChannel->access([](auto memory) {
+            auto updatesChannel = new (memory._data) CameraSettingsUpdateChannel{};
+        });
+    }
+    sendSourceCameraNameUpdate();
+    sendOverlayImageUpdate();
+}
+
+inline VideoConferenceModule::~VideoConferenceModule()
+{
+    instance->unmuteAll();
+    toolbar.hide();
+}
+
+const wchar_t* VideoConferenceModule::get_name()
+{
+    return L"Video Conference";
+}
+
+const wchar_t* VideoConferenceModule::get_key()
+{
+    return L"Video Conference";
+}
+
+bool VideoConferenceModule::get_config(wchar_t* buffer, int* buffer_size)
+{
+    return true;
+}
+
+void VideoConferenceModule::set_config(const wchar_t* /*config*/)
+{
 }
 
 void VideoConferenceModule::init_settings()
@@ -365,10 +416,39 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
     }
 }
 
+void toggleProxyCamRegistration(const bool enable)
+{
+    if (!is_process_elevated())
+    {
+        return;
+    }
+
+    auto vcmRoot = fs::path{ get_module_folderpath() } / "modules";
+    vcmRoot /= "VideoConference";
+
+    std::array<fs::path, 2> proxyFilters = { vcmRoot / "VideoConferenceProxyFilter_x64.dll", vcmRoot / "VideoConferenceProxyFilter_x86.dll" };
+    for (const auto filter : proxyFilters)
+    {
+        std::wstring params;
+        if (!enable)
+        {
+            params += L"/u ";
+        }
+        params += filter;
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
+        sei.lpFile = L"regsvr32";
+        sei.lpParameters = params.c_str();
+        sei.nShow = SW_SHOWNORMAL;
+        ShellExecuteExW(&sei);
+    }
+}
+
 void VideoConferenceModule::enable()
 {
     if (!_enabled)
     {
+        toggleProxyCamRegistration(true);
         toolbar.setMicrophoneMute(getMicrophoneMuteState());
         toolbar.setCameraMute(getVirtualCameraMuteState());
 
@@ -403,6 +483,7 @@ void VideoConferenceModule::disable()
 {
     if (_enabled)
     {
+        toggleProxyCamRegistration(false);
         if (hook_handle)
         {
             bool success = UnhookWindowsHookEx(hook_handle);
