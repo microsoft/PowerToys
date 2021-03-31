@@ -84,7 +84,8 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 #### Highlights from v0.35 Stable/0.36 Experimental 
 
 **General**
-- PowerToys will start requiring Windows 10 v1903 or greater after 0.35.x release.  The v1 settings which supports older builds will be removed in 0.37.
+- PowerToys will start requiring Windows 10 v1903 or greater after 0.35.x release.  The v1 settings, which supports older Windows versions, will be removed in 0.37.  
+   - We may be able to bring back support when we migrate to WinUI3 but as of now, we will be increasing the minimum version of Windows to 1903 or greater.
 - Localization corrections
 - Improved GitHub report bug template.
 - Increased .NET Core to 3.1.13
