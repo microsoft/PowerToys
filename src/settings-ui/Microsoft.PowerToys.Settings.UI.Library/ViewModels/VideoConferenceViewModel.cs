@@ -85,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _selectedMicrophoneIndex = MicrophoneNames.FindIndex(name => name == Settings.Properties.SelectedMicrophone.Value);
             }
 
-            _isEnabled = GeneralSettingsConfig.Enabled.VideoConference;
+            _isEnabled = GeneralSettingsConfig.Enabled.VideoConference && GeneralSettingsConfig.IsElevated;
             _cameraAndMicrophoneMuteHotkey = Settings.Properties.MuteCameraAndMicrophoneHotkey.Value;
             _mirophoneMuteHotkey = Settings.Properties.MuteMicrophoneHotkey.Value;
             _cameraMuteHotkey = Settings.Properties.MuteCameraHotkey.Value;
@@ -250,6 +250,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged(nameof(IsEnabled));
                 }
+            }
+        }
+
+        public bool IsElevated
+        {
+            get
+            {
+                return GeneralSettingsConfig.IsElevated;
             }
         }
 
