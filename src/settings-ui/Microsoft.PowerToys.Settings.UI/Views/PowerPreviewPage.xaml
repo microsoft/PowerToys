@@ -53,7 +53,7 @@
                     HorizontalAlignment="Left"
                     Margin="0,0,48,0"
                     MaxWidth="{StaticResource MaxContentWidth}">
-            <TextBlock x:Uid="FileExplorerPreview_RunAsAdminRequired"
+            <TextBlock x:Uid="RunAsAdminRequired"
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                        Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"
                        Margin="{StaticResource SmallBottomMargin}"
