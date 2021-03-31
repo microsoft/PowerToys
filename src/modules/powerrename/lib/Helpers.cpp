@@ -160,7 +160,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                 hr = StringCchCopy(result, cchMax, source);
             }
         } 
-        else if (flags & Camelcase)
+        else if (flags & Capitalized)
         {
             if (!(flags & ExtensionOnly))
             {
@@ -168,7 +168,6 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                 std::wstring extension = fs::path(source).extension().wstring();
 
                 size_t stemLength = stem.length();
-                bool isFirstWord = true;
 
                 while (stemLength > 0 && (iswspace(stem[stemLength - 1]) || iswpunct(stem[stemLength - 1])))
                 {
@@ -183,16 +182,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                         {
                             continue;
                         }
-                        
-                        if (!isFirstWord)
-                        {
-                            stem[i] = towupper(stem[i]);
-                        }
-                        else
-                        {
-                            stem[i] = towlower(stem[i]);
-                            isFirstWord = false;
-                        }
+                        stem[i] = towupper(stem[i]);
                     }
                     else
                     {

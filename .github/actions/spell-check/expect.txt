@@ -202,7 +202,7 @@ buildtransitive
 BValue
 bytearray
 callbackptr
-camelcase
+capitalized
 CANRENAME
 Captureascreenshot
 CAPTURECHANGED

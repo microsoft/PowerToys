@@ -26,7 +26,7 @@
 #define IDC_TRANSFORM_UPPERCASE         3019
 #define IDC_TRANSFORM_LOWERCASE         3020
 #define IDC_TRANSFORM_TITLECASE         3021
-#define IDC_TRANSFORM_CAMELCASE         3022
+#define IDC_TRANSFORM_CAPITALIZED       3022
 #define IDC_SEARCH_FOR                  3023
 #define IDC_REPLACE_WITH                3024
 #define IDC_STATIC                      -1
