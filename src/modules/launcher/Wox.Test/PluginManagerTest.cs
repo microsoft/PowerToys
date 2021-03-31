@@ -48,6 +48,7 @@ namespace Wox.Test
             var pluginPair = new PluginPair(metadata)
             {
                 Plugin = pluginMock.Object,
+                IsPluginLoaded = true,
             };
 
             // Act

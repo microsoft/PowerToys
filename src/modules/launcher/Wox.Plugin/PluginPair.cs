@@ -25,7 +25,7 @@ namespace Wox.Plugin
             this.Metadata = metadata;
         }
 
-        public bool IsPluginLoaded { get; internal set; }
+        public bool IsPluginLoaded { get; set; }
 
         public void LoadPlugin(IPublicAPI api)
         {
