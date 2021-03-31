@@ -270,7 +270,7 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Titlecase);
         }
 
-        TEST_METHOD (VerifyCapitalizedransform)
+        TEST_METHOD (VerifyCapitalizedTransform)
         {
             rename_pairs renamePairs[] = {
                 { L"foo and the to", L"Bar And The To", false, true, 0 },
