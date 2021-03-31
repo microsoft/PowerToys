@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.VideoConferencePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -45,11 +45,12 @@
 
             <ToggleSwitch x:Uid="VideoConference_Enable"
                           IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          IsEnabled="{ Binding Mode=OneWay, Path=IsElevated }"
                           />
 
             <TextBlock x:Uid="VideoConference_Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
             
             <CustomControls:HotkeySettingsControl 
                                           x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header"

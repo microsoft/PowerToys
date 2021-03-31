@@ -253,6 +253,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsElevated
+        {
+            get
+            {
+                return GeneralSettingsConfig.IsElevated;
+            }
+        }
+
         public HotkeySettings CameraAndMicrophoneMuteHotkey
         {
             get
