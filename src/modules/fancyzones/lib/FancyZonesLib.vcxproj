@@ -41,7 +41,6 @@
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesDataTypes.h" />
     <ClInclude Include="FancyZonesWinHookEventIDs.h" />
-    <ClInclude Include="FileWatcher.h" />
     <ClInclude Include="GenericKeyHook.h" />
     <ClInclude Include="FancyZonesData.h" />
     <ClInclude Include="JsonHelpers.h" />
@@ -67,7 +66,6 @@
     <ClCompile Include="FancyZonesDataTypes.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
     <ClCompile Include="FancyZonesData.cpp" />
-    <ClCompile Include="FileWatcher.cpp" />
     <ClCompile Include="JsonHelpers.cpp" />
     <ClCompile Include="MonitorWorkAreaHandler.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />
@@ -89,6 +87,9 @@
     <None Include="fancyzones.base.rc" />
     <ProjectReference Include="..\..\..\common\notifications\notifications.vcxproj">
       <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
+      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
     <ResourceCompile Include="Generated Files/fancyzones.rc" />
     <None Include="packages.config" />
