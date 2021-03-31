@@ -7,3 +7,5 @@ set SolutionDir=%cd%
 popd
 SET IsPipeline=1
 call msbuild ../tools/BugReportTool/BugReportTool.sln /p:Configuration=Release /p:Platform=x64 /p:CIBuild=true || exit /b 1
+call msbuild ../tools/WebcamReportTool/WebcamReportTool.sln /p:Configuration=Release /p:Platform=x64 /p:CIBuild=true || exit /b 1
+
