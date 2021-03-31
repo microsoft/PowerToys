@@ -273,6 +273,7 @@ codereview
 Codespaces
 COINIT
 colorconv
+COLORKEY
 colorpicker
 colorpickerref
 COLORREF
@@ -444,6 +445,8 @@ devblogs
 devdocs
 devenum
 DEVMON
+devpkey
+DEVSOURCE
 df
 DFactory
 Dialpad
@@ -712,6 +715,7 @@ Farbraum
 FARPROC
 Favicon
 fd
+fdw
 feimage
 ffcd
 FFDDDDDD
@@ -991,6 +995,7 @@ IMedia
 IMem
 imeutil
 img
+iminstall
 IMoniker
 IMonitor
 IMouse
@@ -1315,7 +1320,7 @@ MDICHILD
 MDL
 mdpreviewhandler
 MEDIASUBTYPE
-MEDIATYPE
+mediatype
 Melman
 memcmp
 memcpy
@@ -1351,7 +1356,6 @@ MINIMIZEBOX
 miniz
 MINMAXINFO
 Miracast
-mirophone
 mixin
 MJPG
 mkdir
@@ -1603,6 +1607,7 @@ PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
 pathcch
+PAUDIO
 pb
 pbc
 Pbgra
@@ -1860,7 +1865,6 @@ roslyn
 royvou
 rpc
 RRF
-RSHIFT
 rshift
 Rsp
 rst
@@ -2336,6 +2340,9 @@ Versioning
 VFT
 vh
 vid
+VIDCAP
+videoconference
+videoconferencevirtualdriver
 VIDEOINFOHEADER
 viewbox
 viewmodel
@@ -2358,6 +2365,7 @@ VSCBD
 vscode
 VSCROLL
 vse
+vsix
 vsonline
 vstemplate
 VSTHRD
@@ -2383,7 +2391,7 @@ wcscpy
 wcslen
 wcsncmp
 wcsnicmp
-wdk
+WDK
 wdksetup
 wdkvsix
 wdp
@@ -2410,6 +2418,7 @@ wikipedia
 wil
 wildcards
 winapi
+wincodec
 wincolor
 windef
 windevbuildagents
@@ -2538,6 +2547,8 @@ YOffset
 YStr
 YUY
 YUYV
+YVU
+YVYU
 yy
 Zc
 ZEROINIT
