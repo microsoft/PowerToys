@@ -1,6 +1,6 @@
 # New plugin checklist
 - A plugin is a project under `modules\launcher\Plugins`
-- Microsoft plugin project name pattern: Microsoft.PowerToys.Run.Plugin.{PluginName}
+- Microsoft plugin project name pattern: `Microsoft.PowerToys.Run.Plugin.{PluginName}`
 - Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
 - [`GlobalSuppressions.cs`](/src/codeAnalysis/GlobalSuppressions.cs) and [`StyleCop.json`](/src/codeAnalysis/StyleCop.json) have to be included in the plugin project so it follows PowerToys code guidelines
 - A plugin has to have `{PowerToys version}.0` version
