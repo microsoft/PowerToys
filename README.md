@@ -84,7 +84,7 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 #### Highlights from v0.35 Stable/0.36 Experimental 
 
 **General**
-- New warning for users on versions of Windows older than 1903 Settings will no longer be supported on future releases of PowerToys unless they update to a newer version of Windows.
+- PowerToys will start requiring Windows 10 v1903 or greater after 0.35.x release.  The v1 settings which supports older builds will be removed in 0.37.
 - Localization corrections
 - Improved GitHub report bug template.
 - Increased .NET Core to 3.1.13
