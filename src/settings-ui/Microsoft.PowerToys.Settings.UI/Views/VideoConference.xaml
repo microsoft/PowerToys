@@ -1,18 +1,13 @@
-﻿<Page
+<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.VideoConferencePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Page.Resources>
-        <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
-    </Page.Resources>
-    
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -48,12 +43,6 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" x:Name="VideoConferenceView">
 
-            <TextBlock x:Uid="RunAsAdminRequired"
-                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                       Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"
-                       Margin="{StaticResource SmallBottomMargin}"
-                       TextWrapping="Wrap"/>
-            
             <ToggleSwitch x:Uid="VideoConference_Enable"
                           IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
                           IsEnabled="{ Binding Mode=OneWay, Path=IsElevated }"

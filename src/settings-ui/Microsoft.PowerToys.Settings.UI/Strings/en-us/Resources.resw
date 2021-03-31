@@ -874,7 +874,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="FileExplorerPreview_PreviewPane_GroupSettings.Text" xml:space="preserve">
     <value>Preview Pane</value>
   </data>
-  <data name="RunAsAdminRequired.Text" xml:space="preserve">
+  <data name="FileExplorerPreview_RunAsAdminRequired.Text" xml:space="preserve">
     <value>You need to run as administrator to modify these settings.</value>
   </data>
   <data name="FileExplorerPreview_AffectsAllUsers.Text" xml:space="preserve">
