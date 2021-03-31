@@ -66,7 +66,6 @@ build:
           include:
             - 'action_runner.exe'
             - 'BugReportTool\BugReportTool.exe'
-            - 'WebcamReportTool\WebcamReportTool.exe'
             - 'modules\ColorPicker\ColorPicker.dll'
             - 'modules\ColorPicker\ColorPickerUI.dll'
             - 'modules\ColorPicker\ColorPickerUI.exe'
@@ -169,7 +168,6 @@ build:
           to: 'Build_Output'
           include:
             - 'BugReportTool\BugReportTool.exe'
-            - 'WebcamReportTool\WebcamReportTool.exe'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand
