@@ -24,7 +24,7 @@
 - Do not use plugin name or PowerToys as prefixes for entities inside of the plugin project
 - A plugin has to have Unit tests. Use MSTest framework
 - To enable localization add `LocProject.json` file to the plugin root folder. For details see [`localization.md`](/doc/devdocs/localization.md#enabling-localization-on-a-new-project)
-- Plugin's output code and assets have to be included into the installer [`Product.wxs`](\installer\PowerToysSetup\Prodcut.wsx)
+- Plugin's output code and assets have to be included into the installer [`Product.wxs`](\installer\PowerToysSetup\Prodcut.wxs)
 - Test a plugin with a local build. Build the installer, install, check that the plugin works as expected
-- All plugin's binaries have to be included into signed build `pipeline.user.windows.yml`
+- All plugin's binaries have to be included into signed build [`pipeline.user.windows.yml`](\.pipelines\pipeline.user.windows.yml)
 - All plugin's extrenal dependencies has to be ARM compatible. It usually means they have to be .NET 5 compiled.
