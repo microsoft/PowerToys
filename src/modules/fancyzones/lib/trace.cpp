@@ -17,6 +17,7 @@
 #define EventZoneWindowKeyUpKey "FancyZones_ZoneWindowKeyUp"
 #define EventMoveSizeEndKey "FancyZones_MoveSizeEnd"
 #define EventCycleActiveZoneSetKey "FancyZones_CycleActiveZoneSet"
+#define EventQuickLayoutSwitchKey "FancyZones_QuickLayoutSwitch"
 
 #define EventEnabledKey "Enabled"
 #define PressedKeyCodeKey "Hotkey"
@@ -25,6 +26,7 @@
 #define MoveSizeActionKey "InMoveSize"
 #define AppsInHistoryCountKey "AppsInHistoryCount"
 #define CustomZoneSetCountKey "CustomZoneSetCount"
+#define LayoutUsingQuickKeyCountKey "LayoutUsingQuickKeyCount"
 #define NumberOfZonesForEachCustomZoneSetKey "NumberOfZonesForEachCustomZoneSet"
 #define ActiveZoneSetsCountKey "ActiveZoneSetsCount"
 #define ActiveZoneSetsListKey "ActiveZoneSetsList"
@@ -40,6 +42,8 @@
 #define MoveWindowsToLastZoneOnAppOpeningKey "MoveWindowsToLastZoneOnAppOpening"
 #define OpenWindowOnActiveMonitorKey "OpenWindowOnActiveMonitor"
 #define RestoreSizeKey "RestoreSize"
+#define QuickLayoutSwitchKey "QuickLayoutSwitch"
+#define FlashZonesOnQuickSwitchKey "FlashZonesOnQuickSwitch"
 #define UseCursorPosOnEditorStartupKey "UseCursorPosOnEditorStartup"
 #define ShowZonesOnAllMonitorsKey "ShowZonesOnAllMonitors"
 #define SpanZonesAcrossMonitorsKey "SpanZonesAcrossMonitors"
@@ -56,6 +60,7 @@
 #define NumberOfWindowsKey "NumberOfWindows"
 #define InputModeKey "InputMode"
 #define OverlappingZonesAlgorithmKey "OverlappingZonesAlgorithm"
+#define QuickLayoutSwitchedWithShortcutUsed "ShortcutUsed"
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
@@ -128,6 +133,7 @@ void Trace::FancyZones::DataChanged() noexcept
     int appsHistorySize = static_cast<int>(data.GetAppZoneHistoryMap().size());
     const auto& customZones = data.GetCustomZoneSetsMap();
     const auto& devices = data.GetDeviceInfoMap();
+    const auto& quickKeys = data.GetLayoutQuickKeys();
 
     std::unique_ptr<INT32[]> customZonesArray(new (std::nothrow) INT32[customZones.size()]);
     if (!customZonesArray)
@@ -149,7 +155,7 @@ void Trace::FancyZones::DataChanged() noexcept
         return 0;
     };
 
-    //NumberOfZonesForEachCustomZoneSet
+    // NumberOfZonesForEachCustomZoneSet
     int i = 0;
     for (const auto& [id, customZoneSetData] : customZones)
     {
@@ -157,7 +163,7 @@ void Trace::FancyZones::DataChanged() noexcept
         i++;
     }
 
-    //ActiveZoneSetsList
+    // ActiveZoneSetsList
     std::wstring activeZoneSetInfo;
     for (const auto& [id, device] : devices)
     {
@@ -201,7 +207,8 @@ void Trace::FancyZones::DataChanged() noexcept
         TraceLoggingInt32(static_cast<int>(customZones.size()), CustomZoneSetCountKey),
         TraceLoggingInt32Array(customZonesArray.get(), static_cast<int>(customZones.size()), NumberOfZonesForEachCustomZoneSetKey),
         TraceLoggingInt32(static_cast<int>(devices.size()), ActiveZoneSetsCountKey),
-        TraceLoggingWideString(activeZoneSetInfo.c_str(), ActiveZoneSetsListKey));
+        TraceLoggingWideString(activeZoneSetInfo.c_str(), ActiveZoneSetsListKey),
+        TraceLoggingInt32(static_cast<int>(quickKeys.size()), LayoutUsingQuickKeyCountKey));
 }
 
 void Trace::FancyZones::EditorLaunched(int value) noexcept
@@ -225,6 +232,16 @@ void Trace::FancyZones::Error(const DWORD errorCode, std::wstring errorMessage, 
         TraceLoggingValue(methodName.c_str(), "MethodName"),
         TraceLoggingValue(errorCode, "ErrorCode"),
         TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));
+}
+
+void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        EventQuickLayoutSwitchKey,
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(shortcutUsed, QuickLayoutSwitchedWithShortcutUsed));
 }
 
 void Trace::SettingsChanged(const Settings& settings) noexcept
@@ -253,6 +270,8 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.appLastZone_moveWindows, MoveWindowsToLastZoneOnAppOpeningKey),
         TraceLoggingBoolean(settings.openWindowOnActiveMonitor, OpenWindowOnActiveMonitorKey),
         TraceLoggingBoolean(settings.restoreSize, RestoreSizeKey),
+        TraceLoggingBoolean(settings.quickLayoutSwitch, QuickLayoutSwitchKey),
+        TraceLoggingBoolean(settings.flashZonesOnQuickSwitch, FlashZonesOnQuickSwitchKey),
         TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, UseCursorPosOnEditorStartupKey),
         TraceLoggingBoolean(settings.showZonesOnAllMonitors, ShowZonesOnAllMonitorsKey),
         TraceLoggingBoolean(settings.spanZonesAcrossMonitors, SpanZonesAcrossMonitorsKey),

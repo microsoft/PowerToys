@@ -22,6 +22,7 @@ activatable
 ACTIVATEAPP
 Addavirtualdesktop
 Addins
+addrum
 ADDUNDORECORD
 ADifferent
 ADMINS
@@ -49,6 +50,8 @@ amd
 Amicrosoft
 AMirror
 AModifier
+AMPROPERTY
+AMPROPSETID
 anges
 ansicolor
 antialiased
@@ -175,7 +178,6 @@ BRIGHTGREEN
 Browsable
 bsd
 bstr
-BText
 bti
 Btn
 BTNFACE
@@ -204,10 +206,12 @@ CDATA
 CDBECF
 cdecl
 CDeclaration
+CDEF
 cdpx
 cdpxwin
 CENTERALIGN
 cfg
+cguid
 charconv
 charset
 chdir
@@ -434,6 +438,8 @@ DEU
 Devagya
 devblogs
 devdocs
+devenum
+DEVMON
 df
 DFactory
 Dialpad
@@ -486,6 +492,7 @@ drivedetectionwarning
 DRM
 dropdown
 dropref
+dshow
 dst
 DSVG
 DText
@@ -714,6 +721,7 @@ finalizer
 findstr
 FIXEDFILEINFO
 FLASHZONES
+FLASHZONESONQUICKSWITCH
 Fle
 fluentui
 flyout
@@ -772,7 +780,6 @@ GNumber
 google
 GPTR
 grayscale
-GText
 gui
 guiddef
 GUITHREADINFO
@@ -879,6 +886,7 @@ IAppx
 IAsync
 IAuto
 IBackground
+IBase
 IBeam
 IBind
 icase
@@ -897,6 +905,7 @@ Iconset
 IContext
 ICONWARNING
 ICore
+ICreate
 IData
 IDCANCEL
 IDD
@@ -944,6 +953,7 @@ IInput
 IInspectable
 IItem
 IJson
+IKs
 IList
 ILogon
 IMAGEHLP
@@ -954,6 +964,7 @@ IMarkdown
 ime
 imeutil
 img
+IMoniker
 IMonitor
 IMouse
 impl
@@ -969,7 +980,7 @@ inheritdoc
 ini
 INITCOMMONCONTROLSEX
 INITDIALOG
-INITGUID
+initguid
 inl
 Inlines
 inorder
@@ -991,7 +1002,6 @@ INSTALLLOCATION
 INSTALLLOGATTRIBUTES
 INSTALLLOGMODE
 INSTALLMESSAGE
-installpath
 INSTALLPROPERTY
 INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
@@ -1018,6 +1028,7 @@ ipc
 ipcmanager
 ipconfig
 IPersist
+IPin
 IPlugin
 IPower
 ipp
@@ -1026,6 +1037,7 @@ ipreviewhandlertranslateaccelerator
 ipreviewhandlervisualssetfont
 IPrincipal
 IProgram
+IProperty
 IPublic
 IQuery
 IRead
@@ -1085,6 +1097,7 @@ jp
 jpe
 jpeg
 jpg
+jsoref
 JPN
 json
 jsonval
@@ -1240,6 +1253,7 @@ lzw
 mailto
 MAINICON
 Mainwindow
+majortype
 makeappx
 MAKEINTRESOURCE
 MAKEINTRESOURCEW
@@ -1258,6 +1272,7 @@ MATCHMODE
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
+mayitbeegh
 MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
@@ -1266,6 +1281,8 @@ Mdb
 MDICHILD
 MDL
 mdpreviewhandler
+MEDIASUBTYPE
+MEDIATYPE
 Melman
 memcpy
 memset
@@ -1292,6 +1309,7 @@ miniz
 MINMAXINFO
 Miracast
 mixin
+MJPG
 mkdir
 MLogo
 MMI
@@ -1567,6 +1585,7 @@ phwnd
 pici
 pid
 pidl
+PINDIR
 pinfo
 pinvoke
 Pipelinhttps
@@ -1685,6 +1704,7 @@ Queryable
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
+QUICKLAYOUTSWITCH
 qwertyuiopasdfghjklzxcvbnm
 qword
 qwrtyuiopsghjklzxvnm
@@ -1779,13 +1799,12 @@ roslyn
 royvou
 rpc
 RRF
-rshift
 RSHIFT
+rshift
 Rsp
 rst
 Rstrtmgr
 RTB
-RText
 rtf
 Rtl
 RTLREADING
@@ -1997,6 +2016,7 @@ stringify
 STRINGIZE
 stringtable
 stringval
+Strmiids
 strsafe
 strutil
 sttngs
@@ -2095,6 +2115,7 @@ Timeline
 timeunion
 timeutil
 titlecase
+TLayout
 tlb
 tlbimp
 tmp
@@ -2241,6 +2262,7 @@ Versioning
 VFT
 vh
 vid
+VIDEOINFOHEADER
 viewbox
 viewmodel
 virtualization
@@ -2259,6 +2281,7 @@ VREDRAW
 VSC
 VSCBD
 vscode
+vsconfig
 VSCROLL
 vse
 vsonline
@@ -2290,7 +2313,7 @@ wdp
 wdupenv
 weakme
 webapp
-Webcam
+webcam
 webclient
 webkit
 webp
@@ -2343,6 +2366,7 @@ winspool
 winstore
 winui
 winxamlmanager
+wistd
 withinrafael
 Withscript
 wix
@@ -2431,7 +2455,10 @@ yinwang
 YLogo
 yml
 YOffset
+YourUserName
 YStr
+YUY
+YUYV
 yy
 Zc
 ZEROINIT

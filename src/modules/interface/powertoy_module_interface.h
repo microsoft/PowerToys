@@ -86,6 +86,16 @@ public:
     virtual void send_settings_telemetry()
     {
     }
+
+protected:
+    HANDLE CreateDefaultEvent(const wchar_t* eventName)
+    {
+        SECURITY_ATTRIBUTES sa;
+        sa.nLength = sizeof(sa);
+        sa.bInheritHandle = false;
+        sa.lpSecurityDescriptor = NULL;
+        return CreateEventW(&sa, FALSE, FALSE, eventName);
+    }
 };
 
 /*

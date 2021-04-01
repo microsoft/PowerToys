@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Informazioni su Utilità di avvio di PowerToys]]></Val>
+            <Val><![CDATA[Informazioni su PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Informazioni su Rinomina speciale]]></Val>
+            <Val><![CDATA[PowerRename]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[About Power Rename]]></Val>
@@ -208,6 +208,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ColorPicker_ButtonDown.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move the color down]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sposta il colore verso il basso]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ColorPicker_ButtonUp.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move the color up]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sposta il colore verso l'alto]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ColorPicker_ChangeCursor.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Change cursor when picking a color]]></Val>
@@ -219,10 +237,13 @@
       </Item>
       <Item ItemId=";ColorPicker_ColorFormatsDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Editor color formats (Change the order by dragging)]]></Val>
+          <Val><![CDATA[Editor color formats]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Formati colore editor (modificare l'ordine mediante trascinamento)]]></Val>
+            <Val><![CDATA[Formati colore dell'editor]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Editor color formats (Change the order by dragging)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -412,6 +433,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";FancyZones_FlashZonesOnQuickSwitch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Flash zones when switching layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Scambia le zone quando si cambia layout]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";FancyZones_HighlightOpacity.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zone opacity]]></Val>
@@ -573,6 +603,24 @@
           <Val><![CDATA[Override Windows Snap shortcut (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ignora tasto di scelta rapida Affianca finestre di Windows (tasto WINDOWS + tasti di direzione) per spostare le finestre tra le zone]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_QuickLayoutSwitch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Abilita commutazione rapida layout]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_QuickLayoutSwitch_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Commutazione rapida layout]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2003,7 +2051,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Rinomina speciale]]></Val>
+            <Val><![CDATA[PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2012,7 +2060,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename enables you to perform simple bulk renaming, searching and replacing file names.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Rinomina speciale consente di eseguire semplici operazioni di ridenominazione, ricerca e sostituzione dei nomi dei file in blocco.]]></Val>
+            <Val><![CDATA[PowerRename consente di eseguire semplici operazioni di ridenominazione, ricerca e sostituzione dei nomi dei file in blocco.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2021,7 +2069,7 @@
         <Str Cat="Text">
           <Val><![CDATA[In File Explorer, right-clicking one or more selected files and clicking on PowerRename from the context menu.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[In Esplora file fare clic con il pulsante destro del mouse su uno o più file selezionati e scegliere Rinomina speciale dal menu di scelta rapida.]]></Val>
+            <Val><![CDATA[In Esplora file fare clic con il pulsante destro del mouse su uno o più file selezionati e scegliere PowerRename dal menu di scelta rapida.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2030,7 +2078,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Rinomina speciale supporta la ricerca di file con espressioni regolari per abilitare funzionalità di ridenominazione più avanzate.]]></Val>
+            <Val><![CDATA[PowerRename supporta la ricerca di file con espressioni regolari per abilitare funzionalità di ridenominazione più avanzate.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2039,7 +2087,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L'utilità di avvio di PowerToys è un programma di avvio veloce per utenti esperti che offre funzionalità aggiuntive senza sacrificare le prestazioni.]]></Val>
+            <Val><![CDATA[PowerToys Run è un programma di avvio veloce per utenti esperti che offre funzionalità aggiuntive senza sacrificare le prestazioni.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2057,7 +2105,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Utilità di avvio di PowerToys]]></Val>
+            <Val><![CDATA[PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2075,7 +2123,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys runs supports various action keys to funnel search queries for a specific subset of results. Typing < searches for running processes only, ? will search only for file, or . for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L'Utilità di avvio di PowerToys supporta vari tasti di azione per indirizzare le query di ricerca per un subset specifico di risultati. Se si digita < verranno cercati solo i processi in esecuzione, se si digita ? verranno cercati solo i file e se si digita . verranno cercate solo le applicazioni installate. Per il set completo di 'Tasti di azione' disponibili, vedere la documentazione di PowerToys.]]></Val>
+            <Val><![CDATA[PowerToys Run supporta vari tasti di azione per indirizzare le query di ricerca per un subset specifico di risultati. Se si digita < verranno cercati solo i processi in esecuzione, se si digita ? verranno cercati solo i file e se si digita . verranno cercate solo le applicazioni installate. Per il set completo di 'Tasti di azione' disponibili, vedere la documentazione di PowerToys.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2219,7 +2267,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abilita Utilità di avvio di PowerToys]]></Val>
+            <Val><![CDATA[Abilita PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2273,7 +2321,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Apri Utilità di avvio di PowerToys]]></Val>
+            <Val><![CDATA[Apri PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2417,7 +2465,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Rinomina speciale]]></Val>
+            <Val><![CDATA[PowerRename]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Power Rename]]></Val>
@@ -2456,7 +2504,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abilita Rinomina speciale]]></Val>
+            <Val><![CDATA[Abilita PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2519,7 +2567,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Utilità di avvio di PowerToys]]></Val>
+            <Val><![CDATA[PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2618,7 +2666,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run can't provide any results without plugins. Please enable at least one plugin.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L'Utilità di avvio di PowerToys non può restituire risultati senza i plug-in. Abilitare almeno un plug-in.]]></Val>
+            <Val><![CDATA[PowerToys Run non può restituire risultati senza i plug-in. Abilitare almeno un plug-in.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2783,7 +2831,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Utilità di avvio di PowerToys]]></Val>
+            <Val><![CDATA[PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2804,7 +2852,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Rinomina speciale]]></Val>
+            <Val><![CDATA[PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

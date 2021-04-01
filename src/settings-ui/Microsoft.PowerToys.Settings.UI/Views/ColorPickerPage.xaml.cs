@@ -47,5 +47,35 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             ColorPicker_ComboBox.SelectedIndex = index;
         }
+
+        private void ReorderButtonUp_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            ColorFormatModel color = ((Button)sender).DataContext as ColorFormatModel;
+            if (color == null)
+            {
+                return;
+            }
+
+            var index = ViewModel.ColorFormats.IndexOf(color);
+            if (index > 0)
+            {
+                ViewModel.ColorFormats.Move(index, index - 1);
+            }
+        }
+
+        private void ReorderButtonDown_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            ColorFormatModel color = ((Button)sender).DataContext as ColorFormatModel;
+            if (color == null)
+            {
+                return;
+            }
+
+            var index = ViewModel.ColorFormats.IndexOf(color);
+            if (index < ViewModel.ColorFormats.Count - 1)
+            {
+                ViewModel.ColorFormats.Move(index, index + 1);
+            }
+        }
     }
 }

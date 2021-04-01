@@ -36,12 +36,13 @@
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
-#include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>
-#include <common/utils/winapi_error.h>
-#include <common/version/version.h>
-#include <common/utils/window.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include <runner/settings_window.h>
+#include <common/utils/process_path.h>
+#include <common/utils/winapi_error.h>
+#include <common/utils/window.h>
+#include <common/version/version.h>
 
 extern updating::notifications::strings Strings;
 
@@ -79,6 +80,30 @@ void open_menu_from_another_instance()
     PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, 0);
 }
 
+void debug_verify_launcher_assets()
+{
+    try
+    {
+        namespace fs = std::filesystem;
+        const fs::path powertoysRoot = get_module_folderpath();
+        constexpr std::array<std::string_view, 4> assetsToCheck = { "modules\\launcher\\Images\\app.dark.png",
+                                                                    "modules\\launcher\\Images\\app.light.png",
+                                                                    "modules\\launcher\\Images\\app_error.dark.png",
+                                                                    "modules\\launcher\\Images\\app_error.light.png" };
+        for (const auto asset : assetsToCheck)
+        {
+            const auto assetPath = powertoysRoot / asset;
+            if (!fs::is_regular_file(assetPath))
+            {
+              Logger::error("{} couldn't be found.", assetPath.string());
+            }
+        }
+    }
+    catch (...)
+    {
+    }
+}
+
 int runner(bool isProcessElevated, bool openSettings, bool openOobe)
 {
     Logger::info("Runner is starting. Elevated={}", isProcessElevated);
@@ -96,6 +121,8 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
     int result = -1;
     try
     {
+        debug_verify_launcher_assets();
+
         std::thread{ [] {
             github_update_worker();
         } }.detach();
@@ -161,7 +188,7 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
 
         if (openOobe)
         {
-            open_oobe_window(); 
+            open_oobe_window();
         }
 
         settings_telemetry::init();
@@ -433,7 +460,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         auto general_settings = load_general_settings();
         const bool openSettings = std::string(lpCmdLine).find("--open-settings") != std::string::npos;
 
-
         // Apply the general settings but don't save it as the modules() variable has not been loaded yet
         apply_general_settings(general_settings, false);
         int rvalue = 0;
@@ -442,7 +468,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
              general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
              std::string(lpCmdLine).find("--dont-elevate") != std::string::npos))
         {
-
             result = runner(elevated, openSettings, openOobe);
         }
         else

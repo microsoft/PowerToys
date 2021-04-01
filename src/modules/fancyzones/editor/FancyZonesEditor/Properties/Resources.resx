@@ -303,14 +303,11 @@
     <value>Delete zone</value>
     <comment>A tooltip on a button that allows the user to delete a zone</comment>
   </data>
-  <data name="Error_Parsing_Zones_Settings_Malformed_Data" xml:space="preserve">
-    <value>'zones-settings.json' contains malformed data.</value>
-  </data>
   <data name="Error_Parsing_Zones_Settings_Title" xml:space="preserve">
     <value>Editor settings parsing error.</value>
   </data>
-  <data name="Error_Parsing_Zones_Settings_User_Choice" xml:space="preserve">
-    <value>Would you like to continue? Malformed data will be lost.</value>
+  <data name="Error_Parsing_Zones_Settings_Message" xml:space="preserve">
+    <value>A layout that contained invalid data has been removed.</value>
   </data>
   <data name="Apply_Layout" xml:space="preserve">
     <value>Apply layout</value>
@@ -345,5 +342,11 @@
   <data name="SplitterName" xml:space="preserve">
     <value>Splitter:</value>
     <comment>Title for concept: A segmenter visual for splitting one item into two.  This would be the vertical line</comment>
+  </data>
+  <data name="QuickKey_Select" xml:space="preserve">
+    <value>Select a key to quickly apply the layout (Win + Ctrl + Alt + key)</value>
+  </data>
+  <data name="Quick_Key_None" xml:space="preserve">
+    <value>None</value>
   </data>
 </root>

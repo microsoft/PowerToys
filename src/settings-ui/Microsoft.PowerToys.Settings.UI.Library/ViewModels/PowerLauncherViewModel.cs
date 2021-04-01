@@ -262,11 +262,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (value == true)
                 {
                     settings.Properties.Position = StartupPosition.Cursor;
+                    _isCursorPositionRadioButtonChecked = value;
+                    UpdateSettings();
                 }
-
-                _isCursorPositionRadioButtonChecked = value;
-
-                UpdateSettings();
             }
         }
 
@@ -282,11 +280,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (value == true)
                 {
                     settings.Properties.Position = StartupPosition.PrimaryMonitor;
+                    _isPrimaryMonitorPositionRadioButtonChecked = value;
+                    UpdateSettings();
                 }
-
-                _isPrimaryMonitorPositionRadioButtonChecked = value;
-
-                UpdateSettings();
             }
         }
 
@@ -302,11 +298,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (value == true)
                 {
                     settings.Properties.Position = StartupPosition.Focus;
+                    _isFocusPositionRadioButtonChecked = value;
+                    UpdateSettings();
                 }
-
-                _isFocusPositionRadioButtonChecked = value;
-
-                UpdateSettings();
             }
         }
 
@@ -452,6 +446,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public bool ShowPluginsLoadingMessage
         {
             get => EnablePowerLauncher && !Plugins.Any();
+        }
+
+        public bool IsUpToDate(PowerLauncherSettings settings)
+        {
+            return this.settings.Equals(settings);
         }
     }
 }

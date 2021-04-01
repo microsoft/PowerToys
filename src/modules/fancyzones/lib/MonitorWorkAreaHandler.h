@@ -30,6 +30,16 @@ public:
     winrt::com_ptr<IZoneWindow> GetWorkArea(const GUID& desktopId, HMONITOR monitor);
 
     /**
+     * Get work area based on virtual desktop id and the current cursor position.
+     *
+     * @param[in]  desktopId Virtual desktop identifier.
+     *
+     * @returns    Object representing single work area, interface to all actions available on work area
+     *             (e.g. moving windows through zone layout specified for that work area).
+     */
+    winrt::com_ptr<IZoneWindow> GetWorkAreaFromCursor(const GUID& desktopId);
+
+    /**
      * Get work area on which specified window is located.
      *
      * @param[in]  window Window handle.
