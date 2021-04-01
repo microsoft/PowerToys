@@ -103,7 +103,7 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 - Bug fixes
 
 **PowerToys Run**
-- Users to specify where to show the launcher window. Thanks [@addrum](https://github.com/addrum)!
+- Users can specify where to show the launcher window. Thanks [@addrum](https://github.com/addrum)!
 - New plugin added to support opening previously used Visual Studio Code workspaces, remote machines (SSH or Codespaces), and containers! When enabled, use `{` to query for available workspaces. Thanks [@ricardosantos9521](https://github.com/ricardosantos9521)!  Please note, this plugin is off by default.
 - Shell history now saves the raw command instead of the resolved command. A command like `%appdata%` would now save in the Shell history as is instead of `C:\Users\YourUserName\AppData\Roaming`. Thanks [@mayitbeegh](https://github.com/mayitbeegh)!
 - Better logging to try to track down some bugs
