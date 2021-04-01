@@ -153,14 +153,17 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
                     // if the camera is not in use, we just mute/unmute the mic
                     reverseMicrophoneMute();
                 }
+                return 1;
             }
             else if (isHotkeyPressed(kbd->vkCode, settings.microphoneMuteHotkey))
             {
                 reverseMicrophoneMute();
+                return 1;
             }
             else if (isHotkeyPressed(kbd->vkCode, settings.cameraMuteHotkey))
             {
                 reverseVirtualCameraMuteState();
+                return 1;
             }
         }
     }
@@ -434,7 +437,9 @@ void toggleProxyCamRegistration(const bool enable)
         {
             params += L"/u ";
         }
+        params += '"';
         params += filter;
+        params += '"';
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
         sei.lpFile = L"regsvr32";
