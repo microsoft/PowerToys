@@ -1809,6 +1809,7 @@ REGISTERCLASSFAILED
 registrypath
 regkey
 REGPINTYPES
+regsvr
 reimplementing
 reloadable
 Remapper
