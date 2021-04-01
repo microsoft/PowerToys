@@ -22,6 +22,7 @@ activatable
 ACTIVATEAPP
 Addavirtualdesktop
 Addins
+addrum
 ADDUNDORECORD
 ADifferent
 ADMINS
@@ -1096,6 +1097,7 @@ jp
 jpe
 jpeg
 jpg
+jsoref
 JPN
 json
 jsonval
@@ -1270,6 +1272,7 @@ MATCHMODE
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
+mayitbeegh
 MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
@@ -2278,6 +2281,7 @@ VREDRAW
 VSC
 VSCBD
 vscode
+vsconfig
 VSCROLL
 vse
 vsonline
@@ -2451,6 +2455,7 @@ yinwang
 YLogo
 yml
 YOffset
+YourUserName
 YStr
 YUY
 YUYV
