@@ -1,5 +1,7 @@
 #include "MicrophoneDevice.h"
 
+#include "Logging.h"
+
 #include <Functiondiscoverykeys_devpkey.h>
 
 MicrophoneDevice::MicrophoneDevice(wil::com_ptr_nothrow<IMMDevice> device, wil::com_ptr_nothrow<IAudioEndpointVolume> endpoint) :
@@ -17,6 +19,10 @@ MicrophoneDevice::MicrophoneDevice(wil::com_ptr_nothrow<IMMDevice> device, wil::
     if (props)
     {
         props->GetValue(PKEY_Device_FriendlyName, &_friendly_name);
+    }
+    else
+    {
+        LOG("MicrophoneDevice::MicrophoneDevice couldn't open property store");
     }
 }
 
@@ -75,18 +81,21 @@ std::optional<MicrophoneDevice> MicrophoneDevice::getDefault()
     auto deviceEnumerator = wil::CoCreateInstanceNoThrow<MMDeviceEnumerator, IMMDeviceEnumerator>();
     if (!deviceEnumerator)
     {
+        LOG("MicrophoneDevice::getDefault MMDeviceEnumerator returned null");
         return std::nullopt;
     }
     wil::com_ptr_nothrow<IMMDevice> captureDevice;
     deviceEnumerator->GetDefaultAudioEndpoint(eCapture, eCommunications, &captureDevice);
     if (!captureDevice)
     {
+        LOG("MicrophoneDevice::getDefault captureDevice is null");
         return std::nullopt;
     }
     wil::com_ptr_nothrow<IAudioEndpointVolume> microphoneEndpoint;
     captureDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_INPROC_SERVER, nullptr, reinterpret_cast<LPVOID*>(&microphoneEndpoint));
     if (!microphoneEndpoint)
     {
+        LOG("MicrophoneDevice::getDefault captureDevice is null");
         return std::nullopt;
     }
     return std::make_optional<MicrophoneDevice>(std::move(captureDevice), std::move(microphoneEndpoint));
@@ -98,6 +107,7 @@ std::vector<MicrophoneDevice> MicrophoneDevice::getAllActive()
     auto deviceEnumerator = wil::CoCreateInstanceNoThrow<MMDeviceEnumerator, IMMDeviceEnumerator>();
     if (!deviceEnumerator)
     {
+        LOG("MicrophoneDevice::getAllActive MMDeviceEnumerator returned null");
         return microphoneDevices;
     }
 
@@ -105,6 +115,7 @@ std::vector<MicrophoneDevice> MicrophoneDevice::getAllActive()
     deviceEnumerator->EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE, &captureDevices);
     if (!captureDevices)
     {
+        LOG("MicrophoneDevice::getAllActive EnumAudioEndpoints returned null");
         return microphoneDevices;
     }
     UINT nDevices = 0;

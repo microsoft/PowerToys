@@ -196,7 +196,7 @@ void VideoConferenceModule::onGeneralSettingsChanged()
     }
     catch (...)
     {
-        //Logger::error("Couldn't get enabled state");
+        LOG("Couldn't get enabled state");
     }
     if (enabled)
     {
@@ -262,7 +262,7 @@ void VideoConferenceModule::onModuleSettingsChanged()
     }
     catch (...)
     {
-        // Improper JSON. TODO: handle the error.
+        LOG("onModuleSettingsChanged encountered an exception");
     }
 }
 

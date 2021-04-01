@@ -1,4 +1,5 @@
 #include "VideoCaptureDeviceList.h"
+#include "Logging.h"
 #include <mfapi.h>
 #include <Mfidl.h>
 
@@ -44,15 +45,24 @@ HRESULT VideoCaptureDeviceList::EnumerateDevices()
             MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
             MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
     }
-
+    else
+    {
+        LOG("VideoCaptureDeviceList::EnumerateDevices(): Couldn't MFCreateAttributes");
+    }
     // Enumerate devices.
     if (SUCCEEDED(hr))
     {
         hr = MFEnumDeviceSources(pAttributes.get(), &m_ppDevices, &m_numberDevices);
     }
+    else
+    {
+        LOG("VideoCaptureDeviceList::EnumerateDevices(): Couldn't SetGUID");
+    }
+
 
     if (FAILED(hr))
     {
+        LOG("VideoCaptureDeviceList::EnumerateDevices(): MFEnumDeviceSources failed");
         return hr;
     }
 
