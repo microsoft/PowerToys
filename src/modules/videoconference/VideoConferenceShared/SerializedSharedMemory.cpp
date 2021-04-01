@@ -56,6 +56,7 @@ SerializedSharedMemory& SerializedSharedMemory::operator=(SerializedSharedMemory
     _handles.swap(rhs._handles);
     _memory = std::move(rhs._memory);
     rhs._memory = {};
+    _read_only = rhs._read_only;
     rhs._read_only = true;
 
     return *this;
