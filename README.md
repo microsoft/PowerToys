@@ -24,8 +24,8 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Requirements
 
- - Windows 10 v1903 (build 18362) or newer preferred, Windows 10 v1803 (build 17134) minimum.
-- ⚠️ Support for Windows 10 v1803 will be removed with the next release (v0.35.x and newer)!
+- Windows 10 v1903 (build 18362) or newer preferred, Windows 10 v1803 (build 17134) minimum.
+   - ⚠️ PowerToys minimum version of Windows 10 will be increased to v1903 starting with the 0.37 release
 - Have [.NET Core 3.1.13 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.13-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
@@ -86,7 +86,7 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 
 **General**
 - PowerToys will start requiring Windows 10 v1903 or greater after 0.35.x release.  The v1 settings, which supports older Windows versions, will be removed in 0.37.  
-   - We may be able to bring back support when we migrate to WinUI3 but as of now, we will be increasing the minimum version of Windows to 1903 or greater.
+   - Note: We may be able to bring back support when we migrate to WinUI3 but as of now, we will be increasing the minimum version of Windows to 1903 or greater.
 - Localization corrections
 - Improved GitHub report bug template.
 - Increased .NET Core to 3.1.13
@@ -94,7 +94,7 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 
 **Color Picker**
 - UX adjustments to editor. Thanks [@niels9001](https://github.com/niels9001)!
-- `esc` can now be used to exit the editor. Thanks [@BenConstable9](https://github.com/BenConstable9)!
+- `Esc` can now be used to exit the editor. Thanks [@BenConstable9](https://github.com/BenConstable9)!
 
 **FancyZones**
 - Added hotkeys and quick swap functionality for custom layouts! Users can now assign a hotkey in the editor and use it to quickly set a desktop's zones with `Ctrl + Win + Alt + NUMBER` key binding, or by pressing the hotkey while dragging a window.
