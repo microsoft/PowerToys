@@ -90,7 +90,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DirectShowUtils.h" />
-    <ClInclude Include="Logging.h" />
     <ClInclude Include="VideoCaptureDevice.h" />
     <ClInclude Include="VideoCaptureProxyFilter.h" />
   </ItemGroup>

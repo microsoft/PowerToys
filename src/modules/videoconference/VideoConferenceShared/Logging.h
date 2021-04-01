@@ -30,3 +30,5 @@ std::string toMediaTypeString(GUID subtype);
     auto verboseLogOnScopeEnd = wil::scope_exit([&] {               \
         LogToFile(std::string(functionNameTMPVAR + " exit"), true); \
     });
+
+#define LOG(str) LogToFile(str, false);
