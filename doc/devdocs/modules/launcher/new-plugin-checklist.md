@@ -4,7 +4,7 @@
 - Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
 - [`GlobalSuppressions.cs`](/src/codeAnalysis/GlobalSuppressions.cs) and [`StyleCop.json`](/src/codeAnalysis/StyleCop.json) have to be included in the plugin project so it follows PowerToys code guidelines
 - A plugin has to have `{PowerToys version}.0` version
-- A plugin has to have only x64 platform target
+- Make sure `*.csproj` specify only x64 platform target
 - A plugin has to contain a `plugin.json` file of the following format in its root folder
 ```
 {
@@ -27,4 +27,4 @@
 - Plugin's output code and assets have to be included in the installer [`Product.wxs`](/installer/PowerToysSetup/Product.wxs)
 - Test a plugin with a local build. Build the installer, install, check that the plugin works as expected
 - All plugin's binaries have to be included in the signed build [`pipeline.user.windows.yml`](/.pipelines/pipeline.user.windows.yml)
-- All plugin's external dependencies have to be ARM compatible. It usually means they have to be .NET 5 compiled.
+- A plugin target framework has to be .NET Core 3.1
