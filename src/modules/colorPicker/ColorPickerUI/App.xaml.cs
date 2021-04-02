@@ -31,7 +31,7 @@ namespace ColorPickerUI
             if (!createdNew)
             {
                 _instanceMutex = null;
-                Application.Current.Shutdown();
+                Environment.Exit(0);
                 return;
             }
 
