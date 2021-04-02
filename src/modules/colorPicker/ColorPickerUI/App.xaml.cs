@@ -27,7 +27,7 @@ namespace ColorPickerUI
             _args = e?.Args;
 
             // allow only one instance of color picker
-            _instanceMutex = new Mutex(true, @"Global\ColorPicker", out bool createdNew);
+            _instanceMutex = new Mutex(true, @"Local\ColorPicker", out bool createdNew);
             if (!createdNew)
             {
                 _instanceMutex = null;
