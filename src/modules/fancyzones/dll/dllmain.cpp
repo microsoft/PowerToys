@@ -18,7 +18,6 @@
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
-#include <common/version/version.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
