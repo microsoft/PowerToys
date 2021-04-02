@@ -306,8 +306,17 @@ bool VideoConferenceModule::get_config(wchar_t* buffer, int* buffer_size)
     return true;
 }
 
-void VideoConferenceModule::set_config(const wchar_t* /*config*/)
+void VideoConferenceModule::set_config(const wchar_t* config)
 {
+    try
+    {
+        PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
+        values.save_to_settings_file();
+    }
+    catch (...)
+    {
+        LOG("VideoConferenceModule::set_config: exception during saving new settings values");
+    }
 }
 
 void VideoConferenceModule::init_settings()
@@ -432,7 +441,7 @@ void toggleProxyCamRegistration(const bool enable)
     std::array<fs::path, 2> proxyFilters = { vcmRoot / "VideoConferenceProxyFilter_x64.dll", vcmRoot / "VideoConferenceProxyFilter_x86.dll" };
     for (const auto filter : proxyFilters)
     {
-        std::wstring params { L"/s " };
+        std::wstring params{ L"/s " };
         if (!enable)
         {
             params += L"/u ";
