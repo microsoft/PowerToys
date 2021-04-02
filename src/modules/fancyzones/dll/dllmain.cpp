@@ -17,6 +17,7 @@
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
+#include <common/version/version.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -157,6 +158,8 @@ public:
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         app_key = NonLocalizable::FancyZonesStr;
         std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
+        logFilePath.append(LogSettings::logPath);
+        logFilePath.append(get_product_version());
         logFilePath.append(LogSettings::fancyZonesLogPath);
         Logger::init(LogSettings::fancyZonesLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name(), FancyZonesModule::get_key());
