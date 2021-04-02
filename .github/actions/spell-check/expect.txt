@@ -217,6 +217,7 @@ charset
 chdir
 checkbox
 checkboxes
+CHECKCANCELED
 Checkedin
 checknetisolation
 Chicklet
@@ -1037,6 +1038,7 @@ ipreviewhandlertranslateaccelerator
 ipreviewhandlervisualssetfont
 IPrincipal
 IProgram
+IProgress
 IProperty
 IPublic
 IQuery
@@ -1056,6 +1058,7 @@ isetting
 isfinite
 IShell
 ISingle
+ISmart
 ismethod
 isocpp
 IStorage
@@ -1265,6 +1268,7 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 Markdig
+MARQUEEPROGRESS
 martinchrzan
 martinmoene
 MATCHALLOCCURENCES
@@ -1656,6 +1660,7 @@ Printfax
 prm
 PROCESSKEY
 PRODUCTVERSION
+PROGDLG
 Progman
 programdata
 PROGRAMFILES
@@ -1664,6 +1669,7 @@ Proj
 projectname
 propkey
 propvarutil
+prpui
 Prt
 prui
 prvpane
@@ -1955,6 +1961,8 @@ spesi
 spinbuttonref
 splitwstring
 spoprod
+sppd
+sppre
 spsi
 spsia
 spsrif
@@ -2112,6 +2120,7 @@ thre
 tif
 TILEDWINDOW
 Timeline
+TIMERID
 timeunion
 timeutil
 titlecase
