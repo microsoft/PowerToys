@@ -491,6 +491,16 @@
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
   </data>
+  <data name="ShortcutGuide_DisabledApps.Text" xml:space="preserve">
+    <value>Disable for apps</value>
+  </data>
+  <data name="ShortcutGuide_DisabledApps_TextBoxControl.Header" xml:space="preserve">
+    <value>Turn off Shortcut Guide when these applications have focus. Add one application name per line.</value>
+  </data>
+  <data name="ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+    <comment>Don't translate outlook.exe</comment>
+  </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image sizes</value>
   </data>
@@ -793,6 +803,7 @@
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
+    <comment>Don't translate outlook.exe</comment>
   </data>
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
