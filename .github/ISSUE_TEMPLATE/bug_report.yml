@@ -1,4 +1,4 @@
-name: "Bug report 🐛"
+name: "🐛 Bug report"
 description: Report errors or unexpected behavior
 title: ''
 labels: 
@@ -23,15 +23,12 @@ body:
   validations:
     required: true
 
-- type: dropdown
+- type: checkboxes
   attributes:
     label: Running as admin
     description: Are you running PowerToys as Admin?
     options:
-      - 'No'
-      - 'Yes'
-  validations:
-    required: true
+      - label: Yes
 
 - type: dropdown
   attributes:
