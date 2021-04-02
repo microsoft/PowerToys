@@ -105,7 +105,10 @@ namespace ColorPicker.Keyboard
                 if (!_activationShortcutPressed)
                 {
                     _activationShortcutPressed = true;
-                    _appStateHandler.StartUserSession();
+
+                    // We now activate the session from the runner.
+                    // TODO remove unused code
+                    // _appStateHandler.StartUserSession();
                 }
             }
         }
