@@ -281,9 +281,6 @@
               <Directory Id="SettingsV2XamlAssetsInstallFolder" Name="Assets" />
             </Directory>
           </Directory>
-          <Directory Id="SettingsHtmlInstallFolder" Name="settings-html">
-            <Directory Id="SettingsHtmlDistInstallFolder" Name="dist"/>
-          </Directory>
         </Directory>
       </Directory>
       <Directory Id="ProgramMenuFolder">
@@ -314,9 +311,6 @@
             <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]PowerToys.exe&quot; &quot;%1&quot;" />
           </RegistryKey>
         </RegistryKey>
-      </Component>
-      <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
-        <File Id="PowerToysSettings.exe" KeyPath="yes" Checksum="yes" />
       </Component>
       <Component Id="BackgroundActivator_dll" Guid="23B25EE4-BCA2-45DF-BBCD-82FBDF01C5AB" Win64="yes">
         <File Id="BackgroundActivatorDLL.dll" KeyPath="yes" Checksum="yes" />
@@ -743,23 +737,6 @@
       </Component>
     </DirectoryRef>
 
-    <DirectoryRef Id="SettingsHtmlInstallFolder" FileSource="$(var.RepoDir)\settings\settings-html\">
-      <Component Id="settings_html" Guid="87881A99-E917-4B0D-B1D8-5C6EB9709F96" Win64="yes">
-        <File Source="$(var.RepoDir)\src\settings\settings-html\index.html" KeyPath="yes" />
-      </Component>
-      <Component Id="settings_dark_html" Guid="855866C7-2F13-4B08-B5C1-B507354C2760" Win64="yes">
-        <File Source="$(var.RepoDir)\src\settings\settings-html\index-dark.html" KeyPath="yes" />
-      </Component>
-    </DirectoryRef>
-    <DirectoryRef Id="SettingsHtmlDistInstallFolder" FileSource="$(var.RepoDir)\settings\settings-html\dist\">
-      <Component Id="settings_js_bundle" Guid="9EF539C1-2F50-421E-B074-C58ED3A9785C" Win64="yes">
-        <File Source="$(var.RepoDir)\src\settings\settings-html\dist\bundle.js" KeyPath="yes" />
-      </Component>
-      <Component Id="settings_css" Guid="9B8EBF56-A7A7-4D83-B53C-75A692E2F95A" Win64="yes">
-        <File Source="$(var.RepoDir)\src\settings\settings-html\dist\layout.css" KeyPath="yes" />
-      </Component>
-    </DirectoryRef>
-
     <DirectoryRef Id="DesktopFolder">
       <Component Id="DesktopShortcut" Guid="87321F2B-CC48-4326-881E-9C62CC260DC8">
         <Condition>INSTALLDESKTOPSHORTCUT</Condition>
@@ -814,11 +791,6 @@
       <ComponentRef Id="SettingsV2Styles" />
       <ComponentRef Id="SettingsV2Views" />
       <ComponentRef Id="SettingsV2XamlAssets" />
-      <ComponentRef Id="settings_exe" />
-      <ComponentRef Id="settings_html" />
-      <ComponentRef Id="settings_dark_html" />
-      <ComponentRef Id="settings_js_bundle" />
-      <ComponentRef Id="settings_css" />
     </ComponentGroup>
     <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
       <ComponentRef Id="BugReportTool_exe" />
