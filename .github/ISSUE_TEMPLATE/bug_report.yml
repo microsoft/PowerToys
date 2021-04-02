@@ -53,17 +53,6 @@ body:
       - Settings window
   validations:
     required: true
-    
-- type: textarea
-  attributes:
-    label: Other Software
-    description: If you're reporting a bug about our interaction with other software, what software? What versions?
-    placeholder: |
-      vim 8.2 (inside WSL)
-      OpenSSH_for_Windows_8.1p1
-      My Cool Application v0.3 (include a code snippet if it would help!)
-  validations:
-    required: false
 
 - type: textarea
   attributes:
@@ -85,3 +74,14 @@ body:
     placeholder: What happened instead?
   validations:
     required: true
+
+- type: textarea
+  attributes:
+    label: Other Software
+    description: If you're reporting a bug about our interaction with other software, what software? What versions?
+    placeholder: |
+      vim 8.2 (inside WSL)
+      OpenSSH_for_Windows_8.1p1
+      My Cool Application v0.3 (include a code snippet if it would help!)
+  validations:
+    required: false
