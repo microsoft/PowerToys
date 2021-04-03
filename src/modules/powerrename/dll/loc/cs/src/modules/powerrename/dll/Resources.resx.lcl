@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Only show the PowerRename menu item on the extended context menu (Shift + Right-click).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Položka nabídky Hromadné přejmenování se zobrazí jenom v rozšířené místní nabídce (Shift+kliknutí pravým tlačítkem).]]></Val>
+            <Val><![CDATA[Položka nabídky PowerRename se zobrazí jenom v rozšířené místní nabídce (Shift+kliknutí pravým tlačítkem).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Hromadné přejmenování]]></Val>
+            <Val><![CDATA[PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

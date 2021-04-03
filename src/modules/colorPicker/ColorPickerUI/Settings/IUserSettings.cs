@@ -25,5 +25,7 @@ namespace ColorPicker.Settings
         ObservableCollection<string> VisibleColorFormats { get; }
 
         SettingItem<bool> ShowColorName { get; }
+
+        void SendSettingsTelemetry();
     }
 }

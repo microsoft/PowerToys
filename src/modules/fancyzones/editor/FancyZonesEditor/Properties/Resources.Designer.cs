@@ -376,11 +376,11 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;zones-settings.json&apos; contains malformed data..
+        ///   Looks up a localized string similar to A layout that contained invalid data has been removed..
         /// </summary>
-        public static string Error_Parsing_Zones_Settings_Malformed_Data {
+        public static string Error_Parsing_Zones_Settings_Message {
             get {
-                return ResourceManager.GetString("Error_Parsing_Zones_Settings_Malformed_Data", resourceCulture);
+                return ResourceManager.GetString("Error_Parsing_Zones_Settings_Message", resourceCulture);
             }
         }
         
@@ -390,15 +390,6 @@ namespace FancyZonesEditor.Properties {
         public static string Error_Parsing_Zones_Settings_Title {
             get {
                 return ResourceManager.GetString("Error_Parsing_Zones_Settings_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Would you like to continue? Malformed data will be lost..
-        /// </summary>
-        public static string Error_Parsing_Zones_Settings_User_Choice {
-            get {
-                return ResourceManager.GetString("Error_Parsing_Zones_Settings_User_Choice", resourceCulture);
             }
         }
         
@@ -565,11 +556,13 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+
         ///   Looks up a localized string similar to px.
         /// </summary>
         public static string Pixels {
             get {
                 return ResourceManager.GetString("Pixels", resourceCulture);
+
             }
         }
         
@@ -579,6 +572,7 @@ namespace FancyZonesEditor.Properties {
         public static string Quick_Key_None {
             get {
                 return ResourceManager.GetString("Quick_Key_None", resourceCulture);
+
             }
         }
         

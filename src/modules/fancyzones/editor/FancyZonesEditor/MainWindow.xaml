@@ -542,6 +542,8 @@
                     </StackPanel>
 
 
+
+
                     <StackPanel Margin="0, 12, 0, 0">
                         <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
                                    x:Name="distanceTitle"

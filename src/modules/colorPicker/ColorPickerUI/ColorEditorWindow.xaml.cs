@@ -2,19 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using ColorPicker.Helpers;
 
 namespace ColorPicker
 {
@@ -23,16 +12,19 @@ namespace ColorPicker
     /// </summary>
     public partial class ColorEditorWindow : Window
     {
-        public ColorEditorWindow()
+        private readonly AppStateHandler _appStateHandler;
+
+        public ColorEditorWindow(AppStateHandler appStateHandler)
         {
             InitializeComponent();
+            _appStateHandler = appStateHandler;
             Closing += ColorEditorWindow_Closing;
         }
 
         private void ColorEditorWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;
-            this.Hide();
+            _appStateHandler.EndUserSession();
         }
     }
 }

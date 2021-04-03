@@ -6,6 +6,8 @@
 
 namespace PTSettingsHelper
 {
+    constexpr inline const wchar_t* log_settings_filename = L"log_settings.json";
+
     std::wstring get_module_save_folder_location(std::wstring_view powertoy_name);
     std::wstring get_root_save_folder_location();
 

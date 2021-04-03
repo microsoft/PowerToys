@@ -4,14 +4,18 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Timers;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
+using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
+using PowerLauncher.Plugin;
+using PowerLauncher.Telemetry.Events;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
@@ -40,6 +44,21 @@ namespace PowerLauncher
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
+            NativeEventWaiter.WaitForEventLoop(Constants.RunSendSettingsTelemetryEvent(), SendSettingsTelemetry);
+        }
+
+        private void SendSettingsTelemetry()
+        {
+            Log.Info("Send Run settings telemetry", this.GetType());
+            var plugins = PluginManager.AllPlugins.ToDictionary(x => x.Metadata.Name, x => new PluginModel()
+            {
+                Disabled = x.Metadata.Disabled,
+                ActionKeyword = x.Metadata.ActionKeyword,
+                IsGlobal = x.Metadata.IsGlobal,
+            });
+
+            var telemetryEvent = new RunPluginsSettingsEvent(plugins);
+            PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
         }
 
         private void CheckForFirstDelete(object sender, ElapsedEventArgs e)
@@ -161,20 +180,12 @@ namespace PowerLauncher
             _settings.WindowLeft = Left;
         }
 
-        private void OnActivated(object sender, EventArgs e)
-        {
-            if (_settings.ClearInputOnLaunch)
-            {
-                _viewModel.ClearQueryCommand.Execute(null);
-            }
-        }
-
         private void OnDeactivated(object sender, EventArgs e)
         {
             if (_settings.HideWhenDeactivated)
             {
                 // (this.FindResource("OutroStoryboard") as Storyboard).Begin();
-                Hide();
+                _viewModel.Hide();
             }
         }
 

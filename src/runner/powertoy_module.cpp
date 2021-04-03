@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "powertoy_module.h"
 #include "centralized_kb_hook.h"
+#include <common/logger/logger.h>
 
 std::map<std::wstring, PowertoyModule>& modules()
 {
@@ -60,6 +61,7 @@ void PowertoyModule::update_hotkeys()
     for (size_t i = 0; i < hotkeyCount; i++)
     {
         CentralizedKeyboardHook::SetHotkeyAction(pt_module->get_key(), hotkeys[i], [modulePtr, i] {
+            Logger::trace(L"{} hotkey is invoked from Centralized keyboard hook", modulePtr->get_key());
             return modulePtr->on_hotkey(i);
         });
     }

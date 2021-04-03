@@ -28,24 +28,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             _ = Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", () =>
             {
-                _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                PowerLauncherSettings powerLauncherSettings = null;
+                try
                 {
-                    PowerLauncherSettings powerLauncherSettings = null;
-                    try
-                    {
-                        powerLauncherSettings = settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
-                    }
-                    catch (IOException ex)
-                    {
-                        Logger.LogInfo(ex.Message);
-                    }
+                    powerLauncherSettings = settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                }
+                catch (IOException ex)
+                {
+                    Logger.LogInfo(ex.Message);
+                }
 
-                    if (powerLauncherSettings != null)
+                if (powerLauncherSettings != null && !ViewModel.IsUpToDate(powerLauncherSettings))
+                {
+                    _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         DataContext = ViewModel = new PowerLauncherViewModel(powerLauncherSettings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
                         this.Bindings.Update();
-                    }
-                });
+                    });
+                }
             });
 
             var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();

@@ -135,8 +135,22 @@ public
     public:
         literal int VK_WIN_BOTH = CommonSharedConstants::VK_WIN_BOTH;
 
+        static String ^ AppDataPath() {
+            auto localPath = Environment::GetFolderPath(Environment::SpecialFolder::LocalApplicationData);
+            auto powerToysPath = gcnew String(CommonSharedConstants::APPDATA_PATH);
+            return System::IO::Path::Combine(localPath, powerToysPath);
+        }
+
         static String ^ PowerLauncherSharedEvent() {
             return gcnew String(CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
+        }
+
+        static String ^ RunSendSettingsTelemetryEvent() {
+            return gcnew String(CommonSharedConstants::RUN_SEND_SETTINGS_TELEMETRY_EVENT);
+        }
+
+        static String ^ ColorPickerSendSettingsTelemetryEvent() {
+            return gcnew String(CommonSharedConstants::COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT);
         }
 
         static String ^ ShowColorPickerSharedEvent() {

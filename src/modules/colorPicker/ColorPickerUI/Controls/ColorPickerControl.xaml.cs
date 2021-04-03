@@ -205,6 +205,7 @@ namespace ColorPicker.Controls
                 detailsStackPanel.BeginAnimation(StackPanel.OpacityProperty, opacityAppear);
                 detailsGrid.BeginAnimation(Grid.HeightProperty, resize);
                 CurrentColorButton.IsEnabled = false;
+                SessionEventHelper.Event.EditorAdjustColorOpened = true;
             }
         }
 
@@ -239,8 +240,8 @@ namespace ColorPicker.Controls
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {
             HideDetails();
-
             SelectedColorChangedCommand.Execute(_currentColor);
+            SessionEventHelper.Event.EditorColorAdjusted = true;
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -258,6 +259,7 @@ namespace ColorPicker.Controls
         {
             var selectedColor = ((SolidColorBrush)((Button)sender).Background).Color;
             SelectedColorChangedCommand.Execute(selectedColor);
+            SessionEventHelper.Event.EditorSimilarColorPicked = true;
         }
 
         private void ValueGradientGrid_MouseMove(object sender, MouseEventArgs e)

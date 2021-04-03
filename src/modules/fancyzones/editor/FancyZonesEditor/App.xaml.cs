@@ -135,15 +135,7 @@ namespace FancyZonesEditor
                 sb.AppendLine(ParsingErrorDataTag);
                 sb.AppendLine(parseResult.MalformedData);
 
-                string message = parseResult.Message + Environment.NewLine + Environment.NewLine + FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_User_Choice;
-                if (MessageBox.Show(message, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Title, MessageBoxButton.YesNo) == MessageBoxResult.No)
-                {
-                    // TODO: log error
-                    ShowExceptionReportMessageBox(sb.ToString());
-                    Environment.Exit(0);
-                }
-
-                ShowExceptionReportMessageBox(sb.ToString());
+                MessageBox.Show(parseResult.Message, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Title, MessageBoxButton.OK);
             }
 
             MainWindowSettingsModel settings = ((App)Current).MainWindowSettings;

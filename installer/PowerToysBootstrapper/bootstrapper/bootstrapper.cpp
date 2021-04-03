@@ -12,6 +12,7 @@
 #include <common/utils/resources.h>
 #include <common/utils/window.h>
 #include <common/utils/winapi_error.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
 #include <runner/action_runner_utils.h>
 
@@ -76,6 +77,27 @@ void SetupLogger(fs::path directory, const spdlog::level::level_enum severity)
     catch (...)
     {
         spdlog::set_default_logger(nullLogger);
+    }
+}
+
+void CleanupSettingsFromOlderVersions()
+{
+    try
+    {
+        const auto logSettingsFile = fs::path{ PTSettingsHelper::get_root_save_folder_location() } / PTSettingsHelper::log_settings_filename;
+        if (fs::is_regular_file(logSettingsFile))
+        {
+            fs::remove(logSettingsFile);
+            spdlog::info("Removed old log settings file");
+        }
+        else
+        {
+            spdlog::info("Old log settings file wasn't found");
+        }
+    }
+    catch(...)
+    {
+        spdlog::error("Failed to cleanup old log settings");
     }
 }
 
@@ -379,6 +401,8 @@ int Bootstrapper(HINSTANCE hInstance)
         spdlog::error("Unknown exception during dotnet installation");
         ShowMessageBoxError(IDS_DOTNET_INSTALL_ERROR);
     }
+    
+    CleanupSettingsFromOlderVersions();
 
     // At this point, there's no reason to show progress bar window, since MSI installers have their own
     CloseProgressBarDialog();

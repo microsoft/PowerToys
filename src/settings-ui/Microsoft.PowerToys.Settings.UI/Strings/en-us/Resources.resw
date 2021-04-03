@@ -491,6 +491,16 @@
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
   </data>
+  <data name="ShortcutGuide_DisabledApps.Text" xml:space="preserve">
+    <value>Disable for apps</value>
+  </data>
+  <data name="ShortcutGuide_DisabledApps_TextBoxControl.Header" xml:space="preserve">
+    <value>Turn off Shortcut Guide when these applications have focus. Add one application name per line.</value>
+  </data>
+  <data name="ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+    <comment>Don't translate outlook.exe</comment>
+  </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image sizes</value>
   </data>
@@ -793,6 +803,7 @@
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
+    <comment>Don't translate outlook.exe</comment>
   </data>
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
@@ -868,7 +879,7 @@
     <value>Open directly into the editor mode</value>
   </data>
   <data name="ColorPicker_ColorFormatsDescription.Text" xml:space="preserve">
-    <value>Editor color formats (Change the order by dragging)</value>
+    <value>Editor color formats</value>
   </data>
   <data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
     <value>Show color name</value>
@@ -1170,6 +1181,14 @@ Win + Shift + O to toggle your video</value>
   <data name="Run_PluginsLoading.Text" xml:space="preserve">
     <value>Plugins are loading...</value>
   </data>
+
+  <data name="ColorPicker_ButtonDown.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color down</value>
+  </data>
+  <data name="ColorPicker_ButtonUp.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color up</value>
+  </data>
+
   <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
     <value>Flash zones when switching layout</value>
   </data>

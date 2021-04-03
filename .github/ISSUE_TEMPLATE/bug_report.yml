@@ -1,0 +1,90 @@
+name: "Bug report 🐛"
+description: Report errors or unexpected behavior
+title: ''
+labels: 
+- Issue-Bug
+- Triage-Needed
+assignees: ''
+issue_body: true
+body:
+- type: markdown
+  attributes:
+    value: |
+      Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
+      
+      We highly suggest including a screenshots and a bug report log (System tray->Report bug). To include, paste them into the markdown editor below the form or follow up with a separate comment.
+- type: input
+  attributes:
+    label: Microsoft PowerToys version
+    placeholder: |
+      "0.33.1"
+    description: |
+      Hover over system tray icon or look at Settings
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: Running as admin
+    description: Are you running PowerToys as Admin?
+    options:
+      - 'No'
+      - 'Yes'
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: Area(s) with issue?
+    description: What things had an issue?  Check all that apply.
+    multiple: true
+    options:
+      - General
+      - ColorPicker
+      - FancyZones
+      - FancyZones Editor 
+      - Image Resizer
+      - Keyboard Manager
+      - MD Preview
+      - PowerRename
+      - PowerToys Run
+      - Shortcut Guide
+      - SVG Preview
+      - SVG Thumbnail
+      - Installer
+      - System tray interaction
+      - Settings window
+  validations:
+    required: true
+    
+- type: textarea
+  attributes:
+    label: Other Software
+    description: If you're reporting a bug about our interaction with other software, what software? What versions?
+    placeholder: |
+      vim 8.2 (inside WSL)
+      OpenSSH_for_Windows_8.1p1
+      My Cool Application v0.3 (include a code snippet if it would help!)
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    placeholder: Tell us the steps required to trigger your bug.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: ✔️ Expected Behavior
+    placeholder: What were you expecting?
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: ❌ Actual Behavior
+    placeholder: What happened instead?
+  validations:
+    required: true

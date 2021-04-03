@@ -549,7 +549,7 @@ namespace FancyZonesEditor.Utils
 
                     if (!devicesParsingResult || !customZonesParsingResult)
                     {
-                        return new ParsingResult(false, Properties.Resources.Error_Parsing_Zones_Settings_Malformed_Data, settingsString);
+                        return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Message, settingsString);
                     }
                 }
                 catch (Exception ex)
@@ -810,15 +810,12 @@ namespace FancyZonesEditor.Utils
                     continue;
                 }
 
-                LayoutModel layout;
-                if (zoneSet.Type == CanvasLayoutModel.ModelTypeID)
+                LayoutModel layout = null;
+                try
                 {
-                    var info = JsonSerializer.Deserialize<CanvasInfoWrapper>(zoneSet.Info.GetRawText(), _options);
-
-                    var zones = new List<Int32Rect>();
-                    foreach (var zone in info.Zones)
+                    if (zoneSet.Type == CanvasLayoutModel.ModelTypeID)
                     {
-                        zones.Add(new Int32Rect { X = (int)zone.X, Y = (int)zone.Y, Width = (int)zone.Width, Height = (int)zone.Height });
+                        layout = ParseCanvasInfo(zoneSet);
                     }
 
                     try
@@ -838,12 +835,13 @@ namespace FancyZonesEditor.Utils
 
                     var cells = new int[info.Rows, info.Columns];
                     for (int row = 0; row < info.Rows; row++)
+
+                    else if (zoneSet.Type == GridLayoutModel.ModelTypeID)
+
                     {
-                        for (int column = 0; column < info.Columns; column++)
-                        {
-                            cells[row, column] = info.CellChildMap[row][column];
-                        }
+                        layout = ParseGridInfo(zoneSet);
                     }
+
 
                     try
                     {
@@ -857,8 +855,15 @@ namespace FancyZonesEditor.Utils
                     layout.SensitivityRadius = info.SensitivityRadius;
                     (layout as GridLayoutModel).ShowSpacing = info.ShowSpacing;
                     (layout as GridLayoutModel).Spacing = info.Spacing;
+
                 }
-                else
+                catch (Exception)
+                {
+                    result = false;
+                    continue;
+                }
+
+                if (layout == null)
                 {
                     result = false;
                     continue;
@@ -911,6 +916,71 @@ namespace FancyZonesEditor.Utils
             }
 
             return true;
+        }
+
+        private CanvasLayoutModel ParseCanvasInfo(CustomLayoutWrapper wrapper)
+        {
+            var info = JsonSerializer.Deserialize<CanvasInfoWrapper>(wrapper.Info.GetRawText(), _options);
+
+            var zones = new List<Int32Rect>();
+            foreach (var zone in info.Zones)
+            {
+                if (zone.Width < 0 || zone.Height < 0)
+                {
+                    // Malformed data
+                    return null;
+                }
+
+                zones.Add(new Int32Rect { X = zone.X, Y = zone.Y, Width = zone.Width, Height = zone.Height });
+            }
+
+            var layout = new CanvasLayoutModel(wrapper.Uuid, wrapper.Name, LayoutType.Custom, zones, Math.Max(info.RefWidth, 0), Math.Max(info.RefHeight, 0));
+            layout.SensitivityRadius = info.SensitivityRadius;
+
+            return layout;
+        }
+
+        private GridLayoutModel ParseGridInfo(CustomLayoutWrapper wrapper)
+        {
+            var info = JsonSerializer.Deserialize<GridInfoWrapper>(wrapper.Info.GetRawText(), _options);
+
+            // Check if rows and columns are valid
+            if (info.Rows <= 0 || info.Columns <= 0)
+            {
+                return null;
+            }
+
+            // Check if percentage is valid. Otherwise, Editor could crash on layout rendering.
+            foreach (int percent in info.RowsPercentage)
+            {
+                if (percent < 0)
+                {
+                    return null;
+                }
+            }
+
+            foreach (int percent in info.ColumnsPercentage)
+            {
+                if (percent < 0)
+                {
+                    return null;
+                }
+            }
+
+            var cells = new int[info.Rows, info.Columns];
+            for (int row = 0; row < info.Rows; row++)
+            {
+                for (int column = 0; column < info.Columns; column++)
+                {
+                    cells[row, column] = info.CellChildMap[row][column];
+                }
+            }
+
+            var layout = new GridLayoutModel(wrapper.Uuid, wrapper.Name, LayoutType.Custom, info.Rows, info.Columns, info.RowsPercentage, info.ColumnsPercentage, cells);
+            layout.SensitivityRadius = info.SensitivityRadius;
+            layout.ShowSpacing = info.ShowSpacing;
+            layout.Spacing = info.Spacing;
+            return layout;
         }
 
         private LayoutType JsonTagToLayoutType(string tag)
