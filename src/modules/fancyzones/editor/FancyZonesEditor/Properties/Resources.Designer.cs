@@ -250,7 +250,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Distance to highlight adjacent zones.
+        ///   Looks up a localized string similar to Highlight distance.
         /// </summary>
         public static string Distance_adjacent_zones {
             get {
@@ -565,7 +565,16 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to px.
+        /// </summary>
+        public static string Pixels {
+            get {
+                return ResourceManager.GetString("Pixels", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
         /// </summary>
         public static string Quick_Key_None {
             get {
@@ -574,7 +583,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Press Win + Alt + key to apply this layout.
+        ///   Looks up a localized string similar to Press Win + Ctrl + Alt + selected key to apply this layout.
         /// </summary>
         public static string QuickKey_Description {
             get {
@@ -585,18 +594,9 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Layout shortcut.
         /// </summary>
-        public static string QuickKey_Tooltip {
+        public static string QuickKey_Title {
             get {
-                return ResourceManager.GetString("QuickKey_Tooltip", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Reset layout.
-        /// </summary>
-        public static string Reset_Layout {
-            get {
-                return ResourceManager.GetString("Reset_Layout", resourceCulture);
+                return ResourceManager.GetString("QuickKey_Title", resourceCulture);
             }
         }
         
@@ -637,7 +637,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Space around zones.
+        ///   Looks up a localized string similar to Zone spacing.
         /// </summary>
         public static string Space_Around_Zones {
             get {
