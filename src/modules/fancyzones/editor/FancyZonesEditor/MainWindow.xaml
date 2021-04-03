@@ -84,6 +84,9 @@
                         </StackPanel>
                     </ToolTip>
                 </Border.ToolTip>
+                <StackPanel Orientation="Vertical">
+                    
+              
                 <TextBlock Name="IndexText"
                            TextTrimming="CharacterEllipsis"
                            Text="{Binding Index}"
@@ -93,6 +96,15 @@
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                    <TextBlock Name="ResolutionText"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Index}"
+                               Grid.Row="0"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                </StackPanel>
             </Border>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding Selected}"
@@ -100,6 +112,10 @@
                     <Setter TargetName="IndexText"
                             Property="Foreground"
                             Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                    <Setter TargetName="ResolutionText"
+                            Property="Foreground"
+                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                    
                     <Setter TargetName="MonitorItem"
                             Property="BorderBrush"
                             Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
@@ -329,7 +345,6 @@
                     <local1:MonitorViewModel x:Name="monitorViewModel" />
                 </ScrollViewer.DataContext>
                 <Grid>
-
                     <ItemsControl x:Name="MainWindowItemControl"
                                   TabIndex="0"
                                   ItemTemplate="{StaticResource MonitorItemTemplate}"
@@ -342,7 +357,6 @@
                                             Margin="8, 0, 8, 16" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
-
                     </ItemsControl>
                 </Grid>
             </ScrollViewer>
