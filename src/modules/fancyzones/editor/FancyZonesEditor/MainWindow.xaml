@@ -98,8 +98,10 @@
                            Foreground="{DynamicResource PrimaryForegroundBrush}" />
                     <TextBlock Name="ResolutionText"
                                TextTrimming="CharacterEllipsis"
-                               Text="{Binding Index}"
+                               Text="{Binding Dimensions}"
                                Grid.Row="0"
+                               Margin="0,2,0,0"
+                               FontSize="12"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
