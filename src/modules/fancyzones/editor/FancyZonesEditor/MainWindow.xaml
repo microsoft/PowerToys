@@ -420,7 +420,7 @@
                     <!-- Shortcut panel -->
                     <StackPanel Orientation="Vertical"
                                 Visibility="{Binding IsCustom, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                Margin="0,12,0,48">
+                                Margin="0,12,0,36">
 
                         <StackPanel Margin="28,0,0,4" Orientation="Horizontal">
                             <TextBlock x:Name="QuickKeyTitle" Text="{x:Static props:Resources.QuickKey_Title}" />
@@ -455,7 +455,7 @@
                     <Grid  Width="218"
                            Height="124"
                            HorizontalAlignment="Left"
-                           Margin="24,0,0,0">
+                           Margin="24,12,0,24">
                         <local:LayoutPreview />
 
                         <Button Content="&#xE104;"
@@ -469,7 +469,7 @@
                                 Padding="0"
                                 BorderBrush="Transparent"
                                 Click="EditZones_Click"
-                                Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}"
+                                Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"
                                 ToolTip="{x:Static props:Resources.Edit_zones}"
                                 AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
                                 Style="{StaticResource AccentButtonStyle}"
@@ -493,14 +493,14 @@
 
                         <ui:NumberBox Minimum="1"
                                       Maximum="40"
-                                      Width="212"
+                                      Width="216"
                                       Margin="12,0,0,0"
                                       Header="{x:Static props:Resources.Number_of_zones}"
                                       SpinButtonPlacementMode="Compact"
                                       Text="{Binding TemplateZoneCount}" />
                     </StackPanel>
 
-                    <StackPanel Margin="0, 24, 0, 0">
+                    <StackPanel Margin="0, 12, 0, 0">
                         <TextBlock Text="{x:Static props:Resources.Space_Around_Zones}"
                                    x:Name="spacingTitle"
                                    Margin="28,0,0,4"
