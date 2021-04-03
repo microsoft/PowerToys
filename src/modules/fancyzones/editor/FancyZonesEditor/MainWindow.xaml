@@ -84,7 +84,7 @@
                         </StackPanel>
                     </ToolTip>
                 </Border.ToolTip>
-                <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
                     
               
                 <TextBlock Name="IndexText"
@@ -100,8 +100,8 @@
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding Dimensions}"
                                Grid.Row="0"
-                               Margin="0,2,0,0"
-                               FontSize="12"
+                               Margin="0,0,0,0"
+                               FontSize="11"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
