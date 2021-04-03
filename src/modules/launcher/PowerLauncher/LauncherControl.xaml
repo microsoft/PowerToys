@@ -55,9 +55,7 @@
                                     <ScrollViewer.ContentTemplate>
                                         <DataTemplate>
                                             <Grid
-                                                Background="{Binding Background, ElementName=PART_ContentHost}"
-                                                RenderOptions.ClearTypeHint="Enabled"
-                                                TextOptions.TextFormattingMode="Display">
+                                                Background="{Binding Background, ElementName=PART_ContentHost}">
                                                 <ContentPresenter Content="{Binding Path=Content, ElementName=PART_ContentHost}"/>
                                             </Grid>
                                         </DataTemplate>
@@ -113,7 +111,6 @@
             FontSize="24"
             Style="{StaticResource QueryTextBoxStyle}"
             Tag="{x:Static p:Resources.startTyping}"
-            RenderOptions.ClearTypeHint="Enabled"
             />
         <TextBlock
             x:Name="AutoCompleteTextBlock"
@@ -125,7 +122,6 @@
             FontSize="24"
             Foreground="{DynamicResource TextControlPlaceholderForeground}"
             Background="{DynamicResource SystemChromeLow}"
-            RenderOptions.ClearTypeHint="Enabled"
          />
         <TextBlock
             AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
@@ -136,8 +132,6 @@
             HorizontalAlignment="Center" 
             VerticalAlignment="Center"
             Foreground="{DynamicResource TextControlPlaceholderForeground}" 
-            RenderOptions.ClearTypeHint="Enabled"
-            TextOptions.TextRenderingMode="Auto"
             SnapsToDevicePixels="True"/>
     </Grid>
 </UserControl>
