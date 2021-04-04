@@ -41,18 +41,12 @@
                 <TextBlock x:Uid="Oobe_HowToUse"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                    <controls:KeyVisual Content="Win" />
-                    <controls:KeyVisual Content="Shift" />
-                    <controls:KeyVisual Content="C" />
-                    <TextBlock Text="Super long string that is super long and long and long and long and long. ANd even longer, it;s so long you wont even believe it it's, so long oh yeah it's awesome." TextWrapping="Wrap" Margin="12,0,0,0" />
-                </StackPanel>
-
+                <controls:ShortcutTextControl x:Uid="Oobe_ColorPicker_HowToUse" />
+              
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                        Style="{StaticResource OobeSubtitleStyle}"/>
-                
-            <TextBlock x:Uid="Oobe_ColorPicker_TipsAndTricks"
-                       TextWrapping="Wrap" />
+
+                <controls:ShortcutTextControl x:Uid="Oobe_ColorPicker_TipsAndTricks" />
             
             <StackPanel Orientation="Horizontal"
                         Spacing="4"

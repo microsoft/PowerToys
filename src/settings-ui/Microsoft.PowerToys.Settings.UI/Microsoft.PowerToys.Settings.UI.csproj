@@ -99,6 +99,9 @@
       <DependentUpon>HotkeySettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\KeyVisual\KeyVisual.cs" />
+    <Compile Include="Controls\ShortcutTextControl.xaml.cs">
+      <DependentUpon>ShortcutTextControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
       <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
     </Compile>
@@ -280,6 +283,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\KeyVisual\KeyVisual.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ShortcutTextControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

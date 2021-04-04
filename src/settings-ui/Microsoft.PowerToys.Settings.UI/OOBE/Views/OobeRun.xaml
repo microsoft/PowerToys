@@ -43,13 +43,12 @@
                 <TextBlock x:Uid="Oobe_HowToLaunch"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
-                <controls:ShortcutVisualControl x:Uid="Oobe_Run_HowToLaunch" />
+                <controls:ShortcutTextControl x:Uid="Oobe_Run_HowToLaunch" />
                 
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
-                <TextBlock x:Uid="Oobe_Run_TipsAndTricks"
-                           TextWrapping="Wrap" />
+                <controls:ShortcutTextControl x:Uid="Oobe_Run_TipsAndTricks" />
 
                 <StackPanel Orientation="Horizontal"
                             Margin="0,32,0,0"

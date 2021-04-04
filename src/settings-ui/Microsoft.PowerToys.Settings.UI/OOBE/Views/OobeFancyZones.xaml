@@ -40,13 +40,14 @@
                 <TextBlock x:Uid="Oobe_HowToUse"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
-                <controls:ShortcutVisualControl x:Uid="Oobe_FancyZones_HowToUse" />
-                
+
+                <controls:ShortcutTextControl x:Uid="Oobe_FancyZones_HowToUse" />
+
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
-                <controls:ShortcutVisualControl x:Uid="Oobe_FancyZones_TipsAndTricks" />
-                
+                <controls:ShortcutTextControl x:Uid="Oobe_FancyZones_TipsAndTricks" />
+
                 <StackPanel Orientation="Horizontal"
                             Spacing="4"
                             Margin="0,32,0,0">
