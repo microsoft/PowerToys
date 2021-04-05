@@ -424,7 +424,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Example: outlook.exe]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -436,6 +436,9 @@
       <Item ItemId=";FancyZones_FlashZonesOnQuickSwitch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Flash zones when switching layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zónák villogtatása az elrendezés váltásakor]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -607,12 +610,18 @@
       <Item ItemId=";FancyZones_QuickLayoutSwitch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gyors elrendezésváltás engedélyezése]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";FancyZones_QuickLayoutSwitch_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gyors elrendezésváltás]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2871,6 +2880,27 @@
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[A Windows-billentyűparancsokra vonatkozó súgó átfedésének megjelenítése a Windows-billentyű megnyomásakor.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Disable for apps]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Turn off Shortcut Guide when these applications have focus. Add one application name per line.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Example: outlook.exe]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Példa: outlook.exe]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

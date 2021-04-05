@@ -211,12 +211,18 @@
       <Item ItemId=";ColorPicker_ButtonDown.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Move the color down]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Rengi aşağı taşı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPicker_ButtonUp.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Move the color up]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Rengi yukarı taşı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -232,8 +238,8 @@
       <Item ItemId=";ColorPicker_ColorFormatsDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Editor color formats]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Düzenleyici renk biçimleri (Sürükleyerek sıralamayı değiştirin)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Düzenleyici rengi biçimleri]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Editor color formats (Change the order by dragging)]]></Val>
@@ -418,7 +424,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Example: outlook.exe]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -430,6 +436,9 @@
       <Item ItemId=";FancyZones_FlashZonesOnQuickSwitch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Flash zones when switching layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Düzen değiştirilirken bölgeleri parlamayla göster]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -601,12 +610,18 @@
       <Item ItemId=";FancyZones_QuickLayoutSwitch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Hızlı düzen anahtarını etkinleştir]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";FancyZones_QuickLayoutSwitch_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Hızlı düzen anahtarı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2865,6 +2880,27 @@
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Windows tuşuna basıldığında Windows kısayollarının bulunduğu bir yardım katmanını gösterir.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Disable for apps]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Turn off Shortcut Guide when these applications have focus. Add one application name per line.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Example: outlook.exe]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Örnek: outlook.exe]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -424,7 +424,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Example: outlook.exe]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -2880,6 +2880,27 @@
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Hiermee wordt een help-overlay met Windows-snelkoppelingen weergegeven wanneer de Windows-toets wordt ingedrukt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Disable for apps]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Turn off Shortcut Guide when these applications have focus. Add one application name per line.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Example: outlook.exe]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Voorbeeld: outlook.exe]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

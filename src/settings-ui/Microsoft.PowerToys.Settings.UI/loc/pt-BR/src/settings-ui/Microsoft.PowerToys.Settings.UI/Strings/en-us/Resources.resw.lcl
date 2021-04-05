@@ -424,11 +424,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Example: outlook.exe]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Exemplo: outlook.exe]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_FlashZonesOnQuickSwitch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Flash zones when switching layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Piscar as zonas ao mudar de layout]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -594,6 +603,24 @@
           <Val><![CDATA[Override Windows Snap shortcut (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Substituir o atalho de Ajuste do Windows (Win + Seta) para mover as janelas entre as zonas]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_QuickLayoutSwitch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Habilitar opção de mudança rápida de layout]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_QuickLayoutSwitch_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mudança rápida de layout]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2853,6 +2880,27 @@
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Mostra uma sobreposição de ajuda com os atalhos do Windows quando a tecla Windows é pressionada.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Disable for apps]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Turn off Shortcut Guide when these applications have focus. Add one application name per line.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Example: outlook.exe]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Exemplo: outlook.exe]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
