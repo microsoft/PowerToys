@@ -517,6 +517,9 @@
       <Item ItemId=";QuickKey_Select" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select a key to quickly apply the layout (Win + Ctrl + Alt + key)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionner une touche pour appliquer rapidement la disposition (Win + Ctrl + Alt + touche)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
