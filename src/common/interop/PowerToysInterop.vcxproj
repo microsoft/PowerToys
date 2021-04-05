@@ -47,6 +47,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <PreprocessorDefinitions>PowerToysInterop;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SolutionDir)src\common\interop;../../;../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitDefaultLibName>false</OmitDefaultLibName>
