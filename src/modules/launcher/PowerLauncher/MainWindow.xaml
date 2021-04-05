@@ -10,8 +10,6 @@
         Topmost="True"
         SizeToContent="Height"
         ResizeMode="NoResize"
-        TextOptions.TextRenderingMode="ClearType"
-        RenderOptions.ClearTypeHint="Enabled"
         WindowStyle="None"
         WindowStartupLocation="Manual"
         AllowDrop="True"
