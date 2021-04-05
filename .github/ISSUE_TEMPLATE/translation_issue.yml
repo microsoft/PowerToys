@@ -39,9 +39,10 @@ body:
       - Shortcut Guide
       - SVG Preview
       - SVG Thumbnail
-      - Installer
+      - Settings
+      - Welcome / PowerToys Tour window
       - System tray interaction
-      - Settings window
+      - Installer
   validations:
     required: true
 - type: input
