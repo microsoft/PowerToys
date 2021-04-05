@@ -24,6 +24,8 @@ body:
 - type: dropdown
   attributes:
     label: Utility with issue?
+    description: |
+      Please include a screenshot as that is extremely helpful. To include, paste them into the markdown editor below the form or follow up with a separate comment.
     multiple: true
     options:
       - General
@@ -45,37 +47,25 @@ body:
     required: true
 - type: input
   attributes:
-    label: Language
+    label: 🌐 Language affected
     placeholder: "German"
-    description: |
-      The language which is affected
-  validations:
-    required: true
-- type: textarea
-  attributes:
-    label: 📝 Provide where the issue is / 📷 Screenshots
-    description: Where did you found the affected phrase(s)?
-    placeholder: Provide some screenshots or describe where you found the phrase(s).
   validations:
     required: true
 - type: textarea
   attributes: 
     label: ❌ Actual phrase(s)
-    description: What is there?
-    placeholder: Example phrase
+    placeholder: What is there?
   validations:
     required: true
 - type: textarea
   attributes: 
     label: ✔️ Expected phrase(s)
-    description: Where did you found the affected phrase(s)?
     placeholder: What do you expect?
   validations:
     required: true
 - type: textarea
   attributes:
     label: ℹ Why is the current translation wrong
-    description: If it is opinion based issue, why do you feel this is incorrect?
-    placeholder: term is outdated
+    placeholder: Why do you feel this is incorrect?
   validations:
     required: true
