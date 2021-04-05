@@ -293,8 +293,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\window.h = src\common\utils\window.h
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "old-settings-ui", "src\settings\old-settings-ui.vcxproj", "{07C389E3-6BC8-41CF-923E-307B1265FA2D}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{8F62026A-294B-41C6-8839-87463613F216}"
 	ProjectSection(SolutionItems) = preProject
 		src\common\Telemetry\ProjectTelemetry.h = src\common\Telemetry\ProjectTelemetry.h
@@ -616,10 +614,6 @@ Global
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}.Debug|x64.Build.0 = Debug|x64
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}.Release|x64.ActiveCfg = Release|x64
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}.Release|x64.Build.0 = Release|x64
-		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Debug|x64.ActiveCfg = Debug|x64
-		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Debug|x64.Build.0 = Debug|x64
-		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Release|x64.ActiveCfg = Release|x64
-		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Release|x64.Build.0 = Release|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|x64.ActiveCfg = Debug|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|x64.Build.0 = Debug|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Release|x64.ActiveCfg = Release|x64
