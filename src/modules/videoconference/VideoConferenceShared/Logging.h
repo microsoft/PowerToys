@@ -31,4 +31,9 @@ std::string toMediaTypeString(GUID subtype);
         LogToFile(std::string(functionNameTMPVAR + " exit"), true); \
     });
 
+#if defined(PowerToysInterop)
+#undef LOG
+#define LOG(...)
+#else
 #define LOG(str) LogToFile(str, false);
+#endif
