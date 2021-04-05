@@ -65,7 +65,6 @@ build:
           to: 'Build_Output'
           include:
             - 'action_runner.exe'
-            - 'BugReportTool\BugReportTool.exe'
             - 'modules\ColorPicker\ColorPicker.dll'
             - 'modules\ColorPicker\ColorPickerUI.dll'
             - 'modules\ColorPicker\ColorPickerUI.exe'
@@ -146,6 +145,8 @@ build:
             - 'modules\Microsoft.Launcher.dll'
             - 'modules\PowerRename\PowerRenameExt.dll'
             - 'modules\ShortcutGuide\ShortcutGuide.dll'
+            - 'modules\VideoConference\VideoConferenceModule.dll'
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
             - 'Notifications.dll'
             - 'os-detection.dll'
             - 'PowerToys.exe'
@@ -168,6 +169,7 @@ build:
           to: 'Build_Output'
           include:
             - 'BugReportTool\BugReportTool.exe'
+            - 'WebcamReportTool\WebcamReportTool.exe'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand
