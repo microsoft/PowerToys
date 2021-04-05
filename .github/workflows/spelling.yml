@@ -1,12 +1,15 @@
 name: Spell checking
 on:
   pull_request_target:
-  push:
+    branches:
+      - "**"
+    types: ['opened', 'reopened', 'synchronize', 'ready_for_review']
 
 jobs:
   build:
     name: Spell checking
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
     steps:
     - name: checkout-merge
       if: "contains(github.event_name, 'pull_request')"
