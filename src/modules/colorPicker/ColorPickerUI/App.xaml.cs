@@ -38,12 +38,16 @@ namespace ColorPickerUI
             if (_args?.Length > 0)
             {
                 _ = int.TryParse(_args[0], out _powerToysPid);
-            }
 
-            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () =>
+                RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () =>
+                {
+                    Environment.Exit(0);
+                });
+            }
+            else
             {
-                Environment.Exit(0);
-            });
+                _powerToysPid = -1;
+            }
 
             _themeManager = new ThemeManager(this);
             base.OnStartup(e);
@@ -82,6 +86,11 @@ namespace ColorPickerUI
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public bool IsRunningAsPowerToy()
+        {
+            return _powerToysPid != -1;
         }
     }
 }
