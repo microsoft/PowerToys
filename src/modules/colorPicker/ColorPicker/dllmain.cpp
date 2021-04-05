@@ -4,8 +4,7 @@
 #include <interface/powertoy_module_interface.h>
 #include "trace.h"
 #include "Generated Files/resource.h"
-// TODO
-// #include <common/logger/logger.h>
+#include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/os-detect.h>
 #include <common/utils/resources.h>
@@ -84,19 +83,17 @@ private:
             }
             catch (...)
             {
-                // ????
-                // Error C1083 Cannot open include file : 'spdlog/spdlog.h' : No such file or directory
-                // Logger::error("Failed to initialize ColorPicker start shortcut");
+                Logger::error("Failed to initialize ColorPicker start shortcut");
             }
         }
         else
         {
-            // Logger::info("ColorPicker settings are empty");
+            Logger::info("ColorPicker settings are empty");
         }
 
         if (!m_hotkey.key)
         {
-            // Logger::info("ColorPicker is going to use default shortcut");
+            Logger::info("ColorPicker is going to use default shortcut");
             m_hotkey.win = true;
             m_hotkey.alt = false;
             m_hotkey.shift = true;
