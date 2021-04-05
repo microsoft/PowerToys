@@ -817,45 +817,10 @@ namespace FancyZonesEditor.Utils
                     {
                         layout = ParseCanvasInfo(zoneSet);
                     }
-
-                    try
-                    {
-                        layout = new CanvasLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, zones, info.RefWidth, info.RefHeight);
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
-
-                    layout.SensitivityRadius = info.SensitivityRadius;
-                }
-                else if (zoneSet.Type == GridLayoutModel.ModelTypeID)
-                {
-                    var info = JsonSerializer.Deserialize<GridInfoWrapper>(zoneSet.Info.GetRawText(), _options);
-
-                    var cells = new int[info.Rows, info.Columns];
-                    for (int row = 0; row < info.Rows; row++)
-
                     else if (zoneSet.Type == GridLayoutModel.ModelTypeID)
-
                     {
                         layout = ParseGridInfo(zoneSet);
                     }
-
-
-                    try
-                    {
-                        layout = new GridLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, info.Rows, info.Columns, info.RowsPercentage, info.ColumnsPercentage, cells);
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
-
-                    layout.SensitivityRadius = info.SensitivityRadius;
-                    (layout as GridLayoutModel).ShowSpacing = info.ShowSpacing;
-                    (layout as GridLayoutModel).Spacing = info.Spacing;
-
                 }
                 catch (Exception)
                 {
