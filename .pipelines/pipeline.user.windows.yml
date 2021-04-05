@@ -61,6 +61,10 @@ build:
             - 'x64/**/*.pdb'
           exclude:
             - 'x64/Release/obj/**/*.pdb'
+        - from: 'x86/Release'
+          to: 'Build_Output'
+          include:
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
