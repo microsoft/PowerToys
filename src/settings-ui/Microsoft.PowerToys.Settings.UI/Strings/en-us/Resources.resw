@@ -1038,10 +1038,10 @@
 Take a moment to preview the various utilities listed or view our comprehensive documentation on</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>Microsoft Docs.</value>
+    <value>Microsoft Docs</value>
   </data>
   <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
-    <value>PowerToys in our release notes.</value>
+    <value>PowerToys in our release notes</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
     <value>Win + Shift + C to open Color Picker.</value>
