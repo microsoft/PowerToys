@@ -1031,17 +1031,17 @@
     <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
   </data>
   <data name="Oobe_Overview_CheckoutLatestVersion.Text" xml:space="preserve">
-    <value>For returning users, check out what is new on this latest version of</value>
+    <value>For returning users, check out what is new in our</value>
   </data>
   <data name="Oobe_Overview_Description.Text" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.
 Take a moment to preview the various utilities listed or view our comprehensive documentation on</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>Microsoft Docs.</value>
+    <value>Microsoft Docs</value>
   </data>
   <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
-    <value>PowerToys in our release notes.</value>
+    <value>release notes</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
     <value>{Win} + {Ctrl} + {C} to open Color Picker.</value>
