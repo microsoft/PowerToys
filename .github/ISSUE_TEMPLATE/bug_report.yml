@@ -11,8 +11,6 @@ body:
   attributes:
     value: |
       Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
-      
-      We highly suggest including a screenshots and a bug report log (System tray->Report bug). To include, paste them into the markdown editor below the form or follow up with a separate comment.
 - type: input
   attributes:
     label: Microsoft PowerToys version
@@ -58,6 +56,7 @@ body:
 - type: textarea
   attributes:
     label: Steps to reproduce
+    description: We highly suggest including a screenshots and a bug report log (System tray->Report bug). To include, paste them into the markdown editor below the form or follow up with a separate comment.
     placeholder: Tell us the steps required to trigger your bug.
   validations:
     required: true
