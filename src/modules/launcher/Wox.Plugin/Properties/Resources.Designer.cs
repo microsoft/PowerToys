@@ -59,5 +59,23 @@ namespace Wox.Plugin.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please contact plugin creator for help.
+        /// </summary>
+        public static string FailedToLoadPluginDescription {
+            get {
+                return ResourceManager.GetString("FailedToLoadPluginDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fail to Load {0} Plugin.
+        /// </summary>
+        public static string FailedToLoadPluginTitle {
+            get {
+                return ResourceManager.GetString("FailedToLoadPluginTitle", resourceCulture);
+            }
+        }
     }
 }

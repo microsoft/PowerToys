@@ -22,28 +22,22 @@ using JsonException = System.Text.Json.JsonException;
 namespace PowerLauncher
 {
     // Watch for /Local/Microsoft/PowerToys/Launcher/Settings.json changes
-    public class SettingsWatcher : BaseModel
+    public class SettingsReader : BaseModel
     {
         private readonly ISettingsUtils _settingsUtils;
 
         private const int MaxRetries = 10;
-        private static readonly object _watcherSyncObject = new object();
-        private readonly IFileSystemWatcher _watcher;
+        private static readonly object _readSyncObject = new object();
         private readonly PowerToysRunSettings _settings;
-
         private readonly ThemeManager _themeManager;
 
-        public SettingsWatcher(PowerToysRunSettings settings, ThemeManager themeManager)
+        private IFileSystemWatcher _watcher;
+
+        public SettingsReader(PowerToysRunSettings settings, ThemeManager themeManager)
         {
             _settingsUtils = new SettingsUtils();
             _settings = settings;
             _themeManager = themeManager;
-
-            // Set up watcher
-            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
-
-            // Load initial settings file
-            OverloadSettings();
 
             // Apply theme at startup
             _themeManager.ChangeTheme(_settings.Theme, true);
@@ -61,9 +55,14 @@ namespace PowerLauncher
             }
         }
 
-        public void OverloadSettings()
+        public void ReadSettingsOnChange()
         {
-            Monitor.Enter(_watcherSyncObject);
+            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", ReadSettings);
+        }
+
+        public void ReadSettings()
+        {
+            Monitor.Enter(_readSyncObject);
             var retry = true;
             var retryCount = 0;
             while (retry)
@@ -86,16 +85,7 @@ namespace PowerLauncher
                         foreach (var setting in overloadSettings.Plugins)
                         {
                             var plugin = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.ID == setting.Id);
-                            if (plugin != null)
-                            {
-                                plugin.Metadata.Disabled = setting.Disabled;
-                                plugin.Metadata.ActionKeyword = setting.ActionKeyword;
-                                plugin.Metadata.IsGlobal = setting.IsGlobal;
-                                if (plugin.Plugin is ISettingProvider)
-                                {
-                                    (plugin.Plugin as ISettingProvider).UpdateSettings(setting);
-                                }
-                            }
+                            plugin?.Update(setting, App.API);
                         }
                     }
 
@@ -168,7 +158,7 @@ namespace PowerLauncher
                 }
             }
 
-            Monitor.Exit(_watcherSyncObject);
+            Monitor.Exit(_readSyncObject);
         }
 
         private static string ConvertHotkey(HotkeySettings hotkey)
