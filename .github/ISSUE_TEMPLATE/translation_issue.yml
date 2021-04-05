@@ -23,10 +23,9 @@ body:
     required: true
 - type: dropdown
   attributes:
-    label: Utility with issue?
+    label: Utility with translation issue
     description: |
       Please include a screenshot as that is extremely helpful. To include, paste them into the markdown editor below the form or follow up with a separate comment.
-    multiple: true
     options:
       - General
       - ColorPicker
@@ -60,7 +59,7 @@ body:
 - type: textarea
   attributes: 
     label: ✔️ Expected phrase(s)
-    placeholder: What do you expect?
+    placeholder: What was expected?
   validations:
     required: true
 - type: textarea
