@@ -28,7 +28,7 @@ body:
     label: Running as admin
     description: Are you running PowerToys as Admin?
     options:
-      - label: Yes
+      - label: "Yes"
 
 - type: dropdown
   attributes:
