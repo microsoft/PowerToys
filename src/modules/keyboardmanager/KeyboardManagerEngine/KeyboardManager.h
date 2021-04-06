@@ -16,6 +16,7 @@
 #include <keyboardmanager/common/Helpers.h>
 #include "KeyboardEventHandlers.h"
 #include "Input.h"
+#include <common/utils/file_watcher.h>
 
 class KeyboardManager
 {
@@ -38,6 +39,7 @@ private:
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     Input inputHandler;
 
+    file_watcher watcher;
 public:
     // Constructor
     KeyboardManager()
@@ -51,6 +53,18 @@ public:
 
         // Set the static pointer to the newest object of the class
         keyboardmanager_object_ptr = this;
+
+        std::filesystem::path modulePath(PTSettingsHelper::get_module_save_folder_location(app_key));
+        auto changeConfigCallback = [this](DWORD err) {
+            if (err != ERROR_SUCCESS)
+            {
+                // Logger::error(get_last_error_message(err));
+            }
+
+            load_config();
+        };
+
+        watcher = std::move(file_watcher(changeConfigCallback, modulePath.c_str(), { L"settings.json", L"default.json" }));
     };
 
     // Load config from the saved settings.
