@@ -356,24 +356,26 @@ void OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
         return;
     }
 
-    BYTE* data = nullptr;
-    frame->GetPointer(&data);
-    if (!data)
+    BYTE* frameData = nullptr;
+    frame->GetPointer(&frameData);
+    if (!frameData)
     {
         LOG("Couldn't get sample pointer");
         return;
     }
 
-    wil::com_ptr_nothrow<IMFMediaBuffer> buf;
+    wil::com_ptr_nothrow<IMFMediaBuffer> imageBuf;
     const long nBytes = frame->GetSize();
 
-    image->GetBufferByIndex(0, &buf);
-    BYTE* inputBuf = nullptr;
-    DWORD max_length = 0, current_length = 0;
-    buf->Lock(&inputBuf, &max_length, &current_length);
-    std::copy(inputBuf, inputBuf + current_length, data);
-    buf->Unlock();
+    image->GetBufferByIndex(0, &imageBuf);
+    BYTE* imageData = nullptr;
+    DWORD maxLength = 0, curLength = 0;
+    imageBuf->Lock(&imageData, &maxLength, &curLength);
+    std::copy(imageData, imageData + curLength, frameData);
+    imageBuf->Unlock();
+    frame->SetActualDataLength(curLength);
 }
+
 
 VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
     _worker_thread{ std::thread{ [this]() {
@@ -487,6 +489,27 @@ HRESULT VideoCaptureProxyFilter::GetSyncSource(IReferenceClock** pClock)
     return S_OK;
 }
 
+GUID MapDShowSubtypeToMFT(const GUID& dshowSubtype)
+{
+    if (dshowSubtype == MEDIASUBTYPE_YUY2)
+    {
+        return MFVideoFormat_YUY2;
+    }
+    else if (dshowSubtype == MEDIASUBTYPE_MJPG)
+    {
+        return MFVideoFormat_MJPG;
+    }
+    else if (dshowSubtype == MEDIASUBTYPE_RGB24)
+    {
+        return MFVideoFormat_RGB24;
+    }
+    else
+    {
+        LOG("Unsupported media type format provided!");
+        return MFVideoFormat_MJPG;
+    }
+}
+
 HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
 {
     VERBOSE_LOG;
@@ -499,7 +522,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
     std::unique_lock<std::mutex> lock{ _worker_mutex };
 
     // We cannot initialize capture device and outpin during VideoCaptureProxyFilter ctor
-    // since that results in a deadlock. Do it now.
+    // since that results in a deadlock -> initializing now.
     if (!_outPin)
     {
         LOG("Started pin initialization");
@@ -552,7 +575,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
         wil::com_ptr_nothrow<IMFMediaType> targetMediaType;
         MFCreateMediaType(&targetMediaType);
         targetMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-        targetMediaType->SetGUID(MF_MT_SUBTYPE, webcam.bestFormat.mediaType->subtype);
+        targetMediaType->SetGUID(MF_MT_SUBTYPE, MapDShowSubtypeToMFT(webcam.bestFormat.mediaType->subtype));
         targetMediaType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
         targetMediaType->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE);
         MFSetAttributeSize(
