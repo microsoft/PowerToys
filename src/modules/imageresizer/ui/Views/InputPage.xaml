@@ -69,27 +69,43 @@
             
             <ListBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                        <TextBlock Text="(" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Text="{Binding Fit,Converter={StaticResource EnumValueConverter},ConverterParameter=ThirdPersonSingular}" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                    <Grid Margin="0,0,0,4">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="20" />
+                            <RowDefinition Height="24" />
+
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding Name}"
+                                   FontWeight="SemiBold"
+                                   FontSize="16"
+                                   Margin="0,-2,0,0"
+                                   VerticalAlignment="Top"
+                                   Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                        <StackPanel Orientation="Horizontal"
+                                    Grid.Row="1"
+                                    VerticalAlignment="Top">
+                            <TextBlock Text="{Binding Fit,Converter={StaticResource EnumValueConverter},ConverterParameter=ThirdPersonSingular}" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock Text="{Binding Width,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock Text="&#xE711;" FontSize="11" FontFamily="Segoe MDL2 Assets" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,5,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock Text="{Binding Height,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Text="{Binding Unit,Converter={StaticResource EnumValueConverter},ConverterParameter=ToLower}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Text=")" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                    </StackPanel>
+                            <TextBlock Text="{Binding Unit,Converter={StaticResource EnumValueConverter},ConverterParameter=ToLower}"
+                                       Margin="4,0,0,0"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                        </StackPanel>
+                    </Grid>
                 </DataTemplate>
                 
                 <DataTemplate DataType="{x:Type m:CustomSize}">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="36" />
+                            <RowDefinition Height="32" />
                             <RowDefinition Height="*" />
                             
                         </Grid.RowDefinitions>
                         <TextBlock VerticalAlignment="Top"
                                    Text="{Binding Name}"
+                                   FontSize="16"
+                                   Margin="0,-2,0,0"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
                                    FontWeight="SemiBold" />
                   
