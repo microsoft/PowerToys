@@ -5,7 +5,7 @@
 
 namespace LoggerHelpers
 {
-    std::filesystem::path get_log_folder_path(std::wstring_view appPath)
+    inline std::filesystem::path get_log_folder_path(std::wstring_view appPath)
     {
         std::filesystem::path logFolderPath(appPath);
         logFolderPath.append(LogSettings::logPath);
