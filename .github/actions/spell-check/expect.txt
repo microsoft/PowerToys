@@ -1186,6 +1186,7 @@ Lclean
 LCONTROL
 LCtrl
 Ldone
+ldx
 LEFTSCROLLBAR
 lego
 len
@@ -1212,6 +1213,7 @@ LINQTo
 Linux
 listbox
 listview
+lld
 llkhf
 LLogo
 Llvm
@@ -1322,7 +1324,6 @@ mdpreviewhandler
 MEDIASUBTYPE
 mediatype
 Melman
-memcmp
 memcpy
 memset
 Mensching
@@ -2210,6 +2211,8 @@ towlower
 towupper
 tracelogging
 traies
+TRANSCODE
+transcoded
 transparrent
 TRAYMOUSEMESSAGE
 TRK

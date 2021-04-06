@@ -204,7 +204,7 @@ struct VideoCaptureReceiverPin : winrt::implements<VideoCaptureReceiverPin, IPin
         {
             _owningFilter->AddRef();
         }
-        
+
         pInfo->dir = PINDIR_INPUT;
         std::copy(std::begin(NAME), std::end(NAME), pInfo->achName);
         return S_OK;
@@ -416,18 +416,18 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
             LOG("Skipping mediatype due to low fps");
             continue;
         }
-        
+
         if (format->bmiHeader.biWidth < bestFormat.width || format->bmiHeader.biHeight < bestFormat.height)
         {
             LOG("Skipping mediatype due to low mode");
             continue;
         }
 
-        if (mt->subtype != MEDIASUBTYPE_YUY2 && mt->subtype != MEDIASUBTYPE_MJPG && mt->subtype != MEDIASUBTYPE_NV12)
+        if (mt->subtype != MEDIASUBTYPE_YUY2 && mt->subtype != MEDIASUBTYPE_MJPG && mt->subtype != MEDIASUBTYPE_RGB24)
         {
             OLECHAR* guidString;
             StringFromCLSID(mt->subtype, &guidString);
-            LOG("Skipping mediatype due to unsupported subtype" );
+            LOG("Skipping mediatype due to unsupported subtype: ");
             LOG(guidString);
             ::CoTaskMemFree(guidString);
             continue;
@@ -441,11 +441,14 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
 
     if (!bestFormat.mediaType)
     {
+        LOG(L"Couldn't select a suitable media format");
         return std::nullopt;
     }
 
-    LOG(L"Selected media format:");
-    LOG(GetMediaSubTypeString(bestFormat.mediaType->subtype));
+    char selectedFormat[512]{};
+    sprintf_s(selectedFormat, "Selected media format: %s %ldx%ld %lld fps", GetMediaSubTypeString(bestFormat.mediaType->subtype), bestFormat.width, bestFormat.height, 10000000LL / bestFormat.avgFrameTime);
+    LOG(selectedFormat);
+
     return std::move(bestFormat);
 }
 
