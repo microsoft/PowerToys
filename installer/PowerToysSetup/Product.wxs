@@ -402,6 +402,9 @@
       <Component Id="BugReportTool_exe" Guid="0F8E3E9F-2E86-4660-A3BF-AE4DD431B93C" Win64="yes">
         <File Source="$(var.BinX64Dir)BugReportTool\BugReportTool.exe" Id="BugReportTool.exe" KeyPath="yes" Checksum="yes" />
       </Component>
+      <Component Id="WebcamReportTool_exe" Guid="B6005DAC-8C26-4865-91B3-99F098422C13" Win64="yes">
+        <File Source="$(var.BinX64Dir)WebcamReportTool\WebcamReportTool.exe" Id="WebcamReportTool.exe" Checksum="yes" />
+      </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
@@ -858,6 +861,7 @@
     </ComponentGroup>
     <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
       <ComponentRef Id="BugReportTool_exe" />
+      <ComponentRef Id="WebcamReportTool_exe" />
     </ComponentGroup>
   </Fragment>
 
