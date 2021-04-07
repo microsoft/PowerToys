@@ -76,7 +76,7 @@ namespace ColorPicker.Keyboard
                 return;
             }
 
-            if (!(System.Windows.Application.Current as ColorPickerUI.App).IsRunningAsPowerToy())
+            if ((System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
             {
                 var name = Helper.GetKeyName((uint)virtualCode);
 

@@ -18,7 +18,7 @@ namespace ColorPickerUI
     {
         private Mutex _instanceMutex;
         private static string[] _args;
-        private int _powerToysPid;
+        private int _powerToysRunnerPid;
         private bool disposedValue;
         private ThemeManager _themeManager;
 
@@ -37,16 +37,16 @@ namespace ColorPickerUI
 
             if (_args?.Length > 0)
             {
-                _ = int.TryParse(_args[0], out _powerToysPid);
+                _ = int.TryParse(_args[0], out _powerToysRunnerPid);
 
-                RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () =>
+                RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
                     Environment.Exit(0);
                 });
             }
             else
             {
-                _powerToysPid = -1;
+                _powerToysRunnerPid = -1;
             }
 
             _themeManager = new ThemeManager(this);
@@ -88,9 +88,9 @@ namespace ColorPickerUI
             GC.SuppressFinalize(this);
         }
 
-        public bool IsRunningAsPowerToy()
+        public bool IsRunningDetachedFromPowerToys()
         {
-            return _powerToysPid != -1;
+            return _powerToysRunnerPid == -1;
         }
     }
 }
