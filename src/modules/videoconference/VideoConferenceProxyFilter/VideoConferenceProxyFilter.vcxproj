@@ -60,6 +60,9 @@
     <Lib>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
+    <PreBuildEvent Condition="'$(Platform)'=='x64'">
+      <Command>call "$(ProjectDir)build_vcm_x86.cmd"</Command>
+    </PreBuildEvent>    
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Platform)'!='Win32'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>

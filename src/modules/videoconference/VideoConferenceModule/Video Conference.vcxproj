@@ -79,9 +79,6 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalDependencies>mfplat.lib;mf.lib;mfreadwrite.lib;mfuuid.lib;shlwapi.lib;gdiplus.lib;dwmapi.lib;uxtheme.lib;shcore.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PreBuildEvent>
-      <Command>call "$(ProjectDir)build_vcm_x86.cmd"</Command>
-    </PreBuildEvent>
     <PostBuildEvent>
       <Command>xcopy /y /I  "$(ProjectDir)Icons\*" "$(OutDir)Icons"
 xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
