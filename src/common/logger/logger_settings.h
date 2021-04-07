@@ -7,13 +7,15 @@ struct LogSettings
     inline const static std::wstring defaultLogLevel = L"trace";
     inline const static std::wstring logLevelOption = L"logLevel";
     inline const static std::string runnerLoggerName = "runner";
+    inline const static std::wstring logPath = L"Logs\\";
     inline const static std::wstring runnerLogPath = L"RunnerLogs\\runner-log.txt";
     inline const static std::string actionRunnerLoggerName = "action-runner";
     inline const static std::wstring actionRunnerLogPath = L"RunnerLogs\\action-runner-log.txt";
     inline const static std::string launcherLoggerName = "launcher";
     inline const static std::wstring launcherLogPath = L"LogsModuleInterface\\launcher-log.txt";
     inline const static std::string fancyZonesLoggerName = "fancyzones";
-    inline const static std::wstring fancyZonesLogPath = L"FancyZonesLogs\\fancyzones-log.txt";
+    inline const static std::wstring fancyZonesLogPath = L"fancyzones-log.txt";
+    inline const static std::wstring fancyZonesOldLogPath = L"FancyZonesLogs\\"; // needed to clean up old logs
     inline const static std::string shortcutGuideLoggerName = "shortcut-guide";
     inline const static std::wstring shortcutGuideLogPath = L"ShortcutGuideLogs\\shortcut-guide-log.txt";
     inline const static std::string keyboardManagerLoggerName = "keyboard-manager";

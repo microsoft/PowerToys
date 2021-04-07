@@ -14,6 +14,7 @@
 #include <lib/FancyZonesWinHookEventIDs.h>
 #include <lib/FancyZonesData.cpp>
 #include <common/logger/logger.h>
+#include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
@@ -156,9 +157,19 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         app_key = NonLocalizable::FancyZonesStr;
-        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
+        const auto appFolder = PTSettingsHelper::get_module_save_folder_location(app_key);
+        const std::filesystem::path logFolder = LoggerHelpers::get_log_folder_path(appFolder);
+        
+        std::filesystem::path logFilePath(logFolder);
         logFilePath.append(LogSettings::fancyZonesLogPath);
         Logger::init(LogSettings::fancyZonesLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        
+        std::filesystem::path oldLogFolder(appFolder);
+        oldLogFolder.append(LogSettings::fancyZonesOldLogPath);
+        LoggerHelpers::delete_old_log_folder(oldLogFolder);
+
+        LoggerHelpers::delete_other_versions_log_folders(appFolder, logFolder);
+
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name(), FancyZonesModule::get_key());
         FancyZonesDataInstance().LoadFancyZonesData();
         s_instance = this;
