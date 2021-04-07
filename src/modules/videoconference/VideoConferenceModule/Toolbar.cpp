@@ -31,6 +31,16 @@ Toolbar::Toolbar()
     lightImages.camUnusedMicOff = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/Off-NotInUse Light.png");
 }
 
+void Toolbar::scheduleModuleSettingsUpdate()
+{
+    moduleSettingsUpdateScheduled = true;
+}
+
+void Toolbar::scheduleGeneralSettingsUpdate()
+{
+    generalSettingsUpdateScheduled = true;
+}
+
 LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
@@ -114,6 +124,17 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     }
     case WM_TIMER:
     {
+        if (toolbar->generalSettingsUpdateScheduled)
+        {
+            instance->onGeneralSettingsChanged();
+            toolbar->generalSettingsUpdateScheduled = false;
+        }
+        if (toolbar->moduleSettingsUpdateScheduled)
+        {
+            instance->onModuleSettingsChanged();
+            toolbar->moduleSettingsUpdateScheduled= false;
+        }
+
         toolbar->cameraInUse = VideoConferenceModule::getVirtualCameraInUse();
 
         InvalidateRect(hwnd, NULL, NULL);
