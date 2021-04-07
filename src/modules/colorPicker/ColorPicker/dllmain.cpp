@@ -109,6 +109,7 @@ private:
 
     void launch_process()
     {
+        Logger::trace(L"Launching ColorPicker process");
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"";
@@ -119,7 +120,13 @@ private:
         sei.lpFile = L"modules\\ColorPicker\\ColorPickerUI.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
-        ShellExecuteExW(&sei);
+        if (!ShellExecuteExW(&sei))
+        {
+            DWORD error = GetLastError();
+            std::wstring message = L"ColorPicker failed to start with error = ";
+            message += std::to_wstring(error);
+            Logger::error(message);
+        }
 
         m_hProcess = sei.hProcess;
     }
@@ -137,6 +144,7 @@ private:
         }
         catch (std::exception ex)
         {
+            Logger::warn(L"An exception occurred while loading the settings file");
             // Error while loading from the settings file. Let default values stay as they are.
         }
     }
@@ -243,6 +251,7 @@ public:
     {
         if (m_enabled)
         {
+            Logger::trace(L"ColorPicker hotkey pressed");
             if (!is_process_running())
             {
                 launch_process();
