@@ -11,7 +11,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     init_apartment();
 
     std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName));
-    logFilePath.append(LogSettings::keyboardManagerLogPath);
+    logFilePath.append(LogSettings::keyboardManagerEngineLogPath);
     Logger::init(LogSettings::keyboardManagerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
     std::wstring pid = std::wstring(lpCmdLine);
