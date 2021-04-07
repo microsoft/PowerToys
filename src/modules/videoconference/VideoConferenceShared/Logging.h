@@ -37,3 +37,4 @@ std::string toMediaTypeString(GUID subtype);
 #else
 #define LOG(str) LogToFile(str, false);
 #endif
+
