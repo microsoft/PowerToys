@@ -89,16 +89,38 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BufferValidationHelpers.h" />
+    <ClInclude Include="Dialog.h" />
+    <ClInclude Include="EditKeyboardWindow.h" />
+    <ClInclude Include="EditShortcutsWindow.h" />
     <ClInclude Include="KeyboardManagerEditor.h" />
+    <ClInclude Include="KeyDropDownControl.h" />
+    <ClInclude Include="LoadingAndSavingRemappingHelper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ShortcutControl.h" />
+    <ClInclude Include="SingleKeyRemapControl.h" />
+    <ClInclude Include="Styles.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="UIHelpers.h" />
+    <ClInclude Include="XamlBridge.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BufferValidationHelpers.cpp" />
+    <ClCompile Include="Dialog.cpp" />
+    <ClCompile Include="EditKeyboardWindow.cpp" />
+    <ClCompile Include="EditShortcutsWindow.cpp" />
     <ClCompile Include="KeyboardManagerEditor.cpp" />
+    <ClCompile Include="KeyDropDownControl.cpp" />
+    <ClCompile Include="LoadingAndSavingRemappingHelper.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ShortcutControl.cpp" />
+    <ClCompile Include="SingleKeyRemapControl.cpp" />
+    <ClCompile Include="Styles.cpp" />
+    <ClCompile Include="UIHelpers.cpp" />
+    <ClCompile Include="XamlBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="KeyboardManagerEditor.rc" />
