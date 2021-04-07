@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <gdiplus.h>
+#include <atomic>
 
 #include <common/Display/monitors.h>
 
@@ -19,6 +20,9 @@ class Toolbar
 {
 public:
     Toolbar();
+
+    void scheduleModuleSettingsUpdate();
+    void scheduleGeneralSettingsUpdate();
 
     void show(std::wstring position, std::wstring monitorString);
     void hide();
@@ -51,5 +55,7 @@ private:
 
     uint64_t lastTimeCamOrMicMuteStateChanged;
 
+    std::atomic_bool moduleSettingsUpdateScheduled = false;
+    std::atomic_bool generalSettingsUpdateScheduled = false;
     UINT_PTR nTimerId;
 };

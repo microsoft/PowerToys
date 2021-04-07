@@ -58,9 +58,9 @@ public:
     static bool getVirtualCameraMuteState();
     static bool getVirtualCameraInUse();
 
-private:
     void onGeneralSettingsChanged();
     void onModuleSettingsChanged();
+private:
 
     void init_settings();
     void updateControlledMicrophones(const std::wstring_view new_mic);
