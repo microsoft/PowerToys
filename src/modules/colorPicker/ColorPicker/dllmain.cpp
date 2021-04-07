@@ -6,7 +6,6 @@
 #include "Generated Files/resource.h"
 #include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_objects.h>
-#include <common/utils/os-detect.h>
 #include <common/utils/resources.h>
 
 #include <colorPicker/ColorPicker/ColorPickerConstants.h>
@@ -227,12 +226,8 @@ public:
     {
         ResetEvent(send_telemetry_event);
         ResetEvent(m_hInvokeEvent);
-        // use only with new settings?
-        if (UseNewSettings())
-        {
-            launch_process();
-            m_enabled = true;
-        }
+        launch_process();
+        m_enabled = true;
     };
 
     virtual void disable()
