@@ -1,9 +1,12 @@
 #include "pch.h"
 #include "LoadingAndSavingRemappingHelper.h"
+
 #include <set>
+
 #include <common/interop/shared_constants.h>
-#include <common/KeyboardManagerState.h>
 #include <common/trace.h>
+
+#include <common/KeyboardManagerState.h>
 
 namespace LoadingAndSavingRemappingHelper
 {

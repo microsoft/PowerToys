@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "ShortcutControl.h"
 
-#include "KeyDropDownControl.h"
+#include <common/interop/shared_constants.h>
 
 #include <common/KeyboardManagerState.h>
 #include <common/Helpers.h>
 #include <dll/Generated Files/resource.h>
 
-#include <common/interop/shared_constants.h>
+#include <KeyDropDownControl.h>
 
 //Both static members are initialized to null
 HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;

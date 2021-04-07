@@ -1,11 +1,10 @@
 #include "pch.h"
 #include "SingleKeyRemapControl.h"
+
 #include <common/Helpers.h>
-#include <common/KeyboardManagerConstants.h>
 #include <common/KeyboardManagerState.h>
-#include "ShortcutControl.h"
-#include <dll/Generated Files/resource.h>
-#include <common/interop/shared_constants.h>
+
+#include <ShortcutControl.h>
 
 //Both static members are initialized to null
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;

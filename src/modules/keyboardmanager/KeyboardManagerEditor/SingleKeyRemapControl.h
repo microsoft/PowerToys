@@ -1,6 +1,8 @@
 #pragma once
-#include "KeyDropDownControl.h"
+
 #include <common/Shortcut.h>
+
+#include <KeyDropDownControl.h>
 
 class KeyboardManagerState;
 namespace winrt::Windows::UI::Xaml

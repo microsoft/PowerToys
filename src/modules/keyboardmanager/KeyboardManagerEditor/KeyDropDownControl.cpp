@@ -1,11 +1,10 @@
 #include "pch.h"
 #include "KeyDropDownControl.h"
-#include <common/Helpers.h>
-#include <common/KeyboardManagerState.h>
-#include "BufferValidationHelpers.h"
+
 #include <common/interop/shared_constants.h>
-#include <common/interop/keyboard_layout_impl.h>
-#include <common/Helpers.h>
+#include <common/KeyboardManagerState.h>
+
+#include <BufferValidationHelpers.h>
 
 // Initialized to null
 KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;

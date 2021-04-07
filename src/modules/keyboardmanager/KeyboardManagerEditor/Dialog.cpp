@@ -1,10 +1,8 @@
 #include "pch.h"
 #include "Dialog.h"
 
-#include <set>
-
-#include <dll/Generated Files/resource.h>
 #include <common/utils/resources.h>
+#include <dll/Generated Files/resource.h>
 
 using namespace winrt::Windows::Foundation;
 

@@ -1,18 +1,16 @@
 #include "pch.h"
 #include "EditShortcutsWindow.h"
-#include "ShortcutControl.h"
-#include "KeyDropDownControl.h"
-#include "XamlBridge.h"
-#include <common/trace.h>
-#include <common/KeyboardManagerConstants.h>
-#include <common/themes/windows_colors.h>
+
 #include <common/Display/dpi_aware.h>
-#include "Styles.h"
-#include "Dialog.h"
-#include <dll/Generated Files/resource.h>
 #include <common/KeyboardManagerState.h>
-#include "LoadingAndSavingRemappingHelper.h"
-#include "UIHelpers.h"
+
+#include <Dialog.h>
+#include <KeyDropDownControl.h>
+#include <LoadingAndSavingRemappingHelper.h>
+#include <ShortcutControl.h>
+#include <Styles.h>
+#include <UIHelpers.h>
+#include <XamlBridge.h>
 
 using namespace winrt::Windows::Foundation;
 

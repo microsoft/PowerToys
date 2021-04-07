@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <common/Shortcut.h>
 
 class KeyboardManagerState;
