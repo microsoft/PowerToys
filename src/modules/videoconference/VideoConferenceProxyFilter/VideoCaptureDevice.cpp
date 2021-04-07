@@ -402,7 +402,6 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
             continue;
         }
 
-        LOG("Inspecting media type");
         auto format = reinterpret_cast<VIDEOINFOHEADER*>(mt->pbFormat);
         if (!format || !format->AvgTimePerFrame)
         {
@@ -413,13 +412,11 @@ std::optional<VideoStreamFormat> SelectBestMediaType(wil::com_ptr_nothrow<IPin>&
         const auto formatAvgFPS = 10000000LL / format->AvgTimePerFrame;
         if (format->AvgTimePerFrame > bestFormat.avgFrameTime || formatAvgFPS < MINIMAL_FPS_ALLOWED)
         {
-            LOG("Skipping mediatype due to low fps");
             continue;
         }
 
         if (format->bmiHeader.biWidth < bestFormat.width || format->bmiHeader.biHeight < bestFormat.height)
         {
-            LOG("Skipping mediatype due to low mode");
             continue;
         }
 
