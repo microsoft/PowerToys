@@ -135,7 +135,7 @@
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
     <value>File Explorer add-ons</value>
-    <comment>Product name: Navigation view item name for File Explorer Preview</comment>
+    <comment>Product name: Navigation view item name for File Explorer.  Please use File Explorer as in the context of File Explorer in Windows</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
@@ -668,6 +668,7 @@
   </data>
   <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
     <value>File Explorer</value>
+    <comment>Use same translation as Windows does for File Explorer</comment>
   </data>
   <data name="About_ImageResizer.Text" xml:space="preserve">
     <value>About Image Resizer</value>
