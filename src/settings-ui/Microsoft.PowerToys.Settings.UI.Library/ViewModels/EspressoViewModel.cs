@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -15,11 +14,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private EspressoSettings Settings { get; set; }
 
-        private string settingsConfigFileFolder = string.Empty;
-
         private Func<string, int> SendConfigMSG { get; }
 
-        public EspressoViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<EspressoSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public EspressoViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<EspressoSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             if (settingsRepository == null)
@@ -28,7 +25,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
-            settingsConfigFileFolder = configFileSubfolder;
 
             // To obtain the settings configurations of Fancy zones.
             if (moduleSettingsRepository == null)
@@ -45,7 +41,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = GeneralSettingsConfig.Enabled.Espresso;
+            IsEnabled = GeneralSettingsConfig.Enabled.Espresso;
+        }
+
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set
+            {
+                if (_isEnabled != value)
+                {
+                    _isEnabled = value;
+                    OnPropertyChanged(nameof(IsEnabled));
+
+                    GeneralSettingsConfig.Enabled.Espresso = value;
+                    var outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+
+                    SendConfigMSG(outgoing.ToString());
+                }
+            }
         }
 
         private bool _isEnabled;

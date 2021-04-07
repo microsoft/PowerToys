@@ -53,38 +53,45 @@
                     HorizontalAlignment="Left"
                     Margin="0,0,48,0"
                     MaxWidth="{StaticResource MaxContentWidth}">
-            <ToggleSwitch x:Uid="Espresso_EnableEspresso" IsOn="True" />
-            <ToggleSwitch x:Uid="Espresso_EnableDisplayKeepAwake" IsOn="True" />
+            <ToggleSwitch x:Uid="Espresso_EnableEspresso" IsOn="{Binding IsEnabled, Mode=TwoWay}" />
             <!--IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"/>-->
 
-                <!--<TextBlock x:Uid="Shortcuts"
+            <!--<TextBlock x:Uid="Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>-->
 
-            <TextBlock x:Uid="FancyZones_Editor_GroupSettings"
+            <TextBlock x:Uid="Espresso_Behavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <ToggleSwitch x:Uid="Espresso_EnableDisplayKeepAwake"
+                          IsEnabled="{Binding IsEnabled}"
+                          IsOn="True" />
             <!--Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"-->
-            <RadioButton x:Uid="Espresso_IndefiniteKeepAwake">
-                <RadioButton.Content>
-                    <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+
+            <StackPanel Margin="{StaticResource MediumTopMargin}">
+                <RadioButton x:Uid="Espresso_IndefiniteKeepAwake"
+                             IsEnabled="{Binding IsEnabled}">
+                    <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Espresso_IndefiniteKeepAwakeContent"/>
                         <LineBreak/>
                         <Run Foreground="{ThemeResource SystemBaseMediumColor}"
                              x:Uid="Espresso_IndefiniteKeepAwakeDescription"/>
-                    </TextBlock>
-                </RadioButton.Content>
-            </RadioButton>
-            <RadioButton x:Uid="Espresso_TemporaryKeepAwake">
-                <RadioButton.Content>
-                    <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        </TextBlock>
+                    </RadioButton.Content>
+                </RadioButton>
+                <RadioButton x:Uid="Espresso_TemporaryKeepAwake"
+                             IsEnabled="{Binding IsEnabled}">
+                    <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Espresso_TemporaryKeepAwakeContent"/>
                         <LineBreak/>
                         <Run Foreground="{ThemeResource SystemBaseMediumColor}"
                              x:Uid="Espresso_TemporaryKeepAwakeDescription"/>
-                    </TextBlock>
-                </RadioButton.Content>
-            </RadioButton>
+                        </TextBlock>
+                    </RadioButton.Content>
+                </RadioButton>
             </StackPanel>
+        </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 
                     HorizontalAlignment="Left"
@@ -136,7 +143,7 @@
                                 NavigateUri="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c">
                     <TextBlock Text="Niels Laute's UX concept" TextWrapping="Wrap" />
                 </HyperlinkButton>
-                
+
             </StackPanel>
         </RelativePanel>
     </Grid>

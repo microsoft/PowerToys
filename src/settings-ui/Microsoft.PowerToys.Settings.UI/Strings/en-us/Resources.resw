@@ -1179,4 +1179,7 @@ Win + Shift + O to toggle your video</value>
   <data name="Espresso_EnableDisplayKeepAwake.Header" xml:space="preserve">
     <value>Keep display on</value>
   </data>
+  <data name="Espresso_Behavior_GroupSettings.Text" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
 </root>
