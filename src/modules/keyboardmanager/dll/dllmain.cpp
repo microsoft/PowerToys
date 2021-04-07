@@ -16,6 +16,7 @@
 #include <keyboardmanager/common/Helpers.h>
 #include "KeyboardEventHandlers.h"
 #include "Input.h"
+#include <shellapi.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -62,6 +63,7 @@ private:
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     Input inputHandler;
 
+    HANDLE m_hProcess = nullptr;
 public:
     // Constructor
     KeyboardManager()
@@ -229,7 +231,6 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
-        stop_lowlevel_keyboard_hook();
         delete this;
     }
 
@@ -316,8 +317,30 @@ public:
         m_enabled = true;
         // Log telemetry
         Trace::EnableKeyboardManager(true);
-        // Start keyboard hook
-        start_lowlevel_keyboard_hook();
+        
+        unsigned long powertoys_pid = GetCurrentProcessId();
+        std::wstring executable_args = L"";
+        executable_args.append(std::to_wstring(powertoys_pid));
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"modules\\KeyboardManagerEngine\\KeyboardManagerEngine.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei) == false)
+        {
+            Logger::error(L"Failed to start keyboard manager engine");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
+        else
+        {
+            m_hProcess = sei.hProcess;
+            SetPriorityClass(m_hProcess, REALTIME_PRIORITY_CLASS);
+        }
     }
 
     // Disable the powertoy
@@ -329,8 +352,12 @@ public:
         // Close active windows
         CloseActiveEditKeyboardWindow();
         CloseActiveEditShortcutsWindow();
-        // Stop keyboard hook
-        stop_lowlevel_keyboard_hook();
+
+        if (m_hProcess)
+        {
+            TerminateProcess(m_hProcess, 0);
+            m_hProcess = nullptr;
+        }
     }
 
     // Returns if the powertoys is enabled

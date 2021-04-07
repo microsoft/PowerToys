@@ -44,10 +44,6 @@ public:
     // Constructor
     KeyboardManager()
     {
-        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
-        logFilePath.append(LogSettings::keyboardManagerLogPath);
-        Logger::init(LogSettings::keyboardManagerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
-
         // Load the initial configuration.
         load_config();
 
@@ -58,9 +54,10 @@ public:
         auto changeConfigCallback = [this](DWORD err) {
             if (err != ERROR_SUCCESS)
             {
-                // Logger::error(get_last_error_message(err));
+                Logger::error(L"Failed to watch settings changes. {}", get_last_error_or_default(err));
             }
 
+            Logger::trace(L"Loading new config.");
             load_config();
         };
 
