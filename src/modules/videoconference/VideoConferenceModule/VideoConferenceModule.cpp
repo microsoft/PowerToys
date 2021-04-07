@@ -268,9 +268,9 @@ void VideoConferenceModule::onModuleSettingsChanged()
 
 VideoConferenceModule::VideoConferenceModule() :
     _generalSettingsWatcher{ PTSettingsHelper::get_powertoys_general_save_file_location(), [this] {
-                                onGeneralSettingsChanged();
+                                toolbar.scheduleGeneralSettingsUpdate();
                             } },
-    _moduleSettingsWatcher{ PTSettingsHelper::get_module_save_file_location(get_key()), [this] { onModuleSettingsChanged(); } }
+    _moduleSettingsWatcher{ PTSettingsHelper::get_module_save_file_location(get_key()), [this] { toolbar.scheduleModuleSettingsUpdate(); } }
 {
     init_settings();
     _settingsUpdateChannel =
