@@ -207,6 +207,13 @@ void reportDotNetInstallationInfo(const filesystem::path& tmpDir)
     }
 }
 
+void reportVCMLogs(const filesystem::path& tmpDir, const filesystem::path& reportDir)
+{
+    error_code ec;
+    copy(tmpDir / "PowerToysVideoConference_x86.log", reportDir, ec);
+    copy(tmpDir / "PowerToysVideoConference_x64.log", reportDir, ec);
+}
+
 int wmain(int argc, wchar_t* argv[], wchar_t*)
 {
     // Get path to save zip
@@ -232,10 +239,10 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     auto settingsRootPath = PTSettingsHelper::get_root_save_folder_location();
     settingsRootPath = settingsRootPath + L"\\";
 
+    const auto tempDir = temp_directory_path();
     // Copy to a temp folder
-    auto tmpDir = temp_directory_path();
-    tmpDir = tmpDir.append("PowerToys\\");
-    if (!deleteFolder(tmpDir))
+    auto reportDir = tempDir / "PowerToys\\";
+    if (!deleteFolder(reportDir))
     {
         printf("Failed to delete temp folder\n");
         return 1;
@@ -243,9 +250,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     try
     {
-        copy(settingsRootPath, tmpDir, copy_options::recursive);
+        copy(settingsRootPath, reportDir, copy_options::recursive);
         // Remove updates folder contents
-        deleteFolder(tmpDir / "Updates");
+        deleteFolder(reportDir / "Updates");
     }
     catch (...)
     {
@@ -254,19 +261,21 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     }
 
     // Hide sensitive information
-    hideUserPrivateInfo(tmpDir);
+    hideUserPrivateInfo(reportDir);
 
-    // Write monitors info to the temporary folder
-    reportMonitorInfo(tmpDir);
+    // Write monitors info to the report folder
+    reportMonitorInfo(reportDir);
 
-    // Write windows version info to the temporary folder
-    reportWindowsVersion(tmpDir);
+    // Write windows version info to the report folder
+    reportWindowsVersion(reportDir);
 
-    // Write dotnet installation info to the temporary folder
-    reportDotNetInstallationInfo(tmpDir);
+    // Write dotnet installation info to the report folder
+    reportDotNetInstallationInfo(reportDir);
 
-    // Write registry to the temporary folder
-    reportRegistry(tmpDir);
+    // Write registry to the report folder
+    reportRegistry(reportDir);
+
+    reportVCMLogs(tempDir, reportDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
@@ -277,7 +286,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     try
     {
-        zipFolder(zipPath, tmpDir);
+        zipFolder(zipPath, reportDir);
     }
     catch (...)
     {
@@ -285,6 +294,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         return 1;
     }
 
-    deleteFolder(tmpDir);
+    deleteFolder(reportDir);
     return 0;
 }
