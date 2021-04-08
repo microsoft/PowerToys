@@ -19,7 +19,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         private static string _icon_path;
         private bool _disposed;
         private readonly QuantityType[] _included = new QuantityType[] { QuantityType.Acceleration, QuantityType.Length, QuantityType.Mass, QuantityType.Speed, QuantityType.Temperature, QuantityType.Volume };
-        private CultureInfo _currentCulture = CultureInfo.InvariantCulture;
+        private CultureInfo _currentCulture = CultureInfo.CurrentCulture;
         private int _roundingFractionalDigits = 4;
 
         public void Init(PluginInitContext context) {
