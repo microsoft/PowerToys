@@ -13,9 +13,7 @@
     <ClInclude Include="EspressoConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -29,8 +27,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Espresso.rc">
-      <Filter>Generated Files</Filter>
-    </ResourceCompile>
+    <ResourceCompile Include="Espresso.rc" />
   </ItemGroup>
 </Project>

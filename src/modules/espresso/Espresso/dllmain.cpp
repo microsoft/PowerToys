@@ -1,14 +1,13 @@
 #include "pch.h"
-#include "resource.h"
-#include "trace.h"
-#include "EspressoConstants.h"
-
 #include <interface/powertoy_module_interface.h>
-
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/interop/shared_constants.h>
+#include "trace.h"
+#include "resource.h"
+#include "EspressoConstants.h"
 #include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_helpers.h>
+
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
@@ -17,8 +16,6 @@
 
 #include <filesystem>
 
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -80,6 +77,10 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_ESPRESSO_NAME);
         app_key = EspressoConstants::ModuleKey;
+
+        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
+        Logger::init(LogSettings::launcherLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        Logger::info("Launcher object is constructing");
         init_settings();
     };
 
