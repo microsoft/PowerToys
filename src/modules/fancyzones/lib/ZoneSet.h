@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Zone.h"
+#include "Settings.h"
 
 namespace FancyZonesDataTypes
 {
@@ -157,11 +158,13 @@ struct ZoneSetConfig
         GUID id,
         FancyZonesDataTypes::ZoneSetLayoutType layoutType,
         HMONITOR monitor,
-        int sensitivityRadius) noexcept :
+        int sensitivityRadius,
+        Settings::OverlappingZonesAlgorithm selectionAlgorithm = {}) noexcept :
             Id(id),
             LayoutType(layoutType),
             Monitor(monitor),
-            SensitivityRadius(sensitivityRadius)
+            SensitivityRadius(sensitivityRadius),
+            SelectionAlgorithm(selectionAlgorithm)
     {
     }
 
@@ -169,6 +172,7 @@ struct ZoneSetConfig
     FancyZonesDataTypes::ZoneSetLayoutType LayoutType{};
     HMONITOR Monitor{};
     int SensitivityRadius;
+    Settings::OverlappingZonesAlgorithm SelectionAlgorithm = Settings::OverlappingZonesAlgorithm::Smallest;
 };
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept;

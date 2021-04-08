@@ -48,10 +48,13 @@
       </Item>
       <Item ItemId=";wox_plugin_cmd_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Allows to execute system commands from PowerToys Run. Commands should start with >]]></Val>
+          <Val><![CDATA[Executes commands (e.g 'ping', 'cmd').]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Umożliwia wykonywanie poleceń systemowych z poziomu narzędzia Uruchamianie PowerToys. Polecenia powinny rozpoczynać się od znaku >]]></Val>
+            <Val><![CDATA[Wykonuje polecenia (np. „ping”, „cmd”).]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Allows to execute system commands from PowerToys Run. Commands should start with >]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

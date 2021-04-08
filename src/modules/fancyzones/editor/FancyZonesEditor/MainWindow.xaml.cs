@@ -46,6 +46,8 @@ namespace FancyZonesEditor
                 WrapPanelItemSize = SmallWrapPanelItemSize;
             }
 
+            MaxWidth = workArea.Width;
+            MaxHeight = workArea.Height;
             SizeToContent = SizeToContent.WidthAndHeight;
         }
 
@@ -302,18 +304,26 @@ namespace FancyZonesEditor
             }
             else
             {
-                selectedLayoutModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Custom)
-                {
-                    TemplateZoneCount = 0,
-                };
+                var area = App.Overlay.WorkArea;
+                CanvasLayoutModel canvasModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Custom, (int)area.Width, (int)area.Height);
+                canvasModel.AddZone();
+                selectedLayoutModel = canvasModel;
             }
 
             selectedLayoutModel.InitTemplateZones();
 
+            try
+            {
+                Hide();
+            }
+            catch
+            {
+                // See https://github.com/microsoft/PowerToys/issues/9396
+                Hide();
+            }
+
             App.Overlay.CurrentDataContext = selectedLayoutModel;
-            var mainEditor = App.Overlay;
-            Hide();
-            mainEditor.OpenEditor(selectedLayoutModel);
+            App.Overlay.OpenEditor(selectedLayoutModel);
         }
 
         // This is required to fix a WPF rendering bug when using custom chrome

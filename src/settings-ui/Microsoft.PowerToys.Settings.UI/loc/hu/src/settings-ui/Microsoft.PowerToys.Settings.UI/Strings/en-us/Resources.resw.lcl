@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A PowerToys Asszisztens névjegye]]></Val>
+            <Val><![CDATA[A PowerToys Run névjegye]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -208,6 +208,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ColorPicker_ButtonDown.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move the color down]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Szín mozgatása lefelé]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ColorPicker_ButtonUp.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move the color up]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Szín mozgatása felfelé]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ColorPicker_ChangeCursor.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Change cursor when picking a color]]></Val>
@@ -219,10 +237,13 @@
       </Item>
       <Item ItemId=";ColorPicker_ColorFormatsDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Editor color formats (Change the order by dragging)]]></Val>
+          <Val><![CDATA[Editor color formats]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Szerkesztő színformátumai (húzással módosíthatja a sorrendet)]]></Val>
+            <Val><![CDATA[Szerkesztő színformátumai]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Editor color formats (Change the order by dragging)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -403,7 +424,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Example: outlook.exe]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -412,12 +433,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";FancyZones_FlashZonesOnQuickSwitch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Flash zones when switching layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zónák villogtatása az elrendezés váltásakor]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";FancyZones_HighlightOpacity.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Zone highlight opacity]]></Val>
+          <Val><![CDATA[Zone opacity]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zóna kiemelésének átlátszatlansága]]></Val>
+            <Val><![CDATA[Zóna átlátszatlansága]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Zone highlight opacity]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -484,6 +517,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Win + Up/Down/Left/Right to move windows based on relative position]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Win + fel/le/bal/jobb gombokkal mozgathatók az ablakok relatív elhelyezkedés alapján]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Win + Left/Right to move windows based on zone index]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Win + bal/jobb gombokkal mozgathatók az ablakok zónaindex alapján]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Move windows between zones across all monitors]]></Val>
@@ -511,11 +562,65 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";FancyZones_OverlappingZones.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[When multiple zones overlap:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Több átfedő zóna esetén:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_OverlappingZonesLargest.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Activate the largest zone by area]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A terület alapján legnagyobb zóna aktiválása]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_OverlappingZonesPositional.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Split the overlapped area into multiple activation targets]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Az átfedő terület felosztása több aktiválási célhelyre]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_OverlappingZonesSmallest.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Activate the smallest zone by area]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A terület alapján legkisebb zóna aktiválása]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Override Windows Snap shortcut (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[A Windows dokkolási billentyűparancsának (Win + nyílbillentyű) felülbírálása az ablakok zónák közötti áthelyezéséhez]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_QuickLayoutSwitch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gyors elrendezésváltás engedélyezése]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_QuickLayoutSwitch_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gyors elrendezésváltás]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -687,10 +792,13 @@
       </Item>
       <Item ItemId=";FileExplorerPreview_RunAsAdminRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You need to run as administrator to modify these settings]]></Val>
+          <Val><![CDATA[You need to run as administrator to modify these settings.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[E beállítások módosításához rendszergazdai jogosultság szükséges]]></Val>
+            <Val><![CDATA[E beállítások módosításához rendszergazdai jogosultság szükséges.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[You need to run as administrator to modify these settings]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -879,10 +987,13 @@
       </Item>
       <Item ItemId=";General_RunAsAdminRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You need to run as administrator to use this setting]]></Val>
+          <Val><![CDATA[You need to run as administrator to use this setting.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A beállítás használatához rendszergazdaként kell futtatnia]]></Val>
+            <Val><![CDATA[E beállítás használatához rendszergazdai jogosultság szükséges.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[You need to run as administrator to use this setting]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1600,6 +1711,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";OOBE_Settings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Beállítások]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Off.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Off]]></Val>
@@ -1618,11 +1738,491 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";OobeWindow_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Welcome to PowerToys]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Üdvözli a PowerToys]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Button.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Welcome to PowerToys]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Üdvözli a PowerToys]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerToys Tour]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ColorPicker" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Color Picker]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Color Picker]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ColorPicker_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows 10 that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A Color Picker egy Windows 10-hez készült rendszerszintű színválasztó eszköz, amely lehetővé teszi, hogy bármely jelenleg futó alkalmazásban színeket válasszon ki, és azokat egy konfigurálható formátumban automatikusan a vágólapra másolja.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ColorPicker_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Win + Shift + C to open Color Picker.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Win + Shift + C – a Color Picker megnyitása.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ColorPicker_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[To select a color with more precision, scroll the mouse wheel to zoom in.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A pontosabb színkiválasztáshoz nagyítson az egérkerék görgetésével.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_FancyZones" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[FancyZones]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[FancyZones]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_FancyZones_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A FancyZones egy ablakkezelő, amely megkönnyíti az összetett ablakelrendezések létrehozását és az ablakok ezekben való gyors elhelyezését.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_FancyZones_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Shift + drag while dragging the window to snap a window to a zone, and release the window in the desired zone.]D;]A;Win + ` to open the FancyZones editor.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ablak zónához való dokkolásához a Shift billentyűt lenyomva tartva húzza az ablakot a kívánt zónába, majd engedje el.]D;]A;A Win + billentyűkombinációt lenyomva megnyithatja a FancyZones szerkesztőt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_FancyZones_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Snap a window to multiple zones by holding the Ctrl key (while also holding Shift) when dragging a window.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ha több zónához szeretne dokkolni egy ablakot, az ablak húzása közben a SHIFT mellett a CTRL billentyűt is tartsa lenyomva.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_FileExplorer" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File Explorer add-ons]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[File Explorer add-ons]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_FileExplorer_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md) and SVG icons (.svg) to be viewed in the preview pane.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A PowerToys új bővítményei lehetővé teszik a Markdown-fájlok (.md) és az SVG-ikonok (.svg) megtekintését a Windows Fájlkezelő előnézeti ablaktáblájában.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_FileExplorer_HowToEnable.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open Windows File Explorer, select the View tab in the File Explorer ribbon, then select Preview Pane. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nyissa meg a Windows Fájlkezelőt, válassza a Fájlkezelő menüszalagján lévő Nézet lapfület, majd a Betekintő ablaktábla lehetőséget. ]D;]A;A Fájlkezelóben kattintson a kívánt Markdown-fájlra vagy SVG-ikonra, és annak tartalma megjelenik az előnézeti ablaktáblában.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_GetStarted.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Let's get started!]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Első lépések]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_GettingStarted.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Getting started]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Első lépések]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_HowToCreateMappings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[How to create mappings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Leképezések létrehozása]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_HowToEnable.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[How to enable]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Engedélyezési útmutató]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[How to launch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Indítási útmutató]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[How to use]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Használati útmutató]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ImageResizer" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[ImageResizer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ImageResizer]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ImageResizer_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Image Resizer is a Windows shell extension for simple bulk image-resizing.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A Képméretező egy tömeges képméretezést megkönnyítő windowsos felületbővítmény.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ImageResizer_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[In File Explorer, right-clicking one or more image files and clicking on Resize pictures from the context menu.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A Fájlkezelőben kattintson a jobb gombbal egy vagy több képfájlra, majd kattintson a Képek átméretezése parancsra a helyi menüben.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ImageResizer_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Want a custom size? You can add them in the PowerToys Settings!]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Egyéni méretet szeretne? A PowerToys-beállításoknál hozzáadhatja.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_KBM" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Keyboard Manager]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Keyboard Manager]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_KBM_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Keyboard Manager allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A Billentyűzetmendzser lehetővé teszi a billentyűzet hatékonyabb testreszabását a billentyűk újramegfeleltetésével és saját billentyűparancsok létrehozásával.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_KBM_HowToCreateMappings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Launch PowerToys settings, navigate to the Keyboard Manager menu, and select either Remap a key or Remap a shortcut.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nyissa meg a PowerToys-beállításokat, navigáljon a Billentyűzetmendzser menüjéhez, és válassza a Billentyű átkötése vagy a Billentyűparancs átkötése parancsot.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_KBM_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azt szeretné, hogy a billentyűparancs csak egy adott alkalmazás esetében működjön? A billentyűparancs átkötésének létrehozásakor használja a Célalkalmazás mezőt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Launch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Launch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Indítás]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_LearnMore.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn more about]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[További információ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Overview" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Overview]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Áttekintés]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Overview_CheckoutLatestVersion.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[For returning users, check out what is new on this latest version of]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A meglévő felhasználók tájékozódhatnak a legújabb verzió újdonságairól:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Overview_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation on]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A Microsoft PowerToys egy haladó felhasználók számára készült hatékonyságnövelő segédprogramkészlet, amely a Windows 10 felhasználói környezetének beállítására és a funkciók használatának megkönnyítésére szolgál.]D;]A;Szánjon egy kis időt a felsorolt segédprogramok kipróbálására, vagy tekintse meg a részletes dokumentációt a következő helyen:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Overview_DescriptionLinkText.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Microsoft Docs.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft Docs.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Overview_LatestVersionLink.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerToys in our release notes.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PowerToys a kibocsátási megjegyzésekben.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_PowerRename" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerRename]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PowerRename]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_PowerRename_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerRename enables you to perform simple bulk renaming, searching and replacing file names.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A PowerRename lehetővé teszi a fájlnevek egyszerű tömeges átnevezését, keresését és cseréjét.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_PowerRename_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[In File Explorer, right-clicking one or more selected files and clicking on PowerRename from the context menu.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A Fájlkezelőben kattintson a jobb gombbal egy vagy több kijelölt fájlra, majd válassza a helyi menü PowerRename parancsát.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_PowerRename_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A PowerRename támogatja a fájlok reguláris kifejezések használatával történő keresését a fejlettebb átnevezési funkciók lehetővé tétele érdekében.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_PowerRun_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A PowerToys Run egy haladó felhasználók számára készült gyors alkalmazásindító, amely további funkciókat is tartalmaz, anélkül, hogy azok befolyásolnák az eszköz teljesítményét.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_PowerToysDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Welcome to PowerToys!  These overviews will help you quickly learn the basics of all our utilities.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Üdvözli a PowerToys. Ezen áttekintések segítségével gyorsan megismerheti segédprogramjaink alapvető funkcióit.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Run" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerToys Run]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PowerToys Run]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Run_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Alt + Space to open PowerToys and just start typing.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A PowerToys megnyitásához nyomja le az Alt + Szóköz billentyűkombinációt, és kezdjen el gépelni.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Run_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerToys runs supports various action keys to funnel search queries for a specific subset of results. Typing < searches for running processes only, ? will search only for file, or . for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A PowerToys-futtatásokban számos műveletbillentyű használható a keresési lekérdezések eredményeinek egy meghatározott részhalmazra való leszűkítése céljából. Példák: < – csak a futó folyamatok keresése, ? – csak fájl keresése, . – telepített alkalmazások keresése. A műveletbillentyűk teljes készletét a PowerToys dokumentációjában tekintheti meg.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ShortcutGuide" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Shortcut Guide]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Shortcut Guide]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ShortcutGuide_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A Billentyűsegéd megjeleníti a felhasználó számára az asztal aktuális állapotában elérhető billentyűparancsok listáját.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_ShortcutGuide_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Win + ? to open Shortcut Guide, press it again to close or press Esc. You can also launch it by holding the Win key for one second!]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A Win + ? billentyűkombináció lenyomásával megnyithatja, annak újbóli lenyomásával vagy az Esc billentyű használatával pedig bezárhatja a Billentyűsegédet. A segédprogramot a Windows billentyű egy másodpercig tartó lenyomásával is elindíthatja.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Tips & tricks]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tippek és trükkök]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_VideoConference" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Video Conference]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Video Conference]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_VideoConference_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A Video Conference Mute lehetővé teszi, hogy a felhasználók konferenciahívás közben egyetlen billentyűleütéssel gyorsan elnémítsák a mikrofont, és kikapcsolják a kamerát, függetlenül attól, hogy a számítógépen melyik alkalmazáson van a fókusz.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_VideoConference_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Win + N to toggle both your microphone and video ]D;]A;Win + Shift + A to toggle your microphone ]D;]A;Win + Shift + O to toggle your video]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Win + N – a mikrofon és a videó be-/kikapcsolása ]D;]A;Win + Shift + A – a mikrofon be-/kikapcsolása ]D;]A;Win + Shift + O – a videó be-/kikapcsolása]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_Welcome" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Welcome to PowerToys]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Üdvözli a PowerToys]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";OpenSource_Notice.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open-source notice]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nyílt forráskódra vonatkozó nyilatkozat]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PowerLauncher_ActionKeyword.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Direct activation phrase]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Közvetlen aktiválási kifejezés]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PowerLauncher_AuthoredBy.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Authored by]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Szerző:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1654,15 +2254,12 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerLauncher_DisableDriveDetectionWarning.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";PowerLauncher_EnablePluginToggle.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Disable drive detection warning for the file search plugin]]></Val>
+          <Val><![CDATA[Enable plugin]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A meghajtóészlelési figyelmeztetés letiltása a fájlkereső beépülő modul esetében]]></Val>
+            <Val><![CDATA[Beépülő modul engedélyezése]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Disable drive detection warning for the indexer plugin]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1670,7 +2267,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A PowerToys Asszisztens engedélyezése]]></Val>
+            <Val><![CDATA[A PowerToys Run engedélyezése]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1680,6 +2277,15 @@
           <Val><![CDATA[Ignore shortcuts in fullscreen mode]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Billentyűparancsok figyelmen kívül hagyása teljes képernyős módban]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PowerLauncher_IncludeInGlobalResult.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Include in global result]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Belefoglalás a globális eredménybe]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1715,7 +2321,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A PowerToys Asszisztens megnyitása]]></Val>
+            <Val><![CDATA[A PowerToys Run megnyitása]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1734,6 +2340,15 @@
           <Val><![CDATA[Override Win+S shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Win+S billentyűparancs felülbírálása]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PowerLauncher_Plugins.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Plugins]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Beépülő modulok]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1889,7 +2504,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Az Átnevező Plusz engedélyezése]]></Val>
+            <Val><![CDATA[A PowerRename engedélyezése]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1952,7 +2567,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys Asszisztens]]></Val>
+            <Val><![CDATA[PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2038,6 +2653,105 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Run_AdditionalOptions.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Additional options]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[További lehetőségek]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Run_AllPluginsDisabled.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerToys Run can't provide any results without plugins. Please enable at least one plugin.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A PowerToys Run beépülő modulok nélkül nem képes eredményeket produkálni. Engedélyezzen legalább egy beépülő modult.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Run_NotAccessibleWarning.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please define an activation phrase or allow this plugin for the global results to use it.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Adjon meg egy aktiválási kifejezést, vagy engedélyezze ezt a beépülő modult a globális eredmények esetében, és használja azt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Run_NotAllowedActionKeyword.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This activation phrase overrides the behavior of other plugins. Please change it to something else.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ez az aktiválási kifejezés felülbírálja a többi beépülő modul viselkedését. Változtassa meg.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Run_PluginUseDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A globális találatokban szereplő összes beépülő modult felveheti vagy eltávolíthatja, módosíthatja a közvetlen aktiválási kifejezést, valamint konfigurálhat további beállításokat.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Run_PluginsLoading.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Plugins are loading...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Beépülő modulok betöltése folyamatban...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Run_PositionAppearance_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Position & appearance]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pozíció és megjelenés]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Run_PositionHeader.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show PowerToys Run on]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A PowerToys Run megjelenítése itt:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Run_Radio_Position_Cursor.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Monitor with mouse cursor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Monitor egérkurzorral]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Run_Radio_Position_Focus.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Monitor with focused window]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Monitor fókuszablakkal]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Run_Radio_Position_Primary_Monitor.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Primary monitor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Elsődleges monitor]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";SettingsPage_SetShortcut.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcut setting]]></Val>
@@ -2055,6 +2769,15 @@
           <Val><![CDATA[Information Symbol]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Adatszimbólum]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SettingsWindow_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerToys Settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A PowerToys beállításai]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2108,17 +2831,20 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys Asszisztens]]></Val>
+            <Val><![CDATA[PowerToys Run]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Shell_PowerPreview.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[File Explorer]]></Val>
+          <Val><![CDATA[File Explorer add-ons]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fájlkezelő]]></Val>
+            <Val><![CDATA[Fájlkezelői bővítmények]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[File Explorer]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2126,7 +2852,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Átnevező Plusz]]></Val>
+            <Val><![CDATA[PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2154,6 +2880,27 @@
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[A Windows-billentyűparancsokra vonatkozó súgó átfedésének megjelenítése a Windows-billentyű megnyomásakor.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Disable for apps]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Turn off Shortcut Guide when these applications have focus. Add one application name per line.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Example: outlook.exe]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Példa: outlook.exe]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

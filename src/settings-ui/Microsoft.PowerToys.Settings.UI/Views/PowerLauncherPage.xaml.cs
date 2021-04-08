@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
@@ -22,8 +23,30 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            ViewModel = new PowerLauncherViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, (int)Windows.System.VirtualKey.Space);
+            PowerLauncherSettings settings = settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+            ViewModel = new PowerLauncherViewModel(settings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
             DataContext = ViewModel;
+            _ = Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", () =>
+            {
+                PowerLauncherSettings powerLauncherSettings = null;
+                try
+                {
+                    powerLauncherSettings = settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                }
+                catch (IOException ex)
+                {
+                    Logger.LogInfo(ex.Message);
+                }
+
+                if (powerLauncherSettings != null && !ViewModel.IsUpToDate(powerLauncherSettings))
+                {
+                    _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    {
+                        DataContext = ViewModel = new PowerLauncherViewModel(powerLauncherSettings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
+                        this.Bindings.Update();
+                    });
+                }
+            });
 
             var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
 
@@ -36,6 +59,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ApplicationName"), "application_name"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_StringInApplication"), "string_in_application"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
+        }
+
+        private void OpenColorsSettings_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
+        }
+
+        private void PluginsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedPlugin = (sender as ListView)?.SelectedItem;
+            foreach (var plugin in ViewModel.Plugins)
+            {
+                plugin.ShowAdditionalInfoPanel = plugin == selectedPlugin;
+            }
         }
 
         /*

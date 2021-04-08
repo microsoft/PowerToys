@@ -12,10 +12,13 @@
       <Disp Icon="Str" Disp="true" LocTbl="false" />
       <Item ItemId=";BOOTSTRAPPER_PROGRESS_TITLE" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[PowerToys installer]]></Val>
+          <Val><![CDATA[PowerToys Installer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Установщик PowerToys]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerToys installer]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -39,19 +42,25 @@
       </Item>
       <Item ItemId=";DOTNET_INSTALL_ERROR" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Couldn't install dotnet!]]></Val>
+          <Val><![CDATA[Couldn't install .NET Core.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удалось установить .Net.]]></Val>
+            <Val><![CDATA[Не удалось установить .NET Core.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Couldn't install dotnet!]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";DOWNLOADING_DOTNET" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Downloading .NET Core Runtime...]]></Val>
+          <Val><![CDATA[Downloading .NET Core...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Скачивание среды выполнения .NET Core…]]></Val>
+            <Val><![CDATA[Скачивание .NET Core…]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Downloading .NET Core Runtime...]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -228,9 +237,21 @@
       </Item>
       <Item ItemId=";INSTALLER_EXTRACT_ERROR" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Couldn't extract MSI installer!]]></Val>
+          <Val><![CDATA[Couldn't extract MSI installer.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Не удалось извлечь установщик MSI.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Couldn't extract MSI installer!]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";NEWER_VERSION_ERROR" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A newer version is already installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Более новая версия уже установлена.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -258,6 +279,15 @@
           <Val><![CDATA[PowerToys: uninstall previous version?]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Удалить предыдущую версию PowerToys?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";OLD_WINDOWS_ERROR" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerToys requires Windows 10 version 1903 (May 2019 Update) or newer to run.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Для запуска PowerToys требуется Windows 10 версии 1903 (обновление за май 2019 года) или более поздней.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -291,10 +321,13 @@
       </Item>
       <Item ItemId=";UNINSTALL_PREVIOUS_VERSION_ERROR" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Couldn't uninstall previous PowerToys version!]]></Val>
+          <Val><![CDATA[Couldn't uninstall previous PowerToys version.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Удалить предыдущую версию PowerToys не удалось.]]></Val>
+            <Val><![CDATA[Не удалось удалить предыдущую версию PowerToys.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Couldn't uninstall previous PowerToys version!]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

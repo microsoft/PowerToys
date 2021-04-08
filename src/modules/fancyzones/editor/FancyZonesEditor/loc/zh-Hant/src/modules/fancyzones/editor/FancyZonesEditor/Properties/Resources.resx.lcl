@@ -28,6 +28,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Apply_Layout" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Apply layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[套用版面配置]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Are_You_Sure" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Are you sure?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[確定嗎?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Are_You_Sure_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Are you sure you want to delete this layout?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[確定要刪除此版面配置嗎?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Cancel" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cancel]]></Val>
@@ -48,9 +75,21 @@
       </Item>
       <Item ItemId=";Choose_Layout" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Choose your layout for this desktop]]></Val>
+          <Val><![CDATA[Choose the layout for this desktop]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[選擇此桌面的配置]]></Val>
+            <Val><![CDATA[選擇此桌面的版面配置]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Choose your layout for this desktop]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Choose_layout_type" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Choose layout type]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[選擇版面配置類型]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -82,6 +121,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Create" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[建立]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Create_Custom_From_Template" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create custom layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[建立自訂版面配置]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Create_new_layout" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create new layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[建立新的版面配置]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Custom" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Custom]]></Val>
@@ -91,12 +157,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Custom_Layout_Create_New" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";Custom_Layout_Create_New" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create new custom]]></Val>
+          <Val><![CDATA[Custom layout]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[建立新自訂]]></Val>
+            <Val><![CDATA[自訂版面配置]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create new custom]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -109,20 +178,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Custom_Layout_Delete_Button" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Default_Custom_Layout_Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Delete custom layout]]></Val>
+          <Val><![CDATA[Custom layout]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[刪除自訂配置]]></Val>
+            <Val><![CDATA[自訂版面配置]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Custom_Table_Layout" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Delete" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Custom table layout creator]]></Val>
+          <Val><![CDATA[Delete]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[自訂資料表配置建立者]]></Val>
+            <Val><![CDATA[刪除]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Delete_Zone" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Delete zone]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[刪除區域]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -136,12 +214,42 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Edit_Selected_Layout" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Duplicate" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Edit selected layout]]></Val>
+          <Val><![CDATA[Duplicate]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[編輯選取的配置]]></Val>
+            <Val><![CDATA[複製]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Edit" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Edit]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[編輯]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Edit_Layout" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Edit layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[編輯版面配置]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Edit_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Edit zone layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[編輯區域配置]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Edit zones]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -226,6 +334,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Error_Parsing_Zones_Settings_Message" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A layout that contained invalid data has been removed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已移除包含無效資料的配置。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_Parsing_Zones_Settings_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Editor settings parsing error.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[編輯器設定剖析錯誤。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Error_Persisting_Custom_Layout" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Error persisting custom layout]]></Val>
@@ -280,6 +406,78 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Layout_Canvas_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create layouts that have overlapping zones]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[建立有重疊區域的版面配置]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Layout_Canvas_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Canvas]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[畫布]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Layout_Grid_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create layouts that are horizontally or vertically stacked]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[建立以水平或垂直方式堆疊的版面配置]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Layout_Grid_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Grid]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[方格]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";MergeDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Click and drag across zones.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[按一下並在區域之間拖曳。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";MergeName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Merge/Delete:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[合併/刪除:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Merge_zones" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Merge zones]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[合併區域]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Monitor" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Monitor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[監視器]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Name]]></Val>
@@ -289,11 +487,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Note_Custom_Table" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";No_Custom_Layouts_Message" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click "merge".]]></Val>
+          <Val><![CDATA[Create or duplicate a layout to get started]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[注意: 按住 Shift 鍵可變更分隔器的方向。若要合併區域，請選取區域，然後按一下 [合併]5D;。]]></Val>
+            <Val><![CDATA[若要開始，請建立或複製版面配置]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";NumberOfZones" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Number of zones]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[區域數目]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Select" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a key to quickly apply the layout (Win + Ctrl + Alt + key)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[選取按鍵以快速套用版面配置 (Windows 鍵 + Ctrl + Alt + 按鍵)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Quick_Key_None" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[None]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[無]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -307,11 +532,32 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Save" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Save]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[儲存]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Save_Apply" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Save and apply]]></Val>
+          <Val><![CDATA[Save & apply]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[儲存並套用]]></Val>
+            <Val><![CDATA[儲存並套用(_A)]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Save and apply]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Settings" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Template settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[範本設定]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -334,20 +580,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Tab_Item_Custom" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";SplitterDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Custom tab selected, press ctrl + tab to switch to Templates]]></Val>
+          <Val><![CDATA[Hold Shift key for vertical split.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[已選取自訂索引標籤，按 ctrl + tab 以切換到範本]]></Val>
+            <Val><![CDATA[按住 Shift 鍵可垂直分割。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Tab_Item_Templates" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";SplitterName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Templates tab selected, press ctrl + tab to switch to Custom]]></Val>
+          <Val><![CDATA[Splitter:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[已選取範本索引標籤，按 ctrl + tab 以切換到自訂]]></Val>
+            <Val><![CDATA[分隔器:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Template_Layout_Blank" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[沒有任何版面配置]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -408,19 +663,25 @@
       </Item>
       <Item ItemId=";Zone_Count_Decrement" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Decrement number of zones in template layout]]></Val>
+          <Val><![CDATA[Decrement number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[減少範本配置中的區域數]]></Val>
+            <Val><![CDATA[區域的減少數目]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Decrement number of zones in template layout]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Zone_Count_Increment" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Increment number of zones in template layout]]></Val>
+          <Val><![CDATA[Increment number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[增加範本配置中的區域數]]></Val>
+            <Val><![CDATA[區域的增加數目]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Increment number of zones in template layout]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -22,6 +22,13 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             Canvas.SetZIndex(this, zIndex++);
+            SizeChanged += CanvasZone_SizeChanged;
+        }
+
+        private void CanvasZone_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            WidthLabel.Text = Width.ToString();
+            HeightLabel.Text = Height.ToString();
         }
 
         private CanvasLayoutModel model;

@@ -179,7 +179,7 @@ namespace ColorPicker.Helpers
             {
                 _zoomWindow.Left = _lastLeft + 1;
                 _zoomWindow.Top = _lastTop + 1;
-                PowerToysTelemetry.Log.WriteEvent(new ColorPickerZoomOpenedEvent());
+                SessionEventHelper.Event.ZoomUsed = true;
             }
 
             _throttledActionInvoker.ScheduleAction(

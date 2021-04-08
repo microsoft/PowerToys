@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="BOOTSTRAPPER_PROGRESS_TITLE" xml:space="preserve">
-    <value>PowerToys installer</value>
+    <value>PowerToys Installer</value>
   </data>
   <data name="DOTNET_CORE_DOWNLOAD_FAILURE" xml:space="preserve">
     <value>Couldn't download .NET Core Desktop Runtime 3.1, please install it manually.</value>
@@ -128,19 +128,19 @@
     <value>PowerToys: uninstall previous version?</value>
   </data>
   <data name="INSTALLER_EXTRACT_ERROR" xml:space="preserve">
-    <value>Couldn't extract MSI installer!</value>
+    <value>Couldn't extract MSI installer.</value>
   </data>
   <data name="EXTRACTING_INSTALLER" xml:space="preserve">
     <value>Extracting PowerToys MSI...</value>
   </data>
   <data name="UNINSTALL_PREVIOUS_VERSION_ERROR" xml:space="preserve">
-    <value>Couldn't uninstall previous PowerToys version!</value>
+    <value>Couldn't uninstall previous PowerToys version.</value>
   </data>
   <data name="DOWNLOADING_DOTNET" xml:space="preserve">
-    <value>Downloading .NET Core Runtime...</value>
+    <value>Downloading .NET Core...</value>
   </data>
   <data name="DOTNET_INSTALL_ERROR" xml:space="preserve">
-    <value>Couldn't install dotnet!</value>
+    <value>Couldn't install .NET Core.</value>
   </data>
   <data name="NEW_VERSION_INSTALLATION_ERROR" xml:space="preserve">
     <value>Couldn't install new PowerToys version.</value>
@@ -154,5 +154,11 @@
   </data>
   <data name="GITHUB_NEW_VERSION_CHECK_ERROR" xml:space="preserve">
     <value>Failed to connect to the server. Check your network connection or retry later.</value>
+  </data>
+   <data name="NEWER_VERSION_ERROR" xml:space="preserve">
+    <value>A newer version is already installed.</value>
+  </data>
+  <data name="OLD_WINDOWS_ERROR" xml:space="preserve">
+    <value>PowerToys requires Windows 10 version 1903 (May 2019 Update) or newer to run.</value>
   </data>
 </root>

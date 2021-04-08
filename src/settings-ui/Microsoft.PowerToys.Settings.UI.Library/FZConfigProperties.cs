@@ -18,11 +18,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesMouseSwitch = new BoolProperty();
             FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
             FancyzonesMoveWindowsBasedOnPosition = new BoolProperty();
+            FancyzonesOverlappingZonesAlgorithm = new IntProperty();
             FancyzonesDisplayChangeMoveWindows = new BoolProperty();
             FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
             FancyzonesAppLastZoneMoveWindows = new BoolProperty();
             FancyzonesOpenWindowOnActiveMonitor = new BoolProperty();
             FancyzonesRestoreSize = new BoolProperty();
+            FancyzonesQuickLayoutSwitch = new BoolProperty(ConfigDefaults.DefaultFancyzonesQuickLayoutSwitch);
+            FancyzonesFlashZonesOnQuickSwitch = new BoolProperty(ConfigDefaults.DefaultFancyzonesFlashZonesOnQuickSwitch);
             UseCursorposEditorStartupscreen = new BoolProperty(ConfigDefaults.DefaultUseCursorposEditorStartupscreen);
             FancyzonesShowOnAllMonitors = new BoolProperty();
             FancyzonesSpanZonesAcrossMonitors = new BoolProperty();
@@ -50,6 +53,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("fancyzones_moveWindowsBasedOnPosition")]
         public BoolProperty FancyzonesMoveWindowsBasedOnPosition { get; set; }
 
+        [JsonPropertyName("fancyzones_overlappingZonesAlgorithm")]
+        public IntProperty FancyzonesOverlappingZonesAlgorithm { get; set; }
+
         [JsonPropertyName("fancyzones_displayChange_moveWindows")]
         public BoolProperty FancyzonesDisplayChangeMoveWindows { get; set; }
 
@@ -64,6 +70,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("fancyzones_restoreSize")]
         public BoolProperty FancyzonesRestoreSize { get; set; }
+
+        [JsonPropertyName("fancyzones_quickLayoutSwitch")]
+        public BoolProperty FancyzonesQuickLayoutSwitch { get; set; }
+
+        [JsonPropertyName("fancyzones_flashZonesOnQuickSwitch")]
+        public BoolProperty FancyzonesFlashZonesOnQuickSwitch { get; set; }
 
         [JsonPropertyName("use_cursorpos_editor_startupscreen")]
         public BoolProperty UseCursorposEditorStartupscreen { get; set; }

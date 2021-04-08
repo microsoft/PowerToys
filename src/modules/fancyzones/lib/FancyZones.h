@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/hooks/WinHookEvent.h>
+#include "Settings.h"
 
 #include <functional>
 
@@ -101,6 +102,11 @@ interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindow
      * @returns Boolean indicating if move/size operation is currently active.
      */
     IFACEMETHOD_(bool, InMoveSize)
+    () = 0;
+    /**
+     * @returns Enumeration value indicating the algorithm used to choose one of multiple overlapped zones to highlight.
+     */
+    IFACEMETHOD_(Settings::OverlappingZonesAlgorithm, GetOverlappingZonesAlgorithm)
     () = 0;
 };
 

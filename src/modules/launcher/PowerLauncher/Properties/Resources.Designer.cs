@@ -61,15 +61,6 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have activated Wox {0} times.
-        /// </summary>
-        public static string about_activate_times {
-            get {
-                return ResourceManager.GetString("about_activate_times", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Application Icon.
         /// </summary>
         public static string AppIcon {
@@ -138,6 +129,24 @@ namespace PowerLauncher.Properties {
         public static string executeQuery {
             get {
                 return ResourceManager.GetString("executeQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plugins: {0} - fail to load and would be disabled, please contact plugins creator for help.
+        /// </summary>
+        public static string FailedToInitializePluginsDescription {
+            get {
+                return ResourceManager.GetString("FailedToInitializePluginsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fail to initialize plugins.
+        /// </summary>
+        public static string FailedToInitializePluginsTitle {
+            get {
+                return ResourceManager.GetString("FailedToInitializePluginsTitle", resourceCulture);
             }
         }
         

@@ -15,4 +15,5 @@ struct VersionHelper
     size_t revision;
 
     std::wstring toWstring() const;
+    std::string toString() const;
 };

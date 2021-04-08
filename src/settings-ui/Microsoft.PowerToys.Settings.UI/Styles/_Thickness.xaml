@@ -33,4 +33,8 @@
     <!--Extra Extra Small size margins-->
     <Thickness x:Key="XXSmallTopMargin">0, 4, 0, 0</Thickness>
     <Thickness x:Key="XXSmallTopRightBottomMargin">0, 4, 4, 4</Thickness>
+
+    <!-- OOBE -->
+    <Thickness x:Key="OobePageContentMargin">32, 24, 32, 24</Thickness>
+    
 </ResourceDictionary>

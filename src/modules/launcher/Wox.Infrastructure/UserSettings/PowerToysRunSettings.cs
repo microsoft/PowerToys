@@ -47,6 +47,8 @@ namespace Wox.Infrastructure.UserSettings
 
         public Theme Theme { get; set; } = Theme.System;
 
+        public StartupPosition StartupPosition { get; set; } = StartupPosition.Cursor;
+
         public string QueryBoxFont { get; set; } = FontFamily.GenericSansSerif.Name;
 
         public string QueryBoxFontStyle { get; set; }
@@ -134,10 +136,6 @@ namespace Wox.Infrastructure.UserSettings
                 }
             }
         }
-
-        // Order defaults to 0 or -1, so 1 will let this property appear last
-        [JsonProperty(Order = 1)]
-        public PluginSettings PluginSettings { get; set; } = new PluginSettings();
 
         public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; } = new ObservableCollection<CustomPluginHotkey>();
 

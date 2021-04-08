@@ -10,21 +10,25 @@ std::optional<RcResource> RcResource::create(int resource_id, const std::wstring
     {
         return std::nullopt;
     }
+
     const HGLOBAL memHandle = LoadResource(nullptr, resHandle);
     if (!memHandle)
     {
         return std::nullopt;
     }
+    
     const size_t resSize = SizeofResource(nullptr, resHandle);
     if (!resSize)
     {
         return std::nullopt;
     }
+    
     auto res = static_cast<const std::byte*>(LockResource(memHandle));
     if (!res)
     {
         return std::nullopt;
     }
+    
     return RcResource{ res, resSize };
 }
 
@@ -35,6 +39,7 @@ bool RcResource::saveAsFile(const std::filesystem::path destination)
     {
         return false;
     }
+    
     installerFile.write(reinterpret_cast<const char*>(_memory), _size);
     return true;
 }

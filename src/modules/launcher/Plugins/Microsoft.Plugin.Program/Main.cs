@@ -32,6 +32,10 @@ namespace Microsoft.Plugin.Program
 
         internal static ProgramPluginSettings Settings { get; set; }
 
+        public string Name => Properties.Resources.wox_plugin_program_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_program_plugin_description;
+
         private static PluginInitContext _context;
         private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed;
@@ -52,12 +56,12 @@ namespace Microsoft.Plugin.Program
 
             var a = Task.Run(() =>
             {
-                Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _win32ProgramRepository.IndexPrograms);
+                Stopwatch.Normal("Microsoft.Plugin.Program.Main - Win32Program index cost", _win32ProgramRepository.IndexPrograms);
             });
 
             var b = Task.Run(() =>
             {
-                Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Package index cost", _packageRepository.IndexPrograms);
+                Stopwatch.Normal("Microsoft.Plugin.Program.Main - Package index cost", _packageRepository.IndexPrograms);
             });
 
             Task.WaitAll(a, b);

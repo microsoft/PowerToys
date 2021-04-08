@@ -84,14 +84,18 @@ namespace Wox
             });
         }
 
-        public void ShowNotification(string text)
+        public void ShowNotification(string text, string secondaryText = null)
         {
+            var builder = new ToastContentBuilder().AddText(text);
+
+            if (!string.IsNullOrWhiteSpace(secondaryText))
+            {
+                builder.AddText(secondaryText);
+            }
+
             Application.Current.Dispatcher.Invoke(() =>
             {
-                ToastContent toastContent = new ToastContentBuilder()
-                    .AddText(text)
-                    .GetToastContent();
-                var toast = new ToastNotification(toastContent.GetXml());
+                var toast = new ToastNotification(builder.GetToastContent().GetXml());
                 DesktopNotificationManagerCompat.CreateToastNotifier().Show(toast);
             });
         }

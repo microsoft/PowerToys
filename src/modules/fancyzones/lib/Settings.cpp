@@ -15,11 +15,14 @@ namespace NonLocalizable
     const wchar_t OverrideSnapHotKeysID[] = L"fancyzones_overrideSnapHotkeys";
     const wchar_t MoveWindowAcrossMonitorsID[] = L"fancyzones_moveWindowAcrossMonitors";
     const wchar_t MoveWindowsBasedOnPositionID[] = L"fancyzones_moveWindowsBasedOnPosition";
+    const wchar_t OverlappingZonesAlgorithmID[] = L"fancyzones_overlappingZonesAlgorithm";
     const wchar_t DisplayChangeMoveWindowsID[] = L"fancyzones_displayChange_moveWindows";
     const wchar_t ZoneSetChangeMoveWindowsID[] = L"fancyzones_zoneSetChange_moveWindows";
     const wchar_t AppLastZoneMoveWindowsID[] = L"fancyzones_appLastZone_moveWindows";
     const wchar_t OpenWindowOnActiveMonitorID[] = L"fancyzones_openWindowOnActiveMonitor";
     const wchar_t RestoreSizeID[] = L"fancyzones_restoreSize";
+    const wchar_t QuickLayoutSwitch[] = L"fancyzones_quickLayoutSwitch";
+    const wchar_t FlashZonesOnQuickSwitch[] = L"fancyzones_flashZonesOnQuickSwitch";
     const wchar_t UseCursorPosEditorStartupScreenID[] = L"use_cursorpos_editor_startupscreen";
     const wchar_t ShowOnAllMonitorsID[] = L"fancyzones_show_on_all_monitors";
     const wchar_t SpanZonesAcrossMonitorsID[] = L"fancyzones_span_zones_across_monitors";
@@ -79,21 +82,19 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[14 /* 15 */] = {
-        // "Turning FLASHING_ZONE option off"
+    } m_configBools[16] = {
         { NonLocalizable::ShiftDragID, &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { NonLocalizable::MouseSwitchID, &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { NonLocalizable::OverrideSnapHotKeysID, &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
         { NonLocalizable::MoveWindowAcrossMonitorsID, &m_settings.moveWindowAcrossMonitors, IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS },
         { NonLocalizable::MoveWindowsBasedOnPositionID, &m_settings.moveWindowsBasedOnPosition, IDS_SETTING_DESCRIPTION_MOVE_WINDOWS_BASED_ON_POSITION },
-
-        // "Turning FLASHING_ZONE option off"
-        //{ L"fancyzones_zoneSetChange_flashZones", &m_settings.zoneSetChange_flashZones, IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES },
         { NonLocalizable::DisplayChangeMoveWindowsID, &m_settings.displayChange_moveWindows, IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS },
         { NonLocalizable::ZoneSetChangeMoveWindowsID, &m_settings.zoneSetChange_moveWindows, IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS },
         { NonLocalizable::AppLastZoneMoveWindowsID, &m_settings.appLastZone_moveWindows, IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS },
         { NonLocalizable::OpenWindowOnActiveMonitorID, &m_settings.openWindowOnActiveMonitor, IDS_SETTING_DESCRIPTION_OPEN_WINDOW_ON_ACTIVE_MONITOR },
         { NonLocalizable::RestoreSizeID, &m_settings.restoreSize, IDS_SETTING_DESCRIPTION_RESTORESIZE },
+        { NonLocalizable::QuickLayoutSwitch, &m_settings.quickLayoutSwitch, IDS_SETTING_DESCRIPTION_QUICKLAYOUTSWITCH },
+        { NonLocalizable::FlashZonesOnQuickSwitch, &m_settings.flashZonesOnQuickSwitch, IDS_SETTING_DESCRIPTION_FLASHZONESONQUICKSWITCH },
         { NonLocalizable::UseCursorPosEditorStartupScreenID, &m_settings.use_cursorpos_editor_startupscreen, IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN },
         { NonLocalizable::ShowOnAllMonitorsID, &m_settings.showZonesOnAllMonitors, IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS },
         { NonLocalizable::SpanZonesAcrossMonitorsID, &m_settings.spanZonesAcrossMonitors, IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS },
@@ -238,6 +239,15 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
         {
             m_settings.zoneHighlightOpacity = *val;
         }
+
+        if (auto val = values.get_int_value(NonLocalizable::OverlappingZonesAlgorithmID))
+        {
+            // Avoid undefined behavior
+            if (*val >= 0 || *val < (int)Settings::OverlappingZonesAlgorithm::EnumElements)
+            {
+                m_settings.overlappingZonesAlgorithm = (Settings::OverlappingZonesAlgorithm)*val;
+            }
+        }
     }
     catch (...)
     {
@@ -264,6 +274,7 @@ void FancyZonesSettings::SaveSettings() noexcept
         values.add_property(NonLocalizable::ZoneBorderColorID, m_settings.zoneBorderColor);
         values.add_property(NonLocalizable::ZoneHighlightColorID, m_settings.zoneHighlightColor);
         values.add_property(NonLocalizable::ZoneHighlightOpacityID, m_settings.zoneHighlightOpacity);
+        values.add_property(NonLocalizable::OverlappingZonesAlgorithmID, (int)m_settings.overlappingZonesAlgorithm);
         values.add_property(NonLocalizable::EditorHotkeyID, m_settings.editorHotkey.get_json());
         values.add_property(NonLocalizable::ExcludedAppsID, m_settings.excludedApps);
 

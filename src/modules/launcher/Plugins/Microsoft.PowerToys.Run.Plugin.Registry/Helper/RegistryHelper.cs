@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
 using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
@@ -144,21 +143,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
             // it's impossible to directly open a key via command-line option, so we must override the last remember key
             Win32.Registry.SetValue(@"HKEY_Current_User\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", "LastKey", fullKey);
 
-            var processStartInfo = new ProcessStartInfo
-            {
-                // -m => allow multi-instance (hidden start option)
-                Arguments = "-m",
-
-                FileName = "regedit.exe",
-
-                // Start as administrator
-                Verb = "runas",
-
-                // Start as administrator will not work without this
-                UseShellExecute = true,
-            };
-
-            Process.Start(processStartInfo);
+            // -m => allow multi-instance (hidden start option)
+            Wox.Infrastructure.Helper.OpenInShell("regedit.exe", "-m", null, true);
         }
 
         /// <summary>

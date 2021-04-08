@@ -1,20 +1,24 @@
 name: Spell checking
 on:
+  pull_request_target:
   push:
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron: '15 * * * *'
 
 jobs:
   build:
     name: Spell checking
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.0.0
+    - name: checkout-merge
+      if: "contains(github.event_name, 'pull_request')"
+      uses: actions/checkout@v2.0.0
+      with:
+        ref: refs/pull/${{github.event.pull_request.number}}/merge
+        fetch-depth: 5
+    - name: checkout
+      if: "!contains(github.event_name, 'pull_request')"
+      uses: actions/checkout@v2.0.0
       with:
         fetch-depth: 5
-    - uses: check-spelling/check-spelling@0.0.16-alpha
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        bucket: .github/actions
-        project: spell-check
+    - uses: check-spelling/check-spelling@0.0.17-alpha
+      with:
+        config: .github/actions/spell-check

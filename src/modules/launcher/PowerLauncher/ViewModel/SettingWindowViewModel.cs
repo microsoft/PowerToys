@@ -17,13 +17,6 @@ namespace PowerLauncher.ViewModel
         {
             _storage = new WoxJsonStorage<PowerToysRunSettings>();
             Settings = _storage.Load();
-            Settings.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(Settings.ActivateTimes))
-                {
-                    OnPropertyChanged(nameof(ActivatedTimes));
-                }
-            };
         }
 
         public PowerToysRunSettings Settings { get; set; }
@@ -32,7 +25,5 @@ namespace PowerLauncher.ViewModel
         {
             _storage.Save();
         }
-
-        public string ActivatedTimes => string.Format(CultureInfo.InvariantCulture, Properties.Resources.about_activate_times, Settings.ActivateTimes);
     }
 }

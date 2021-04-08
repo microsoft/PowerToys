@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Telemetry
             where T : EventBase, IEvent
         {
             this.Write<T>(
-                null,
+                telemetryEvent.EventName,
                 new EventSourceOptions()
                 {
                     Keywords = ProjectKeywordMeasure,

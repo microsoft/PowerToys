@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Manages Windows services.
+        ///   Looks up a localized string similar to Manages Windows services..
         /// </summary>
         internal static string wox_plugin_service_plugin_description {
             get {
@@ -124,7 +124,16 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} has been restarted.
+        ///   Looks up a localized string similar to An error occurred while restarting the service.
+        /// </summary>
+        internal static string wox_plugin_service_restart_error_notification {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_restart_error_notification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The service has been restarted.
         /// </summary>
         internal static string wox_plugin_service_restarted_notification {
             get {
@@ -147,6 +156,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
         internal static string wox_plugin_service_start {
             get {
                 return ResourceManager.GetString("wox_plugin_service_start", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while starting the service.
+        /// </summary>
+        internal static string wox_plugin_service_start_error_notification {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_start_error_notification", resourceCulture);
             }
         }
         
@@ -214,7 +232,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} has been started.
+        ///   Looks up a localized string similar to The service has been started.
         /// </summary>
         internal static string wox_plugin_service_started_notification {
             get {
@@ -250,6 +268,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while stopping the service.
+        /// </summary>
+        internal static string wox_plugin_service_stop_error_notification {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_stop_error_notification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Stopping.
         /// </summary>
         internal static string wox_plugin_service_stop_pending {
@@ -268,7 +295,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} has been stopped.
+        ///   Looks up a localized string similar to The service has been stopped.
         /// </summary>
         internal static string wox_plugin_service_stopped_notification {
             get {

@@ -36,6 +36,12 @@ namespace FancyZonesEditor.Models
             CanvasRect = new Rect(new Size(width, height));
         }
 
+        public CanvasLayoutModel(string name, LayoutType type, int width, int height)
+        : base(name, type)
+        {
+            CanvasRect = new Rect(new Size(width, height));
+        }
+
         public CanvasLayoutModel(string name, LayoutType type)
         : base(name, type)
         {
@@ -91,6 +97,10 @@ namespace FancyZonesEditor.Models
             {
                 _topLeft = DefaultOffset;
             }
+            else if (_topLeft == Zones[Zones.Count - 1].X)
+            {
+                _topLeft += OffsetShift;
+            }
 
             Rect workingArea = App.Overlay.WorkArea;
             int topLeft = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_topLeft);
@@ -144,6 +154,7 @@ namespace FancyZonesEditor.Models
             }
 
             layout.SensitivityRadius = SensitivityRadius;
+            layout.CanvasRect = CanvasRect;
             return layout;
         }
 
@@ -155,7 +166,10 @@ namespace FancyZonesEditor.Models
                 other.Zones.Add(zone);
             }
 
+            other._topLeft = _topLeft;
             other.SensitivityRadius = SensitivityRadius;
+            other.CanvasRect = CanvasRect;
+            other.UpdateLayout();
         }
 
         // PersistData

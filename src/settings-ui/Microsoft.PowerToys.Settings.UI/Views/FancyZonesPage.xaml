@@ -123,8 +123,18 @@
             <CheckBox x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}"
                       Margin="{StaticResource XSmallTopMargin}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" />
 
+            <ComboBox x:Uid="FancyZones_OverlappingZones"
+                      SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                      VerticalAlignment="Center"
+                      Width="{StaticResource MaxComboBoxWidth}"
+                      Margin="{StaticResource SmallTopMargin}">
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesLargest" />
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesPositional" />
+            </ComboBox>
 
             <TextBlock x:Uid="FancyZones_WindowBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
@@ -135,10 +145,17 @@
                       Margin="{StaticResource XSmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <CheckBox x:Uid="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition}"
-                      Margin="24,8,0,0"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
+            <RadioButton x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex"
+                         GroupName="FancyZones_MoveWindowGroup"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnZoneIndex}"
+                         Margin="24,8,0,0"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
+
+            <RadioButton x:Uid="FancyZones_MoveWindowBasedOnRelativePosition"
+                         GroupName="FancyZones_MoveWindowGroup"
+                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition}"
+                         Margin="24,8,0,0"
+                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}"
@@ -171,6 +188,20 @@
                       Margin="{StaticResource XSmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
+
+            <TextBlock x:Uid="FancyZones_QuickLayoutSwitch_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <CheckBox x:Uid="FancyZones_QuickLayoutSwitch"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}"
+                      Margin="{StaticResource XSmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_FlashZonesOnQuickSwitch"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZonesOnQuickSwitch}"
+                      Margin="24,8,0,0"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.QuickSwitchEnabled}"/>
 
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"

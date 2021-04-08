@@ -105,6 +105,7 @@
             </ic:EventTriggerBehavior>
         </i:Interaction.Behaviors>
         <ScrollViewer x:Name="scrollViewer"
+                      VerticalScrollBarVisibility="Auto"
                       Grid.Column="0">
                 <Grid Margin="{StaticResource MediumLeftRightBottomMargin}">
                     <Frame x:Name="shellFrame" />

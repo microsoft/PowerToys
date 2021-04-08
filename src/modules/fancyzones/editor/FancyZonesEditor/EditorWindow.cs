@@ -31,25 +31,17 @@ namespace FancyZonesEditor
 
             App.FancyZonesEditorIO.SerializeZoneSettings();
 
-            _backToLayoutPicker = false;
             Close();
-            mainEditor.CloseEditor();
         }
 
         protected void OnClosed(object sender, EventArgs e)
         {
-            if (_backToLayoutPicker)
-            {
-                App.Overlay.CloseEditor();
-            }
+            App.Overlay.CloseEditor();
         }
 
         protected void OnCancel(object sender, RoutedEventArgs e)
         {
-            _backToLayoutPicker = true;
             Close();
         }
-
-        private bool _backToLayoutPicker = true;
     }
 }

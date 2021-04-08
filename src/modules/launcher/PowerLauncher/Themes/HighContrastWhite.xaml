@@ -12,7 +12,6 @@
     <system:String x:Key="Theme.BaseColorScheme">HighContrast</system:String>
     <system:String x:Key="Theme.ColorScheme">Accent5</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
-    <system:Boolean x:Key="Theme.IsHighContrast">True</system:Boolean>
 
     <Color x:Key="SystemBaseMediumLowColor">#66000000</Color>
     <SolidColorBrush x:Key="SystemChromeLow" Color="White" options:Freeze="True" />

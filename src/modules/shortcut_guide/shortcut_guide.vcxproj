@@ -67,6 +67,7 @@
     <ClInclude Include="d2d_svg.h" />
     <ClInclude Include="d2d_text.h" />
     <ClInclude Include="d2d_window.h" />
+    <ClInclude Include="native_event_waiter.h" />
     <ClInclude Include="overlay_window.h" />
     <ClInclude Include="keyboard_state.h" />
     <ClInclude Include="Generated Files/resource.h" />
@@ -83,6 +84,7 @@
     <ClCompile Include="d2d_svg.cpp" />
     <ClCompile Include="d2d_text.cpp" />
     <ClCompile Include="d2d_window.cpp" />
+    <ClCompile Include="native_event_waiter.cpp" />
     <ClCompile Include="overlay_window.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="keyboard_state.cpp" />

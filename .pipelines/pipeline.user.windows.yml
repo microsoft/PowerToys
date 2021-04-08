@@ -20,10 +20,7 @@ signing_options:
 package_sources:
   nuget:
     feeds:
-      'Nuget': 'https://api.nuget.org/v3/index.json'
-      'Toolset': 'https://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
-      'PipelineBuildSupplement': 'https://msazure.pkgs.visualstudio.com/_packaging/PipelineBuildSupplement/nuget/v3/index.json'
-
+      'PowerToysCDPX_Feed': 'https://github-private.pkgs.visualstudio.com/microsoft/_packaging/PowerToysCDPX_Feed/nuget/v3/index.json'
 restore:
   commands:
     - !!defaultcommand
@@ -83,6 +80,7 @@ build:
             - 'modules\FancyZones\FancyZonesEditor.dll'
             - 'modules\FancyZones\ManagedCommon.dll'
             - 'modules\FancyZones\Telemetry.dll'
+            - 'modules\FancyZones\Microsoft.PowerToys.Common.UI.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll'
             - 'modules\FileExplorerPreview\powerpreview.dll'
@@ -133,6 +131,7 @@ build:
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Telemetry.dll'
+            - 'modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll'
             - 'modules\launcher\Plugins\Service\Microsoft.PowerToys.Run.Plugin.Service.dll'
             - 'modules\launcher\Plugins\System\Microsoft.PowerToys.Run.Plugin.System.dll'
             - 'modules\launcher\PowerLauncher.dll'
@@ -151,14 +150,13 @@ build:
             - 'os-detection.dll'
             - 'PowerToys.exe'
             - 'PowerToysInterop.dll'
-            - 'PowerToysSettings.exe'
-            - 'SettingsUIRunner\Microsoft.PowerToys.Settings.UI.exe'
-            - 'SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll'
-            - 'SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Runner.dll'
-            - 'SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Runner.exe'
-            - 'SettingsUIRunner\PowerToysInterop.dll'
-            - 'SettingsUIRunner\Telemetry.dll'
-            - 'SettingsUIRunner\ManagedCommon.dll'
+            - 'Settings\Microsoft.PowerToys.Settings.UI.exe'
+            - 'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
+            - 'Settings\PowerToys.Settings.dll'
+            - 'Settings\PowerToys.Settings.exe'
+            - 'Settings\PowerToysInterop.dll'
+            - 'Settings\Telemetry.dll'
+            - 'Settings\ManagedCommon.dll'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand

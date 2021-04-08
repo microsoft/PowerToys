@@ -159,10 +159,6 @@
   <data name="Name" xml:space="preserve">
     <value>Name</value>
   </data>
-  <data name="Note_Custom_Table" xml:space="preserve">
-    <value>Hold down Shift key to change orientation of splitter.
-To merge zones, select the zones and click "merge".</value>
-  </data>
   <data name="Save_Apply" xml:space="preserve">
     <value>Save &amp; apply</value>
   </data>
@@ -176,10 +172,10 @@ To merge zones, select the zones and click "merge".</value>
     <value>Templates</value>
   </data>
   <data name="Zone_Count_Decrement" xml:space="preserve">
-    <value>Decrement number of zones in template layout</value>
+    <value>Decrement number of zones</value>
   </data>
   <data name="Zone_Count_Increment" xml:space="preserve">
-    <value>Increment number of zones in template layout</value>
+    <value>Increment number of zones</value>
   </data>
   <data name="Error_Invalid_Arguments" xml:space="preserve">
     <value>FancyZones Editor arguments are invalid.</value>
@@ -298,7 +294,7 @@ To merge zones, select the zones and click "merge".</value>
     <value>Are you sure you want to delete this layout?</value>
   </data>
   <data name="Edit_zones" xml:space="preserve">
-    <value>Edit zones</value>
+    <value>Edit zone layout</value>
   </data>
   <data name="No_Custom_Layouts_Message" xml:space="preserve">
     <value>Create or duplicate a layout to get started</value>
@@ -307,14 +303,11 @@ To merge zones, select the zones and click "merge".</value>
     <value>Delete zone</value>
     <comment>A tooltip on a button that allows the user to delete a zone</comment>
   </data>
-  <data name="Error_Parsing_Zones_Settings_Malformed_Data" xml:space="preserve">
-    <value>'zones-settings.json' contains malformed data.</value>
-  </data>
   <data name="Error_Parsing_Zones_Settings_Title" xml:space="preserve">
     <value>Editor settings parsing error.</value>
   </data>
-  <data name="Error_Parsing_Zones_Settings_User_Choice" xml:space="preserve">
-    <value>Would you like to continue? Malformed data will be lost.</value>
+  <data name="Error_Parsing_Zones_Settings_Message" xml:space="preserve">
+    <value>A layout that contained invalid data has been removed.</value>
   </data>
   <data name="Apply_Layout" xml:space="preserve">
     <value>Apply layout</value>
@@ -333,5 +326,27 @@ To merge zones, select the zones and click "merge".</value>
   </data>
   <data name="Default_Custom_Layout_Name" xml:space="preserve">
     <value>Custom layout</value>
+  </data>
+  <data name="MergeDescription" xml:space="preserve">
+    <value>Click and drag across zones.</value>
+    <comment>Click mouse, hold button down and drag across multiple zones in tool</comment>
+  </data>
+  <data name="MergeName" xml:space="preserve">
+    <value>Merge/Delete:</value>
+    <comment>Title for concept behind Merging two zones together or removing an zone</comment>
+  </data>
+  <data name="SplitterDescription" xml:space="preserve">
+    <value>Hold Shift key for vertical split.</value>
+    <comment>A segmenter visual for splitting one item into two.  This would be the vertical line. Shift key is referring to key on keyboard</comment>
+  </data>
+  <data name="SplitterName" xml:space="preserve">
+    <value>Splitter:</value>
+    <comment>Title for concept: A segmenter visual for splitting one item into two.  This would be the vertical line</comment>
+  </data>
+  <data name="QuickKey_Select" xml:space="preserve">
+    <value>Select a key to quickly apply the layout (Win + Ctrl + Alt + key)</value>
+  </data>
+  <data name="Quick_Key_None" xml:space="preserve">
+    <value>None</value>
   </data>
 </root>

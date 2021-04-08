@@ -23,13 +23,6 @@ namespace FancyZonesEditor
             VirtualDesktopId,
         }
 
-        private readonly CanvasLayoutModel _blankModel;
-        private readonly CanvasLayoutModel _focusModel;
-        private readonly GridLayoutModel _rowsModel;
-        private readonly GridLayoutModel _columnsModel;
-        private readonly GridLayoutModel _gridModel;
-        private readonly GridLayoutModel _priorityGridModel;
-
         // Non-localizable strings
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
         public static readonly string FullRegistryPath = "HKEY_CURRENT_USER\\" + RegistryPath;
@@ -53,40 +46,40 @@ namespace FancyZonesEditor
         public MainWindowSettingsModel()
         {
             // Initialize default layout models: Blank, Focus, Columns, Rows, Grid, and PriorityGrid
-            _blankModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Blank, LayoutType.Blank)
+            var blankModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Blank, LayoutType.Blank)
             {
                 TemplateZoneCount = 0,
                 SensitivityRadius = 0,
             };
-            DefaultModels.Add(_blankModel);
+            DefaultModels.Insert((int)LayoutType.Blank, blankModel);
 
-            _focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
-            _focusModel.InitTemplateZones();
-            DefaultModels.Add(_focusModel);
+            var focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
+            focusModel.InitTemplateZones();
+            DefaultModels.Insert((int)LayoutType.Focus, focusModel);
 
-            _columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
+            var columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
             {
                 Rows = 1,
                 RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
-            _columnsModel.InitTemplateZones();
-            DefaultModels.Add(_columnsModel);
+            columnsModel.InitTemplateZones();
+            DefaultModels.Insert((int)LayoutType.Columns, columnsModel);
 
-            _rowsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Rows, LayoutType.Rows)
+            var rowsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Rows, LayoutType.Rows)
             {
                 Columns = 1,
                 ColumnPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
-            _rowsModel.InitTemplateZones();
-            DefaultModels.Add(_rowsModel);
+            rowsModel.InitTemplateZones();
+            DefaultModels.Insert((int)LayoutType.Rows, rowsModel);
 
-            _gridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Grid, LayoutType.Grid);
-            _gridModel.InitTemplateZones();
-            DefaultModels.Add(_gridModel);
+            var gridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Grid, LayoutType.Grid);
+            gridModel.InitTemplateZones();
+            DefaultModels.Insert((int)LayoutType.Grid, gridModel);
 
-            _priorityGridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Priority_Grid, LayoutType.PriorityGrid);
-            _priorityGridModel.InitTemplateZones();
-            DefaultModels.Add(_priorityGridModel);
+            var priorityGridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Priority_Grid, LayoutType.PriorityGrid);
+            priorityGridModel.InitTemplateZones();
+            DefaultModels.Insert((int)LayoutType.PriorityGrid, priorityGridModel);
         }
 
         // IsShiftKeyPressed - is the shift key currently being held down
@@ -133,7 +126,7 @@ namespace FancyZonesEditor
         {
             get
             {
-                return _blankModel;
+                return DefaultModels[(int)LayoutType.Blank];
             }
         }
 
@@ -148,6 +141,8 @@ namespace FancyZonesEditor
         }
 
         private static ObservableCollection<LayoutModel> _customModels = new ObservableCollection<LayoutModel>();
+
+        public static QuickKeysModel QuickKeys { get; } = new QuickKeysModel();
 
         public LayoutModel SelectedModel
         {
@@ -202,7 +197,7 @@ namespace FancyZonesEditor
             {
                 foreach (LayoutModel model in CustomModels)
                 {
-                    if ("{" + model.Guid.ToString().ToUpperInvariant() + "}" == currentApplied.ZonesetUuid.ToUpperInvariant())
+                    if (model.Uuid == currentApplied.ZonesetUuid.ToUpperInvariant())
                     {
                         // found match
                         foundModel = model;
@@ -234,7 +229,7 @@ namespace FancyZonesEditor
 
             if (foundModel == null)
             {
-                foundModel = _priorityGridModel;
+                foundModel = DefaultModels[(int)LayoutType.PriorityGrid];
             }
 
             SetSelectedModel(foundModel);
@@ -255,6 +250,7 @@ namespace FancyZonesEditor
             SelectedModel.IsSelected = model.IsSelected;
             SelectedModel.IsApplied = model.IsApplied;
             SelectedModel.Name = model.Name;
+            SelectedModel.QuickKey = model.QuickKey;
 
             if (model is GridLayoutModel grid)
             {

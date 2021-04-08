@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
@@ -12,9 +11,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using PowerLauncher.Helper;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin.Logger;
 
@@ -83,12 +80,8 @@ namespace PowerLauncher
 
         private void RepositoryHyperlink_Click(object sender, RoutedEventArgs e)
         {
-            var ps = new ProcessStartInfo((sender as Hyperlink).NavigateUri.ToString())
-            {
-                UseShellExecute = true,
-                Verb = "open",
-            };
-            Process.Start(ps);
+            var uri = (sender as Hyperlink).NavigateUri.ToString();
+            Wox.Infrastructure.Helper.OpenInShell(uri);
         }
     }
 }

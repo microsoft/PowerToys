@@ -65,6 +65,18 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                 return;
             }
 
+            try
+            {
+                svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                _browser.ScrollBarsEnabled = true;
+                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
+            }
+
             InvokeOnControlThread(() =>
             {
                 try
@@ -127,7 +139,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             _browser.Dock = DockStyle.Fill;
             _browser.IsWebBrowserContextMenuEnabled = false;
             _browser.ScriptErrorsSuppressed = true;
-            _browser.ScrollBarsEnabled = true;
+            _browser.ScrollBarsEnabled = false;
             _browser.AllowNavigation = false;
             Controls.Add(_browser);
         }

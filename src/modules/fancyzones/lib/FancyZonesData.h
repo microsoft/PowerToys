@@ -42,22 +42,16 @@ public:
 
     std::optional<FancyZonesDataTypes::CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
 
-    inline const JSONHelpers::TDeviceInfoMap & GetDeviceInfoMap() const
-    {
-        std::scoped_lock lock{ dataLock };
-        return deviceInfoMap;
-    }
+    const JSONHelpers::TDeviceInfoMap& GetDeviceInfoMap() const;
 
-    inline const JSONHelpers::TCustomZoneSetsMap & GetCustomZoneSetsMap() const
-    {
-        std::scoped_lock lock{ dataLock };
-        return customZoneSetsMap;
-    }
+    const JSONHelpers::TCustomZoneSetsMap& GetCustomZoneSetsMap() const;
 
-    inline const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const
+    const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const;
+
+    inline const JSONHelpers::TLayoutQuickKeysMap& GetLayoutQuickKeys() const
     {
         std::scoped_lock lock{ dataLock };
-        return appZoneHistoryMap;
+        return quickKeysMap;
     }
 
     inline const std::wstring& GetZonesSettingsFileName() const 
@@ -81,7 +75,7 @@ public:
     json::JsonObject GetPersistFancyZonesJSON();
 
     void LoadFancyZonesData();
-    void SaveFancyZonesData() const;
+    void SaveAppZoneHistoryAndZoneSettings() const;
     void SaveZoneSettings() const;
     void SaveAppZoneHistory() const;
 
@@ -133,6 +127,8 @@ private:
     JSONHelpers::TDeviceInfoMap deviceInfoMap{};
     // Maps custom zoneset UUID to it's data
     JSONHelpers::TCustomZoneSetsMap customZoneSetsMap{};
+    // Maps zoneset UUID with quick access keys
+    JSONHelpers::TLayoutQuickKeysMap quickKeysMap{};
 
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;

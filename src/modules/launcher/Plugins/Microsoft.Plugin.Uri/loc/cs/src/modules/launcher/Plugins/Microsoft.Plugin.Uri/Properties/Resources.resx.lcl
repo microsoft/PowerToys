@@ -10,21 +10,36 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId=";Microsoft_plugin_uri_open_failed" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to open URL]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se otevřít adresu URL.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Microsoft_plugin_uri_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Handles urls]]></Val>
+          <Val><![CDATA[Opens URLs and UNC network shares.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zpracovává adresy URL.]]></Val>
+            <Val><![CDATA[Otevírá adresy URL a sdílené síťové složky UNC.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Handles urls]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_uri_plugin_name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Url Handler]]></Val>
+          <Val><![CDATA[URI Handler]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Obslužná rutina adres URL]]></Val>
+            <Val><![CDATA[Obslužná rutina identifikátoru URI]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Url Handler]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

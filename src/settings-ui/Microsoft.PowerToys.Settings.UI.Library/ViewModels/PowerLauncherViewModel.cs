@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using ManagedCommon;
@@ -18,9 +21,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _isLightThemeRadioButtonChecked;
         private bool _isSystemThemeRadioButtonChecked;
 
-        private GeneralSettings GeneralSettingsConfig { get; set; }
+        private bool _isCursorPositionRadioButtonChecked;
+        private bool _isPrimaryMonitorPositionRadioButtonChecked;
+        private bool _isFocusPositionRadioButtonChecked;
 
-        private readonly ISettingsUtils _settingsUtils;
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private PowerLauncherSettings settings;
 
@@ -28,11 +33,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private readonly SendCallback callback;
 
+        private readonly Func<bool> isDark;
+
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        public PowerLauncherViewModel(PowerLauncherSettings settings, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<bool> isDark)
         {
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+            if (settings == null)
+            {
+                throw new ArgumentException("settings argument can not be null");
+            }
+
+            this.settings = settings;
+            this.isDark = isDark;
 
             // To obtain the general Settings configurations of PowerToys
             if (settingsRepository == null)
@@ -44,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-            callback = (PowerLauncherSettings settings) =>
+            callback = (PowerLauncherSettings s) =>
             {
                 // Propagate changes to Power Launcher through IPC
                 // Using InvariantCulture as this is an IPC message
@@ -53,21 +66,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                         CultureInfo.InvariantCulture,
                         "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                         PowerLauncherSettings.ModuleName,
-                        JsonSerializer.Serialize(settings)));
+                        JsonSerializer.Serialize(s)));
             };
-
-            if (_settingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
-            {
-                settings = _settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
-            }
-            else
-            {
-                settings = new PowerLauncherSettings();
-                settings.Properties.OpenPowerLauncher.Alt = true;
-                settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
-                settings.Properties.MaximumNumberOfResults = 4;
-                callback(settings);
-            }
 
             switch (settings.Properties.Theme)
             {
@@ -81,6 +81,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     _isSystemThemeRadioButtonChecked = true;
                     break;
             }
+
+            switch (settings.Properties.Position)
+            {
+                case StartupPosition.Cursor:
+                    _isCursorPositionRadioButtonChecked = true;
+                    break;
+                case StartupPosition.PrimaryMonitor:
+                    _isPrimaryMonitorPositionRadioButtonChecked = true;
+                    break;
+                case StartupPosition.Focus:
+                    _isFocusPositionRadioButtonChecked = true;
+                    break;
+            }
+
+            foreach (var plugin in Plugins)
+            {
+                plugin.PropertyChanged += OnPluginInfoChange;
+            }
+        }
+
+        private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
+            UpdateSettings();
         }
 
         public PowerLauncherViewModel(PowerLauncherSettings settings, SendCallback callback)
@@ -110,6 +134,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     GeneralSettingsConfig.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
+                    OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
+                    OnPropertyChanged(nameof(ShowPluginsLoadingMessage));
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -219,6 +245,60 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     settings.Properties.Theme = Theme.System;
                     _isDarkThemeRadioButtonChecked = value;
 
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool IsCursorPositionRadioButtonChecked
+        {
+            get
+            {
+                return _isCursorPositionRadioButtonChecked;
+            }
+
+            set
+            {
+                if (value == true)
+                {
+                    settings.Properties.Position = StartupPosition.Cursor;
+                    _isCursorPositionRadioButtonChecked = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool IsPrimaryMonitorPositionRadioButtonChecked
+        {
+            get
+            {
+                return _isPrimaryMonitorPositionRadioButtonChecked;
+            }
+
+            set
+            {
+                if (value == true)
+                {
+                    settings.Properties.Position = StartupPosition.PrimaryMonitor;
+                    _isPrimaryMonitorPositionRadioButtonChecked = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool IsFocusPositionRadioButtonChecked
+        {
+            get
+            {
+                return _isFocusPositionRadioButtonChecked;
+            }
+
+            set
+            {
+                if (value == true)
+                {
+                    settings.Properties.Position = StartupPosition.Focus;
+                    _isFocusPositionRadioButtonChecked = value;
                     UpdateSettings();
                 }
             }
@@ -343,21 +423,34 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool DisableDriveDetectionWarning
+        private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
+
+        public ObservableCollection<PowerLauncherPluginViewModel> Plugins
         {
             get
             {
-                return settings.Properties.DisableDriveDetectionWarning;
-            }
-
-            set
-            {
-                if (settings.Properties.DisableDriveDetectionWarning != value)
+                if (_plugins == null)
                 {
-                    settings.Properties.DisableDriveDetectionWarning = value;
-                    UpdateSettings();
+                    _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(settings.Plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
                 }
+
+                return _plugins;
             }
+        }
+
+        public bool ShowAllPluginsDisabledWarning
+        {
+            get => EnablePowerLauncher && Plugins.Any() && Plugins.All(x => x.Disabled);
+        }
+
+        public bool ShowPluginsLoadingMessage
+        {
+            get => EnablePowerLauncher && !Plugins.Any();
+        }
+
+        public bool IsUpToDate(PowerLauncherSettings settings)
+        {
+            return this.settings.Equals(settings);
         }
     }
 }

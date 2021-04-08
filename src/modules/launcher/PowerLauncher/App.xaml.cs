@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
@@ -28,7 +29,7 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
 
-        private const string Unique = "PowerLauncher_Unique_Application_Mutex";
+        private const string Unique = "PowerToys_PowerToysRun_InstanceMutex";
         private static bool _disposed;
         private PowerToysRunSettings _settings;
         private MainViewModel _mainVM;
@@ -36,7 +37,7 @@ namespace PowerLauncher
         private ThemeManager _themeManager;
         private SettingWindowViewModel _settingsVM;
         private StringMatcher _stringMatcher;
-        private SettingsWatcher _settingsWatcher;
+        private SettingsReader _settingsReader;
 
         [STAThread]
         public static void Main()
@@ -79,10 +80,11 @@ namespace PowerLauncher
 
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
-            Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
+            Stopwatch.Normal("App.OnStartup - Startup cost", () =>
             {
-                Log.Info("Begin PowerToys Run startup ----------------------------------------------------", GetType());
-                Log.Info($"Runtime info:{ErrorReporting.RuntimeInfo()}", GetType());
+                var textToLog = new StringBuilder();
+                textToLog.AppendLine("Begin PowerToys Run startup ----------------------------------------------------");
+                textToLog.AppendLine($"Runtime info:{ErrorReporting.RuntimeInfo()}");
 
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
@@ -98,10 +100,12 @@ namespace PowerLauncher
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
-                PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _themeManager);
+                _settingsReader = new SettingsReader(_settings, _themeManager);
+                _settingsReader.ReadSettings();
+
                 PluginManager.InitializePlugins(API);
 
                 Current.MainWindow = _mainWindow;
@@ -112,15 +116,16 @@ namespace PowerLauncher
 
                 RegisterExitEvents();
 
-                _settingsWatcher = new SettingsWatcher(_settings, _themeManager);
+                _settingsReader.ReadSettingsOnChange();
 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
                 _themeManager.ThemeChanged += OnThemeChanged;
-                Log.Info("End PowerToys Run startup ----------------------------------------------------  ", GetType());
+                textToLog.AppendLine("End PowerToys Run startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
 
+                Log.Info(textToLog.ToString(), GetType());
                 PowerToysTelemetry.Log.WriteEvent(new LauncherBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
 
                 // [Conditional("RELEASE")]
@@ -175,7 +180,7 @@ namespace PowerLauncher
         {
             if (!_disposed)
             {
-                Stopwatch.Normal("|App.OnExit|Exit cost", () =>
+                Stopwatch.Normal("App.OnExit - Exit cost", () =>
                 {
                     Log.Info("Start PowerToys Run Exit----------------------------------------------------  ", GetType());
                     if (disposing)

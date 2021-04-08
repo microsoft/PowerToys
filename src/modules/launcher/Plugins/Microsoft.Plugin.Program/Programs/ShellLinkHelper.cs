@@ -169,7 +169,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception e)
                 {
-                    Log.Exception($"|Failed to fetch description for {target}, {e.Message}", e, GetType());
+                    Log.Exception($"Failed to fetch description for {target}, {e.Message}", e, GetType());
                     Description = string.Empty;
                 }
 

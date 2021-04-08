@@ -127,6 +127,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Setting_Description_FlashZonesOnQuickSwitch" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Flash zones when switching layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Przełącz strefy podczas przełączania układu]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Setting_Description_Make_Dragged_Window_Transparent" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
@@ -140,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use a non-primary mouse button to toggle zone activation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Do przełączania aktywacji strefy użyj przycisku myszy innego niż podstawowy]]></Val>
+            <Val><![CDATA[Aktywuj strefy przyciskiem myszy innym niż podstawowy]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -181,11 +190,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Setting_Description_QuickLayoutSwitch" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Włącz szybkie przełączanie układu]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Setting_Description_RestoreSize" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Restore the original size of windows when unsnapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Przywróć oryginalny rozmiar okien podczas odciągania]]></Val>
+            <Val><![CDATA[Przywróć oryginalny rozmiar okien po odciągnięciu]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

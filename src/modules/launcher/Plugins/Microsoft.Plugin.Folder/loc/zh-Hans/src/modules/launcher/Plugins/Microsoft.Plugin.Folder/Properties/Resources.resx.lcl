@@ -78,10 +78,13 @@
       </Item>
       <Item ItemId=";wox_plugin_folder_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open favorite folder from PowerToys Run directly]]></Val>
+          <Val><![CDATA[Navigates folders starting from a drive letter 'C:\' or from the user home '~'.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[直接从 PowerToys Run 打开收藏文件夹]]></Val>
+            <Val><![CDATA[从驱动器号 "C:\" 或用户主目录 "~" 开始导航文件夹。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Open favorite folder from PowerToys Run directly]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

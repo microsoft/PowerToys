@@ -743,7 +743,7 @@
         <Str Cat="Text">
           <Val><![CDATA[ZIP]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[zip 圧縮]]></Val>
+            <Val><![CDATA[ZIP]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zip]]></Val>

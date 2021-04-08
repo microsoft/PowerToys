@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press the Color Picker icon to capture a color from your screen.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[画面から色をキャプチャするには、カラー ピッカー アイコンを押します。]]></Val>
+            <Val><![CDATA[画面から色をキャプチャするには、Color Picker アイコンを押します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -554,7 +554,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[カラー ピッカーエディター]]></Val>
+            <Val><![CDATA[Color Picker エディター]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

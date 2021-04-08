@@ -13,7 +13,6 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -22,7 +21,7 @@ using Control = System.Windows.Controls.Control;
 
 namespace Microsoft.Plugin.Shell
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
@@ -33,6 +32,10 @@ namespace Microsoft.Plugin.Shell
         private readonly PluginJsonStorage<ShellPluginSettings> _storage;
 
         private string IconPath { get; set; }
+
+        public string Name => Properties.Resources.wox_plugin_cmd_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_cmd_plugin_description;
 
         private PluginInitContext _context;
 
@@ -152,8 +155,8 @@ namespace Microsoft.Plugin.Shell
 
         private ProcessStartInfo PrepareProcessStartInfo(string command, bool runAsAdministrator = false)
         {
-            command = command.Trim();
-            command = Environment.ExpandEnvironmentVariables(command);
+            string trimmedCommand = command.Trim();
+            command = Environment.ExpandEnvironmentVariables(trimmedCommand);
             var workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             var runAsAdministratorArg = !runAsAdministrator && !_settings.RunAsAdministrator ? string.Empty : "runas";
 
@@ -214,7 +217,7 @@ namespace Microsoft.Plugin.Shell
 
             info.UseShellExecute = true;
 
-            _settings.AddCmdHistory(command);
+            _settings.AddCmdHistory(trimmedCommand);
 
             return info;
         }
@@ -330,10 +333,6 @@ namespace Microsoft.Plugin.Shell
             };
 
             return resultlist;
-        }
-
-        public void UpdateSettings(PowerLauncherSettings settings)
-        {
         }
     }
 }

@@ -106,7 +106,7 @@
 
                 <RadioButton x:Uid="Radio_Theme_Default"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
-                <HyperlinkButton NavigateUri="ms-settings:colors">
+                <HyperlinkButton Click="OpenColorsSettings_Click">
                     <TextBlock x:Uid="Windows_Color_Settings" />
                 </HyperlinkButton>
             </StackPanel>
@@ -187,15 +187,19 @@
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
 
+                <HyperlinkButton Click="OobeButton_Click">
+                    <TextBlock x:Uid="Oobe_Button"/>
+                </HyperlinkButton>
+                
                 <HyperlinkButton x:Uid="GeneralPage_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="General_Repository"/>
                 </HyperlinkButton>
 
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysReportBug">
                     <TextBlock x:Uid="GeneralPage_ReportAbug"/>
                 </HyperlinkButton>
 
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysRequestFeature">
                     <TextBlock x:Uid="GeneralPage_RequestAFeature_URL"/>
                 </HyperlinkButton>
 

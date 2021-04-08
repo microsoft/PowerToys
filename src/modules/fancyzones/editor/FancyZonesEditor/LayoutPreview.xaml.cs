@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -27,7 +26,6 @@ namespace FancyZonesEditor
 
         public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));
         private LayoutModel _model;
-        private List<Int32Rect> _zones = new List<Int32Rect>();
 
         public bool IsActualSize
         {
@@ -82,11 +80,6 @@ namespace FancyZonesEditor
             RenderPreview();
         }
 
-        public Int32Rect[] GetZoneRects()
-        {
-            return _zones.ToArray();
-        }
-
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             _model = (LayoutModel)DataContext;
@@ -105,8 +98,6 @@ namespace FancyZonesEditor
             Body.RowDefinitions.Clear();
             Body.ColumnDefinitions.Clear();
 
-            _zones.Clear();
-
             if (_model is GridLayoutModel gridModel)
             {
                 RenderGridPreview(gridModel);
@@ -121,32 +112,12 @@ namespace FancyZonesEditor
         {
             int rows = grid.Rows;
             int cols = grid.Columns;
+            double spacing = grid.ShowSpacing ? grid.Spacing : 0;
 
-            RowColInfo[] rowInfo = (from percent in grid.RowPercents
-                                    select new RowColInfo(percent)).ToArray();
-
-            RowColInfo[] colInfo = (from percent in grid.ColumnPercents
-                                    select new RowColInfo(percent)).ToArray();
-
-            int spacing = grid.ShowSpacing ? grid.Spacing : 0;
+            var rowData = GridData.PrefixSum(grid.RowPercents);
+            var columnData = GridData.PrefixSum(grid.ColumnPercents);
 
             var workArea = App.Overlay.WorkArea;
-            double width = workArea.Width - (spacing * (cols + 1));
-            double height = workArea.Height - (spacing * (rows + 1));
-
-            double top = spacing;
-            for (int row = 0; row < rows; row++)
-            {
-                double cellHeight = rowInfo[row].Recalculate(top, height);
-                top += cellHeight + spacing;
-            }
-
-            double left = spacing;
-            for (int col = 0; col < cols; col++)
-            {
-                double cellWidth = colInfo[col].Recalculate(left, width);
-                left += cellWidth + spacing;
-            }
 
             Viewbox viewbox = new Viewbox
             {
@@ -170,10 +141,8 @@ namespace FancyZonesEditor
                     {
                         // this is not a continuation of a span
                         Border rect = new Border();
-                        left = colInfo[col].Start;
-                        top = rowInfo[row].Start;
-                        Canvas.SetTop(rect, top);
-                        Canvas.SetLeft(rect, left);
+                        double left = columnData[col] * workArea.Width / GridData.Multiplier;
+                        double top = rowData[row] * workArea.Height / GridData.Multiplier;
 
                         int maxRow = row;
                         while (((maxRow + 1) < rows) && (grid.CellChildMap[maxRow + 1, col] == childIndex))
@@ -187,12 +156,21 @@ namespace FancyZonesEditor
                             maxCol++;
                         }
 
-                        rect.Width = Math.Max(0, colInfo[maxCol].End - left);
-                        rect.Height = Math.Max(0, rowInfo[maxRow].End - top);
-                        rect.Style = (Style)FindResource("GridLayoutPreviewActualSizeStyle");
+                        double right = columnData[maxCol + 1] * workArea.Width / GridData.Multiplier;
+                        double bottom = rowData[maxRow + 1] * workArea.Height / GridData.Multiplier;
+
+                        left += col == 0 ? spacing : spacing / 2;
+                        right -= maxCol == cols - 1 ? spacing : spacing / 2;
+                        top += row == 0 ? spacing : spacing / 2;
+                        bottom -= maxRow == rows - 1 ? spacing : spacing / 2;
+
+                        Canvas.SetTop(rect, top);
+                        Canvas.SetLeft(rect, left);
+                        rect.Width = Math.Max(1, right - left);
+                        rect.Height = Math.Max(1, bottom - top);
+
+                        rect.Style = (Style)FindResource("GridLayoutActualScalePreviewStyle");
                         frame.Children.Add(rect);
-                        _zones.Add(new Int32Rect(
-                            (int)left, (int)top, (int)rect.Width, (int)rect.Height));
                     }
                 }
             }
@@ -261,7 +239,7 @@ namespace FancyZonesEditor
 
                         Grid.SetColumnSpan(rect, span);
                         rect.Margin = margin;
-                        rect.Style = (Style)FindResource("GridLayoutPreviewStyle");
+                        rect.Style = (Style)FindResource("GridLayoutSmallScalePreviewStyle");
                         Body.Children.Add(rect);
                     }
                 }
@@ -283,7 +261,7 @@ namespace FancyZonesEditor
         private void RenderCanvasPreview(CanvasLayoutModel canvas)
         {
             var workArea = canvas.CanvasRect;
-            if (workArea.Width == 0 || workArea.Height == 0 || App.Overlay.SpanZonesAcrossMonitors)
+            if (workArea.Width == 0 || workArea.Height == 0)
             {
                 workArea = App.Overlay.WorkArea;
             }
@@ -310,11 +288,11 @@ namespace FancyZonesEditor
 
                 if (IsActualSize)
                 {
-                   rect.Style = (Style)FindResource("CanvasLayoutPreviewActualSizeStyle");
+                   rect.Style = (Style)FindResource("CanvasLayoutActualScalePreviewStyle");
                 }
                 else
                 {
-                   rect.Style = (Style)FindResource("CanvasLayoutPreviewStyle");
+                   rect.Style = (Style)FindResource("CanvasLayoutSmallScalePreviewStyle");
                 }
 
                 frame.Children.Add(rect);

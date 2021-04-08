@@ -134,8 +134,8 @@
     <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
-    <value>File Explorer</value>
-    <comment>Product name: Navigation view item name for File Explorer Preview</comment>
+    <value>File Explorer add-ons</value>
+    <comment>Product name: Navigation view item name for File Explorer.  Please use File Explorer as in the context of File Explorer in Windows</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
@@ -291,9 +291,6 @@
   <data name="PowerLauncher_IgnoreHotkeysInFullScreen.Content" xml:space="preserve">
     <value>Ignore shortcuts in fullscreen mode</value>
   </data>
-  <data name="PowerLauncher_DisableDriveDetectionWarning.Content" xml:space="preserve">
-    <value>Disable drive detection warning for the file search plugin</value>
-  </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
@@ -330,7 +327,7 @@
     <value>To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
-    <value>Zone highlight opacity</value>
+    <value>Zone opacity</value>
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
@@ -497,6 +494,16 @@
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
+  </data>
+  <data name="ShortcutGuide_DisabledApps.Text" xml:space="preserve">
+    <value>Disable for apps</value>
+  </data>
+  <data name="ShortcutGuide_DisabledApps_TextBoxControl.Header" xml:space="preserve">
+    <value>Turn off Shortcut Guide when these applications have focus. Add one application name per line.</value>
+  </data>
+  <data name="ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+    <comment>Don't translate outlook.exe</comment>
   </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image sizes</value>
@@ -665,6 +672,7 @@
   </data>
   <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
     <value>File Explorer</value>
+    <comment>Use same translation as Windows does for File Explorer</comment>
   </data>
   <data name="About_ImageResizer.Text" xml:space="preserve">
     <value>About Image Resizer</value>
@@ -718,7 +726,7 @@
     <value>Administrator mode</value>
   </data>
   <data name="General_RunAsAdminRequired.Text" xml:space="preserve">
-    <value>You need to run as administrator to use this setting</value>
+    <value>You need to run as administrator to use this setting.</value>
   </data>
   <data name="ShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts with the following hotkeys are valid:</value>
@@ -790,7 +798,7 @@
     <value>Preview Pane</value>
   </data>
   <data name="FileExplorerPreview_RunAsAdminRequired.Text" xml:space="preserve">
-    <value>You need to run as administrator to modify these settings</value>
+    <value>You need to run as administrator to modify these settings.</value>
   </data>
   <data name="FileExplorerPreview_AffectsAllUsers.Text" xml:space="preserve">
     <value>The settings on this page affect all users on the system</value>
@@ -800,6 +808,7 @@
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
+    <comment>Don't translate outlook.exe</comment>
   </data>
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
@@ -875,7 +884,7 @@
     <value>Open directly into the editor mode</value>
   </data>
   <data name="ColorPicker_ColorFormatsDescription.Text" xml:space="preserve">
-    <value>Editor color formats (Change the order by dragging)</value>
+    <value>Editor color formats</value>
   </data>
   <data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
     <value>Show color name</value>
@@ -932,7 +941,263 @@
     <value>https://aka.ms/PowerToysOverview_ShortcutGuide</value>
     <comment>URL. Do not loc</comment>
   </data>
+  <data name="FancyZones_MoveWindowBasedOnRelativePosition.Content" xml:space="preserve">
+    <value>Win + Up/Down/Left/Right to move windows based on relative position</value>
+  </data>
+  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" xml:space="preserve">
+    <value>Win + Left/Right to move windows based on zone index</value>
+  </data>
   <data name="ColorPicker_Editor.Text" xml:space="preserve">
     <value>Editor</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesLargest.Content" xml:space="preserve">
+    <value>Activate the largest zone by area</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesPositional.Content" xml:space="preserve">
+    <value>Split the overlapped area into multiple activation targets</value>
+  </data>
+  <data name="FancyZones_OverlappingZonesSmallest.Content" xml:space="preserve">
+    <value>Activate the smallest zone by area</value>
+  </data>
+  <data name="FancyZones_OverlappingZones.Header" xml:space="preserve">
+    <value>When multiple zones overlap:</value>
+  </data>
+  <data name="PowerLauncher_Plugins.Text" xml:space="preserve">
+    <value>Plugins</value>
+  </data>
+  <data name="PowerLauncher_ActionKeyword.Text" xml:space="preserve">
+    <value>Direct activation phrase</value>
+  </data>
+  <data name="PowerLauncher_AuthoredBy.Text" xml:space="preserve">
+    <value>Authored by</value>
+    <comment>example: Authored by Microsoft</comment>
+  </data>
+  <data name="PowerLauncher_IncludeInGlobalResult.Content" xml:space="preserve">
+    <value>Include in global result</value>
+  </data>
+  <data name="PowerLauncher_EnablePluginToggle.AutomationProperties.Name" xml:space="preserve">
+    <value>Enable plugin</value>
+  </data>
+  <data name="Run_AdditionalOptions.Text" xml:space="preserve">
+    <value>Additional options</value>
+  </data>
+  <data name="Run_NotAccessibleWarning.Text" xml:space="preserve">
+    <value>Please define an activation phrase or allow this plugin for the global results to use it.</value>
+  </data>
+  <data name="Run_AllPluginsDisabled.Text" xml:space="preserve">
+    <value>PowerToys Run can't provide any results without plugins. Please enable at least one plugin.</value>
+  </data>
+  <data name="Run_NotAllowedActionKeyword.Text" xml:space="preserve">
+    <value>This activation phrase overrides the behavior of other plugins. Please change it to something else.</value>
+  </data>
+  <data name="Run_PluginUseDescription.Text" xml:space="preserve">
+    <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options.</value>
+  </data>
+  <data name="Oobe_GetStarted.Text" xml:space="preserve">
+    <value>Let's get started!</value>
+  </data>
+  <data name="Oobe_PowerToysDescription.Text" xml:space="preserve">
+    <value>Welcome to PowerToys!  These overviews will help you quickly learn the basics of all our utilities.</value>
+  </data>
+  <data name="Oobe_GettingStarted.Text" xml:space="preserve">
+    <value>Getting started</value>
+  </data>
+  <data name="Oobe_Launch.Text" xml:space="preserve">
+    <value>Launch</value>
+  </data>
+  <data name="Oobe_LearnMore.Text" xml:space="preserve">
+    <value>Learn more about</value>
+  </data>
+  <data name="Oobe_ColorPicker_Description" xml:space="preserve">
+    <value>Color Picker is a system-wide color selection tool for Windows 10 that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.</value>
+  </data>
+  <data name="Oobe_FancyZones_Description" xml:space="preserve">
+    <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
+  </data>
+  <data name="Oobe_FileExplorer_Description" xml:space="preserve">
+    <value>PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md) and SVG icons (.svg) to be viewed in the preview pane.</value>
+  </data>
+  <data name="Oobe_ImageResizer_Description" xml:space="preserve">
+    <value>Image Resizer is a Windows shell extension for simple bulk image-resizing.</value>
+  </data>
+  <data name="Oobe_KBM_Description" xml:space="preserve">
+    <value>Keyboard Manager allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.</value>
+  </data>
+  <data name="Oobe_PowerRename_Description" xml:space="preserve">
+    <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
+  </data>
+  <data name="Oobe_PowerRun_Description" xml:space="preserve">
+    <value>PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.</value>
+  </data>
+  <data name="Oobe_ShortcutGuide_Description" xml:space="preserve">
+    <value>Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.</value>
+  </data>
+  <data name="Oobe_VideoConference_Description" xml:space="preserve">
+    <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
+  </data>
+  <data name="Oobe_Overview_CheckoutLatestVersion.Text" xml:space="preserve">
+    <value>For returning users, check out what is new in our</value>
+  </data>
+  <data name="Oobe_Overview_Description.Text" xml:space="preserve">
+    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.
+Take a moment to preview the various utilities listed or view our comprehensive documentation on</value>
+  </data>
+  <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
+    <value>Microsoft Docs</value>
+  </data>
+  <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
+    <value>release notes</value>
+  </data>
+  <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
+    <value>{Win} + {Ctrl} + {C} to open Color Picker.</value>
+  </data>
+  <data name="Oobe_ColorPicker_TipsAndTricks.Text" xml:space="preserve">
+    <value>To select a color with more precision, {scroll the mouse wheel} to zoom in.</value>
+  </data>
+  <data name="Oobe_FancyZones_HowToUse.Text" xml:space="preserve">
+    <value>{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {`} to open the FancyZones editor.</value>
+  </data>
+  <data name="Oobe_FancyZones_TipsAndTricks.Text" xml:space="preserve">
+    <value>Snap a window to multiple zones by holding the {Ctrl} key (while also holding {Shift}) when dragging a window.</value>
+  </data>
+  <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
+    <value>Open File Explorer, {select the View tab} in the File Explorer ribbon, then {select Preview Pane}. 
+From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!</value>
+  </data>
+  <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
+    <value>How to create mappings</value>
+  </data>
+  <data name="Oobe_HowToEnable.Text" xml:space="preserve">
+    <value>How to enable</value>
+  </data>
+  <data name="Oobe_HowToLaunch.Text" xml:space="preserve">
+    <value>How to launch</value>
+  </data>
+  <data name="Oobe_HowToUse.Text" xml:space="preserve">
+    <value>How to use</value>
+  </data>
+  <data name="Oobe_ImageResizer_HowToLaunch.Text" xml:space="preserve">
+    <value>In File Explorer, {right-clicking one or more image files} and {clicking on Resize pictures} from the context menu.</value>
+  </data>
+  <data name="Oobe_ImageResizer_TipsAndTricks.Text" xml:space="preserve">
+    <value>Want a custom size? You can add them in the PowerToys Settings!</value>
+  </data>
+  <data name="Oobe_KBM_HowToCreateMappings.Text" xml:space="preserve">
+    <value>Launch {PowerToys settings}, navigate to the Keyboard Manager menu, and select either {Remap a key} or {Remap a shortcut}.</value>
+  </data>
+  <data name="Oobe_KBM_TipsAndTricks.Text" xml:space="preserve">
+    <value>Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.</value>
+  </data>
+  <data name="Oobe_PowerRename_HowToUse.Text" xml:space="preserve">
+    <value>In File Explorer, {right-clicking one or more selected files} and {clicking on PowerRename} from the context menu.</value>
+  </data>
+  <data name="Oobe_PowerRename_TipsAndTricks.Text" xml:space="preserve">
+    <value>PowerRename supports searching for files using regular expressions to enable more advanced renaming functionalities.</value>
+  </data>
+  <data name="Oobe_Run_HowToLaunch.Text" xml:space="preserve">
+    <value>{Alt} + {Space} to open Run and just start typing.</value>
+  </data>
+  <data name="Oobe_Run_TipsAndTricks.Text" xml:space="preserve">
+    <value>PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing {&lt;} searches for running processes only, {?} will search only for file, or {.} for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
+  </data>
+  <data name="Oobe_ShortcutGuide_HowToLaunch.Text" xml:space="preserve">
+    <value>{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!</value>
+  </data>
+  <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
+    <value>Tips &amp; tricks</value>
+  </data>
+  <data name="Oobe_VideoConference_HowToLaunch.Text" xml:space="preserve">
+    <value>{Win} + {N} to toggle both your microphone and video
+{Win} + {Shift} + {A} to toggle your microphone 
+{Win} + {Shift} + {O} to toggle your video</value>
+  </data>
+  <data name="Oobe_ColorPicker" xml:space="preserve">
+    <value>Color Picker</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_FancyZones" xml:space="preserve">
+    <value>FancyZones</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_FileExplorer" xml:space="preserve">
+    <value>File Explorer add-ons</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_ImageResizer" xml:space="preserve">
+    <value>ImageResizer</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_KBM" xml:space="preserve">
+    <value>Keyboard Manager</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_Overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="Oobe_PowerRename" xml:space="preserve">
+    <value>PowerRename</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_Run" xml:space="preserve">
+    <value>PowerToys Run</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_ShortcutGuide" xml:space="preserve">
+    <value>Shortcut Guide</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_VideoConference" xml:space="preserve">
+    <value>Video Conference</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_Welcome" xml:space="preserve">
+    <value>Welcome to PowerToys</value>
+    <comment>Do not localize 'PowerToys'</comment>
+  </data>
+  <data name="OOBE_Settings.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Oobe_Button.Text" xml:space="preserve">
+    <value>Welcome to PowerToys</value>
+  </data>
+  <data name="OobeWindow_Title" xml:space="preserve">
+    <value>Welcome to PowerToys</value>
+  </data>
+  <data name="SettingsWindow_Title" xml:space="preserve">
+    <value>PowerToys Settings</value>
+  </data>
+  <data name="Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
+    <value>Position &amp; appearance</value>
+  </data>
+  <data name="Run_PositionHeader.Text" xml:space="preserve">
+    <value>Show PowerToys Run on</value>
+    <comment>as in Show PowerToys Run on primary monitor</comment>
+  </data>
+  <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
+    <value>Monitor with mouse cursor</value>
+  </data>
+  <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
+    <value>Monitor with focused window</value>
+  </data>
+  <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
+    <value>Primary monitor</value>
+  </data>
+  <data name="Run_PluginsLoading.Text" xml:space="preserve">
+    <value>Plugins are loading...</value>
+  </data>
+  <data name="ColorPicker_ButtonDown.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color down</value>
+  </data>
+  <data name="ColorPicker_ButtonUp.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color up</value>
+  </data>
+  <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
+    <value>Flash zones when switching layout</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch.Content" xml:space="preserve">
+    <value>Enable quick layout switch</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
+    <value>Quick layout switch</value>
   </data>
 </root>

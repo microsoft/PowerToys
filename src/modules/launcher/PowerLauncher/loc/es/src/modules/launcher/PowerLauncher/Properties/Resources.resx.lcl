@@ -100,15 +100,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";about_activate_times" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[You have activated Wox {0} times]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ha activado Wox {0} veces.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";deseralization_error_message" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Settings will be reset to default and program will continue to function.]]></Val>
@@ -122,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run deserialization error]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Error de deserialización del Ejecutor de PowerToys]]></Val>
+            <Val><![CDATA[Error de deserialización de PowerToys Run]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Powertoys Run deserialization error]]></Val>
@@ -206,7 +197,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run ran into an issue]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[El Ejecutor de PowerToys tuvo un problema.]]></Val>
+            <Val><![CDATA[PowerToys Run tuvo un problema.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

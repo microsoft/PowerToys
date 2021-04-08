@@ -117,16 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="filesfolder_copy_failed" xml:space="preserve">
-    <value>Copying path {0} has failed, it will now be deleted for consistency</value>
-    <comment>parameter: targetPath</comment>
+  <data name="FailedToLoadPluginDescription" xml:space="preserve">
+    <value>Please contact plugin creator for help</value>
   </data>
-  <data name="filesfolder_removefolder_failed" xml:space="preserve">
-    <value>Not able to delete folder {0}, please go to the location and manually delete it</value>
-    <comment>parameter: path</comment>
-  </data>
-  <data name="filesfolder_verifybothfolderfilesequal_failed" xml:space="preserve">
-    <value>Unable to verify folders and files between {0} and {1}</value>
-    <comment>parameters: fromPath, toPath</comment>
+  <data name="FailedToLoadPluginTitle" xml:space="preserve">
+    <value>Fail to Load {0} Plugin</value>
   </data>
 </root>

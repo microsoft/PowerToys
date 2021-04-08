@@ -209,13 +209,11 @@
                                         Style="{DynamicResource CollapsableTextblock}"
                                         FontWeight="Bold"
                                         Text="{Binding Result.ToolTipData.Title}"
-                                        TextWrapping="Wrap" 
-                                        RenderOptions.ClearTypeHint="Enabled" />
+                                        TextWrapping="Wrap" />
                                     <TextBlock 
                                         Style="{DynamicResource CollapsableTextblock}"
                                         Text="{Binding Result.ToolTipData.Text}"                               
-                                        TextWrapping="Wrap" 
-                                        RenderOptions.ClearTypeHint="Enabled" />
+                                        TextWrapping="Wrap" />
                                 </StackPanel>
                             </ToolTip>
                         </Grid.ToolTip>
@@ -235,8 +233,7 @@
                             FontWeight="SemiBold"
                             FontSize="20"
                             Margin="0,0,0,-2"
-                            VerticalAlignment="Bottom"
-                            RenderOptions.ClearTypeHint="Enabled"/>
+                            VerticalAlignment="Bottom"/>
                         <TextBlock
                             AutomationProperties.Name="{x:Static p:Resources.Subtitle}"
                             x:Name="Path"
@@ -245,8 +242,7 @@
                             Grid.Row="1"
                             Foreground="{DynamicResource SecondaryTextForeground}"
                             Margin="0,2,0,0"
-                            VerticalAlignment="Top"
-                            RenderOptions.ClearTypeHint="Enabled"/>
+                            VerticalAlignment="Top"/>
                         <ListView      
                             AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemsCollection}"
                             HorizontalAlignment="Right" 
@@ -284,8 +280,7 @@
                                             <ToolTip >
                                                 <TextBlock
                                                     AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}"
-                                                    Text="{Binding Title}"
-                                                    RenderOptions.ClearTypeHint="Enabled"/>
+                                                    Text="{Binding Title}"/>
                                             </ToolTip>
                                         </ToolTipService.ToolTip>
                                         <Button.Content>
@@ -293,8 +288,7 @@
                                                 AutomationProperties.Name="{x:Static p:Resources.ContextMenuIcon}"
                                                 FontFamily="{Binding FontFamily}"
                                                 FontSize="16"
-                                                Text="{Binding Glyph}"
-                                                RenderOptions.ClearTypeHint="Enabled"/>
+                                                Text="{Binding Glyph}"/>
                                         </Button.Content>
                                     </Button>
                                 </DataTemplate>

@@ -66,7 +66,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public static IFile FileWrapper { get; set; } = new FileSystem().File;
 
-        public static IShellLinkHelper Helper { get; set; } = new ShellLinkHelper();
+        public static IShellLinkHelper ShellLinkHelper { get; set; } = new ShellLinkHelper();
 
         public static IDirectoryWrapper DirectoryWrapper { get; set; } = new DirectoryWrapper();
 
@@ -294,7 +294,7 @@ namespace Microsoft.Plugin.Program.Programs
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
-                        Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
+                        Helper.OpenInShell(ParentDirectory);
                         return true;
                     },
                 });
@@ -473,7 +473,7 @@ namespace Microsoft.Plugin.Program.Programs
                 const int MAX_PATH = 260;
                 StringBuilder buffer = new StringBuilder(MAX_PATH);
 
-                string target = Helper.RetrieveTargetPath(path);
+                string target = ShellLinkHelper.RetrieveTargetPath(path);
 
                 if (!string.IsNullOrEmpty(target))
                 {
@@ -485,7 +485,7 @@ namespace Microsoft.Plugin.Program.Programs
                         program.FullPath = Path.GetFullPath(target).ToLower(CultureInfo.CurrentCulture);
                         program.AppType = GetAppTypeFromPath(target);
 
-                        var description = Helper.Description;
+                        var description = ShellLinkHelper.Description;
                         if (!string.IsNullOrEmpty(description))
                         {
                             program.Description = description;
