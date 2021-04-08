@@ -25,17 +25,36 @@ namespace Espresso.Shell
 
             Console.WriteLine("Espresso - Computer Caffeination Engine");
 
+            var displayOption = new Option<bool>(
+                    aliases: new[] { "--display-on", "-d" },
+                    getDefaultValue: () => true,
+                    description: "Determines whether the display should be kept awake.")
+            {
+                Argument = new Argument<bool>(() => false)
+                {
+                    Arity = ArgumentArity.ZeroOrOne,
+                },
+            };
+
+            displayOption.Required = false;
+
+            var timeOption = new Option<long>(
+                    aliases: new[] { "--time-limit", "-t" },
+                    getDefaultValue: () => 0,
+                    description: "Determines the interval, in seconds, during which the computer is kept awake.")
+            {
+                Argument = new Argument<long>(() => 0)
+                {
+                    Arity = ArgumentArity.ExactlyOne,
+                },
+            };
+
+            timeOption.Required = false;
 
             var rootCommand = new RootCommand
             {
-                new Option<bool>(
-                    aliases: new string[] {"--display-on", "-d" },
-                    getDefaultValue: () => false,
-                    description: "Determines whether the display should be kept awake."),
-                new Option<long>(
-                    aliases: new string[] {"--time-limit", "-t" },
-                    getDefaultValue: () => 0,
-                    description: "Determines the interval, in seconds, during which the computer is kept awake.")
+                displayOption,
+                timeOption
             };
 
             rootCommand.Description = appName;
@@ -45,18 +64,18 @@ namespace Espresso.Shell
             return rootCommand.InvokeAsync(args).Result;
         }
 
-        private static void HandleCommandLineArguments(bool displayOption, long timeOption)
+        private static void HandleCommandLineArguments(bool displayOn, long timeLimit)
         {
-            Console.WriteLine($"The value for --display-on is: {displayOption}");
-            Console.WriteLine($"The value for --time-limit is: {timeOption}");
+            Console.WriteLine($"The value for --display-on is: {displayOn}");
+            Console.WriteLine($"The value for --time-limit is: {timeLimit}");
             
-            if (timeOption <= 0)
+            if (timeLimit <= 0)
             {
                 // Indefinite keep awake.
-                bool success = APIHelper.SetIndefiniteKeepAwake(displayOption);
+                bool success = APIHelper.SetIndefiniteKeepAwake(displayOn);
                 if (success)
                 {
-                    Console.WriteLine($"Currently in indefinite keep awake. Display always on: {displayOption}");
+                    Console.WriteLine($"Currently in indefinite keep awake. Display always on: {displayOn}");
                 }
                 else
                 {

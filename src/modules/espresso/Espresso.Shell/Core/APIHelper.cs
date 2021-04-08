@@ -49,15 +49,15 @@ namespace Espresso.Shell.Core
             }
         }
 
-        public static bool SetIndefiniteKeepAwake(bool keepDisplayOn = true)
+        public static bool SetIndefiniteKeepAwake(bool? keepDisplayOn = true)
         {
-            if (keepDisplayOn)
+            if ((bool)keepDisplayOn)
             {
-                return SetAwakeState(EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
             }
             else
             {
-                return SetAwakeState(EXECUTION_STATE.ES_CONTINUOUS);
+                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
             }    
         }
 
