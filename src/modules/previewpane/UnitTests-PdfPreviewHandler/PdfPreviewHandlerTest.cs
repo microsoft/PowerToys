@@ -33,7 +33,6 @@ namespace PdfPreviewHandlerUnitTests
 
                 // Assert
                 Assert.AreEqual(1, pdfPreviewHandlerControl.Controls.Count);
-                Assert.AreEqual(2, flowLayoutPanel.Controls.Count);
             }
         }
 
@@ -45,7 +44,7 @@ namespace PdfPreviewHandlerUnitTests
             {
                 var mockStream = new Mock<IStream>();
                 mockStream
-                    .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>())) 
+                    .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
                     .Throws(new Exception());
 
                 // Act
@@ -83,13 +82,6 @@ namespace PdfPreviewHandlerUnitTests
                         Marshal.WriteInt32(bytesReadPtr, 0);
                     }
                 });
-
-            streamMock
-              .Setup(x => x.SetSize(It.IsAny<long>()))
-              .Callback<long>((libNewSize) =>
-              { 
-                  Marshal.WriteInt64(new IntPtr(libNewSize), sourceArray.Length);
-              });
 
             return streamMock.Object;
         }
