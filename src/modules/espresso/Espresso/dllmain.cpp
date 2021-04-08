@@ -293,30 +293,11 @@ void Espresso::init_settings()
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(Espresso::get_name());
-
-        // Load a bool property.
-        //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
-        //  g_settings.bool_prop = *v;
-        //}
-
-        // Load an int property.
-        //if (auto v = settings.get_int_value(L"int_spinner_1")) {
-        //  g_settings.int_prop = *v;
-        //}
-
-        // Load a string property.
-        //if (auto v = settings.get_string_value(L"string_text_1")) {
-        //  g_settings.string_prop = *v;
-        //}
-
-        // Load a color property.
-        //if (auto v = settings.get_string_value(L"color_picker_1")) {
-        //  g_settings.color_prop = *v;
-        //}
+            PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
     }
-    catch (std::exception&)
+    catch (std::exception ex)
     {
+        Logger::warn(L"An exception occurred while loading the settings file");
         // Error while loading from the settings file. Let default values stay as they are.
     }
 }
