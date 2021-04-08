@@ -28,7 +28,7 @@
 
 bool failed(HRESULT hr)
 {
-    return FAILED(hr);
+    return hr != S_OK;
 }
 
 bool failed(bool val)
@@ -82,7 +82,8 @@ wil::com_ptr_nothrow<IWICBitmapSource> LoadAsRGB24BitmapWithSize(IWICImagingFact
     {
         wil::com_ptr_nothrow<IWICBitmapScaler> scaler;
         OK_OR_BAIL(pWIC->CreateBitmapScaler(&scaler));
-        OK_OR_BAIL(scaler->Initialize(decodedFrame.get(), targetWidth, targetHeight, WICBitmapInterpolationModeHighQualityCubic));
+        OK_OR_BAIL(
+            scaler->Initialize(decodedFrame.get(), targetWidth, targetHeight, WICBitmapInterpolationModeHighQualityCubic));
         bitmap.attach(scaler.detach());
     }
     else
@@ -98,7 +99,7 @@ wil::com_ptr_nothrow<IWICBitmapSource> LoadAsRGB24BitmapWithSize(IWICImagingFact
         wil::com_ptr_nothrow<IWICBitmapSource> convertedBitmap;
         if (SUCCEEDED(WICConvertBitmapSource(targetPixelFormat, bitmap.get(), &convertedBitmap)))
         {
-            bitmap = std::move(convertedBitmap);
+            return convertedBitmap;
         }
     }
 
@@ -150,19 +151,25 @@ IMFSample* ConvertIMFVideoSample(const MFT_REGISTER_TYPE_INFO& inputType,
     MFT_REGISTER_TYPE_INFO outputType = { MFMediaType_Video, {} };
     outputMediaType->GetGUID(MF_MT_SUBTYPE, &outputType.guidSubtype);
 
-    OK_OR_BAIL(MFTEnumEx(MFT_CATEGORY_VIDEO_DECODER,
-                         MFT_ENUM_FLAG_SYNCMFT,
-                         &inputType,
-                         &outputType,
-                         &ppVDActivate,
-                         &count));
+    const std::array<GUID, 3> transformerCategories = {
+        MFT_CATEGORY_VIDEO_PROCESSOR, MFT_CATEGORY_VIDEO_DECODER, MFT_CATEGORY_VIDEO_ENCODER
+    };
 
-    wil::com_ptr_nothrow<IMFTransform> videoDecoder;
+    for (const auto& trasnformerCategory : transformerCategories)
+    {
+        OK_OR_BAIL(MFTEnumEx(trasnformerCategory, MFT_ENUM_FLAG_SYNCMFT, &inputType, &outputType, &ppVDActivate, &count));
+        if (count != 0)
+        {
+            break;
+        }
+    }
+
+    wil::com_ptr_nothrow<IMFTransform> videoTransformer;
 
     bool videoDecoderActivated = false;
     for (UINT32 i = 0; i < count; ++i)
     {
-        if (!videoDecoderActivated && !FAILED(ppVDActivate[i]->ActivateObject(IID_PPV_ARGS(&videoDecoder))))
+        if (!videoDecoderActivated && !FAILED(ppVDActivate[i]->ActivateObject(IID_PPV_ARGS(&videoTransformer))))
         {
             videoDecoderActivated = true;
         }
@@ -180,25 +187,25 @@ IMFSample* ConvertIMFVideoSample(const MFT_REGISTER_TYPE_INFO& inputType,
         return nullptr;
     }
 
-    auto shutdownVideoDecoder = wil::scope_exit([&videoDecoder] { MFShutdownObject(videoDecoder.get()); });
+    auto shutdownVideoDecoder = wil::scope_exit([&videoTransformer] { MFShutdownObject(videoTransformer.get()); });
     // Set input/output types for the decoder
     wil::com_ptr_nothrow<IMFMediaType> intermediateFrameMediaType;
     OK_OR_BAIL(MFCreateMediaType(&intermediateFrameMediaType));
     intermediateFrameMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-    intermediateFrameMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_MJPG);
+    intermediateFrameMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB24);
     intermediateFrameMediaType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
     intermediateFrameMediaType->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE);
     OK_OR_BAIL(MFSetAttributeSize(intermediateFrameMediaType.get(), MF_MT_FRAME_SIZE, width, height));
     OK_OR_BAIL(MFSetAttributeRatio(intermediateFrameMediaType.get(), MF_MT_PIXEL_ASPECT_RATIO, width, height));
-    OK_OR_BAIL(videoDecoder->SetInputType(0, intermediateFrameMediaType.get(), 0));
-    OK_OR_BAIL(videoDecoder->SetOutputType(0, outputMediaType, 0));
+    OK_OR_BAIL(videoTransformer->SetInputType(0, intermediateFrameMediaType.get(), 0));
+    OK_OR_BAIL(videoTransformer->SetOutputType(0, outputMediaType, 0));
 
     // Process the input sample
-    OK_OR_BAIL(videoDecoder->ProcessInput(0, inputSample.get(), 0));
+    OK_OR_BAIL(videoTransformer->ProcessInput(0, inputSample.get(), 0));
 
     // Check whether we need to allocate output sample and buffer ourselves
     MFT_OUTPUT_STREAM_INFO outputStreamInfo{};
-    OK_OR_BAIL(videoDecoder->GetOutputStreamInfo(0, &outputStreamInfo));
+    OK_OR_BAIL(videoTransformer->GetOutputStreamInfo(0, &outputStreamInfo));
     const bool onlyProvidesSamples = outputStreamInfo.dwFlags & MFT_OUTPUT_STREAM_PROVIDES_SAMPLES;
     const bool canProvideSamples = outputStreamInfo.dwFlags & MFT_OUTPUT_STREAM_CAN_PROVIDE_SAMPLES;
     const bool mustAllocateSample =
@@ -213,8 +220,10 @@ IMFSample* ConvertIMFVideoSample(const MFT_REGISTER_TYPE_INFO& inputType,
     {
         OK_OR_BAIL(MFCreateSample(&outputSample));
         OK_OR_BAIL(outputSample->SetSampleDuration(333333));
+        OK_OR_BAIL(outputSample->SetSampleTime(1));
         IMFMediaBuffer* outputMediaBuffer = nullptr;
-        OK_OR_BAIL(MFCreateAlignedMemoryBuffer(outputStreamInfo.cbSize, outputStreamInfo.cbAlignment - 1, &outputMediaBuffer));
+        OK_OR_BAIL(
+            MFCreateAlignedMemoryBuffer(outputStreamInfo.cbSize, outputStreamInfo.cbAlignment - 1, &outputMediaBuffer));
         OK_OR_BAIL(outputMediaBuffer->SetCurrentLength(outputStreamInfo.cbSize));
         OK_OR_BAIL(outputSample->AddBuffer(outputMediaBuffer));
         outputSamples.pSample = outputSample;
@@ -222,7 +231,7 @@ IMFSample* ConvertIMFVideoSample(const MFT_REGISTER_TYPE_INFO& inputType,
 
     // Finally, produce the output sample
     DWORD processStatus = 0;
-    if (FAILED(videoDecoder->ProcessOutput(0, 1, &outputSamples, &processStatus)))
+    if (failed(videoTransformer->ProcessOutput(0, 1, &outputSamples, &processStatus)))
     {
         LOG("Failed to convert image frame");
     }
@@ -261,76 +270,74 @@ wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> 
         return nullptr;
     }
 
-    // Just copy the raw pixels to the sample buffer w/o using any container
+    // First, let's create a sample containing RGB24 bitmap
+    IMFSample* outputSample = nullptr;
+    OK_OR_BAIL(MFCreateSample(&outputSample));
+    OK_OR_BAIL(outputSample->SetSampleDuration(333333));
+    OK_OR_BAIL(outputSample->SetSampleTime(1));
+    IMFMediaBuffer* outputMediaBuffer = nullptr;
+    const DWORD nPixelBytes = targetWidth * targetHeight * 3;
+    OK_OR_BAIL(MFCreateAlignedMemoryBuffer(nPixelBytes, MF_64_BYTE_ALIGNMENT, &outputMediaBuffer));
+
+    const UINT stride = 3 * targetWidth;
+
+    DWORD max_length = 0, current_length = 0;
+    BYTE* sampleBufferMemory = nullptr;
+    OK_OR_BAIL(outputMediaBuffer->Lock(&sampleBufferMemory, &max_length, &current_length));
+    OK_OR_BAIL(srcImageBitmap->CopyPixels(nullptr, stride, nPixelBytes, sampleBufferMemory));
+    OK_OR_BAIL(outputMediaBuffer->Unlock());
+
+    OK_OR_BAIL(outputMediaBuffer->SetCurrentLength(nPixelBytes));
+    OK_OR_BAIL(outputSample->AddBuffer(outputMediaBuffer));
+
     if (outputType.guidSubtype == MFVideoFormat_RGB24)
     {
-        IMFSample* outputSample = nullptr;
-        OK_OR_BAIL(MFCreateSample(&outputSample));
-        OK_OR_BAIL(outputSample->SetSampleDuration(333333));
-        IMFMediaBuffer* outputMediaBuffer = nullptr;
-        const DWORD nPixelBytes = targetWidth * targetHeight * 3;
-        OK_OR_BAIL(MFCreateAlignedMemoryBuffer(nPixelBytes, MF_64_BYTE_ALIGNMENT, &outputMediaBuffer));
-
-        const UINT stride = 3 * targetWidth;
-
-        DWORD max_length = 0, current_length = 0;
-        BYTE* sampleBufferMemory = nullptr;
-        OK_OR_BAIL(outputMediaBuffer->Lock(&sampleBufferMemory, &max_length, &current_length));
-        OK_OR_BAIL(srcImageBitmap->CopyPixels(nullptr, stride, nPixelBytes, sampleBufferMemory));
-        OK_OR_BAIL(outputMediaBuffer->Unlock());
-
-        OK_OR_BAIL(outputMediaBuffer->SetCurrentLength(nPixelBytes));
-        OK_OR_BAIL(outputSample->AddBuffer(outputMediaBuffer));
         return outputSample;
     }
 
-    // Otherwise, create an intermediate jpg container sample which will be transcoded to the target format
-    wil::com_ptr_nothrow<IStream> intermediateJpgStream =
-        EncodeBitmapToContainer(pWIC, srcImageBitmap, GUID_ContainerFormatJpeg, targetWidth, targetHeight);
-    if (!intermediateJpgStream)
+    // Special case for mjpg, since we need to use jpg container for it instead of supplying raw pixels
+    if (outputType.guidSubtype == MFVideoFormat_MJPG)
     {
-        return nullptr;
+        // Use an intermediate jpg container sample which will be transcoded to the target format
+        wil::com_ptr_nothrow<IStream> jpgStream =
+            EncodeBitmapToContainer(pWIC, srcImageBitmap, GUID_ContainerFormatJpeg, targetWidth, targetHeight);
+
+        // Obtain stream size and lock its memory pointer
+        STATSTG intermediateStreamStat{};
+        OK_OR_BAIL(jpgStream->Stat(&intermediateStreamStat, STATFLAG_NONAME));
+        const ULONGLONG jpgStreamSize = intermediateStreamStat.cbSize.QuadPart;
+        HGLOBAL streamMemoryHandle{};
+        OK_OR_BAIL(GetHGlobalFromStream(jpgStream.get(), &streamMemoryHandle));
+
+        auto jpgStreamMemory = static_cast<uint8_t*>(GlobalLock(streamMemoryHandle));
+        auto unlockJpgStreamMemory = wil::scope_exit([jpgStreamMemory] { GlobalUnlock(jpgStreamMemory); });
+
+        // Create a sample from the input image buffer
+        wil::com_ptr_nothrow<IMFSample> jpgSample;
+        OK_OR_BAIL(MFCreateSample(&jpgSample));
+
+        IMFMediaBuffer* inputMediaBuffer = nullptr;
+        OK_OR_BAIL(MFCreateAlignedMemoryBuffer(static_cast<DWORD>(jpgStreamSize), MF_64_BYTE_ALIGNMENT, &inputMediaBuffer));
+        BYTE* inputBuf = nullptr;
+        OK_OR_BAIL(inputMediaBuffer->Lock(&inputBuf, &max_length, &current_length));
+        if (max_length < jpgStreamSize)
+        {
+            return nullptr;
+        }
+
+        std::copy(jpgStreamMemory, jpgStreamMemory + jpgStreamSize, inputBuf);
+        unlockJpgStreamMemory.reset();
+        OK_OR_BAIL(inputMediaBuffer->Unlock());
+        OK_OR_BAIL(inputMediaBuffer->SetCurrentLength(static_cast<DWORD>(jpgStreamSize)));
+        OK_OR_BAIL(jpgSample->AddBuffer(inputMediaBuffer));
+
+        return jpgSample;
     }
 
-    // Obtain stream size and lock its memory pointer
-    STATSTG intermediateStreamStat{};
-    OK_OR_BAIL(intermediateJpgStream->Stat(&intermediateStreamStat, STATFLAG_NONAME));
-    const ULONGLONG intermediateStreamSize = intermediateStreamStat.cbSize.QuadPart;
-    HGLOBAL streamMemoryHandle{};
-    OK_OR_BAIL(GetHGlobalFromStream(intermediateJpgStream.get(), &streamMemoryHandle));
-
-    auto intermediateStreamMemory = static_cast<uint8_t*>(GlobalLock(streamMemoryHandle));
-    auto unlockIntermediateStreamMemory =
-        wil::scope_exit([intermediateStreamMemory] { GlobalUnlock(intermediateStreamMemory); });
-
-    // Create a sample from the input image buffer
-    wil::com_ptr_nothrow<IMFSample> inputSample;
-    OK_OR_BAIL(MFCreateSample(&inputSample));
-
-    IMFMediaBuffer* inputMediaBuffer = nullptr;
-    OK_OR_BAIL(MFCreateAlignedMemoryBuffer(static_cast<DWORD>(intermediateStreamSize), MF_64_BYTE_ALIGNMENT, &inputMediaBuffer));
-    BYTE* inputBuf = nullptr;
-    DWORD max_length = 0, current_length = 0;
-    OK_OR_BAIL(inputMediaBuffer->Lock(&inputBuf, &max_length, &current_length));
-    if (max_length < intermediateStreamSize)
-    {
-        return nullptr;
-    }
-
-    std::copy(intermediateStreamMemory, intermediateStreamMemory + intermediateStreamSize, inputBuf);
-    unlockIntermediateStreamMemory.reset();
-    OK_OR_BAIL(inputMediaBuffer->Unlock());
-    OK_OR_BAIL(inputMediaBuffer->SetCurrentLength(static_cast<DWORD>(intermediateStreamSize)));
-    OK_OR_BAIL(inputSample->AddBuffer(inputMediaBuffer));
-
-    // Now we are ready to convert it to the requested media type, so we need to find a suitable jpg encoder
-    MFT_REGISTER_TYPE_INFO intermediateType = { MFMediaType_Video, MFVideoFormat_MJPG };
+    // Now we are ready to convert it to the requested media type
+    MFT_REGISTER_TYPE_INFO intermediateType = { MFMediaType_Video, MFVideoFormat_RGB24 };
 
     // But if no conversion is needed, just return the input sample
-    if (intermediateType.guidSubtype == outputType.guidSubtype)
-    {
-        return inputSample;
-    }
 
-    return ConvertIMFVideoSample(intermediateType, sampleMediaType, inputSample, targetWidth, targetHeight);
+    return ConvertIMFVideoSample(intermediateType, sampleMediaType, outputSample, targetWidth, targetHeight);
 }
