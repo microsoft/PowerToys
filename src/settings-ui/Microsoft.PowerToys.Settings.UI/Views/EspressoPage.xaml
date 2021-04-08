@@ -5,6 +5,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
     xmlns:Custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:Color="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels" xmlns:Interactivity="using:Microsoft.Xaml.Interactivity" xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d"
@@ -90,6 +91,29 @@
                         </TextBlock>
                     </RadioButton.Content>
                 </RadioButton>
+
+                <StackPanel Orientation="Horizontal">
+                    <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Hours"
+                            Value="{Binding Hours, Mode=TwoWay}"
+                            Minimum="0"
+                            SpinButtonPlacementMode="Compact"
+                            HorizontalAlignment="Left"
+                            Margin="{StaticResource SmallTopMargin}"
+                            MinWidth="90"
+                            IsEnabled="{Binding IsEnabled}"
+                            SmallChange="1" 
+                            LargeChange="5"/>
+                    <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Minutes"
+                            Value="{Binding Minutes, Mode=TwoWay}"
+                            Minimum="0"
+                            SpinButtonPlacementMode="Compact"
+                            HorizontalAlignment="Left"
+                            Margin="{StaticResource SmallLeftTopRightBottomMargin}"
+                            MinWidth="90"
+                            IsEnabled="{Binding IsEnabled}"
+                            SmallChange="1" 
+                            LargeChange="5"/>
+                </StackPanel>
             </StackPanel>
         </StackPanel>
 

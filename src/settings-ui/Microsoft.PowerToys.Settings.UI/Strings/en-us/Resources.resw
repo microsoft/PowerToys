@@ -1182,4 +1182,10 @@ Win + Shift + O to toggle your video</value>
   <data name="Espresso_Behavior_GroupSettings.Text" xml:space="preserve">
     <value>Behavior</value>
   </data>
+  <data name="Espresso_TemporaryKeepAwake_Hours.Header" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="Espresso_TemporaryKeepAwake_Minutes.Header" xml:space="preserve">
+    <value>Minutes</value>
+  </data>
 </root>

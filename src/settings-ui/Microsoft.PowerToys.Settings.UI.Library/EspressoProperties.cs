@@ -10,14 +10,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public EspressoProperties()
         {
-            IsEnabled = new BoolProperty();
             KeepDisplayOn = new BoolProperty();
             Mode = EspressoMode.INDEFINITE;
-            TimeAllocation = new IntProperty();
+            Hours = new IntProperty();
+            Minutes = new IntProperty();
         }
-
-        [JsonPropertyName("espresso_is_enabled")]
-        public BoolProperty IsEnabled { get; set; }
 
         [JsonPropertyName("espresso_keep_display_on")]
         public BoolProperty KeepDisplayOn { get; set; }
@@ -25,8 +22,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("espresso_mode")]
         public EspressoMode Mode { get; set; }
 
-        [JsonPropertyName("espresso_time_allocation")]
-        public IntProperty TimeAllocation { get; set; }
+        [JsonPropertyName("espresso_hours")]
+        public IntProperty Hours { get; set; }
+
+        [JsonPropertyName("espresso_minutes")]
+        public IntProperty Minutes { get; set; }
     }
 
     public enum EspressoMode
