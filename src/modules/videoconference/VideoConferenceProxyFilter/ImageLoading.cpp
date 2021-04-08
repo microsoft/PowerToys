@@ -155,9 +155,9 @@ IMFSample* ConvertIMFVideoSample(const MFT_REGISTER_TYPE_INFO& inputType,
         MFT_CATEGORY_VIDEO_PROCESSOR, MFT_CATEGORY_VIDEO_DECODER, MFT_CATEGORY_VIDEO_ENCODER
     };
 
-    for (const auto& trasnformerCategory : transformerCategories)
+    for (const auto& transformerCategory : transformerCategories)
     {
-        OK_OR_BAIL(MFTEnumEx(trasnformerCategory, MFT_ENUM_FLAG_SYNCMFT, &inputType, &outputType, &ppVDActivate, &count));
+        OK_OR_BAIL(MFTEnumEx(transformerCategory, MFT_ENUM_FLAG_SYNCMFT, &inputType, &outputType, &ppVDActivate, &count));
         if (count != 0)
         {
             break;
