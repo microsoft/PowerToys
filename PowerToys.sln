@@ -312,6 +312,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings", "src\settings-ui\PowerToys.Settings\PowerToys.Settings.csproj", "{6ED2F4FC-E122-4CEE-90F1-97E4CCC8BC7A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "espresso", "espresso", "{A81DFA80-09EB-4464-A89A-DF4AEAC93527}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Espresso", "src\modules\espresso\Espresso\Espresso.vcxproj", "{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -634,6 +638,10 @@ Global
 		{6ED2F4FC-E122-4CEE-90F1-97E4CCC8BC7A}.Debug|x64.Build.0 = Debug|x64
 		{6ED2F4FC-E122-4CEE-90F1-97E4CCC8BC7A}.Release|x64.ActiveCfg = Release|x64
 		{6ED2F4FC-E122-4CEE-90F1-97E4CCC8BC7A}.Release|x64.Build.0 = Release|x64
+		{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}.Debug|x64.ActiveCfg = Debug|x64
+		{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}.Debug|x64.Build.0 = Debug|x64
+		{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}.Release|x64.ActiveCfg = Release|x64
+		{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -729,6 +737,8 @@ Global
 		{4BABF3FE-3451-42FD-873F-3C332E18DCEF} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{6ED2F4FC-E122-4CEE-90F1-97E4CCC8BC7A} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
+		{A81DFA80-09EB-4464-A89A-DF4AEAC93527} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{5E7360A8-D048-4ED3-8F09-0BFD64C5529A} = {A81DFA80-09EB-4464-A89A-DF4AEAC93527}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
