@@ -82,6 +82,24 @@ namespace Espresso.Shell
                     Console.WriteLine("Could not set up the state to be indefinite keep awake.");
                 }
             }
+            else
+            {
+                // Timed keep-awake.
+                bool success = APIHelper.SetTimedKeepAwake(timeLimit, displayOn);
+                if (success)
+                {
+                    Console.WriteLine($"Finished execution of timed keep-awake.");
+
+                    // Because the timed keep-awake execution completed, there is no reason for
+                    // Espresso to stay alive - I will just shut down the application until it's
+                    // launched again by the user.
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    Console.WriteLine("Could not set up the state to be timed keep awake.");
+                }
+            }
 
             new ManualResetEvent(false).WaitOne();
         }

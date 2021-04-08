@@ -49,9 +49,9 @@ namespace Espresso.Shell.Core
             }
         }
 
-        public static bool SetIndefiniteKeepAwake(bool? keepDisplayOn = true)
+        public static bool SetIndefiniteKeepAwake(bool keepDisplayOn = true)
         {
-            if ((bool)keepDisplayOn)
+            if (keepDisplayOn)
             {
                 return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
             }
@@ -61,15 +61,42 @@ namespace Espresso.Shell.Core
             }    
         }
 
-        public static bool SetTimedKeepAwake(int seconds, bool keepDisplayOn = true)
+        public static bool SetTimedKeepAwake(long seconds, bool keepDisplayOn = true)
         {
             if (keepDisplayOn)
             {
-                return false;
+                var success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                if (success)
+                {
+                    RunTimedLoop(seconds);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
-                return false;
+                var success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                if (success)
+                {
+                    RunTimedLoop(seconds);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        private static void RunTimedLoop(long seconds)
+        {
+            var startTime = DateTime.UtcNow;
+            while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
+            {
+                // We do nothing.
             }
         }
     }
