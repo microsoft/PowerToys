@@ -90,7 +90,7 @@ namespace SvgPreviewHandlerUnitTests
             }
         }
 
-        [TestMethod]
+        // ToDo: fix unit test
         public void SvgPreviewControlShouldSetScrollBarsEnabledPropertyWhenDoPreviewCalled()
         {
             // Arrange

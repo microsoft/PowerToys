@@ -98,6 +98,13 @@
     <Compile Include="Controls\HotkeySettingsControl.xaml.cs">
       <DependentUpon>HotkeySettingsControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\KeyVisual\KeyVisual.cs" />
+    <Compile Include="Controls\ShortcutTextControl.xaml.cs">
+      <DependentUpon>ShortcutTextControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
+      <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -244,6 +251,9 @@
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI">
       <Version>6.1.1</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
+      <Version>6.1.1</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Win32.UI.XamlApplication">
       <Version>6.1.2</Version>
     </PackageReference>
@@ -254,7 +264,7 @@
       <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>12.0.3</Version>
+      <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
       <Version>1.1.118</Version>
@@ -274,6 +284,18 @@
     <Page Include="Controls\HotkeySettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\KeyVisual\KeyVisual.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ShortcutTextControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ShortcutVisualControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="OOBE\Views\OobeColorPicker.xaml">
       <SubType>Designer</SubType>

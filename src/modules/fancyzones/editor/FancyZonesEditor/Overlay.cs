@@ -363,46 +363,5 @@ namespace FancyZonesEditor
                 Monitors.Add(monitor);
             }
         }
-
-        public Int32Rect[] GetZoneRects()
-        {
-            if (_editor != null)
-            {
-                if (_editor is GridEditor gridEditor)
-                {
-                    return ZoneRectsFromPanel(gridEditor.PreviewPanel);
-                }
-                else
-                {
-                    // CanvasEditor
-                    return ZoneRectsFromPanel(((CanvasEditor)_editor).Preview);
-                }
-            }
-            else
-            {
-                // One of the predefined zones (neither grid or canvas editor used).
-                return _layoutPreview.GetZoneRects();
-            }
-        }
-
-        private Int32Rect[] ZoneRectsFromPanel(Panel previewPanel)
-        {
-            // TODO: the ideal here is that the ArrangeRects logic is entirely inside the model, so we don't have to walk the UIElement children to get the rect info
-            int count = previewPanel.Children.Count;
-            Int32Rect[] zones = new Int32Rect[count];
-
-            for (int i = 0; i < count; i++)
-            {
-                FrameworkElement child = (FrameworkElement)previewPanel.Children[i];
-                Point topLeft = child.TransformToAncestor(previewPanel).Transform(default);
-
-                zones[i].X = (int)topLeft.X;
-                zones[i].Y = (int)topLeft.Y;
-                zones[i].Width = (int)child.ActualWidth;
-                zones[i].Height = (int)child.ActualHeight;
-            }
-
-            return zones;
-        }
     }
 }

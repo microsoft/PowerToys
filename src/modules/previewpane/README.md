@@ -157,10 +157,6 @@ Since in-process preview handlers run under a surrogate hosting process (prevhos
 
 ## Managing Preview Handlers
 
-After successful integration, your preview handler should appear in the PowerToys settings UI under the `File Explorer Preview` Tab. In here you should be able to enable and disable your preview handler.
+After successful integration, your preview handler should appear in the PowerToys settings UI under the `File Explorer Preview` Tab. In here you should be able to enable and disable all the preview handles.
 
-<img src="../../../doc/images/preview_pane/settings-ui.png" alt="Settings UI - File Explorer Preview Tab" >
-
-In the general settings of the Settings UI, you should be able to disable and enable all the preview handlers all at once.
-
-<img src="../../../doc/images/preview_pane/general-settings.png" alt="Settings UI - General Settings Tab" >
+<img src="../../../doc/images/settingsv2/file-explorer.png" alt="Settings UI - File Explorer Preview Tab" >

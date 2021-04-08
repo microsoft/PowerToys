@@ -334,11 +334,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Error_Parsing_Zones_Settings_Malformed_Data" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Error_Parsing_Zones_Settings_Message" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA['zones-settings.json' contains malformed data.]]></Val>
+          <Val><![CDATA[A layout that contained invalid data has been removed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["zones-settings.json" 包含格式错误的数据。]]></Val>
+            <Val><![CDATA[包含了无效数据的布局已被删除。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -348,15 +348,6 @@
           <Val><![CDATA[Editor settings parsing error.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[编辑器设置分析错误。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Error_Parsing_Zones_Settings_User_Choice" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Would you like to continue? Malformed data will be lost.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[是否要继续操作? 格式错误的数据将丢失。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -451,6 +442,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";MergeDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Click and drag across zones.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[单击并跨区域拖动。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";MergeName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Merge/Delete:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[合并/删除:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Merge_zones" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Merge zones]]></Val>
@@ -487,23 +496,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Note_Custom_Table" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, hold down the left mouse button, drag the mouse to the zone to merge, release the mouse button and click "Merge zones".]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[按住 Shift 键可以改变拆分器的方向。]D;]A;若要合并区域，请按住鼠标左键，将鼠标拖到要合并的区域，释放鼠标按钮，然后单击“合并区域”。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";NumberOfZones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[区域数]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Select" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a key to quickly apply the layout (Win + Ctrl + Alt + key)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[选择一个键来快速应用布局(Windows 键 + Ctrl + Alt + 你选择的键)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Quick_Key_None" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[None]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -561,6 +576,24 @@
           <Val><![CDATA[Space around zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[区域周围的空间]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SplitterDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hold Shift key for vertical split.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[按住 Shift 键进行垂直拆分。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SplitterName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Splitter:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[拆分器:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

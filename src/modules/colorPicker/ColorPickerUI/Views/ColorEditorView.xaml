@@ -20,13 +20,16 @@
 
         <!-- Side bar -->
         <Grid Background="{DynamicResource SecondaryBackgroundBrush}">
-            <ui:ListView Margin="0,48,0,0"
+            <ui:ListView x:Name="HistoryColors" 
+                         Margin="0,48,0,0"
                          Grid.Row="1"
                          Padding="0"
                          TabIndex="3"
                          ItemsSource="{Binding ColorsHistory}"
                          SelectedIndex="{Binding SelectedColorIndex}"
-                         ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}">
+                         ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}"
+                         IsItemClickEnabled="True"
+                         ItemClick="HistoryColors_ItemClick">
                 <ui:ListView.ContextMenu>
                     <ContextMenu Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
                         <MenuItem Header="{x:Static p:Resources.Remove}"
@@ -75,7 +78,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Margin="0,1,0,0" />
-            
+
             <!-- Enable once we have settings linking available -->
             <!--<Button Width="46"
                     Height="32"
@@ -87,7 +90,7 @@
                     Margin="0,0,46,0"
                     ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
                     AutomationProperties.Name="{x:Static p:Resources.Open_settings}" />-->
-            
+
             <Button Width="64"
                     Height="32"
                     TabIndex="1"

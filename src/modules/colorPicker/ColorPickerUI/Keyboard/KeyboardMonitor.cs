@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Windows.Input;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
@@ -22,7 +21,7 @@ namespace ColorPicker.Keyboard
     {
         private readonly AppStateHandler _appStateHandler;
         private readonly IUserSettings _userSettings;
-        private List<string> _previouslyPressedKeys;
+        private List<string> _previouslyPressedKeys = new List<string>();
 
         private List<string> _activationKeys = new List<string>();
         private GlobalKeyboardHook _keyboardHook;
@@ -73,47 +72,43 @@ namespace ColorPicker.Keyboard
             // ESC pressed
             if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape))
             {
-                _appStateHandler.HideColorPicker();
-                PowerToysTelemetry.Log.WriteEvent(new ColorPickerCancelledEvent());
+                _appStateHandler.EndUserSession();
                 return;
             }
 
-            var name = Helper.GetKeyName((uint)virtualCode);
-
-            // If the last key pressed is a modifier key, then currentlyPressedKeys cannot possibly match with _activationKeys
-            // because _activationKeys contains exactly 1 non-modifier key. Hence, there's no need to check if `name` is a
-            // modifier key or to do any additional processing on it.
-            if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown || e.KeyboardState == GlobalKeyboardHook.KeyboardState.SysKeyDown)
+            if ((System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
             {
-                // Check pressed modifier keys.
-                AddModifierKeys(currentlyPressedKeys);
+                var name = Helper.GetKeyName((uint)virtualCode);
 
-                currentlyPressedKeys.Add(name);
-            }
-
-            currentlyPressedKeys.Sort();
-
-            if (currentlyPressedKeys.Count == 0 && _previouslyPressedKeys.Count != 0)
-            {
-                // no keys pressed, we can enable activation shortcut again
-                _activationShortcutPressed = false;
-            }
-
-            _previouslyPressedKeys = currentlyPressedKeys;
-
-            if (ArraysAreSame(currentlyPressedKeys, _activationKeys))
-            {
-                // avoid triggering this action multiple times as this will be called nonstop while keys are pressed
-                if (!_activationShortcutPressed)
+                // If the last key pressed is a modifier key, then currentlyPressedKeys cannot possibly match with _activationKeys
+                // because _activationKeys contains exactly 1 non-modifier key. Hence, there's no need to check if `name` is a
+                // modifier key or to do any additional processing on it.
+                if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown || e.KeyboardState == GlobalKeyboardHook.KeyboardState.SysKeyDown)
                 {
-                    _activationShortcutPressed = true;
-                    if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+                    // Check pressed modifier keys.
+                    AddModifierKeys(currentlyPressedKeys);
+
+                    currentlyPressedKeys.Add(name);
+                }
+
+                currentlyPressedKeys.Sort();
+
+                if (currentlyPressedKeys.Count == 0 && _previouslyPressedKeys.Count != 0)
+                {
+                    // no keys pressed, we can enable activation shortcut again
+                    _activationShortcutPressed = false;
+                }
+
+                _previouslyPressedKeys = currentlyPressedKeys;
+
+                if (ArraysAreSame(currentlyPressedKeys, _activationKeys))
+                {
+                    // avoid triggering this action multiple times as this will be called nonstop while keys are pressed
+                    if (!_activationShortcutPressed)
                     {
-                        _appStateHandler.ShowColorPickerEditor();
-                    }
-                    else
-                    {
-                        _appStateHandler.ShowColorPicker();
+                        _activationShortcutPressed = true;
+
+                        _appStateHandler.StartUserSession();
                     }
                 }
             }

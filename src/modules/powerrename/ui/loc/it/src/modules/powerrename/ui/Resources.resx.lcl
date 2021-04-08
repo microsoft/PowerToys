@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Rinomina speciale]]></Val>
+            <Val><![CDATA[PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -153,6 +153,24 @@
           <Val><![CDATA[All items have been filtered out.]D;]A;Please select from the options above to show items.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Tutti gli elementi sono stati filtrati.]D;]A;Selezionare una delle opzioni precedenti per visualizzare gli elementi.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Loading" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Loading...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Caricamento...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Loading_Msg" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please wait while the selected items are enumerated.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Attendere. È in corso l'enumerazione degli elementi selezionati.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

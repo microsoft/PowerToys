@@ -451,6 +451,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";MergeDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Click and drag across zones.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Clique e arraste pelas zonas.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";MergeName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Merge/Delete:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Unir/Eliminar:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Merge_zones" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Merge zones]]></Val>
@@ -487,23 +505,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Note_Custom_Table" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, hold down the left mouse button, drag the mouse to the zone to merge, release the mouse button and click "Merge zones".]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mantenha a tecla Shift premida para alterar a orientação do divisor.]D;]A;Para intercalar zonas, mantenha premido o botão esquerdo do rato, arraste o rato até à zona a intercalar, solte o botão do rato e clique em "Intercalar zonas".]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";NumberOfZones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Número de zonas]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Select" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a key to quickly apply the layout (Win + Ctrl + Alt + key)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Selecione uma tecla para aplicar rapidamente o esquema (Windows + Ctrl + Alt + tecla)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Quick_Key_None" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[None]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nenhum]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -561,6 +585,24 @@
           <Val><![CDATA[Space around zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Espaço à volta das zonas]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SplitterDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hold Shift key for vertical split.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mantenha premida a tecla Shift para divisão vertical.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SplitterName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Splitter:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Divisor:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

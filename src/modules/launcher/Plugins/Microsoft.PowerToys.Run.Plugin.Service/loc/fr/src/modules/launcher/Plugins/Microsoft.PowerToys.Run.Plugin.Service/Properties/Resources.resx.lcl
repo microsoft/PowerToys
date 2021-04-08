@@ -47,10 +47,13 @@
       </Item>
       <Item ItemId=";wox_plugin_service_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Manages Windows services]]></Val>
+          <Val><![CDATA[Manages Windows services.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Gère les services Windows]]></Val>
+            <Val><![CDATA[Gère les services Windows.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Manages Windows services]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

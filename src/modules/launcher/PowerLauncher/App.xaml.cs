@@ -37,7 +37,7 @@ namespace PowerLauncher
         private ThemeManager _themeManager;
         private SettingWindowViewModel _settingsVM;
         private StringMatcher _stringMatcher;
-        private SettingsWatcher _settingsWatcher;
+        private SettingsReader _settingsReader;
 
         [STAThread]
         public static void Main()
@@ -103,6 +103,9 @@ namespace PowerLauncher
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _themeManager);
+                _settingsReader = new SettingsReader(_settings, _themeManager);
+                _settingsReader.ReadSettings();
+
                 PluginManager.InitializePlugins(API);
 
                 Current.MainWindow = _mainWindow;
@@ -113,7 +116,7 @@ namespace PowerLauncher
 
                 RegisterExitEvents();
 
-                _settingsWatcher = new SettingsWatcher(_settings, _themeManager);
+                _settingsReader.ReadSettingsOnChange();
 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();

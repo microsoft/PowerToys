@@ -28,10 +28,7 @@ namespace Wox.Test
             // Arrange
             PluginManager.SetAllPlugins(new List<PluginPair>()
             {
-                new PluginPair
-                {
-                    Metadata = new PluginMetadata() { ActionKeyword = ">" },
-                },
+                new PluginPair(new PluginMetadata() { ActionKeyword = ">" }),
             });
 
             string searchQuery = ">   file.txt    file2 file3";
@@ -51,7 +48,7 @@ namespace Wox.Test
             string searchQuery = "file.txt  file2  file3";
             PluginManager.SetAllPlugins(new List<PluginPair>()
             {
-                new PluginPair { Metadata = new PluginMetadata() { Disabled = false, IsGlobal = true } },
+                new PluginPair(new PluginMetadata() { Disabled = false, IsGlobal = true }),
             });
 
             // Act
@@ -66,7 +63,7 @@ namespace Wox.Test
         public void QueryBuildShouldGenerateSameSearchQueryWithOrWithoutSpaceAfterActionKeyword()
         {
             // Arrange
-            var plugin = new PluginPair { Metadata = new PluginMetadata() { ActionKeyword = "a" } };
+            var plugin = new PluginPair(new PluginMetadata() { ActionKeyword = "a" });
             PluginManager.SetAllPlugins(new List<PluginPair>()
             {
                 plugin,
@@ -93,8 +90,8 @@ namespace Wox.Test
         {
             // Arrange
             string searchQuery = "abcdefgh";
-            var firstPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" } };
-            var secondPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" } };
+            var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" });
+            var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" });
             PluginManager.SetAllPlugins(new List<PluginPair>()
             {
                 firstPlugin,
@@ -117,8 +114,8 @@ namespace Wox.Test
         {
             // Arrange
             string searchQuery = "abcd efgh";
-            var firstPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" } };
-            var secondPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" } };
+            var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" });
+            var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" });
             PluginManager.SetAllPlugins(new List<PluginPair>()
             {
                 firstPlugin,
@@ -142,8 +139,8 @@ namespace Wox.Test
         {
             // Arrange
             string searchQuery = "!efgh";
-            var firstPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "!", ID = "plugin1" } };
-            var secondPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "!", ID = "plugin2" } };
+            var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "!", ID = "plugin1" });
+            var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "!", ID = "plugin2" });
             PluginManager.SetAllPlugins(new List<PluginPair>()
             {
                 firstPlugin,

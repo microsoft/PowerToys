@@ -13,6 +13,7 @@ using ColorPicker.Common;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.Settings
 {
@@ -159,6 +160,28 @@ namespace ColorPicker.Settings
                     }
                 }
             }
+        }
+
+        public void SendSettingsTelemetry()
+        {
+            Logger.LogInfo("Sending settings telemetry");
+            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerModuleName);
+            var properties = settings?.Properties;
+            if (properties == null)
+            {
+                Logger.LogError("Failed to send settings telemetry");
+                return;
+            }
+
+            var telemetrySettings = new Telemetry.ColorPickerSettings(properties.VisibleColorFormats)
+            {
+                ActivationShortcut = properties.ActivationShortcut.ToString(),
+                ActivationBehaviour = properties.ActivationAction.ToString(),
+                ColorFormatForClipboard = properties.CopiedColorRepresentation.ToString(),
+                ShowColorName = properties.ShowColorName,
+            };
+
+            PowerToysTelemetry.Log.WriteEvent(telemetrySettings);
         }
     }
 }

@@ -79,7 +79,7 @@ namespace PowerToys.Settings
                 // send IPC Message
                 ShellPage.SetRestartAdminSndMessageCallback(msg =>
                 {
-                    Program.GetTwoWayIPCManager().Send(msg);
+                    Program.GetTwoWayIPCManager()?.Send(msg);
                     isOpen = false;
                     System.Windows.Application.Current.Shutdown(); // close application
                 });
@@ -87,7 +87,7 @@ namespace PowerToys.Settings
                 // send IPC Message
                 ShellPage.SetCheckForUpdatesMessageCallback(msg =>
                 {
-                    Program.GetTwoWayIPCManager().Send(msg);
+                    Program.GetTwoWayIPCManager()?.Send(msg);
                 });
 
                 // open oobe

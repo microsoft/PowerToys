@@ -1,11 +1,25 @@
+# See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-patterns
 https?://(?:(?:www\.|)youtube\.com|youtu.be)/[-a-zA-Z0-9?&=]*
+# GitHub SHAs
+\bapi.github\.com/repos/[^/]+/[^/]+/[^/]+/[0-9a-f]+\b
 ://github\.(?:com|blog)/[^\w")]+
+(?:\[[0-9a-f]+\]\(https:/|)/github\.com/[^/]+/[^/]+/[^/]+/[0-9a-f]+(?:[-0-9a-zA-Z/#.]*|)\b
+# githubusercontent
 ://githubusercontent\.com/[^\w")]+
+# gist github
+/gist\.github\.com/[^/]+/[0-9a-f]+
+
+# msdn
+\b(?:download\.visualstudio|docs|msdn)\.microsoft\.com/[-_a-zA-Z0-9()=./]*
+
 data:[a-zA-Z=;,/0-9+-]+
 0x[0-9a-fA-F](?:\.[0-9a-fA-F]*|)[pP]
 (?:0[Xx]|U\+|#)[a-f0-9A-FGgRr]{2,}[Uu]?[Ll]{0,2}\b
-[{"][0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}"]
-\b([A-Za-z])\1{3,}\b
+# uuid:
+[-<({"'>][0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[<'"})>]
+
+# ignore long runs of a single character:
+\b([A-Za-z])\g{-1}{3,}\b
 (?:L"[abAB]+", ){3}L"[abAB]+"
 "Lorem[^"]+?\."
 TestCase\("[^"]+"
@@ -45,3 +59,5 @@ TestCase\("[^"]+"
 # marker for ignoring a comment to the end of the line
 ^.*/\* #no-spell-check-line \*/.*$
 // #no-spell-check.*$
+
+http://tes/

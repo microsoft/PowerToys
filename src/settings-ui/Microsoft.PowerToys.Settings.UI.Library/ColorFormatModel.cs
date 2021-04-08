@@ -12,6 +12,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private string _name;
         private string _example;
         private bool _isShown;
+        private bool _canMoveUp = true;
+        private bool _canMoveDown = true;
 
         public ColorFormatModel(string name, string example, bool isShown)
         {
@@ -58,6 +60,34 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set
             {
                 _isShown = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool CanMoveUp
+        {
+            get
+            {
+                return _canMoveUp;
+            }
+
+            set
+            {
+                _canMoveUp = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool CanMoveDown
+        {
+            get
+            {
+                return _canMoveDown;
+            }
+
+            set
+            {
+                _canMoveDown = value;
                 OnPropertyChanged();
             }
         }

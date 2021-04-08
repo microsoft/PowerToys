@@ -14,5 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // Fancy Zones Default Flags.
         public static readonly bool DefaultFancyzonesShiftDrag = true;
         public static readonly bool DefaultUseCursorposEditorStartupscreen = true;
+        public static readonly bool DefaultFancyzonesQuickLayoutSwitch = true;
+        public static readonly bool DefaultFancyzonesFlashZonesOnQuickSwitch = true;
     }
 }

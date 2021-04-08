@@ -133,6 +133,24 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Plugins: {0} - fail to load and would be disabled, please contact plugins creator for help.
+        /// </summary>
+        public static string FailedToInitializePluginsDescription {
+            get {
+                return ResourceManager.GetString("FailedToInitializePluginsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fail to initialize plugins.
+        /// </summary>
+        public static string FailedToInitializePluginsTitle {
+            get {
+                return ResourceManager.GetString("FailedToInitializePluginsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Last execution time: {0}.
         /// </summary>
         public static string lastExecuteTime {

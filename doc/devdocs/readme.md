@@ -64,28 +64,7 @@ Various tools used by PowerToys. Includes the Visual Studio 2019 project templat
 
 1. Windows 10 April 2018 Update (version 1803) or newer
 2. Visual Studio Community/Professional/Enterprise 2019
-3. Run the command below in cmd/terminal to install all the workloads and components for VS.
-
-```shell
-cd "%ProgramFiles(x86)%\Microsoft Visual Studio\2019"
-SET targetFolder="\"
-IF EXIST Preview\NUL (SET targetFolder=Preview)
-IF EXIST Enterprise\NUL (SET targetFolder=Enterprise)
-IF EXIST Professional\NUL (SET targetFolder=Professional)
-IF EXIST Community\NUL (SET targetFolder=Community)
-
-ECHO %targetFolder%
-
-"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vs_installer.exe" ^
-modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFolder%" ^
---add Microsoft.VisualStudio.Workload.NativeDesktop ^
---add Microsoft.VisualStudio.Workload.ManagedDesktop ^
---add Microsoft.VisualStudio.Workload.Universal ^
---add Microsoft.VisualStudio.Component.Windows10SDK.17134 ^
---add Microsoft.VisualStudio.ComponentGroup.UWP.VC ^
---add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ^
---add Microsoft.VisualStudio.Component.VC.ATL.Spectre
-```
+3. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
 
 ### Compile source code
 
@@ -101,25 +80,37 @@ Our installer is two parts, an EXE and an MSI.  The EXE (Bootstrapper) contains 
 
 The installer can only be compiled in `Release` mode, step 1 and 2 must be done before the MSI will be able to be compiled.
 
-1. Compile PowerToys.sln. Instructions are listed above.
-2. Compile Bug reporting tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
-3. Compile PowerToysSetup.sln Path from root: `installer\PowerToysSetup.sln` (details listed below)
+1. Compile `PowerToys.sln`. Instructions are listed above.
+2. Compile `BugReportTool.sln` tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
+3. Compile `PowerToysSetup.sln` Path from root: `installer\PowerToysSetup.sln` (details listed below)
+4. Compile `PowerToysBootstrapper.sln` Path from root: `installer\PowerToysBootstrapper\PowerToysBootstrapper.sln` (details listed below)
 
 ### Prerequisites for building the MSI installer
 
-1. Build `tools\BugReportTool\BugReportTool.sln`: in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
-2. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=RobMensching.WiXToolset).
-3. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
+1. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=RobMensching.WiXToolset).
+2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
+
+### Locally compiling the Bug reporting tool
+
+1. Open `tools\BugReportTool\BugReportTool.sln`
+1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+2. From the `Build` menu, choose `Build Solution`.
 
 ### Locally compiling the .MSI installer
 
-- Open `installer\PowerToysSetup.sln`: in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
-- The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+1. Open `installer\PowerToysSetup.sln`
+2. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+3. From the `Build` menu choose `Build Solution`.
+
+The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
 
 ### Locally compiling the .EXE Bootstrapper installer
 
-- Open `installer\PowerToysBootstrapper\PowerToysBootstrapper.sln`: in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
-- The `PowerToysSetup-0.0.1-x64.exe` binary is created in the `installer\PowerToysBootstrapper\x64\Release\` folder.
+1. Open `installer\PowerToysBootstrapper\PowerToysBootstrapper.sln` 
+2. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
+3. From the `Build` menu choose `Build Solution`.
+
+The `PowerToysSetup-0.0.1-x64.exe` binary is created in the `installer\PowerToysBootstrapper\x64\Release\` folder.
 
 #### Supported arguments for the .EXE Bootstrapper installer
 

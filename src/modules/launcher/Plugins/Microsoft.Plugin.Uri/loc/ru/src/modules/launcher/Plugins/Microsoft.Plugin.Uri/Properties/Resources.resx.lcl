@@ -21,19 +21,25 @@
       </Item>
       <Item ItemId=";Microsoft_plugin_uri_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Handles urls]]></Val>
+          <Val><![CDATA[Opens URLs and UNC network shares.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Обрабатывает URL-адреса]]></Val>
+            <Val><![CDATA[Открытие URL-адресов и сетевых папок UNC.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Handles urls]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_uri_plugin_name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Url Handler]]></Val>
+          <Val><![CDATA[URI Handler]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Обработчик URL-адресов]]></Val>
+            <Val><![CDATA[Обработчик URI]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Url Handler]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

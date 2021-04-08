@@ -127,6 +127,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Setting_Description_FlashZonesOnQuickSwitch" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Flash zones when switching layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Выделение зон при переключении макета]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Setting_Description_Make_Dragged_Window_Transparent" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
@@ -177,6 +186,15 @@
           <Val><![CDATA[Override Windows Snap hotkeys (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Переопределите сочетания клавиш прикрепления окон (клавиша Windows+клавиша со стрелкой) для перемещения окон между зонами.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Setting_Description_QuickLayoutSwitch" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable quick layout switch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Включение быстрого переключения макета]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

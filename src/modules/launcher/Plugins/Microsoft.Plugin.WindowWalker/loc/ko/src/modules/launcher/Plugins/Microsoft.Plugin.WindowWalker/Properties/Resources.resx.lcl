@@ -12,10 +12,13 @@
       <Disp Icon="Str" Disp="true" LocTbl="false" />
       <Item ItemId=";wox_plugin_windowwalker_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Alt-Tab alternative enabling searching through your windows.]]></Val>
+          <Val><![CDATA[Switches between open windows.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[창을 검색할 수 있도록 하는 Alt+Tab 대안입니다.]]></Val>
+            <Val><![CDATA[열린 창 사이를 전환합니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Alt-Tab alternative enabling searching through your windows.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

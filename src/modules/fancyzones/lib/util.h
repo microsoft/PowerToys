@@ -188,6 +188,8 @@ namespace FancyZonesUtils
 
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept;
     void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
+
+    // Parameter rect must be in screen coordinates (e.g. obtained from GetWindowRect)
     void SizeWindowToRect(HWND window, RECT rect) noexcept;
 
     bool HasNoVisibleOwner(HWND window) noexcept;

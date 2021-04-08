@@ -18,7 +18,7 @@ namespace ColorPickerUI
     {
         private Mutex _instanceMutex;
         private static string[] _args;
-        private int _powerToysPid;
+        private int _powerToysRunnerPid;
         private bool disposedValue;
         private ThemeManager _themeManager;
 
@@ -27,23 +27,27 @@ namespace ColorPickerUI
             _args = e?.Args;
 
             // allow only one instance of color picker
-            _instanceMutex = new Mutex(true, @"Global\ColorPicker", out bool createdNew);
+            _instanceMutex = new Mutex(true, @"Local\PowerToys_ColorPicker_InstanceMutex", out bool createdNew);
             if (!createdNew)
             {
                 _instanceMutex = null;
-                Application.Current.Shutdown();
+                Environment.Exit(0);
                 return;
             }
 
             if (_args?.Length > 0)
             {
-                _ = int.TryParse(_args[0], out _powerToysPid);
-            }
+                _ = int.TryParse(_args[0], out _powerToysRunnerPid);
 
-            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () =>
+                RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
+                {
+                    Environment.Exit(0);
+                });
+            }
+            else
             {
-                Environment.Exit(0);
-            });
+                _powerToysRunnerPid = -1;
+            }
 
             _themeManager = new ThemeManager(this);
             base.OnStartup(e);
@@ -82,6 +86,11 @@ namespace ColorPickerUI
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public bool IsRunningDetachedFromPowerToys()
+        {
+            return _powerToysRunnerPid == -1;
         }
     }
 }

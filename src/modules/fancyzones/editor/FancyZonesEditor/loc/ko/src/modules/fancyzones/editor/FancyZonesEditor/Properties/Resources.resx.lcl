@@ -334,11 +334,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Error_Parsing_Zones_Settings_Malformed_Data" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Error_Parsing_Zones_Settings_Message" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA['zones-settings.json' contains malformed data.]]></Val>
+          <Val><![CDATA[A layout that contained invalid data has been removed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA['zones-settings.json'에 잘못된 형식의 데이터가 있습니다.]]></Val>
+            <Val><![CDATA[잘못된 데이터가 포함된 레이아웃이 제거되었습니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -348,15 +348,6 @@
           <Val><![CDATA[Editor settings parsing error.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[편집기 설정 구문 분석 오류입니다.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Error_Parsing_Zones_Settings_User_Choice" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Would you like to continue? Malformed data will be lost.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[계속하시겠습니까? 잘못된 형식의 데이터가 손실됩니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -451,6 +442,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";MergeDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Click and drag across zones.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[클릭하여 영역을 가로질러 끕니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";MergeName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Merge/Delete:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[병합/삭제:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Merge_zones" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Merge zones]]></Val>
@@ -487,23 +496,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Note_Custom_Table" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, hold down the left mouse button, drag the mouse to the zone to merge, release the mouse button and click "Merge zones".]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[&lt;Shift&gt; 키를 길게 눌러 분할기의 방향을 변경합니다.]D;]A;영역을 병합하려면 왼쪽 마우스 단추를 누른 상태에서 병합할 영역으로 마우스를 끌고 마우스 단추를 놓은 후 "영역 병합"을 클릭합니다.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";NumberOfZones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[영역 수]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Select" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a key to quickly apply the layout (Win + Ctrl + Alt + key)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[레이아웃을 빠르게 적용하려면 키 선택(Win + Ctrl + Alt + 키)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Quick_Key_None" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[None]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[없음]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -561,6 +576,24 @@
           <Val><![CDATA[Space around zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[영역 주위 공간]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SplitterDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hold Shift key for vertical split.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[세로 분할을 수행하려면 <Shift> 키를 길게 누릅니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SplitterName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Splitter:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[분할기:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

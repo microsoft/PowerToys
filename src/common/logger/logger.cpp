@@ -38,7 +38,7 @@ level_enum getLogLevel(std::wstring_view logSettingsPath)
     return result;
 }
 
-std::shared_ptr<spdlog::logger> Logger::logger;
+std::shared_ptr<spdlog::logger> Logger::logger = spdlog::null_logger_mt("null");
 
 bool Logger::wasLogFailedShown()
 {
