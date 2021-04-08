@@ -29,7 +29,7 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
 
-        private const string Unique = "PowerLauncher_Unique_Application_Mutex";
+        private const string Unique = "PowerToys_PowerToysRun_InstanceMutex";
         private static bool _disposed;
         private PowerToysRunSettings _settings;
         private MainViewModel _mainVM;
