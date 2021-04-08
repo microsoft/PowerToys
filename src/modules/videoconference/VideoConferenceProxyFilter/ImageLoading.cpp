@@ -92,7 +92,7 @@ wil::com_ptr_nothrow<IWICBitmapSource> LoadAsRGB24BitmapWithSize(IWICImagingFact
     WICPixelFormatGUID pixelFormat{};
     OK_OR_BAIL(bitmap->GetPixelFormat(&pixelFormat));
 
-    const auto targetPixelFormat = GUID_WICPixelFormat24bppRGB;
+    const auto targetPixelFormat = GUID_WICPixelFormat24bppBGR;
     if (pixelFormat != targetPixelFormat)
     {
         wil::com_ptr_nothrow<IWICBitmapSource> convertedBitmap;
