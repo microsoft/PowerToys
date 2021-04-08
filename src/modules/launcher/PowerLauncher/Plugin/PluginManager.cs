@@ -128,9 +128,9 @@ namespace PowerLauncher.Plugin
                     return;
                 }
 
-                pair.LoadPlugin(API);
+                pair.InitializePlugin(API);
 
-                if (!pair.IsPluginLoaded)
+                if (!pair.IsPluginInitialized)
                 {
                     failedPlugins.Enqueue(pair);
                 }
@@ -159,7 +159,7 @@ namespace PowerLauncher.Plugin
                 throw new ArgumentNullException(nameof(pair));
             }
 
-            if (!pair.IsPluginLoaded)
+            if (!pair.IsPluginInitialized)
             {
                 return new List<Result>();
             }
