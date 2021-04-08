@@ -20,7 +20,6 @@
 #include <common/version/helper.h>
 #include <common/logger/logger.h>
 #include <common/utils/elevation.h>
-#include <common/utils/os-detect.h>
 #include <common/utils/process_path.h>
 #include <common/utils/timeutil.h>
 #include <common/utils/winapi_error.h>
@@ -367,12 +366,12 @@ void run_settings_window(bool showOobeWindow)
     
     BOOL process_created = false;
 
-    // Due to a bug in .NET, running the Settings process as non-elevated
-    // from an elevated process sometimes results in a crash.
-    // TODO: Revisit this after switching to .NET 5
-    if (is_process_elevated() && !UseNewSettings())
+    if (is_process_elevated())
     {
-        process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
+        // TODO: Revisit this after switching to .NET 5
+        // Due to a bug in .NET, running the Settings process as non-elevated
+        // from an elevated process sometimes results in a crash.  
+        // process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
     }
 
     if (FALSE == process_created)
