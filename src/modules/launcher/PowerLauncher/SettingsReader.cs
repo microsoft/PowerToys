@@ -187,8 +187,8 @@ namespace PowerLauncher
             return PluginManager.AllPlugins.Select(x => new PowerLauncherPluginSettings()
             {
                 Id = x.Metadata.ID,
-                Name = x.Plugin.Name,
-                Description = x.Plugin.Description,
+                Name = x.Plugin == null ? x.Metadata.Name : x.Plugin.Name,
+                Description = x.Plugin?.Description,
                 Author = x.Metadata.Author,
                 Disabled = x.Metadata.Disabled,
                 IsGlobal = x.Metadata.IsGlobal,
