@@ -56,20 +56,24 @@ namespace ColorPicker.Controls
 
         private static void SelectedColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+            var control = (ColorPickerControl)d;
             var newColor = (Color)e.NewValue;
-            ((ColorPickerControl)d)._originalColor = ((ColorPickerControl)d)._currentColor = newColor;
-            var newColorBackground = new SolidColorBrush(newColor);
-            ((ColorPickerControl)d).CurrentColorButton.Background = newColorBackground;
 
-            ((ColorPickerControl)d)._ignoreHexChanges = true;
-            ((ColorPickerControl)d)._ignoreRGBChanges = true;
-            ((ColorPickerControl)d).HexCode.Text = ColorToHex(newColor);
-            ((ColorPickerControl)d).RTextBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
-            ((ColorPickerControl)d).GTextBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
-            ((ColorPickerControl)d).BTextBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
-            ((ColorPickerControl)d).SetColorFromTextBoxes(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
-            ((ColorPickerControl)d)._ignoreRGBChanges = false;
-            ((ColorPickerControl)d)._ignoreHexChanges = false;
+            control._originalColor = control._currentColor = newColor;
+            var newColorBackground = new SolidColorBrush(newColor);
+            control.CurrentColorButton.Background = newColorBackground;
+
+            control._ignoreHexChanges = true;
+            control._ignoreRGBChanges = true;
+
+            control.HexCode.Text = ColorToHex(newColor);
+            control.RNumberBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
+            control.GNumberBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
+            control.BNumberBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
+            control.SetColorFromTextBoxes(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
+
+            control._ignoreRGBChanges = false;
+            control._ignoreHexChanges = false;
 
             var hsv = ColorHelper.ConvertToHSVColor(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
 
@@ -107,12 +111,13 @@ namespace ColorPicker.Controls
             }
 
             var s = hsv.saturation;
+            var control = (ColorPickerControl)d;
 
-            ((ColorPickerControl)d).colorVariation1Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 8), 360), s, Math.Min(hsv.value + 0.3, 1)));
-            ((ColorPickerControl)d).colorVariation2Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 4), 360), s, Math.Min(hsv.value + 0.15, 1)));
+            control.colorVariation1Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 8), 360), s, Math.Min(hsv.value + 0.3, 1)));
+            control.colorVariation2Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 4), 360), s, Math.Min(hsv.value + 0.15, 1)));
 
-            ((ColorPickerControl)d).colorVariation3Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 4), 0), s, Math.Max(hsv.value - 0.2, 0)));
-            ((ColorPickerControl)d).colorVariation4Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
+            control.colorVariation3Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 4), 0), s, Math.Max(hsv.value - 0.2, 0)));
+            control.colorVariation4Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
         }
 
         private void UpdateValueColorGradient(double posX)
@@ -161,9 +166,9 @@ namespace ColorPicker.Controls
 
             if (!_ignoreRGBChanges)
             {
-                RTextBox.Text = currentColor.R.ToString(CultureInfo.InvariantCulture);
-                GTextBox.Text = currentColor.G.ToString(CultureInfo.InvariantCulture);
-                BTextBox.Text = currentColor.B.ToString(CultureInfo.InvariantCulture);
+                RNumberBox.Text = currentColor.R.ToString(CultureInfo.InvariantCulture);
+                GNumberBox.Text = currentColor.G.ToString(CultureInfo.InvariantCulture);
+                BNumberBox.Text = currentColor.B.ToString(CultureInfo.InvariantCulture);
             }
 
             _currentColor = currentColor;
@@ -200,6 +205,7 @@ namespace ColorPicker.Controls
                 detailsStackPanel.BeginAnimation(StackPanel.OpacityProperty, opacityAppear);
                 detailsGrid.BeginAnimation(Grid.HeightProperty, resize);
                 CurrentColorButton.IsEnabled = false;
+                SessionEventHelper.Event.EditorAdjustColorOpened = true;
             }
         }
 
@@ -234,8 +240,8 @@ namespace ColorPicker.Controls
         private void OKButton_Click(object sender, RoutedEventArgs e)
         {
             HideDetails();
-
             SelectedColorChangedCommand.Execute(_currentColor);
+            SessionEventHelper.Event.EditorColorAdjusted = true;
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -253,6 +259,7 @@ namespace ColorPicker.Controls
         {
             var selectedColor = ((SolidColorBrush)((Button)sender).Background).Color;
             SelectedColorChangedCommand.Execute(selectedColor);
+            SessionEventHelper.Event.EditorSimilarColorPicked = true;
         }
 
         private void ValueGradientGrid_MouseMove(object sender, MouseEventArgs e)
@@ -357,19 +364,15 @@ namespace ColorPicker.Controls
             }
         }
 
-        private void RGBTextBoxes_TextChanged(object sender, TextChangedEventArgs e)
+#pragma warning disable CA1801 // Review unused parameters
+        private void RGBNumberBox_ValueChanged(ModernWpf.Controls.NumberBox sender, ModernWpf.Controls.NumberBoxValueChangedEventArgs args)
+#pragma warning restore CA1801 // Review unused parameters
         {
-            var validNumber = int.TryParse((sender as TextBox).Text, out int result);
-            if (!validNumber || result < 0 || result > 255)
-            {
-                return;
-            }
-
             if (!_ignoreRGBChanges)
             {
-                var r = byte.Parse(RTextBox.Text, CultureInfo.InvariantCulture);
-                var g = byte.Parse(GTextBox.Text, CultureInfo.InvariantCulture);
-                var b = byte.Parse(BTextBox.Text, CultureInfo.InvariantCulture);
+                var r = byte.Parse(RNumberBox.Text, CultureInfo.InvariantCulture);
+                var g = byte.Parse(GNumberBox.Text, CultureInfo.InvariantCulture);
+                var b = byte.Parse(BNumberBox.Text, CultureInfo.InvariantCulture);
                 _ignoreRGBChanges = true;
                 SetColorFromTextBoxes(System.Drawing.Color.FromArgb(r, g, b));
                 _ignoreRGBChanges = false;
@@ -396,6 +399,11 @@ namespace ColorPicker.Controls
         private static string ColorToHex(Color color)
         {
             return "#" + BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty, StringComparison.InvariantCulture);
+        }
+
+        private void HexCode_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            (sender as TextBox).SelectAll();
         }
     }
 }

@@ -6,7 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+      xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -38,16 +39,14 @@
                 </HyperlinkButton>
 
                 <TextBlock x:Uid="Oobe_HowToUse"
-                           Style="{StaticResource OobeSubtitleStyle}"/>
-                
-            <TextBlock x:Uid="Oobe_ColorPicker_HowToUse"
-                       TextWrapping="Wrap"/>
-            
-            <TextBlock x:Uid="Oobe_TipsAndTricks"
+                           Style="{StaticResource OobeSubtitleStyle}" />
+
+                <controls:ShortcutTextControl x:Uid="Oobe_ColorPicker_HowToUse" />
+              
+                <TextBlock x:Uid="Oobe_TipsAndTricks"
                        Style="{StaticResource OobeSubtitleStyle}"/>
-                
-            <TextBlock x:Uid="Oobe_ColorPicker_TipsAndTricks"
-                       TextWrapping="Wrap" />
+
+                <controls:ShortcutTextControl x:Uid="Oobe_ColorPicker_TipsAndTricks" />
             
             <StackPanel Orientation="Horizontal"
                         Spacing="4"

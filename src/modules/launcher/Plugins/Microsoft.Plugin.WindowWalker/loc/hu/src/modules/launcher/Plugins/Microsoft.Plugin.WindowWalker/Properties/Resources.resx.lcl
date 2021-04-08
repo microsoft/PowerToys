@@ -12,10 +12,13 @@
       <Disp Icon="Str" Disp="true" LocTbl="false" />
       <Item ItemId=";wox_plugin_windowwalker_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Alt-Tab alternative enabling searching through your windows.]]></Val>
+          <Val><![CDATA[Switches between open windows.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Az Alt+Tab alternatívája, amely lehetővé teszi az ablakok közötti keresést.]]></Val>
+            <Val><![CDATA[Vált a megnyitott ablakok között.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Alt-Tab alternative enabling searching through your windows.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -10,11 +10,10 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     Background="{DynamicResource GridZoneBackgroundBrush}"
-    BorderBrush="{DynamicResource LayoutPreviewZoneBorderBrush}"
+    BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
     BorderThickness="1"
     Opacity="1"
     ui:ControlHelper.CornerRadius="4"
-    Effect="{StaticResource ZoneDropShadow}"
     mc:Ignorable="d">
     
     <Grid x:Name="Frame">

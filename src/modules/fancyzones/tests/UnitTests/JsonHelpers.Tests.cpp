@@ -1539,6 +1539,73 @@ namespace FancyZonesUnitTests
                 compareJsonArrays(expected, actual);
             }
 
+            TEST_METHOD(QuickLayoutKeysParse)
+            {
+                const std::wstring zoneUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}";
+                LayoutQuickKeyJSON expected{ zoneUuid, 2 };
+                json::JsonArray array;
+                array.Append(LayoutQuickKeyJSON::ToJson(expected));
+
+                json::JsonObject json;
+                json.SetNamedValue(L"quick-layout-keys", json::JsonValue::Parse(array.Stringify()));
+
+                const auto& quickKeysMap = ParseQuickKeys(json);
+
+                Assert::AreEqual((size_t)array.Size(), quickKeysMap.size());
+
+                Assert::IsTrue(quickKeysMap.find(zoneUuid) != quickKeysMap.end());                
+                int actualKey = quickKeysMap.find(zoneUuid)->second;
+                Assert::AreEqual((int)expected.key, actualKey);
+            }
+
+            TEST_METHOD (QuickLayoutKeysParseEmpty)
+            {
+                json::JsonArray array;
+                json::JsonObject json;
+                json.SetNamedValue(L"quick-layout-keys", json::JsonValue::Parse(array.Stringify()));
+
+                const auto& quickKeysMap = ParseQuickKeys(json);
+
+                Assert::IsTrue(quickKeysMap.empty());
+            }
+
+            TEST_METHOD (QuickLayoutKeysParseInvalid)
+            {
+                const std::wstring invalidZoneUuid = L"{33A2B101-06E0-437B-}";
+                LayoutQuickKeyJSON expected{ invalidZoneUuid, 2 };
+                json::JsonArray array;
+                array.Append(LayoutQuickKeyJSON::ToJson(expected));
+
+                json::JsonObject json;
+                json.SetNamedValue(L"quick-layout-keys", json::JsonValue::Parse(array.Stringify()));
+
+                const auto& quickKeysMap = ParseQuickKeys(json);
+
+                Assert::IsTrue(quickKeysMap.empty());
+            }
+
+            TEST_METHOD (QuickLayoutKeysParseMissed)
+            {
+                json::JsonObject json;
+
+                const auto& quickKeysMap = ParseQuickKeys(json);
+
+                Assert::IsTrue(quickKeysMap.empty());
+            }
+
+            TEST_METHOD (QuickLayoutKeysSerialize)
+            {
+                json::JsonArray expected;
+                expected.Append(LayoutQuickKeyJSON::ToJson(LayoutQuickKeyJSON{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", 3}));
+                json::JsonObject json;
+                json.SetNamedValue(L"quick-layout-keys", json::JsonValue::Parse(expected.Stringify()));
+
+                const auto& quickKeysMap = ParseQuickKeys(json);
+
+                auto actual = SerializeQuickKeys(quickKeysMap);
+                compareJsonArrays(expected, actual);
+            }
+            
             TEST_METHOD (SetActiveZoneSet)
             {
                 FancyZonesData data;
@@ -1640,14 +1707,17 @@ namespace FancyZonesUnitTests
                 };
                 AppZoneHistoryJSON appZoneHistory{ L"app-path", std::vector<AppZoneHistoryData>{ data } };
                 DeviceInfoJSON deviceInfo{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                json::JsonArray zoneSetsArray, appZonesArray, deviceInfoArray;
+                LayoutQuickKeyJSON quickKeys{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", 1 };
+                json::JsonArray zoneSetsArray, appZonesArray, deviceInfoArray, quickKeysArray;
                 zoneSetsArray.Append(CustomZoneSetJSON::ToJson(zoneSets));
                 appZonesArray.Append(AppZoneHistoryJSON::ToJson(appZoneHistory));
                 deviceInfoArray.Append(DeviceInfoJSON::ToJson(deviceInfo));
+                quickKeysArray.Append(LayoutQuickKeyJSON::ToJson(quickKeys));
                 json::JsonObject fancyZones;
                 fancyZones.SetNamedValue(L"custom-zone-sets", zoneSetsArray);
                 fancyZones.SetNamedValue(L"app-zone-history", appZonesArray);
                 fancyZones.SetNamedValue(L"devices", deviceInfoArray);
+                fancyZones.SetNamedValue(L"quick-layout-keys", quickKeysArray);
 
                 json::to_file(jsonPath, fancyZones);
 
@@ -1664,6 +1734,7 @@ namespace FancyZonesUnitTests
                 Assert::IsFalse(fancyZonesData.GetCustomZoneSetsMap().empty());
                 Assert::IsFalse(fancyZonesData.GetCustomZoneSetsMap().empty());
                 Assert::IsFalse(fancyZonesData.GetCustomZoneSetsMap().empty());
+                Assert::IsFalse(fancyZonesData.GetLayoutQuickKeys().empty());
             }
 
             TEST_METHOD (LoadFancyZonesDataFromCroppedJson)

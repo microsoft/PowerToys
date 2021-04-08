@@ -4,11 +4,10 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Globalization;
+using System.IO;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -24,8 +23,30 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            ViewModel = new PowerLauncherViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, (int)Windows.System.VirtualKey.Space, App.IsDarkTheme);
+            PowerLauncherSettings settings = settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+            ViewModel = new PowerLauncherViewModel(settings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
             DataContext = ViewModel;
+            _ = Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", () =>
+            {
+                PowerLauncherSettings powerLauncherSettings = null;
+                try
+                {
+                    powerLauncherSettings = settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                }
+                catch (IOException ex)
+                {
+                    Logger.LogInfo(ex.Message);
+                }
+
+                if (powerLauncherSettings != null && !ViewModel.IsUpToDate(powerLauncherSettings))
+                {
+                    _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    {
+                        DataContext = ViewModel = new PowerLauncherViewModel(powerLauncherSettings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsDarkTheme);
+                        this.Bindings.Update();
+                    });
+                }
+            });
 
             var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
 

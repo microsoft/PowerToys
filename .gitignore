@@ -342,3 +342,5 @@ src/common/Telemetry/*.etl
 !**/MergeModules/Release/
 !**/MergeModules/Debug/
 /src/modules/previewpane/SvgThumbnailProvider/$(SolutionDir)$(Platform)/$(Configuration)/modules/FileExplorerPreview/SvgThumbnailProvider.xml
+/src/modules/powerrename/ui/RCa24464
+/src/modules/powerrename/ui/RCb24464

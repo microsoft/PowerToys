@@ -150,7 +150,6 @@ build:
             - 'os-detection.dll'
             - 'PowerToys.exe'
             - 'PowerToysInterop.dll'
-            - 'PowerToysSettings.exe'
             - 'Settings\Microsoft.PowerToys.Settings.UI.exe'
             - 'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
             - 'Settings\PowerToys.Settings.dll'

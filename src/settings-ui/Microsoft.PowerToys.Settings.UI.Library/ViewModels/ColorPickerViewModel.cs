@@ -247,11 +247,28 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 ColorFormats.Add(remainingColorFormat);
             }
 
+            // Reordering colors with buttons: disable first and last buttons
+            ColorFormats[0].CanMoveUp = false;
+            ColorFormats[ColorFormats.Count - 1].CanMoveDown = false;
+
             ColorFormats.CollectionChanged += ColorFormats_CollectionChanged;
         }
 
         private void ColorFormats_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
+            // Reordering colors with buttons: update buttons availability depending on order
+            if (ColorFormats.Count > 0)
+            {
+                foreach (var color in ColorFormats)
+                {
+                    color.CanMoveUp = true;
+                    color.CanMoveDown = true;
+                }
+
+                ColorFormats[0].CanMoveUp = false;
+                ColorFormats[ColorFormats.Count - 1].CanMoveDown = false;
+            }
+
             UpdateColorFormats();
             ScheduleSavingOfSettings();
         }

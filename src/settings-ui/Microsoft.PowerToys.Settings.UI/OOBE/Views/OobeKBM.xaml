@@ -4,6 +4,7 @@
       xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
       mc:Ignorable="d"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -40,14 +41,12 @@
                 <TextBlock x:Uid="Oobe_HowToCreateMappings"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
-                <TextBlock x:Uid="Oobe_KBM_HowToCreateMappings"
-                           TextWrapping="Wrap" />
+                <controls:ShortcutTextControl x:Uid="Oobe_KBM_HowToCreateMappings" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
-                <TextBlock x:Uid="Oobe_KBM_TipsAndTricks"
-                           TextWrapping="Wrap" />
+                <controls:ShortcutTextControl x:Uid="Oobe_KBM_TipsAndTricks" />
 
                 <StackPanel Orientation="Horizontal"
                             Spacing="4"

@@ -7,6 +7,7 @@
 #include <commctrl.h>
 #include <Shlobj.h>
 #include <helpers.h>
+#include <PowerRenameEnum.h>
 #include <windowsx.h>
 #include <thread>
 #include <trace.h>
@@ -167,6 +168,17 @@ IFACEMETHODIMP CPowerRenameUI::GetShowUI(_Out_ bool* showUI)
 // IPowerRenameManagerEvents
 IFACEMETHODIMP CPowerRenameUI::OnItemAdded(_In_ IPowerRenameItem*)
 {
+    // Check if the user canceled the enumeration from the progress dialog UI
+    if (m_prpui.IsCanceled())
+    {
+        m_prpui.Stop();
+        if (m_sppre)
+        {
+            // Cancel the enumeration
+            m_sppre->Cancel();
+        }
+    }
+
     return S_OK;
 }
 
@@ -373,21 +385,37 @@ void CPowerRenameUI::_Cleanup()
     m_hwnd = NULL;
 }
 
-void CPowerRenameUI::_EnumerateItems(_In_ IUnknown* pdtobj)
+HRESULT CPowerRenameUI::_EnumerateItems(_In_ IUnknown* pdtobj)
 {
+    HRESULT hr = S_OK;
     // Enumerate the data object and populate the manager
     if (m_spsrm)
     {
         m_disableCountUpdate = true;
-        EnumerateDataObject(pdtobj, m_spsrm);
+
+        // Ensure we re-create the enumerator
+        m_sppre = nullptr;
+        hr = CPowerRenameEnum::s_CreateInstance(pdtobj, m_spsrm, IID_PPV_ARGS(&m_sppre));
+        if (SUCCEEDED(hr))
+        {
+            m_prpui.Start();
+            hr = m_sppre->Start();
+            m_prpui.Stop();
+        }
+
         m_disableCountUpdate = false;
 
-        UINT itemCount = 0;
-        m_spsrm->GetVisibleItemCount(&itemCount);
-        m_listview.SetItemCount(itemCount);
+        if (SUCCEEDED(hr))
+        {
+            UINT itemCount = 0;
+            m_spsrm->GetItemCount(&itemCount);
+            m_listview.SetItemCount(itemCount);
 
-        _UpdateCounts();
+            _UpdateCounts();
+        }
     }
+
+    return hr;
 }
 
 HRESULT CPowerRenameUI::_ReadSettings()
@@ -607,7 +635,12 @@ void CPowerRenameUI::_OnInitDlg()
     if (m_dataSource)
     {
         // Populate the manager from the data object
-        _EnumerateItems(m_dataSource);
+        if (FAILED(_EnumerateItems(m_dataSource)))
+        {
+            // Failed during enumeration.  Close the dialog.
+            _OnCloseDlg();
+            return;
+        }
     }
 
     // Initialize from stored settings. Do this now in case we have
@@ -1441,4 +1474,161 @@ void CPowerRenameListView::OnColumnClick(_In_ IPowerRenameManager* psrm, _In_ in
 
     psrm->GetFilter(&filter);
     _UpdateHeaderFilterState(filter);
+}
+
+IFACEMETHODIMP CPowerRenameProgressUI::QueryInterface(__in REFIID riid, __deref_out void** ppv)
+{
+    static const QITAB qit[] = {
+        QITABENT(CPowerRenameProgressUI, IUnknown),
+        { 0 },
+    };
+    return QISearch(this, qit, riid, ppv);
+}
+
+IFACEMETHODIMP_(ULONG)
+CPowerRenameProgressUI::AddRef()
+{
+    return InterlockedIncrement(&m_refCount);
+}
+
+IFACEMETHODIMP_(ULONG)
+CPowerRenameProgressUI::Release()
+{
+    long refCount = InterlockedDecrement(&m_refCount);
+    if (refCount == 0)
+    {
+        delete this;
+    }
+    return refCount;
+}
+
+#define TIMERID_CHECKCANCELED 101
+#define CANCEL_CHECK_INTERVAL 500
+
+HRESULT CPowerRenameProgressUI::Start()
+{
+    _Cleanup();
+    m_canceled = false;
+    m_workerThreadHandle = CreateThread(nullptr, 0, s_workerThread, this, 0, nullptr);
+    return (m_workerThreadHandle) ? S_OK : E_FAIL;
+}
+
+DWORD WINAPI CPowerRenameProgressUI::s_workerThread(_In_ void* pv)
+{
+    if (SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
+    {
+        CPowerRenameProgressUI* pThis = reinterpret_cast<CPowerRenameProgressUI*>(pv);
+        if (pThis)
+        {
+            HWND hwndMessage = CreateMsgWindow(g_hInst, s_msgWndProc, pThis);
+
+            SetTimer(hwndMessage, TIMERID_CHECKCANCELED, CANCEL_CHECK_INTERVAL, nullptr);
+
+            if (SUCCEEDED(CoCreateInstance(CLSID_ProgressDialog, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&pThis->m_sppd))))
+            {
+                wchar_t buff[100] = { 0 };
+                LoadString(g_hInst, IDS_LOADING, buff, ARRAYSIZE(buff));
+                pThis->m_sppd->SetLine(1, buff, FALSE, NULL);
+                LoadString(g_hInst, IDS_LOADING_MSG, buff, ARRAYSIZE(buff));
+                pThis->m_sppd->SetLine(2, buff, FALSE, NULL);
+                LoadString(g_hInst, IDS_APP_TITLE, buff, ARRAYSIZE(buff));
+                pThis->m_sppd->SetTitle(buff);
+                SetTimer(hwndMessage, TIMERID_CHECKCANCELED, CANCEL_CHECK_INTERVAL, nullptr);
+                pThis->m_sppd->StartProgressDialog(NULL, NULL, PROGDLG_MARQUEEPROGRESS, NULL);
+            }
+
+            while (pThis->m_sppd && !pThis->m_canceled)
+            {
+                MSG msg;
+                while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+                {
+                    TranslateMessage(&msg);
+                    DispatchMessage(&msg);
+                }
+            }
+
+            KillTimer(hwndMessage, TIMERID_CHECKCANCELED);
+            DestroyWindow(hwndMessage);
+        }
+
+        CoUninitialize();
+    }
+
+    return S_OK;
+}
+
+HRESULT CPowerRenameProgressUI::Stop()
+{
+    _Cleanup();
+    return S_OK;
+}
+
+void CPowerRenameProgressUI::_Cleanup()
+{
+    if (m_sppd)
+    {
+        m_sppd->StopProgressDialog();
+        m_sppd = nullptr;
+    }
+
+    if (m_workerThreadHandle)
+    {
+        CloseHandle(m_workerThreadHandle);
+        m_workerThreadHandle = nullptr;
+    }
+}
+
+void CPowerRenameProgressUI::_UpdateCancelState()
+{
+    m_canceled = (m_sppd && m_sppd->HasUserCancelled());
+}
+
+LRESULT CALLBACK CPowerRenameProgressUI::s_msgWndProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+    LRESULT lRes = 0;
+
+    CPowerRenameProgressUI* pThis = (CPowerRenameProgressUI*)GetWindowLongPtr(hwnd, 0);
+    if (pThis != nullptr)
+    {
+        lRes = pThis->_WndProc(hwnd, uMsg, wParam, lParam);
+        if (uMsg == WM_NCDESTROY)
+        {
+            SetWindowLongPtr(hwnd, 0, NULL);
+        }
+    }
+    else
+    {
+        lRes = DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
+
+    return lRes;
+}
+
+LRESULT CPowerRenameProgressUI::_WndProc(_In_ HWND hwnd, _In_ UINT msg, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+    LRESULT lRes = 0;
+
+    AddRef();
+
+    switch (msg)
+    {
+    case WM_TIMER:
+        if (wParam == TIMERID_CHECKCANCELED)
+        {
+            _UpdateCancelState();
+        }
+        break;
+
+    case WM_DESTROY:
+        KillTimer(hwnd, TIMERID_CHECKCANCELED);
+        break;
+
+    default:
+        lRes = DefWindowProc(hwnd, msg, wParam, lParam);
+        break;
+    }
+
+    Release();
+
+    return lRes;
 }

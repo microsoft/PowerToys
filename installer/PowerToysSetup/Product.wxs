@@ -103,7 +103,6 @@
     <CustomAction
       Id="TerminateProcesses"
       Return="ignore"
-      Impersonate="no"
       Execute="immediate"
       BinaryKey="PTCustomActions"
       DllEntry="TerminateProcessesCA" />
@@ -282,13 +281,12 @@
               <Directory Id="SettingsV2XamlAssetsInstallFolder" Name="Assets" />
             </Directory>
           </Directory>
-          <Directory Id="SettingsHtmlInstallFolder" Name="settings-html">
-            <Directory Id="SettingsHtmlDistInstallFolder" Name="dist"/>
-          </Directory>
         </Directory>
       </Directory>
-      <Directory Id="ProgramMenuFolder"/>
-      <Directory Id="DesktopFolder" Name="Desktop"/>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="PowerToys (Preview)"/>
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />        
    </Directory>
   </Fragment>
 
@@ -302,20 +300,7 @@
         </RegistryKey>
       </Component>
       <Component Id="powertoys_exe" Guid="A2C66D91-3485-4D00-B04D-91844E6B345B" Win64="yes">
-        <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes">
-          <Shortcut Id="ApplicationStartMenuShortcut"
-                    Name="PowerToys (Preview)"
-                    Description="PowerToys - Windows system utilities to maximize productivity"
-                    Directory="ProgramMenuFolder"
-                    Icon="powertoys.exe"
-                    IconIndex="0"
-                    Advertise="yes">
-            <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
-            <!-- ToastActivatorCLSID is used only by toast background activation, which currently isn't used, but causes MSI warning 1946 to display for a small share of users -->
-            <!-- <ShortcutProperty Key="System.AppUserModel.ToastActivatorCLSID" Value="{DD5CACDA-7C2E-4997-A62A-04A597B58F76}"/> -->
-          </Shortcut>
-        </File>
-
+        <File Id="PowerToys.exe" KeyPath="yes" Checksum="yes" />
         <RegistryKey Root="HKCR" Key="powertoys">
           <RegistryValue Type="string" Name="URL Protocol" Value=""/>
           <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol"/>
@@ -326,13 +311,6 @@
             <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]PowerToys.exe&quot; &quot;%1&quot;" />
           </RegistryKey>
         </RegistryKey>
-
-
-      </Component>
-
-
-      <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
-        <File Id="PowerToysSettings.exe" KeyPath="yes" Checksum="yes" />
       </Component>
       <Component Id="BackgroundActivator_dll" Guid="23B25EE4-BCA2-45DF-BBCD-82FBDF01C5AB" Win64="yes">
         <File Id="BackgroundActivatorDLL.dll" KeyPath="yes" Checksum="yes" />
@@ -356,6 +334,24 @@
         <?endforeach?>
       </Component>
     </DirectoryRef>
+
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="PowerToysStartMenuShortcut" Guid="336AB4F9-078C-4DCA-B69F-3808A9FFD758">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+          Name="PowerToys (Preview)"
+          Description="PowerToys - Windows system utilities to maximize productivity"
+          Icon="powertoys.exe"
+          IconIndex="0"
+          Target="[!PowerToys.exe]"
+          WorkingDirectory="INSTALLFOLDER">
+          <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
+        </Shortcut>
+        <RemoveFolder Id="CleanUpStartMenuShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+        <!-- ApplicationStartMenuShortcut is implicitly installed in HKCU, so WIX won't allow changing this reg value to HKLM. -->
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\PowerToys" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+    
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">
       <Component Id="PowerToysSvgs" Guid="7C4D4EED-9338-423D-992C-DCE02F3E2D35" Win64="yes">
         <File Source="$(var.BinX64Dir)svgs\0.svg" />
@@ -378,6 +374,7 @@
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\fancyzones.dll" KeyPath="yes" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.deps.json" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
@@ -740,23 +737,10 @@
       </Component>
     </DirectoryRef>
 
-    <DirectoryRef Id="SettingsHtmlInstallFolder" FileSource="$(var.RepoDir)\settings\settings-html\">
-      <Component Id="settings_html" Guid="87881A99-E917-4B0D-B1D8-5C6EB9709F96" Win64="yes">
-        <File Source="$(var.RepoDir)\src\settings\settings-html\index.html" KeyPath="yes" />
-      </Component>
-      <Component Id="settings_dark_html" Guid="855866C7-2F13-4B08-B5C1-B507354C2760" Win64="yes">
-        <File Source="$(var.RepoDir)\src\settings\settings-html\index-dark.html" KeyPath="yes" />
-      </Component>
-    </DirectoryRef>
-    <DirectoryRef Id="SettingsHtmlDistInstallFolder" FileSource="$(var.RepoDir)\settings\settings-html\dist\">
-      <Component Id="settings_js_bundle" Guid="9EF539C1-2F50-421E-B074-C58ED3A9785C" Win64="yes">
-        <File Source="$(var.RepoDir)\src\settings\settings-html\dist\bundle.js" KeyPath="yes" />
-      </Component>
-    </DirectoryRef>
-
     <DirectoryRef Id="DesktopFolder">
       <Component Id="DesktopShortcut" Guid="87321F2B-CC48-4326-881E-9C62CC260DC8">
         <Condition>INSTALLDESKTOPSHORTCUT</Condition>
+        <!-- DesktopShortcutId is implicitly installed in HKCU, so WIX won't allow changing this reg value to HKLM. -->
         <RegistryValue Root="HKCU"
                         Key="Software\[Manufacturer]\[ProductName]"
                         Name="desktopshorcutinstalled"
@@ -777,6 +761,7 @@
   <Fragment>
     <ComponentGroup Id="CoreComponents" Directory="INSTALLFOLDER">
       <ComponentRef Id="powertoys_exe" />
+      <ComponentRef Id="PowerToysStartMenuShortcut"/>
       <ComponentRef Id="BackgroundActivator_dll" />
       <ComponentRef Id="action_runner_exe" />
       <ComponentRef Id="powertoys_toast_clsid" />
@@ -806,10 +791,6 @@
       <ComponentRef Id="SettingsV2Styles" />
       <ComponentRef Id="SettingsV2Views" />
       <ComponentRef Id="SettingsV2XamlAssets" />
-      <ComponentRef Id="settings_exe" />
-      <ComponentRef Id="settings_html" />
-      <ComponentRef Id="settings_dark_html" />
-      <ComponentRef Id="settings_js_bundle" />
     </ComponentGroup>
     <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
       <ComponentRef Id="BugReportTool_exe" />
@@ -917,15 +898,15 @@
   </Fragment>
   <Fragment>
     <ComponentGroup Id="LauncherComponents">
-
-      <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
-
+      <Component Id="launcherShortcutComponent" Directory="LauncherInstallFolder" Guid="8824006B-CD06-4D87-8AC4-1B40C71DB4D7">
         <!-- Toast Notification AUMID -->
-        <RegistryKey Root="HKCU" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
           <RegistryValue Type="string" Name="DisplayName" Value="PowerToys Run" />
           <RegistryValue Type="string" Name="IconUri" Value="[LauncherImagesFolder]RunAsset.ico" />
         </RegistryKey>
+      </Component>
 
+      <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
         <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />

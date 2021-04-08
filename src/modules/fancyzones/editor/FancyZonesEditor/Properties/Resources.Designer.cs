@@ -376,11 +376,11 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;zones-settings.json&apos; contains malformed data..
+        ///   Looks up a localized string similar to A layout that contained invalid data has been removed..
         /// </summary>
-        public static string Error_Parsing_Zones_Settings_Malformed_Data {
+        public static string Error_Parsing_Zones_Settings_Message {
             get {
-                return ResourceManager.GetString("Error_Parsing_Zones_Settings_Malformed_Data", resourceCulture);
+                return ResourceManager.GetString("Error_Parsing_Zones_Settings_Message", resourceCulture);
             }
         }
         
@@ -390,15 +390,6 @@ namespace FancyZonesEditor.Properties {
         public static string Error_Parsing_Zones_Settings_Title {
             get {
                 return ResourceManager.GetString("Error_Parsing_Zones_Settings_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Would you like to continue? Malformed data will be lost..
-        /// </summary>
-        public static string Error_Parsing_Zones_Settings_User_Choice {
-            get {
-                return ResourceManager.GetString("Error_Parsing_Zones_Settings_User_Choice", resourceCulture);
             }
         }
         
@@ -502,6 +493,24 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Click and drag across zones..
+        /// </summary>
+        public static string MergeDescription {
+            get {
+                return ResourceManager.GetString("MergeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Merge/Delete:.
+        /// </summary>
+        public static string MergeName {
+            get {
+                return ResourceManager.GetString("MergeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Monitor.
         /// </summary>
         public static string Monitor {
@@ -529,21 +538,29 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hold down Shift key to change orientation of splitter.
-        ///To merge zones, select the zones and click &quot;merge&quot;..
-        /// </summary>
-        public static string Note_Custom_Table {
-            get {
-                return ResourceManager.GetString("Note_Custom_Table", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Number of zones.
         /// </summary>
         public static string NumberOfZones {
             get {
                 return ResourceManager.GetString("NumberOfZones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        public static string Quick_Key_None {
+            get {
+                return ResourceManager.GetString("Quick_Key_None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a key to quickly apply the layout (Win + Ctrl + Alt + key).
+        /// </summary>
+        public static string QuickKey_Select {
+            get {
+                return ResourceManager.GetString("QuickKey_Select", resourceCulture);
             }
         }
         
@@ -598,6 +615,24 @@ namespace FancyZonesEditor.Properties {
         public static string Space_Around_Zones {
             get {
                 return ResourceManager.GetString("Space_Around_Zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hold Shift key for vertical split..
+        /// </summary>
+        public static string SplitterDescription {
+            get {
+                return ResourceManager.GetString("SplitterDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Splitter:.
+        /// </summary>
+        public static string SplitterName {
+            get {
+                return ResourceManager.GetString("SplitterName", resourceCulture);
             }
         }
         

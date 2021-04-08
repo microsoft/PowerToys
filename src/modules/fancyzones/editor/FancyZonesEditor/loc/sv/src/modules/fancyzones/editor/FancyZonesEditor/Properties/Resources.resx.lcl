@@ -334,11 +334,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Error_Parsing_Zones_Settings_Malformed_Data" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Error_Parsing_Zones_Settings_Message" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA['zones-settings.json' contains malformed data.]]></Val>
+          <Val><![CDATA[A layout that contained invalid data has been removed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[zones-settings.json innehåller felaktigt utformade data.]]></Val>
+            <Val><![CDATA[En layout som innehöll ogiltiga data har tagits bort.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -348,15 +348,6 @@
           <Val><![CDATA[Editor settings parsing error.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Parsningsfel i redigerarinställningar.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Error_Parsing_Zones_Settings_User_Choice" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Would you like to continue? Malformed data will be lost.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vill du fortsätta? Felaktigt utformade data kommer att gå förlorade.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -451,6 +442,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";MergeDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Click and drag across zones.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Klicka och dra mellan zoner.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";MergeName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Merge/Delete:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sammanslå/ta bort:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Merge_zones" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Merge zones]]></Val>
@@ -487,23 +496,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Note_Custom_Table" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, hold down the left mouse button, drag the mouse to the zone to merge, release the mouse button and click "Merge zones".]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Håll ned tangenten Skift om du vill ändra orienteringen för delare.]D;]A;Om du vill sammanslå zoner håller du ned vänster musknapp och drar musen till den zon som ska sammanslås. Sedan släpper du musknappen och klickar på "Sammanslå zoner".]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Hold down Shift key to change orientation of splitter.]D;]A;To merge zones, select the zones and click "merge".]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";NumberOfZones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Antal zoner]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Select" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a key to quickly apply the layout (Win + Ctrl + Alt + key)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Välj en tangent för att snabbt tillämpa layouten (Win + Ctrl + Alt + tangent)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Quick_Key_None" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[None]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ingen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -561,6 +576,24 @@
           <Val><![CDATA[Space around zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Utrymme runt zoner]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SplitterDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hold Shift key for vertical split.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Håll ned Skift-tangenten för vertikal delning.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SplitterName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Splitter:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Delare:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

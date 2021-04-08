@@ -120,11 +120,6 @@ namespace FancyZonesEditor.Models
 
         private int _spacing = LayoutSettings.DefaultSpacing;
 
-        // FreeZones (not persisted) - used to keep track of child indices that are no longer in use in the CellChildMap,
-        //  making them candidates for re-use when it's needed to add another child
-        //  TODO: do I need FreeZones on the data model?  - I think I do
-        public IList<int> FreeZones { get; } = new List<int>();
-
         public GridLayoutModel()
             : base()
         {

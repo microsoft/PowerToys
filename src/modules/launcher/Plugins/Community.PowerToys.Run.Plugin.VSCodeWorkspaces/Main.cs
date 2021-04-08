@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Windows.Controls;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
@@ -51,11 +49,14 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                         title += $" - {(a.ExtraInfo != null ? $"{a.ExtraInfo} ({typeWorkspace})" : typeWorkspace)}";
                     }
 
+                    var tooltip = new ToolTipData(title, $"{Resources.Workspace}{(a.TypeWorkspace != TypeWorkspace.Local ? $" {Resources.In} {typeWorkspace}" : "")}: {SystemPath.RealPath(a.RelativePath)}");
+
                     results.Add(new Result
                     {
                         Title = title,
                         SubTitle = $"{Resources.Workspace}{(a.TypeWorkspace != TypeWorkspace.Local ? $" {Resources.In} {typeWorkspace}" : "")}: {SystemPath.RealPath(a.RelativePath)}",
                         Icon = a.VSCodeInstance.WorkspaceIcon,
+                        ToolTipData = tooltip,
                         Action = c =>
                         {
                             bool hide;
@@ -85,6 +86,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     });
                 });
 
+
                 // Search opened remote machines
                 _machinesApi.Machines.ForEach(a =>
                 {
@@ -95,11 +97,14 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                         title += $" [{a.User}@{a.HostName}]";
                     }
 
+                    var tooltip = new ToolTipData(title, Resources.SSHRemoteMachine);
+
                     results.Add(new Result
                     {
                         Title = title,
                         SubTitle = Resources.SSHRemoteMachine,
                         Icon = a.VSCodeInstance.RemoteIcon,
+                        ToolTipData = tooltip,
                         Action = c =>
                         {
                             bool hide;
