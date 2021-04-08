@@ -5,6 +5,7 @@
 
 #include <common/Themes/windows_colors.h>
 
+#include "Logging.h"
 #include "VideoConferenceModule.h"
 
 Toolbar* toolbar = nullptr;
@@ -132,7 +133,7 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         if (toolbar->moduleSettingsUpdateScheduled)
         {
             instance->onModuleSettingsChanged();
-            toolbar->moduleSettingsUpdateScheduled= false;
+            toolbar->moduleSettingsUpdateScheduled = false;
         }
 
         toolbar->cameraInUse = VideoConferenceModule::getVirtualCameraInUse();
@@ -143,6 +144,7 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         const auto nowMillis = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         const bool showOverlayTimeout = nowMillis - toolbar->lastTimeCamOrMicMuteStateChanged > OVERLAY_SHOW_TIME;
 
+        static bool previousShow = false;
         bool show = false;
 
         if (toolbar->cameraInUse)
@@ -165,6 +167,11 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         else
         {
             ShowWindow(hwnd, SW_HIDE);
+        }
+        if (previousShow != show)
+        {
+            previousShow = show;
+            LOG(show ? "Toolbar visibility changed to shown" : "Toolbar visibility changed to hidden");
         }
 
         KillTimer(hwnd, toolbar->nTimerId);
