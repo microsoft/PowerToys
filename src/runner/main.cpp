@@ -148,7 +148,7 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
         chdir_current_executable();
         // Load Powertoys DLLs
 
-        const std::array<std::wstring_view, 8> knownModules = {
+        const std::array<std::wstring_view, 9> knownModules = {
             L"modules/FancyZones/fancyzones.dll",
             L"modules/FileExplorerPreview/powerpreview.dll",
             L"modules/ImageResizer/ImageResizerExt.dll",
@@ -157,6 +157,7 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuide.dll",
             L"modules/ColorPicker/ColorPicker.dll",
+            L"modules/Espresso/Espresso.dll",
         };
 
         for (const auto& moduleSubdir : knownModules)
