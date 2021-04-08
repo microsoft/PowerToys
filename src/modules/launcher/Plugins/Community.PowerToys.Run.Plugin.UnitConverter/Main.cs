@@ -12,8 +12,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public class Main : IPlugin, IPluginI18n, IDisposable
     {
-        public string Name => Properties.Resources.wox_plugin_unitconverter_plugin_name;
-        public string Description => Properties.Resources.wox_plugin_unitconverter_plugin_description;
+        public string Name => Properties.Resources.plugin_name;
+        public string Description => Properties.Resources.plugin_description;
 
         private PluginInitContext _context;
         private static string _icon_path;
@@ -113,7 +113,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 Title = string.Format("{0} {1}", Math.Round(converted_value, _roundingFractionalDigits), unit_name),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = Properties.Resources.wox_plugin_unitconvert_copy_to_clipboard,
+                SubTitle = Properties.Resources.copy_to_clipboard,
                 Action = c => {
                     var ret = false;
                     var thread = new Thread(() => {
@@ -122,7 +122,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                             ret = true;
                         }
                         catch (ExternalException) {
-                            MessageBox.Show(Properties.Resources.wox_plugin_unitconvert_copy_failed);
+                            MessageBox.Show(Properties.Resources.copy_failed);
                         }
                     });
                     thread.SetApartmentState(ApartmentState.STA);
@@ -134,11 +134,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         public string GetTranslatedPluginTitle() {
-            return Properties.Resources.wox_plugin_unitconverter_plugin_name;
+            return Properties.Resources.plugin_name;
         }
 
         public string GetTranslatedPluginDescription() {
-            return Properties.Resources.wox_plugin_unitconverter_plugin_description;
+            return Properties.Resources.plugin_description;
         }
 
         private void OnThemeChanged(Theme _, Theme newTheme) {

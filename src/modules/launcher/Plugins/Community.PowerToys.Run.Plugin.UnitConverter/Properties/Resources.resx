@@ -117,16 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="wox_plugin_unitconverter_plugin_description" xml:space="preserve">
-    <value>Provides unit conversion.</value>
-  </data>
-  <data name="wox_plugin_unitconverter_plugin_name" xml:space="preserve">
-    <value>UnitConverter</value>
-  </data>
-  <data name="wox_plugin_unitconvert_copy_failed" xml:space="preserve">
+  <data name="copy_failed" xml:space="preserve">
     <value>Copy failed</value>
   </data>
-  <data name="wox_plugin_unitconvert_copy_to_clipboard" xml:space="preserve">
+  <data name="copy_to_clipboard" xml:space="preserve">
     <value>Copy to clipboard</value>
+  </data>
+  <data name="plugin_description" xml:space="preserve">
+    <value>Provides unit conversion.</value>
+  </data>
+  <data name="plugin_name" xml:space="preserve">
+    <value>Unit Converter</value>
   </data>
 </root>
