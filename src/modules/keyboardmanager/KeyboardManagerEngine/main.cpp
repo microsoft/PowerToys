@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include <common/utils/window.h>
 #include <common/utils/process_waiter.h>
-#include "KeyboardManager.h"
+#include<keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;

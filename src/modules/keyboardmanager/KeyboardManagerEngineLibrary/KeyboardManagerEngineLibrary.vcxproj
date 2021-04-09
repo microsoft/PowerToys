@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
-    <CppWinRTOptimized>true</CppWinRTOptimized>
-    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
-    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
-    <MinimalCoreWin>true</MinimalCoreWin>
-    <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{ba661f5b-1d5a-4ffc-9bf1-fc39df280bdd}</ProjectGuid>
+    <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>KeyboardManagerEngine</RootNamespace>
+    <ProjectGuid>{e496b7fc-1e99-4bab-849b-0e8367040b02}</ProjectGuid>
+    <RootNamespace>KeyboardManagerEngineLibrary</RootNamespace>
     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.17134.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -25,40 +21,27 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets">
-    <Import Project="PropertySheet.props" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <TargetName>PowerToys.KeyboardManager</TargetName>
-  </PropertyGroup>
-  <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\$(ProjectName)\</OutDir>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(SolutionDir)src\;$(SolutionDir)src\modules;$(SolutionDir)src\common\Telemetry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EXAMPLEPOWERTOY_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings>4002</DisableSpecificWarnings>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link>
-      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>Shell32.lib;Shcore.lib;OleAut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="KeyboardEventHandlers.h" />
+    <ClInclude Include="KeyboardManager.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="KeyboardEventHandlers.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
@@ -70,9 +53,9 @@
     <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">
       <Project>{8affa899-0b73-49ec-8c50-0fadda57b2fc}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\KeyboardManagerEngineLibrary\KeyboardManagerEngineLibrary.vcxproj">
-      <Project>{e496b7fc-1e99-4bab-849b-0e8367040b02}</Project>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
