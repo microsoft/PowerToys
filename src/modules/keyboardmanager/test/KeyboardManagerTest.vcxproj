@@ -41,19 +41,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AppSpecificShortcutRemappingTests.cpp" />
     <ClCompile Include="BufferValidationTests.cpp" />
     <ClCompile Include="LoadingAndSavingRemappingTests.cpp" />
-    <ClCompile Include="MockedInputSanityTests.cpp" />
-    <ClCompile Include="SetKeyEventTests.cpp" />
-    <ClCompile Include="OSLevelShortcutRemappingTests.cpp" />
     <ClCompile Include="MockedInput.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ShortcutTests.cpp" />
-    <ClCompile Include="SingleKeyRemappingTests.cpp" />
-    <ClCompile Include="KeyboardManagerHelperTests.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -18,37 +18,16 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MockedInput.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TestHelpers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SingleKeyRemappingTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MockedInputSanityTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SetKeyEventTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OSLevelShortcutRemappingTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AppSpecificShortcutRemappingTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LoadingAndSavingRemappingTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BufferValidationTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyboardManagerHelperTests.cpp">
+    <ClCompile Include="TestHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShortcutTests.cpp">
+    <ClCompile Include="MockedInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,10 +38,10 @@
     <ClInclude Include="MockedInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TestHelpers.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="TestHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

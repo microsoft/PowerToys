@@ -14,8 +14,6 @@
 #include <common/logger/logger_settings.h>
 #include <keyboardmanager/common/trace.h>
 #include <keyboardmanager/common/Helpers.h>
-#include "KeyboardEventHandlers.h"
-#include "Input.h"
 #include <shellapi.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -59,9 +57,6 @@ private:
 
     // Variable which stores all the state information to be shared between the UI and back-end
     KeyboardManagerState keyboardManagerState;
-
-    // Object of class which implements InputInterface. Required for calling library functions while enabling testing
-    Input inputHandler;
 
     HANDLE m_hProcess = nullptr;
 public:
@@ -364,136 +359,6 @@ public:
     virtual bool is_enabled() override
     {
         return m_enabled;
-    }
-
-    // Hook procedure definition
-    static LRESULT CALLBACK hook_proc(int nCode, WPARAM wParam, LPARAM lParam)
-    {
-        LowlevelKeyboardEvent event;
-        if (nCode == HC_ACTION)
-        {
-            event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-            event.wParam = wParam;
-            if (keyboardmanager_object_ptr->HandleKeyboardHookEvent(&event) == 1)
-            {
-                // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
-                if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
-                {
-                    KeyboardEventHandlers::SetNumLockToPreviousState(keyboardmanager_object_ptr->inputHandler);
-                }
-                return 1;
-            }
-        }
-        return CallNextHookEx(hook_handle_copy, nCode, wParam, lParam);
-    }
-
-    void start_lowlevel_keyboard_hook()
-    {
-#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
-        if (IsDebuggerPresent())
-        {
-            return;
-        }
-#endif
-
-        if (!hook_handle)
-        {
-            hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, hook_proc, GetModuleHandle(NULL), NULL);
-            hook_handle_copy = hook_handle;
-            if (!hook_handle)
-            {
-                DWORD errorCode = GetLastError();
-                show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager");
-                auto errorMessage = get_last_error_message(errorCode);
-                Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
-            }
-        }
-    }
-
-    // Function to terminate the low level hook
-    void stop_lowlevel_keyboard_hook()
-    {
-        if (hook_handle)
-        {
-            UnhookWindowsHookEx(hook_handle);
-            hook_handle = nullptr;
-        }
-    }
-
-    // Function called by the hook procedure to handle the events. This is the starting point function for remapping
-    intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
-    {
-        // If remappings are disabled (due to the remap tables getting updated) skip the rest of the hook
-        if (!keyboardManagerState.AreRemappingsEnabled())
-        {
-            return 0;
-        }
-
-        // If key has suppress flag, then suppress it
-        if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
-        {
-            return 1;
-        }
-
-        // If the Detect Key Window is currently activated, then suppress the keyboard event
-        KeyboardManagerHelper::KeyboardHookDecision singleKeyRemapUIDetected = keyboardManagerState.DetectSingleRemapKeyUIBackend(data);
-        if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
-        {
-            return 1;
-        }
-        else if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
-        {
-            return 0;
-        }
-
-        // If the Detect Shortcut Window from Remap Keys is currently activated, then suppress the keyboard event
-        KeyboardManagerHelper::KeyboardHookDecision remapKeyShortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, true);
-        if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
-        {
-            return 1;
-        }
-        else if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
-        {
-            return 0;
-        }
-
-        // Remap a key
-        intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, keyboardManagerState);
-
-        // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
-        if (SingleKeyRemapResult == 1)
-        {
-            return 1;
-        }
-
-        // If the Detect Shortcut Window is currently activated, then suppress the keyboard event
-        KeyboardManagerHelper::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, false);
-        if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
-        {
-            return 1;
-        }
-        else if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
-        {
-            return 0;
-        }
-
-        /* This feature has not been enabled (code from proof of concept stage)
-        * 
-        //// Remap a key to behave like a modifier instead of a toggle
-        //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
-        */
-
-        // Handle an app-specific shortcut remapping
-        intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, keyboardManagerState);
-
-        // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
-        if (AppSpecificShortcutRemapResult == 1)
-        {
-            return 1;
-        }
-
-        // Handle an os-level shortcut remapping
-        return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, keyboardManagerState);
     }
 };
 
