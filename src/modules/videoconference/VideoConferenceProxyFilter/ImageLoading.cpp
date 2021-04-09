@@ -21,30 +21,11 @@
 #include <mfidl.h>
 #include <mftransform.h>
 #include <dshow.h>
+#include <Wincodecsdk.h>
 
 #include <shlwapi.h>
 
 #include "Logging.h"
-
-bool failed(HRESULT hr)
-{
-    return hr != S_OK;
-}
-
-bool failed(bool val)
-{
-    return val == false;
-}
-
-template<typename T>
-bool failed(wil::com_ptr_nothrow<T>& ptr)
-{
-    return ptr == nullptr;
-}
-
-#define OK_OR_BAIL(expr) \
-    if (failed(expr))    \
-        return {};
 
 IWICImagingFactory* _GetWIC() noexcept
 {
@@ -110,7 +91,8 @@ wil::com_ptr_nothrow<IStream> EncodeBitmapToContainer(IWICImagingFactory* pWIC,
                                                       wil::com_ptr_nothrow<IWICBitmapSource> bitmap,
                                                       const GUID& containerGUID,
                                                       const UINT width,
-                                                      const UINT height)
+                                                      const UINT height,
+                                                      const float quality)
 {
     wil::com_ptr_nothrow<IWICBitmapEncoder> encoder;
     pWIC->CreateEncoder(containerGUID, nullptr, &encoder);
@@ -125,8 +107,31 @@ wil::com_ptr_nothrow<IStream> EncodeBitmapToContainer(IWICImagingFactory* pWIC,
     OK_OR_BAIL(CreateStreamOnHGlobal(nullptr, true, &encodedBitmap));
     encoder->Initialize(encodedBitmap.get(), WICBitmapEncoderNoCache);
     wil::com_ptr_nothrow<IWICBitmapFrameEncode> encodedFrame;
-    OK_OR_BAIL(encoder->CreateNewFrame(&encodedFrame, nullptr));
-    OK_OR_BAIL(encodedFrame->Initialize(nullptr));
+
+    wil::com_ptr_nothrow<IPropertyBag2> encoderOptions;
+    OK_OR_BAIL(encoder->CreateNewFrame(&encodedFrame, &encoderOptions));
+
+    ULONG nProperties = 0;
+    OK_OR_BAIL(encoderOptions->CountProperties(&nProperties));
+    for (ULONG propIdx = 0; propIdx < nProperties; ++propIdx)
+    {
+        PROPBAG2 propBag{};
+        ULONG _;
+        OK_OR_BAIL(encoderOptions->GetPropertyInfo(propIdx, 1, &propBag, &_));
+        if (propBag.pstrName == std::wstring_view{ L"ImageQuality" })
+        {
+            wil::unique_variant variant;
+            variant.vt = VT_R4;
+            variant.fltVal = quality;
+            OK_OR_BAIL(encoderOptions->Write(1, &propBag, &variant));
+            LOG("Successfully set jpg compression quality");
+            // skip the rest of the properties
+            propIdx = nProperties;
+        }
+        CoTaskMemFree(propBag.pstrName);
+    }
+
+    OK_OR_BAIL(encodedFrame->Initialize(encoderOptions.get()));
 
     WICPixelFormatGUID intermediateFormat = GUID_WICPixelFormat24bppRGB;
     OK_OR_BAIL(encodedFrame->SetPixelFormat(&intermediateFormat));
@@ -245,7 +250,8 @@ IMFSample* ConvertIMFVideoSample(const MFT_REGISTER_TYPE_INFO& inputType,
 }
 
 wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> imageStream,
-                                                  IMFMediaType* sampleMediaType) noexcept
+                                                  IMFMediaType* sampleMediaType,
+                                                  const float quality) noexcept
 {
     UINT targetWidth = 0;
     UINT targetHeight = 0;
@@ -302,7 +308,7 @@ wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> 
     {
         // Use an intermediate jpg container sample which will be transcoded to the target format
         wil::com_ptr_nothrow<IStream> jpgStream =
-            EncodeBitmapToContainer(pWIC, srcImageBitmap, GUID_ContainerFormatJpeg, targetWidth, targetHeight);
+            EncodeBitmapToContainer(pWIC, srcImageBitmap, GUID_ContainerFormatJpeg, targetWidth, targetHeight, quality);
 
         // Obtain stream size and lock its memory pointer
         STATSTG intermediateStreamStat{};

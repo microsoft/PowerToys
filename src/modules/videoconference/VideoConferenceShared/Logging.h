@@ -4,6 +4,9 @@
 #include <guiddef.h>
 #include <system_error>
 
+#include <wil/com.h>
+#include <Windows.h>
+
 void LogToFile(std::string what, const bool verbose = false);
 void LogToFile(std::wstring what, const bool verbose = false);
 std::string toMediaTypeString(GUID subtype);
@@ -38,3 +41,22 @@ std::string toMediaTypeString(GUID subtype);
 #define LOG(str) LogToFile(str, false);
 #endif
 
+inline bool failed(HRESULT hr)
+{
+    return hr != S_OK;
+}
+
+inline bool failed(bool val)
+{
+    return val == false;
+}
+
+template<typename T>
+inline bool failed(wil::com_ptr_nothrow<T>& ptr)
+{
+    return ptr == nullptr;
+}
+
+#define OK_OR_BAIL(expr) \
+    if (failed(expr))    \
+        return {};

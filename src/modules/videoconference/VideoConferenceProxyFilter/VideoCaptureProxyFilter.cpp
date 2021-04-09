@@ -35,7 +35,8 @@ wil::com_ptr_nothrow<IMemAllocator> VideoCaptureProxyPin::FindAllocator()
 }
 
 wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> imageStream,
-                                                  IMFMediaType* sampleMediaType) noexcept;
+                                                  IMFMediaType* sampleMediaType,
+                                                  const float quality) noexcept;
 
 HRESULT VideoCaptureProxyPin::Connect(IPin* pReceivePin, const AM_MEDIA_TYPE*)
 {
@@ -69,6 +70,7 @@ HRESULT VideoCaptureProxyPin::Connect(IPin* pReceivePin, const AM_MEDIA_TYPE*)
     }
 
     auto allocator = FindAllocator();
+
     memInput->NotifyAllocator(allocator.get(), false);
 
     return S_OK;
@@ -349,6 +351,20 @@ HRESULT VideoCaptureProxyPin::QuerySupported(REFGUID guidPropSet, DWORD dwPropID
     return S_OK;
 }
 
+long GetImageSize(wil::com_ptr_nothrow<IMFSample>& image)
+{
+    if (!image)
+    {
+        return 0;
+    }
+    DWORD imageSize = 0;
+    wil::com_ptr_nothrow<IMFMediaBuffer> imageBuf;
+
+    OK_OR_BAIL(image->GetBufferByIndex(0, &imageBuf));
+    OK_OR_BAIL(imageBuf->GetCurrentLength(&imageSize));
+    return imageSize;
+}
+
 void OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
 {
     if (!image)
@@ -365,17 +381,23 @@ void OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
     }
 
     wil::com_ptr_nothrow<IMFMediaBuffer> imageBuf;
-    const long nBytes = frame->GetSize();
+    const DWORD frameSize = frame->GetSize();
 
     image->GetBufferByIndex(0, &imageBuf);
     BYTE* imageData = nullptr;
-    DWORD maxLength = 0, curLength = 0;
-    imageBuf->Lock(&imageData, &maxLength, &curLength);
-    std::copy(imageData, imageData + curLength, frameData);
-    imageBuf->Unlock();
-    frame->SetActualDataLength(curLength);
-}
+    DWORD _ = 0, imageSize = 0;
+    imageBuf->Lock(&imageData, &_, &imageSize);
 
+    if (imageSize > frameSize)
+    {
+        LOG("Error: overlay image size is larger than a frame size - truncated.");
+        imageSize = frameSize;
+    }
+
+    std::copy(imageData, imageData + imageSize, frameData);
+    imageBuf->Unlock();
+    frame->SetActualDataLength(imageSize);
+}
 
 VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
     _worker_thread{ std::thread{ [this]() {
@@ -566,11 +588,17 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
         }
 
         auto& webcam = webcams[*selectedCamIdx];
-
         auto pin = winrt::make_self<VideoCaptureProxyPin>();
         pin->_mediaFormat = CopyMediaType(webcam.bestFormat.mediaType);
         pin->_owningFilter = this;
         _outPin.attach(pin.detach());
+
+        auto frameCallback = [this](IMediaSample* sample) {
+            std::unique_lock<std::mutex> lock{ _worker_mutex };
+            sample->AddRef();
+            _pending_frame = sample;
+            _worker_cv.notify_one();
+        };
 
         wil::com_ptr_nothrow<IMFMediaType> targetMediaType;
         MFCreateMediaType(&targetMediaType);
@@ -582,28 +610,37 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
             targetMediaType.get(), MF_MT_FRAME_SIZE, webcam.bestFormat.width, webcam.bestFormat.height);
         MFSetAttributeRatio(targetMediaType.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
 
-        if (!_blankImage)
-        {
-            wil::com_ptr_nothrow<IStream> blackBMPImage = SHCreateMemStream(bmpPixelData, sizeof(bmpPixelData));
-            _blankImage = LoadImageAsSample(blackBMPImage, targetMediaType.get());
-        }
-
-        if (newSettings.overlayImage && !_overlayImage)
-        {
-            _overlayImage = LoadImageAsSample(newSettings.overlayImage, targetMediaType.get());
-        }
-
-        LOG("Loaded images");
-        auto frameCallback = [this](IMediaSample* sample) {
-            std::unique_lock<std::mutex> lock{ _worker_mutex };
-            sample->AddRef();
-            _pending_frame = sample;
-            _worker_cv.notify_one();
-        };
-
         _captureDevice = VideoCaptureDevice::Create(std::move(webcam), std::move(frameCallback));
         if (_captureDevice)
         {
+            if (!_blankImage)
+            {
+                wil::com_ptr_nothrow<IStream> blackBMPImage = SHCreateMemStream(bmpPixelData, sizeof(bmpPixelData));
+                _blankImage = LoadImageAsSample(blackBMPImage, targetMediaType.get(), false);
+            }
+
+            if (newSettings.overlayImage && !_overlayImage)
+            {
+                long maxFrameSize = 0;
+                ALLOCATOR_PROPERTIES allocatorProperties{};
+                if (!failed(_captureDevice->_allocator->GetProperties(&allocatorProperties)))
+                {
+                    maxFrameSize = allocatorProperties.cbBuffer;
+                }
+
+                size_t selectedModeIdx = 0;
+                constexpr std::array<float, 3> jpgQualityModes = { 0.5f, 0.25f, 0.1f };
+                _overlayImage = LoadImageAsSample(newSettings.overlayImage, targetMediaType.get(), jpgQualityModes[selectedModeIdx]);
+                long imageSize = GetImageSize(_overlayImage);
+                while (maxFrameSize && maxFrameSize < imageSize && selectedModeIdx < size(jpgQualityModes))
+                {
+                    _overlayImage = LoadImageAsSample(newSettings.overlayImage, targetMediaType.get(), jpgQualityModes[++selectedModeIdx]);
+                    imageSize = GetImageSize(_overlayImage);
+                }
+            }
+
+            LOG("Loaded images");
+
             LOG("Capture device created successfully");
         }
         else

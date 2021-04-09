@@ -22,6 +22,10 @@ unique_media_type_ptr CopyMediaType(const AM_MEDIA_TYPE* source)
 
 wil::com_ptr_nothrow<IMemAllocator> GetPinAllocator(wil::com_ptr_nothrow<IPin>& inputPin)
 {
+    if (!inputPin)
+    {
+        return nullptr;
+    }
     wil::com_ptr_nothrow<IMemAllocator> allocator;
     if (auto memInput = inputPin.try_query<IMemInputPin>(); memInput)
     {
