@@ -221,6 +221,7 @@ IMFSample* ConvertIMFVideoSample(const MFT_REGISTER_TYPE_INFO& inputType,
         OK_OR_BAIL(MFCreateSample(&outputSample));
         OK_OR_BAIL(outputSample->SetSampleDuration(333333));
         OK_OR_BAIL(outputSample->SetSampleTime(1));
+        OK_OR_BAIL(outputSample->SetUINT32(MF_MT_VIDEO_ROTATION, MFVideoRotationFormat::MFVideoRotationFormat_0));
         IMFMediaBuffer* outputMediaBuffer = nullptr;
         OK_OR_BAIL(
             MFCreateAlignedMemoryBuffer(outputStreamInfo.cbSize, outputStreamInfo.cbAlignment - 1, &outputMediaBuffer));
@@ -273,6 +274,7 @@ wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> 
     // First, let's create a sample containing RGB24 bitmap
     IMFSample* outputSample = nullptr;
     OK_OR_BAIL(MFCreateSample(&outputSample));
+    OK_OR_BAIL(outputSample->SetUINT32(MF_MT_VIDEO_ROTATION, MFVideoRotationFormat::MFVideoRotationFormat_0));
     OK_OR_BAIL(outputSample->SetSampleDuration(333333));
     OK_OR_BAIL(outputSample->SetSampleTime(1));
     IMFMediaBuffer* outputMediaBuffer = nullptr;
@@ -315,7 +317,7 @@ wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> 
         // Create a sample from the input image buffer
         wil::com_ptr_nothrow<IMFSample> jpgSample;
         OK_OR_BAIL(MFCreateSample(&jpgSample));
-
+        OK_OR_BAIL(jpgSample->SetUINT32(MF_MT_VIDEO_ROTATION, MFVideoRotationFormat::MFVideoRotationFormat_0));
         IMFMediaBuffer* inputMediaBuffer = nullptr;
         OK_OR_BAIL(MFCreateAlignedMemoryBuffer(static_cast<DWORD>(jpgStreamSize), MF_64_BYTE_ALIGNMENT, &inputMediaBuffer));
         BYTE* inputBuf = nullptr;
