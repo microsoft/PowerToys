@@ -40,8 +40,6 @@ private:
     Input inputHandler;
 
     event_waiter eventWaiter;
-
-    std::mutex configAccessMutex;
 public:
     // Constructor
     KeyboardManager()
@@ -69,7 +67,6 @@ public:
     // Load config from the saved settings.
     void load_config()
     {
-        std::lock_guard configLock{ configAccessMutex };
         try
         {
             PowerToysSettings::PowerToyValues settings =
@@ -224,7 +221,6 @@ public:
         {
             event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
             event.wParam = wParam;
-            std::lock_guard configLock{ keyboardmanager_object_ptr->configAccessMutex };
             if (keyboardmanager_object_ptr->HandleKeyboardHookEvent(&event) == 1)
             {
                 // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
