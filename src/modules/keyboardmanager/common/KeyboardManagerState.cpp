@@ -603,6 +603,19 @@ bool KeyboardManagerState::SaveConfigToFile()
         result = false;
     }
 
+    if (result)
+    {
+        auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::ConfigEventName.c_str());
+        if (hEvent)
+        {
+            SetEvent(hEvent);
+        }
+        else
+        {
+            // todo: log error
+        }
+    }
+
     return result;
 }
 

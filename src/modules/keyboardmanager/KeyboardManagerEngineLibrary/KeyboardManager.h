@@ -16,7 +16,7 @@
 #include <keyboardmanager/common/Helpers.h>
 #include "KeyboardEventHandlers.h"
 #include "Input.h"
-#include <common/utils/file_watcher.h>
+#include <common/utils/event_waiter.h>
 
 class KeyboardManager
 {
@@ -39,7 +39,7 @@ private:
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     Input inputHandler;
 
-    file_watcher watcher;
+    event_waiter eventWaiter;
 
     std::mutex configAccessMutex;
 public:
@@ -63,7 +63,7 @@ public:
             load_config();
         };
 
-        watcher = std::move(file_watcher(changeConfigCallback, modulePath.c_str(), { L"settings.json", L"default.json" }));
+        eventWaiter = std::move(event_waiter(KeyboardManagerConstants::ConfigEventName, changeConfigCallback));
     };
 
     // Load config from the saved settings.
