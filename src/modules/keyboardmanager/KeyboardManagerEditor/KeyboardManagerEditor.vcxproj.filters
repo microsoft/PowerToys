@@ -118,4 +118,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="KeyboardManagerEditor.exe.manifest" />
+  </ItemGroup>
 </Project>
