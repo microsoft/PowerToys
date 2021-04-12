@@ -24,7 +24,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int numArgs;
     LPWSTR* cmdArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);
 
-    MessageBox(nullptr, cmdArgs[1], cmdArgs[0], MB_OK);
     if (cmdArgs == nullptr)
     {
         // TODO: report error
