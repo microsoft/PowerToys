@@ -20,6 +20,7 @@
 
 struct VideoCaptureProxyPin;
 struct IMFSample;
+struct IMFMediaType;
 
 inline const wchar_t CAMERA_NAME[] = L"PowerToys VideoConference Mute";
 
@@ -33,6 +34,7 @@ struct VideoCaptureProxyFilter : winrt::implements<VideoCaptureProxyFilter, IBas
     std::optional<std::wstring> _currentSourceCameraName;
     wil::com_ptr_nothrow<IMFSample> _blankImage;
     wil::com_ptr_nothrow<IMFSample> _overlayImage;
+    wil::com_ptr_nothrow<IMFMediaType> _targetMediaType;
     // BLOCK END: member accessed concurrently
 
     std::mutex _worker_mutex;

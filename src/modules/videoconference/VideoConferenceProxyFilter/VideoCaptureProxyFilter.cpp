@@ -11,6 +11,7 @@ constexpr static inline wchar_t VENDOR[] = L"Microsoft Corporation";
 
 namespace
 {
+    constexpr float initialJpgQuality = 0.5f;
     constexpr std::array<unsigned char, 3> overlayColor = { 0, 0, 0 };
     // clang-format off
     unsigned char bmpPixelData[58] = {
@@ -365,19 +366,18 @@ long GetImageSize(wil::com_ptr_nothrow<IMFSample>& image)
     return imageSize;
 }
 
-void OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
+bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
 {
     if (!image)
     {
-        return;
+        return false;
     }
 
     BYTE* frameData = nullptr;
     frame->GetPointer(&frameData);
     if (!frameData)
     {
-        LOG("Couldn't get sample pointer");
-        return;
+        return false;
     }
 
     wil::com_ptr_nothrow<IMFMediaBuffer> imageBuf;
@@ -386,68 +386,93 @@ void OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
     image->GetBufferByIndex(0, &imageBuf);
     if (!imageBuf)
     {
-        LOG("Error: couldn't get imageBuffer");
-        return;
+        return false;
     }
     BYTE* imageData = nullptr;
     DWORD _ = 0, imageSize = 0;
     imageBuf->Lock(&imageData, &_, &imageSize);
     if (!imageData)
     {
-        LOG("Error: couldn't lock imageBuffer");
-        return;
+        return false;
     }
-
+    bool success = true;
     if (imageSize > frameSize)
     {
-        LOG("Error: overlay image size is larger than a frame size - truncated.");
+        char buf[512]{};
+        sprintf_s(buf, "Error: overlay image size %ld is larger than frame size %d - truncated.", imageSize, frameSize);
+        LOG(buf);
         imageSize = frameSize;
+        success = false;
     }
 
     std::copy(imageData, imageData + imageSize, frameData);
     imageBuf->Unlock();
     frame->SetActualDataLength(imageSize);
+
+    return success;
 }
 
 VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
-    _worker_thread{ std::thread{ [this]() {
-        using namespace std::chrono_literals;
-        const auto uninitializedSleepInterval = 15ms;
-        while (!_shutdown_request)
-        {
-            std::unique_lock<std::mutex> lock{ _worker_mutex };
-            _worker_cv.wait(lock, [this] { return _pending_frame != nullptr || _shutdown_request; });
+    _worker_thread{
+        std::thread{
+            [this]() {
+                using namespace std::chrono_literals;
+                const auto uninitializedSleepInterval = 15ms;
+                std::vector<float> lowerJpgQualityModes = { 0.1f, 0.25f };
+                while (!_shutdown_request)
+                {
+                    std::unique_lock<std::mutex> lock{ _worker_mutex };
+                    _worker_cv.wait(lock, [this] { return _pending_frame != nullptr || _shutdown_request; });
 
-            if (!_outPin || !_outPin->_connectedInputPin)
-            {
-                lock.unlock();
-                std::this_thread::sleep_for(uninitializedSleepInterval);
-                continue;
-            }
+                    if (!_outPin || !_outPin->_connectedInputPin)
+                    {
+                        lock.unlock();
+                        std::this_thread::sleep_for(uninitializedSleepInterval);
+                        continue;
+                    }
 
-            auto input = _outPin->_connectedInputPin.try_query<IMemInputPin>();
-            if (!input)
-            {
-                continue;
-            }
+                    auto input = _outPin->_connectedInputPin.try_query<IMemInputPin>();
+                    if (!input)
+                    {
+                        continue;
+                    }
 
-            IMediaSample* sample = _pending_frame;
-            if (!sample)
-            {
-                continue;
-            }
+                    IMediaSample* sample = _pending_frame;
+                    if (!sample)
+                    {
+                        continue;
+                    }
 
-            const auto newSettings = SyncCurrentSettings();
-            if (newSettings.webcamDisabled)
-            {
-                OverwriteFrame(_pending_frame, _overlayImage ? _overlayImage : _blankImage);
-            }
+                    const auto newSettings = SyncCurrentSettings();
+                    if (newSettings.webcamDisabled)
+                    {
+                        bool overwritten = OverwriteFrame(_pending_frame, _overlayImage ? _overlayImage : _blankImage);
+                        while(!overwritten && _overlayImage && newSettings.overlayImage)
+                        {
+                            _overlayImage.reset();
+                            if (!lowerJpgQualityModes.empty())
+                            {
+                                const float quality = lowerJpgQualityModes.back();
+                                lowerJpgQualityModes.pop_back();
+                                char buf[512]{};
+                                sprintf_s(buf, "Reload overlay image with quality %f", quality);
+                                LOG(buf);
+                                _overlayImage = LoadImageAsSample(newSettings.overlayImage, _targetMediaType.get(), quality);
+                                overwritten = OverwriteFrame(_pending_frame, _overlayImage);
+                            }
+                            else
+                            {
+                                LOG("Couldn't overwrite frame with image with all available quality modes.");
+                            }
+                        }
+                    }
 
-            _pending_frame = nullptr;
-            input->Receive(sample);
-            sample->Release();
-        }
-    } } }
+                    _pending_frame = nullptr;
+                    input->Receive(sample);
+                    sample->Release();
+                }
+            } }
+    }
 {
 }
 
@@ -610,15 +635,15 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
             _worker_cv.notify_one();
         };
 
-        wil::com_ptr_nothrow<IMFMediaType> targetMediaType;
-        MFCreateMediaType(&targetMediaType);
-        targetMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-        targetMediaType->SetGUID(MF_MT_SUBTYPE, MapDShowSubtypeToMFT(webcam.bestFormat.mediaType->subtype));
-        targetMediaType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
-        targetMediaType->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE);
+        _targetMediaType.reset();
+        MFCreateMediaType(&_targetMediaType);
+        _targetMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+        _targetMediaType->SetGUID(MF_MT_SUBTYPE, MapDShowSubtypeToMFT(webcam.bestFormat.mediaType->subtype));
+        _targetMediaType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
+        _targetMediaType->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE);
         MFSetAttributeSize(
-            targetMediaType.get(), MF_MT_FRAME_SIZE, webcam.bestFormat.width, webcam.bestFormat.height);
-        MFSetAttributeRatio(targetMediaType.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
+            _targetMediaType.get(), MF_MT_FRAME_SIZE, webcam.bestFormat.width, webcam.bestFormat.height);
+        MFSetAttributeRatio(_targetMediaType.get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
 
         _captureDevice = VideoCaptureDevice::Create(std::move(webcam), std::move(frameCallback));
         if (_captureDevice)
@@ -626,46 +651,10 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
             if (!_blankImage)
             {
                 wil::com_ptr_nothrow<IStream> blackBMPImage = SHCreateMemStream(bmpPixelData, sizeof(bmpPixelData));
-                _blankImage = LoadImageAsSample(blackBMPImage, targetMediaType.get(), false);
+                _blankImage = LoadImageAsSample(blackBMPImage, _targetMediaType.get(), initialJpgQuality);
             }
 
-            if (newSettings.overlayImage && !_overlayImage)
-            {
-                long maxFrameSize = 0;
-                ALLOCATOR_PROPERTIES allocatorProperties{};
-                if (!failed(_captureDevice->_allocator->GetProperties(&allocatorProperties)))
-                {
-                    maxFrameSize = allocatorProperties.cbBuffer;
-                }
-                if (maxFrameSize)
-                {
-                    LOG("Obtained maxFrameSize");
-                }
-                else
-                {
-                    LOG("Couldn't obtain maxFrameSize");
-                }
-
-                size_t selectedModeIdx = 0;
-                constexpr std::array<float, 3> jpgQualityModes = { 0.5f, 0.25f, 0.1f };
-                _overlayImage = LoadImageAsSample(newSettings.overlayImage, targetMediaType.get(), jpgQualityModes[selectedModeIdx]);
-                long imageSize = GetImageSize(_overlayImage);
-                while (maxFrameSize && maxFrameSize < imageSize && selectedModeIdx < size(jpgQualityModes))
-                {
-                    LOG("Trying lower jpg quality");
-                    _overlayImage = LoadImageAsSample(newSettings.overlayImage, targetMediaType.get(), jpgQualityModes[++selectedModeIdx]);
-                    imageSize = GetImageSize(_overlayImage);
-                }
-                if (maxFrameSize < imageSize)
-                {
-                    LOG("Couldn't lower jpg quality enough");
-                }
-                else
-                {
-                    LOG("Successfully lowered jpg quality to fit into image frame");
-                }
-            }
-
+            _overlayImage = LoadImageAsSample(newSettings.overlayImage, _targetMediaType.get(), initialJpgQuality);
             LOG("Capture device created successfully");
         }
         else
