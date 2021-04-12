@@ -6,6 +6,9 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public static class InputInterpreter
     {
+        public static string[] RegexSplitter(ref string[] split) {
+            return Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)");
+        }
 
         /// <summary>
         /// Replaces a split input array with shorthand feet/inch notation (1', 1'2" etc) to 'x foot in cm'. 
@@ -16,7 +19,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             // catches 1' || 1" || 1'2 || 1'2" in cm
             // by converting it to "x foot in cm"
             if (split.Length == 3) {
-                string[] shortsplit = Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)"); // todo ',' or '.' should depend on culture
+                string[] shortsplit = RegexSplitter(ref split);
 
                 switch (shortsplit.Length) {
                     case 2:
@@ -39,17 +42,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                             bool isInches = double.TryParse(shortsplit[2], NumberStyles.AllowDecimalPoint, culture, out double inches);
 
                             if (!isFeet || !isInches) {
-                                // one of either could not be parsed correctly
+                                // atleast one could not be parsed correctly
                                 break;
                             }
 
                             double totalInFeet = Length.FromFeetInches(feet, inches).Feet;
                             string convertedTotalInFeet = totalInFeet.ToString();
-
-                            if (culture == CultureInfo.InvariantCulture) {
-                                // todo: actually make this work for more cultures where decimal parsing could break (e.g. '1,5' != 15)
-                                convertedTotalInFeet = totalInFeet.ToString().Replace(',', '.');
-                            }
 
                             string[] newInput = new string[] { convertedTotalInFeet, "foot", split[1], split[2] };
                             split = newInput;
