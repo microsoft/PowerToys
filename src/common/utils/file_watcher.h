@@ -22,7 +22,7 @@ public:
             return;
         }
 
-        // We copy this hanlde because we want to capture it
+        // We copy this handle because we want to capture it
         // We can not relay on capturing 'this' because we allow move constructor
         auto watcher_exit_local_event = watcher_exit_event;
         std::thread([=]() {
