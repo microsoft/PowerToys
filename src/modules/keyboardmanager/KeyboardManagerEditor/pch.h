@@ -5,6 +5,7 @@
 #define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 #include <unknwn.h>
 #include <windows.h>
+#include <shellapi.h>
 
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
