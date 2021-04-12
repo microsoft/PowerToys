@@ -1510,6 +1510,7 @@ oldnewthing
 oldpath
 oldtheme
 oleaut
+OleAut
 OLECHAR
 OLEDB
 OLIVEGREEN
@@ -1737,6 +1738,7 @@ readme
 READMODE
 readonly
 READWRITE
+REALTIME
 RECTDESTINATION
 RECTL
 rectp
@@ -2179,6 +2181,7 @@ Tz
 UAC
 UAL
 uap
+UCHAR
 udit
 UIA
 Uid

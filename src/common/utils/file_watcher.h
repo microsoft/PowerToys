@@ -56,9 +56,9 @@ public:
             while (true)
             {
                 memset(info, 0, sizeof(info));
-                OVERLAPPED ov;
-                memset(&ov, 0, sizeof(OVERLAPPED));
-                ov.hEvent = wait_changes_event;
+                OVERLAPPED overlapped;
+                memset(&overlapped, 0, sizeof(OVERLAPPED));
+                overlapped.hEvent = wait_changes_event;
 
                 auto ret = ReadDirectoryChangesW(
                     h_directory,
@@ -67,7 +67,7 @@ public:
                     false,
                     FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE,
                     nullptr,
-                    &ov,
+                    &overlapped,
                     nullptr);
 
                 if (ret == 0)
@@ -91,7 +91,7 @@ public:
                 if (waitRes == WAIT_OBJECT_0)
                 {
                     DWORD bytes_returned = 0;
-                    if (GetOverlappedResult(ov.hEvent, &ov, &bytes_returned, false) == false)
+                    if (GetOverlappedResult(overlapped.hEvent, &overlapped, &bytes_returned, false) == false)
                     {
                         callback(GetLastError());
                         return;
