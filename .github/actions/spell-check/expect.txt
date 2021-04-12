@@ -169,6 +169,7 @@ bms
 BNumber
 Bokm
 BOKMAL
+boolalpha
 Bools
 bootstrapper
 BOTTOMALIGN
@@ -698,7 +699,7 @@ exlist
 EXPCMDFLAGS
 EXPCMDSTATE
 explr
-Expr
+expr
 exsb
 EXSEL
 exstyle
@@ -742,6 +743,7 @@ FIXEDFILEINFO
 FLASHZONES
 FLASHZONESONQUICKSWITCH
 Fle
+flt
 fluentui
 flyout
 fmtlib
@@ -1358,7 +1360,7 @@ miniz
 MINMAXINFO
 Miracast
 mixin
-MJPG
+mjpg
 mkdir
 MLogo
 mmdeviceapi
@@ -1723,6 +1725,7 @@ PROGRAMFILES
 progressbar
 Proj
 projectname
+PROPBAG
 propkey
 propvarutil
 Prt
@@ -1734,6 +1737,7 @@ psfgao
 Psr
 psrm
 psrree
+pstr
 pstream
 pstrm
 psz
@@ -2211,7 +2215,6 @@ towlower
 towupper
 tracelogging
 traies
-TRANSCODE
 transcoded
 transparrent
 TRAYMOUSEMESSAGE
@@ -2423,6 +2426,7 @@ wil
 wildcards
 winapi
 wincodec
+Wincodecsdk
 wincolor
 windef
 windevbuildagents
