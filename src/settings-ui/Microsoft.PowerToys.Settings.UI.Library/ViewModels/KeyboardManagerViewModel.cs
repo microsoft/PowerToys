@@ -4,11 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -24,15 +25,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private readonly ISettingsUtils _settingsUtils;
 
         private const string PowerToyName = KeyboardManagerSettings.ModuleName;
-        private const string RemapKeyboardActionName = "RemapKeyboard";
-        private const string RemapKeyboardActionValue = "Open Remap Keyboard Window";
-        private const string EditShortcutActionName = "EditShortcut";
-        private const string EditShortcutActionValue = "Open Edit Shortcut Window";
         private const string JsonFileType = ".json";
 
         private static string ConfigFileMutexName => interop.Constants.KeyboardManagerConfigFileMutexName();
 
         private const int ConfigFileMutexWaitTimeoutMilliseconds = 1000;
+
+        private const string KeyboardManagerEditorPath = "..\\modules\\KeyboardManager\\PowerToys.KeyboardManagerEditor.exe";
+
+        private enum KeyboardManagerEditorType
+        {
+            KeyEditor = 0,
+            ShortcutEditor,
+        }
 
         public KeyboardManagerSettings Settings { get; set; }
 
@@ -165,31 +170,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));
 
-        // Note: FxCop suggests calling ConfigureAwait() for the following methods,
-        // and calling ConfigureAwait(true) has the same behavior as not explicitly
-        // calling it (continuations are scheduled on the task-creating thread)
-        private async void OnRemapKeyboard()
+        private void OnRemapKeyboard()
         {
-            await Task.Run(() => OnRemapKeyboardBackground()).ConfigureAwait(true);
+            OpenEditor((int)KeyboardManagerEditorType.KeyEditor);
         }
 
-        private async void OnEditShortcut()
+        private void OnEditShortcut()
         {
-            await Task.Run(() => OnEditShortcutBackground()).ConfigureAwait(true);
+            OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
         }
 
-        private async Task OnRemapKeyboardBackground()
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
+        private static void OpenEditor(int type)
         {
-            Helper.AllowRunnerToForeground();
-            SendConfigMSG(Helper.GetSerializedCustomAction(PowerToyName, RemapKeyboardActionName, RemapKeyboardActionValue));
-            await Task.CompletedTask.ConfigureAwait(true);
-        }
+            try
+            {
+                string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
 
-        private async Task OnEditShortcutBackground()
-        {
-            Helper.AllowRunnerToForeground();
-            SendConfigMSG(Helper.GetSerializedCustomAction(PowerToyName, EditShortcutActionName, EditShortcutActionValue));
-            await Task.CompletedTask.ConfigureAwait(true);
+                // InvariantCulture: type represents the KeyboardManagerEditorType enum value
+                Process.Start(path, type.ToString(CultureInfo.InvariantCulture));
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Exception encountered when opening an {PowerToyName} editor", e);
+            }
         }
 
         public void NotifyFileChanged()
