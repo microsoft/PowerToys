@@ -5,6 +5,7 @@ abcdef
 abcdefgh
 abgr
 ABlocked
+ABOUTBOX
 Abug
 accctrl
 Acceleratorkeys
@@ -1118,6 +1119,7 @@ KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
 keyboardmanagercommon
+KEYBOARDMANAGEREDITOR
 keyboardmanagerstate
 keyboardmanagerui
 keycode
@@ -2427,6 +2429,7 @@ wstr
 wstring
 wstringstream
 wsz
+wtoi
 WTS
 WTSAT
 wu
