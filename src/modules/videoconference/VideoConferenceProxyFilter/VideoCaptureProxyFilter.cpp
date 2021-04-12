@@ -396,10 +396,10 @@ bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
         return false;
     }
     bool success = true;
-    if (imageSize > frameSize)
+    if (imageSize > frameSize && failed(frame->SetActualDataLength(imageSize)))
     {
         char buf[512]{};
-        sprintf_s(buf, "Error: overlay image size %ld is larger than frame size %d - truncated.", imageSize, frameSize);
+        sprintf_s(buf, "Error: overlay image size %lu is larger than frame size %lu", imageSize, frameSize);
         LOG(buf);
         imageSize = frameSize;
         success = false;
@@ -443,14 +443,15 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
                         continue;
                     }
 
-                    const auto newSettings = SyncCurrentSettings();
+                    auto newSettings = SyncCurrentSettings();
                     if (newSettings.webcamDisabled)
                     {
                         bool overwritten = OverwriteFrame(_pending_frame, _overlayImage ? _overlayImage : _blankImage);
-                        while(!overwritten && _overlayImage && newSettings.overlayImage)
+                        while (!overwritten && _overlayImage)
                         {
                             _overlayImage.reset();
-                            if (!lowerJpgQualityModes.empty())
+                            newSettings = SyncCurrentSettings();
+                            if (!lowerJpgQualityModes.empty() && newSettings.overlayImage)
                             {
                                 const float quality = lowerJpgQualityModes.back();
                                 lowerJpgQualityModes.pop_back();
