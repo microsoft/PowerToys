@@ -72,7 +72,7 @@ namespace ColorPicker.Keyboard
             // ESC pressed
             if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape))
             {
-                _appStateHandler.EndUserSession();
+                e.Handled = _appStateHandler.EndUserSession();
                 return;
             }
 

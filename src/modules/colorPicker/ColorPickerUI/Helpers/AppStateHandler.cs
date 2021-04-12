@@ -54,7 +54,7 @@ namespace ColorPicker.Helpers
             }
         }
 
-        public void EndUserSession()
+        public bool EndUserSession()
         {
             lock (_colorPickerVisibilityLock)
             {
@@ -70,7 +70,11 @@ namespace ColorPicker.Helpers
                     }
 
                     SessionEventHelper.End();
+
+                    return true;
                 }
+
+                return false;
             }
         }
 
