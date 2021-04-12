@@ -384,9 +384,19 @@ void OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
     const DWORD frameSize = frame->GetSize();
 
     image->GetBufferByIndex(0, &imageBuf);
+    if (!imageBuf)
+    {
+        LOG("Error: couldn't get imageBuffer");
+        return;
+    }
     BYTE* imageData = nullptr;
     DWORD _ = 0, imageSize = 0;
     imageBuf->Lock(&imageData, &_, &imageSize);
+    if (!imageData)
+    {
+        LOG("Error: couldn't lock imageBuffer");
+        return;
+    }
 
     if (imageSize > frameSize)
     {
@@ -627,6 +637,14 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
                 {
                     maxFrameSize = allocatorProperties.cbBuffer;
                 }
+                if (maxFrameSize)
+                {
+                    LOG("Obtained maxFrameSize");
+                }
+                else
+                {
+                    LOG("Couldn't obtain maxFrameSize");
+                }
 
                 size_t selectedModeIdx = 0;
                 constexpr std::array<float, 3> jpgQualityModes = { 0.5f, 0.25f, 0.1f };
@@ -634,12 +652,19 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
                 long imageSize = GetImageSize(_overlayImage);
                 while (maxFrameSize && maxFrameSize < imageSize && selectedModeIdx < size(jpgQualityModes))
                 {
+                    LOG("Trying lower jpg quality");
                     _overlayImage = LoadImageAsSample(newSettings.overlayImage, targetMediaType.get(), jpgQualityModes[++selectedModeIdx]);
                     imageSize = GetImageSize(_overlayImage);
                 }
+                if (maxFrameSize < imageSize)
+                {
+                    LOG("Couldn't lower jpg quality enough");
+                }
+                else
+                {
+                    LOG("Successfully lowered jpg quality to fit into image frame");
+                }
             }
-
-            LOG("Loaded images");
 
             LOG("Capture device created successfully");
         }
