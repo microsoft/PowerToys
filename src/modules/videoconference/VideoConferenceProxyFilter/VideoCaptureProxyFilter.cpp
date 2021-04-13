@@ -327,7 +327,7 @@ HRESULT VideoCaptureProxyPin::Get(
         return E_PROP_ID_UNSUPPORTED;
     }
 
-    if (!pPropData || !pcbReturned)
+    if (!pPropData)
     {
         LOG("VideoCaptureProxyPin::Get FAILED pPropData || pcbReturned");
         return E_POINTER;
