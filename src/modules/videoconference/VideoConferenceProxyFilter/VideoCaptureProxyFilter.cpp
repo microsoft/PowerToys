@@ -346,7 +346,7 @@ HRESULT VideoCaptureProxyPin::Get(
 
     *(GUID*)pPropData = PIN_CATEGORY_CAPTURE;
 
-    LOG("VideoCaptureProxyPin::Get SUCCEESS pPropData");
+    LOG("VideoCaptureProxyPin::Get SUCCESS pPropData");
     return S_OK;
 }
 
