@@ -338,12 +338,6 @@ HRESULT VideoCaptureProxyPin::Get(
         *pcbReturned = sizeof(GUID);
     }
 
-    if (!pPropData)
-    {
-        LOG("VideoCaptureProxyPin::Get SUCCEESS !pPropData");
-        return S_OK;
-    }
-
     if (cbPropData < sizeof(GUID))
     {
         LOG("VideoCaptureProxyPin::Get FAILED cbPropData");
