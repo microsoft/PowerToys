@@ -4,6 +4,7 @@
 #include <mfidl.h>
 #include <Shlwapi.h>
 #include <mfapi.h>
+#include <fstream>
 
 constexpr static inline wchar_t FILTER_NAME[] = L"PowerToysVCMProxyFilter";
 constexpr static inline wchar_t PIN_NAME[] = L"PowerToysVCMProxyPIN";
@@ -437,10 +438,40 @@ bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
 }
 
 //#define DEBUG_FRAME_DATA
+//#define DEBUG_OVERWRITE_FRAME
+
+#if defined(DEBUG_OVERWRITE_FRAME)
+void DebugOverwriteFrame(IMediaSample* frame, std::string_view filepath)
+{
+    std::ifstream file{ filepath.data(), std::ios::binary };
+    std::streampos fileSize = 0;
+    fileSize = file.tellg();
+    file.seekg(0, std::ios::end);
+    fileSize = file.tellg() - fileSize;
+
+    BYTE* frameData = nullptr;
+    if (!frame)
+    {
+        LOG("null frame provided");
+        return;
+    }
+    frame->GetPointer(&frameData);
+    const DWORD frameSize = frame->GetSize();
+
+    if (fileSize > frameSize || !frameData)
+    {
+        LOG("frame can't be filled with data");
+        return;
+    }
+    file.read((char*)frameData, fileSize);
+    frame->SetActualDataLength((long)fileSize);
+    LOG("DebugOverwriteFrame success");
+}
+
+#endif
 
 #if defined(DEBUG_FRAME_DATA)
 #include <filesystem>
-#include <fstream>
 
 namespace fs = std::filesystem;
 
@@ -500,6 +531,7 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
                     auto newSettings = SyncCurrentSettings();
                     if (newSettings.webcamDisabled)
                     {
+#if !defined(DEBUG_OVERWRITE_FRAME)
                         bool overwritten = OverwriteFrame(_pending_frame, _overlayImage ? _overlayImage : _blankImage);
                         while (!overwritten && _overlayImage)
                         {
@@ -532,6 +564,9 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
                         {
                             OverwriteFrame(_pending_frame, _blankImage);
                         }
+#else
+                      DebugOverwriteFrame(_pending_frame, "R:\\frame.data");
+#endif
                     }
 
                     _pending_frame = nullptr;
