@@ -418,21 +418,20 @@ bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
         LOG("VideoCaptureProxyPin::OverwriteFrame FAILED imageData");
         return false;
     }
-    bool success = true;
     if (imageSize > frameSize && failed(frame->SetActualDataLength(imageSize)))
     {
         char buf[512]{};
         sprintf_s(buf, "Error: overlay image size %lu is larger than frame size %lu", imageSize, frameSize);
         LOG(buf);
-        imageSize = frameSize;
-        success = false;
+        imageBuf->Unlock();
+        return false;
     }
 
     std::copy(imageData, imageData + imageSize, frameData);
     imageBuf->Unlock();
     frame->SetActualDataLength(imageSize);
 
-    return success;
+    return true;
 }
 
 VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
@@ -488,6 +487,10 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
                             {
                                 LOG("Couldn't overwrite frame with image with all available quality modes.");
                             }
+                        }
+                        if (!overwritten && !_overlayImage)
+                        {
+                            OverwriteFrame(_pending_frame, _blankImage);
                         }
                     }
 
