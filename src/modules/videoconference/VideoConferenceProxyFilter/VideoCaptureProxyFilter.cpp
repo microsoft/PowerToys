@@ -111,7 +111,6 @@ HRESULT VideoCaptureProxyPin::ConnectedTo(IPin** pPin)
 {
     if (!_connectedInputPin)
     {
-        LOG("VideoCaptureProxyPin::ConnectedTo FAILED _connectedInputPin");
         *pPin = nullptr;
         return VFW_E_NOT_CONNECTED;
     }
@@ -346,7 +345,7 @@ HRESULT VideoCaptureProxyPin::Get(
 
     *(GUID*)pPropData = PIN_CATEGORY_CAPTURE;
 
-    LOG("VideoCaptureProxyPin::Get SUCCESS pPropData");
+    LOG("VideoCaptureProxyPin::Get SUCCESS");
     return S_OK;
 }
 
@@ -378,6 +377,7 @@ long GetImageSize(wil::com_ptr_nothrow<IMFSample>& image)
     {
         return 0;
     }
+
     DWORD imageSize = 0;
     wil::com_ptr_nothrow<IMFMediaBuffer> imageBuf;
 
@@ -410,6 +410,7 @@ bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
         LOG("VideoCaptureProxyPin::OverwriteFrame FAILED imageBuf");
         return false;
     }
+
     BYTE* imageData = nullptr;
     DWORD _ = 0, imageSize = 0;
     imageBuf->Lock(&imageData, &_, &imageSize);
@@ -418,10 +419,11 @@ bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
         LOG("VideoCaptureProxyPin::OverwriteFrame FAILED imageData");
         return false;
     }
+
     if (imageSize > frameSize && failed(frame->SetActualDataLength(imageSize)))
     {
         char buf[512]{};
-        sprintf_s(buf, "Error: overlay image size %lu is larger than frame size %lu", imageSize, frameSize);
+        sprintf_s(buf, "VideoCaptureProxyPin::OverwriteFrame FAILED overlay image size %lu is larger than frame size %lu", imageSize, frameSize);
         LOG(buf);
         imageBuf->Unlock();
         return false;
@@ -488,6 +490,7 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
                                 LOG("Couldn't overwrite frame with image with all available quality modes.");
                             }
                         }
+
                         if (!overwritten && !_overlayImage)
                         {
                             OverwriteFrame(_pending_frame, _blankImage);
@@ -532,6 +535,7 @@ HRESULT VideoCaptureProxyFilter::Pause(void)
             LOG("VideoCaptureProxyPin::Pause FAILED allocator");
             return VFW_E_NO_TRANSPORT;
         }
+
         allocator->Commit();
     }
 
@@ -802,6 +806,7 @@ VideoCaptureProxyFilter::SyncedSettings VideoCaptureProxyFilter::SyncCurrentSett
                 {
                     return;
                 }
+
                 settings->newOverlayImagePosted = false;
             });
         }
