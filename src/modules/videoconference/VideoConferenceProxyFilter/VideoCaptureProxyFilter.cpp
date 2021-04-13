@@ -436,6 +436,29 @@ bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
     return true;
 }
 
+//#define DEBUG_FRAME_DATA
+
+#if defined(DEBUG_FRAME_DATA)
+#include <filesystem>
+#include <fstream>
+
+namespace fs = std::filesystem;
+
+void DumpSample(IMediaSample* frame, const std::string_view filename)
+{
+    BYTE* data = nullptr;
+    frame->GetPointer(&data);
+    if (!data)
+    {
+        LOG("Couldn't get sample pointer");
+        return;
+    }
+    const long nBytes = frame->GetActualDataLength();
+    std::ofstream file{ fs::temp_directory_path() / filename, std::ios::binary };
+    file.write((const char*)data, nBytes);
+}
+#endif
+
 VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
     _worker_thread{
         std::thread{
@@ -466,7 +489,14 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
                     {
                         continue;
                     }
-
+#if defined(DEBUG_FRAME_DATA)
+                    static bool realFrameSaved = false;
+                    if (!realFrameSaved)
+                    {
+                        DumpSample(sample, "PowerToysVCMRealFrame.binary");
+                        realFrameSaved = true;
+                    }
+#endif
                     auto newSettings = SyncCurrentSettings();
                     if (newSettings.webcamDisabled)
                     {
@@ -490,7 +520,14 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
                                 LOG("Couldn't overwrite frame with image with all available quality modes.");
                             }
                         }
-
+#if defined(DEBUG_FRAME_DATA)
+                        static bool overlayFrameSaved = false;
+                        if (!overlayFrameSaved && _overlayImage && overwritten)
+                        {
+                            DumpSample(sample, "PowerToysVCMOverlayImageFrame.binary");
+                            overlayFrameSaved = true;
+                        }
+#endif
                         if (!overwritten && !_overlayImage)
                         {
                             OverwriteFrame(_pending_frame, _blankImage);
