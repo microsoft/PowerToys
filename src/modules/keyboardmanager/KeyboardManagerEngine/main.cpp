@@ -2,6 +2,8 @@
 #include <common/utils/window.h>
 #include <common/utils/process_waiter.h>
 #include<keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <common/utils/winapi_error.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
