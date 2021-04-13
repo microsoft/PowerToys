@@ -41,24 +41,27 @@ wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> 
 
 HRESULT VideoCaptureProxyPin::Connect(IPin* pReceivePin, const AM_MEDIA_TYPE*)
 {
-    VERBOSE_LOG;
     if (!pReceivePin)
     {
+        LOG("VideoCaptureProxyPin::Connect FAILED pReceivePin");
         return E_POINTER;
     }
 
     if (_owningFilter->_state == State_Running)
     {
+        LOG("VideoCaptureProxyPin::Connect FAILED _owningFilter->_state");
         return VFW_E_NOT_STOPPED;
     }
 
     if (_connectedInputPin)
     {
+        LOG("VideoCaptureProxyPin::Connect FAILED _connectedInputPin");
         return VFW_E_ALREADY_CONNECTED;
     }
 
     if (FAILED(pReceivePin->ReceiveConnection(this, _mediaFormat.get())))
     {
+        LOG("VideoCaptureProxyPin::Connect FAILED pReceivePin->ReceiveConnection");
         return E_POINTER;
     }
 
@@ -67,12 +70,22 @@ HRESULT VideoCaptureProxyPin::Connect(IPin* pReceivePin, const AM_MEDIA_TYPE*)
     auto memInput = _connectedInputPin.try_query<IMemInputPin>();
     if (!memInput)
     {
+        LOG("VideoCaptureProxyPin::Connect FAILED _connectedInputPin.try_query");
         return VFW_E_NO_TRANSPORT;
     }
 
     auto allocator = FindAllocator();
+    if (allocator == nullptr)
+    {
+        LOG("VideoCaptureProxyPin::Connect FAILED FindAllocator");
+        return VFW_E_NO_TRANSPORT;
+    }
 
-    memInput->NotifyAllocator(allocator.get(), false);
+    if (FAILED(memInput->NotifyAllocator(allocator.get(), false)))
+    {
+        LOG("VideoCaptureProxyPin::Connect FAILED memInput->NotifyAllocator");
+        return VFW_E_NO_TRANSPORT;
+    }
 
     return S_OK;
 }
@@ -86,6 +99,7 @@ HRESULT VideoCaptureProxyPin::Disconnect(void)
 {
     if (!_connectedInputPin)
     {
+        LOG("VideoCaptureProxyPin::Disconnect FAILED _connectedInputPin");
         return S_FALSE;
     }
 
@@ -97,20 +111,20 @@ HRESULT VideoCaptureProxyPin::ConnectedTo(IPin** pPin)
 {
     if (!_connectedInputPin)
     {
+        LOG("VideoCaptureProxyPin::ConnectedTo FAILED _connectedInputPin");
         *pPin = nullptr;
         return VFW_E_NOT_CONNECTED;
     }
 
-    VERBOSE_LOG;
     _connectedInputPin.try_copy_to(pPin);
     return S_OK;
 }
 
 HRESULT VideoCaptureProxyPin::ConnectionMediaType(AM_MEDIA_TYPE* pmt)
 {
-    VERBOSE_LOG;
     if (!_connectedInputPin)
     {
+        LOG("VideoCaptureProxyPin::ConnectionMediaType FAILED _connectedInputPin");
         return VFW_E_NOT_CONNECTED;
     }
 
@@ -122,10 +136,10 @@ HRESULT VideoCaptureProxyPin::QueryPinInfo(PIN_INFO* pInfo)
 {
     if (!pInfo)
     {
+        LOG("VideoCaptureProxyPin::QueryPinInfo FAILED pInfo");
         return E_POINTER;
     }
 
-    VERBOSE_LOG;
     pInfo->pFilter = _owningFilter;
     if (_owningFilter)
     {
@@ -145,6 +159,7 @@ HRESULT VideoCaptureProxyPin::QueryDirection(PIN_DIRECTION* pPinDir)
 {
     if (!pPinDir)
     {
+        LOG("VideoCaptureProxyPin::QueryDirection FAILED pPinDir");
         return E_POINTER;
     }
 
@@ -156,6 +171,7 @@ HRESULT VideoCaptureProxyPin::QueryId(LPWSTR* Id)
 {
     if (!Id)
     {
+        LOG("VideoCaptureProxyPin::QueryId FAILED Id");
         return E_POINTER;
     }
 
@@ -166,7 +182,6 @@ HRESULT VideoCaptureProxyPin::QueryId(LPWSTR* Id)
 
 HRESULT VideoCaptureProxyPin::QueryAccept(const AM_MEDIA_TYPE*)
 {
-    VERBOSE_LOG;
     return S_OK;
 }
 
@@ -174,10 +189,10 @@ HRESULT VideoCaptureProxyPin::EnumMediaTypes(IEnumMediaTypes** ppEnum)
 {
     if (!ppEnum)
     {
+        LOG("VideoCaptureProxyPin::EnumMediaTypes FAILED ppEnum");
         return E_POINTER;
     }
 
-    VERBOSE_LOG;
     auto enumerator = winrt::make_self<MediaTypeEnumerator>();
     enumerator->_objects.emplace_back(CopyMediaType(_mediaFormat));
     *ppEnum = enumerator.detach();
@@ -214,9 +229,10 @@ HRESULT VideoCaptureProxyPin::NewSegment(REFERENCE_TIME, REFERENCE_TIME, double)
 
 HRESULT VideoCaptureProxyPin::SetFormat(AM_MEDIA_TYPE* pmt)
 {
-    VERBOSE_LOG;
     if (pmt == nullptr)
+    {
         return S_OK;
+    }
 
     _mediaFormat = CopyMediaType(pmt);
     return S_OK;
@@ -226,6 +242,7 @@ HRESULT VideoCaptureProxyPin::GetFormat(AM_MEDIA_TYPE** ppmt)
 {
     if (!ppmt)
     {
+        LOG("VideoCaptureProxyPin::GetFormat FAILED ppmt");
         return E_POINTER;
     }
 
@@ -237,10 +254,10 @@ HRESULT VideoCaptureProxyPin::GetNumberOfCapabilities(int* piCount, int* piSize)
 {
     if (!piCount || !piSize)
     {
+        LOG("VideoCaptureProxyPin::GetNumberOfCapabilities FAILED piCount || piSize");
         return E_POINTER;
     }
 
-    VERBOSE_LOG;
     *piCount = 1;
     *piSize = sizeof(VIDEO_STREAM_CONFIG_CAPS);
     return S_OK;
@@ -250,15 +267,16 @@ HRESULT VideoCaptureProxyPin::GetStreamCaps(int iIndex, AM_MEDIA_TYPE** ppmt, BY
 {
     if (!ppmt || !pSCC)
     {
+        LOG("VideoCaptureProxyPin::GetStreamCaps FAILED ppmt || pSCC");
         return E_POINTER;
     }
 
     if (iIndex != 0)
     {
+        LOG("VideoCaptureProxyPin::GetStreamCaps FAILED iIndex");
         return S_FALSE;
     }
 
-    VERBOSE_LOG;
     VIDEOINFOHEADER* vih = reinterpret_cast<decltype(vih)>(_mediaFormat->pbFormat);
 
     VIDEO_STREAM_CONFIG_CAPS caps{};
@@ -299,16 +317,19 @@ HRESULT VideoCaptureProxyPin::Get(
 {
     if (guidPropSet != AMPROPSETID_Pin)
     {
+        LOG("VideoCaptureProxyPin::Get FAILED guidPropSet");
         return E_PROP_SET_UNSUPPORTED;
     }
 
     if (dwPropID != AMPROPERTY_PIN_CATEGORY)
     {
+        LOG("VideoCaptureProxyPin::Get FAILED dwPropID");
         return E_PROP_ID_UNSUPPORTED;
     }
 
     if (!pPropData || !pcbReturned)
     {
+        LOG("VideoCaptureProxyPin::Get FAILED pPropData || pcbReturned");
         return E_POINTER;
     }
 
@@ -319,16 +340,19 @@ HRESULT VideoCaptureProxyPin::Get(
 
     if (!pPropData)
     {
+        LOG("VideoCaptureProxyPin::Get SUCCEESS !pPropData");
         return S_OK;
     }
 
     if (cbPropData < sizeof(GUID))
     {
+        LOG("VideoCaptureProxyPin::Get FAILED cbPropData");
         return E_UNEXPECTED;
     }
 
-    VERBOSE_LOG;
     *(GUID*)pPropData = PIN_CATEGORY_CAPTURE;
+
+    LOG("VideoCaptureProxyPin::Get SUCCEESS pPropData");
     return S_OK;
 }
 
@@ -336,11 +360,13 @@ HRESULT VideoCaptureProxyPin::QuerySupported(REFGUID guidPropSet, DWORD dwPropID
 {
     if (guidPropSet != AMPROPSETID_Pin)
     {
+        LOG("VideoCaptureProxyPin::QuerySupported FAILED guidPropSet");
         return E_PROP_SET_UNSUPPORTED;
     }
 
     if (dwPropID != AMPROPERTY_PIN_CATEGORY)
     {
+        LOG("VideoCaptureProxyPin::QuerySupported FAILED dwPropID");
         return E_PROP_ID_UNSUPPORTED;
     }
 
@@ -377,6 +403,7 @@ bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
     frame->GetPointer(&frameData);
     if (!frameData)
     {
+        LOG("VideoCaptureProxyPin::OverwriteFrame FAILED frameData");
         return false;
     }
 
@@ -386,6 +413,7 @@ bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
     image->GetBufferByIndex(0, &imageBuf);
     if (!imageBuf)
     {
+        LOG("VideoCaptureProxyPin::OverwriteFrame FAILED imageBuf");
         return false;
     }
     BYTE* imageData = nullptr;
@@ -393,6 +421,7 @@ bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
     imageBuf->Lock(&imageData, &_, &imageSize);
     if (!imageData)
     {
+        LOG("VideoCaptureProxyPin::OverwriteFrame FAILED imageData");
         return false;
     }
     bool success = true;
@@ -490,19 +519,20 @@ HRESULT VideoCaptureProxyFilter::Stop(void)
 
 HRESULT VideoCaptureProxyFilter::Pause(void)
 {
-    VERBOSE_LOG;
     if (_state == State_Stopped)
     {
         std::unique_lock<std::mutex> lock{ _worker_mutex };
 
         if (!_outPin)
         {
+            LOG("VideoCaptureProxyPin::Pause FAILED _outPin");
             return VFW_E_NO_TRANSPORT;
         }
 
         auto allocator = _outPin->FindAllocator();
         if (!allocator)
         {
+            LOG("VideoCaptureProxyPin::Pause FAILED allocator");
             return VFW_E_NO_TRANSPORT;
         }
         allocator->Commit();
@@ -514,7 +544,6 @@ HRESULT VideoCaptureProxyFilter::Pause(void)
 
 HRESULT VideoCaptureProxyFilter::Run(REFERENCE_TIME)
 {
-    VERBOSE_LOG;
     _state = State_Running;
     if (_captureDevice)
     {
@@ -526,7 +555,6 @@ HRESULT VideoCaptureProxyFilter::Run(REFERENCE_TIME)
 
 HRESULT VideoCaptureProxyFilter::GetState(DWORD, FILTER_STATE* State)
 {
-    VERBOSE_LOG;
     *State = _state;
     return S_OK;
 }
@@ -563,17 +591,16 @@ GUID MapDShowSubtypeToMFT(const GUID& dshowSubtype)
     }
     else
     {
-        LOG("Unsupported media type format provided!");
+        LOG("MapDShowSubtypeToMFT: Unsupported media type format provided!");
         return MFVideoFormat_MJPG;
     }
 }
 
 HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
 {
-    VERBOSE_LOG;
     if (!ppEnum)
     {
-        LOG("EnumPins: null arg provided");
+        LOG("VideoCaptureProxyFilter::EnumPins null arg provided");
         return E_POINTER;
     }
 
@@ -583,13 +610,13 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
     // since that results in a deadlock -> initializing now.
     if (!_outPin)
     {
-        LOG("Started pin initialization");
+        LOG("VideoCaptureProxyFilter::EnumPins started pin initialization");
         const auto newSettings = SyncCurrentSettings();
         std::vector<VideoCaptureDeviceInfo> webcams;
         webcams = VideoCaptureDevice::ListAll();
         if (webcams.empty())
         {
-            LOG("No physical webcams found");
+            LOG("VideoCaptureProxyFilter::EnumPins no physical webcams found");
             return E_FAIL;
         }
 
@@ -599,7 +626,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
             if (newSettings.newCameraName == webcams[i].friendlyName)
             {
                 selectedCamIdx = i;
-                LOG("Webcam selected using settings");
+                LOG("VideoCaptureProxyFilter::EnumPins webcam selected using settings");
                 break;
             }
         }
@@ -610,7 +637,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
             {
                 if (newSettings.newCameraName != CAMERA_NAME)
                 {
-                    LOG("Webcam selected using first fit");
+                    LOG("VideoCaptureProxyFilter::EnumPins webcam selected using first fit");
                     selectedCamIdx = i;
                     break;
                 }
@@ -619,7 +646,7 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
 
         if (!selectedCamIdx)
         {
-            LOG("Webcam couldn't be selected");
+            LOG("VideoCaptureProxyFilter::EnumPins FAILED webcam couldn't be selected");
             return E_FAIL;
         }
 
@@ -656,11 +683,11 @@ HRESULT VideoCaptureProxyFilter::EnumPins(IEnumPins** ppEnum)
             }
 
             _overlayImage = LoadImageAsSample(newSettings.overlayImage, _targetMediaType.get(), initialJpgQuality);
-            LOG("Capture device created successfully");
+            LOG("VideoCaptureProxyFilter::EnumPins capture device created successfully");
         }
         else
         {
-            LOG("Couldn't create capture device");
+            LOG("VideoCaptureProxyFilter::EnumPins FAILED couldn't create capture device");
         }
     }
 
@@ -679,6 +706,7 @@ HRESULT VideoCaptureProxyFilter::QueryFilterInfo(FILTER_INFO* pInfo)
 {
     if (!pInfo)
     {
+        LOG("VideoCaptureProxyPin::QueryFilterInfo FAILED pInfo");
         return E_POINTER;
     }
 
