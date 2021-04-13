@@ -51,7 +51,7 @@ public:
         keyboardmanager_object_ptr = this;
 
         std::filesystem::path modulePath(PTSettingsHelper::get_module_save_folder_location(app_key));
-        auto changeConfigCallback = [this](DWORD err) {
+        auto changeSettingsCallback = [this](DWORD err) {
             if (err != ERROR_SUCCESS)
             {
                 Logger::error(L"Failed to watch settings changes. {}", get_last_error_or_default(err));
@@ -61,7 +61,7 @@ public:
             load_config();
         };
 
-        eventWaiter = std::move(event_waiter(KeyboardManagerConstants::ConfigEventName, changeConfigCallback));
+        eventWaiter = std::move(event_waiter(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback));
     };
 
     // Load config from the saved settings.

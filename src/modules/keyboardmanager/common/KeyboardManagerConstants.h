@@ -8,7 +8,7 @@
 namespace KeyboardManagerConstants
 {
     // Event name for signaling config changes
-    inline const std::wstring ConfigEventName = L"PowerToys_KeyboardManager_Event_Config"; 
+    inline const std::wstring SettingsEventName = L"PowerToys_KeyboardManager_Event_Settings"; 
 
     // Name of the powertoy module.
     inline const std::wstring ModuleName = L"Keyboard Manager";

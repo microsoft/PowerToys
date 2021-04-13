@@ -605,7 +605,7 @@ bool KeyboardManagerState::SaveConfigToFile()
 
     if (result)
     {
-        auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::ConfigEventName.c_str());
+        auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
         if (hEvent)
         {
             SetEvent(hEvent);
