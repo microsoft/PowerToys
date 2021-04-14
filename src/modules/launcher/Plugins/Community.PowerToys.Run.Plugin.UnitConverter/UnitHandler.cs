@@ -18,6 +18,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             NotFound
         }
 
+        /// <summary>
+        /// Given user unit input, converts it. (E.g "1 foot in cm")
+        /// </summary>
+        /// <param name="split"></param>
+        /// <param name="quantityType"></param>
+        /// <param name="currentCulture"></param>
+        /// <returns>The converted value as a double.</returns>
         public static double ConvertInput(string[] split, QuantityType quantityType, CultureInfo currentCulture) {
             string input_first_unit = split[1].ToLower();
             string input_second_unit = split[3].ToLower();
@@ -48,6 +55,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         }
 
+        /// <summary>
+        /// Given a split array of user input, parses the input for abbreviations (e.g. "1 cm in meters").
+        /// </summary>
+        /// <param name="split"></param>
+        /// <param name="quantityType"></param>
+        /// <returns>A tuple consisting of an Abbreviated enum and QuantityInfo.</returns>
         public static (Abbreviated Abbreviated, QuantityInfo UnitInfo) ParseInputForAbbreviation(string[] split, QuantityType quantityType) {
             string input_first_unit = split[1].ToLower();
             string input_second_unit = split[3].ToLower();

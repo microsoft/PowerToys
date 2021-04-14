@@ -7,7 +7,7 @@
     "Version": "0.0.1",
     "Language": "csharp",
     "Website": "https://github.com/ThiefZero",
-    "IcoPathDark": "Images\\calculator.dark.png",
-    "IcoPathLight": "Images\\calculator.light.png",
+    "IcoPathDark": "Images\\unitconverter.dark.png",
+    "IcoPathLight": "Images\\unitconverter.light.png",
     "ExecuteFileName": "Community.PowerToys.Run.Plugin.UnitConverter.dll"
 }

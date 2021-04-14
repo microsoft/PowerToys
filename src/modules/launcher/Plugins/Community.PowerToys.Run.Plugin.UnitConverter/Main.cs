@@ -39,9 +39,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
             string[] split = query.Search.Split(' ');
             split = Array.ConvertAll(split, x => x.ToLower());
-
             InputInterpreter.ShorthandFeetInchHandler(ref split, _currentCulture);
-            InputInterpreter.DegreePrefixer(ref split);
 
             if (split.Length < 4 || split.Length > 4) {
                 // deny any other queries than:
@@ -49,6 +47,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 // 10 ft to cm
                 return new List<Result>();
             }
+            
+            InputInterpreter.DegreePrefixer(ref split);
 
             List<Result> final_list = new List<Result>();
 
@@ -102,10 +102,10 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         private static void UpdateIconPath(Theme theme) {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite) {
-                _icon_path = "Images/calculator.light.png";
+                _icon_path = "Images/unitconverter.light.png";
             }
             else {
-                _icon_path = "Images/calculator.dark.png";
+                _icon_path = "Images/unitconverter.dark.png";
             }
         }
 
