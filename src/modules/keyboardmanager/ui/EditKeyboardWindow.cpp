@@ -253,6 +253,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     header.SetLeftOf(applyButton, cancelButton);
 
     auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow]() {
+        LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(keyboardManagerState, SingleKeyRemapControl::singleKeyRemapBuffer, true);
         bool saveResult = keyboardManagerState.SaveConfigToFile();
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
     };

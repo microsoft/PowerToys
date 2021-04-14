@@ -233,6 +233,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     header.SetLeftOf(applyButton, cancelButton);
 
     auto ApplyRemappings = [&keyboardManagerState, _hWndEditShortcutsWindow]() {
+        LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(keyboardManagerState, ShortcutControl::shortcutRemapBuffer, true);
         bool saveResult = keyboardManagerState.SaveConfigToFile();
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     };
