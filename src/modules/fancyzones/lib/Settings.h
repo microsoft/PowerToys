@@ -45,7 +45,7 @@ struct Settings
     std::wstring zoneHighlightColor = L"#008CFF";
     int zoneHighlightOpacity = 50;
     OverlappingZonesAlgorithm overlappingZonesAlgorithm = OverlappingZonesAlgorithm::Smallest;
-    PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
+    PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, VK_OEM_3);
     std::wstring excludedApps = L"";
     std::vector<std::wstring> excludedAppsArray;
 };
