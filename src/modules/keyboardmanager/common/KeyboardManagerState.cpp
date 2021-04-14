@@ -5,6 +5,7 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include "KeyDelay.h"
 #include "Helpers.h"
+#include <common/logger/logger.h>
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
@@ -612,7 +613,7 @@ bool KeyboardManagerState::SaveConfigToFile()
         }
         else
         {
-            // todo: log error
+            Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
         }
     }
 

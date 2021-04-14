@@ -20,7 +20,6 @@ struct LogSettings
     inline const static std::wstring shortcutGuideLogPath = L"ShortcutGuideLogs\\shortcut-guide-log.txt";
     inline const static std::string keyboardManagerLoggerName = "keyboard-manager";
     inline const static std::wstring keyboardManagerLogPath = L"Logs\\keyboard-manager-log.txt";
-    inline const static std::wstring keyboardManagerEngineLogPath = L"Engine";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();

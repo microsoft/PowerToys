@@ -48,7 +48,7 @@ KeyboardManager::KeyboardManager()
         loadingSettings = false;
     };
 
-    eventWaiter = std::move(event_waiter(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback));
+    eventWaiter = event_waiter(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
 }
 
 void KeyboardManager::load_settings()

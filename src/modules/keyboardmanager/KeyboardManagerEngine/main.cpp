@@ -15,7 +15,7 @@ const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEngine_InstanceMute
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
     init_apartment();
-    LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, LogSettings::keyboardManagerEngineLogPath, LogSettings::keyboardManagerLoggerName);
+    LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Engine", LogSettings::keyboardManagerLoggerName);
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {

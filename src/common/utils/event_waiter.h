@@ -9,6 +9,7 @@ public:
     event_waiter() {}
     event_waiter(const std::wstring& name, std::function<void(DWORD)> callback)
     {
+        // Create localExitThreadEvent for capturing. We can not capture 'this' as we implement move constructor.
         auto localExitThreadEvent = exit_thread_event = CreateEvent(nullptr, false, false, nullptr);
         std::thread([=]() {
             HANDLE globalEvent = CreateEvent(nullptr, false, false, name.c_str());
@@ -29,10 +30,9 @@ public:
 
                 if (waitResult == WAIT_OBJECT_0)
                 {
-                    callback(0);
+                    callback(ERROR_SUCCESS);
                 }
             }
-            
         }).detach();
     }
 
