@@ -1019,8 +1019,8 @@
         <?endforeach?>
       </Component>
       <Component Id="UnitConverterImagesComponent" Directory="UnitConverterImagesFolder" Guid="16ABD217-0898-47B2-89D9-AF1ABF00F543">
-        <File Id="UnitConverterPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\calculator.light.png" />
-        <File Id="UnitConverterPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\calculator.dark.png" />
+        <File Id="UnitConverterLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\unitconverter.light.png" />
+        <File Id="UnitConverterDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\unitconverter.dark.png" />
       </Component>
 
       <!-- Uri Plugin -->
