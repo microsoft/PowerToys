@@ -34,8 +34,18 @@ KeyboardManager::KeyboardManager()
             Logger::error(L"Failed to watch settings changes. {}", get_last_error_or_default(err));
         }
 
-        Logger::trace(L"Loading new config.");
-        load_config();
+        Logger::trace(L"Loading settings");
+        loadingSettings = true;
+        try
+        {
+            load_config();
+        }
+        catch (...)
+        {
+            Logger::error("Failed to load settings");
+        }
+
+        loadingSettings = false;
     };
 
     eventWaiter = std::move(event_waiter(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback));
@@ -243,6 +253,12 @@ void KeyboardManager::stop_lowlevel_keyboard_hook()
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
+    if (loadingSettings)
+    {
+        return 0;
+    }
+
+    // Suspend remappings if Reamp key/shortcut window is opened
     auto h = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
     if (h != nullptr && WaitForSingleObject(h, 0) == WAIT_OBJECT_0)
     {

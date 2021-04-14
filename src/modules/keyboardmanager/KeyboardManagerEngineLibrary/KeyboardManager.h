@@ -25,6 +25,8 @@ private:
     Input inputHandler;
 
     event_waiter eventWaiter;
+
+    std::atomic_bool loadingSettings = false;
 public:
     // Constructor
     KeyboardManager();
