@@ -4,8 +4,6 @@
 #include <common/interop/shared_constants.h>
 #include <common/utils/resources.h>
 #include "Generated Files/resource.h"
-#include <keyboardmanager/ui/EditKeyboardWindow.h>
-#include <keyboardmanager/ui/EditShortcutsWindow.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
@@ -256,36 +254,8 @@ public:
     }
 
     // Signal from the Settings editor to call a custom action.
-    // This can be used to spawn more complex editors.
     virtual void call_custom_action(const wchar_t* action) override
     {
-        static UINT custom_action_num_calls = 0;
-        try
-        {
-            // Parse the action values, including name.
-            PowerToysSettings::CustomActionObject action_object =
-                PowerToysSettings::CustomActionObject::from_json_string(action);
-            HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-
-            if (action_object.get_name() == L"RemapKeyboard")
-            {
-                if (!CheckEditKeyboardWindowActive() && !CheckEditShortcutsWindowActive())
-                {
-                    std::thread(createEditKeyboardWindow, hInstance, std::ref(keyboardManagerState)).detach();
-                }
-            }
-            else if (action_object.get_name() == L"EditShortcut")
-            {
-                if (!CheckEditKeyboardWindowActive() && !CheckEditShortcutsWindowActive())
-                {
-                    std::thread(createEditShortcutsWindow, hInstance, std::ref(keyboardManagerState)).detach();
-                }
-            }
-        }
-        catch (std::exception&)
-        {
-            // Improper JSON.
-        }
     }
 
     // Called by the runner to pass the updated settings values as a serialized JSON.
@@ -345,9 +315,8 @@ public:
         m_enabled = false;
         // Log telemetry
         Trace::EnableKeyboardManager(false);
-        // Close active windows
-        CloseActiveEditKeyboardWindow();
-        CloseActiveEditShortcutsWindow();
+        // Stop keyboard hook
+        stop_lowlevel_keyboard_hook();
 
         if (m_hProcess)
         {
