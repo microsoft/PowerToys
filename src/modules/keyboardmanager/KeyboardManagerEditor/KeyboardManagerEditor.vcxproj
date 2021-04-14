@@ -84,18 +84,16 @@
     <ConfigurationType>Application</ConfigurationType>
     <TargetName>PowerToys.$(ProjectName)</TargetName>
   </PropertyGroup>
-
   <!-- Debug/Release props -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-      <UseDebugLibraries>true</UseDebugLibraries>
-      <LinkIncremental>true</LinkIncremental>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-      <UseDebugLibraries>false</UseDebugLibraries>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
-      <LinkIncremental>false</LinkIncremental>
-    </PropertyGroup>
-
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -138,6 +136,7 @@
     <ClInclude Include="KeyDropDownControl.h" />
     <ClInclude Include="LoadingAndSavingRemappingHelper.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.base.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ShortcutControl.h" />
     <ClInclude Include="SingleKeyRemapControl.h" />
@@ -165,7 +164,7 @@
     <ClCompile Include="XamlBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="KeyboardManagerEditor.rc" />
+    <ResourceCompile Include="KeyboardManagerEditor.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="KeyboardManagerEditor.ico" />
@@ -192,7 +191,7 @@
     <Manifest Include="KeyboardManagerEditor.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources.resx" />
+    <None Include="Resources.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -206,4 +205,7 @@
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h KeyboardManagerEditor.base.rc KeyboardManagerEditor.rc" />
+</Target>
 </Project>

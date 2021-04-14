@@ -60,6 +60,9 @@
     <ClInclude Include="XamlBridge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KeyboardManagerEditor.cpp">
@@ -103,7 +106,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="KeyboardManagerEditor.rc">
+    <ResourceCompile Include="KeyboardManagerEditor.base.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
