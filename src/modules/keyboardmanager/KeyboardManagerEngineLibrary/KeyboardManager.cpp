@@ -258,7 +258,7 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 0;
     }
 
-    // Suspend remappings if Reamp key/shortcut window is opened
+    // Suspend remapping if remap key/shortcut window is opened
     auto h = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
     if (h != nullptr && WaitForSingleObject(h, 0) == WAIT_OBJECT_0)
     {
