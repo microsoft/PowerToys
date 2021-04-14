@@ -32,7 +32,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     std::wstring pid = std::wstring(lpCmdLine);
     if (!pid.empty())
     {
-        on_process_terminate(pid, [](int err) {
+        auto mainThreadId = GetCurrentThreadId();
+        on_process_terminate(pid, [mainThreadId](int err) {
             if (err != ERROR_SUCCESS)
             {
                 Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
@@ -43,7 +44,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
             }
 
             Logger::info(L"Exiting KeyboardManager engine");
-            ExitProcess(0);
+            PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
         });
     }
 
