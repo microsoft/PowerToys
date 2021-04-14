@@ -21,8 +21,8 @@ KeyboardManager* KeyboardManager::keyboardmanager_object_ptr;
 
 KeyboardManager::KeyboardManager()
 {
-    // Load the initial configuration.
-    load_config();
+    // Load the initial settings.
+    load_settings();
 
     // Set the static pointer to the newest object of the class
     keyboardmanager_object_ptr = this;
@@ -38,7 +38,7 @@ KeyboardManager::KeyboardManager()
         loadingSettings = true;
         try
         {
-            load_config();
+            load_settings();
         }
         catch (...)
         {
@@ -51,22 +51,22 @@ KeyboardManager::KeyboardManager()
     eventWaiter = std::move(event_waiter(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback));
 }
 
-void KeyboardManager::load_config()
+void KeyboardManager::load_settings()
 {
     try
     {
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(app_key.c_str());
-        auto current_config = settings.get_string_value(KeyboardManagerConstants::ActiveConfigurationSettingName);
+        auto current_settings = settings.get_string_value(KeyboardManagerConstants::ActiveConfigurationSettingName);
 
-        if (current_config)
+        if (current_settings)
         {
-            keyboardManagerState.SetCurrentConfigName(*current_config);
-            // Read the config file and load the remaps.
-            auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
-            if (configFile)
+            keyboardManagerState.SetCurrentConfigName(*current_settings);
+            // Read the settings file and load the remaps.
+            auto settingsFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_settings + L".json");
+            if (settingsFile)
             {
-                auto jsonData = *configFile;
+                auto jsonData = *settingsFile;
 
                 // Load single key remaps
                 try
@@ -195,7 +195,7 @@ void KeyboardManager::load_config()
     }
     catch (...)
     {
-        // Unable to load inital config.
+        Logger::error("Failed to load settings");
     }
 }
 

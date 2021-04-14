@@ -31,8 +31,8 @@ public:
     // Constructor
     KeyboardManager();
 
-    // Load config from the saved settings.
-    void load_config();
+    // Load settings from the file.
+    void load_settings();
 
     // Hook procedure definition
     static LRESULT CALLBACK hook_proc(int nCode, WPARAM wParam, LPARAM lParam);
