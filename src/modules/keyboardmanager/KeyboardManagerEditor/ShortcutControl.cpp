@@ -5,8 +5,8 @@
 
 #include <KeyboardManagerState.h>
 #include <Helpers.h>
-#include <dll/Generated Files/resource.h>
 
+#include <Constants.h>
 #include <KeyDropDownControl.h>
 
 //Both static members are initialized to null

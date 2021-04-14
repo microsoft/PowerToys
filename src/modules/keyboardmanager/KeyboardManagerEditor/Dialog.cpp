@@ -1,9 +1,6 @@
 #include "pch.h"
 #include "Dialog.h"
 
-#include <common/utils/resources.h>
-#include <dll/Generated Files/resource.h>
-
 using namespace winrt::Windows::Foundation;
 
 IAsyncOperation<bool> Dialog::PartialRemappingConfirmationDialog(XamlRoot root, std::wstring dialogTitle)

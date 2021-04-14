@@ -23,6 +23,9 @@
 #pragma pop_macro("GetCurrentTime")
 
 #include <common/logger/logger.h>
+#include <common/utils/resources.h>
+
+#include <Generated Files/resource.h>
 
 using namespace winrt;
 using namespace Windows::UI;
