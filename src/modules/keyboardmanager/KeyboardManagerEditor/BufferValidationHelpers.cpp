@@ -3,7 +3,7 @@
 
 #include <common/interop/shared_constants.h>
 
-#include <common/KeyboardManagerConstants.h>
+#include <KeyboardManagerConstants.h>
 #include <KeyDropDownControl.h>
 
 namespace BufferValidationHelpers

@@ -2,7 +2,7 @@
 #include "KeyDropDownControl.h"
 
 #include <common/interop/shared_constants.h>
-#include <common/KeyboardManagerState.h>
+#include <KeyboardManagerState.h>
 
 #include <BufferValidationHelpers.h>
 

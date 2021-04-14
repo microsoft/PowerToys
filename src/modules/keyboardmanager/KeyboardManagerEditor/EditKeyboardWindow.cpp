@@ -5,10 +5,11 @@
 #include <common/Display/dpi_aware.h>
 #include <common/interop/shared_constants.h>
 #include <common/themes/windows_colors.h>
-#include <common/trace.h>
 
-#include <common/KeyboardManagerConstants.h>
-#include <common/KeyboardManagerState.h>
+#include <trace.h>
+#include <KeyboardManagerConstants.h>
+#include <KeyboardManagerState.h>
+
 #include <dll/Generated Files/resource.h>
 
 #include "EditKeyboardWindow.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Helpers.h>
+#include <Helpers.h>
 
 class KeyboardManagerState;
 

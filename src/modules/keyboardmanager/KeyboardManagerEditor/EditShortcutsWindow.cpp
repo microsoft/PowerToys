@@ -2,7 +2,7 @@
 #include "EditShortcutsWindow.h"
 
 #include <common/Display/dpi_aware.h>
-#include <common/KeyboardManagerState.h>
+#include <KeyboardManagerState.h>
 
 #include <Dialog.h>
 #include <KeyDropDownControl.h>

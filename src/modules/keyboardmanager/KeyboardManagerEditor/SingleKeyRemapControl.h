@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Shortcut.h>
+#include <Shortcut.h>
 
 #include <KeyDropDownControl.h>
 

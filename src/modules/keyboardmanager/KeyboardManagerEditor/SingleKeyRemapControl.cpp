@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "SingleKeyRemapControl.h"
 
-#include <common/Helpers.h>
-#include <common/KeyboardManagerState.h>
+#include <Helpers.h>
+#include <KeyboardManagerState.h>
 
 #include <ShortcutControl.h>
 

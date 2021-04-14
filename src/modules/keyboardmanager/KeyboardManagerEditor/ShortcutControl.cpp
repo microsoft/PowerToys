@@ -3,8 +3,8 @@
 
 #include <common/interop/shared_constants.h>
 
-#include <common/KeyboardManagerState.h>
-#include <common/Helpers.h>
+#include <KeyboardManagerState.h>
+#include <Helpers.h>
 #include <dll/Generated Files/resource.h>
 
 #include <KeyDropDownControl.h>
