@@ -69,8 +69,30 @@ bool ReencodeJPGImage(BYTE* imageBuf, const DWORD imageSize, DWORD& reencodedSiz
     OK_OR_BAIL(CreateStreamOnHGlobal(nullptr, true, &outputStream));
     OK_OR_BAIL(encoder->Initialize(outputStream.get(), WICBitmapEncoderNoCache));
     wil::com_ptr_nothrow<IWICBitmapFrameEncode> encodedFrame;
-    OK_OR_BAIL(encoder->CreateNewFrame(&encodedFrame, nullptr));
-    OK_OR_BAIL(encodedFrame->Initialize(nullptr));
+    wil::com_ptr_nothrow<IPropertyBag2> encoderOptions;
+    OK_OR_BAIL(encoder->CreateNewFrame(&encodedFrame, &encoderOptions));
+
+    ULONG nProperties = 0;
+    OK_OR_BAIL(encoderOptions->CountProperties(&nProperties));
+    for (ULONG propIdx = 0; propIdx < nProperties; ++propIdx)
+    {
+        PROPBAG2 propBag{};
+        ULONG _;
+        OK_OR_BAIL(encoderOptions->GetPropertyInfo(propIdx, 1, &propBag, &_));
+        if (propBag.pstrName == std::wstring_view{ L"ImageQuality" })
+        {
+            wil::unique_variant variant;
+            variant.vt = VT_R4;
+            variant.fltVal = 0.1f;
+            OK_OR_BAIL(encoderOptions->Write(1, &propBag, &variant));
+            LOG("Successfully set jpg compression quality");
+            // skip the rest of the properties
+            propIdx = nProperties;
+        }
+        CoTaskMemFree(propBag.pstrName);
+    }
+
+    OK_OR_BAIL(encodedFrame->Initialize(encoderOptions.get()));
     WICPixelFormatGUID intermediateFormat = GUID_WICPixelFormat24bppRGB;
 
     OK_OR_BAIL(encodedFrame->SetPixelFormat(&intermediateFormat));
