@@ -63,36 +63,36 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Copy failed.
         /// </summary>
-        public static string wox_plugin_unitconvert_copy_failed {
+        public static string copy_failed {
             get {
-                return ResourceManager.GetString("wox_plugin_unitconvert_copy_failed", resourceCulture);
+                return ResourceManager.GetString("copy_failed", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Copy to clipboard.
         /// </summary>
-        public static string wox_plugin_unitconvert_copy_to_clipboard {
+        public static string copy_to_clipboard {
             get {
-                return ResourceManager.GetString("wox_plugin_unitconvert_copy_to_clipboard", resourceCulture);
+                return ResourceManager.GetString("copy_to_clipboard", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Provides unit conversion..
         /// </summary>
-        public static string wox_plugin_unitconverter_plugin_description {
+        public static string plugin_description {
             get {
-                return ResourceManager.GetString("wox_plugin_unitconverter_plugin_description", resourceCulture);
+                return ResourceManager.GetString("plugin_description", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to UnitConverter.
         /// </summary>
-        public static string wox_plugin_unitconverter_plugin_name {
+        public static string plugin_name {
             get {
-                return ResourceManager.GetString("wox_plugin_unitconverter_plugin_name", resourceCulture);
+                return ResourceManager.GetString("plugin_name", resourceCulture);
             }
         }
     }

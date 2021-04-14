@@ -326,7 +326,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorTest",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter\Community.PowerToys.Run.Plugin.UnitConverter.csproj", "{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Community.PowerToys.Run.Plugin.UnitConverter.UnitTest", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.csproj", "{3E424AD2-19E5-4AE6-B833-F53963EB5FC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter.UnitTest", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.csproj", "{3E424AD2-19E5-4AE6-B833-F53963EB5FC1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -768,6 +768,7 @@ Global
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}.Release|Any CPU.ActiveCfg = Release|x64
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}.Release|x64.ActiveCfg = Release|x64
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}.Release|x64.Build.0 = Release|x64
+		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|x64.ActiveCfg = Debug|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|x64.Build.0 = Debug|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Release|Any CPU.ActiveCfg = Release|x64
