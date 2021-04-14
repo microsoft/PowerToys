@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>
-#include <keyboardmanager/ui/LoadingAndSavingRemappingHelper.h>
+#include <keyboardmanager/KeyboardManagerEditor/LoadingAndSavingRemappingHelper.h>
 #include "TestHelpers.h"
 #include <common/interop/shared_constants.h>
 

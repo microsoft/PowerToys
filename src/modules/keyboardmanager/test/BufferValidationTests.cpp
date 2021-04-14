@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
-#include <keyboardmanager/ui/BufferValidationHelpers.h>
+#include <keyboardmanager/KeyboardManagerEditor/BufferValidationHelpers.h>
 #include "TestHelpers.h"
 #include <common/interop/keyboard_layout.h>
 #include <common/interop/shared_constants.h>
