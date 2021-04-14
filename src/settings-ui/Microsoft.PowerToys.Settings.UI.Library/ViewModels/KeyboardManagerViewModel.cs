@@ -32,6 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private const int ConfigFileMutexWaitTimeoutMilliseconds = 1000;
 
         private const string KeyboardManagerEditorPath = "..\\modules\\KeyboardManager\\PowerToys.KeyboardManagerEditor.exe";
+        private Process editor;
 
         private enum KeyboardManagerEditorType
         {
@@ -108,6 +109,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     GeneralSettingsConfig.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
+
+                    if (!Enabled && editor != null)
+                    {
+                        editor.CloseMainWindow();
+                    }
+
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(outgoing.ToString());
@@ -181,14 +188,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         }
 
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
-        private static void OpenEditor(int type)
+        private void OpenEditor(int type)
         {
             try
             {
+                if (editor != null)
+                {
+                    editor.CloseMainWindow();
+                }
+
                 string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value
-                Process.Start(path, type.ToString(CultureInfo.InvariantCulture));
+                editor = Process.Start(path, type.ToString(CultureInfo.InvariantCulture));
             }
             catch (Exception e)
             {
