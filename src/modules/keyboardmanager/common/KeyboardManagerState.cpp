@@ -642,20 +642,3 @@ std::wstring KeyboardManagerState::GetActivatedApp()
 {
     return activatedAppSpecificShortcutTarget;
 }
-
-bool KeyboardManagerState::AreRemappingsEnabled()
-{
-    return remappingsEnabled;
-}
-
-void KeyboardManagerState::RemappingsDisabledWrapper(std::function<void()> method)
-{
-    // Disable keyboard remappings
-    remappingsEnabled = false;
-
-    // Run the method which requires the remappings to be disabled
-    method();
-
-    // Re-enable the keyboard remappings
-    remappingsEnabled = true;
-}

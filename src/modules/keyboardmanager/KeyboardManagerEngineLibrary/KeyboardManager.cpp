@@ -243,8 +243,8 @@ void KeyboardManager::stop_lowlevel_keyboard_hook()
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
-    // If remappings are disabled (due to the remap tables getting updated) skip the rest of the hook
-    if (!keyboardManagerState.AreRemappingsEnabled())
+    auto h = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
+    if (h != nullptr && WaitForSingleObject(h, 0) == WAIT_OBJECT_0)
     {
         return 0;
     }
@@ -255,28 +255,6 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 1;
     }
 
-    // If the Detect Key Window is currently activated, then suppress the keyboard event
-    KeyboardManagerHelper::KeyboardHookDecision singleKeyRemapUIDetected = keyboardManagerState.DetectSingleRemapKeyUIBackend(data);
-    if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
-    {
-        return 1;
-    }
-    else if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
-    {
-        return 0;
-    }
-
-    // If the Detect Shortcut Window from Remap Keys is currently activated, then suppress the keyboard event
-    KeyboardManagerHelper::KeyboardHookDecision remapKeyShortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, true);
-    if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
-    {
-        return 1;
-    }
-    else if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
-    {
-        return 0;
-    }
-
     // Remap a key
     intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, keyboardManagerState);
 
@@ -284,17 +262,6 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     if (SingleKeyRemapResult == 1)
     {
         return 1;
-    }
-
-    // If the Detect Shortcut Window is currently activated, then suppress the keyboard event
-    KeyboardManagerHelper::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, false);
-    if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
-    {
-        return 1;
-    }
-    else if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
-    {
-        return 0;
     }
 
     /* This feature has not been enabled (code from proof of concept stage)

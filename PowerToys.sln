@@ -285,6 +285,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\appMutex.h = src\common\utils\appMutex.h
 		src\common\utils\com_object_factory.h = src\common\utils\com_object_factory.h
 		src\common\utils\elevation.h = src\common\utils\elevation.h
+		src\common\utils\event_locker.h = src\common\utils\event_locker.h
 		src\common\utils\event_waiter.h = src\common\utils\event_waiter.h
 		src\common\utils\exec.h = src\common\utils\exec.h
 		src\common\utils\file_watcher.h = src\common\utils\file_watcher.h
