@@ -39,6 +39,7 @@ wil::com_ptr_nothrow<IMemAllocator> VideoCaptureProxyPin::FindAllocator()
 wil::com_ptr_nothrow<IMFSample> LoadImageAsSample(wil::com_ptr_nothrow<IStream> imageStream,
                                                   IMFMediaType* sampleMediaType,
                                                   const float quality) noexcept;
+bool ReencodeJPGImage(BYTE* imageBuf, const DWORD imageSize, DWORD& reencodedSize);
 
 HRESULT VideoCaptureProxyPin::Connect(IPin* pReceivePin, const AM_MEDIA_TYPE*)
 {
@@ -387,6 +388,25 @@ long GetImageSize(wil::com_ptr_nothrow<IMFSample>& image)
     return imageSize;
 }
 
+void ReencodeFrame(IMediaSample* frame)
+{
+    BYTE* frameData = nullptr;
+    frame->GetPointer(&frameData);
+    if (!frameData)
+    {
+        LOG("VideoCaptureProxyPin::ReencodeFrame FAILED frameData");
+        return;
+    }
+    const DWORD frameSize = frame->GetSize();
+    DWORD reencodedSize = 0;
+    if (!ReencodeJPGImage(frameData, frameSize, reencodedSize))
+    {
+        LOG("VideoCaptureProxyPin::ReencodeJPGImage FAILED");
+        return;
+    }
+    frame->SetActualDataLength(reencodedSize);
+}
+
 bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
 {
     if (!image)
@@ -565,8 +585,17 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
                             OverwriteFrame(_pending_frame, _blankImage);
                         }
 #else
-                      DebugOverwriteFrame(_pending_frame, "R:\\frame.data");
+                        DebugOverwriteFrame(_pending_frame, "R:\\frame.data");
 #endif
+                    }
+                    else
+                    {
+                        GUID subtype{};
+                        _targetMediaType->GetGUID(MF_MT_SUBTYPE, &subtype);
+                        if (subtype == MFVideoFormat_MJPG)
+                        {
+                            ReencodeFrame(_pending_frame);
+                        }
                     }
 
                     _pending_frame = nullptr;

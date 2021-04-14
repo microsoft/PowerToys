@@ -42,6 +42,58 @@ IWICImagingFactory* _GetWIC() noexcept
     return s_Factory;
 }
 
+bool ReencodeJPGImage(BYTE* imageBuf, const DWORD imageSize, DWORD& reencodedSize)
+{
+    auto pWIC = _GetWIC();
+    wil::com_ptr_nothrow<IStream> imageStream = SHCreateMemStream(imageBuf, imageSize);
+    if (!imageStream)
+    {
+        return false;
+    }
+
+    // Decode jpg into bitmap
+    wil::com_ptr_nothrow<IWICBitmapDecoder> bitmapDecoder;
+    OK_OR_BAIL(pWIC->CreateDecoderFromStream(imageStream.get(), nullptr, WICDecodeMetadataCacheOnLoad, &bitmapDecoder));
+    wil::com_ptr_nothrow<IWICBitmapFrameDecode> decodedFrame;
+    OK_OR_BAIL(bitmapDecoder->GetFrame(0, &decodedFrame));
+    wil::com_ptr_nothrow<IWICBitmapSource> bitmap;
+    bitmap.attach(decodedFrame.detach());
+    UINT width = 0, height = 0;
+    OK_OR_BAIL(bitmap->GetSize(&width, &height));
+
+    // Initialize jpg encoder
+    wil::com_ptr_nothrow<IWICBitmapEncoder> encoder;
+    OK_OR_BAIL(pWIC->CreateEncoder(GUID_ContainerFormatJpeg, nullptr, &encoder));
+
+    wil::com_ptr_nothrow<IStream> outputStream;
+    OK_OR_BAIL(CreateStreamOnHGlobal(nullptr, true, &outputStream));
+    OK_OR_BAIL(encoder->Initialize(outputStream.get(), WICBitmapEncoderNoCache));
+    wil::com_ptr_nothrow<IWICBitmapFrameEncode> encodedFrame;
+    OK_OR_BAIL(encoder->CreateNewFrame(&encodedFrame, nullptr));
+    OK_OR_BAIL(encodedFrame->Initialize(nullptr));
+    WICPixelFormatGUID intermediateFormat = GUID_WICPixelFormat24bppRGB;
+
+    OK_OR_BAIL(encodedFrame->SetPixelFormat(&intermediateFormat));
+    OK_OR_BAIL(encodedFrame->SetSize(width, height));
+
+    // Commit the image encoding
+    OK_OR_BAIL(encodedFrame->WriteSource(bitmap.get(), nullptr));
+    OK_OR_BAIL(encodedFrame->Commit());
+    OK_OR_BAIL(encoder->Commit());
+
+    STATSTG intermediateStreamStat{};
+    OK_OR_BAIL(outputStream->Stat(&intermediateStreamStat, STATFLAG_NONAME));
+    const ULONGLONG jpgStreamSize = intermediateStreamStat.cbSize.QuadPart;
+    HGLOBAL streamMemoryHandle{};
+    OK_OR_BAIL(GetHGlobalFromStream(outputStream.get(), &streamMemoryHandle));
+
+    auto jpgStreamMemory = static_cast<uint8_t*>(GlobalLock(streamMemoryHandle));
+    std::copy(jpgStreamMemory, jpgStreamMemory + jpgStreamSize, imageBuf);
+    auto unlockJpgStreamMemory = wil::scope_exit([jpgStreamMemory] { GlobalUnlock(jpgStreamMemory); });
+    reencodedSize = (DWORD)jpgStreamSize;
+    return true;
+}
+
 wil::com_ptr_nothrow<IWICBitmapSource> LoadAsRGB24BitmapWithSize(IWICImagingFactory* pWIC,
                                                                  wil::com_ptr_nothrow<IStream> image,
                                                                  const UINT targetWidth,
@@ -105,7 +157,7 @@ wil::com_ptr_nothrow<IStream> EncodeBitmapToContainer(IWICImagingFactory* pWIC,
     // Prepare the encoder output memory stream and encoding params
     wil::com_ptr_nothrow<IStream> encodedBitmap;
     OK_OR_BAIL(CreateStreamOnHGlobal(nullptr, true, &encodedBitmap));
-    encoder->Initialize(encodedBitmap.get(), WICBitmapEncoderNoCache);
+    OK_OR_BAIL(encoder->Initialize(encodedBitmap.get(), WICBitmapEncoderNoCache));
     wil::com_ptr_nothrow<IWICBitmapFrameEncode> encodedFrame;
 
     wil::com_ptr_nothrow<IPropertyBag2> encoderOptions;
