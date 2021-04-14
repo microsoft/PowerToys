@@ -4,6 +4,7 @@
 #include<keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common/utils/winapi_error.h>
+#include <common/utils/logger_helper.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
@@ -14,9 +15,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 {
     init_apartment();
 
-    std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName));
-    logFilePath.append(LogSettings::keyboardManagerEngineLogPath);
-    Logger::init(LogSettings::keyboardManagerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+    LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, LogSettings::keyboardManagerEngineLogPath, LogSettings::keyboardManagerLoggerName);
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {
