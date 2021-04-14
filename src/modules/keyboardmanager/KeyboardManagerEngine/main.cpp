@@ -1,10 +1,11 @@
 ﻿#include "pch.h"
 #include <common/utils/window.h>
 #include <common/utils/process_waiter.h>
-#include<keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
-#include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
+#include <keyboardmanager/common/trace.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
@@ -14,7 +15,6 @@ const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEngine_InstanceMute
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
     init_apartment();
-
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, LogSettings::keyboardManagerEngineLogPath, LogSettings::keyboardManagerLoggerName);
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
@@ -28,6 +28,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
         return 0;
     }
 
+    Trace::RegisterProvider();
     std::wstring pid = std::wstring(lpCmdLine);
     if (!pid.empty())
     {
@@ -50,5 +51,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     kbm.start_lowlevel_keyboard_hook();
     run_message_loop();
     kbm.stop_lowlevel_keyboard_hook();
+    Trace::UnregisterProvider();
     return 0;
 }
