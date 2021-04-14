@@ -82,7 +82,7 @@
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>Spectre</SpectreMitigation>
     <ConfigurationType>Application</ConfigurationType>
-    <TargetName>PowerToys.$(ProjectName)</TargetName>
+    <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
   </PropertyGroup>
   <!-- Debug/Release props -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
