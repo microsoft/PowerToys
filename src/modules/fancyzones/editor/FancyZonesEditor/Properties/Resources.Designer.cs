@@ -250,7 +250,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Distance to highlight adjacent zones.
+        ///   Looks up a localized string similar to Highlight distance.
         /// </summary>
         public static string Distance_adjacent_zones {
             get {
@@ -540,9 +540,27 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Number of zones.
         /// </summary>
+        public static string Number_of_zones {
+            get {
+                return ResourceManager.GetString("Number_of_zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Number of zones.
+        /// </summary>
         public static string NumberOfZones {
             get {
                 return ResourceManager.GetString("NumberOfZones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to px.
+        /// </summary>
+        public static string Pixels {
+            get {
+                return ResourceManager.GetString("Pixels", resourceCulture);
             }
         }
         
@@ -556,11 +574,20 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select a key to quickly apply the layout (Win + Ctrl + Alt + key).
+        ///   Looks up a localized string similar to Press Win + Ctrl + Alt + selected key to apply this layout.
         /// </summary>
-        public static string QuickKey_Select {
+        public static string QuickKey_Description {
             get {
-                return ResourceManager.GetString("QuickKey_Select", resourceCulture);
+                return ResourceManager.GetString("QuickKey_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Layout shortcut.
+        /// </summary>
+        public static string QuickKey_Title {
+            get {
+                return ResourceManager.GetString("QuickKey_Title", resourceCulture);
             }
         }
         
