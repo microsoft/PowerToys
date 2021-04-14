@@ -12,6 +12,7 @@ namespace ZonedWindowProperties
     const wchar_t MultiMonitorDeviceID[]    = L"FancyZones#MultiMonitorDevice";
 }
 
+// in reality, this file needs to be kept in sync currently with src/settings-ui/Microsoft.PowerToys.Settings.UI.Library/FZConfigProperties.cs
 struct Settings
 {
     enum struct OverlappingZonesAlgorithm : int
