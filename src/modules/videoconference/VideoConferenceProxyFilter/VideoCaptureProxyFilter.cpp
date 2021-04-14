@@ -459,6 +459,7 @@ bool OverwriteFrame(IMediaSample* frame, wil::com_ptr_nothrow<IMFSample>& image)
 
 //#define DEBUG_FRAME_DATA
 //#define DEBUG_OVERWRITE_FRAME
+//#define DEBUG_REENCODE_JPG_DATA
 
 #if defined(DEBUG_OVERWRITE_FRAME)
 void DebugOverwriteFrame(IMediaSample* frame, std::string_view filepath)
@@ -588,6 +589,7 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
                         DebugOverwriteFrame(_pending_frame, "R:\\frame.data");
 #endif
                     }
+#if defined(DEBUG_REENCODE_JPG_DATA)
                     else
                     {
                         GUID subtype{};
@@ -597,6 +599,7 @@ VideoCaptureProxyFilter::VideoCaptureProxyFilter() :
                             ReencodeFrame(_pending_frame);
                         }
                     }
+#endif
 
                     _pending_frame = nullptr;
                     input->Receive(sample);
