@@ -78,7 +78,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 Our goals for the [v0.35 release cycle][github-release-link] were to add in new functionality to support quick swapping layouts for FancyZones, wrap up work for the DirectShow migration for Video Conference Mute so we can migrate into the main dev branch as well as fixing bugs. 
 
-The 0.36 experimental release was released as well which includeds Video Conference Mute.
+The 0.36 experimental release was released as well which includes Video Conference Mute.
 
 Our [prioritized roadmap][roadmap] of features and utilities will dictate what the core team is focusing on for the near future. 
 
