@@ -35,8 +35,8 @@
     <Property Id="WINDOWSBUILDNUMBER" Secure="yes">
       <RegistrySearch Id="BuildNumberSearch" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Name="CurrentBuildNumber" Type="raw" />
     </Property>
-    <Condition Message="This application is only supported on Windows 10 version 1803 (build 17134) or higher.">
-      <![CDATA[(WINDOWSBUILDNUMBER >= 17134)]]>
+    <Condition Message="This application is only supported on Windows 10 version 1903 (build 18362) or higher.">
+      <![CDATA[(WINDOWSBUILDNUMBER >= 18362)]]>
     </Condition>
 
     <Icon Id="powertoys.exe" SourceFile="$(var.BinX64Dir)svgs\icon.ico"/>
