@@ -127,15 +127,11 @@
                                           Style="{StaticResource DisabledWhenUnselectedTextBoxStyle}"
                                           AutomationProperties.Name="{x:Static p:Resources.Width}"
                                           Margin="8,0,0,0">
-                                <ui:NumberBox.Text>
-                                    <Binding Converter="{StaticResource AutoDoubleConverter}"
-                                             Path="Width"
+                                <ui:NumberBox.Value>
+                                    <Binding Path="Width"
                                              UpdateSourceTrigger="PropertyChanged">
-                                        <Binding.ValidationRules>
-                                            <local:AutoDoubleValidationRule />
-                                        </Binding.ValidationRules>
                                     </Binding>
-                                </ui:NumberBox.Text>
+                                </ui:NumberBox.Value>
                             </ui:NumberBox>
                             <TextBlock VerticalAlignment="Center"
                                    Text="&#xE711;"
@@ -152,15 +148,11 @@
                                           Width="102"
                                           AutomationProperties.Name="{x:Static p:Resources.Height}"
                                           Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
-                                <ui:NumberBox.Text>
-                                    <Binding Converter="{StaticResource AutoDoubleConverter}"
-                                             Path="Height"
+                                <ui:NumberBox.Value>
+                                    <Binding Path="Height"
                                              UpdateSourceTrigger="PropertyChanged">
-                                        <Binding.ValidationRules>
-                                            <local:AutoDoubleValidationRule />
-                                        </Binding.ValidationRules>
                                     </Binding>
-                                </ui:NumberBox.Text>
+                                </ui:NumberBox.Value>
                             </ui:NumberBox>
                             <ComboBox Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
