@@ -402,8 +402,6 @@ int Bootstrapper(HINSTANCE hInstance)
         ShowMessageBoxError(IDS_DOTNET_INSTALL_ERROR);
     }
     
-    CleanupSettingsFromOlderVersions();
-
     // At this point, there's no reason to show progress bar window, since MSI installers have their own
     CloseProgressBarDialog();
 
