@@ -19,6 +19,7 @@ public:
     ~event_locker()
     {
         ResetEvent(eventHandle);
+        CloseHandle(eventHandle);
     }
 private:
     HANDLE eventHandle;
