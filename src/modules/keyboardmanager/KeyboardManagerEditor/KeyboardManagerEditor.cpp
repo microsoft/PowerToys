@@ -5,6 +5,8 @@
 #include "KeyboardManagerEditor.h"
 
 #include <KeyboardManagerState.h>
+#include <SettingsHelper.h>
+
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
 
@@ -38,6 +40,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     KeyboardManagerEditorType type = static_cast<KeyboardManagerEditorType>(_wtoi(cmdArgs[1]));
     KeyboardManagerState state;
+
+    SettingsHelper::loadConfig(state);
 
     switch (type)
     {

@@ -51,6 +51,7 @@
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RemapShortcut.cpp" />
+    <ClCompile Include="SettingsHelper.cpp" />
     <ClCompile Include="Shortcut.cpp" />
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
@@ -63,6 +64,7 @@
     <ClInclude Include="KeyDelay.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemapShortcut.h" />
+    <ClInclude Include="SettingsHelper.h" />
     <ClInclude Include="Shortcut.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
@@ -80,6 +82,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <Import Project="..\..\..\..\deps\spdlog.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
