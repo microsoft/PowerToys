@@ -37,9 +37,7 @@ Install from the [Microsoft PowerToys GitHub releases page][github-release-link]
 This is our preferred method.
 
 #### Experimental version
-To install the Video Conference mute, please use the [v0.28 pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.27 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
-
-We hope to have an updated version in February 2021 with the new DirectShow driver.
+To install the Video Conference mute, please use the [v0.36 experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.35 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
 ### Via WinGet (Preview)
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). To install PowerToys, run the following command from the command line / PowerShell:
@@ -78,7 +76,9 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.35 - March 2021 Update
 
-Our goals for the [v0.35 release cycle][github-release-link] were to add in new functionality to support quick swapping layouts for FancyZones, wrap up work for the DirectShow migration for Video Conference Mute so we can migrate into the main dev branch as well as fixing bugs. The 0.36 experimental release will happen the week of April 5th toward the end of the week pending testing. Throughout these efforts, we continue working towards stability across all PowerToys utilities. 
+Our goals for the [v0.35 release cycle][github-release-link] were to add in new functionality to support quick swapping layouts for FancyZones, wrap up work for the DirectShow migration for Video Conference Mute so we can migrate into the main dev branch as well as fixing bugs. 
+
+The 0.36 experimental release was released as well which includeds Video Conference Mute.
 
 Our [prioritized roadmap][roadmap] of features and utilities will dictate what the core team is focusing on for the near future. 
 
@@ -166,4 +166,4 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F19
-[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.28.0
+[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.36.0
