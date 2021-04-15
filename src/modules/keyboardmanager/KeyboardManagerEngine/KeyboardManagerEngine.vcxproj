@@ -32,7 +32,7 @@
     <TargetName>PowerToys.KeyboardManager</TargetName>
   </PropertyGroup>
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\$(ProjectName)\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\$(ProjectName)\</OutDir>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup>
