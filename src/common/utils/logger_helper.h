@@ -34,7 +34,15 @@ namespace LoggerHelpers
         std::filesystem::path logFolderPath(appPath);
         logFolderPath.append(LogSettings::logPath);
 
-        for (const auto& dir : std::filesystem::directory_iterator(logFolderPath))
+        std::error_code err;
+        auto folders = std::filesystem::directory_iterator(logFolderPath, err);
+        if (err.value())
+        {
+            Logger::error("Failed to create directory iterator for {}. {}", logFolderPath.string(), err.message());
+            return false;
+        }
+
+        for (const auto& dir : folders)
         {
             if (dir != currentVersionLogFolder)
             {
