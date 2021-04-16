@@ -518,7 +518,7 @@ void Shortcut::SetKeyCodes(const std::vector<int32_t>& keys)
 }
 
 // Function to check if all the modifiers in the shortcut have been pressed down
-bool Shortcut::CheckModifiersKeyboardState(InputInterface& ii) const
+bool Shortcut::CheckModifiersKeyboardState(KeyboardManagerInput::InputInterface& ii) const
 {
     // Check the win key state
     if (winKey == ModifierKey::Both)
@@ -669,7 +669,7 @@ bool IgnoreKeyCode(DWORD key)
 }
 
 // Function to check if any keys are pressed down except those in the shortcut
-bool Shortcut::IsKeyboardStateClearExceptShortcut(InputInterface& ii) const
+bool Shortcut::IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInterface& ii) const
 {
     // Iterate through all the virtual key codes - 0xFF is set to key down because of the Num Lock
     for (int keyVal = 1; keyVal < 0xFF; keyVal++)

@@ -1,8 +1,5 @@
 #include "pch.h"
 #include "Dialog.h"
-#include <set>
-#include "keyboardmanager/dll/Generated Files/resource.h"
-#include <common/utils/resources.h>
 
 using namespace winrt::Windows::Foundation;
 

@@ -1,21 +1,26 @@
 #include "pch.h"
+
+#include <set>
+
+#include <common/Display/dpi_aware.h>
+#include <common/interop/shared_constants.h>
+#include <common/themes/windows_colors.h>
+#include <common/utils/event_locker.h>
+
+#include <trace.h>
+#include <KeyboardManagerConstants.h>
+#include <KeyboardManagerState.h>
+
+#include <dll/Generated Files/resource.h>
+
 #include "EditKeyboardWindow.h"
 #include "SingleKeyRemapControl.h"
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
-#include <keyboardmanager/common/trace.h>
-#include <keyboardmanager/common/KeyboardManagerConstants.h>
-#include <set>
-#include <common/themes/windows_colors.h>
-#include <common/display/dpi_aware.h>
 #include "Styles.h"
 #include "Dialog.h"
-#include <keyboardmanager/dll/Generated Files/resource.h>
-#include <common/interop/shared_constants.h>
-#include "keyboardmanager/common/KeyboardManagerState.h"
 #include "LoadingAndSavingRemappingHelper.h"
 #include "UIHelpers.h"
-#include <common/utils/event_locker.h>
 
 using namespace winrt::Windows::Foundation;
 

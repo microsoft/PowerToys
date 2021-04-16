@@ -1,8 +1,11 @@
 #include "pch.h"
 #include "BufferValidationHelpers.h"
-#include <keyboardmanager/common/KeyboardManagerConstants.h>
+
 #include <common/interop/shared_constants.h>
-#include <modules\keyboardmanager\ui\KeyDropDownControl.h>
+
+#include <Constants.h>
+#include <KeyboardManagerConstants.h>
+#include <KeyDropDownControl.h>
 
 namespace BufferValidationHelpers
 {

@@ -65,9 +65,6 @@
     <ProjectReference Include="..\dll\KeyboardManager.vcxproj">
       <Project>{89f34af7-1c34-4a72-aa6e-534bcf972bd9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ui\KeyboardManagerUI.vcxproj">
-      <Project>{eaf23649-ef6e-478b-980e-81fad96cca2a}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="KeyboardManagerTest.rc" />

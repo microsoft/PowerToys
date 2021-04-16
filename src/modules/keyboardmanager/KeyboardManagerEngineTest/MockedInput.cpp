@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "MockedInput.h"
 
+using namespace KeyboardManagerInput;
+
 // Set the keyboard hook procedure to be tested
 void MockedInput::SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> hookProcedure)
 {

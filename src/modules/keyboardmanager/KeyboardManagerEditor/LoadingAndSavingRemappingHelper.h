@@ -1,7 +1,6 @@
 #pragma once
-#include <vector>
-#include <keyboardmanager/common/Helpers.h>
-#include <variant>
+
+#include <Helpers.h>
 
 class KeyboardManagerState;
 

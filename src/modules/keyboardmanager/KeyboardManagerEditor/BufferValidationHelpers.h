@@ -1,8 +1,6 @@
 #pragma once
-#include "keyboardmanager/common/Helpers.h"
-#include <variant>
-#include <vector>
-#include "keyboardmanager/common/Shortcut.h"
+
+#include <Helpers.h>
 
 namespace BufferValidationHelpers
 {

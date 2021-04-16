@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 #include "MockedInput.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>
-#include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.h>
+#include <keyboardmanager/common/KeyboardEventHandlers.h>
 #include <keyboardmanager/common/Helpers.h>
 #include "TestHelpers.h"
 
@@ -14,7 +14,7 @@ namespace RemappingLogicTests
     TEST_CLASS (SetKeyEventTests)
     {
     private:
-        MockedInput mockedInputHandler;
+        KeyboardManagerInput::MockedInput mockedInputHandler;
         KeyboardManagerState testState;
 
     public:
