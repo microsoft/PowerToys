@@ -3,8 +3,6 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/interop/shared_constants.h>
-#include <keyboardmanager/ui/EditKeyboardWindow.h>
-#include <keyboardmanager/ui/EditShortcutsWindow.h>
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
