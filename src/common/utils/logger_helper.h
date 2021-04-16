@@ -49,7 +49,7 @@ namespace LoggerHelpers
 
         if (!dir_exists(logFolderPath))
         {
-            Logger::warn("Directory {} does not exist", logFolderPath.string());
+            Logger::trace("Directory {} does not exist", logFolderPath.string());
             return true;
         }
 
