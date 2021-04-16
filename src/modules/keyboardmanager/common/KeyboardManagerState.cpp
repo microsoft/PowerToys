@@ -5,6 +5,7 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include "KeyDelay.h"
 #include "Helpers.h"
+#include <common/logger/logger.h>
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
@@ -603,6 +604,19 @@ bool KeyboardManagerState::SaveConfigToFile()
         result = false;
     }
 
+    if (result)
+    {
+        auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
+        if (hEvent)
+        {
+            SetEvent(hEvent);
+        }
+        else
+        {
+            Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
+        }
+    }
+
     return result;
 }
 
@@ -628,21 +642,4 @@ void KeyboardManagerState::SetActivatedApp(const std::wstring& appName)
 std::wstring KeyboardManagerState::GetActivatedApp()
 {
     return activatedAppSpecificShortcutTarget;
-}
-
-bool KeyboardManagerState::AreRemappingsEnabled()
-{
-    return remappingsEnabled;
-}
-
-void KeyboardManagerState::RemappingsDisabledWrapper(std::function<void()> method)
-{
-    // Disable keyboard remappings
-    remappingsEnabled = false;
-
-    // Run the method which requires the remappings to be disabled
-    method();
-
-    // Re-enable the keyboard remappings
-    remappingsEnabled = true;
 }

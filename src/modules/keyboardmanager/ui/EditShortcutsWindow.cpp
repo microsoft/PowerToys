@@ -13,6 +13,7 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include "LoadingAndSavingRemappingHelper.h"
 #include "UIHelpers.h"
+#include <common/utils/event_locker.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -48,6 +49,7 @@ static IAsyncAction OnClickAccept(
 // Function to create the Edit Shortcuts Window
 void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
+    event_locker locker(KeyboardManagerConstants::EditorWindowEventName.c_str());
     Logger::trace("Creating Remap shortcuts window");
 
     // Window Registration
@@ -231,13 +233,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     header.SetLeftOf(applyButton, cancelButton);
 
     auto ApplyRemappings = [&keyboardManagerState, _hWndEditShortcutsWindow]() {
-        // Disable the remappings while the remapping table is updated
-        keyboardManagerState.RemappingsDisabledWrapper(
-            [&keyboardManagerState]() {
-                LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(keyboardManagerState, ShortcutControl::shortcutRemapBuffer, true);
-                // Save the updated key remaps to file.
-                bool saveResult = keyboardManagerState.SaveConfigToFile();
-            });
+        LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(keyboardManagerState, ShortcutControl::shortcutRemapBuffer, true);
+        bool saveResult = keyboardManagerState.SaveConfigToFile();
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     };
 

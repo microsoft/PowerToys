@@ -13,7 +13,7 @@ class RemapShortcut;
 namespace KeyboardEventHandlers
 {
     // Function to a handle a single key remap
-    __declspec(dllexport) intptr_t HandleSingleKeyRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
+    intptr_t HandleSingleKeyRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
 
     /* This feature has not been enabled (code from proof of concept stage)
     * 
@@ -22,13 +22,13 @@ namespace KeyboardEventHandlers
     */
 
     // Function to a handle a shortcut remap
-    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState, const std::optional<std::wstring>& activatedApp = std::nullopt) noexcept;
+    intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState, const std::optional<std::wstring>& activatedApp = std::nullopt) noexcept;
 
     // Function to a handle an os-level shortcut remap
-    __declspec(dllexport) intptr_t HandleOSLevelShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
+    intptr_t HandleOSLevelShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
 
     // Function to a handle an app-specific shortcut remap
-    __declspec(dllexport) intptr_t HandleAppSpecificShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
+    intptr_t HandleAppSpecificShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
 
     // Function to ensure Num Lock state does not change when it is suppressed by the low level hook
     void SetNumLockToPreviousState(InputInterface& ii);

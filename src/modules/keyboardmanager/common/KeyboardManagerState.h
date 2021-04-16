@@ -230,8 +230,4 @@ public:
 
     // Gets the activated target application in app-specific shortcut
     std::wstring GetActivatedApp();
-
-    bool AreRemappingsEnabled();
-
-    void RemappingsDisabledWrapper(std::function<void()> method);
 };

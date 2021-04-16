@@ -22,6 +22,12 @@ inline std::optional<std::wstring> get_last_error_message(const DWORD dw)
     return message;
 }
 
+inline std::wstring get_last_error_or_default(const DWORD dw)
+{
+    auto message = get_last_error_message(dw);
+    return message.has_value() ? message.value() : L"";
+}
+
 inline void show_last_error_message(const wchar_t* functionName, DWORD dw, const wchar_t* errorTitle)
 {
     const auto system_message = get_last_error_message(dw);

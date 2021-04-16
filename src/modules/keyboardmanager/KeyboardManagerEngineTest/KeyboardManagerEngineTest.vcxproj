@@ -3,12 +3,13 @@
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{62173D9A-6724-4C00-A1C8-FB646480A9EC}</ProjectGuid>
+    <ProjectGuid>{7f4b3a60-bc27-45a7-8000-68b0b6ea7466}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>KeyboardManagerTest</RootNamespace>
+    <RootNamespace>KeyboardManagerEngineTest</RootNamespace>
     <OverrideWindowsTargetPlatformVersion>true</OverrideWindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
+    <ProjectName>KeyboardManagerEngineTest</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -19,15 +20,12 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\KeyboardManagerEngine\</OutDir>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -41,12 +39,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BufferValidationTests.cpp" />
-    <ClCompile Include="LoadingAndSavingRemappingTests.cpp" />
+    <ClCompile Include="AppSpecificShortcutRemappingTests.cpp" />
+    <ClCompile Include="MockedInputSanityTests.cpp" />
+    <ClCompile Include="SetKeyEventTests.cpp" />
+    <ClCompile Include="OSLevelShortcutRemappingTests.cpp" />
     <ClCompile Include="MockedInput.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ShortcutTests.cpp" />
+    <ClCompile Include="SingleKeyRemappingTests.cpp" />
+    <ClCompile Include="HelperTests.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -62,15 +65,9 @@
     <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">
       <Project>{8affa899-0b73-49ec-8c50-0fadda57b2fc}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\dll\KeyboardManager.vcxproj">
-      <Project>{89f34af7-1c34-4a72-aa6e-534bcf972bd9}</Project>
+    <ProjectReference Include="..\KeyboardManagerEngineLibrary\KeyboardManagerEngineLibrary.vcxproj">
+      <Project>{e496b7fc-1e99-4bab-849b-0e8367040b02}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ui\KeyboardManagerUI.vcxproj">
-      <Project>{eaf23649-ef6e-478b-980e-81fad96cca2a}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="KeyboardManagerTest.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 #include "MockedInput.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>
-#include <keyboardmanager/dll/KeyboardEventHandlers.h>
+#include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.h>
 #include "TestHelpers.h"
 #include <common/interop/shared_constants.h>
 
