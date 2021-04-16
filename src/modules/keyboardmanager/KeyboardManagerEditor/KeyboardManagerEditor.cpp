@@ -27,20 +27,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     if (cmdArgs == nullptr)
     {
-        // TODO: report error
+        Logger::error(L"Keyboard Manager Editor cannot start as a standalone application");
         return -1;
     }
 
     if (numArgs != 2)
     {
-        // TODO: report error
+        Logger::error(L"Invalid argumants on Keyboard Manager Editor start");
         return -1;
     }
 
     editor = std::make_unique<KeyboardManagerEditor>(hInstance);
     if (!editor->startLowLevelKeyboardHook())
     {
-        // TODO: report error
+        DWORD errorCode = GetLastError();
+        show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager Editor");
+        auto errorMessage = get_last_error_message(errorCode);
+        Logger::error(L"Unable to start keyboard hook: {}", errorMessage.has_value() ? errorMessage.value() : L"");
+        // TODO: Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
+        
         return -1;
     }
     
@@ -68,22 +73,12 @@ bool KeyboardManagerEditor::startLowLevelKeyboardHook()
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
     if (IsDebuggerPresent())
     {
-        return;
+        return true;
     }
 #endif
 
     hook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyHookProc, GetModuleHandle(NULL), NULL);
-    
-    if (!hook)
-    {
-        DWORD errorCode = GetLastError();
-        show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager Editor");
-        auto errorMessage = get_last_error_message(errorCode);
-        // TODO: Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
-        return false;
-    }
-
-    return true;
+    return (hook != nullptr);
 }
 
 void KeyboardManagerEditor::openEditorWindow(KeyboardManagerEditorType type)
