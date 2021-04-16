@@ -28,7 +28,7 @@ namespace LoggerHelpers
         return false;
     }
 
-    inline bool create_dir_if_does_not_exist(std::filesystem::path dir)
+    inline bool dir_exists(std::filesystem::path dir)
     {
         std::error_code err;
         auto entry = std::filesystem::directory_entry(dir, err);
@@ -38,18 +38,7 @@ namespace LoggerHelpers
             return false;
         }
 
-        if (!entry.exists())
-        {
-            Logger::warn("Directory {} does not exist", dir.string());
-            std::error_code err;
-            if (!std::filesystem::create_directory(dir, err))
-            {
-                Logger::error("Failed to create directory {}. {}", dir.string(), err.message());
-                return false;
-            }
-        }
-
-        return true;
+        return entry.exists();
     }
 
     inline bool delete_other_versions_log_folders(std::wstring_view appPath, const std::filesystem::path& currentVersionLogFolder)
@@ -58,9 +47,10 @@ namespace LoggerHelpers
         std::filesystem::path logFolderPath(appPath);
         logFolderPath.append(LogSettings::logPath);
 
-        if (!create_dir_if_does_not_exist(logFolderPath))
+        if (!dir_exists(logFolderPath))
         {
-            return false;
+            Logger::warn("Directory {} does not exist", logFolderPath.string());
+            return true;
         }
 
         std::error_code err;
