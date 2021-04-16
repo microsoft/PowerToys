@@ -145,6 +145,7 @@
 
                             <ui:NumberBox Style="{StaticResource DisabledWhenUnselectedTextBoxStyle}"
                                           SpinButtonPlacementMode="Compact"
+                                          Minimum="1"
                                           Width="102"
                                           AutomationProperties.Name="{x:Static p:Resources.Height}"
                                           Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
