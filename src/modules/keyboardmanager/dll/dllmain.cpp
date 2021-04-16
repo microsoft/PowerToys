@@ -315,8 +315,6 @@ public:
         m_enabled = false;
         // Log telemetry
         Trace::EnableKeyboardManager(false);
-        // Stop keyboard hook
-        stop_lowlevel_keyboard_hook();
 
         if (m_hProcess)
         {

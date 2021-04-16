@@ -1,5 +1,7 @@
 #pragma once
 
+#include <common/interop/shared_constants.h>
+
 namespace KeyboardManagerConstants
 {
     // Event name for signaling settings changes
