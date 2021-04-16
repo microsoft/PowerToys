@@ -45,6 +45,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\common\interop\keyboard_layout.cpp" />
     <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="KeyboardEventHandlers.cpp" />
     <ClCompile Include="KeyboardManagerState.cpp" />
     <ClCompile Include="KeyDelay.cpp" />
     <ClCompile Include="pch.cpp">
@@ -56,6 +57,8 @@
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="ModifierKey.h" />
     <ClInclude Include="InputInterface.h" />
     <ClInclude Include="Helpers.h" />
