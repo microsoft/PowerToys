@@ -14,7 +14,7 @@ namespace RemappingLogicTests
     TEST_CLASS (SetKeyEventTests)
     {
     private:
-        MockedInput mockedInputHandler;
+        KeyboardManagerInput::MockedInput mockedInputHandler;
         KeyboardManagerState testState;
 
     public:

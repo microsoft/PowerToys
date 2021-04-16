@@ -1,7 +1,7 @@
 #pragma once
 #include <common/utils/event_waiter.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
-#include "Input.h"
+#include <keyboardmanager/common/Input.h>
 
 class KeyboardManager
 {
@@ -22,7 +22,7 @@ private:
     KeyboardManagerState keyboardManagerState;
 
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
-    Input inputHandler;
+    KeyboardManagerInput::Input inputHandler;
 
     event_waiter eventWaiter;
 

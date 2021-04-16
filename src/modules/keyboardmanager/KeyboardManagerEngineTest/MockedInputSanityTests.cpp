@@ -13,7 +13,7 @@ namespace RemappingLogicTests
     TEST_CLASS (MockedInputSanityTests)
     {
     private:
-        MockedInput mockedInputHandler;
+        KeyboardManagerInput::MockedInput mockedInputHandler;
         KeyboardManagerState testState;
 
     public:
