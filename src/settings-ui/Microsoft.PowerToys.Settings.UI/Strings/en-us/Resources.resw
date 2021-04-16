@@ -1041,6 +1041,9 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Microsoft Docs</value>
   </data>
+  <data name="Oobe_Overview_DescriptionAccesibleLinkText.AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Docs</value>
+  </data>
   <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
     <value>release notes</value>
   </data>
