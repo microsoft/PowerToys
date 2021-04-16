@@ -4,17 +4,16 @@
 #include "pch.h"
 #include "KeyboardManagerEditor.h"
 
+#include <common/utils/winapi_error.h>
+
+#include <KeyboardEventHandlers.h>
 #include <KeyboardManagerState.h>
 #include <SettingsHelper.h>
 
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
 
-enum class KeyboardManagerEditorType
-{
-    KeyEditor = 0,
-    ShortcutEditor,
-};
+std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -38,19 +37,160 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return -1;
     }
 
+    editor = std::make_unique<KeyboardManagerEditor>(hInstance);
+    if (!editor->startLowLevelKeyboardHook())
+    {
+        // TODO: report error
+        return -1;
+    }
+    
     KeyboardManagerEditorType type = static_cast<KeyboardManagerEditorType>(_wtoi(cmdArgs[1]));
-    KeyboardManagerState state;
+    editor->openEditorWindow(type);
+    
+    editor = nullptr;
 
-    SettingsHelper::loadConfig(state);
+    return 0;
+}
 
+KeyboardManagerEditor::KeyboardManagerEditor(HINSTANCE hInst) :
+    hInstance(hInst)
+{
+    startLowLevelKeyboardHook();
+}
+
+KeyboardManagerEditor::~KeyboardManagerEditor()
+{
+    UnhookWindowsHookEx(hook);
+}
+
+bool KeyboardManagerEditor::startLowLevelKeyboardHook()
+{
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
+    if (IsDebuggerPresent())
+    {
+        return;
+    }
+#endif
+
+    hook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyHookProc, GetModuleHandle(NULL), NULL);
+    
+    if (!hook)
+    {
+        DWORD errorCode = GetLastError();
+        show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager Editor");
+        auto errorMessage = get_last_error_message(errorCode);
+        // TODO: Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
+        return false;
+    }
+
+    return true;
+}
+
+void KeyboardManagerEditor::openEditorWindow(KeyboardManagerEditorType type)
+{
     switch (type)
     {
     case KeyboardManagerEditorType::KeyEditor:
-        createEditKeyboardWindow(hInstance, state);
+        createEditKeyboardWindow(hInstance, keyboardManagerState);
         break;
     case KeyboardManagerEditorType::ShortcutEditor:
-        createEditShortcutsWindow(hInstance, state);
-    }   
+        createEditShortcutsWindow(hInstance, keyboardManagerState);
+    }
+}
 
-    return 0;
+intptr_t KeyboardManagerEditor::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
+{
+    // If remappings are disabled (due to the remap tables getting updated) skip the rest of the hook
+    if (!keyboardManagerState.AreRemappingsEnabled())
+    {
+        return 0;
+    }
+
+    // If key has suppress flag, then suppress it
+    if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+    {
+        return 1;
+    }
+
+    // If the Detect Key Window is currently activated, then suppress the keyboard event
+    KeyboardManagerHelper::KeyboardHookDecision singleKeyRemapUIDetected = keyboardManagerState.DetectSingleRemapKeyUIBackend(data);
+    if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
+    {
+        return 1;
+    }
+    else if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
+    {
+        return 0;
+    }
+
+    // If the Detect Shortcut Window from Remap Keys is currently activated, then suppress the keyboard event
+    KeyboardManagerHelper::KeyboardHookDecision remapKeyShortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, true);
+    if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
+    {
+        return 1;
+    }
+    else if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
+    {
+        return 0;
+    }
+
+    // Remap a key
+    intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(editor->getInputHandler(), data, keyboardManagerState);
+
+    // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
+    if (SingleKeyRemapResult == 1)
+    {
+        return 1;
+    }
+
+    // If the Detect Shortcut Window is currently activated, then suppress the keyboard event
+    KeyboardManagerHelper::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, false);
+    if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
+    {
+        return 1;
+    }
+    else if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
+    {
+        return 0;
+    }
+
+    /* This feature has not been enabled (code from proof of concept stage)
+        * 
+        //// Remap a key to behave like a modifier instead of a toggle
+        //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
+        */
+
+    // Handle an app-specific shortcut remapping
+    intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(editor->getInputHandler(), data, keyboardManagerState);
+
+    // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
+    if (AppSpecificShortcutRemapResult == 1)
+    {
+        return 1;
+    }
+
+    // Handle an os-level shortcut remapping
+    return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(editor->getInputHandler(), data, keyboardManagerState);
+}
+
+// Hook procedure definition
+LRESULT KeyboardManagerEditor::KeyHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    LowlevelKeyboardEvent event;
+    if (nCode == HC_ACTION)
+    {
+        event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+        event.wParam = wParam;
+        if (editor->HandleKeyboardHookEvent(&event) == 1)
+        {
+            // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
+            if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+            {
+                KeyboardEventHandlers::SetNumLockToPreviousState(editor->getInputHandler());
+            }
+            return 1;
+        }
+    }
+
+    return CallNextHookEx(hook, nCode, wParam, lParam);
 }
