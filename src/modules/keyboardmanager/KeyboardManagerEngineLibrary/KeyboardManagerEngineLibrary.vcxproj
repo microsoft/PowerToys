@@ -32,13 +32,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Input.h" />
-    <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="KeyboardManager.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Input.cpp" />
-    <ClCompile Include="KeyboardEventHandlers.cpp" />
     <ClCompile Include="KeyboardManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

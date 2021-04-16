@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 #include "MockedInput.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>
-#include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.h>
+#include <keyboardmanager/common/KeyboardEventHandlers.h>
 #include "TestHelpers.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

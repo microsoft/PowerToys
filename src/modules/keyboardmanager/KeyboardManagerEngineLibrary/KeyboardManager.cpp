@@ -13,7 +13,7 @@
 #include <common/logger/logger_settings.h>
 #include <keyboardmanager/common/trace.h>
 #include <keyboardmanager/common/Helpers.h>
-#include "KeyboardEventHandlers.h"
+#include <keyboardmanager/common/KeyboardEventHandlers.h>
 
 HHOOK KeyboardManager::hook_handle_copy;
 HHOOK KeyboardManager::hook_handle;
