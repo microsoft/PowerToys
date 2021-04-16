@@ -123,7 +123,7 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                             <ui:NumberBox SpinButtonPlacementMode="Compact"
-                            Minimum="1"
+                                          Minimum="1"
                                           Width="102"
                                           Style="{StaticResource DisabledWhenUnselectedTextBoxStyle}"
                                           AutomationProperties.Name="{x:Static p:Resources.Width}"
