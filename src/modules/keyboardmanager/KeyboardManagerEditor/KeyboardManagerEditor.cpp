@@ -33,7 +33,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     if (numArgs != 2)
     {
-        Logger::error(L"Invalid argumants on Keyboard Manager Editor start");
+        Logger::error(L"Invalid arguments on Keyboard Manager Editor start");
         return -1;
     }
 
