@@ -23,15 +23,13 @@
                         VerticalAlignment="Top">
 
                 <TextBlock Text="{x:Bind ViewModel.ModuleName}"
+                           AutomationProperties.HeadingLevel="Level2"
                            Style="{StaticResource PageTitleStyle}" />
 
                 <TextBlock Margin="0,4,0,0"
                            TextWrapping="Wrap">
                     <Run x:Uid="Oobe_Overview_Description" />
-                    <Hyperlink NavigateUri="{x:Bind ViewModel.DescriptionLink}"
-                               AutomationProperties.Name="Lalla"
-                               AutomationProperties.HelpText="Testtest"
-                               Foreground="{ThemeResource SystemControlBackgroundAccentBrush}">
+                    <Hyperlink NavigateUri="{x:Bind ViewModel.DescriptionLink}">
                         <Run x:Uid="Oobe_Overview_DescriptionLinkText" />
                     </Hyperlink><Run Text="." />
                 </TextBlock>

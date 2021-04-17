@@ -25,6 +25,7 @@
                         VerticalAlignment="Top">
                 
                 <TextBlock Text="{x:Bind ViewModel.ModuleName}"
+                           AutomationProperties.HeadingLevel="Level2"
                            Style="{StaticResource PageTitleStyle}" />
                 
                 <TextBlock TextWrapping="Wrap"
@@ -39,12 +40,14 @@
                 </HyperlinkButton>
 
                 <TextBlock x:Uid="Oobe_HowToUse"
+                           AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
                 <controls:ShortcutTextControl x:Uid="Oobe_ColorPicker_HowToUse" />
               
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
-                       Style="{StaticResource OobeSubtitleStyle}"/>
+                           AutomationProperties.HeadingLevel="Level3"
+                           Style="{StaticResource OobeSubtitleStyle}"/>
 
                 <controls:ShortcutTextControl x:Uid="Oobe_ColorPicker_TipsAndTricks" />
             

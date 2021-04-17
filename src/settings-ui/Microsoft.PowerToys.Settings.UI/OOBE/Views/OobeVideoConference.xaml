@@ -25,6 +25,7 @@
                         VerticalAlignment="Top">
 
                 <TextBlock Text="{x:Bind ViewModel.ModuleName}"
+                           AutomationProperties.HeadingLevel="Level2"
                            Style="{StaticResource PageTitleStyle}" />
 
                 <TextBlock TextWrapping="Wrap"
@@ -40,6 +41,7 @@
                 </HyperlinkButton>
 
                 <TextBlock x:Uid="Oobe_HowToLaunch"
+                           AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
                 <controls:ShortcutTextControl x:Uid="Oobe_VideoConference_HowToLaunch" />

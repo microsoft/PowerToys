@@ -24,6 +24,7 @@
                         VerticalAlignment="Top">
 
                 <TextBlock Text="{x:Bind ViewModel.ModuleName}"
+                           AutomationProperties.HeadingLevel="Level2"
                            Style="{StaticResource PageTitleStyle}" />
 
                 <TextBlock Margin="0,4,0,0"
@@ -40,11 +41,13 @@
 
 
                 <TextBlock x:Uid="Oobe_HowToUse"
+                           AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
                 <controls:ShortcutTextControl x:Uid="Oobe_PowerRename_HowToUse" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
+                           AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
                 <TextBlock x:Uid="Oobe_PowerRename_TipsAndTricks"

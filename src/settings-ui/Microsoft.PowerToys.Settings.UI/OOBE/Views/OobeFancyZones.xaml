@@ -24,6 +24,7 @@
                         Margin="{StaticResource OobePageContentMargin}"
                         VerticalAlignment="Top">
                 <TextBlock Text="{x:Bind ViewModel.ModuleName}"
+                           AutomationProperties.HeadingLevel="Level2"
                            Style="{StaticResource PageTitleStyle}" />
                 <TextBlock TextWrapping="Wrap"
                            Margin="0,4,0,0"
@@ -36,14 +37,16 @@
                                 <Run Text="{x:Bind ViewModel.ModuleName}" />
                     </TextBlock>
                 </HyperlinkButton>
-                
+
                 <TextBlock x:Uid="Oobe_HowToUse"
+                           AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
 
                 <controls:ShortcutTextControl x:Uid="Oobe_FancyZones_HowToUse" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
+                           AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
                 <controls:ShortcutTextControl x:Uid="Oobe_FancyZones_TipsAndTricks" />

@@ -24,6 +24,7 @@
                         VerticalAlignment="Top">
 
                 <TextBlock Text="{x:Bind ViewModel.ModuleName}"
+                           AutomationProperties.HeadingLevel="Level2"
                            Style="{StaticResource PageTitleStyle}" />
 
                 <TextBlock Margin="0,4,0,0"
@@ -39,11 +40,13 @@
                 </HyperlinkButton>
 
                 <TextBlock x:Uid="Oobe_HowToCreateMappings"
+                           AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
                 <controls:ShortcutTextControl x:Uid="Oobe_KBM_HowToCreateMappings" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
+                           AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
                 <controls:ShortcutTextControl x:Uid="Oobe_KBM_TipsAndTricks" />
