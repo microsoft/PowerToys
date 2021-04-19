@@ -3,7 +3,7 @@
 
 #include <common/interop/shared_constants.h>
 
-#include <Constants.h>
+#include <KeyboardManagerEditorStrings.h>
 #include <KeyboardManagerConstants.h>
 #include <KeyDropDownControl.h>
 
@@ -220,7 +220,7 @@ namespace BufferValidationHelpers
 
             // Convert app name to lower case
             std::transform(appName.begin(), appName.end(), appName.begin(), towlower);
-            std::wstring lowercaseDefAppName = KeyboardManagerConstants::DefaultAppName;
+            std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName;
             std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
             if (appName == lowercaseDefAppName)
             {

@@ -6,7 +6,7 @@
 #include <KeyboardManagerState.h>
 #include <Helpers.h>
 
-#include <Constants.h>
+#include <KeyboardManagerEditorStrings.h>
 #include <KeyDropDownControl.h>
 
 //Both static members are initialized to null
@@ -108,7 +108,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     row.Children().Append(target);
 
     targetAppTextBox.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
-    targetAppTextBox.PlaceholderText(KeyboardManagerConstants::DefaultAppName);
+    targetAppTextBox.PlaceholderText(KeyboardManagerEditorStrings::DefaultAppName);
     targetAppTextBox.Text(targetAppName);
 
     // GotFocus handler will be called whenever the user tabs into or clicks on the textbox
@@ -155,7 +155,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             shortcutRemapBuffer[rowIndex].first[1] = tempShortcut;
         }
         std::wstring newText = targetAppTextBox.Text().c_str();
-        std::wstring lowercaseDefAppName = KeyboardManagerConstants::DefaultAppName;
+        std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName;
         std::transform(newText.begin(), newText.end(), newText.begin(), towlower);
         std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
         if (newText == lowercaseDefAppName)

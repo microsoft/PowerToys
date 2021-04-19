@@ -5,7 +5,7 @@
 #include <KeyboardManagerState.h>
 
 #include <BufferValidationHelpers.h>
-#include <Constants.h>
+#include <KeyboardManagerEditorStrings.h>
 #include <ErrorTypes.h>
 
 // Initialized to null
@@ -119,7 +119,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
         // If there is an error set the warning flyout
         if (errorType != KeyboardManagerHelper::ErrorType::NoError)
         {
-            SetDropDownError(currentDropDown, KeyboardManagerHelper::GetErrorMessage(errorType));
+            SetDropDownError(currentDropDown, KeyboardManagerEditorStrings::GetErrorMessage(errorType));
         }
     };
 
@@ -186,7 +186,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
         // If the remapping is invalid display an error message
         if (validationResult.first != KeyboardManagerHelper::ErrorType::NoError)
         {
-            SetDropDownError(currentDropDown, KeyboardManagerHelper::GetErrorMessage(validationResult.first));
+            SetDropDownError(currentDropDown, KeyboardManagerEditorStrings::GetErrorMessage(validationResult.first));
         }
 
         // Handle None case if there are no other errors
@@ -255,7 +255,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
             if (targetApp != nullptr)
             {
                 std::wstring newText = targetApp.Text().c_str();
-                std::wstring lowercaseDefAppName = KeyboardManagerConstants::DefaultAppName;
+                std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName;
                 std::transform(newText.begin(), newText.end(), newText.begin(), towlower);
                 std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
                 if (newText == lowercaseDefAppName)
