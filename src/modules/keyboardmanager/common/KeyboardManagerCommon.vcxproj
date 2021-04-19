@@ -57,6 +57,7 @@
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ErrorTypes.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="ModifierKey.h" />

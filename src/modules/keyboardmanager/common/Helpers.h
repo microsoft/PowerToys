@@ -29,29 +29,6 @@ namespace KeyboardManagerHelper
         Action
     };
 
-    // Type to store codes for different errors
-    enum class ErrorType
-    {
-        NoError,
-        SameKeyPreviouslyMapped,
-        MapToSameKey,
-        ConflictingModifierKey,
-        SameShortcutPreviouslyMapped,
-        MapToSameShortcut,
-        ConflictingModifierShortcut,
-        WinL,
-        CtrlAltDel,
-        RemapUnsuccessful,
-        SaveFailed,
-        ShortcutStartWithModifier,
-        ShortcutCannotHaveRepeatedModifier,
-        ShortcutAtleast2Keys,
-        ShortcutOneActionKey,
-        ShortcutNotMoreThanOneActionKey,
-        ShortcutMaxShortcutSizeOneActionKey,
-        ShortcutDisableAsActionKey
-    };
-
     // Enum type to store possible decision for input in the low level hook
     enum class KeyboardHookDecision
     {

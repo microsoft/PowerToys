@@ -6,6 +6,7 @@
 
 #include <BufferValidationHelpers.h>
 #include <Constants.h>
+#include <ErrorTypes.h>
 
 // Initialized to null
 KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;

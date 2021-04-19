@@ -10,6 +10,7 @@
 #include <shlwapi.h>
 #include "keyboardmanager/dll/Generated Files/resource.h"
 #include <common/interop/keyboard_layout.h>
+#include "ErrorTypes.h"
 #include "KeyboardManagerConstants.h"
 
 using namespace winrt::Windows::Foundation;
