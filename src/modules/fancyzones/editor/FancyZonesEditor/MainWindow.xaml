@@ -520,7 +520,8 @@
                                       Text="{Binding TemplateZoneCount}" />
                     </StackPanel>
 
-                    <StackPanel Margin="0, 12, 0, 0">
+                    <StackPanel Margin="0, 12, 0, 0"
+                                Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}">
                         <TextBlock Text="{x:Static props:Resources.Space_Around_Zones}"
                                    x:Name="spacingTitle"
                                    Margin="28,0,0,4"
