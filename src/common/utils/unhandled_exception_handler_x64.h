@@ -144,7 +144,7 @@ void LogStackTrace()
     Logger::flush();
 }
 
-LONG WINAPI UnhandledExceptiontHandler(PEXCEPTION_POINTERS info)
+LONG WINAPI UnhandledExceptionHandler(PEXCEPTION_POINTERS info)
 {
     if (!processingException)
     {
