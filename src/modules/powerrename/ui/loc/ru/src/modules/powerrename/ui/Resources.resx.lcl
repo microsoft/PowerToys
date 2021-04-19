@@ -169,6 +169,9 @@
       <Item ItemId=";Loading_Msg" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please wait while the selected items are enumerated.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Подождите, пока выполняется перечисление выбранных элементов.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
