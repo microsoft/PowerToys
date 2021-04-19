@@ -1147,8 +1147,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Welcome" xml:space="preserve">
-    <value>Welcome to PowerToys</value>
-    <comment>Do not localize 'PowerToys'</comment>
+    <value>Welcome</value>
   </data>
   <data name="OOBE_Settings.Text" xml:space="preserve">
     <value>Settings</value>
