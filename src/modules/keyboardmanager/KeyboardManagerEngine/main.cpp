@@ -6,7 +6,7 @@
 #include <keyboardmanager/common/trace.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
-#include <common\utils\UnhandledExceptionHandlerX64.h>
+#include <common/utils/UnhandledExceptionHandlerX64.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
