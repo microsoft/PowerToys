@@ -192,7 +192,7 @@ void StackTraceInit(void)
 {
     InitSymbols();
     // Global handler for unhandled exceptions
-    SetUnhandledExceptionFilter(UnhandledExceptiontHandler);
+    SetUnhandledExceptionFilter(UnhandledExceptionHandler);
     // Handler for abort()
     signal(SIGABRT, &AbortHandler);
 }
