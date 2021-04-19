@@ -55,9 +55,6 @@ namespace KeyboardManagerHelper
     // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
     ErrorType DoKeysOverlap(DWORD first, DWORD second);
 
-    // Function to return the error message
-    winrt::hstring GetErrorMessage(ErrorType errorType);
-
     // Function to return the list of key name in the order for the drop down based on the key codes
     winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::pair<DWORD,std::wstring>>& list);
 

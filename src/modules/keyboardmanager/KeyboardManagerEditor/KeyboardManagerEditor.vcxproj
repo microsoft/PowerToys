@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BufferValidationHelpers.cpp" />
+    <ClCompile Include="KeyboardManagerEditorStrings.cpp" />
     <ClCompile Include="Dialog.cpp" />
     <ClCompile Include="EditKeyboardWindow.cpp" />
     <ClCompile Include="EditShortcutsWindow.cpp" />

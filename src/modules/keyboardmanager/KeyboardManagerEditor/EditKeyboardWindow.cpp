@@ -11,8 +11,6 @@
 #include <KeyboardManagerConstants.h>
 #include <KeyboardManagerState.h>
 
-#include <dll/Generated Files/resource.h>
-
 #include "EditKeyboardWindow.h"
 #include "ErrorTypes.h"
 #include "SingleKeyRemapControl.h"

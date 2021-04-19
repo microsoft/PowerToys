@@ -113,6 +113,9 @@
     <ClCompile Include="XamlBridge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="KeyboardManagerEditorStrings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="KeyboardManagerEditor.base.rc">
