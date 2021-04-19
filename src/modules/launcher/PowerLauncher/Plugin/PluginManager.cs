@@ -186,6 +186,11 @@ namespace PowerLauncher.Plugin
                     }
                 });
 
+                if (milliseconds > 50)
+                {
+                    Log.Warn($"PluginManager.QueryForPlugin {metadata.Name}. Query cost - {milliseconds} milliseconds", typeof(PluginManager));
+                }
+
                 metadata.QueryCount += 1;
                 metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;
 
