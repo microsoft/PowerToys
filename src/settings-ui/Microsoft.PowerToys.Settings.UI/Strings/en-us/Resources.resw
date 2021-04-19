@@ -1148,7 +1148,6 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="Oobe_Welcome" xml:space="preserve">
     <value>Welcome</value>
-    <comment>Do not localize 'PowerToys'</comment>
   </data>
   <data name="OOBE_Settings.Text" xml:space="preserve">
     <value>Settings</value>
