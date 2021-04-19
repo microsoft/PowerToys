@@ -2,7 +2,7 @@
 #include <DbgHelp.h>
 #include <signal.h>
 #include <stdio.h>
-#include "..\logger\logger.h"
+#include "../logger/logger.h"
 
 static IMAGEHLP_SYMBOL64* pSymbol = (IMAGEHLP_SYMBOL64*)malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(TCHAR));
 static IMAGEHLP_LINE64 line;
