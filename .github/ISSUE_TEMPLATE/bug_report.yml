@@ -1,10 +1,10 @@
 name: "🐛 Bug report"
 description: Report errors or unexpected behavior
-title: 
+# title: ''
 labels: 
 - Issue-Bug
 - Triage-Needed
-assignees: 
+# assignees: ''
 issue_body: true
 body:
 - type: markdown
