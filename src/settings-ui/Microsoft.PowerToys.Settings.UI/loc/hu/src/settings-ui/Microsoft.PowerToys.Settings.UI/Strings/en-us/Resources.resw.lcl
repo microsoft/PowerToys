@@ -754,7 +754,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FileExplorerPreview_Image.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FileExplorerPreview_Image.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[File Explorer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1779,19 +1779,25 @@
       </Item>
       <Item ItemId=";Oobe_ColorPicker_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Win + Shift + C to open Color Picker.]]></Val>
+          <Val><![CDATA[{Win} + {Ctrl} + {C} to open Color Picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Win + Shift + C – a Color Picker megnyitása.]]></Val>
+            <Val><![CDATA[A {Win} + {Ctrl} + {C} billentyűkombinációval megnyithatja a Színszedőt.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Win + Shift + C to open Color Picker.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_ColorPicker_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[To select a color with more precision, scroll the mouse wheel to zoom in.]]></Val>
+          <Val><![CDATA[To select a color with more precision, {scroll the mouse wheel} to zoom in.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A pontosabb színkiválasztáshoz nagyítson az egérkerék görgetésével.]]></Val>
+            <Val><![CDATA[A pontosabb színkiválasztáshoz nagyítson {az egérkerék görgetésével}.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[To select a color with more precision, scroll the mouse wheel to zoom in.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1815,19 +1821,25 @@
       </Item>
       <Item ItemId=";Oobe_FancyZones_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Shift + drag while dragging the window to snap a window to a zone, and release the window in the desired zone.]D;]A;Win + ` to open the FancyZones editor.]]></Val>
+          <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {`} to open the FancyZones editor.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ablak zónához való dokkolásához a Shift billentyűt lenyomva tartva húzza az ablakot a kívánt zónába, majd engedje el.]D;]A;A Win + billentyűkombinációt lenyomva megnyithatja a FancyZones szerkesztőt.]]></Val>
+            <Val><![CDATA[Ablak zónához való dokkolásához a {Shift} billentyűt lenyomva tartva {húzza az ablakot} a kívánt zónába, majd engedje el. A {Win} + {`} billentyűkombinációt lenyomva megnyithatja a FancyZones szerkesztőt.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Shift + drag while dragging the window to snap a window to a zone, and release the window in the desired zone.]D;]A;Win + ` to open the FancyZones editor.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_FancyZones_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Snap a window to multiple zones by holding the Ctrl key (while also holding Shift) when dragging a window.]]></Val>
+          <Val><![CDATA[Snap a window to multiple zones by holding the {Ctrl} key (while also holding {Shift}) when dragging a window.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ha több zónához szeretne dokkolni egy ablakot, az ablak húzása közben a SHIFT mellett a CTRL billentyűt is tartsa lenyomva.]]></Val>
+            <Val><![CDATA[Ha több zónához szeretne dokkolni egy ablakot, az ablak húzása közben a {Shift} mellett a {Ctrl} billentyűt is tartsa lenyomva.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Snap a window to multiple zones by holding the Ctrl key (while also holding Shift) when dragging a window.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1851,10 +1863,13 @@
       </Item>
       <Item ItemId=";Oobe_FileExplorer_HowToEnable.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open Windows File Explorer, select the View tab in the File Explorer ribbon, then select Preview Pane. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+          <Val><![CDATA[Open File Explorer, {select the View tab} in the File Explorer ribbon, then {select Preview Pane}. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nyissa meg a Windows Fájlkezelőt, válassza a Fájlkezelő menüszalagján lévő Nézet lapfület, majd a Betekintő ablaktábla lehetőséget. ]D;]A;A Fájlkezelóben kattintson a kívánt Markdown-fájlra vagy SVG-ikonra, és annak tartalma megjelenik az előnézeti ablaktáblában.]]></Val>
+            <Val><![CDATA[Nyissa meg a Fájlkezelőt, {válassza a Nézet lapfület} a Fájlkezelő menüszalagján, majd {válassza a Betekintő ablaktábla lehetőséget}. ]D;]A;A Fájlkezelőben kattintson a kívánt Markdown-fájlra vagy SVG-ikonra, és annak tartalma megjelenik az előnézeti ablaktáblában.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Open Windows File Explorer, select the View tab in the File Explorer ribbon, then select Preview Pane. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1932,10 +1947,13 @@
       </Item>
       <Item ItemId=";Oobe_ImageResizer_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[In File Explorer, right-clicking one or more image files and clicking on Resize pictures from the context menu.]]></Val>
+          <Val><![CDATA[In File Explorer, {right-clicking one or more image files} and {clicking on Resize pictures} from the context menu.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A Fájlkezelőben kattintson a jobb gombbal egy vagy több képfájlra, majd kattintson a Képek átméretezése parancsra a helyi menüben.]]></Val>
+            <Val><![CDATA[A Fájlkezelőben {kattintson a jobb gombbal egy vagy több képfájlra}, majd {kattintson a Képek átméretezése parancsra} a helyi menüben.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[In File Explorer, right-clicking one or more image files and clicking on Resize pictures from the context menu.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1968,10 +1986,13 @@
       </Item>
       <Item ItemId=";Oobe_KBM_HowToCreateMappings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Launch PowerToys settings, navigate to the Keyboard Manager menu, and select either Remap a key or Remap a shortcut.]]></Val>
+          <Val><![CDATA[Launch {PowerToys settings}, navigate to the Keyboard Manager menu, and select either {Remap a key} or {Remap a shortcut}.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nyissa meg a PowerToys-beállításokat, navigáljon a Billentyűzetmendzser menüjéhez, és válassza a Billentyű átkötése vagy a Billentyűparancs átkötése parancsot.]]></Val>
+            <Val><![CDATA[Nyissa meg a {PowerToys-beállításokat}, navigáljon a Billentyűmenedzser menüjéhez, és válassza a {Billentyű átkötése} vagy a {Billentyűparancs átkötése} parancsot.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Launch PowerToys settings, navigate to the Keyboard Manager menu, and select either Remap a key or Remap a shortcut.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2013,10 +2034,13 @@
       </Item>
       <Item ItemId=";Oobe_Overview_CheckoutLatestVersion.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For returning users, check out what is new on this latest version of]]></Val>
+          <Val><![CDATA[For returning users, check out what is new in our]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A meglévő felhasználók tájékozódhatnak a legújabb verzió újdonságairól:]]></Val>
+            <Val><![CDATA[A meglévő felhasználók tájékozódhatnak az újdonságokról itt:]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For returning users, check out what is new on this latest version of]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2031,19 +2055,25 @@
       </Item>
       <Item ItemId=";Oobe_Overview_DescriptionLinkText.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Microsoft Docs.]]></Val>
+          <Val><![CDATA[Microsoft Docs]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft Docs.]]></Val>
+            <Val><![CDATA[Microsoft Docs]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Microsoft Docs.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_Overview_LatestVersionLink.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[PowerToys in our release notes.]]></Val>
+          <Val><![CDATA[release notes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys a kibocsátási megjegyzésekben.]]></Val>
+            <Val><![CDATA[kiadási megjegyzések]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerToys in our release notes.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2067,10 +2097,13 @@
       </Item>
       <Item ItemId=";Oobe_PowerRename_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[In File Explorer, right-clicking one or more selected files and clicking on PowerRename from the context menu.]]></Val>
+          <Val><![CDATA[In File Explorer, {right-clicking one or more selected files} and {clicking on PowerRename} from the context menu.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A Fájlkezelőben kattintson a jobb gombbal egy vagy több kijelölt fájlra, majd válassza a helyi menü PowerRename parancsát.]]></Val>
+            <Val><![CDATA[A Fájlkezelőben {kattintson a jobb gombbal egy vagy több kijelölt fájlra}, majd {kattintson PowerRename parancsra} a helyi menüben.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[In File Explorer, right-clicking one or more selected files and clicking on PowerRename from the context menu.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2112,19 +2145,25 @@
       </Item>
       <Item ItemId=";Oobe_Run_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Alt + Space to open PowerToys and just start typing.]]></Val>
+          <Val><![CDATA[{Alt} + {Space} to open Run and just start typing.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A PowerToys megnyitásához nyomja le az Alt + Szóköz billentyűkombinációt, és kezdjen el gépelni.]]></Val>
+            <Val><![CDATA[Nyissa meg a Futtatást az {Alt} + {Space} billentyűkombinációval, és egyszerűen kezdjen el gépelni.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Alt + Space to open PowerToys and just start typing.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_Run_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[PowerToys runs supports various action keys to funnel search queries for a specific subset of results. Typing < searches for running processes only, ? will search only for file, or . for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
+          <Val><![CDATA[PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing {<} searches for running processes only, {?} will search only for file, or {.} for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A PowerToys-futtatásokban számos műveletbillentyű használható a keresési lekérdezések eredményeinek egy meghatározott részhalmazra való leszűkítése céljából. Példák: < – csak a futó folyamatok keresése, ? – csak fájl keresése, . – telepített alkalmazások keresése. A műveletbillentyűk teljes készletét a PowerToys dokumentációjában tekintheti meg.]]></Val>
+            <Val><![CDATA[A PowerToys Run számos műveleti billentyűt támogat a keresési lekérdezések az eredményeinek egy meghatározott részhalmazára való leszűkítéséhez. A {<} beírásával csak a futó folyamatokat, a {?} beírásával csak a fájlokat, a {.} beírásával pedig a telepített alkalmazásokat lehet keresni. Az elérhető műveleti billentyűk teljes készletét a PowerToys dokumentációjában találhatja meg.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerToys runs supports various action keys to funnel search queries for a specific subset of results. Typing < searches for running processes only, ? will search only for file, or . for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2148,10 +2187,13 @@
       </Item>
       <Item ItemId=";Oobe_ShortcutGuide_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Win + ? to open Shortcut Guide, press it again to close or press Esc. You can also launch it by holding the Win key for one second!]]></Val>
+          <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A Win + ? billentyűkombináció lenyomásával megnyithatja, annak újbóli lenyomásával vagy az Esc billentyű használatával pedig bezárhatja a Billentyűsegédet. A segédprogramot a Windows billentyű egy másodpercig tartó lenyomásával is elindíthatja.]]></Val>
+            <Val><![CDATA[A {Win} + {?} billentyűkombináció lenyomásával megnyithatja, annak újbóli lenyomásával vagy az {Esc} billentyű használatával pedig bezárhatja a Billentyűsegédet. A segédprogramot a {Win} billentyű egy másodpercig tartó lenyomásával is elindíthatja.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Win + ? to open Shortcut Guide, press it again to close or press Esc. You can also launch it by holding the Win key for one second!]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2184,10 +2226,13 @@
       </Item>
       <Item ItemId=";Oobe_VideoConference_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Win + N to toggle both your microphone and video ]D;]A;Win + Shift + A to toggle your microphone ]D;]A;Win + Shift + O to toggle your video]]></Val>
+          <Val><![CDATA[{Win} + {N} to toggle both your microphone and video]D;]A;{Win} + {Shift} + {A} to toggle your microphone ]D;]A;{Win} + {Shift} + {O} to toggle your video]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Win + N – a mikrofon és a videó be-/kikapcsolása ]D;]A;Win + Shift + A – a mikrofon be-/kikapcsolása ]D;]A;Win + Shift + O – a videó be-/kikapcsolása]]></Val>
+            <Val><![CDATA[{Win} + {N} – a mikrofon és a videó be-/kikapcsolása ]D;]A;{Win} + {Shift} + {A} – a mikrofon be-/kikapcsolása ]D;]A;{Win} + {Shift} + {O} – a videó be-/kikapcsolása]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Win + N to toggle both your microphone and video ]D;]A;Win + Shift + A to toggle your microphone ]D;]A;Win + Shift + O to toggle your video]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2887,12 +2932,18 @@
       <Item ItemId=";ShortcutGuide_DisabledApps.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Disable for apps]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Letiltás az alkalmazások számára]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ShortcutGuide_DisabledApps_TextBoxControl.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Turn off Shortcut Guide when these applications have focus. Add one application name per line.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A Billentyűsegéd kikapcsolása, ha ezek az alkalmazások vannak fókuszban. Soronként egy alkalmazásnevet adjon meg.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
