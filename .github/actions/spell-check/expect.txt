@@ -398,6 +398,7 @@ davidegiacometti
 Dayof
 dbdfc
 Dbg
+Dbghelp
 DBLCLKS
 DBLEPSILON
 DCOM
@@ -2013,6 +2014,7 @@ stdcall
 stdcpp
 stdcpplatest
 stdexcept
+stdio
 stdin
 stdlib
 STDMETHODCALLTYPE
@@ -2032,6 +2034,7 @@ Strikethrough
 Stringified
 stringify
 STRINGIZE
+stringstream
 stringtable
 stringval
 Strmiids
