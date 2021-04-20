@@ -23,40 +23,36 @@ namespace Wox.Plugin
         public PluginPair(PluginMetadata metadata)
         {
             this.Metadata = metadata;
+            LoadPlugin();
         }
 
-        public bool IsPluginLoaded { get; set; }
+        public bool IsPluginInitialized { get; set; }
 
-        public void LoadPlugin(IPublicAPI api)
+        public void InitializePlugin(IPublicAPI api)
         {
             if (Metadata.Disabled)
             {
-                Log.Info($"Do not load {Metadata.Name} as it is disabled.", GetType());
+                Log.Info($"Do not initialize {Metadata.Name} as it is disabled.", GetType());
                 return;
             }
 
-            if (IsPluginLoaded)
+            if (IsPluginInitialized)
             {
-                Log.Info($"Plugin {Metadata.Name} is already loaded", GetType());
+                Log.Info($"{Metadata.Name} plugin is already initialized", GetType());
                 return;
             }
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            if (!CreatePluginInstance())
-            {
-                return;
-            }
-
             if (!InitPlugin(api))
             {
                 return;
             }
 
             stopWatch.Stop();
-            IsPluginLoaded = true;
+            IsPluginInitialized = true;
             Metadata.InitTime += stopWatch.ElapsedMilliseconds;
-            Log.Info($"Total load cost for <{Metadata.Name}> is <{Metadata.InitTime}ms>", GetType());
+            Log.Info($"Total initialize cost for <{Metadata.Name}> is <{Metadata.InitTime}ms>", GetType());
             return;
         }
 
@@ -70,8 +66,8 @@ namespace Wox.Plugin
             if (Metadata.Disabled && !setting.Disabled)
             {
                 Metadata.Disabled = false;
-                LoadPlugin(api);
-                if (!IsPluginLoaded)
+                InitializePlugin(api);
+                if (!IsPluginInitialized)
                 {
                     var title = string.Format(CultureInfo.CurrentCulture, Resources.FailedToLoadPluginTitle, Metadata.Name);
                     api.ShowMsg(title, Resources.FailedToLoadPluginDescription, string.Empty, false);
@@ -115,8 +111,23 @@ namespace Wox.Plugin
             return hashcode;
         }
 
+        private void LoadPlugin()
+        {
+            var stopWatch = new Stopwatch();
+            CreatePluginInstance();
+            stopWatch.Stop();
+            Metadata.InitTime += stopWatch.ElapsedMilliseconds;
+            Log.Info($"Load cost for <{Metadata.Name}> is <{Metadata.InitTime}ms>", GetType());
+        }
+
         private bool CreatePluginInstance()
         {
+            if (Plugin != null)
+            {
+                Log.Warn($"{Metadata.Name} plugin was already loaded", GetType());
+                return true;
+            }
+
             try
             {
                 _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(Metadata.ExecuteFilePath);
@@ -158,6 +169,12 @@ namespace Wox.Plugin
 
         private bool InitPlugin(IPublicAPI api)
         {
+            if (Plugin == null)
+            {
+                Log.Warn($"Can not initialize {Metadata.Name} plugin as it was not loaded", GetType());
+                return false;
+            }
+
             try
             {
                 Plugin.Init(new PluginInitContext

@@ -11,7 +11,6 @@
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
-#include <common/utils/os-detect.h>
 #include <common/utils/winapi_error.h>
 
 #include <filesystem>
@@ -185,89 +184,86 @@ public:
         Logger::info("Launcher is enabling");
         ResetEvent(m_hEvent);
         ResetEvent(send_telemetry_event);
-        // Start PowerLauncher.exe only if the OS is 19H1 or higher
-        if (UseNewSettings())
+
+        unsigned long powertoys_pid = GetCurrentProcessId();
+
+        if (!is_process_elevated(false))
         {
-            unsigned long powertoys_pid = GetCurrentProcessId();
+            Logger::trace("Starting PowerToys Run from not elevated process");
+            std::wstring executable_args;
+            executable_args += L" -powerToysPid ";
+            executable_args += std::to_wstring(powertoys_pid);
+            executable_args += L" --centralized-kb-hook";
 
-            if (!is_process_elevated(false))
+            SHELLEXECUTEINFOW sei{ sizeof(sei) };
+            sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+            sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
+            sei.nShow = SW_SHOWNORMAL;
+            sei.lpParameters = executable_args.data();
+
+            if (ShellExecuteExW(&sei))
             {
-                Logger::trace("Starting PowerToys Run from not elevated process");
-                std::wstring executable_args;
-                executable_args += L" -powerToysPid ";
-                executable_args += std::to_wstring(powertoys_pid);
-                executable_args += L" --centralized-kb-hook";
-
-                SHELLEXECUTEINFOW sei{ sizeof(sei) };
-                sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-                sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
-                sei.nShow = SW_SHOWNORMAL;
-                sei.lpParameters = executable_args.data();
-                
-                if (ShellExecuteExW(&sei))
-                {
-                    m_enabled = true;
-                    m_hProcess = sei.hProcess;
-                    Logger::trace("Started PowerToys Run. Handle {}", m_hProcess);
-                }
-                else
-                {
-                    Logger::error("Launcher failed to start");
-                }
+                m_enabled = true;
+                m_hProcess = sei.hProcess;
+                Logger::trace("Started PowerToys Run. Handle {}", m_hProcess);
             }
             else
             {
-                Logger::trace("Starting PowerToys Run from elevated process");
-                std::wstring action_runner_path = get_module_folderpath();
+                Logger::error("Launcher failed to start");
+            }
+        }
+        else
+        {
+            Logger::trace("Starting PowerToys Run from elevated process");
+            std::wstring action_runner_path = get_module_folderpath();
 
-                std::wstring params;
-                params += L"-run-non-elevated ";
-                params += L"-target modules\\launcher\\PowerLauncher.exe ";
-                params += L"-pidFile ";
-                params += POWER_LAUNCHER_PID_SHARED_FILE;
-                params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
-                params += L"--centralized-kb-hook ";
+            std::wstring params;
+            params += L"-run-non-elevated ";
+            params += L"-target modules\\launcher\\PowerLauncher.exe ";
+            params += L"-pidFile ";
+            params += POWER_LAUNCHER_PID_SHARED_FILE;
+            params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
+            params += L"--centralized-kb-hook ";
 
-                action_runner_path += L"\\action_runner.exe";
-                // Set up the shared file from which to retrieve the PID of PowerLauncher
-                HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
-                if (!hMapFile)
+            action_runner_path += L"\\action_runner.exe";
+            // Set up the shared file from which to retrieve the PID of PowerLauncher
+            HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
+            if (!hMapFile)
+            {
+                auto err = get_last_error_message(GetLastError());
+                Logger::error(L"Failed to create FileMapping {}. {}", POWER_LAUNCHER_PID_SHARED_FILE, err.has_value() ? err.value() : L"");
+                return;
+            }
+
+            PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+            if (pidBuffer)
+            {
+                *pidBuffer = 0;
+                m_hProcess = NULL;
+
+                if (run_non_elevated(action_runner_path, params, pidBuffer))
                 {
-                    auto err = get_last_error_message(GetLastError());
-                    Logger::error(L"Failed to create FileMapping {}. {}", POWER_LAUNCHER_PID_SHARED_FILE, err.has_value() ? err.value() : L"");
-                    return;
-                }
-
-                PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
-                if (pidBuffer)
-                {
-                    *pidBuffer = 0;
-                    m_hProcess = NULL;
-
-                    if (run_non_elevated(action_runner_path, params, pidBuffer))
+                    Logger::trace("Started PowerToys Run Process. PID {}", *pidBuffer);
+                    m_enabled = true;
+                    const int maxRetries = 80;
+                    for (int retry = 0; retry < maxRetries; ++retry)
                     {
-                        Logger::trace("Started PowerToys Run Process. PID {}", *pidBuffer);
-                        m_enabled = true;
-                        const int maxRetries = 80;
-                        for (int retry = 0; retry < maxRetries; ++retry)
+                        Sleep(50);
+                        DWORD pid = *pidBuffer;
+                        if (pid)
                         {
-                            Sleep(50);
-                            DWORD pid = *pidBuffer;
-                            if (pid)
-                            {
-                                m_hProcess = OpenProcess(PROCESS_TERMINATE | PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, pid);
-                                Logger::trace("Opened PowerToys Run Process. Handle {}", m_hProcess);
-                                break;
-                            }
+                            m_hProcess = OpenProcess(PROCESS_TERMINATE | PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, pid);
+                            Logger::trace("Opened PowerToys Run Process. Handle {}", m_hProcess);
+                            break;
                         }
                     }
-                    else
-                    {
-                        Logger::error("Failed to start PowerToys Run");
-                    }
                 }
-                CloseHandle(hMapFile);
+                else
+                {
+                    Logger::error("Failed to start PowerToys Run");
+                }
             }
+            CloseHandle(hMapFile);
         }
     }
 

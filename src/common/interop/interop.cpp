@@ -122,11 +122,6 @@ public
         static String ^ GetProductVersion() {
             return gcnew String(get_product_version().c_str());
         }
-
-            static bool ShouldNewSettingsBeUsed()
-        {
-            return UseNewSettings();
-        }
     };
 
 public
@@ -159,6 +154,10 @@ public
         
         static String ^ ShowShortcutGuideSharedEvent() {
             return gcnew String(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT);
+        }
+
+        static String ^ KeyboardManagerConfigFileMutexName() {
+            return gcnew String(CommonSharedConstants::KEYBOARD_MANAGER_CONFIG_FILE_MUTEX_NAME);
         }
     };
 }

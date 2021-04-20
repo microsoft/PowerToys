@@ -25,6 +25,7 @@
                         VerticalAlignment="Top">
                 
                 <TextBlock Text="{x:Bind ViewModel.ModuleName}"
+                           AutomationProperties.HeadingLevel="Level2"
                            Style="{StaticResource PageTitleStyle}" />
                 
                 <TextBlock TextWrapping="Wrap"
@@ -39,12 +40,14 @@
                 </HyperlinkButton>
 
                 <TextBlock x:Uid="Oobe_HowToUse"
+                           AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
                 <controls:ShortcutTextControl x:Uid="Oobe_ColorPicker_HowToUse" />
               
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
-                       Style="{StaticResource OobeSubtitleStyle}"/>
+                           AutomationProperties.HeadingLevel="Level3"
+                           Style="{StaticResource OobeSubtitleStyle}"/>
 
                 <controls:ShortcutTextControl x:Uid="Oobe_ColorPicker_TipsAndTricks" />
             
@@ -57,13 +60,14 @@
                         <Run Text="{x:Bind ViewModel.ModuleName}"/>
                     </TextBlock>
                 </Button>
-                    <Button Click="SettingsLaunchButton_Click">
+                    <Button Click="SettingsLaunchButton_Click"
+                            AutomationProperties.LabeledBy="{Binding ElementName=SettingsLabel}">
                         <StackPanel Orientation="Horizontal"
                                     Spacing="8">
                             <TextBlock Text="&#xE115;"
                                        Margin="0,3,0,0"
                                        FontFamily="Segoe MDL2 Assets" />
-                            <TextBlock x:Uid="OOBE_Settings" />
+                            <TextBlock x:Uid="OOBE_Settings" Name="SettingsLabel" />
                         </StackPanel>
                     </Button>
                 </StackPanel>

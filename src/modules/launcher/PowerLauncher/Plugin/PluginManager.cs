@@ -128,9 +128,9 @@ namespace PowerLauncher.Plugin
                     return;
                 }
 
-                pair.LoadPlugin(API);
+                pair.InitializePlugin(API);
 
-                if (!pair.IsPluginLoaded)
+                if (!pair.IsPluginInitialized)
                 {
                     failedPlugins.Enqueue(pair);
                 }
@@ -159,7 +159,7 @@ namespace PowerLauncher.Plugin
                 throw new ArgumentNullException(nameof(pair));
             }
 
-            if (!pair.IsPluginLoaded)
+            if (!pair.IsPluginInitialized)
             {
                 return new List<Result>();
             }
@@ -185,6 +185,11 @@ namespace PowerLauncher.Plugin
                         UpdateResultWithActionKeyword(results, query);
                     }
                 });
+
+                if (milliseconds > 50)
+                {
+                    Log.Warn($"PluginManager.QueryForPlugin {metadata.Name}. Query cost - {milliseconds} milliseconds", typeof(PluginManager));
+                }
 
                 metadata.QueryCount += 1;
                 metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;

@@ -58,6 +58,7 @@
                     <TextBlock x:Uid="Oobe_GettingStarted"
                                TextWrapping="Wrap"
                                FontWeight="SemiBold"
+                               AutomationProperties.HeadingLevel="Level1"
                                Style="{StaticResource PageTitleStyle}"
                                Margin="0,0,0,16" />
                 </StackPanel>

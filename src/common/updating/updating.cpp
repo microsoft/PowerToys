@@ -10,7 +10,6 @@
 #include <common/notifications/notifications.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/json.h>
-#include <common/utils/os-detect.h>
 
 namespace // Strings in this namespace should not be localized
 {
@@ -77,9 +76,6 @@ namespace updating
             const VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
             VersionHelper github_version = current_version;
 
-            // On a <1903 system, block updates to 0.36+ 
-            const bool blockNonPatchReleases = current_version.major == 0 && current_version.minor == 35 && !Is19H1OrHigher();
-
             if (prerelease)
             {
                 const auto body = co_await client.request(Uri{ ALL_RELEASES_ENDPOINT });
@@ -106,11 +102,6 @@ namespace updating
                 {
                     github_version = *extracted_version;
                 }
-            }
-
-            if (blockNonPatchReleases && github_version >= VersionHelper{ 0, 36, 0 })
-            {
-                co_return version_up_to_date{};
             }
 
             if (github_version <= current_version)
