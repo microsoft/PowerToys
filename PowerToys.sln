@@ -294,6 +294,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\resources.h = src\common\utils\resources.h
 		src\common\utils\string_utils.h = src\common\utils\string_utils.h
 		src\common\utils\timeutil.h = src\common\utils\timeutil.h
+		src\common\utils\UnhandledExceptionHandlerX64.h = src\common\utils\UnhandledExceptionHandlerX64.h
 		src\common\utils\winapi_error.h = src\common\utils\winapi_error.h
 		src\common\utils\window.h = src\common\utils\window.h
 	EndProjectSection
