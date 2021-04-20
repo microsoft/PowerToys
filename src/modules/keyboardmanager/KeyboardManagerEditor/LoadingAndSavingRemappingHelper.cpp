@@ -5,6 +5,7 @@
 
 #include <common/interop/shared_constants.h>
 #include <trace.h>
+#include <ErrorTypes.h>
 #include <KeyboardManagerState.h>
 
 namespace LoadingAndSavingRemappingHelper

@@ -7,6 +7,7 @@
 #include <KeyboardManagerState.h>
 
 #include <Dialog.h>
+#include <ErrorTypes.h>
 #include <KeyDropDownControl.h>
 #include <LoadingAndSavingRemappingHelper.h>
 #include <ShortcutControl.h>

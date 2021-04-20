@@ -8,8 +8,8 @@
 #include <common/utils/resources.h>
 
 #include <shlwapi.h>
-#include "keyboardmanager/dll/Generated Files/resource.h"
 #include <common/interop/keyboard_layout.h>
+#include "ErrorTypes.h"
 #include "KeyboardManagerConstants.h"
 
 using namespace winrt::Windows::Foundation;
@@ -138,52 +138,6 @@ namespace KeyboardManagerHelper
         else
         {
             return ErrorType::NoError;
-        }
-    }
-
-    // Function to return the error message
-    winrt::hstring GetErrorMessage(ErrorType errorType)
-    {
-        switch (errorType)
-        {
-        case ErrorType::NoError:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_REMAPSUCCESSFUL).c_str();
-        case ErrorType::SameKeyPreviouslyMapped:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAMEKEYPREVIOUSLYMAPPED).c_str();
-        case ErrorType::MapToSameKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAPPEDTOSAMEKEY).c_str();
-        case ErrorType::ConflictingModifierKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CONFLICTINGMODIFIERKEY).c_str();
-        case ErrorType::SameShortcutPreviouslyMapped:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAMESHORTCUTPREVIOUSLYMAPPED).c_str();
-        case ErrorType::MapToSameShortcut:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAPTOSAMESHORTCUT).c_str();
-        case ErrorType::ConflictingModifierShortcut:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CONFLICTINGMODIFIERSHORTCUT).c_str();
-        case ErrorType::WinL:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_WINL).c_str();
-        case ErrorType::CtrlAltDel:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CTRLALTDEL).c_str();
-        case ErrorType::RemapUnsuccessful:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_REMAPUNSUCCESSFUL).c_str();
-        case ErrorType::SaveFailed:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAVEFAILED).c_str();
-        case ErrorType::ShortcutStartWithModifier:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTSTARTWITHMODIFIER).c_str();
-        case ErrorType::ShortcutCannotHaveRepeatedModifier:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTNOREPEATEDMODIFIER).c_str();
-        case ErrorType::ShortcutAtleast2Keys:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTATLEAST2KEYS).c_str();
-        case ErrorType::ShortcutOneActionKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTONEACTIONKEY).c_str();
-        case ErrorType::ShortcutNotMoreThanOneActionKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTMAXONEACTIONKEY).c_str();
-        case ErrorType::ShortcutMaxShortcutSizeOneActionKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAXSHORTCUTSIZE).c_str();
-        case ErrorType::ShortcutDisableAsActionKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_DISABLEASACTIONKEY).c_str();
-        default:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_DEFAULT).c_str();
         }
     }
 

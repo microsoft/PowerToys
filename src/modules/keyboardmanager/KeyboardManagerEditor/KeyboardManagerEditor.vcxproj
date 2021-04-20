@@ -129,7 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BufferValidationHelpers.h" />
-    <ClInclude Include="Constants.h" />
+    <ClInclude Include="KeyboardManagerEditorStrings.h" />
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="EditKeyboardWindow.h" />
     <ClInclude Include="EditShortcutsWindow.h" />
@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BufferValidationHelpers.cpp" />
+    <ClCompile Include="KeyboardManagerEditorStrings.cpp" />
     <ClCompile Include="Dialog.cpp" />
     <ClCompile Include="EditKeyboardWindow.cpp" />
     <ClCompile Include="EditShortcutsWindow.cpp" />
