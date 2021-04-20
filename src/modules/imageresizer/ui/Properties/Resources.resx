@@ -117,92 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Advanced_About" xml:space="preserve">
-    <value>About</value>
-  </data>
-  <data name="Advanced_CreateSize" xml:space="preserve">
-    <value>Create a new size</value>
-  </data>
-  <data name="Advanced_DeleteSize" xml:space="preserve">
-    <value>Delete</value>
-    <comment>remove a file</comment>
-  </data>
-  <data name="Advanced_Encoding" xml:space="preserve">
-    <value>Encoding</value>
-    <comment>encoding a file to a different format</comment>
-  </data>
-  <data name="Advanced_FallbackEncoder" xml:space="preserve">
-    <value>_Fallback encoder:</value>
-  </data>
-  <data name="Advanced_FallbackEncoder_Name" xml:space="preserve">
-    <value>Fallback encoder</value>
-  </data>
-  <data name="Advanced_File" xml:space="preserve">
-    <value>File</value>
-    <comment>as in file name</comment>
-  </data>
-  <data name="Advanced_FileName" xml:space="preserve">
-    <value>_Filename:</value>
-  </data>
-  <data name="Advanced_FileNameToken1" xml:space="preserve">
-    <value>Original filename</value>
-  </data>
-  <data name="Advanced_FileNameToken2" xml:space="preserve">
-    <value>Size name</value>
-  </data>
-  <data name="Advanced_FileNameToken3" xml:space="preserve">
-    <value>Selected width</value>
-  </data>
-  <data name="Advanced_FileNameToken4" xml:space="preserve">
-    <value>Selected height</value>
-  </data>
-  <data name="Advanced_FileNameToken5" xml:space="preserve">
-    <value>Actual width (pixels)</value>
-  </data>
-  <data name="Advanced_FileNameToken6" xml:space="preserve">
-    <value>Actual height (pixels)</value>
-  </data>
-  <data name="Advanced_FileNameTokens" xml:space="preserve">
-    <value>The following parameters can be used.</value>
-  </data>
-  <data name="Advanced_FileName_Name" xml:space="preserve">
-    <value>Filename</value>
-  </data>
-  <data name="Advanced_JpegQualityLevel" xml:space="preserve">
-    <value>_JPEG quality level:</value>
-  </data>
-  <data name="Advanced_JpegQualityLevel_Name" xml:space="preserve">
-    <value>JPEG quality level</value>
-  </data>
-  <data name="Advanced_KeepDateModified" xml:space="preserve">
-    <value>_Use original date modified</value>
-  </data>
-  <data name="Advanced_PngInterlaceOption" xml:space="preserve">
-    <value>_PNG interlacing:</value>
-  </data>
-  <data name="Advanced_PngInterlaceOption_Name" xml:space="preserve">
-    <value>PNG interlacing</value>
-  </data>
-  <data name="Advanced_Sizes" xml:space="preserve">
-    <value>Sizes</value>
-  </data>
-  <data name="Advanced_TiffCompressOption" xml:space="preserve">
-    <value>_TIFF compression:</value>
-  </data>
-  <data name="Advanced_TiffCompressOption_Name" xml:space="preserve">
-    <value>TIFF compression</value>
-  </data>
-  <data name="Advanced_Title" xml:space="preserve">
-    <value>Settings</value>
-  </data>
   <data name="AllFilesFilter" xml:space="preserve">
     <value>All Files</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
-  </data>
-  <data name="Copyright" xml:space="preserve">
-    <value>© 2020 Brice Lambson. All rights reserved.</value>
   </data>
   <data name="Height" xml:space="preserve">
     <value>Height</value>
@@ -228,9 +147,6 @@
   </data>
   <data name="Input_Resize" xml:space="preserve">
     <value>Resize</value>
-  </data>
-  <data name="Input_ShowAdvanced" xml:space="preserve">
-    <value>Settings</value>
   </data>
   <data name="Input_ShrinkOnly" xml:space="preserve">
     <value>_Make pictures smaller but not larger</value>
@@ -342,32 +258,6 @@
   </data>
   <data name="Small" xml:space="preserve">
     <value>Small</value>
-  </data>
-  <data name="TiffCompressOption_Ccitt3" xml:space="preserve">
-    <value>CCITT3</value>
-    <comment>Do not loc</comment>
-  </data>
-  <data name="TiffCompressOption_Ccitt4" xml:space="preserve">
-    <value>CCITT4</value>
-    <comment>Do not loc</comment>
-  </data>
-  <data name="TiffCompressOption_Default" xml:space="preserve">
-    <value>(Default)</value>
-  </data>
-  <data name="TiffCompressOption_Lzw" xml:space="preserve">
-    <value>LZW</value>
-    <comment>Do not loc</comment>
-  </data>
-  <data name="TiffCompressOption_None" xml:space="preserve">
-    <value>None</value>
-  </data>
-  <data name="TiffCompressOption_Rle" xml:space="preserve">
-    <value>RLE</value>
-    <comment>Do not loc</comment>
-  </data>
-  <data name="TiffCompressOption_Zip" xml:space="preserve">
-    <value>ZIP</value>
-    <comment>Do not loc</comment>
   </data>
   <data name="Times_Symbol" xml:space="preserve">
     <value>Times Symbol</value>
