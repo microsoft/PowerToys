@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
-// ShowAdvancedCommand = new RelayCommand(ShowAdvanced);
 
 using System.Windows.Input;
 using ImageResizer.Helpers;
@@ -35,20 +34,13 @@ namespace ImageResizer.ViewModels
 
             ResizeCommand = new RelayCommand(Resize);
             CancelCommand = new RelayCommand(Cancel);
-            ShowAdvancedCommand = new RelayCommand(ShowAdvanced);
-
-            ShowAdvancedSettings = !AdvancedSettings.UseNewSettings();
         }
-
-        public bool ShowAdvancedSettings { get; }
 
         public Settings Settings { get; }
 
         public ICommand ResizeCommand { get; }
 
         public ICommand CancelCommand { get; }
-
-        public ICommand ShowAdvancedCommand { get; }
 
         public void Resize()
         {
@@ -58,8 +50,5 @@ namespace ImageResizer.ViewModels
 
         public void Cancel()
             => _mainView.Close();
-
-        public void ShowAdvanced()
-            => _mainView.ShowAdvanced(new AdvancedViewModel(Settings));
     }
 }

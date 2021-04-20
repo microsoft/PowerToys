@@ -198,17 +198,6 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Content="&#xE115;"
-                        FontFamily="Segoe MDL2 Assets"
-                        Style="{StaticResource DefaultButtonStyle}"
-                        FontSize="16"
-                        Margin="-6,0,0,0"
-                        AutomationProperties.Name="{x:Static p:Resources.Input_ShowAdvanced}"
-                        ToolTip="{x:Static p:Resources.Input_ShowAdvanced}"
-                        Background="Transparent"
-                        Command="{Binding ShowAdvancedCommand}"
-                        Visibility="{Binding ShowAdvancedSettings, Converter={StaticResource BoolValueConverter}}"/>
-
                 <Button Grid.Column="1"
                         Style="{StaticResource AccentButtonStyle}"
                         MinWidth="76"
