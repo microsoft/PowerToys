@@ -17,7 +17,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 {
     init_apartment();
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Engine", LogSettings::keyboardManagerLoggerName);
-    StackTraceInit();
+    InitUnhandledExceptionHandler();
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {

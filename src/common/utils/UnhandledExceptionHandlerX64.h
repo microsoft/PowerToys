@@ -9,7 +9,7 @@ static IMAGEHLP_LINE64 line;
 static BOOLEAN processingException = FALSE;
 static CHAR modulePath[MAX_PATH];
 
-static const char* exceptionDescription(const DWORD& code)
+static inline const char* exceptionDescription(const DWORD& code)
 {
     switch (code)
     {
@@ -59,7 +59,7 @@ static const char* exceptionDescription(const DWORD& code)
 }
 
 /* Returns the index of the last backslash in the file path */
-int GetFilenameStart(CHAR* path)
+inline int GetFilenameStart(CHAR* path)
 {
     int pos = 0;
     int found = 0;
@@ -78,7 +78,7 @@ int GetFilenameStart(CHAR* path)
     return found;
 }
 
-void LogStackTrace()
+inline void LogStackTrace()
 {
     BOOL result;
     HANDLE thread;
@@ -94,7 +94,16 @@ void LogStackTrace()
     memset(&modulePath[0], '\0', sizeof(modulePath));
     line.LineNumber = 0;
 
-    RtlCaptureContext(&context);
+    try
+    {
+        RtlCaptureContext(&context);
+    }
+    catch (...)
+    {
+        Logger::error(L"Failed to capture context. {}", get_last_error_or_default(GetLastError()));
+        return;
+    }
+    
     process = GetCurrentProcess();
     thread = GetCurrentThread();
     dw64Displacement = 0;
@@ -119,32 +128,43 @@ void LogStackTrace()
             SymGetModuleBase64,
             NULL);
 
+        if (!result)
+        {
+            break;
+        }
+
         pSymbol->MaxNameLength = MAX_PATH;
         pSymbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
 
-        SymGetSymFromAddr64(process, stack.AddrPC.Offset, &dw64Displacement, pSymbol);
+        if (!SymGetSymFromAddr64(process, stack.AddrPC.Offset, &dw64Displacement, pSymbol))
+        {
+            Logger::error(L"Failed to get a symbol. {}", get_last_error_or_default(GetLastError()));
+        }
+
         line.LineNumber = 0;
         SymGetLineFromAddr64(process, stack.AddrPC.Offset, &dwDisplacement, &line);
 
         DWORD64 moduleBase = SymGetModuleBase64(process, stack.AddrPC.Offset);
         if (moduleBase)
         {
-            GetModuleFileNameA((HINSTANCE)moduleBase, modulePath, MAX_PATH);
+            if (!GetModuleFileNameA((HINSTANCE)moduleBase, modulePath, MAX_PATH))
+            {
+                Logger::error(L"Failed to get a module path. {}", get_last_error_or_default(GetLastError()));
+            }
+        }
+        else
+        {
+            Logger::error(L"Failed to get a module. {}", get_last_error_or_default(GetLastError()));
         }
         
         ss << std::string(modulePath).substr(GetFilenameStart(modulePath)) << "!" << pSymbol->Name << "(" << line.FileName << ":" << line.LineNumber << std::endl;
-
-        if (!result)
-        {
-            break;
-        }
     }
 
     Logger::error("STACK TRACE\r\n{}", ss.str());
     Logger::flush();
 }
 
-LONG WINAPI UnhandledExceptionHandler(PEXCEPTION_POINTERS info)
+inline LONG WINAPI UnhandledExceptionHandler(PEXCEPTION_POINTERS info)
 {
     if (!processingException)
     {
@@ -164,6 +184,8 @@ LONG WINAPI UnhandledExceptionHandler(PEXCEPTION_POINTERS info)
         }
         catch (...)
         {
+            Logger::error("Failed to log stack trace");
+            Logger::flush();
         }
 
         processingException = false;
@@ -173,26 +195,44 @@ LONG WINAPI UnhandledExceptionHandler(PEXCEPTION_POINTERS info)
 }
 
 /* Handler to trap abort() calls */
-void AbortHandler(int signal_number)
+inline void AbortHandler(int signal_number)
 {
     Logger::error("--- ABORT");
-    LogStackTrace();
+    try
+    {
+        LogStackTrace();
+    }
+    catch(...)
+    {
+        Logger::error("Failed to log stack trace on abort");
+        Logger::flush();
+    }
 }
 
-void InitSymbols()
+inline void InitSymbols()
 {
     // Preload symbols so they will be available in case of out-of-memory exception
     SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
     line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
     HANDLE process = GetCurrentProcess();
-    SymInitialize(process, NULL, TRUE);
+    if (!SymInitialize(process, NULL, TRUE))
+    {
+        Logger::error(L"Failed to initialize symbol handler. {}", get_last_error_or_default(GetLastError()));
+    }
 }
 
-void StackTraceInit(void)
+inline void InitUnhandledExceptionHandler(void)
 {
-    InitSymbols();
-    // Global handler for unhandled exceptions
-    SetUnhandledExceptionFilter(UnhandledExceptionHandler);
-    // Handler for abort()
-    signal(SIGABRT, &AbortHandler);
+    try
+    {
+        InitSymbols();
+        // Global handler for unhandled exceptions
+        SetUnhandledExceptionFilter(UnhandledExceptionHandler);
+        // Handler for abort()
+        signal(SIGABRT, &AbortHandler);    
+    }
+    catch(...)
+    {
+        Logger::error("Failed to init global unhandled exception handler");
+    }
 }
