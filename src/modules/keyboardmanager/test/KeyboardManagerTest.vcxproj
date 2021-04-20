@@ -62,8 +62,8 @@
     <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">
       <Project>{8affa899-0b73-49ec-8c50-0fadda57b2fc}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\dll\KeyboardManager.vcxproj">
-      <Project>{89f34af7-1c34-4a72-aa6e-534bcf972bd9}</Project>
+    <ProjectReference Include="..\KeyboardManagerEditorLibrary\KeyboardManagerEditorLibrary.vcxproj">
+      <Project>{23d2070d-e4ad-4add-85a7-083d9c76ad49}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

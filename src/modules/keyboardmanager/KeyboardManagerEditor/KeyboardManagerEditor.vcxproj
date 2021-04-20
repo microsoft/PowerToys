@@ -109,7 +109,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;./../common;./../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\modules\KeyboardManager\KeyboardManagerEditorLibrary;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;./../common;./../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Display.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -118,7 +118,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;./../common;./../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\KeyboardManager\KeyboardManagerEditorLibrary;$(SolutionDir)src\modules\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;./../common;./../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -128,42 +128,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="BufferValidationHelpers.h" />
-    <ClInclude Include="Constants.h" />
-    <ClInclude Include="Dialog.h" />
-    <ClInclude Include="EditKeyboardWindow.h" />
-    <ClInclude Include="EditShortcutsWindow.h" />
     <ClInclude Include="Generated Files\resource.h" />
     <ClInclude Include="KeyboardManagerEditor.h" />
-    <ClInclude Include="KeyDropDownControl.h" />
-    <ClInclude Include="LoadingAndSavingRemappingHelper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="ShortcutControl.h" />
-    <ClInclude Include="SingleKeyRemapControl.h" />
-    <ClInclude Include="Styles.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="UIHelpers.h" />
-    <ClInclude Include="XamlBridge.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BufferValidationHelpers.cpp" />
-    <ClCompile Include="Dialog.cpp" />
-    <ClCompile Include="EditKeyboardWindow.cpp" />
-    <ClCompile Include="EditShortcutsWindow.cpp" />
     <ClCompile Include="KeyboardManagerEditor.cpp" />
-    <ClCompile Include="KeyDropDownControl.cpp" />
-    <ClCompile Include="LoadingAndSavingRemappingHelper.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ShortcutControl.cpp" />
-    <ClCompile Include="SingleKeyRemapControl.cpp" />
-    <ClCompile Include="Styles.cpp" />
-    <ClCompile Include="UIHelpers.cpp" />
-    <ClCompile Include="XamlBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files\KeyboardManagerEditor.rc" />
@@ -185,6 +162,9 @@
     </ProjectReference>
     <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">
       <Project>{8affa899-0b73-49ec-8c50-0fadda57b2fc}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\KeyboardManagerEditorLibrary\KeyboardManagerEditorLibrary.vcxproj">
+      <Project>{23d2070d-e4ad-4add-85a7-083d9c76ad49}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
