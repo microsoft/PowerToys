@@ -167,11 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files\KeyboardManagerEditor.rc" />
-    <ResourceCompile Include="KeyboardManagerEditor.base.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="KeyboardManagerEditor.ico" />
-    <Image Include="small.ico" />
+    <None Include="KeyboardManagerEditor.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
@@ -195,6 +191,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Keyboard.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

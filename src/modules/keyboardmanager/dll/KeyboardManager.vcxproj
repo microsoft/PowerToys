@@ -68,9 +68,6 @@
     <ResourceCompile Include="Generated Files\KeyboardManager.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Keyboard.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

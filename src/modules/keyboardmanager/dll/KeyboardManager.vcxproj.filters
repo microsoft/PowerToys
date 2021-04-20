@@ -34,11 +34,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Keyboard.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
     <None Include="KeyboardManager.base.rc">
       <Filter>Resource Files</Filter>
