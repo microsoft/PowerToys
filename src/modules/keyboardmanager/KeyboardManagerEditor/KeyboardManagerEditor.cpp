@@ -96,12 +96,6 @@ void KeyboardManagerEditor::openEditorWindow(KeyboardManagerEditorType type)
 
 intptr_t KeyboardManagerEditor::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
-    // If key has suppress flag, then suppress it
-    if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
-    {
-        return 1;
-    }
-
     // If the Detect Key Window is currently activated, then suppress the keyboard event
     KeyboardManagerHelper::KeyboardHookDecision singleKeyRemapUIDetected = keyboardManagerState.DetectSingleRemapKeyUIBackend(data);
     if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
@@ -124,15 +118,6 @@ intptr_t KeyboardManagerEditor::HandleKeyboardHookEvent(LowlevelKeyboardEvent* d
         return 0;
     }
 
-    // Remap a key
-    intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(editor->getInputHandler(), data, keyboardManagerState);
-
-    // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
-    if (SingleKeyRemapResult == 1)
-    {
-        return 1;
-    }
-
     // If the Detect Shortcut Window is currently activated, then suppress the keyboard event
     KeyboardManagerHelper::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, false);
     if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
@@ -144,23 +129,7 @@ intptr_t KeyboardManagerEditor::HandleKeyboardHookEvent(LowlevelKeyboardEvent* d
         return 0;
     }
 
-    /* This feature has not been enabled (code from proof of concept stage)
-        * 
-        //// Remap a key to behave like a modifier instead of a toggle
-        //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
-        */
-
-    // Handle an app-specific shortcut remapping
-    intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(editor->getInputHandler(), data, keyboardManagerState);
-
-    // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
-    if (AppSpecificShortcutRemapResult == 1)
-    {
-        return 1;
-    }
-
-    // Handle an os-level shortcut remapping
-    return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(editor->getInputHandler(), data, keyboardManagerState);
+    return 0;
 }
 
 // Hook procedure definition
