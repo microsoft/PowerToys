@@ -33,7 +33,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BufferValidationHelpers.h" />
-    <ClInclude Include="Constants.h" />
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="EditKeyboardWindow.h" />
     <ClInclude Include="EditShortcutsWindow.h" />
