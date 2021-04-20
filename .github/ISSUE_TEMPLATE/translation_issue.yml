@@ -5,7 +5,6 @@ labels:
 - Area-Localization
 - Issue-Translation
 - Triage-Needed 
-issue_body: true
 body:
 - type: markdown
   attributes:
@@ -22,8 +21,6 @@ body:
 - type: dropdown
   attributes:
     label: Utility with translation issue
-    description: |
-      Please include a screenshot as that is extremely helpful. To include, paste them into the markdown editor below the form or follow up with a separate comment.
     options:
       - General
       - ColorPicker
@@ -52,7 +49,7 @@ body:
 - type: textarea
   attributes: 
     label: ❌ Actual phrase(s)
-    placeholder: What is there?
+    placeholder: What is there?  Please include a screenshot as that is extremely helpful. 
   validations:
     required: true
 - type: textarea
