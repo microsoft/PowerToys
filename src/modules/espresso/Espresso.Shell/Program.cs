@@ -2,6 +2,7 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.IO;
 using System.Threading;
 
 namespace Espresso.Shell
@@ -24,6 +25,19 @@ namespace Espresso.Shell
             }
 
             Console.WriteLine("Espresso - Computer Caffeination Engine");
+
+            var configOption = new Option<string>(
+                    aliases: new[] { "--config", "-c" },
+                    getDefaultValue: () => string.Empty,
+                    description: "Pointer to a PowerToys configuration file that the tool will be watching for changes. All other options are disregarded if config is used.")
+            {
+                Argument = new Argument<string>(() => string.Empty)
+                {
+                    Arity = ArgumentArity.ZeroOrOne,
+                },
+            };
+
+            configOption.Required = false;
 
             var displayOption = new Option<bool>(
                     aliases: new[] { "--display-on", "-d" },
@@ -53,55 +67,78 @@ namespace Espresso.Shell
 
             var rootCommand = new RootCommand
             {
+                configOption,
                 displayOption,
                 timeOption
             };
 
             rootCommand.Description = appName;
 
-            rootCommand.Handler = CommandHandler.Create<bool, long>(HandleCommandLineArguments);
+            rootCommand.Handler = CommandHandler.Create<string, bool, long>(HandleCommandLineArguments);
 
             return rootCommand.InvokeAsync(args).Result;
         }
 
-        private static void HandleCommandLineArguments(bool displayOn, long timeLimit)
+        private static void HandleCommandLineArguments(string config, bool displayOn, long timeLimit)
         {
             Console.WriteLine($"The value for --display-on is: {displayOn}");
             Console.WriteLine($"The value for --time-limit is: {timeLimit}");
-            
-            if (timeLimit <= 0)
+
+            if (!string.IsNullOrWhiteSpace(config))
             {
-                // Indefinite keep awake.
-                bool success = APIHelper.SetIndefiniteKeepAwake(displayOn);
-                if (success)
+                // Configuration file is used, therefore we disregard any other command-line parameter
+                // and instead watch for changes in the file.
+
+                FileSystemWatcher watcher = new FileSystemWatcher
                 {
-                    Console.WriteLine($"Currently in indefinite keep awake. Display always on: {displayOn}");
-                }
-                else
-                {
-                    Console.WriteLine("Could not set up the state to be indefinite keep awake.");
-                }
+                    Path = Path.GetDirectoryName(config),
+                    EnableRaisingEvents = true,
+                    NotifyFilter = NotifyFilters.LastWrite,
+                    Filter = Path.GetFileName(config)
+                };
+                watcher.Changed += new FileSystemEventHandler(HandleEspressoConfigChange);
             }
             else
             {
-                // Timed keep-awake.
-                bool success = APIHelper.SetTimedKeepAwake(timeLimit, displayOn);
-                if (success)
+                if (timeLimit <= 0)
                 {
-                    Console.WriteLine($"Finished execution of timed keep-awake.");
-
-                    // Because the timed keep-awake execution completed, there is no reason for
-                    // Espresso to stay alive - I will just shut down the application until it's
-                    // launched again by the user.
-                    Environment.Exit(0);
+                    // Indefinite keep awake.
+                    bool success = APIHelper.SetIndefiniteKeepAwake(displayOn);
+                    if (success)
+                    {
+                        Console.WriteLine($"Currently in indefinite keep awake. Display always on: {displayOn}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could not set up the state to be indefinite keep awake.");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("Could not set up the state to be timed keep awake.");
+                    // Timed keep-awake.
+                    bool success = APIHelper.SetTimedKeepAwake(timeLimit, displayOn);
+                    if (success)
+                    {
+                        Console.WriteLine($"Finished execution of timed keep-awake.");
+
+                        // Because the timed keep-awake execution completed, there is no reason for
+                        // Espresso to stay alive - I will just shut down the application until it's
+                        // launched again by the user.
+                        Environment.Exit(0);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could not set up the state to be timed keep awake.");
+                    }
                 }
             }
 
             new ManualResetEvent(false).WaitOne();
+        }
+
+        private static void HandleEspressoConfigChange(object sender, FileSystemEventArgs e)
+        {
+            Console.WriteLine("Reached test!");
         }
     }
 }
