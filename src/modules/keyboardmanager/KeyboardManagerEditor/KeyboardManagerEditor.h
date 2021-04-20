@@ -1,7 +1,5 @@
 #pragma once
 
-#include "resource.h"
-
 #include <KeyboardManagerState.h>
 #include <Input.h>
 

@@ -138,8 +138,7 @@
     <ClInclude Include="KeyDropDownControl.h" />
     <ClInclude Include="LoadingAndSavingRemappingHelper.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.base.h" />
-    <ClInclude Include="Resource.h" />
+    <None Include="resource.base.h" />
     <ClInclude Include="ShortcutControl.h" />
     <ClInclude Include="SingleKeyRemapControl.h" />
     <ClInclude Include="Styles.h" />
