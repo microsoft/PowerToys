@@ -1,12 +1,10 @@
 name: "🌐 Localization/Translation issue"
 description: Report incorrect translations.
-title: ''
 labels: 
 - Issue-Bug
 - Area-Localization
 - Issue-Translation
 - Triage-Needed 
-assignees: ''
 issue_body: true
 body:
 - type: markdown
