@@ -33,9 +33,6 @@
     <ClInclude Include="EditShortcutsWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardManagerEditor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="KeyDropDownControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -81,9 +78,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EditShortcutsWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="KeyboardManagerEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KeyDropDownControl.cpp">
