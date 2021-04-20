@@ -1,11 +1,8 @@
 name: "🐛 Bug report"
 description: Report errors or unexpected behavior
-# title: ''
 labels: 
 - Issue-Bug
 - Triage-Needed
-# assignees: ''
-issue_body: true
 body:
 - type: markdown
   attributes:
@@ -56,7 +53,7 @@ body:
 - type: textarea
   attributes:
     label: Steps to reproduce
-    description: We highly suggest including a screenshots and a bug report log (System tray->Report bug). To include, paste them into the markdown editor below the form or follow up with a separate comment.
+    description: We highly suggest including a screenshots and a bug report log (System tray->Report bug).
     placeholder: Tell us the steps required to trigger your bug.
   validations:
     required: true
