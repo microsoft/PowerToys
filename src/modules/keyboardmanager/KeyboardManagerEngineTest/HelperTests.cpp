@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
+#include <keyboardmanager/common/ErrorTypes.h>
 #include <keyboardmanager/common/Helpers.h>
 #include "TestHelpers.h"
 #include <common/interop/keyboard_layout.h>
