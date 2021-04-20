@@ -138,6 +138,7 @@ int Bootstrapper(HINSTANCE hInstance)
         ("no_full_ui", "Use reduced UI for MSI")
         ("s,silent", "Suppress MSI UI and notifications")
         ("no_start_pt", "Do not launch PowerToys after the installation is complete")
+        ("start_pt", "Always launch PowerToys after the installation is complete")
         ("skip_dotnet_install", "Skip dotnet 3.X installation even if it's not detected")
         ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"))
         ("log_dir", "Log directory", cxxopts::value<std::string>()->default_value("."))
@@ -169,10 +170,11 @@ int Bootstrapper(HINSTANCE hInstance)
     const bool noFullUI = cmdArgs["no_full_ui"].as<bool>();
     const bool skipDotnetInstall = cmdArgs["skip_dotnet_install"].as<bool>();
     const bool noStartPT = cmdArgs["no_start_pt"].as<bool>();
+    const bool startPT = cmdArgs["start_pt"].as<bool>();
     const auto logLevel = cmdArgs["log_level"].as<std::string>();
     const auto logDirArg = cmdArgs["log_dir"].as<std::string>();
     const auto installDirArg = cmdArgs["install_dir"].as<std::string>();
-    const bool extract_msi_only = cmdArgs["extract_msi"].as<bool>();
+    const bool extractMsiOnly = cmdArgs["extract_msi"].as<bool>();
 
     std::wstring installFolderProp;
     if (!installDirArg.empty())
@@ -216,7 +218,7 @@ int Bootstrapper(HINSTANCE hInstance)
     }
 
     SetupLogger(logDir, severity);
-    spdlog::debug("PowerToys Bootstrapper is launched\nnoFullUI: {}\nsilent: {}\nno_start_pt: {}\nskip_dotnet_install: {}\nlog_level: {}\ninstall_dir: {}\nextract_msi: {}\n", noFullUI, g_Silent, noStartPT, skipDotnetInstall, logLevel, installDirArg, extract_msi_only);
+    spdlog::debug("PowerToys Bootstrapper is launched\nnoFullUI: {}\nsilent: {}\nno_start_pt: {}\nskip_dotnet_install: {}\nlog_level: {}\ninstall_dir: {}\nextract_msi: {}\n", noFullUI, g_Silent, noStartPT, skipDotnetInstall, logLevel, installDirArg, extractMsiOnly);
     
     const VersionHelper myVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
 
@@ -229,7 +231,7 @@ int Bootstrapper(HINSTANCE hInstance)
     }
 
     // If a user requested an MSI -> extract it and exit
-    if (extract_msi_only)
+    if (extractMsiOnly)
     {
         if (const auto installerPath = ExtractEmbeddedInstaller(fs::current_path()))
         {
@@ -416,7 +418,7 @@ int Bootstrapper(HINSTANCE hInstance)
 
     spdlog::debug("Installation completed");
 
-    if (!noStartPT && !g_Silent)
+    if ((!noStartPT && !g_Silent) || startPT)
     {
         spdlog::debug("Starting the newly installed PowerToys.exe");
         auto newPTPath = updating::get_msi_package_installed_path();
