@@ -49,6 +49,11 @@ namespace Espresso.Shell.Core
             }
         }
 
+        public static bool SetNormalKeepAwake()
+        {
+            return SetAwakeState(EXECUTION_STATE.ES_CONTINUOUS);
+        }
+
         public static bool SetIndefiniteKeepAwake(bool keepDisplayOn = true)
         {
             if (keepDisplayOn)
