@@ -7,7 +7,7 @@
 
 // Class for mocked keyboard input
 class MockedInput :
-    public InputInterface
+    public KeyboardManagerInput::InputInterface
 {
 private:
     // Stores the states for all the keys - false for key up, and true for key down
