@@ -10,11 +10,11 @@ body:
 - type: markdown
   attributes:
     value: |
-      Please make sure to [search for existing issues](https://github.com/microsoft/PowerTOys/issues) before filing a new one!
+      Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
 - type: input
   attributes:
     label: Microsoft PowerToys version
-    placeholder: "0.33.1"
+    placeholder: "0.35.0"
     description: |
       Hover over system tray icon or look at Settings
   validations:
