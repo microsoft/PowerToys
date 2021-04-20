@@ -21,9 +21,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="KeyboardManagerEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -123,14 +120,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="KeyboardManagerEditor.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
     <None Include="Resources.resx">
       <Filter>Resource Files</Filter>
@@ -138,5 +127,10 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="KeyboardManagerEditor.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Keyboard.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
