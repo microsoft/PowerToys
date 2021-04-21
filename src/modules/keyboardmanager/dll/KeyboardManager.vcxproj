@@ -44,10 +44,12 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Generated Files\resource.h" />
+    <ClInclude Include="trace.h" />
     <None Include="resource.base.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="trace.cpp" />
     <None Include="KeyboardManager.base.rc" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>

@@ -18,17 +18,6 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
-// Log if the user has KBM enabled or disabled - Can also be used to see how often users have to restart the keyboard hook
-void Trace::EnableKeyboardManager(const bool enabled) noexcept
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "KeyboardManager_EnableKeyboardManager",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(enabled, "Enabled"));
-}
-
 // Log if a key remap has been invoked
 void Trace::KeyRemapInvoked(bool isKeyToKey) noexcept
 {
