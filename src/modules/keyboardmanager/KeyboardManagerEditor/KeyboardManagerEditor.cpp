@@ -5,6 +5,10 @@
 #include "KeyboardManagerEditor.h"
 
 #include <common/utils/winapi_error.h>
+#include <common/utils/logger_helper.h>
+#include <common/utils/UnhandledExceptionHandlerX64.h>
+
+#include <keyboardmanager/common/trace.h>
 
 #include <KeyboardEventHandlers.h>
 #include <KeyboardManagerState.h>
@@ -12,8 +16,6 @@
 
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
-#include <common/utils/logger_helper.h>
-#include <common/utils/UnhandledExceptionHandlerX64.h>
 
 std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
 
@@ -26,6 +28,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Editor", LogSettings::keyboardManagerLoggerName);
     InitUnhandledExceptionHandler();
+    Trace::RegisterProvider();
 
     int numArgs;
     LPWSTR* cmdArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);
@@ -49,7 +52,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager Editor");
         auto errorMessage = get_last_error_message(errorCode);
         Logger::error(L"Unable to start keyboard hook: {}", errorMessage.has_value() ? errorMessage.value() : L"");
-        // TODO: Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
+        Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
         
         return -1;
     }
@@ -59,6 +62,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     
     editor = nullptr;
 
+    Trace::UnregisterProvider();
     return 0;
 }
 
