@@ -145,6 +145,7 @@ int XamlBridge::MessageLoop()
 {
     MSG msg = {};
     HRESULT hr = S_OK;
+    Logger::trace("Start XAML bridge message loop");
     while (GetMessage(&msg, nullptr, 0, 0))
     {
         const bool xamlSourceProcessedMessage = FilterMessage(&msg);
@@ -158,6 +159,7 @@ int XamlBridge::MessageLoop()
         }
     }
 
+    Logger::trace("Stoped XAML bridge message loop");
     return (int)msg.wParam;
 }
 
