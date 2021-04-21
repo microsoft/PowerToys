@@ -27,7 +27,7 @@ KeyboardManager::KeyboardManager()
 
     std::filesystem::path modulePath(PTSettingsHelper::get_module_save_folder_location(app_key));
     auto changeSettingsCallback = [this](DWORD err) {
-        Logger::trace(L"Recived settings changed notification");
+        Logger::trace(L"Received settings changed notification");
         if (err != ERROR_SUCCESS)
         {
             Logger::error(L"Failed to watch settings changes. {}", get_last_error_or_default(err));
