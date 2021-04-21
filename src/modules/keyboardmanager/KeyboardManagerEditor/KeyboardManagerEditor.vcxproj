@@ -78,7 +78,7 @@
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v142</PlatformToolset>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\$(MSBuildProjectName)</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\$(MSBuildProjectName)\</OutDir>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>Spectre</SpectreMitigation>
     <ConfigurationType>Application</ConfigurationType>
