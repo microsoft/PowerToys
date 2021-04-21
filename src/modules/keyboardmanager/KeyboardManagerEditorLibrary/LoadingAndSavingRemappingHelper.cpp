@@ -4,9 +4,10 @@
 #include <set>
 
 #include <common/interop/shared_constants.h>
-#include <trace.h>
 #include <ErrorTypes.h>
 #include <KeyboardManagerState.h>
+
+#include <keyboardmanager/KeyboardManagerEditorLibrary/trace.h>
 
 namespace LoadingAndSavingRemappingHelper
 {

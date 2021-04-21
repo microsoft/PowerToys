@@ -25,6 +25,8 @@
 #include <common/logger/logger.h>
 #include <common/utils/resources.h>
 
+#include <ProjectTelemetry.h>
+
 #include <keyboardmanager/KeyboardManagerEditor/Generated Files/resource.h>
 //#include <Generated Files/resource.h>
 

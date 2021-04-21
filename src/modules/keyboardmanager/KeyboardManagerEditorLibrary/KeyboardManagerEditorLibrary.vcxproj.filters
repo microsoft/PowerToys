@@ -57,6 +57,9 @@
     <ClInclude Include="KeyboardManagerEditorStrings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="trace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -96,6 +99,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KeyboardManagerEditorStrings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="trace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
