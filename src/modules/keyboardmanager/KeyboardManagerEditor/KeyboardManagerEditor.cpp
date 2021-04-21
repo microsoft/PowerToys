@@ -12,6 +12,7 @@
 
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
+#include <common/utils/logger_helper.h>
 
 std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
 
@@ -22,6 +23,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
 
+    LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Editor", LogSettings::keyboardManagerLoggerName);
     int numArgs;
     LPWSTR* cmdArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);
 
