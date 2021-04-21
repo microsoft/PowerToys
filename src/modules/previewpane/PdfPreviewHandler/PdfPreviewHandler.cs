@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
     /// <summary>
     /// Implementation of preview handler for pdf files.
     /// </summary>
-    [Guid("45769bcc-e8fd-42d0-947e-02beef77a1f6")]
+    [Guid("07665729-6243-4746-95b7-79579308d1b2")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
     public class PdfPreviewHandler : StreamBasedPreviewHandler, IDisposable

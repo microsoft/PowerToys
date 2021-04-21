@@ -39,7 +39,7 @@ PowerPreviewModule::PowerPreviewModule() :
         true,
         L"pdf-previewer-toggle-setting",
         GET_RESOURCE_STRING(IDS_PREVPANE_PDF_SETTINGS_DESCRIPTION),
-        L"{45769bcc-e8fd-42d0-947e-02beef77a1f6}",
+        L"{07665729-6243-4746-95b7-79579308d1b2}",
         L"PDF Preview Handler",
         std::make_unique<RegistryWrapper>()));
 

@@ -438,7 +438,7 @@
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
         </RegistryKey>
         <!-- Registry Key for Class Registration of Pdf Preview Handler -->
-        <RegistryKey Root="HKCR" Key="CLSID\{45769bcc-e8fd-42d0-947e-02beef77a1f6}">
+        <RegistryKey Root="HKCR" Key="CLSID\{07665729-6243-4746-95b7-79579308d1b2}">
           <RegistryValue Type="string" Value="Microsoft.PowerToys.PreviewHandler.Pdf.PdfPreviewHandler" />
           <RegistryValue Type="string" Name="DisplayName" Value="Pdf Preview Handler" />
           <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
@@ -464,7 +464,7 @@
         </RegistryKey>
         <!-- Add Pdf preview handler to preview handlers list -->
         <RegistryKey Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\PreviewHandlers">
-          <RegistryValue Type="string" Name="{45769bcc-e8fd-42d0-947e-02beef77a1f6}" Value="Pdf Preview Handler" />
+          <RegistryValue Type="string" Name="{07665729-6243-4746-95b7-79579308d1b2}" Value="Pdf Preview Handler" />
         </RegistryKey>
         <!-- Add file type association for Svg Preview Handler -->
         <RegistryKey Root="HKCR" Key=".svg\shellex">
@@ -480,7 +480,7 @@
         </RegistryKey>
         <!-- Add file type association for Pdf Preview Handler -->
         <RegistryKey Root="HKCR" Key=".pdf\shellex">
-          <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{45769bcc-e8fd-42d0-947e-02beef77a1f6}" />
+          <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{07665729-6243-4746-95b7-79579308d1b2}" />
         </RegistryKey>
         <!-- Update Key to use IE11 for prevhost.exe -->
         <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
