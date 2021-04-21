@@ -13,6 +13,7 @@
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/UnhandledExceptionHandlerX64.h>
 
 std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
 
@@ -24,6 +25,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
 
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Editor", LogSettings::keyboardManagerLoggerName);
+    InitUnhandledExceptionHandler();
+
     int numArgs;
     LPWSTR* cmdArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);
 
