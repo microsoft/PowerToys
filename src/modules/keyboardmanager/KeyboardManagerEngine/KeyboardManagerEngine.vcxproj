@@ -29,7 +29,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <TargetName>PowerToys.KeyboardManager</TargetName>
+    <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\$(ProjectName)\</OutDir>
