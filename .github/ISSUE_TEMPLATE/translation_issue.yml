@@ -1,22 +1,19 @@
 name: "🌐 Localization/Translation issue"
 description: Report incorrect translations.
-title: ''
 labels: 
 - Issue-Bug
 - Area-Localization
 - Issue-Translation
 - Triage-Needed 
-assignees: ''
-issue_body: true
 body:
 - type: markdown
   attributes:
     value: |
-      Please make sure to [search for existing issues](https://github.com/microsoft/PowerTOys/issues) before filing a new one!
+      Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
 - type: input
   attributes:
     label: Microsoft PowerToys version
-    placeholder: "0.33.1"
+    placeholder: "0.35.0"
     description: |
       Hover over system tray icon or look at Settings
   validations:
@@ -24,8 +21,6 @@ body:
 - type: dropdown
   attributes:
     label: Utility with translation issue
-    description: |
-      Please include a screenshot as that is extremely helpful. To include, paste them into the markdown editor below the form or follow up with a separate comment.
     options:
       - General
       - ColorPicker
@@ -54,7 +49,7 @@ body:
 - type: textarea
   attributes: 
     label: ❌ Actual phrase(s)
-    placeholder: What is there?
+    placeholder: What is there?  Please include a screenshot as that is extremely helpful. 
   validations:
     required: true
 - type: textarea

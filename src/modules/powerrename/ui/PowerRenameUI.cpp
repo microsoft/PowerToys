@@ -39,7 +39,8 @@ FlagCheckboxMap g_flagCheckboxMap[] = {
     { ExtensionOnly, IDC_CHECK_EXTENSIONONLY },
     { Uppercase, IDC_TRANSFORM_UPPERCASE },
     { Lowercase, IDC_TRANSFORM_LOWERCASE },
-    { Titlecase, IDC_TRANSFORM_TITLECASE }
+    { Titlecase, IDC_TRANSFORM_TITLECASE },
+    { Capitalized, IDC_TRANSFORM_CAPITALIZED }
 };
 
 struct RepositionMap
@@ -708,6 +709,7 @@ void CPowerRenameUI::_InitDlgText()
     UpdateDlgControl(m_hwnd, IDC_CHECK_NAMEONLY, IDS_ITEM_NAME_ONLY);
     UpdateDlgControl(m_hwnd, IDC_CHECK_EXTENSIONONLY, IDS_ITEM_EXTENSION_ONLY);
     UpdateDlgControl(m_hwnd, IDC_TRANSFORM_TITLECASE, IDS_MAKE_TITLECASE);
+    UpdateDlgControl(m_hwnd, IDC_TRANSFORM_CAPITALIZED, IDS_MAKE_CAPITALIZED);
     UpdateDlgControl(m_hwnd, ID_RENAME, IDS_RENAME_BUTTON);
     UpdateDlgControl(m_hwnd, ID_ABOUT, IDS_HELP_BUTTON);
     UpdateDlgControl(m_hwnd, IDCANCEL, IDS_CANCEL_BUTTON);
@@ -756,6 +758,7 @@ void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
     case IDC_CHECK_NAMEONLY:
     case IDC_TRANSFORM_UPPERCASE:
     case IDC_TRANSFORM_LOWERCASE:
+    case IDC_TRANSFORM_CAPITALIZED:
     case IDC_TRANSFORM_TITLECASE:
         if (BN_CLICKED == HIWORD(wParam))
         {
@@ -981,6 +984,7 @@ void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
         {
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE), FALSE);
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_TITLECASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAPITALIZED), FALSE);
         }
     }
     else if (checkBoxId == IDC_TRANSFORM_LOWERCASE)
@@ -989,6 +993,7 @@ void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
         {
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE), FALSE);
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_TITLECASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAPITALIZED), FALSE);
         }
     }
     else if (checkBoxId == IDC_TRANSFORM_TITLECASE)
@@ -997,6 +1002,16 @@ void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
         {
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE), FALSE);
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAPITALIZED), FALSE);
+        }
+    }
+    else if (checkBoxId == IDC_TRANSFORM_CAPITALIZED) 
+    {
+        if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAPITALIZED)) == BST_CHECKED)
+        {
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_TITLECASE), FALSE);
         }
     }
     else if (checkBoxId == IDC_CHECK_NAMEONLY)

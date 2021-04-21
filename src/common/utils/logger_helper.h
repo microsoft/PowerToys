@@ -28,13 +28,40 @@ namespace LoggerHelpers
         return false;
     }
 
+    inline bool dir_exists(std::filesystem::path dir)
+    {
+        std::error_code err;
+        auto entry = std::filesystem::directory_entry(dir, err);
+        if (err.value())
+        {
+            Logger::error("Failed to create directory entry. {}", err.message());
+            return false;
+        }
+
+        return entry.exists();
+    }
+
     inline bool delete_other_versions_log_folders(std::wstring_view appPath, const std::filesystem::path& currentVersionLogFolder)
     {
         bool result = true;
         std::filesystem::path logFolderPath(appPath);
         logFolderPath.append(LogSettings::logPath);
 
-        for (const auto& dir : std::filesystem::directory_iterator(logFolderPath))
+        if (!dir_exists(logFolderPath))
+        {
+            Logger::trace("Directory {} does not exist", logFolderPath.string());
+            return true;
+        }
+
+        std::error_code err;
+        auto folders = std::filesystem::directory_iterator(logFolderPath, err);
+        if (err.value())
+        {
+            Logger::error("Failed to create directory iterator for {}. {}", logFolderPath.string(), err.message());
+            return false;
+        }
+
+        for (const auto& dir : folders)
         {
             if (dir != currentVersionLogFolder)
             {

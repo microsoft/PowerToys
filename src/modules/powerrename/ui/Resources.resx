@@ -175,6 +175,9 @@ Please select from the options above to show items.</value>
   <data name="Make_Titlecase" xml:space="preserve">
     <value>Make Titlecase</value>
   </data>
+  <data name="Make_Capitalized" xml:space="preserve">
+    <value>Make Capitalized</value>
+  </data>
   <data name="Rename_Button" xml:space="preserve">
     <value>&amp;Rename</value>
   </data>

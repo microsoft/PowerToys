@@ -334,11 +334,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Error_Parsing_Zones_Settings_Malformed_Data" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Error_Parsing_Zones_Settings_Message" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA['zones-settings.json' contains malformed data.]]></Val>
+          <Val><![CDATA[A layout that contained invalid data has been removed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA['zones-settings.json' hatalı biçimlendirilmiş veriler içeriyor.]]></Val>
+            <Val><![CDATA[Geçersiz veri içeren düzen kaldırıldı.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -348,15 +348,6 @@
           <Val><![CDATA[Editor settings parsing error.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Düzenleyici ayarları ayrıştırılırken hata oluştu.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Error_Parsing_Zones_Settings_User_Choice" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Would you like to continue? Malformed data will be lost.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Devam etmek istiyor musunuz? Hatalı biçimlendirilmiş veriler kaybolacak.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

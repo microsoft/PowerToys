@@ -10,29 +10,20 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
-      <Item ItemId=";filesfolder_copy_failed" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";FailedToLoadPluginDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Copying path {0} has failed, it will now be deleted for consistency]]></Val>
+          <Val><![CDATA[Please contact plugin creator for help]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[경로 {0}을(를) 복사하지 못했습니다. 지금 일관성을 위해 삭제됩니다.]]></Val>
+            <Val><![CDATA[도움말은 플러그 인 작성자에게 문의하세요.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";filesfolder_removefolder_failed" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";FailedToLoadPluginTitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Not able to delete folder {0}, please go to the location and manually delete it]]></Val>
+          <Val><![CDATA[Fail to Load {0} Plugin]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[폴더 {0}을(를) 삭제할 수 없습니다. 해당 위치로 이동하여 수동으로 삭제하세요.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";filesfolder_verifybothfolderfilesequal_failed" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to verify folders and files between {0} and {1}]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{0}~{1}의 폴더와 파일을 확인할 수 없음]]></Val>
+            <Val><![CDATA[{0} 플러그 인을 로드하지 못함]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
