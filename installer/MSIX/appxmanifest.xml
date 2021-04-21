@@ -79,11 +79,20 @@
             <desktop2:DesktopPreviewHandler Clsid="74619BDA-A66B-451D-864C-A7726F5FE650"/>
           </uap3:FileTypeAssociation>
         </uap:Extension>
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap3:FileTypeAssociation Name="pdfpreviewhandler" desktop2:AllowSilentDefaultTakeOver="true">
+            <uap:SupportedFileTypes>
+              <uap:FileType>.pdf</uap:FileType>
+            </uap:SupportedFileTypes>
+            <desktop2:DesktopPreviewHandler Clsid="4F6D533B-4185-43A6-AD75-9B20034B14CA"/>
+          </uap3:FileTypeAssociation>
+        </uap:Extension>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
             <com:SurrogateServer DisplayName="Preview Handler" AppId="E39A92FE-D89A-417B-9B9D-F0B6BD564B36" SystemSurrogate="PreviewHost">
               <com:Class Id="74619BDA-A66B-451D-864C-A7726F5FE650" Path="modules\powerpreview.dll" ThreadingModel="Both"/>
               <com:Class Id="E0907A95-6F9A-4D1B-A97A-7D9D2648881E" Path="modules\powerpreview.dll" ThreadingModel="Both"/>
+              <com:Class Id="4F6D533B-4185-43A6-AD75-9B20034B14CA" Path="modules\powerpreview.dll" ThreadingModel="Both"/>
             </com:SurrogateServer>
           </com:ComServer>
         </com:Extension>
