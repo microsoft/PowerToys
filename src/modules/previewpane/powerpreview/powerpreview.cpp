@@ -44,11 +44,9 @@ PowerPreviewModule::PowerPreviewModule() :
         std::make_unique<RegistryWrapper>(),
         L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}"));
 
-    // If the user is on the new settings interface, File Explorer might be disabled if they updated from old to new settings, so initialize the registry state in the constructor as PowerPreviewModule::enable/disable will not be called on startup
-    if (UseNewSettings())
-    {
-        update_registry_to_match_toggles();
-    }
+    // File Explorer might be disabled if user updated from old to new settings.
+    // Initialize the registry state in the constructor as PowerPreviewModule::enable/disable will not be called on startup
+    update_registry_to_match_toggles();
 }
 
 // Destroy the powertoy and free memory.
@@ -111,8 +109,8 @@ void PowerPreviewModule::set_config(const wchar_t* config)
         bool isElevated = is_process_elevated(false);
         for (auto& fileExplorerModule : m_fileExplorerModules)
         {
-            // If the user is using the new settings interface, as it does not have a toggle to modify enabled consider File Explorer to always be enabled
-            updateSuccess = updateSuccess && fileExplorerModule->UpdateState(settings, this->m_enabled || UseNewSettings(), isElevated);
+            // The new settings interface does not have a toggle to modify enabled, consider File Explorer to always be enabled
+            updateSuccess = updateSuccess && fileExplorerModule->UpdateState(settings, true, isElevated);
         }
 
         if (!updateSuccess)
@@ -131,12 +129,6 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    // Should only be done for old settings as it is already done for new settings in the constructor.
-    if (!UseNewSettings())
-    {
-        update_registry_to_match_toggles();
-    }
-
     if (!this->m_enabled)
     {
         Trace::EnabledPowerPreview(true);

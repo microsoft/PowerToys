@@ -22,10 +22,3 @@ inline bool Is19H1OrHigher()
 {
   return IsAPIContractV8Available();
 }
-
-// This function returns true if the build is 19h1 or higher, so that we deploy the new settings.
-// It returns false otherwise.
-inline bool UseNewSettings()
-{
-  return Is19H1OrHigher();
-}
