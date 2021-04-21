@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private const int ConfigFileMutexWaitTimeoutMilliseconds = 1000;
 
-        private const string KeyboardManagerEditorPath = "modules\\KeyboardManager\\PowerToys.KeyboardManagerEditor.exe";
+        private const string KeyboardManagerEditorPath = "modules\\KeyboardManager\\KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
         private Process editor;
 
         private enum KeyboardManagerEditorType
