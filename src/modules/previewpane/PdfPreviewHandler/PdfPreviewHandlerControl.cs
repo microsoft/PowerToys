@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
     public class PdfPreviewHandlerControl : FormHandlerControl
     {
         /// <summary>
-        /// RichTextBox control to display if external images are blocked.
+        /// RichTextBox control to display error message.
         /// </summary>
         private RichTextBox _infoBar;
 
@@ -34,11 +34,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         private FlowLayoutPanel _flowLayoutPanel;
 
         /// <summary>
+        /// Use UISettings to get system colors and scrollbar size.
+        /// </summary>
+        private static UISettings _uISettings = new UISettings();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PdfPreviewHandlerControl"/> class.
         /// </summary>
         public PdfPreviewHandlerControl()
         {
-            BackColor = GetBackgroundColor();
+            SetBackgroundColor(GetBackgroundColor());
         }
 
         /// <summary>
@@ -51,10 +56,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
 
             try
             {
-                using (var stream = new ReadonlyStream(dataSource as IStream))
+                using (var dataStream = new ReadonlyStream(dataSource as IStream))
                 {
                     var memStream = new MemoryStream();
-                    stream.CopyTo(memStream);
+                    dataStream.CopyTo(memStream);
                     memStream.Position = 0;
 
                     try
@@ -66,13 +71,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                         {
                             InvokeOnControlThread(() =>
                             {
-                                _flowLayoutPanel = new FlowLayoutPanel();
-                                _flowLayoutPanel.AutoScroll = true;
-                                _flowLayoutPanel.AutoSize = true;
-                                _flowLayoutPanel.Dock = DockStyle.Fill;
-                                _flowLayoutPanel.FlowDirection = FlowDirection.TopDown;
+                                _flowLayoutPanel = new FlowLayoutPanel
+                                {
+                                    AutoScroll = true,
+                                    AutoSize = true,
+                                    Dock = DockStyle.Fill,
+                                    FlowDirection = FlowDirection.TopDown,
+                                    WrapContents = false,
+                                };
                                 _flowLayoutPanel.Resize += FlowLayoutPanel_Resize;
-                                _flowLayoutPanel.WrapContents = false;
 
                                 // Only show first 10 pages.
                                 for (uint i = 0; i < pdf.PageCount && i < 10; i++)
@@ -81,23 +88,42 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                                     {
                                         var image = PageToImage(page);
 
-                                        Panel panel = new Panel()
+                                        var picturePanel = new Panel()
                                         {
+                                            Name = "picturePanel",
                                             Margin = new Padding(6, 6, 6, 0),
                                             Size = CalculateSize(image),
                                             BorderStyle = BorderStyle.FixedSingle,
                                         };
 
-                                        PictureBox pictureBox = new PictureBox
+                                        var picture = new PictureBox
                                         {
                                             Dock = DockStyle.Fill,
                                             Image = image,
                                             SizeMode = PictureBoxSizeMode.Zoom,
                                         };
 
-                                        panel.Controls.Add(pictureBox);
-                                        _flowLayoutPanel.Controls.Add(panel);
+                                        picturePanel.Controls.Add(picture);
+                                        _flowLayoutPanel.Controls.Add(picturePanel);
                                     }
+                                }
+
+                                if (pdf.PageCount > 10)
+                                {
+                                    var messageBox = new RichTextBox
+                                    {
+                                        Name = "messageBox",
+                                        Text = Resources.PdfMorePagesMessage,
+                                        BackColor = Color.LightYellow,
+                                        Dock = DockStyle.Fill,
+                                        Multiline = true,
+                                        ReadOnly = true,
+                                        ScrollBars = RichTextBoxScrollBars.None,
+                                        BorderStyle = BorderStyle.None,
+                                    };
+                                    messageBox.ContentsResized += RTBContentsResized;
+
+                                    _flowLayoutPanel.Controls.Add(messageBox);
                                 }
 
                                 Controls.Add(_flowLayoutPanel);
@@ -110,9 +136,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                     {
                         if (ex.Message.Contains("Unable to update the password. The value provided as the current password is incorrect.", StringComparison.Ordinal))
                         {
-                            Controls.Clear();
-                            _infoBar = GetTextBoxControl(Resources.PdfPasswordProtectedError);
-                            Controls.Add(_infoBar);
+                            InvokeOnControlThread(() =>
+                            {
+                                Controls.Clear();
+                                _infoBar = GetTextBoxControl(Resources.PdfPasswordProtectedError);
+                                Controls.Add(_infoBar);
+                            });
                         }
                         else
                         {
@@ -159,7 +188,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
             this.SuspendLayout();
             _flowLayoutPanel.SuspendLayout();
 
-            foreach (Panel panel in _flowLayoutPanel.Controls)
+            foreach (Panel panel in _flowLayoutPanel.Controls.Find("picturePanel", false))
             {
                 var pictureBox = panel.Controls[0] as PictureBox;
                 var image = pictureBox.Image;
@@ -174,34 +203,46 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         /// <summary>
         /// Transform the PdfPage to an Image.
         /// </summary>
-        /// <param name="page">The page to transform.</param>
+        /// <param name="page">The page to transform to an Image.</param>
         /// <returns>An object of type <see cref="Image"/></returns>
-        private static Image PageToImage(PdfPage page)
+        private Image PageToImage(PdfPage page)
         {
-            Image image;
+            Image imageOfPage;
 
             using (var stream = new InMemoryRandomAccessStream())
             {
-                page.RenderToStreamAsync(stream).GetAwaiter().GetResult();
+                page.RenderToStreamAsync(stream, new PdfPageRenderOptions()
+                {
+                    DestinationWidth = (uint)this.ClientSize.Width,
+                }).GetAwaiter().GetResult();
 
-                image = Image.FromStream(stream.AsStream());
+                imageOfPage = Image.FromStream(stream.AsStream());
             }
 
-            return image;
+            return imageOfPage;
         }
 
         /// <summary>
         /// Calculate the size of the control based on the size of the image/pdf page.
         /// </summary>
-        /// <param name="image">Image of pdf page.</param>
+        /// <param name="pdfImage">Image of pdf page.</param>
         /// <returns>New size off the panel.</returns>
-        private Size CalculateSize(Image image)
+        private Size CalculateSize(Image pdfImage)
         {
             var hasScrollBar = _flowLayoutPanel.VerticalScroll.Visible;
-            int width = this.ClientSize.Width - 12 - (hasScrollBar ? 16 : 0);
 
-            int originalWidth = image.Width;
-            int originalHeight = image.Height;
+            // Add 12px margin to the image by making it 12px smaller.
+            int width = this.ClientSize.Width - 12;
+
+            // If the vertical scrollbar is visible, make the image smaller.
+            var scrollBarSizeWidth = (int)_uISettings.ScrollBarSize.Width;
+            if (hasScrollBar && width > scrollBarSizeWidth)
+            {
+                width -= scrollBarSizeWidth;
+            }
+
+            int originalWidth = pdfImage.Width;
+            int originalHeight = pdfImage.Height;
             float percentWidth = (float)width / originalWidth;
 
             int newHeight = (int)(originalHeight * percentWidth);
@@ -215,8 +256,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         /// <returns>An object of type <see cref="Color"/>.</returns>
         private static Color GetBackgroundColor()
         {
-            var uiSettings = new UISettings();
-            Windows.UI.Color systemBackgroundColor = uiSettings.GetColorValue(UIColorType.Background);
+            var systemBackgroundColor = _uISettings.GetColorValue(UIColorType.Background);
 
             return Color.FromArgb(systemBackgroundColor.A, systemBackgroundColor.R, systemBackgroundColor.G, systemBackgroundColor.B);
         }
@@ -228,19 +268,19 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         /// <returns>An object of type <see cref="RichTextBox"/>.</returns>
         private RichTextBox GetTextBoxControl(string message)
         {
-            RichTextBox richTextBox = new RichTextBox
+            var textBox = new RichTextBox
             {
                 Text = message,
                 BackColor = Color.LightYellow,
                 Multiline = true,
                 Dock = DockStyle.Top,
                 ReadOnly = true,
+                ScrollBars = RichTextBoxScrollBars.None,
+                BorderStyle = BorderStyle.None,
             };
-            richTextBox.ContentsResized += RTBContentsResized;
-            richTextBox.ScrollBars = RichTextBoxScrollBars.None;
-            richTextBox.BorderStyle = BorderStyle.None;
+            textBox.ContentsResized += RTBContentsResized;
 
-            return richTextBox;
+            return textBox;
         }
 
         /// <summary>
@@ -250,7 +290,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         /// <param name="e">Provides data for the resize event.</param>
         private void RTBContentsResized(object sender, ContentsResizedEventArgs e)
         {
-            RichTextBox richTextBox = (RichTextBox)sender;
+            var richTextBox = (RichTextBox)sender;
+
+            // Add 5px extra height to the textbox.
             richTextBox.Height = e.NewRectangle.Height + 5;
         }
     }

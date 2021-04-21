@@ -117,12 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="PdfMorePagesMessage" xml:space="preserve">
+    <value>This PDF contains more pages, this preview only shows the first 10 pages. Open PDF to view all pages.</value>
+    <comment>This text is displayes if PDF has more than 10 pages.</comment>
+  </data>
   <data name="PdfNotPreviewedError" xml:space="preserve">
-    <value>The pdf could not be preview due to an internal error.</value>
-    <comment>This text is displayed if pdf fails to preview</comment>
+    <value>This PDF could not be preview due to an internal error.</value>
+    <comment>This text is displayed if PDF fails to preview</comment>
   </data>
   <data name="PdfPasswordProtectedError" xml:space="preserve">
-    <value>Can't preview pdf. The pdf is password protected.</value>
-    <comment>This text is displayed if pdf is password protected.</comment>
+    <value>Can't preview file. This PDF is password protected.</value>
+    <comment>This text is displayed if PDF is password protected.</comment>
   </data>
 </root>

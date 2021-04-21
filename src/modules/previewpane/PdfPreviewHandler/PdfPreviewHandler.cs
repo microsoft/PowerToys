@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
     public class PdfPreviewHandler : StreamBasedPreviewHandler, IDisposable
     {
         private PdfPreviewHandlerControl _pdfPreviewHandlerControl;
-        private bool disposedValue;
+        private bool _disposedValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PdfPreviewHandler"/> class.
@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         /// <param name="disposing">Is Disposing</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -58,7 +58,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
