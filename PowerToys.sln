@@ -322,6 +322,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEngineTest",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditor", "src\modules\keyboardmanager\KeyboardManagerEditor\KeyboardManagerEditor.vcxproj", "{8DF78B53-200E-451F-9328-01EB907193AE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorLibrary", "src\modules\keyboardmanager\KeyboardManagerEditorLibrary\KeyboardManagerEditorLibrary.vcxproj", "{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -656,6 +658,10 @@ Global
 		{8DF78B53-200E-451F-9328-01EB907193AE}.Debug|x64.Build.0 = Debug|x64
 		{8DF78B53-200E-451F-9328-01EB907193AE}.Release|x64.ActiveCfg = Release|x64
 		{8DF78B53-200E-451F-9328-01EB907193AE}.Release|x64.Build.0 = Release|x64
+		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}.Debug|x64.ActiveCfg = Debug|x64
+		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}.Debug|x64.Build.0 = Debug|x64
+		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}.Release|x64.ActiveCfg = Release|x64
+		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -754,6 +760,7 @@ Global
 		{E496B7FC-1E99-4BAB-849B-0E8367040B02} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{7F4B3A60-BC27-45A7-8000-68B0B6EA7466} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{8DF78B53-200E-451F-9328-01EB907193AE} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
+		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
