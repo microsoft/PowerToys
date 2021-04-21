@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <common/version/version.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
 namespace LoggerHelpers
 {

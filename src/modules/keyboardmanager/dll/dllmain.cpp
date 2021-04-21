@@ -7,6 +7,7 @@
 #include <common/utils/winapi_error.h>
 #include <keyboardmanager/common/trace.h>
 #include <shellapi.h>
+#include <common/utils/logger_helper.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -43,9 +44,11 @@ public:
     // Constructor
     KeyboardManager()
     {
-        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
-        logFilePath.append(LogSettings::keyboardManagerLogPath);
-        Logger::init(LogSettings::keyboardManagerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"ModuleInterface", LogSettings::keyboardManagerLoggerName);
+        
+        std::filesystem::path oldLogPath(PTSettingsHelper::get_module_save_folder_location(app_key));
+        oldLogPath.append("Logs");
+        LoggerHelpers::delete_old_log_folder(oldLogPath);
     };
 
     // Destroy the powertoy and free memory
