@@ -338,8 +338,10 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         UpdateWindow(_hWndEditKeyboardWindow);
     }
 
+    Logger::trace("Start EditKeyboardWindow message loop");
     // Message loop:
     xamlBridge.MessageLoop();
+    Logger::trace("Stoped EditKeyboardWindow message loop");
 
     // Reset pointers to nullptr
     xamlBridgePtr = nullptr;
@@ -353,9 +355,32 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     xamlBridge.ClearXamlIslands();
 }
 
+inline std::wstring getMessage(UINT messageCode)
+{
+    switch (messageCode)
+    {
+    case WM_PAINT:
+        return L"WM_PAINT";
+    case WM_SIZE:
+        return L"WM_SIZE";
+    case WM_GETMINMAXINFO:
+        return L"WM_GETMINMAXINFO";
+    case WM_NCDESTROY:
+        return L"WM_NCDESTROY";
+    default:
+        return L"";
+    }
+}
+
 LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM lParam)
 {
     RECT rcClient;
+    auto message = getMessage(messageCode);
+    if (message != L"")
+    {
+        Logger::trace(L"Edit keyboard message handler, messageCode={}", getMessage(messageCode));
+    }
+    
     switch (messageCode)
     {
     // Resize the XAML window whenever the parent window is painted or resized
@@ -388,6 +413,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
             PostQuitMessage(0);
             break;
         }
+
         return DefWindowProc(hWnd, messageCode, wParam, lParam);
         break;
     }
@@ -421,6 +447,7 @@ void CloseActiveEditKeyboardWindow()
     std::unique_lock<std::mutex> hwndLock(editKeyboardWindowMutex);
     if (hwndEditKeyboardNativeWindow != nullptr)
     {
+        Logger::trace("Closing edit Keyboard window");
         PostMessage(hwndEditKeyboardNativeWindow, WM_CLOSE, 0, 0);
     }
 }
