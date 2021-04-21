@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "XamlBridge.h"
 #include <windowsx.h>
+#include <string>
 
 bool XamlBridge::FilterMessage(const MSG* msg)
 {
@@ -191,6 +192,7 @@ WPARAM GetKeyFromReason(winrt::Windows::UI::Xaml::Hosting::XamlSourceFocusNaviga
 // Event triggered when focus is requested
 void XamlBridge::OnTakeFocusRequested(winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource const& sender, winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSourceTakeFocusRequestedEventArgs const& args)
 {
+    Logger::trace("OnTakeFocusRequested");
     if (args.Request().CorrelationId() != lastFocusRequestId)
     {
         const auto reason = args.Request().Reason();
@@ -226,6 +228,7 @@ void XamlBridge::OnTakeFocusRequested(winrt::Windows::UI::Xaml::Hosting::Desktop
 // Function to initialise the xaml source object
 HWND XamlBridge::InitDesktopWindowsXamlSource(winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource)
 {
+    Logger::trace("InitDesktopWindowsXamlSource");
     HRESULT hr = S_OK;
     winrt::init_apartment(apartment_type::single_threaded);
     winxamlmanager = WindowsXamlManager::InitializeForCurrentThread();
@@ -249,6 +252,7 @@ HWND XamlBridge::InitDesktopWindowsXamlSource(winrt::Windows::UI::Xaml::Hosting:
 // Function to close and delete all the xaml source objects
 void XamlBridge::ClearXamlIslands()
 {
+    Logger::trace("Clear xaml island, {} Focus event revokers", m_takeFocusEventRevokers.size());
     for (auto& takeFocusRevoker : m_takeFocusEventRevokers)
     {
         takeFocusRevoker.revoke();
@@ -267,6 +271,7 @@ void XamlBridge::ClearXamlIslands()
 // Function invoked when the window is destroyed
 void XamlBridge::OnDestroy(HWND)
 {
+    Logger::trace("XamlBridge destroy");
     PostQuitMessage(0);
 }
 
@@ -275,6 +280,7 @@ void XamlBridge::OnActivate(HWND, UINT state, HWND hwndActDeact, BOOL fMinimized
 {
     if (state == WA_INACTIVE)
     {
+        Logger::trace("XamlBridge activate");
         m_hwndLastFocus = GetFocus();
     }
 }
@@ -284,18 +290,42 @@ void XamlBridge::OnSetFocus(HWND, HWND hwndOldFocus)
 {
     if (m_hwndLastFocus)
     {
+        Logger::trace("XamlBridge set focus");
         SetFocus(m_hwndLastFocus);
+    }
+}
+
+
+std::wstring getMessageString(const UINT message)
+{
+    switch (message)
+    {
+    case WM_NCDESTROY:
+        return L"WM_NCDESTROY";
+    case WM_ACTIVATE:
+        return L"WM_ACTIVATE";
+    case WM_SETFOCUS:
+        return L"WM_SETFOCUS";
+    default:
+        return L"";
     }
 }
 
 // Message Handler function for Xaml Island windows
 LRESULT XamlBridge::MessageHandler(UINT const message, WPARAM const wParam, LPARAM const lParam) noexcept
 {
+    auto msg = getMessageString(message);
+    if (msg != L"")
+    {
+        Logger::trace(L"XamlBridge message handler. Attempt to handle {}", msg);
+    }
+    
     switch (message)
     {
         HANDLE_MSG(parentWindow, WM_NCDESTROY, OnDestroy);
         HANDLE_MSG(parentWindow, WM_ACTIVATE, OnActivate);
         HANDLE_MSG(parentWindow, WM_SETFOCUS, OnSetFocus);
     }
+
     return DefWindowProc(parentWindow, message, wParam, lParam);
 }
