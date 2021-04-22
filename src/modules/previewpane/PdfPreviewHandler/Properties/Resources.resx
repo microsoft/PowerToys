@@ -119,7 +119,7 @@
   </resheader>
   <data name="PdfMorePagesMessage" xml:space="preserve">
     <value>This PDF contains more pages, this preview only shows the first 10 pages. Open PDF to view all pages.</value>
-    <comment>This text is displayes if PDF has more than 10 pages.</comment>
+    <comment>This text is displayed if PDF has more than 10 pages.</comment>
   </data>
   <data name="PdfNotPreviewedError" xml:space="preserve">
     <value>This PDF could not be preview due to an internal error.</value>

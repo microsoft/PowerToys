@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         private FlowLayoutPanel _flowLayoutPanel;
 
         /// <summary>
-        /// Use UISettings to get system colors and scrollbar size.
+        /// Use UISettings to get system colors and scroll bar size.
         /// </summary>
         private static UISettings _uISettings = new UISettings();
 
@@ -234,7 +234,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
             // Add 12px margin to the image by making it 12px smaller.
             int width = this.ClientSize.Width - 12;
 
-            // If the vertical scrollbar is visible, make the image smaller.
+            // If the vertical scroll bar is visible, make the image smaller.
             var scrollBarSizeWidth = (int)_uISettings.ScrollBarSize.Width;
             if (hasScrollBar && width > scrollBarSizeWidth)
             {
