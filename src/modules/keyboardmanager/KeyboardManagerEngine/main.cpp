@@ -3,9 +3,9 @@
 #include <common/utils/process_waiter.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
-#include <keyboardmanager/common/trace.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
+#include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
 #include <common/utils/UnhandledExceptionHandlerX64.h>
 
 using namespace winrt;
