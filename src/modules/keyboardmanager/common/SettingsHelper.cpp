@@ -158,7 +158,7 @@ bool loadShortcutRemaps(KeyboardManagerState& keyboardManagerState, const json::
     return result;
 }
 
-bool SettingsHelper::loadConfig(KeyboardManagerState& keyboardManagerState)
+bool SettingsHelper::LoadSettings(KeyboardManagerState& keyboardManagerState)
 {
     try
     {

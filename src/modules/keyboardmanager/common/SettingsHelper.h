@@ -1,9 +1,9 @@
 #pragma once
 
-#include <common/KeyboardManagerState.h>
+#include <keyboardmanager/common/KeyboardManagerState.h>
 
 class SettingsHelper
 {
 public:
-    static bool loadConfig(KeyboardManagerState& keyboardManagerState);
+    static bool LoadSettings(KeyboardManagerState& state);
 };
