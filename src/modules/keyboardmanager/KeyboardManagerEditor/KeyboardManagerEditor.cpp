@@ -16,8 +16,10 @@
 
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
+#include <common/utils/process_waiter.h>
 
 std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
+const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEditor_InstanceMutex";
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -30,6 +32,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     InitUnhandledExceptionHandler();
     Trace::RegisterProvider();
 
+    auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
+    if (mutex == nullptr)
+    {
+        Logger::error(L"Failed to create mutex. {}", get_last_error_or_default(GetLastError()));
+    }
+
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        Logger::warn(L"KBM editor instance is already running");
+        return 0;
+    }
+
     int numArgs;
     LPWSTR* cmdArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);
 
@@ -39,10 +53,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return -1;
     }
 
-    if (numArgs != 2)
+    if (numArgs < 2)
     {
         Logger::error(L"Invalid arguments on Keyboard Manager Editor start");
         return -1;
+    }
+
+    if (numArgs == 3)
+    {
+        std::wstring pid = std::wstring(cmdArgs[2]);
+        Logger::trace(L"Editor started from the settings with pid {}", pid);
+        if (!pid.empty())
+        {
+            auto mainThreadId = GetCurrentThreadId();
+            on_process_terminate(pid, [mainThreadId](int err) {
+                if (err != ERROR_SUCCESS)
+                {
+                    Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
+                }
+
+                Logger::info(L"Parrent process exited. Exiting KeyboardManager editor");
+                PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+            });
+        }
     }
 
     editor = std::make_unique<KeyboardManagerEditor>(hInstance);
