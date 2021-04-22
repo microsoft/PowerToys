@@ -9,10 +9,9 @@ body:
     placeholder: |
       What is the expected behavior of the proposed feature?  
       What is the scenario this would be used?  
-      Please limit one per issue.
   validations:
     required: true
 - type: markdown
   attributes:
     value: |
-      If you'd like to see this feature implemented, add a 👍 reaction to this post.
+      Please limit one request per issue.
