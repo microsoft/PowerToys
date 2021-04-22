@@ -92,6 +92,8 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                         {
                             latestVersion = new_version->version;
                             isVersionLatest = false;
+
+                            proceed_with_update(*new_version, true);
                         }
                         json::JsonObject json;
                         json.SetNamedValue(L"version", json::value(latestVersion.toWstring()));

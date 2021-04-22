@@ -251,56 +251,11 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 {
     const std::wstring_view cant_drag_elevated_disable = L"cant_drag_elevated_disable/";
     const std::wstring_view couldnt_toggle_powerpreview_modules_disable = L"couldnt_toggle_powerpreview_modules_disable/";
-    const std::wstring_view download_and_install_update = L"download_and_install_update/";
     const std::wstring_view open_settings = L"open_settings/";
-    const std::wstring_view schedule_update = L"schedule_update/";
-    const std::wstring_view update_now = L"update_now/";
 
     if (param == cant_drag_elevated_disable)
     {
         return notifications::disable_toast(notifications::CantDragElevatedDontShowAgainRegistryPath) ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
-    }
-    else if (param.starts_with(update_now))
-    {
-        std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
-        const auto installerFilename = param.data() + size(update_now);
-        args += L' ';
-        args += installerFilename;
-        launch_action_runner(args.c_str());
-        return toast_notification_handler_result::exit_success;
-    }
-    else if (param.starts_with(schedule_update))
-    {
-        const auto installerFilename = param.data() + size(schedule_update);
-        UpdateState::store([=](UpdateState& state) {
-            state.pending_update = true;
-            state.pending_installer_filename = installerFilename;
-        });
-
-        return toast_notification_handler_result::exit_success;
-    }
-    else if (param.starts_with(download_and_install_update))
-    {
-        try
-        {
-            std::wstring installer_filename = updating::download_update(Strings).get();
-
-            std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
-            args += L' ';
-            args += installer_filename;
-            launch_action_runner(args.c_str());
-
-            return toast_notification_handler_result::exit_success;
-        }
-        catch (...)
-        {
-            MessageBoxW(nullptr,
-                        GET_RESOURCE_STRING(IDS_DOWNLOAD_UPDATE_ERROR).c_str(),
-                        L"PowerToys",
-                        MB_ICONWARNING | MB_OK);
-
-            return toast_notification_handler_result::exit_error;
-        }
     }
     else if (param == couldnt_toggle_powerpreview_modules_disable)
     {
@@ -333,6 +288,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         L"(ML;;NX;;;LW)"; // Integrity label on No execute up for Low mandatory level
     initializeCOMSecurity(securityDescriptor);
 
+    // TODO: this is deprecated and should be removed
     if (launch_pending_update())
     {
         return 0;

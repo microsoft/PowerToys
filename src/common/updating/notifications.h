@@ -34,20 +34,16 @@ namespace updating
             std::wstring OFFER_UNINSTALL_MSI_TITLE;
 
             std::wstring SNOOZE_BUTTON;
-            std::wstring TOAST_TITLE;
+            std::wstring NOTIFICATION_TITLE;
 
             std::wstring UNINSTALLATION_UNKNOWN_ERROR;
         };
 
         void show_unavailable(const notifications::strings& strings, std::wstring reason);
-        void show_available(const updating::new_version_download_info& info, const strings&);
-        void show_download_start(const updating::new_version_download_info& info, const strings&);
         void show_visit_github(const updating::new_version_download_info& info, const strings&);
         void show_install_error(const updating::new_version_download_info& info, const strings&);
-        void show_version_ready(const updating::new_version_download_info& info, const strings&);
+        bool show_confirm_update(const updating::new_version_download_info& info, const strings&);
         void show_uninstallation_error(const notifications::strings& strings);
-
-        void update_download_progress(const updating::new_version_download_info& info, float progress, const notifications::strings& strings);
     }
 }
 
@@ -75,6 +71,6 @@ namespace updating
         .OFFER_UNINSTALL_MSI = GET_RESOURCE_STRING(IDS_OFFER_UNINSTALL_MSI),                                               \
         .OFFER_UNINSTALL_MSI_TITLE = GET_RESOURCE_STRING(IDS_OFFER_UNINSTALL_MSI_TITLE),                                   \
         .SNOOZE_BUTTON = GET_RESOURCE_STRING(IDS_SNOOZE_BUTTON),                                                           \
-        .TOAST_TITLE = GET_RESOURCE_STRING(IDS_TOAST_TITLE),                                                               \
+        .NOTIFICATION_TITLE = GET_RESOURCE_STRING(IDS_TOAST_TITLE),                                                        \
         .UNINSTALLATION_UNKNOWN_ERROR = GET_RESOURCE_STRING(IDS_UNINSTALLATION_UNKNOWN_ERROR)                              \
     }

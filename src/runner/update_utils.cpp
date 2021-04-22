@@ -7,6 +7,7 @@
 #include "update_utils.h"
 
 #include <common/updating/installer.h>
+#include <common/updating/http_client.h>
 #include <common/updating/updating.h>
 #include <common/utils/resources.h>
 #include <common/utils/timeutil.h>
@@ -18,6 +19,8 @@ namespace
 {
     constexpr int64_t UPDATE_CHECK_INTERVAL_MINUTES = 60 * 24;
     constexpr int64_t UPDATE_CHECK_AFTER_FAILED_INTERVAL_MINUTES = 60 * 2;
+
+    const size_t MAX_DOWNLOAD_ATTEMPTS = 3;
 }
 
 bool start_msi_uninstallation_sequence()
@@ -44,6 +47,77 @@ bool start_msi_uninstallation_sequence()
     return exit_code == 0;
 }
 
+using namespace updating;
+
+bool could_be_costly_connection()
+{
+    using namespace winrt::Windows::Networking::Connectivity;
+    ConnectionProfile internetConnectionProfile = NetworkInformation::GetInternetConnectionProfile();
+    return internetConnectionProfile.IsWwanConnectionProfile();
+}
+
+std::optional<std::filesystem::path> create_download_path()
+{
+    auto installer_download_path = get_pending_updates_path();
+    std::error_code ec;
+    std::filesystem::create_directories(installer_download_path, ec);
+    return !ec ? std::optional{ installer_download_path } : std::nullopt;
+}
+
+std::future<bool> download_new_version(const new_version_download_info& new_version, const notifications::strings& strings)
+{
+    auto installer_download_path = create_download_path();
+    if (!installer_download_path)
+    {
+        co_return false;
+    }
+    
+    *installer_download_path /= new_version.installer_filename;
+
+    bool download_success = false;
+    for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
+    {
+        try
+        {
+            http::HttpClient client;
+            co_await client.download(new_version.installer_download_url, *installer_download_path);
+            download_success = true;
+            break;
+        }
+        catch (...)
+        {
+            // reattempt to download or do nothing
+        }
+    }
+    co_return download_success;
+}
+
+void proceed_with_update(const new_version_download_info& download_info, const bool download_update)
+{
+    if (!download_update)
+    {
+        notifications::show_visit_github(download_info, Strings);
+        return;
+    }
+
+    if (!notifications::show_confirm_update(download_info, Strings))
+    {
+        return;
+    }
+
+    if (download_new_version(download_info, Strings).get())
+    {
+        std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
+        args += L' ';
+        args += download_info.installer_filename;
+        launch_action_runner(args.c_str());
+    }
+    else
+    {
+        notifications::show_install_error(download_info, Strings);
+    }
+}
+
 void github_update_worker()
 {
     for (;;)
@@ -61,19 +135,25 @@ void github_update_worker()
         }
 
         std::this_thread::sleep_for(std::chrono::minutes{ sleep_minutes_till_next_update });
-        const bool download_updates_automatically = get_general_settings().downloadUpdatesAutomatically;
-        bool update_check_ok = false;
+
+        const bool download_update = !could_be_costly_connection() && get_general_settings().downloadUpdatesAutomatically;
+        bool version_info_obtained = false;
         try
         {
-            update_check_ok = updating::try_autoupdate(download_updates_automatically, Strings).get();
+            const auto version_info = get_github_version_info_async(Strings).get();
+            version_info_obtained = version_info.has_value();
+            if (version_info_obtained && std::holds_alternative<new_version_download_info>(*version_info))
+            {
+                const auto download_info = std::get<new_version_download_info>(*version_info);
+                proceed_with_update(download_info, download_update);
+            }
         }
         catch (...)
         {
             // Couldn't autoupdate
-            update_check_ok = false;
         }
 
-        if (update_check_ok)
+        if (version_info_obtained)
         {
             UpdateState::store([](UpdateState& state) {
                 state.github_update_last_checked_date.emplace(timeutil::now());
@@ -90,21 +170,20 @@ std::optional<updating::github_version_info> check_for_updates()
 {
     try
     {
-        auto version_check_result = updating::get_github_version_info_async(Strings).get();
-        if (!version_check_result)
+        auto version_info = get_github_version_info_async(Strings).get();
+        if (!version_info)
         {
-            updating::notifications::show_unavailable(Strings, std::move(version_check_result.error()));
+            notifications::show_unavailable(Strings, std::move(version_info.error()));
             return std::nullopt;
         }
 
-        if (std::holds_alternative<updating::version_up_to_date>(*version_check_result))
+        if (std::holds_alternative<updating::version_up_to_date>(*version_info))
         {
-            updating::notifications::show_unavailable(Strings, Strings.GITHUB_NEW_VERSION_UP_TO_DATE);
-            return std::move(*version_check_result);
+            notifications::show_unavailable(Strings, Strings.GITHUB_NEW_VERSION_UP_TO_DATE);
+            return std::move(*version_info);
         }
 
-        auto new_version = std::get<updating::new_version_download_info>(*version_check_result);
-        updating::notifications::show_available(new_version, Strings);
+        auto new_version = std::get<updating::new_version_download_info>(*version_info);
         return std::move(new_version);
     }
     catch (...)

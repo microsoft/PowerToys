@@ -15,8 +15,6 @@ namespace // Strings in this namespace should not be localized
 {
     const wchar_t LATEST_RELEASE_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
     const wchar_t ALL_RELEASES_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases";
-
-    const size_t MAX_DOWNLOAD_ATTEMPTS = 3;
 }
 
 namespace updating
@@ -122,100 +120,10 @@ namespace updating
         co_return nonstd::make_unexpected(strings.GITHUB_NEW_VERSION_CHECK_ERROR);
     }
 
-    bool could_be_costly_connection()
-    {
-        using namespace winrt::Windows::Networking::Connectivity;
-        ConnectionProfile internetConnectionProfile = NetworkInformation::GetInternetConnectionProfile();
-        return internetConnectionProfile.IsWwanConnectionProfile();
-    }
-
     std::filesystem::path get_pending_updates_path()
     {
         auto path_str{ PTSettingsHelper::get_root_save_folder_location() };
         path_str += L"\\Updates";
         return { std::move(path_str) };
-    }
-
-    std::filesystem::path create_download_path()
-    {
-        auto installer_download_dst = get_pending_updates_path();
-        std::error_code _;
-        std::filesystem::create_directories(installer_download_dst, _);
-        return installer_download_dst;
-    }
-
-    std::future<bool> try_autoupdate(const bool download_updates_automatically, const notifications::strings& strings)
-    {
-        const auto version_check_result = co_await get_github_version_info_async(strings);
-        if (!version_check_result)
-        {
-            co_return false;
-        }
-        if (std::holds_alternative<version_up_to_date>(*version_check_result))
-        {
-            co_return true;
-        }
-        const auto new_version = std::get<new_version_download_info>(*version_check_result);
-
-        if (download_updates_automatically && !could_be_costly_connection())
-        {
-            auto installer_download_dst = create_download_path() / new_version.installer_filename;
-            bool download_success = false;
-            for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
-            {
-                try
-                {
-                    http::HttpClient client;
-                    co_await client.download(new_version.installer_download_url, installer_download_dst);
-                    download_success = true;
-                    break;
-                }
-                catch (...)
-                {
-                    // reattempt to download or do nothing
-                }
-            }
-            if (!download_success)
-            {
-                updating::notifications::show_install_error(new_version, strings);
-                co_return false;
-            }
-
-            updating::notifications::show_version_ready(new_version, strings);
-        }
-        else
-        {
-            updating::notifications::show_visit_github(new_version, strings);
-        }
-        co_return true;
-    }
-
-    std::future<std::wstring> download_update(const notifications::strings& strings)
-    {
-        const auto version_check_result = co_await get_github_version_info_async(strings);
-        if (!version_check_result || std::holds_alternative<version_up_to_date>(*version_check_result))
-        {
-            co_return L"";
-        }
-        const auto new_version = std::get<new_version_download_info>(*version_check_result);
-        auto installer_download_dst = create_download_path() / new_version.installer_filename;
-        updating::notifications::show_download_start(new_version, strings);
-
-        try
-        {
-            auto progressUpdateHandle = [&](float progress) {
-                updating::notifications::update_download_progress(new_version, progress, strings);
-            };
-
-            http::HttpClient client;
-            co_await client.download(new_version.installer_download_url, installer_download_dst, progressUpdateHandle);
-        }
-        catch (...)
-        {
-            updating::notifications::show_install_error(new_version, strings);
-            co_return L"";
-        }
-
-        co_return new_version.installer_filename;
     }
 }
