@@ -1,7 +1,6 @@
 name: "⭐ Feature / enhancement request"
-description: Report issues in our documentation
+description: Propose something new.
 labels: 
-- Issue-Docs
 - Triage-Needed 
 body:
 - type: textarea
