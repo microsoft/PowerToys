@@ -341,7 +341,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     Logger::trace("Start EditKeyboardWindow message loop");
     // Message loop:
     xamlBridge.MessageLoop();
-    Logger::trace("Stoped EditKeyboardWindow message loop");
+    Logger::trace("Stopped EditKeyboardWindow message loop");
 
     // Reset pointers to nullptr
     xamlBridgePtr = nullptr;
