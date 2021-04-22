@@ -7,7 +7,6 @@
 #include <common/themes/windows_colors.h>
 #include <common/utils/event_locker.h>
 
-#include <trace.h>
 #include <KeyboardManagerConstants.h>
 #include <KeyboardManagerState.h>
 
