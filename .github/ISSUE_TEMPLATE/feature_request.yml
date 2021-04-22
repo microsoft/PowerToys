@@ -1,0 +1,15 @@
+name: "⭐ Feature / enhancement request"
+description: Report issues in our documentation
+labels: 
+- Issue-Docs
+- Triage-Needed 
+body:
+- type: textarea
+  attributes: 
+    label: Provide a description of the new feature / enhancement
+    placeholder: |
+      What is the expected behavior of the proposed feature?  
+      What is the scenario this would be used?  
+      Please limit one per issue.
+  validations:
+    required: true
