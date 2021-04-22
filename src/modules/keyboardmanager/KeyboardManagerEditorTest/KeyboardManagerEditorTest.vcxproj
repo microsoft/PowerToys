@@ -5,7 +5,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{62173D9A-6724-4C00-A1C8-FB646480A9EC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>KeyboardManagerTest</RootNamespace>
+    <RootNamespace>KeyboardManagerEditorTest</RootNamespace>
     <OverrideWindowsTargetPlatformVersion>true</OverrideWindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
@@ -27,7 +27,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManagerEditor\</OutDir>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -67,7 +67,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="KeyboardManagerTest.rc" />
+    <ResourceCompile Include="KeyboardManagerEditorTest.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
