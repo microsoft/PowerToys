@@ -51,7 +51,6 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="RemapShortcut.cpp" />
     <ClCompile Include="SettingsHelper.cpp" />
     <ClCompile Include="Shortcut.cpp" />
   </ItemGroup>
