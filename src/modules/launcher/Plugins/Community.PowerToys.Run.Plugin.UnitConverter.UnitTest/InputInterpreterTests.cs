@@ -12,8 +12,14 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [TestCase(new string[] { "5\"" }, new string[] { "5", "\"" })]
         [TestCase(new string[] { "1'5" }, new string[] { "1", "'", "5"})]
         public void RegexSplitsInput(string[] input, string[] expectedResult) {
-            string[] shortsplit = InputInterpreter.RegexSplitter(ref input);
+            string[] shortsplit = InputInterpreter.RegexSplitter(input);
             Assert.AreEqual(expectedResult, shortsplit);
+        }
+
+        [TestCase(new string[] { "1cm", "to", "mm" }, new string[] { "1", "cm", "to", "mm" })]
+        public void InsertsSpaces(string[] input, string[] expectedResult) {
+            InputInterpreter.InputSpaceInserter(ref input);
+            Assert.AreEqual(expectedResult, input);
         }
 
         [TestCase(new string[] { "1'", "in", "cm" }, new string[] {"1", "foot", "in", "cm" })]

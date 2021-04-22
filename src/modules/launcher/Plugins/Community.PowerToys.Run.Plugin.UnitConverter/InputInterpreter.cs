@@ -1,13 +1,33 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using UnitsNet;
+using System.Linq;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public static class InputInterpreter
     {
-        public static string[] RegexSplitter(ref string[] split) {
+        public static string[] RegexSplitter(string[] split) {
             return Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)");
+        }
+
+        /// <summary>
+        /// Seperates input like: "1ft in cm" to "1 ft in cm"
+        /// </summary>
+        /// <param name="split"></param>
+        public static void InputSpaceInserter(ref string[] split) {
+            if (split.Length != 3) {
+                return;
+            }
+
+            string[] parseInputWithoutSpace = Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)");
+
+            if (parseInputWithoutSpace.Length > 1) {
+                string[] firstEntryRemoved = split.Skip(1).ToArray();
+                string[] newSplit = new string[] { parseInputWithoutSpace[0], parseInputWithoutSpace[1] };
+
+                split = newSplit.Concat(firstEntryRemoved).ToArray();
+            }
         }
 
         /// <summary>
@@ -16,10 +36,14 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// <param name="split"></param>
         /// <param name="culture"></param>
         public static void ShorthandFeetInchHandler(ref string[] split, CultureInfo culture) {
+            if (!split[0].Contains('\'') && !split[0].Contains('\"')) {
+                return;
+            }
+
             // catches 1' || 1" || 1'2 || 1'2" in cm
             // by converting it to "x foot in cm"
             if (split.Length == 3) {
-                string[] shortsplit = RegexSplitter(ref split);
+                string[] shortsplit = RegexSplitter(split);
 
                 switch (shortsplit.Length) {
                     case 2:

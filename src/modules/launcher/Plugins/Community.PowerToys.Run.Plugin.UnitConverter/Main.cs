@@ -39,7 +39,9 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
             string[] split = query.Search.Split(' ');
             split = Array.ConvertAll(split, x => x.ToLower());
+
             InputInterpreter.ShorthandFeetInchHandler(ref split, _currentCulture);
+            InputInterpreter.InputSpaceInserter(ref split);
 
             if (split.Length < 4 || split.Length > 4) {
                 // deny any other queries than:
