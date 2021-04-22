@@ -606,10 +606,12 @@ bool KeyboardManagerState::SaveConfigToFile()
 
     if (result)
     {
+        Logger::trace(L"Settings file was updated");
         auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
         if (hEvent)
         {
             SetEvent(hEvent);
+            Logger::trace(L"Signaled {} event", KeyboardManagerConstants::SettingsEventName);
         }
         else
         {

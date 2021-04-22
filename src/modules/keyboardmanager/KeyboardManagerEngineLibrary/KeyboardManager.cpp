@@ -12,6 +12,7 @@
 #include <keyboardmanager/common/trace.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardEventHandlers.h>
+#include <ctime>
 
 HHOOK KeyboardManager::hook_handle_copy;
 HHOOK KeyboardManager::hook_handle;
@@ -27,7 +28,7 @@ KeyboardManager::KeyboardManager()
 
     std::filesystem::path modulePath(PTSettingsHelper::get_module_save_folder_location(app_key));
     auto changeSettingsCallback = [this](DWORD err) {
-        Logger::trace(L"Received settings changed notification");
+        Logger::trace(L"{} event was signaled", KeyboardManagerConstants::SettingsEventName);
         if (err != ERROR_SUCCESS)
         {
             Logger::error(L"Failed to watch settings changes. {}", get_last_error_or_default(err));
@@ -36,6 +37,7 @@ KeyboardManager::KeyboardManager()
         loadingSettings = true;
         try
         {
+            Logger::trace("Load settings");
             load_settings();
         }
         catch (...)

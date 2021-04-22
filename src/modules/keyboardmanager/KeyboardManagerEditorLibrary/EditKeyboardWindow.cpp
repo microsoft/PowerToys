@@ -95,8 +95,9 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 // Function to create the Edit Keyboard Window
 void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
-    event_locker locker(KeyboardManagerConstants::EditorWindowEventName.c_str());
     Logger::trace("Creating Remap keys window");
+    event_locker locker(KeyboardManagerConstants::EditorWindowEventName.c_str());
+    Logger::trace(L"Signaled {} event. Remapping is suspended", KeyboardManagerConstants::EditorWindowEventName);
 
     // Window Registration
     const wchar_t szWindowClass[] = L"EditKeyboardWindow";
@@ -359,12 +360,8 @@ inline std::wstring getMessage(UINT messageCode)
 {
     switch (messageCode)
     {
-    case WM_PAINT:
-        return L"WM_PAINT";
     case WM_SIZE:
         return L"WM_SIZE";
-    case WM_GETMINMAXINFO:
-        return L"WM_GETMINMAXINFO";
     case WM_NCDESTROY:
         return L"WM_NCDESTROY";
     default:
