@@ -72,7 +72,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                     Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
                 }
 
-                Logger::info(L"Parrent process exited. Exiting KeyboardManager editor");
+                Logger::info(L"Parent process exited. Exiting KeyboardManager editor");
                 PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
             });
         }
