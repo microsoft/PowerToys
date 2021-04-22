@@ -62,7 +62,6 @@
     <ClCompile Include="tray_icon.cpp" />
     <ClCompile Include="unhandled_exception_handler.cpp" />
     <ClCompile Include="update_utils.cpp" />
-    <ClCompile Include="update_state.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="action_runner_utils.h" />
@@ -72,7 +71,6 @@
     <ClInclude Include="centralized_kb_hook.h" />
     <ClInclude Include="settings_telemetry.h" />
     <ClInclude Include="update_utils.h" />
-    <ClInclude Include="update_state.h" />
     <ClInclude Include="powertoy_module.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="restart_elevated.h" />

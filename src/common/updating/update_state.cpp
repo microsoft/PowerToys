@@ -7,30 +7,32 @@
 
 namespace
 {
-    const wchar_t PERSISTENT_STATE_FILENAME[] = L"\\update_state.json";
-    const wchar_t UPDATE_STATE_MUTEX[] = L"Local\\PowerToys_Runner_UpdateStateMutex";
+    const wchar_t PERSISTENT_STATE_FILENAME[] = L"\\UpdateState.json";
+    const wchar_t UPDATE_STATE_MUTEX[] = L"Local\\PowerToysRunnerUpdateStateMutex";
 }
 
 UpdateState deserialize(const json::JsonObject& json)
 {
     UpdateState result;
 
-    result.github_update_last_checked_date = timeutil::from_string(json.GetNamedString(L"github_update_last_checked_date", L"invalid").c_str());
-    result.pending_update = json.GetNamedBoolean(L"pending_update", false);
-    result.pending_installer_filename = json.GetNamedString(L"pending_installer_filename", L"");
-
+    result.state = static_cast<UpdateState::State>(json.GetNamedNumber(L"state", UpdateState::upToDate));
+    result.releasePageUrl = json.GetNamedString(L"releasePageUrl", L"");
+    result.githubUpdateLastCheckedDate = timeutil::from_string(json.GetNamedString(L"githubUpdateLastCheckedDate", L"invalid").c_str());
+    result.downloadedInstallerFilename = json.GetNamedString(L"downloadedInstallerFilename", L"");
     return result;
 }
 
 json::JsonObject serialize(const UpdateState& state)
 {
     json::JsonObject json;
-    if (state.github_update_last_checked_date.has_value())
+
+    if (state.githubUpdateLastCheckedDate.has_value())
     {
-        json.SetNamedValue(L"github_update_last_checked_date", json::value(timeutil::to_string(*state.github_update_last_checked_date)));
+        json.SetNamedValue(L"githubUpdateLastCheckedDate", json::value(timeutil::to_string(*state.githubUpdateLastCheckedDate)));
     }
-    json.SetNamedValue(L"pending_update", json::value(state.pending_update));
-    json.SetNamedValue(L"pending_installer_filename", json::value(state.pending_installer_filename));
+    json.SetNamedValue(L"releasePageUrl", json::value(state.releasePageUrl));
+    json.SetNamedValue(L"state", json::value(static_cast<double>(state.state)));
+    json.SetNamedValue(L"downloadedInstallerFilename", json::value(state.downloadedInstallerFilename));
 
     return json;
 }

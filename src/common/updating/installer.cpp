@@ -81,7 +81,7 @@ namespace updating
             }
             catch (...)
             {
-                updating::notifications::show_uninstallation_error(strings);
+                MessageBoxW(nullptr, strings.UNINSTALLATION_UNKNOWN_ERROR.c_str(), strings.NOTIFICATION_TITLE.c_str(), MB_OK | MB_ICONERROR);
             }
         }
         return false;

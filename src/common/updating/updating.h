@@ -14,9 +14,9 @@
 namespace updating
 {
     using winrt::Windows::Foundation::Uri;
-    struct version_up_to_date {};
-    using github_version_info = std::variant<new_version_download_info, version_up_to_date>;
-
+    struct version_up_to_date
+    {
+    };
     struct new_version_download_info
     {
         Uri release_page_uri = nullptr;
@@ -24,11 +24,10 @@ namespace updating
         Uri installer_download_url = nullptr;
         std::wstring installer_filename;
     };
+    using github_version_info = std::variant<new_version_download_info, version_up_to_date>;
 
-    // Returns whether the update check has succeeded
-    std::future<bool> try_autoupdate(const bool download_updates_automatically, const notifications::strings&);
+    std::future<std::optional<std::filesystem::path>> download_new_version(const new_version_download_info& new_version);
     std::filesystem::path get_pending_updates_path();
-    std::future<std::wstring> download_update(const notifications::strings&);
     std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const notifications::strings& strings, const bool prerelease = false);
 
     // non-localized

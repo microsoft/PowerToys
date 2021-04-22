@@ -8,6 +8,7 @@
 #include <string_view>
 
 #include <common/updating/updating.h>
+#include <common/updating/update_state.h>
 #include <common/updating/installer.h>
 #include <common/updating/http_client.h>
 #include <common/updating/dotnet_installation.h>
@@ -15,6 +16,7 @@
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
+#include <common/utils/timeutil.h>
 
 #include <common/SettingsAPI/settings_helpers.h>
 
@@ -28,6 +30,8 @@
 #include "../runner/action_runner_utils.h"
 
 auto Strings = create_notifications_strings();
+
+using namespace cmdArg;
 
 int uninstall_msi_action()
 {
@@ -67,11 +71,56 @@ std::optional<fs::path> copy_self_to_temp_dir()
     return std::move(dst_path);
 }
 
-bool install_new_version_stage_1(const std::wstring_view installer_filename, const bool must_restart = false)
+std::optional<fs::path> obtain_installer_path()
 {
-    const fs::path installer{ updating::get_pending_updates_path() / installer_filename };
+    using namespace updating;
 
-    if (!fs::is_regular_file(installer))
+    auto state = UpdateState::read();
+    if (state.state == UpdateState::readyToDownload)
+    {
+        const auto new_version_info = get_github_version_info_async(Strings).get();
+        if (!new_version_info)
+        {
+            Logger::error(L"Couldn't obtain github version info: {}", new_version_info.error());
+            return std::nullopt;
+        }
+        if (!std::holds_alternative<new_version_download_info>(*new_version_info))
+        {
+            Logger::error("Invoked with -update_now argument, but no update was available");
+            return std::nullopt;
+        }
+
+        auto downloaded_installer = download_new_version(std::get<new_version_download_info>(*new_version_info)).get();
+        if (!downloaded_installer)
+        {
+            Logger::error("Couldn't download new installer");
+        }
+        return downloaded_installer;
+    }
+    else if (state.state == UpdateState::readyToInstall)
+    {
+        fs::path installer{ get_pending_updates_path() / state.downloadedInstallerFilename };
+        if (fs::is_regular_file(installer))
+        {
+            return std::move(installer);
+        }
+        else
+        {
+            Logger::error(L"Couldn't find a downloaded installer {}", installer.native());
+            return std::nullopt;
+        }
+    }
+    else
+    {
+        Logger::error("Invoked with -update_now argument, but update state was invalid");
+        return std::nullopt;
+    }
+}
+
+bool install_new_version_stage_1()
+{
+    const auto installer = obtain_installer_path();
+    if (!installer)
     {
         return false;
     }
@@ -80,19 +129,19 @@ bool install_new_version_stage_1(const std::wstring_view installer_filename, con
     {
         // detect if PT was running
         const auto pt_main_window = FindWindowW(pt_tray_icon_window_class, nullptr);
-        const bool launch_powertoys = must_restart || pt_main_window != nullptr;
+        const bool launch_powertoys = pt_main_window != nullptr;
         if (pt_main_window != nullptr)
         {
             SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
         }
 
-        std::wstring arguments{ UPDATE_NOW_LAUNCH_STAGE2_CMDARG };
+        std::wstring arguments{ UPDATE_NOW_LAUNCH_STAGE2 };
         arguments += L" \"";
-        arguments += installer.c_str();
+        arguments += installer->c_str();
         arguments += L"\" \"";
         arguments += get_module_folderpath();
         arguments += L"\" ";
-        arguments += launch_powertoys ? UPDATE_STAGE2_RESTART_PT_CMDARG : UPDATE_STAGE2_DONT_START_PT_CMDARG;
+        arguments += launch_powertoys ? UPDATE_STAGE2_RESTART_PT : UPDATE_STAGE2_DONT_START_PT;
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
         sei.lpFile = copy_in_temp->c_str();
@@ -148,6 +197,12 @@ bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view 
     std::error_code _;
     fs::remove(installer_path, _);
 
+    UpdateState::store([&](UpdateState& state) {
+        state = {};
+        state.githubUpdateLastCheckedDate.emplace(timeutil::now());
+        state.state = UpdateState::upToDate;
+    });
+
     if (!success)
     {
         return false;
@@ -181,7 +236,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     logFilePath.append(LogSettings::actionRunnerLogPath);
     Logger::init(LogSettings::actionRunnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
-    if (action == RUN_NONELEVATED_CMDARG)
+    if (action == RUN_NONELEVATED)
     {
         int nextArg = 2;
 
@@ -227,7 +282,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
         run_same_elevation(target.data(), params, pidBuffer);
 
-        // cleanup
         if (!pidFile.empty())
         {
             if (pidBuffer)
@@ -243,24 +297,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
         }
     }
-    else if (action == UNINSTALL_MSI_CMDARG)
+    else if (action == UNINSTALL_MSI)
     {
         return uninstall_msi_action();
     }
-    else if (action == UPDATE_NOW_LAUNCH_STAGE1_CMDARG)
+    else if (action == UPDATE_NOW_LAUNCH_STAGE1)
     {
-        std::wstring_view installerFilename{ args[2] };
-        return !install_new_version_stage_1(installerFilename);
+        return !install_new_version_stage_1();
     }
-    else if (action == UPDATE_NOW_LAUNCH_STAGE1_START_PT_CMDARG)
-    {
-        std::wstring_view installerFilename{ args[2] };
-        return !install_new_version_stage_1(installerFilename, true);
-    }
-    else if (action == UPDATE_NOW_LAUNCH_STAGE2_CMDARG)
+    else if (action == UPDATE_NOW_LAUNCH_STAGE2)
     {
         using namespace std::string_view_literals;
-        return !install_new_version_stage_2(args[2], args[3], args[4] == std::wstring_view{ UPDATE_STAGE2_RESTART_PT_CMDARG });
+        return !install_new_version_stage_2(args[2], args[3], args[4] == std::wstring_view{ UPDATE_STAGE2_RESTART_PT });
     }
 
     return 0;

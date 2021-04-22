@@ -27,9 +27,6 @@
     <ClCompile Include="restart_elevated.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="update_state.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="update_utils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -70,9 +67,6 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="restart_elevated.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="update_state.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="update_utils.h">

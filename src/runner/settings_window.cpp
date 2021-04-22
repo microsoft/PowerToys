@@ -8,9 +8,7 @@
 #include <common/interop/two_way_pipe_message_ipc.h>
 #include "tray_icon.h"
 #include "general_settings.h"
-#include <common/themes/windows_colors.h>
 #include "restart_elevated.h"
-#include "update_state.h"
 #include "update_utils.h"
 #include "centralized_kb_hook.h"
 
@@ -23,6 +21,8 @@
 #include <common/utils/process_path.h>
 #include <common/utils/timeutil.h>
 #include <common/utils/winapi_error.h>
+#include <common/updating/update_state.h>
+#include <common/themes/windows_colors.h>
 
 #define BUFSIZE 1024
 
@@ -84,34 +84,16 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
-                    if (auto update_check_result = check_for_updates())
-                    {
-                        VersionHelper latestVersion{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION };
-                        bool isVersionLatest = true;
-                        if (auto new_version = std::get_if<updating::new_version_download_info>(&*update_check_result))
-                        {
-                            latestVersion = new_version->version;
-                            isVersionLatest = false;
-                        }
-                        json::JsonObject json;
-                        json.SetNamedValue(L"version", json::value(latestVersion.toWstring()));
-                        json.SetNamedValue(L"isVersionLatest", json::value(isVersionLatest));
-
-                        result.emplace(json.Stringify());
-
-                        UpdateState::store([](UpdateState& state) {
-                            state.github_update_last_checked_date.emplace(timeutil::now());
-                        });
-                    }
+                    check_for_updates_settings_callback();
                 }
                 else if (action == L"request_update_state_date")
                 {
                     json::JsonObject json;
 
                     auto update_state = UpdateState::read();
-                    if (update_state.github_update_last_checked_date)
+                    if (update_state.githubUpdateLastCheckedDate)
                     {
-                        const time_t date = *update_state.github_update_last_checked_date;
+                        const time_t date = *update_state.githubUpdateLastCheckedDate;
                         json.SetNamedValue(L"updateStateDate", json::value(std::to_wstring(date)));
                     }
 
@@ -335,7 +317,7 @@ void run_settings_window(bool showOobeWindow)
     // Arg 6: elevated status
     bool isElevated{ get_general_settings().isElevated };
     std::wstring settings_elevatedStatus = isElevated ? L"true" : L"false";
-    
+
     // Arg 7: is user an admin
     bool isAdmin{ get_general_settings().isAdmin };
     std::wstring settings_isUserAnAdmin = isAdmin ? L"true" : L"false";
@@ -363,14 +345,14 @@ void run_settings_window(bool showOobeWindow)
     executable_args.append(settings_isUserAnAdmin);
     executable_args.append(L" ");
     executable_args.append(settings_showOobe);
-    
+
     BOOL process_created = false;
 
     if (is_process_elevated())
     {
         // TODO: Revisit this after switching to .NET 5
         // Due to a bug in .NET, running the Settings process as non-elevated
-        // from an elevated process sometimes results in a crash.  
+        // from an elevated process sometimes results in a crash.
         // process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
     }
 
