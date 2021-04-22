@@ -54,7 +54,6 @@
     <ClCompile Include="RemapShortcut.cpp" />
     <ClCompile Include="SettingsHelper.cpp" />
     <ClCompile Include="Shortcut.cpp" />
-    <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorTypes.h" />
@@ -70,7 +69,6 @@
     <ClInclude Include="RemapShortcut.h" />
     <ClInclude Include="SettingsHelper.h" />
     <ClInclude Include="Shortcut.h" />
-    <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\COMUtils\COMUtils.vcxproj">
