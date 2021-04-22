@@ -5,6 +5,7 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Espresso.Shell
@@ -13,6 +14,9 @@ namespace Espresso.Shell
     {
         private static Mutex mutex = null;
         private const string appName = "Espresso";
+
+        const int ERROR_SHARING_VIOLATION = 32;
+        const int ERROR_LOCK_VIOLATION = 33;
 
         static int Main(string[] args)
         {
@@ -106,6 +110,10 @@ namespace Espresso.Shell
                         Filter = Path.GetFileName(config)
                     };
                     watcher.Changed += new FileSystemEventHandler(HandleEspressoConfigChange);
+
+                    // Initially the file might not be updated, so we need to start processing
+                    // settings right away.
+                    ProcessSettings(config);
                 }
                 catch (Exception ex)
                 {
@@ -152,61 +160,112 @@ namespace Espresso.Shell
 
         private static void HandleEspressoConfigChange(object sender, FileSystemEventArgs e)
         {
+            ProcessSettings(e.FullPath);
+        }
+
+        private static void ProcessSettings(string fullPath)
+        {
             Console.WriteLine("Detected a file change. Reacting...");
             try
             {
-                var settings = JsonConvert.DeserializeObject<EspressoSettingsModel>(File.ReadAllText(e.FullPath));
+                EspressoSettingsModel settings = null;
 
-                // If the settings were successfully processed, we need to set the right mode of operation.
-                // INDEFINITE = 0
-                // TIMED = 1
-
-                switch (settings.Properties.Mode)
+                var fileStream = GetSettingsFile(fullPath, 10);
+                if (fileStream != null)
                 {
-                    case 0:
-                        {
-                            // Indefinite keep awake.
-                            bool success = APIHelper.SetIndefiniteKeepAwake(settings.Properties.KeepDisplayOn.Value);
-                            if (success)
-                            {
-                                Console.WriteLine($"Currently in indefinite keep awake. Display always on: {settings.Properties.KeepDisplayOn.Value}");
-                            }
-                            else
-                            {
-                                Console.WriteLine("Could not set up the state to be indefinite keep awake.");
-                            }
-                            break;
-                        }
-                    case 1:
-                        {
-                            // Timed keep-awake.
-                            long computedTime = (settings.Properties.Hours.Value * 60 * 60) + (settings.Properties.Minutes.Value * 60);
-                            Console.WriteLine($"In timed keep-awake mode. Expecting to be awake for {computedTime} seconds.");
+                    using (fileStream)
+                    {
+                        using StreamReader reader = new StreamReader(fileStream);
+                        settings = JsonConvert.DeserializeObject<EspressoSettingsModel>(reader.ReadToEnd());
+                    }
 
-                            bool success = APIHelper.SetTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn.Value);
-                            if (success)
-                            {
-                                Console.WriteLine($"Finished execution of timed keep-awake.");
+                    if (settings != null)
+                    {
+                        // If the settings were successfully processed, we need to set the right mode of operation.
+                        // INDEFINITE = 0
+                        // TIMED = 1
 
-                                ResetNormalPowerState();
-                            }
-                            else
-                            {
-                                Console.WriteLine("Could not set up the state to be timed keep awake.");
-                            }
-                            break;
-                        }
-                    default:
+                        switch (settings.Properties.Mode)
                         {
-                            ForceExit("Could not select the right mode of operation. Existing...", 1);
-                            break;
+                            case 0:
+                                {
+                                    // Indefinite keep awake.
+                                    bool success = APIHelper.SetIndefiniteKeepAwake(settings.Properties.KeepDisplayOn.Value);
+                                    if (success)
+                                    {
+                                        Console.WriteLine($"Currently in indefinite keep awake. Display always on: {settings.Properties.KeepDisplayOn.Value}");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Could not set up the state to be indefinite keep awake.");
+                                    }
+                                    break;
+                                }
+                            case 1:
+                                {
+                                    // Timed keep-awake.
+                                    long computedTime = (settings.Properties.Hours.Value * 60 * 60) + (settings.Properties.Minutes.Value * 60);
+                                    Console.WriteLine($"In timed keep-awake mode. Expecting to be awake for {computedTime} seconds.");
+
+                                    bool success = APIHelper.SetTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn.Value);
+                                    if (success)
+                                    {
+                                        Console.WriteLine($"Finished execution of timed keep-awake.");
+
+                                        ResetNormalPowerState();
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Could not set up the state to be timed keep awake.");
+                                    }
+                                    break;
+                                }
+                            default:
+                                {
+                                    ForceExit("Could not select the right mode of operation. Existing...", 1);
+                                    break;
+                                }
                         }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Settings are null.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Could not get handle on file.");
                 }
             }
             catch (Exception ex)
             {
                 ForceExit($"There was a problem reading the configuration file.\n{ex.Message}", 1);
             }
+        }
+
+        private static FileStream GetSettingsFile(string path, int retries)
+        {
+            for (int i = 0; i < retries; i++)
+            {
+                FileStream fileStream = null;
+                try
+                {
+                    fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+                    return fileStream;
+                }
+                catch (IOException ex)
+                {
+                    var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
+                    if (errorCode == ERROR_SHARING_VIOLATION || errorCode == ERROR_LOCK_VIOLATION)
+                    {
+                        Console.WriteLine("There was another process using the file, so couldn't pick the settings up.");
+                    }
+
+                    Thread.Sleep(50);
+                }
+            }
+
+            return null;
         }
 
         private static void ResetNormalPowerState()
