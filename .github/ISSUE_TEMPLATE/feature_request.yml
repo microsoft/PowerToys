@@ -12,3 +12,7 @@ body:
       Please limit one per issue.
   validations:
     required: true
+- type: markdown
+  attributes:
+    value: |
+      If you'd like to see this feature implemented, add a 👍 reaction to this post.
