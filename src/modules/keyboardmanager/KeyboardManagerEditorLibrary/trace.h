@@ -14,4 +14,7 @@ public:
 
     // Log number of app specific shortcut remaps when the user uses Edit Shortcuts and saves settings
     static void AppSpecificShortcutRemapCount(const DWORD shortcutToShortcutCount, const DWORD shortcutToKeyCount) noexcept;
+        
+    // Log if an error occurs in KBM
+    static void Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept;
 };

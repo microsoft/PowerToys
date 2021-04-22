@@ -8,7 +8,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandlerX64.h>
 
-#include <keyboardmanager/common/trace.h>
+#include <trace.h>
 
 #include <KeyboardEventHandlers.h>
 #include <KeyboardManagerState.h>
