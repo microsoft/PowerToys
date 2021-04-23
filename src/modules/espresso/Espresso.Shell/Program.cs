@@ -239,7 +239,8 @@ namespace Espresso.Shell
             }
             catch (Exception ex)
             {
-                ForceExit($"There was a problem reading the configuration file.\n{ex.Message}", 1);
+                Console.WriteLine($"There was a problem reading the configuration file.\n{ex.Message}");
+                //ForceExit($"There was a problem reading the configuration file.\n{ex.Message}", 1);
             }
         }
 

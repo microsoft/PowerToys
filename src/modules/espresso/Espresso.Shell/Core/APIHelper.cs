@@ -33,7 +33,10 @@ namespace Espresso.Shell.Core
         {
             try
             {
-                bool stateSettingSucceeded = (SetThreadExecutionState(state) != 0);
+                var stateResult = SetThreadExecutionState(state);
+                bool stateSettingSucceeded = (stateResult != 0);
+                Console.WriteLine($"State setting result:  {stateResult}");
+
                 if (stateSettingSucceeded)
                 {
                     return true;
