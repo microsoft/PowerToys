@@ -211,7 +211,7 @@ inline void createEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     TextBlock originalKeyRemapHeader;
     originalKeyRemapHeader.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_SOURCEHEADER));
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
-    StackPanel originalKeyHeaderContainer = KeyboardManagerHelper::GetWrapped(originalKeyRemapHeader, KeyboardManagerConstants::RemapTableDropDownWidth + KeyboardManagerConstants::TableArrowColWidth).as<StackPanel>();
+    StackPanel originalKeyHeaderContainer = UIHelpers::GetWrapped(originalKeyRemapHeader, KeyboardManagerConstants::RemapTableDropDownWidth + KeyboardManagerConstants::TableArrowColWidth).as<StackPanel>();
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;

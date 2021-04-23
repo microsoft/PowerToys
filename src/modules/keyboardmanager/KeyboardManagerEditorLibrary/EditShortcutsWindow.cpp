@@ -182,9 +182,9 @@ inline void createEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     StackPanel tableHeader = StackPanel();
     tableHeader.Orientation(Orientation::Horizontal);
     tableHeader.Margin({ 10, 0, 0, 10 });
-    auto originalShortcutContainer = KeyboardManagerHelper::GetWrapped(originalShortcutHeader, KeyboardManagerConstants::ShortcutOriginColumnWidth + (double)KeyboardManagerConstants::ShortcutArrowColumnWidth);
+    auto originalShortcutContainer = UIHelpers::GetWrapped(originalShortcutHeader, KeyboardManagerConstants::ShortcutOriginColumnWidth + (double)KeyboardManagerConstants::ShortcutArrowColumnWidth);
     tableHeader.Children().Append(originalShortcutContainer.as<FrameworkElement>());
-    auto newShortcutHeaderContainer = KeyboardManagerHelper::GetWrapped(newShortcutHeader, KeyboardManagerConstants::ShortcutTargetColumnWidth);
+    auto newShortcutHeaderContainer = UIHelpers::GetWrapped(newShortcutHeader, KeyboardManagerConstants::ShortcutTargetColumnWidth);
     tableHeader.Children().Append(newShortcutHeaderContainer.as<FrameworkElement>());
     tableHeader.Children().Append(targetAppHeader);
 

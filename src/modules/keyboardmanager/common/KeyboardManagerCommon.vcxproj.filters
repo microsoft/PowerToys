@@ -27,9 +27,6 @@
     <ClCompile Include="Shortcut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RemapShortcut.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="KeyDelay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

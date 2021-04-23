@@ -102,7 +102,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 KeyboardManagerEditor::KeyboardManagerEditor(HINSTANCE hInst) :
     hInstance(hInst)
 {
-    SettingsHelper::loadConfig(keyboardManagerState);
+    SettingsHelper::LoadSettings(keyboardManagerState);
     startLowLevelKeyboardHook();
 }
 

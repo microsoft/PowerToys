@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "SingleKeyRemapControl.h"
 
-#include <Helpers.h>
 #include <KeyboardManagerState.h>
 
 #include <ShortcutControl.h>
+#include <UIHelpers.h>
 
 //Both static members are initialized to null
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;
@@ -95,7 +95,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     arrowIcon.Glyph(L"\xE72A");
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
-    auto arrowIconContainer = KeyboardManagerHelper::GetWrapped(arrowIcon, KeyboardManagerConstants::TableArrowColWidth).as<StackPanel>();
+    auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, KeyboardManagerConstants::TableArrowColWidth).as<StackPanel>();
     arrowIconContainer.Orientation(Orientation::Vertical);
     arrowIconContainer.VerticalAlignment(VerticalAlignment::Center);
     row.Children().Append(arrowIconContainer);
@@ -196,7 +196,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     detectRemapKeyBox.IsSecondaryButtonEnabled(false);
 
     // Get the linked text block for the "Type Key" button that was clicked
-    ComboBox linkedRemapDropDown = KeyboardManagerHelper::getSiblingElement(sender).as<ComboBox>();
+    ComboBox linkedRemapDropDown = UIHelpers::GetSiblingElement(sender).as<ComboBox>();
 
     auto unregisterKeys = [&keyboardManagerState]() {
         keyboardManagerState.ClearRegisteredKeyDelays();
@@ -213,7 +213,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         {
             std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList();
             // Update the drop down list with the new language to ensure that the correct key is displayed
-            linkedRemapDropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState.keyboardMap.GetKeyNameList()));
+            linkedRemapDropDown.ItemsSource(UIHelpers::ToBoxValue(keyboardManagerState.keyboardMap.GetKeyNameList()));
             linkedRemapDropDown.SelectedValue(winrt::box_value(std::to_wstring(detectedKey)));
         }
         // Hide the type key UI
