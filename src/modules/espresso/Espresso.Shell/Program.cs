@@ -1,11 +1,14 @@
-﻿using Espresso.Shell.Core;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Espresso.Shell.Core;
 using Espresso.Shell.Models;
 using Newtonsoft.Json;
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Espresso.Shell
@@ -15,13 +18,12 @@ namespace Espresso.Shell
         private static Mutex mutex = null;
         private const string appName = "Espresso";
 
-        const int ERROR_SHARING_VIOLATION = 32;
-        const int ERROR_LOCK_VIOLATION = 33;
+        public static Mutex Mutex { get => mutex; set => mutex = value; }
 
         static int Main(string[] args)
         {
             bool instantiated;
-            mutex = new Mutex(true, appName, out instantiated);
+            Mutex = new Mutex(true, appName, out instantiated);
 
             if (!instantiated)
             {
@@ -170,7 +172,7 @@ namespace Espresso.Shell
             {
                 EspressoSettingsModel settings = null;
 
-                var fileStream = GetSettingsFile(fullPath, 10);
+                var fileStream = SettingsHelper.GetSettingsFile(fullPath, 10);
                 if (fileStream != null)
                 {
                     using (fileStream)
@@ -240,33 +242,7 @@ namespace Espresso.Shell
             catch (Exception ex)
             {
                 Console.WriteLine($"There was a problem reading the configuration file.\n{ex.Message}");
-                //ForceExit($"There was a problem reading the configuration file.\n{ex.Message}", 1);
             }
-        }
-
-        private static FileStream GetSettingsFile(string path, int retries)
-        {
-            for (int i = 0; i < retries; i++)
-            {
-                FileStream fileStream = null;
-                try
-                {
-                    fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
-                    return fileStream;
-                }
-                catch (IOException ex)
-                {
-                    var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
-                    if (errorCode == ERROR_SHARING_VIOLATION || errorCode == ERROR_LOCK_VIOLATION)
-                    {
-                        Console.WriteLine("There was another process using the file, so couldn't pick the settings up.");
-                    }
-
-                    Thread.Sleep(50);
-                }
-            }
-
-            return null;
         }
 
         private static void ResetNormalPowerState()
