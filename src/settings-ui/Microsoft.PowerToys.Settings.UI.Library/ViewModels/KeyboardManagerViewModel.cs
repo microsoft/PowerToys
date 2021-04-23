@@ -200,7 +200,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value
-                editor = Process.Start(path, type.ToString(CultureInfo.InvariantCulture));
+                editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Process.GetCurrentProcess().Id}");
             }
             catch (Exception e)
             {
