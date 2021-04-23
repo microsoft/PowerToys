@@ -1,20 +1,6 @@
 #pragma once
 #include "Shortcut.h"
 
-namespace winrt
-{
-    struct hstring;
-    namespace Windows::Foundation
-    {
-        struct IInspectable;
-        namespace Collections
-        {
-            template<typename T>
-            struct IVector;
-        }
-    }
-}
-
 class LayoutMap;
 
 namespace KeyboardManagerHelper
@@ -40,9 +26,6 @@ namespace KeyboardManagerHelper
     // Function to split a wstring based on a delimiter and return a vector of split strings
     std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
 
-    // Function to return the next sibling element for an element under a stack panel
-    winrt::Windows::Foundation::IInspectable getSiblingElement(winrt::Windows::Foundation::IInspectable const& element);
-
     // Function to return if the key is an extended key which requires the use of the extended key flag
     bool IsExtendedKey(DWORD key);
 
@@ -54,9 +37,6 @@ namespace KeyboardManagerHelper
 
     // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
     ErrorType DoKeysOverlap(DWORD first, DWORD second);
-
-    // Function to return the list of key name in the order for the drop down based on the key codes
-    winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::pair<DWORD,std::wstring>>& list);
 
     // Function to set the value of a key event based on the arguments
     void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
@@ -81,6 +61,4 @@ namespace KeyboardManagerHelper
 
     // Function to check if a modifier has been repeated in the previous drop downs
     bool CheckRepeatedModifier(const std::vector<int32_t>& currentKeys, int selectedKeyCodes);
-
-    winrt::Windows::Foundation::IInspectable GetWrapped(const winrt::Windows::Foundation::IInspectable& element, double width);
 }

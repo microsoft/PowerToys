@@ -1,14 +1,8 @@
 #include "pch.h"
 #include "Helpers.h"
-#include <sstream>
 
-#include <common/interop/keyboard_layout.h>
-#include <common/interop/shared_constants.h>
 #include <common/utils/process_path.h>
-#include <common/utils/resources.h>
 
-#include <shlwapi.h>
-#include <common/interop/keyboard_layout.h>
 #include "ErrorTypes.h"
 #include "KeyboardManagerConstants.h"
 
@@ -28,17 +22,6 @@ namespace KeyboardManagerHelper
         }
 
         return splittedStrings;
-    }
-
-    // Function to return the next sibling element for an element under a stack panel
-    IInspectable getSiblingElement(IInspectable const& element)
-    {
-        FrameworkElement frameworkElement = element.as<FrameworkElement>();
-        StackPanel parentElement = frameworkElement.Parent().as<StackPanel>();
-        uint32_t index;
-
-        parentElement.Children().IndexOf(frameworkElement, index);
-        return parentElement.Children().GetAt(index + 1);
     }
 
     // Function to check if the key is a modifier key
@@ -98,20 +81,6 @@ namespace KeyboardManagerHelper
         default:
             return false;
         }
-    }
-
-    Collections::IVector<IInspectable> ToBoxValue(const std::vector<std::pair<DWORD, std::wstring>>& list)
-    {
-        Collections::IVector<IInspectable> boxList = single_threaded_vector<IInspectable>();
-        for (auto& val : list)
-        {
-            auto comboBox = ComboBoxItem();
-            comboBox.DataContext(winrt::box_value(std::to_wstring(val.first)));
-            comboBox.Content(winrt::box_value(val.second));
-            boxList.Append(winrt::box_value(comboBox));
-        }
-
-        return boxList;
     }
 
     // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
@@ -316,13 +285,5 @@ namespace KeyboardManagerHelper
 
         // If we have at least two keys equal to 'selectedKeyCode' than modifier was repeated
         return numberOfSameType > 1;
-    }
-
-    winrt::Windows::Foundation::IInspectable GetWrapped(const winrt::Windows::Foundation::IInspectable& element, double width)
-    {
-        StackPanel sp = StackPanel();
-        sp.Width(width);
-        sp.Children().Append(element.as<FrameworkElement>());
-        return sp;
     }
 }

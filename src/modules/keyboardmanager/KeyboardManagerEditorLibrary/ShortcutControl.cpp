@@ -4,10 +4,10 @@
 #include <common/interop/shared_constants.h>
 
 #include <KeyboardManagerState.h>
-#include <Helpers.h>
 
 #include <KeyboardManagerEditorStrings.h>
 #include <KeyDropDownControl.h>
+#include <UIHelpers.h>
 
 //Both static members are initialized to null
 HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
@@ -97,7 +97,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     arrowIcon.Glyph(L"\xE72A");
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
-    auto arrowIconContainer = KeyboardManagerHelper::GetWrapped(arrowIcon, KeyboardManagerConstants::ShortcutArrowColumnWidth).as<StackPanel>();
+    auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, KeyboardManagerConstants::ShortcutArrowColumnWidth).as<StackPanel>();
     arrowIconContainer.Orientation(Orientation::Vertical);
     arrowIconContainer.VerticalAlignment(VerticalAlignment::Center);
     row.Children().Append(arrowIconContainer);
@@ -172,10 +172,10 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     });
 
     // We need two containers in order to align it horizontally and vertically
-    StackPanel targetAppHorizontal = KeyboardManagerHelper::GetWrapped(targetAppTextBox, KeyboardManagerConstants::TableTargetAppColWidth).as<StackPanel>();
+    StackPanel targetAppHorizontal = UIHelpers::GetWrapped(targetAppTextBox, KeyboardManagerConstants::TableTargetAppColWidth).as<StackPanel>();
     targetAppHorizontal.Orientation(Orientation::Horizontal);
     targetAppHorizontal.HorizontalAlignment(HorizontalAlignment::Left);
-    StackPanel targetAppContainer = KeyboardManagerHelper::GetWrapped(targetAppHorizontal, KeyboardManagerConstants::TableTargetAppColWidth).as<StackPanel>();
+    StackPanel targetAppContainer = UIHelpers::GetWrapped(targetAppHorizontal, KeyboardManagerConstants::TableTargetAppColWidth).as<StackPanel>();
     targetAppContainer.Orientation(Orientation::Vertical);
     targetAppContainer.VerticalAlignment(VerticalAlignment::Bottom);
     row.Children().Append(targetAppContainer);
@@ -279,7 +279,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     detectShortcutBox.IsSecondaryButtonEnabled(false);
 
     // Get the linked stack panel for the "Type shortcut" button that was clicked
-    StackPanel linkedShortcutStackPanel = KeyboardManagerHelper::getSiblingElement(sender).as<StackPanel>();
+    StackPanel linkedShortcutStackPanel = UIHelpers::GetSiblingElement(sender).as<StackPanel>();
 
     auto unregisterKeys = [&keyboardManagerState]() {
         keyboardManagerState.ClearRegisteredKeyDelays();

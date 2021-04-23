@@ -7,6 +7,7 @@
 #include <BufferValidationHelpers.h>
 #include <KeyboardManagerEditorStrings.h>
 #include <ErrorTypes.h>
+#include <UIHelpers.h>
 
 // Initialized to null
 KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -58,7 +59,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
     dropDown.as<ComboBox>().SelectedValuePath(L"DataContext");
-    dropDown.as<ComboBox>().ItemsSource(KeyboardManagerHelper::ToBoxValue(GetKeyList(isShortcut, renderDisable)));
+    dropDown.as<ComboBox>().ItemsSource(UIHelpers::ToBoxValue(GetKeyList(isShortcut, renderDisable)));
 
     // drop down open handler - to reload the items with the latest layout
     dropDown.as<ComboBox>().DropDownOpened([&, isShortcut](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
@@ -95,7 +96,7 @@ void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, 
     // Check if the layout has changed
     if (previousLayout != layout)
     {
-        currentDropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(GetKeyList(isShortcut, renderDisable)));
+        currentDropDown.ItemsSource(UIHelpers::ToBoxValue(GetKeyList(isShortcut, renderDisable)));
         previousLayout = layout;
     }
 }
