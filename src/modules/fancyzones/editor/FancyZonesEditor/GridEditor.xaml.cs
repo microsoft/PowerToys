@@ -97,7 +97,7 @@ namespace FancyZonesEditor
         {
             Size actualSize = WorkAreaSize();
 
-            if (actualSize.Width < 1 || _data == null || Model == null)
+            if (actualSize.Width < 1 || _data == null || _data.Zones == null || Model == null)
             {
                 return;
             }
