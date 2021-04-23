@@ -187,14 +187,49 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
         }
 
+        public static void BringProcessToFront(Process process)
+        {
+            if (process == null)
+            {
+                return;
+            }
+
+            IntPtr handle = process.MainWindowHandle;
+            if (IsIconic(handle))
+            {
+                ShowWindow(handle, SWRESTORE);
+            }
+
+            SetForegroundWindow(handle);
+        }
+
+        private const int SWRESTORE = 9;
+
+        [System.Runtime.InteropServices.DllImport("User32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr handle);
+
+        [System.Runtime.InteropServices.DllImport("User32.dll")]
+
+        private static extern bool ShowWindow(IntPtr handle, int nCmdShow);
+
+        [System.Runtime.InteropServices.DllImport("User32.dll")]
+
+        private static extern bool IsIconic(IntPtr handle);
+
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         private void OpenEditor(int type)
         {
             try
             {
+                if (editor != null && editor.HasExited)
+                {
+                    editor = null;
+                }
+
                 if (editor != null)
                 {
-                    editor.CloseMainWindow();
+                    BringProcessToFront(editor);
+                    return;
                 }
 
                 string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
