@@ -337,6 +337,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
+    Logger::trace("Terminating process {}", GetCurrentProcessId());
+    Logger::flush();
     TerminateProcess(GetCurrentProcess(), 0);
 }
 

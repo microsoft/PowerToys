@@ -32,10 +32,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     InitUnhandledExceptionHandler();
     Trace::RegisterProvider();
 
+    Logger::trace(L"Editor started with pid {}", GetCurrentProcessId());
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {
         Logger::error(L"Failed to create mutex. {}", get_last_error_or_default(GetLastError()));
+    }
+    else
+    {
+        Logger::trace(L"Created/Opened {} mutex", instanceMutexName);
     }
 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
