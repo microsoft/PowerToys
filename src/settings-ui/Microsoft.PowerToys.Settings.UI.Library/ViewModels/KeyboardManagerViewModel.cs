@@ -187,7 +187,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
         }
 
-        public static void BringProcessToFront(Process process)
+        private static void BringProcessToFront(Process process)
         {
             if (process == null)
             {
@@ -223,16 +223,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (editor != null && editor.HasExited)
                 {
+                    Logger.LogInfo($"Previous instance of {PowerToyName} editor exited");
                     editor = null;
                 }
 
                 if (editor != null)
                 {
+                    Logger.LogInfo($"The {PowerToyName} editor instance {editor.Id} exists. Bringing the process to the front");
                     BringProcessToFront(editor);
                     return;
                 }
 
                 string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
+                Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value
                 editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Process.GetCurrentProcess().Id}");
