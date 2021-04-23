@@ -1,0 +1,17 @@
+name: "⭐ Feature / enhancement request"
+description: Propose something new.
+labels: 
+- Triage-Needed 
+body:
+- type: textarea
+  attributes: 
+    label: Provide a description of the new feature / enhancement
+    placeholder: |
+      What is the expected behavior of the proposed feature?  
+      What is the scenario this would be used?  
+  validations:
+    required: true
+- type: markdown
+  attributes:
+    value: |
+      Please limit one request per issue.
