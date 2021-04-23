@@ -17,7 +17,7 @@ namespace Espresso.Shell
     {
         private static Mutex mutex = null;
         private const string appName = "Espresso";
-
+        private static FileSystemWatcher watcher = null;
         public static Mutex Mutex { get => mutex; set => mutex = value; }
 
         static int Main(string[] args)
@@ -104,11 +104,11 @@ namespace Espresso.Shell
 
                 try
                 {
-                    var watcher = new FileSystemWatcher
+                    watcher = new FileSystemWatcher
                     {
                         Path = Path.GetDirectoryName(config),
                         EnableRaisingEvents = true,
-                        NotifyFilter = NotifyFilters.LastWrite,
+                        NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
                         Filter = Path.GetFileName(config)
                     };
                     watcher.Changed += new FileSystemEventHandler(HandleEspressoConfigChange);
@@ -119,7 +119,8 @@ namespace Espresso.Shell
                 }
                 catch (Exception ex)
                 {
-                    ForceExit($"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}", 1);
+                    Console.WriteLine($"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}");
+                    //ForceExit($"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}", 1);
                 }
             }
             else
@@ -162,17 +163,17 @@ namespace Espresso.Shell
 
         private static void HandleEspressoConfigChange(object sender, FileSystemEventArgs e)
         {
+            Console.WriteLine("Detected a file change. Reacting...");
             ProcessSettings(e.FullPath);
         }
 
         private static void ProcessSettings(string fullPath)
         {
-            Console.WriteLine("Detected a file change. Reacting...");
             try
             {
                 EspressoSettingsModel settings = null;
 
-                var fileStream = SettingsHelper.GetSettingsFile(fullPath, 10);
+                var fileStream = SettingsHelper.GetSettingsFile(fullPath, 3);
                 if (fileStream != null)
                 {
                     using (fileStream)
