@@ -187,17 +187,55 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
         }
 
+        private static void BringProcessToFront(Process process)
+        {
+            if (process == null)
+            {
+                return;
+            }
+
+            IntPtr handle = process.MainWindowHandle;
+            if (IsIconic(handle))
+            {
+                ShowWindow(handle, SWRESTORE);
+            }
+
+            SetForegroundWindow(handle);
+        }
+
+        private const int SWRESTORE = 9;
+
+        [System.Runtime.InteropServices.DllImport("User32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr handle);
+
+        [System.Runtime.InteropServices.DllImport("User32.dll")]
+
+        private static extern bool ShowWindow(IntPtr handle, int nCmdShow);
+
+        [System.Runtime.InteropServices.DllImport("User32.dll")]
+
+        private static extern bool IsIconic(IntPtr handle);
+
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         private void OpenEditor(int type)
         {
             try
             {
+                if (editor != null && editor.HasExited)
+                {
+                    Logger.LogInfo($"Previous instance of {PowerToyName} editor exited");
+                    editor = null;
+                }
+
                 if (editor != null)
                 {
-                    editor.CloseMainWindow();
+                    Logger.LogInfo($"The {PowerToyName} editor instance {editor.Id} exists. Bringing the process to the front");
+                    BringProcessToFront(editor);
+                    return;
                 }
 
                 string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
+                Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value
                 editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Process.GetCurrentProcess().Id}");
