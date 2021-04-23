@@ -337,11 +337,9 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         ShowWindow(_hWndEditKeyboardWindow, SW_SHOW);
         UpdateWindow(_hWndEditKeyboardWindow);
     }
-
-    Logger::trace("Start EditKeyboardWindow message loop");
+    
     // Message loop:
     xamlBridge.MessageLoop();
-    Logger::trace("Stopped EditKeyboardWindow message loop");
 
     // Reset pointers to nullptr
     xamlBridgePtr = nullptr;
@@ -353,6 +351,10 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Cannot be done in WM_DESTROY because that causes crashes due to fatal app exit
     xamlBridge.ClearXamlIslands();
+
+    // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
+    // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
+    TerminateProcess(GetCurrentProcess(), 0);
 }
 
 inline std::wstring getMessage(UINT messageCode)
