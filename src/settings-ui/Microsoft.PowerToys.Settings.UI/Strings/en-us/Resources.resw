@@ -785,7 +785,7 @@
     <value>New update available</value>
   </data>
   <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
-    <value>PowerToys is up-to-date.</value>
+    <value>PowerToys is up to date.</value>
   </data>
   <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Text" xml:space="preserve">
     <value>Icon Preview</value>
