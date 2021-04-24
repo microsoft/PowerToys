@@ -1,8 +1,6 @@
-﻿<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!--Common texts-->
+    <!--  Common texts  -->
     <Style x:Key="PageTitleStyle" TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="FontWeight" Value="SemiBold" />
@@ -19,18 +17,24 @@
     </Style>
 
 
-    <Style x:Key="SettingsGroupTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource SubtitleTextBlockStyle}">
+    <Style
+        x:Key="SettingsGroupTitleStyle"
+        BasedOn="{StaticResource SubtitleTextBlockStyle}"
+        TargetType="TextBlock">
         <Setter Property="Margin" Value="0,34,0,4" />
-        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="AutomationProperties.HeadingLevel" Value="Level2" />
     </Style>
 
-    <Style x:Key="SettingsGroupTitleStyleAsHeader" TargetType="TextBlock" BasedOn="{StaticResource SettingsGroupTitleStyle}">
+    <Style
+        x:Key="SettingsGroupTitleStyleAsHeader"
+        BasedOn="{StaticResource SettingsGroupTitleStyle}"
+        TargetType="TextBlock">
         <Setter Property="Margin" Value="0,0,0,4" />
     </Style>
 
     <Style x:Key="OobeSubtitleStyle" TargetType="TextBlock">
-        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Margin" Value="0,16,0,0" />
     </Style>
 </ResourceDictionary>

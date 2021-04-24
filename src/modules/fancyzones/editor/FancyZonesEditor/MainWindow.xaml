@@ -137,7 +137,7 @@
                                    ToolTip="{Binding Name}"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
 
-                        <Button Content="&#xE104;"
+                        <Button Content="&#xE70F;"
                                 x:Name="EditLayoutButton"
                                 FontFamily="Segoe MDL2 Assets"
                                 FontSize="14"
@@ -298,9 +298,11 @@
                     Grid.Row="3">
                 <StackPanel Orientation="Horizontal"
                             Margin="8">
-                    <TextBlock Text="&#xE109;"
+                    <<TextBlock Text="&#xE710;"
                                FontFamily="Segoe MDL2 Assets"
                                Foreground="White" />
+                        <!--
+                    <ui:FontIcon Glyph="Add"></ui:FontIcon>-->
                     <TextBlock Text="{x:Static props:Resources.Create_new_layout}"
                                Margin="12,-3,0,0"
                                Foreground="White" />
@@ -388,7 +390,7 @@
                             x:Name="deleteLayoutButton"
                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
                             ToolTip="{x:Static props:Resources.Delete}"
-                            Content="&#xE107;"
+                            Content="&#xE74D;"
                             FontFamily="Segoe MDL2 Assets"
                             Foreground="#c50500"
                             Style="{StaticResource IconOnlyButtonStyle}"
@@ -409,7 +411,7 @@
                                         Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE104;"
+                                <TextBlock Text="&#xE70F;"
                                            Margin="0,2,8,0"
                                            FontFamily="Segoe MDL2 Assets" />
                                 <TextBlock Text="{x:Static props:Resources.Edit_zones}" />
@@ -430,7 +432,7 @@
                                             Style="{StaticResource IconOnlyButtonStyle}"
                                             Click="DecrementZones_Click">
                                         <Button.Content>
-                                            <TextBlock Text="&#xE108;"
+                                            <TextBlock Text="&#xE738;"
                                                        FontFamily="Segoe MDL2 Assets" />
                                         </Button.Content>
                                     </Button>
@@ -455,7 +457,7 @@
                                             Style="{StaticResource IconOnlyButtonStyle}"
                                             Click="IncrementZones_Click">
                                         <Button.Content>
-                                            <TextBlock Text="&#xE109;"
+                                            <TextBlock Text="&#xE710;"
                                                        FontFamily="Segoe MDL2 Assets" />
                                         </Button.Content>
                                     </Button>
@@ -544,7 +546,7 @@
                                 <ColumnDefinition Width="32" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="&#xE138;"
+                            <TextBlock Text="&#xE8A9;"
                                        FontSize="16"
                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
                                        Margin="0,4,0,0"

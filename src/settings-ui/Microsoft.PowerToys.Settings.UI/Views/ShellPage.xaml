@@ -32,25 +32,26 @@
             <winui:NavigationView.MenuItems>
                 <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE713;"/>
+                        <FontIcon Glyph="Setting"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
                 <winui:NavigationViewItem x:Uid="Shell_ColorPicker" helpers:NavHelper.NavigateTo="views:ColorPickerPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEF3C;"/>
+                        <FontIcon Glyph="Eyedropper"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
                 
                 <winui:NavigationViewItem x:Uid="Shell_FancyZones" helpers:NavHelper.NavigateTo="views:FancyZonesPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>
+                        <FontIcon Glyph="ViewAll"/>
+                        <!--<PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>-->
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
                 <winui:NavigationViewItem x:Uid="Shell_PowerPreview" helpers:NavHelper.NavigateTo="views:PowerPreviewPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEC50;"/>
+                        <FontIcon Glyph="FileExplorer"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
@@ -62,25 +63,25 @@
 
                 <winui:NavigationViewItem x:Uid="Shell_KeyboardManager" helpers:NavHelper.NavigateTo="views:KeyboardManagerPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE765;"/>
+                        <FontIcon Glyph="KeyboardClassic"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
                 <winui:NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8AC;"/>
+                        <FontIcon Glyph="Rename"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
                 <winui:NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE773;"/>
+                        <FontIcon Glyph="SearchAndApps"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
                 <winui:NavigationViewItem x:Uid="Shell_ShortcutGuide" helpers:NavHelper.NavigateTo="views:ShortcutGuidePage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEDA7;"/>
+                        <FontIcon Glyph="KeyboardShortcut"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
             </winui:NavigationView.MenuItems>

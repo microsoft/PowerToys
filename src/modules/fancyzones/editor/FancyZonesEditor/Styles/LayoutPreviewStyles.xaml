@@ -1,9 +1,14 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:ui="http://schemas.modernwpf.com/2019"
-                    xmlns:local="clr-namespace:FancyZonesEditor.Styles">
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:FancyZonesEditor.Styles"
+    xmlns:ui="http://schemas.modernwpf.com/2019">
 
-    <DropShadowEffect x:Key="ZoneDropShadow" BlurRadius="16" Opacity="0.28" ShadowDepth="1" />
+    <DropShadowEffect
+        x:Key="ZoneDropShadow"
+        BlurRadius="16"
+        Opacity="0.28"
+        ShadowDepth="1" />
 
     <Style x:Key="GridLayoutSmallScalePreviewStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource LayoutPreviewSmallScaleZoneBackgroundBrush}" />

@@ -130,7 +130,7 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
-                                    <Button Content="&#xE107;"
+                                    <Button Content="&#xE74D;"
                                             FontFamily="Segoe MDL2 Assets"
                                             Background="Transparent"
                                             Grid.Column="6"

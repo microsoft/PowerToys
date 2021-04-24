@@ -177,7 +177,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Content="&#xE115;"
+                <Button Content="&#xE713;"
                         FontFamily="Segoe MDL2 Assets"
                         Style="{StaticResource DefaultButtonStyle}"
                         FontSize="16"
