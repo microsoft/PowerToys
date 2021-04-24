@@ -4,6 +4,8 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Espresso.Shell.Core
 {
@@ -22,6 +24,9 @@ namespace Espresso.Shell.Core
     /// </summary>
     public class APIHelper
     {
+        private static CancellationTokenSource TokenSource = new CancellationTokenSource();
+        private static CancellationToken ThreadToken;
+
         // More details about the API used: https://docs.microsoft.com/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
@@ -58,6 +63,7 @@ namespace Espresso.Shell.Core
 
         public static bool SetNormalKeepAwake()
         {
+            //TokenSource.Cancel();
             return SetAwakeState(EXECUTION_STATE.ES_CONTINUOUS);
         }
 
@@ -73,42 +79,73 @@ namespace Espresso.Shell.Core
             }    
         }
 
-        public static bool SetTimedKeepAwake(long seconds, bool keepDisplayOn = true)
+        public static void SetTimedKeepAwake(long seconds, Action<bool> callback, bool keepDisplayOn = true)
         {
+            ThreadToken = TokenSource.Token;
+
+            try
+            {
+                Task.Run(() => RunTimedLoop(seconds, keepDisplayOn), ThreadToken).ContinueWith((result) => callback(result.Result));
+            }
+            catch (OperationCanceledException e)
+            {
+                Console.WriteLine($"{nameof(OperationCanceledException)} thrown with message: {e.Message}");
+            }
+            finally
+            {
+                TokenSource.Dispose();
+            }
+
+        }
+
+        private static bool RunTimedLoop(long seconds, bool keepDisplayOn = true)
+        {
+            bool success;
+
+            // In case cancellation was already requested.
+            //ThreadToken.ThrowIfCancellationRequested();
+
             if (keepDisplayOn)
             {
-                var success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
                 if (success)
                 {
-                    RunTimedLoop(seconds);
-                    return true;
+                    Console.WriteLine("Timed keep-awake with display on.");
+                    var startTime = DateTime.UtcNow;
+                    while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
+                    {
+                        if (ThreadToken.IsCancellationRequested)
+                        {
+                            ThreadToken.ThrowIfCancellationRequested();
+                        }
+                    }
+                    return success;
                 }
                 else
                 {
-                    return false;
+                    return success;
                 }
             }
             else
             {
-                var success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
                 if (success)
                 {
-                    RunTimedLoop(seconds);
-                    return true;
+                    Console.WriteLine("Timed keep-awake with display off.");
+                    var startTime = DateTime.UtcNow;
+                    while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
+                    {
+                        if (ThreadToken.IsCancellationRequested)
+                        {
+                            ThreadToken.ThrowIfCancellationRequested();
+                        }
+                    }
+                    return success;
                 }
                 else
                 {
-                    return false;
+                    return success;
                 }
-            }
-        }
-
-        private static void RunTimedLoop(long seconds)
-        {
-            var startTime = DateTime.UtcNow;
-            while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
-            {
-                // We do nothing.
             }
         }
     }

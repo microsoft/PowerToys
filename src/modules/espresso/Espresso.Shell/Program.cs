@@ -141,20 +141,20 @@ namespace Espresso.Shell
                 else
                 {
                     // Timed keep-awake.
-                    bool success = APIHelper.SetTimedKeepAwake(timeLimit, displayOn);
-                    if (success)
-                    {
-                        Console.WriteLine($"Finished execution of timed keep-awake.");
+                    APIHelper.SetTimedKeepAwake(timeLimit, LogTimedKeepAwakeCompletion, displayOn);
+                    //if (success)
+                    //{
+                    //    Console.WriteLine($"Finished execution of timed keep-awake.");
 
-                        // Because the timed keep-awake execution completed, there is no reason for
-                        // Espresso to stay alive - I will just shut down the application until it's
-                        // launched again by the user.
-                        Environment.Exit(0);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Could not set up the state to be timed keep awake.");
-                    }
+                    //    // Because the timed keep-awake execution completed, there is no reason for
+                    //    // Espresso to stay alive - I will just shut down the application until it's
+                    //    // launched again by the user.
+                    //    Environment.Exit(0);
+                    //}
+                    //else
+                    //{
+                    //    Console.WriteLine("Could not set up the state to be timed keep awake.");
+                    //}
                 }
             }
 
@@ -163,6 +163,8 @@ namespace Espresso.Shell
 
         private static void HandleEspressoConfigChange(object sender, FileSystemEventArgs e)
         {
+            Console.WriteLine("Resetting keep-awake to normal state due to settings change.");
+            ResetNormalPowerState();
             Console.WriteLine("Detected a file change. Reacting...");
             ProcessSettings(e.FullPath);
         }
@@ -210,22 +212,22 @@ namespace Espresso.Shell
                                     long computedTime = (settings.Properties.Hours.Value * 60 * 60) + (settings.Properties.Minutes.Value * 60);
                                     Console.WriteLine($"In timed keep-awake mode. Expecting to be awake for {computedTime} seconds.");
 
-                                    bool success = APIHelper.SetTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn.Value);
-                                    if (success)
-                                    {
-                                        Console.WriteLine($"Finished execution of timed keep-awake.");
+                                    APIHelper.SetTimedKeepAwake(computedTime, LogTimedKeepAwakeCompletion, settings.Properties.KeepDisplayOn.Value);
+                                    //if (success)
+                                    //{
+                                    //    Console.WriteLine($"Finished execution of timed keep-awake.");
 
-                                        ResetNormalPowerState();
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Could not set up the state to be timed keep awake.");
-                                    }
+                                    //    ResetNormalPowerState();
+                                    //}
+                                    //else
+                                    //{
+                                    //    Console.WriteLine("Could not set up the state to be timed keep awake.");
+                                    //}
                                     break;
                                 }
                             default:
                                 {
-                                    ForceExit("Could not select the right mode of operation. Existing...", 1);
+                                    Console.WriteLine("Unknown mode of operation. Check config file.");
                                     break;
                                 }
                         }
@@ -244,6 +246,11 @@ namespace Espresso.Shell
             {
                 Console.WriteLine($"There was a problem reading the configuration file.\n{ex.Message}");
             }
+        }
+
+        private static void LogTimedKeepAwakeCompletion(bool result)
+        {
+            Console.Write($"Completed timed keep-awake successfully: {result}");
         }
 
         private static void ResetNormalPowerState()
