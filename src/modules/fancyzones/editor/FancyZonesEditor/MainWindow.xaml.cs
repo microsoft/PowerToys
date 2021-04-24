@@ -430,5 +430,18 @@ namespace FancyZonesEditor
                 e.Handled = true;
             }
         }
+
+        private void ComboBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                ComboBox selectedComboBox = sender as ComboBox;
+                if (!selectedComboBox.IsDropDownOpen)
+                {
+                    selectedComboBox.IsDropDownOpen = true;
+                }
+            }
+        }
     }
 }

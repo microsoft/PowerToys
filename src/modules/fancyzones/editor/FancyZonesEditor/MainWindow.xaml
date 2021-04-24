@@ -173,7 +173,8 @@
                                 Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}"
                                 Foreground="{DynamicResource PrimaryForegroundBrush}"
                                 ToolTip="{x:Static props:Resources.Edit_Layout}"
-                                AutomationProperties.Name="{x:Static props:Resources.Edit_Layout}"
+                                AutomationProperties.Name="{Binding Name}"
+                                AutomationProperties.HelpText="{x:Static props:Resources.Edit_Layout}"
                                 Style="{StaticResource AccentButtonStyle}"
                                 ui:ControlHelper.CornerRadius="36">
                         </Button>
@@ -462,6 +463,7 @@
                             <ComboBox x:Name="quickKeySelectionComboBox"
                                       Margin="12,0,0,0"
                                       Width="286"
+                                      KeyDown="ComboBox_KeyDown"
                                       AutomationProperties.LabeledBy="{Binding ElementName=QuickKeyTitle}"
                                       AutomationProperties.HelpText="{x:Static props:Resources.QuickKey_Description}"
                                       AutomationProperties.Name="{x:Static props:Resources.QuickKey_Title}"
@@ -516,6 +518,7 @@
                                       KeyDown="EditDialogNumberBox_KeyDown"
                                       Margin="12,0,0,0"
                                       Header="{x:Static props:Resources.Number_of_zones}"
+                                      AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
                                       SpinButtonPlacementMode="Compact"
                                       Text="{Binding TemplateZoneCount}" />
                     </StackPanel>
