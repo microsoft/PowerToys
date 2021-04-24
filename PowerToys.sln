@@ -221,6 +221,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SvgThumbnailProvider", "src\modules\previewpane\SvgThumbnailProvider\SvgThumbnailProvider.csproj", "{8FFE09DA-FA4F-4EE1-B3A2-AD5497FBD1AD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColorPicker", "src\modules\colorPicker\ColorPicker\ColorPicker.vcxproj", "{655C9AF2-18D3-4DA6-80E4-85504A7722BA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD} = {D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorPickerUI", "src\modules\colorPicker\ColorPickerUI\ColorPickerUI.csproj", "{BA58206B-1493-4C75-BFEA-A85768A1E156}"
 EndProject
@@ -284,6 +287,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\elevation.h = src\common\utils\elevation.h
 		src\common\utils\exec.h = src\common\utils\exec.h
 		src\common\utils\json.h = src\common\utils\json.h
+		src\common\utils\logger_helper.h = src\common\utils\logger_helper.h
 		src\common\utils\os-detect.h = src\common\utils\os-detect.h
 		src\common\utils\process_path.h = src\common\utils\process_path.h
 		src\common\utils\resources.h = src\common\utils\resources.h
@@ -292,8 +296,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\winapi_error.h = src\common\utils\winapi_error.h
 		src\common\utils\window.h = src\common\utils\window.h
 	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "old-settings-ui", "src\settings\old-settings-ui.vcxproj", "{07C389E3-6BC8-41CF-923E-307B1265FA2D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{8F62026A-294B-41C6-8839-87463613F216}"
 	ProjectSection(SolutionItems) = preProject
@@ -616,10 +618,6 @@ Global
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}.Debug|x64.Build.0 = Debug|x64
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}.Release|x64.ActiveCfg = Release|x64
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}.Release|x64.Build.0 = Release|x64
-		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Debug|x64.ActiveCfg = Debug|x64
-		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Debug|x64.Build.0 = Debug|x64
-		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Release|x64.ActiveCfg = Release|x64
-		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Release|x64.Build.0 = Release|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|x64.ActiveCfg = Debug|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|x64.Build.0 = Debug|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Release|x64.ActiveCfg = Release|x64

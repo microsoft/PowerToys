@@ -136,18 +136,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/KBM.gif",
                 Link = "https://aka.ms/PowerToysOverview_KeyboardManager",
             });
-            Modules.Insert((int)PowerToysModulesEnum.Run, new OobePowerToysModule()
-            {
-                ModuleName = loader.GetString("Oobe_Run"),
-                Tag = "Run",
-                IsNew = false,
-                Icon = "\uE773",
-                Image = "ms-appx:///Assets/Modules/PowerLauncher.png",
-                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png",
-                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/Run.gif",
-                Description = loader.GetString("Oobe_PowerRun_Description"),
-                Link = "https://aka.ms/PowerToysOverview_PowerToysRun",
-            });
             Modules.Insert((int)PowerToysModulesEnum.PowerRename, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_PowerRename"),
@@ -159,6 +147,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Description = loader.GetString("Oobe_PowerRename_Description"),
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/PowerRename.gif",
                 Link = "https://aka.ms/PowerToysOverview_PowerRename",
+            });
+            Modules.Insert((int)PowerToysModulesEnum.Run, new OobePowerToysModule()
+            {
+                ModuleName = loader.GetString("Oobe_Run"),
+                Tag = "Run",
+                IsNew = false,
+                Icon = "\uE773",
+                Image = "ms-appx:///Assets/Modules/PowerLauncher.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png",
+                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/Run.gif",
+                Description = loader.GetString("Oobe_PowerRun_Description"),
+                Link = "https://aka.ms/PowerToysOverview_PowerToysRun",
             });
             Modules.Insert((int)PowerToysModulesEnum.ShortcutGuide, new OobePowerToysModule()
             {

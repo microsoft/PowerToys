@@ -192,6 +192,7 @@ buildtransitive
 BValue
 bytearray
 callbackptr
+capitalized
 CANRENAME
 Captureascreenshot
 CAPTURECHANGED
@@ -217,6 +218,7 @@ charset
 chdir
 checkbox
 checkboxes
+CHECKCANCELED
 Checkedin
 checknetisolation
 Chicklet
@@ -1037,6 +1039,7 @@ ipreviewhandlertranslateaccelerator
 ipreviewhandlervisualssetfont
 IPrincipal
 IProgram
+IProgress
 IProperty
 IPublic
 IQuery
@@ -1056,6 +1059,7 @@ isetting
 isfinite
 IShell
 ISingle
+ISmart
 ismethod
 isocpp
 IStorage
@@ -1265,6 +1269,7 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 Markdig
+MARQUEEPROGRESS
 martinchrzan
 martinmoene
 MATCHALLOCCURENCES
@@ -1581,6 +1586,8 @@ pguid
 phbm
 phbmp
 Phishing
+php
+phptest
 phwnd
 pici
 pid
@@ -1656,6 +1663,7 @@ Printfax
 prm
 PROCESSKEY
 PRODUCTVERSION
+PROGDLG
 Progman
 programdata
 PROGRAMFILES
@@ -1664,6 +1672,7 @@ Proj
 projectname
 propkey
 propvarutil
+prpui
 Prt
 prui
 prvpane
@@ -1694,6 +1703,7 @@ pwcs
 PWSTR
 pwtd
 px
+py
 Qand
 QI
 qianlifeng
@@ -1819,6 +1829,7 @@ runsettings
 runtimeclass
 runtimeconfig
 runtimes
+rutkas
 rv
 rvalue
 rvm
@@ -1955,6 +1966,8 @@ spesi
 spinbuttonref
 splitwstring
 spoprod
+sppd
+sppre
 spsi
 spsia
 spsrif
@@ -2112,6 +2125,7 @@ thre
 tif
 TILEDWINDOW
 Timeline
+TIMERID
 timeunion
 timeutil
 titlecase

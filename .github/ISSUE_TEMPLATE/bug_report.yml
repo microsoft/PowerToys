@@ -1,18 +1,13 @@
-name: "Bug report 🐛"
+name: "🐛 Bug report"
 description: Report errors or unexpected behavior
-title: ''
 labels: 
 - Issue-Bug
 - Triage-Needed
-assignees: ''
-issue_body: true
 body:
 - type: markdown
   attributes:
     value: |
       Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
-      
-      We highly suggest including a screenshots and a bug report log (System tray->Report bug). To include, paste them into the markdown editor below the form or follow up with a separate comment.
 - type: input
   attributes:
     label: Microsoft PowerToys version
@@ -23,15 +18,12 @@ body:
   validations:
     required: true
 
-- type: dropdown
+- type: checkboxes
   attributes:
     label: Running as admin
     description: Are you running PowerToys as Admin?
     options:
-      - 'No'
-      - 'Yes'
-  validations:
-    required: true
+      - label: "Yes"
 
 - type: dropdown
   attributes:
@@ -51,26 +43,17 @@ body:
       - Shortcut Guide
       - SVG Preview
       - SVG Thumbnail
-      - Installer
+      - Settings
+      - Welcome / PowerToys Tour window
       - System tray interaction
-      - Settings window
+      - Installer
   validations:
     required: true
-    
-- type: textarea
-  attributes:
-    label: Other Software
-    description: If you're reporting a bug about our interaction with other software, what software? What versions?
-    placeholder: |
-      vim 8.2 (inside WSL)
-      OpenSSH_for_Windows_8.1p1
-      My Cool Application v0.3 (include a code snippet if it would help!)
-  validations:
-    required: false
 
 - type: textarea
   attributes:
     label: Steps to reproduce
+    description: We highly suggest including a screenshots and a bug report log (System tray->Report bug).
     placeholder: Tell us the steps required to trigger your bug.
   validations:
     required: true
@@ -88,3 +71,14 @@ body:
     placeholder: What happened instead?
   validations:
     required: true
+
+- type: textarea
+  attributes:
+    label: Other Software
+    description: If you're reporting a bug about our interaction with other software, what software? What versions?
+    placeholder: |
+      vim 8.2 (inside WSL)
+      OpenSSH_for_Windows_8.1p1
+      My Cool Application v0.3 (include a code snippet if it would help!)
+  validations:
+    required: false

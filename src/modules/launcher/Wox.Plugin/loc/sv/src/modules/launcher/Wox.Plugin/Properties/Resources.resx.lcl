@@ -10,29 +10,20 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
-      <Item ItemId=";filesfolder_copy_failed" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";FailedToLoadPluginDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Copying path {0} has failed, it will now be deleted for consistency]]></Val>
+          <Val><![CDATA[Please contact plugin creator for help]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Det gick inte att kopiera sökvägen {0}. Den kommer nu att tas bort av konsekvensskäl]]></Val>
+            <Val><![CDATA[Kontakta skaparen av plugin-program om du vill ha hjälp]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";filesfolder_removefolder_failed" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";FailedToLoadPluginTitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Not able to delete folder {0}, please go to the location and manually delete it]]></Val>
+          <Val><![CDATA[Fail to Load {0} Plugin]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Det gick inte att ta bort mappen {0}. Gå till platsen och ta bort den manuellt]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";filesfolder_verifybothfolderfilesequal_failed" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to verify folders and files between {0} and {1}]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Det gick inte att verifiera mappar och filer mellan {0} och {1}]]></Val>
+            <Val><![CDATA[Det gick inte att läsa in {0} plugin-program]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

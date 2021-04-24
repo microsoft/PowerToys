@@ -45,6 +45,11 @@ namespace PowerLauncher.Helper
         private const string ChannelNameSuffix = "SingeInstanceIPCChannel";
 
         /// <summary>
+        /// Prefix to the names of mutexes which ensures they are unique in a Windows session.
+        /// </summary>
+        private const string LocalMutexPrefix = @"Local\";
+
+        /// <summary>
         /// Gets or sets application mutex.
         /// </summary>
         internal static Mutex SingleInstanceMutex { get; set; }
@@ -62,7 +67,8 @@ namespace PowerLauncher.Helper
             string channelName = string.Concat(applicationIdentifier, Delimiter, ChannelNameSuffix);
 
             // Create mutex based on unique application Id to check if this is the first instance of the application.
-            SingleInstanceMutex = new Mutex(true, applicationIdentifier, out bool firstInstance);
+            string mutexName = string.Concat(LocalMutexPrefix, uniqueName);
+            SingleInstanceMutex = new Mutex(true, mutexName, out bool firstInstance);
             if (firstInstance)
             {
                 _ = CreateRemoteService(channelName);

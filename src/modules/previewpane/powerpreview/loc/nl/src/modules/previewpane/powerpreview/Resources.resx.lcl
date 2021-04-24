@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Some of the File Explorer modules could not be turned off/on as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Een aantal modules van Bestandenverkenner kunnen niet worden in-/uitgeschakeld vanwege uw instellingen. Start PowerToys opnieuw als beheerder om de wijzigingen door te voeren.]]></Val>
+            <Val><![CDATA[Een aantal modules van de Verkenner kunnen niet worden in-/uitgeschakeld vanwege uw instellingen. Start PowerToys opnieuw als beheerder om de wijzigingen door te voeren.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
@@ -71,7 +71,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Couldn't modify File Explorer modules]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kan de modules van Bestandenverkenner niet wijzigen]]></Val>
+            <Val><![CDATA[Kan de modules van Verkenner niet wijzigen]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to modify File Explorer modules]]></Val>
@@ -101,7 +101,7 @@
         <Str Cat="Text">
           <Val><![CDATA[File Explorer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bestandenverkenner]]></Val>
+            <Val><![CDATA[Verkenner]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

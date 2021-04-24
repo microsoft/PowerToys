@@ -3,6 +3,7 @@
 #include <winrt/base.h>
 #include <common/utils/resources.h>
 #include "keyboardmanager/dll/Generated Files/resource.h"
+#include "common/interop/shared_constants.h"
 
 namespace KeyboardManagerConstants
 {
@@ -40,7 +41,7 @@ namespace KeyboardManagerConstants
     inline const std::wstring DefaultConfiguration = L"default";
 
     // Name of the named mutex used for configuration file.
-    inline const std::wstring ConfigFileMutexName = L"PowerToys.KeyboardManager.ConfigMutex";
+    inline const std::wstring ConfigFileMutexName = CommonSharedConstants::KEYBOARD_MANAGER_CONFIG_FILE_MUTEX_NAME;
 
     // Name of the dummy update file.
     inline const std::wstring DummyUpdateFileName = L"settings-updated.json";

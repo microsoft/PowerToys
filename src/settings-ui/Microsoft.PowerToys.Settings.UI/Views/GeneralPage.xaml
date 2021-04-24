@@ -195,11 +195,11 @@
                     <TextBlock x:Uid="General_Repository"/>
                 </HyperlinkButton>
 
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysReportBug">
                     <TextBlock x:Uid="GeneralPage_ReportAbug"/>
                 </HyperlinkButton>
 
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysRequestFeature">
                     <TextBlock x:Uid="GeneralPage_RequestAFeature_URL"/>
                 </HyperlinkButton>
 

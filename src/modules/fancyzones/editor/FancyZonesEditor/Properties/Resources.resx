@@ -145,7 +145,8 @@
     <value>Custom layout creator</value>
   </data>
   <data name="Distance_adjacent_zones" xml:space="preserve">
-    <value>Distance to highlight adjacent zones</value>
+    <value>Highlight distance</value>
+    <comment>Distance of when an adjacent zone should light up when the window is close to it</comment>
   </data>
   <data name="Edit_Layout" xml:space="preserve">
     <value>Edit layout</value>
@@ -343,10 +344,20 @@
     <value>Splitter:</value>
     <comment>Title for concept: A segmenter visual for splitting one item into two.  This would be the vertical line</comment>
   </data>
-  <data name="QuickKey_Select" xml:space="preserve">
-    <value>Select a key to quickly apply the layout (Win + Ctrl + Alt + key)</value>
+  <data name="QuickKey_Description" xml:space="preserve">
+    <value>Press Win + Ctrl + Alt + selected key to apply this layout</value>
   </data>
   <data name="Quick_Key_None" xml:space="preserve">
     <value>None</value>
+  </data>
+  <data name="Number_of_zones" xml:space="preserve">
+    <value>Number of zones</value>
+  </data>
+  <data name="Pixels" xml:space="preserve">
+    <value>px</value>
+    <comment>Abbreviation of pixels</comment>
+  </data>
+  <data name="QuickKey_Title" xml:space="preserve">
+    <value>Layout shortcut</value>
   </data>
 </root>

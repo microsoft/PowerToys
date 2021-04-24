@@ -10,17 +10,13 @@
 
 namespace
 {
-    constexpr inline wchar_t POWERTOYS_MSI_MUTEX_NAME[] = L"Local\\PowerToyRunMutex";
-    constexpr inline wchar_t POWERTOYS_MSIX_MUTEX_NAME[] = L"Local\\PowerToyMSIXRunMutex";
-    constexpr inline wchar_t POWERTOYS_BOOTSTRAPPER_MUTEX_NAME[] = L"PowerToysBootstrapperMutex";
+    constexpr inline wchar_t POWERTOYS_MSI_MUTEX_NAME[] = L"Local\\PowerToys_Runner_MSI_InstanceMutex";
+    constexpr inline wchar_t POWERTOYS_MSIX_MUTEX_NAME[] = L"Local\\PowerToys_Runner_MSIX_InstanceMutex";
+    constexpr inline wchar_t POWERTOYS_BOOTSTRAPPER_MUTEX_NAME[] = L"Local\\PowerToys_Bootstrapper_InstanceMutex";
 }
 
-inline wil::unique_mutex_nothrow createAppMutex(std::wstring mutexName)
+inline wil::unique_mutex_nothrow createAppMutex(const std::wstring& mutexName)
 {
-    wchar_t username[UNLEN + 1];
-    DWORD username_length = UNLEN + 1;
-    GetUserNameW(username, &username_length);
-    mutexName += username;
     wil::unique_mutex_nothrow result{ CreateMutexW(nullptr, TRUE, mutexName.c_str()) };
 
     return GetLastError() == ERROR_ALREADY_EXISTS ? wil::unique_mutex_nothrow{} : std::move(result);

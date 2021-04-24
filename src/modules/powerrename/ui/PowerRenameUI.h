@@ -35,6 +35,43 @@ private:
     HWND m_hwndLV = nullptr;
 };
 
+class CPowerRenameProgressUI :
+    public IUnknown
+{
+public:
+    CPowerRenameProgressUI() :
+        m_refCount(1)
+    {
+    }
+
+    ~CPowerRenameProgressUI() = default;
+
+    // IUnknown
+    IFACEMETHODIMP QueryInterface(__in REFIID riid, __deref_out void** ppv);
+    IFACEMETHODIMP_(ULONG)
+    AddRef();
+    IFACEMETHODIMP_(ULONG)
+    Release();
+
+    HRESULT Start();
+    HRESULT Stop();
+    bool IsCanceled() { return m_canceled; }
+
+private:
+    static LRESULT CALLBACK s_msgWndProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
+    LRESULT _WndProc(_In_ HWND hwnd, _In_ UINT msg, _In_ WPARAM wParam, _In_ LPARAM lParam);
+
+    static DWORD WINAPI s_workerThread(_In_ void* pv);
+
+    void _UpdateCancelState();
+    void _Cleanup();
+
+    long m_refCount = 0;
+    bool m_canceled = false;
+    HANDLE m_workerThreadHandle = nullptr;
+    CComPtr<IProgressDialog> m_sppd;
+};
+
 class CPowerRenameUI :
     public IDropTarget,
     public IPowerRenameUI,
@@ -141,7 +178,7 @@ private:
     void _SetCheckboxesFromFlags(_In_ DWORD flags);
     void _ValidateFlagCheckbox(_In_ DWORD checkBoxId);
 
-    void _EnumerateItems(_In_ IUnknown* pdtobj);
+    HRESULT _EnumerateItems(_In_ IUnknown* pdtobj);
     void _UpdateCounts();
 
     void _CollectItemPosition(_In_ DWORD id);
@@ -164,8 +201,10 @@ private:
     int m_initialHeight = 0;
     int m_lastWidth = 0;
     int m_lastHeight = 0;
+    CPowerRenameProgressUI m_prpui;
     CComPtr<IPowerRenameManager> m_spsrm;
     CComPtr<IUnknown> m_dataSource;
+    CComPtr<IPowerRenameEnum> m_sppre;
     CComPtr<IDropTargetHelper> m_spdth;
     CComPtr<IAutoComplete2> m_spSearchAC;
     CComPtr<IUnknown> m_spSearchACL;

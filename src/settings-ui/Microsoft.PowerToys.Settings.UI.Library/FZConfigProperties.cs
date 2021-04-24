@@ -9,7 +9,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class FZConfigProperties
     {
-        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, false, false, false, 0xc0);
+        // in reality, this file needs to be kept in sync currently with src\modules\fancyzones\lib\Settings.h
+        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, false, false, true, 0xc0);
 
         public FZConfigProperties()
         {

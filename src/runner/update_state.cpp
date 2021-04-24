@@ -8,7 +8,7 @@
 namespace
 {
     const wchar_t PERSISTENT_STATE_FILENAME[] = L"\\update_state.json";
-    const wchar_t UPDATE_STATE_MUTEX[] = L"PTUpdateStateMutex";
+    const wchar_t UPDATE_STATE_MUTEX[] = L"Local\\PowerToys_Runner_UpdateStateMutex";
 }
 
 UpdateState deserialize(const json::JsonObject& json)

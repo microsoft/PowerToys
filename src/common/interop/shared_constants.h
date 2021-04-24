@@ -27,4 +27,7 @@ namespace CommonSharedConstants
 
     // Max DWORD for key code to disable keys.
     const int VK_DISABLED = 0x100;
+
+    // Name of the mutex which controls access to the configuration file for Keyboard Manager
+    const wchar_t KEYBOARD_MANAGER_CONFIG_FILE_MUTEX_NAME[] = L"Local\\PowerToys_KeyboardManager_ConfigFileMutex";
 }

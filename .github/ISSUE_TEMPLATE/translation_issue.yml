@@ -1,0 +1,66 @@
+name: "🌐 Localization/Translation issue"
+description: Report incorrect translations.
+labels: 
+- Issue-Bug
+- Area-Localization
+- Issue-Translation
+- Triage-Needed 
+body:
+- type: markdown
+  attributes:
+    value: |
+      Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
+- type: input
+  attributes:
+    label: Microsoft PowerToys version
+    placeholder: "0.35.0"
+    description: |
+      Hover over system tray icon or look at Settings
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: Utility with translation issue
+    options:
+      - General
+      - ColorPicker
+      - FancyZones
+      - FancyZones Editor 
+      - Image Resizer
+      - Keyboard Manager
+      - MD Preview
+      - PowerRename
+      - PowerToys Run
+      - Shortcut Guide
+      - SVG Preview
+      - SVG Thumbnail
+      - Settings
+      - Welcome / PowerToys Tour window
+      - System tray interaction
+      - Installer
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: 🌐 Language affected
+    placeholder: "German"
+  validations:
+    required: true
+- type: textarea
+  attributes: 
+    label: ❌ Actual phrase(s)
+    placeholder: What is there?  Please include a screenshot as that is extremely helpful. 
+  validations:
+    required: true
+- type: textarea
+  attributes: 
+    label: ✔️ Expected phrase(s)
+    placeholder: What was expected?
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: ℹ Why is the current translation wrong
+    placeholder: Why do you feel this is incorrect?
+  validations:
+    required: true

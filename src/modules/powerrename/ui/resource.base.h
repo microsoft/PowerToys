@@ -26,9 +26,10 @@
 #define IDC_TRANSFORM_UPPERCASE         3019
 #define IDC_TRANSFORM_LOWERCASE         3020
 #define IDC_TRANSFORM_TITLECASE         3021
-#define IDC_SEARCH_FOR                  3022
-#define IDC_REPLACE_WITH                3023
+#define IDC_TRANSFORM_CAPITALIZED       3022
+#define IDC_SEARCH_FOR                  3023
+#define IDC_REPLACE_WITH                3024
 #define IDC_STATIC                      -1
-#define IDR_MAINFRAME                   3024
-#define IDD_MAIN                        3025
+#define IDR_MAINFRAME                   3025
+#define IDD_MAIN                        3026
 #define IDI_RENAME                      2001

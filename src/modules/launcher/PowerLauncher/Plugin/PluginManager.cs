@@ -10,6 +10,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using PowerLauncher.Properties;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -49,7 +50,10 @@ namespace PowerLauncher.Plugin
                     {
                         if (_allPlugins == null)
                         {
-                            _allPlugins = PluginsLoader.Plugins(PluginConfig.Parse(Directories));
+                            _allPlugins = PluginConfig.Parse(Directories)
+                                .Where(x => x.Language.ToUpperInvariant() == AllowedLanguage.CSharp)
+                                .Select(x => new PluginPair(x))
+                                .ToList();
                         }
                     }
                 }
@@ -119,23 +123,15 @@ namespace PowerLauncher.Plugin
             var failedPlugins = new ConcurrentQueue<PluginPair>();
             Parallel.ForEach(AllPlugins, pair =>
             {
-                try
+                if (pair.Metadata.Disabled)
                 {
-                    var milliseconds = Stopwatch.Debug($"PluginManager.InitializePlugins - Init method time cost for <{pair.Metadata.Name}>", () =>
-                    {
-                        pair.Plugin.Init(new PluginInitContext
-                        {
-                            CurrentPluginMetadata = pair.Metadata,
-                            API = API,
-                        });
-                    });
-                    pair.Metadata.InitTime += milliseconds;
-                    Log.Info($"Total init cost for <{pair.Metadata.Name}> is <{pair.Metadata.InitTime}ms>", MethodBase.GetCurrentMethod().DeclaringType);
+                    return;
                 }
-                catch (Exception e)
+
+                pair.InitializePlugin(API);
+
+                if (!pair.IsPluginInitialized)
                 {
-                    Log.Exception($"Fail to Init plugin: {pair.Metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
-                    pair.Metadata.Disabled = true;
                     failedPlugins.Enqueue(pair);
                 }
             });
@@ -145,7 +141,8 @@ namespace PowerLauncher.Plugin
             if (failedPlugins.Any())
             {
                 var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
-                API.ShowMsg($"Fail to Init Plugins", $"Plugins: {failed} - fail to load and would be disabled, please contact plugin creator for help", string.Empty, false);
+                var description = string.Format(CultureInfo.CurrentCulture, Resources.FailedToInitializePluginsDescription, failed);
+                API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false);
             }
         }
 
@@ -160,6 +157,11 @@ namespace PowerLauncher.Plugin
             if (pair == null)
             {
                 throw new ArgumentNullException(nameof(pair));
+            }
+
+            if (!pair.IsPluginInitialized)
+            {
+                return new List<Result>();
             }
 
             try
@@ -183,6 +185,11 @@ namespace PowerLauncher.Plugin
                         UpdateResultWithActionKeyword(results, query);
                     }
                 });
+
+                if (milliseconds > 50)
+                {
+                    Log.Warn($"PluginManager.QueryForPlugin {metadata.Name}. Query cost - {milliseconds} milliseconds", typeof(PluginManager));
+                }
 
                 metadata.QueryCount += 1;
                 metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;

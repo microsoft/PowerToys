@@ -159,6 +159,42 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
             {
                 hr = StringCchCopy(result, cchMax, source);
             }
+        } 
+        else if (flags & Capitalized)
+        {
+            if (!(flags & ExtensionOnly))
+            {
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::wstring extension = fs::path(source).extension().wstring();
+
+                size_t stemLength = stem.length();
+
+                while (stemLength > 0 && (iswspace(stem[stemLength - 1]) || iswpunct(stem[stemLength - 1])))
+                {
+                    stemLength--;
+                }
+
+                for (size_t i = 0; i < stemLength; i++)
+                {
+                    if (!i || iswspace(stem[i - 1]) || iswpunct(stem[i - 1]))
+                    {
+                        if (iswspace(stem[i]) || iswpunct(stem[i]))
+                        {
+                            continue;
+                        }
+                        stem[i] = towupper(stem[i]);
+                    }
+                    else
+                    {
+                        stem[i] = towlower(stem[i]);
+                    }
+                }
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), extension.c_str());
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+            }
         }
         else
         {
@@ -275,7 +311,7 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
     return hr;
 }
 
-HRESULT _GetShellItemArrayFromDataOject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items)
+HRESULT GetShellItemArrayFromDataObject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items)
 {
     *items = nullptr;
     CComPtr<IDataObject> dataObj;
@@ -287,73 +323,6 @@ HRESULT _GetShellItemArrayFromDataOject(_In_ IUnknown* dataSource, _COM_Outptr_ 
     else
     {
         hr = dataSource->QueryInterface(IID_PPV_ARGS(items));
-    }
-
-    return hr;
-}
-
-HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ int depth = 0)
-{
-    HRESULT hr = E_INVALIDARG;
-
-    // We shouldn't get this deep since we only enum the contents of
-    // regular folders but adding just in case
-    if ((pesi) && (depth < (MAX_PATH / 2)))
-    {
-        hr = S_OK;
-
-        ULONG celtFetched;
-        CComPtr<IShellItem> spsi;
-        while ((S_OK == pesi->Next(1, &spsi, &celtFetched)) && (SUCCEEDED(hr)))
-        {
-            CComPtr<IPowerRenameItemFactory> spsrif;
-            hr = psrm->GetRenameItemFactory(&spsrif);
-            if (SUCCEEDED(hr))
-            {
-                CComPtr<IPowerRenameItem> spNewItem;
-                hr = spsrif->Create(spsi, &spNewItem);
-                if (SUCCEEDED(hr))
-                {
-                    spNewItem->PutDepth(depth);
-                    hr = psrm->AddItem(spNewItem);
-                }
-
-                if (SUCCEEDED(hr))
-                {
-                    bool isFolder = false;
-                    if (SUCCEEDED(spNewItem->GetIsFolder(&isFolder)) && isFolder)
-                    {
-                        // Bind to the IShellItem for the IEnumShellItems interface
-                        CComPtr<IEnumShellItems> spesiNext;
-                        hr = spsi->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(&spesiNext));
-                        if (SUCCEEDED(hr))
-                        {
-                            // Parse the folder contents recursively
-                            hr = _ParseEnumItems(spesiNext, psrm, depth + 1);
-                        }
-                    }
-                }
-            }
-
-            spsi = nullptr;
-        }
-    }
-
-    return hr;
-}
-
-// Iterate through the data source and add paths to the rotation manager
-HRESULT EnumerateDataObject(_In_ IUnknown* dataSource, _In_ IPowerRenameManager* psrm)
-{
-    CComPtr<IShellItemArray> spsia;
-    HRESULT hr = E_FAIL;
-    if (SUCCEEDED(_GetShellItemArrayFromDataOject(dataSource, &spsia)))
-    {
-        CComPtr<IEnumShellItems> spesi;
-        if (SUCCEEDED(spsia->EnumItems(&spesi)))
-        {
-            hr = _ParseEnumItems(spesi, psrm);
-        }
     }
 
     return hr;
@@ -528,7 +497,7 @@ bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource)
 {
     bool hasRenamable = false;
     CComPtr<IShellItemArray> spsia;
-    if (SUCCEEDED(_GetShellItemArrayFromDataOject(dataSource, &spsia)))
+    if (SUCCEEDED(GetShellItemArrayFromDataObject(dataSource, &spsia)))
     {
         CComPtr<IEnumShellItems> spesi;
         if (SUCCEEDED(spsia->EnumItems(&spesi)))
@@ -548,4 +517,31 @@ bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource)
         }
     }
     return hasRenamable;
+}
+
+HWND CreateMsgWindow(_In_ HINSTANCE hInst, _In_ WNDPROC pfnWndProc, _In_ void* p)
+{
+    WNDCLASS wc = { 0 };
+    PCWSTR wndClassName = L"MsgWindow";
+
+    wc.lpfnWndProc = DefWindowProc;
+    wc.cbWndExtra = sizeof(void*);
+    wc.hInstance = hInst;
+    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+    wc.lpszClassName = wndClassName;
+
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowEx(
+        0, wndClassName, nullptr, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, hInst, nullptr);
+    if (hwnd)
+    {
+        SetWindowLongPtr(hwnd, 0, (LONG_PTR)p);
+        if (pfnWndProc)
+        {
+            SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)pfnWndProc);
+        }
+    }
+
+    return hwnd;
 }

@@ -23,15 +23,15 @@
                         VerticalAlignment="Top">
 
                 <TextBlock Text="{x:Bind ViewModel.ModuleName}"
+                           AutomationProperties.HeadingLevel="Level2"
                            Style="{StaticResource PageTitleStyle}" />
 
                 <TextBlock Margin="0,4,0,0"
                            TextWrapping="Wrap">
                     <Run x:Uid="Oobe_Overview_Description" />
-                    <Hyperlink NavigateUri="{x:Bind ViewModel.DescriptionLink}"
-                               Foreground="{ThemeResource SystemControlBackgroundAccentBrush}">
+                    <Hyperlink NavigateUri="{x:Bind ViewModel.DescriptionLink}">
                         <Run x:Uid="Oobe_Overview_DescriptionLinkText" />
-                    </Hyperlink>
+                    </Hyperlink><Run Text="." />
                 </TextBlock>
 
                 <TextBlock Margin="0,32,0,0"
@@ -39,17 +39,19 @@
                 <Run x:Uid="Oobe_Overview_CheckoutLatestVersion" />
                 <Hyperlink NavigateUri="{x:Bind ViewModel.Link}">
                     <Run x:Uid="Oobe_Overview_LatestVersionLink" />
-                </Hyperlink>
+                </Hyperlink><Run Text="." />
                 </TextBlock>
 
                 <Button Click="SettingsLaunchButton_Click"
-                            Margin="0,32,0,0">
+                        AutomationProperties.LabeledBy="{Binding ElementName=SettingsLabel}"
+                        Margin="0,32,0,0">
                     <StackPanel Orientation="Horizontal"
-                                    Spacing="8">
+                                Spacing="8">
                         <TextBlock Text="&#xE115;"
-                                       Margin="0,3,0,0"
-                                       FontFamily="Segoe MDL2 Assets" />
-                        <TextBlock x:Uid="OOBE_Settings" />
+                                   Margin="0,3,0,0"
+                                   FontFamily="Segoe MDL2 Assets" />
+                        <TextBlock x:Uid="OOBE_Settings"
+                                   Name="SettingsLabel" />
                     </StackPanel>
                 </Button>
             </StackPanel>

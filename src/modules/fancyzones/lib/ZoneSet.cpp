@@ -882,9 +882,9 @@ bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutI
                 long bottom = rowInfo[maxRow].End;
 
                 top += row == 0 ? spacing : spacing / 2;
-                bottom -= row == gridLayoutInfo.rows() - 1 ? spacing : spacing / 2;
+                bottom -= maxRow == gridLayoutInfo.rows() - 1 ? spacing : spacing / 2;
                 left += col == 0 ? spacing : spacing / 2;
-                right -= col == gridLayoutInfo.columns() - 1 ? spacing : spacing / 2;
+                right -= maxCol == gridLayoutInfo.columns() - 1 ? spacing : spacing / 2;
 
                 auto zone = MakeZone(RECT{ left, top, right, bottom }, i);
                 if (zone)

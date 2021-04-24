@@ -14,7 +14,8 @@ enum PowerRenameFlags
     ExtensionOnly = 0x100,
     Uppercase = 0x200,
     Lowercase = 0x400,
-    Titlecase = 0x800
+    Titlecase = 0x800,
+    Capitalized = 0x1000
 };
 
 enum PowerRenameFilters
@@ -134,3 +135,9 @@ public:
     IFACEMETHOD(AddMRUString)(_In_ PCWSTR entry) = 0;
 };
 
+interface __declspec(uuid("CE8C8616-C1A8-457A-9601-10570F5B9F1F")) IPowerRenameEnum : public IUnknown
+{
+public:
+    IFACEMETHOD(Start)() = 0;
+    IFACEMETHOD(Cancel)() = 0;
+};

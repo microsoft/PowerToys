@@ -421,5 +421,14 @@ namespace FancyZonesEditor
         {
             _openedDialog = null;
         }
+
+        private void EditDialogNumberBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Making sure that pressing Enter when changing values in a NumberBox will not close the edit dialog.
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+            }
+        }
     }
 }

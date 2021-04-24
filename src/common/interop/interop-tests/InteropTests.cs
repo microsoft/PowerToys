@@ -22,9 +22,6 @@ namespace Microsoft.Interop.Tests
         [TestInitialize]
         public void Initialize()
         {
-            // Make sure we don't crash
-            Assert.IsTrue(CommonManaged.ShouldNewSettingsBeUsed() == CommonManaged.ShouldNewSettingsBeUsed());
-
             ClientPipe = new TwoWayPipeMessageIPCManaged(ClientSidePipe, ServerSidePipe, null);
         }
 

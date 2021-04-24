@@ -10,29 +10,20 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
-      <Item ItemId=";filesfolder_copy_failed" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";FailedToLoadPluginDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Copying path {0} has failed, it will now be deleted for consistency]]></Val>
+          <Val><![CDATA[Please contact plugin creator for help]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[複製路徑 {0} 已失敗。為保持一致性，將立即刪除]]></Val>
+            <Val><![CDATA[請連絡外掛程式建立者以取得協助]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";filesfolder_removefolder_failed" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";FailedToLoadPluginTitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Not able to delete folder {0}, please go to the location and manually delete it]]></Val>
+          <Val><![CDATA[Fail to Load {0} Plugin]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法刪除資料夾 {0}，請前往該位置並手動將其刪除]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";filesfolder_verifybothfolderfilesequal_failed" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to verify folders and files between {0} and {1}]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法在 {0} 與 {1} 之間驗證資料夾和檔案]]></Val>
+            <Val><![CDATA[無法載入 {0} 外掛程式]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

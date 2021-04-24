@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
@@ -10,6 +11,30 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
     public class VSCodeWorkspacesApi
     {
         public VSCodeWorkspacesApi() { }
+
+        private VSCodeWorkspace parseVSCodeUri(string uri, VSCodeInstance vscodeInstance)
+        {
+            if (uri != null && uri is String)
+            {
+                string unescapeUri = Uri.UnescapeDataString(uri);
+                var typeWorkspace = ParseVSCodeUri.GetTypeWorkspace(unescapeUri);
+                if (typeWorkspace.TypeWorkspace.HasValue)
+                {
+                    var folderName = Path.GetFileName(unescapeUri);
+                    return new VSCodeWorkspace()
+                    {
+                        Path = uri,
+                        RelativePath = typeWorkspace.Path,
+                        FolderName = folderName,
+                        ExtraInfo = typeWorkspace.MachineName,
+                        TypeWorkspace = typeWorkspace.TypeWorkspace.Value,
+                        VSCodeInstance = vscodeInstance
+                    };
+                }
+            }
+
+            return null;
+        }
 
         public List<VSCodeWorkspace> Workspaces
         {
@@ -33,27 +58,32 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                             if (vscodeStorageFile != null)
                             {
-                                foreach (var workspaceUri in vscodeStorageFile.openedPathsList.workspaces3)
+                                //for previous versions of vscode
+                                if (vscodeStorageFile.openedPathsList.workspaces3 != null)
                                 {
-                                    if (workspaceUri != null && workspaceUri is String)
+                                    foreach (var workspaceUri in vscodeStorageFile.openedPathsList.workspaces3)
                                     {
-                                        string unescapeUri = Uri.UnescapeDataString(workspaceUri);
-                                        var typeWorkspace = ParseVSCodeUri.GetTypeWorkspace(unescapeUri);
-                                        if (typeWorkspace.TypeWorkspace.HasValue)
+                                        var uri = parseVSCodeUri(workspaceUri, vscodeInstance);
+                                        if (uri != null)
                                         {
-                                            var folderName = Path.GetFileName(unescapeUri);
-                                            results.Add(new VSCodeWorkspace()
-                                            {
-                                                Path = workspaceUri,
-                                                RelativePath = typeWorkspace.Path,
-                                                FolderName = folderName,
-                                                ExtraInfo = typeWorkspace.MachineName,
-                                                TypeWorkspace = typeWorkspace.TypeWorkspace.Value,
-                                                VSCodeInstance = vscodeInstance
-                                            });
+                                            results.Add(uri);
                                         }
                                     }
                                 }
+
+                                //vscode v1.55.0 or later
+                                if (vscodeStorageFile.openedPathsList.entries != null)
+                                {
+                                    foreach (var workspaceUri in vscodeStorageFile.openedPathsList.entries.Select(x => x.folderUri))
+                                    {
+                                        var uri = parseVSCodeUri(workspaceUri, vscodeInstance);
+                                        if (uri != null)
+                                        {
+                                            results.Add(uri);
+                                        }
+                                    }
+                                }
+
                             }
                         }
                         catch (Exception ex)

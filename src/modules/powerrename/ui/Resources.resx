@@ -175,6 +175,9 @@ Please select from the options above to show items.</value>
   <data name="Make_Titlecase" xml:space="preserve">
     <value>Make Titlecase</value>
   </data>
+  <data name="Make_Capitalized" xml:space="preserve">
+    <value>Make Capitalized</value>
+  </data>
   <data name="Rename_Button" xml:space="preserve">
     <value>&amp;Rename</value>
   </data>
@@ -204,5 +207,11 @@ Please select from the options above to show items.</value>
   </data>
   <data name="Rename_Criteria" xml:space="preserve">
     <value>Enter the criteria below to rename the items</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Loading_Msg" xml:space="preserve">
+    <value>Please wait while the selected items are enumerated.</value>
   </data>
 </root>

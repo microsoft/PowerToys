@@ -87,6 +87,7 @@
     <ClInclude Include="KeyboardHook.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="shared_constants.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Generated Files\AssemblyInfo.cpp" />
