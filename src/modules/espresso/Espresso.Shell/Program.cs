@@ -120,7 +120,6 @@ namespace Espresso.Shell
                 catch (Exception ex)
                 {
                     Console.WriteLine($"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}");
-                    //ForceExit($"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}", 1);
                 }
             }
             else
@@ -141,20 +140,7 @@ namespace Espresso.Shell
                 else
                 {
                     // Timed keep-awake.
-                    APIHelper.SetTimedKeepAwake(timeLimit, LogTimedKeepAwakeCompletion, displayOn);
-                    //if (success)
-                    //{
-                    //    Console.WriteLine($"Finished execution of timed keep-awake.");
-
-                    //    // Because the timed keep-awake execution completed, there is no reason for
-                    //    // Espresso to stay alive - I will just shut down the application until it's
-                    //    // launched again by the user.
-                    //    Environment.Exit(0);
-                    //}
-                    //else
-                    //{
-                    //    Console.WriteLine("Could not set up the state to be timed keep awake.");
-                    //}
+                    APIHelper.SetTimedKeepAwake(timeLimit, LogTimedKeepAwakeCompletion, LogUnexpectedOrCancelledKeepAwakeCompletion, displayOn);
                 }
             }
 
@@ -212,17 +198,8 @@ namespace Espresso.Shell
                                     long computedTime = (settings.Properties.Hours.Value * 60 * 60) + (settings.Properties.Minutes.Value * 60);
                                     Console.WriteLine($"In timed keep-awake mode. Expecting to be awake for {computedTime} seconds.");
 
-                                    APIHelper.SetTimedKeepAwake(computedTime, LogTimedKeepAwakeCompletion, settings.Properties.KeepDisplayOn.Value);
-                                    //if (success)
-                                    //{
-                                    //    Console.WriteLine($"Finished execution of timed keep-awake.");
+                                    APIHelper.SetTimedKeepAwake(computedTime, LogTimedKeepAwakeCompletion, LogUnexpectedOrCancelledKeepAwakeCompletion, settings.Properties.KeepDisplayOn.Value);
 
-                                    //    ResetNormalPowerState();
-                                    //}
-                                    //else
-                                    //{
-                                    //    Console.WriteLine("Could not set up the state to be timed keep awake.");
-                                    //}
                                     break;
                                 }
                             default:
@@ -246,6 +223,11 @@ namespace Espresso.Shell
             {
                 Console.WriteLine($"There was a problem reading the configuration file.\n{ex.Message}");
             }
+        }
+
+        private static void LogUnexpectedOrCancelledKeepAwakeCompletion()
+        {
+            Console.Write("The keep-awake thread was terminated early.");
         }
 
         private static void LogTimedKeepAwakeCompletion(bool result)

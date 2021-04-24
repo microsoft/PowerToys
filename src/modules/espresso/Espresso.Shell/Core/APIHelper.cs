@@ -63,7 +63,7 @@ namespace Espresso.Shell.Core
 
         public static bool SetNormalKeepAwake()
         {
-            //TokenSource.Cancel();
+            TokenSource.Cancel();
             return SetAwakeState(EXECUTION_STATE.ES_CONTINUOUS);
         }
 
@@ -79,22 +79,13 @@ namespace Espresso.Shell.Core
             }    
         }
 
-        public static void SetTimedKeepAwake(long seconds, Action<bool> callback, bool keepDisplayOn = true)
+        public static void SetTimedKeepAwake(long seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
         {
             ThreadToken = TokenSource.Token;
 
-            try
-            {
-                Task.Run(() => RunTimedLoop(seconds, keepDisplayOn), ThreadToken).ContinueWith((result) => callback(result.Result));
-            }
-            catch (OperationCanceledException e)
-            {
-                Console.WriteLine($"{nameof(OperationCanceledException)} thrown with message: {e.Message}");
-            }
-            finally
-            {
-                TokenSource.Dispose();
-            }
+            Task.Run(() => RunTimedLoop(seconds, keepDisplayOn), ThreadToken)
+                .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
+                .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion); ;
 
         }
 
