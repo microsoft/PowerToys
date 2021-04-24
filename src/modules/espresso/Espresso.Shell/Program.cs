@@ -6,6 +6,7 @@ using Espresso.Shell.Core;
 using Espresso.Shell.Models;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Specialized;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
@@ -23,7 +24,7 @@ namespace Espresso.Shell
 
         private static MemoryCache _memoryCache;
         private static CacheItemPolicy _cacheItemPolicy;
-        private const int CacheExpirationTimeframe = 500;
+        private const int CacheExpirationTimeframe = 1000;
 
         static int Main(string[] args)
         {
@@ -109,7 +110,12 @@ namespace Espresso.Shell
 
                 try
                 {
-                    _memoryCache = MemoryCache.Default;
+                    var cacheConfig = new NameValueCollection()
+                    {
+                        {"CacheMemoryLimitMegabytes", "1"},
+                        {"PollingInterval", TimeSpan.FromMilliseconds(1000).ToString()},
+                    };
+                    _memoryCache = new MemoryCache("EventCache", cacheConfig);
 
                     watcher = new FileSystemWatcher
                     {
@@ -174,7 +180,7 @@ namespace Espresso.Shell
         private static void HandleEspressoConfigChange(object sender, FileSystemEventArgs e)
         {
             _cacheItemPolicy.AbsoluteExpiration = DateTimeOffset.Now.AddMilliseconds(CacheExpirationTimeframe);
-            _memoryCache.AddOrGetExisting(e.Name, e, _cacheItemPolicy);
+            _memoryCache.Set(e.Name, e, _cacheItemPolicy);
         }
 
         private static void ProcessSettings(string fullPath)
