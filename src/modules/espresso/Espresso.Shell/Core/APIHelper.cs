@@ -91,52 +91,60 @@ namespace Espresso.Shell.Core
 
         private static bool RunTimedLoop(long seconds, bool keepDisplayOn = true)
         {
-            bool success;
+            bool success = false;
 
             // In case cancellation was already requested.
             //ThreadToken.ThrowIfCancellationRequested();
 
-            if (keepDisplayOn)
+            try
             {
-                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-                if (success)
+                if (keepDisplayOn)
                 {
-                    Console.WriteLine("Timed keep-awake with display on.");
-                    var startTime = DateTime.UtcNow;
-                    while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
+                    success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                    if (success)
                     {
-                        if (ThreadToken.IsCancellationRequested)
+                        Console.WriteLine("Timed keep-awake with display on.");
+                        var startTime = DateTime.UtcNow;
+                        while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
                         {
-                            ThreadToken.ThrowIfCancellationRequested();
+                            if (ThreadToken.IsCancellationRequested)
+                            {
+                                ThreadToken.ThrowIfCancellationRequested();
+                            }
                         }
+                        return success;
                     }
-                    return success;
+                    else
+                    {
+                        return success;
+                    }
                 }
                 else
                 {
-                    return success;
+                    success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+                    if (success)
+                    {
+                        Console.WriteLine("Timed keep-awake with display off.");
+                        var startTime = DateTime.UtcNow;
+                        while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
+                        {
+                            if (ThreadToken.IsCancellationRequested)
+                            {
+                                ThreadToken.ThrowIfCancellationRequested();
+                            }
+                        }
+                        return success;
+                    }
+                    else
+                    {
+                        return success;
+                    }
                 }
             }
-            else
+            catch (OperationCanceledException ex)
             {
-                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-                if (success)
-                {
-                    Console.WriteLine("Timed keep-awake with display off.");
-                    var startTime = DateTime.UtcNow;
-                    while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
-                    {
-                        if (ThreadToken.IsCancellationRequested)
-                        {
-                            ThreadToken.ThrowIfCancellationRequested();
-                        }
-                    }
-                    return success;
-                }
-                else
-                {
-                    return success;
-                }
+                // Task was clearly cancelled.
+                return success;
             }
         }
     }

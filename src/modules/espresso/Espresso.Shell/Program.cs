@@ -9,6 +9,7 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Runtime.Caching;
 using System.Threading;
 
 namespace Espresso.Shell
@@ -19,6 +20,10 @@ namespace Espresso.Shell
         private const string appName = "Espresso";
         private static FileSystemWatcher watcher = null;
         public static Mutex Mutex { get => mutex; set => mutex = value; }
+
+        private static MemoryCache _memoryCache;
+        private static CacheItemPolicy _cacheItemPolicy;
+        private const int CacheExpirationTimeframe = 500;
 
         static int Main(string[] args)
         {
@@ -104,13 +109,21 @@ namespace Espresso.Shell
 
                 try
                 {
+                    _memoryCache = MemoryCache.Default;
+
                     watcher = new FileSystemWatcher
                     {
                         Path = Path.GetDirectoryName(config),
                         EnableRaisingEvents = true,
-                        NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
+                        NotifyFilter = NotifyFilters.LastWrite,
                         Filter = Path.GetFileName(config)
                     };
+
+                    _cacheItemPolicy = new CacheItemPolicy()
+                    {
+                        RemovedCallback = HandleCacheRemoval
+                    };
+                    
                     watcher.Changed += new FileSystemEventHandler(HandleEspressoConfigChange);
 
                     // Initially the file might not be updated, so we need to start processing
@@ -147,12 +160,21 @@ namespace Espresso.Shell
             new ManualResetEvent(false).WaitOne();
         }
 
-        private static void HandleEspressoConfigChange(object sender, FileSystemEventArgs e)
+        private static void HandleCacheRemoval(CacheEntryRemovedArguments args)
         {
+            if (args.RemovedReason != CacheEntryRemovedReason.Expired) return;
+
+            var fileEvent = (FileSystemEventArgs)args.CacheItem.Value;
             Console.WriteLine("Resetting keep-awake to normal state due to settings change.");
             ResetNormalPowerState();
             Console.WriteLine("Detected a file change. Reacting...");
-            ProcessSettings(e.FullPath);
+            ProcessSettings(fileEvent.FullPath);
+        }
+
+        private static void HandleEspressoConfigChange(object sender, FileSystemEventArgs e)
+        {
+            _cacheItemPolicy.AbsoluteExpiration = DateTimeOffset.Now.AddMilliseconds(CacheExpirationTimeframe);
+            _memoryCache.AddOrGetExisting(e.Name, e, _cacheItemPolicy);
         }
 
         private static void ProcessSettings(string fullPath)
