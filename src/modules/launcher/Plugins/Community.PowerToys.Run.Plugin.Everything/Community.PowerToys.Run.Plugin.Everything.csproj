@@ -104,10 +104,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="EverythingSDK\x64\Everything.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="EverythingSDK\x86\Everything.dll">
+    <Content Include="EverythingSDK\Everything.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\error.png">
