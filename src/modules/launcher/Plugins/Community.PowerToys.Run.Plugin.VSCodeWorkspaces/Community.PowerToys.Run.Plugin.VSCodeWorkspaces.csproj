@@ -38,13 +38,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="EverythingSDK\**" />
-    <EmbeddedResource Remove="EverythingSDK\**" />
-    <None Remove="EverythingSDK\**" />
-    <Page Remove="EverythingSDK\**" />
-  </ItemGroup>
   
   <ItemGroup>
     <None Include="plugin.json">
