@@ -1,4 +1,4 @@
-# Microsoft PowerToys With Everything Support
+# Microsoft PowerToys
 
 <img src="./doc/images/overview/PT%20hero%20image.png"/>
 
