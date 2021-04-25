@@ -26,7 +26,7 @@ namespace Community.PowerToys.Run.Plugin.Everything.SearchHelper
             FileName = 0x00000001,
             Path = 0x00000002,
             FullPathAndFileName = 0x00000004,
-            Extenssion = 0x00000008,
+            Extension = 0x00000008,
             Size = 0x00000010,
             DateCreated = 0x00000020,
             DateModified = 0x00000040,
@@ -153,7 +153,7 @@ namespace Community.PowerToys.Run.Plugin.Everything.SearchHelper
             for (int idx = 0; idx < count; ++idx)
             {
                 if (token.IsCancellationRequested) { return results; }
-                // https://www.voidtools.com/forum/viewtopic.php?t=8169
+
                 string fileNameHighted = Marshal.PtrToStringUni(EverythingApiDllImport.Everything_GetResultHighlightedFileNameW(idx));
                 string fullPathHighted = Marshal.PtrToStringUni(EverythingApiDllImport.Everything_GetResultHighlightedFullPathAndFileNameW(idx));
                 if (fileNameHighted == null | fullPathHighted == null)
@@ -161,16 +161,16 @@ namespace Community.PowerToys.Run.Plugin.Everything.SearchHelper
                     CheckAndThrowExceptionOnError();
                 }
                 if (token.IsCancellationRequested) { return results; }
-                ConvertHightlightFormat(fileNameHighted, out List<int> fileNameHightlightData, out string fileName);
+                ConvertHighlightFormat(fileNameHighted, out List<int> fileNameHighlightData, out string fileName);
                 if (token.IsCancellationRequested) { return results; }
-                ConvertHightlightFormat(fullPathHighted, out List<int> fullPathHightlightData, out string fullPath);
+                ConvertHighlightFormat(fullPathHighted, out List<int> fullPathHighlightData, out string fullPath);
 
                 var result = new SearchResult
                 {
                     FileName = fileName,
-                    FileNameHightData = fileNameHightlightData,
+                    FileNameHightData = fileNameHighlightData,
                     FullPath = fullPath,
-                    FullPathHightData = fullPathHightlightData,
+                    FullPathHightData = fullPathHighlightData,
                 };
 
                 if (token.IsCancellationRequested) { return results; }
@@ -189,16 +189,16 @@ namespace Community.PowerToys.Run.Plugin.Everything.SearchHelper
             return results;
         }
 
-        private static void ConvertHightlightFormat(string contentHightlighted, out List<int> hightlightData, out string fn)
+        private static void ConvertHighlightFormat(string contentHighlighted, out List<int> highlightData, out string fn)
         {
-            hightlightData = new List<int>();
+            highlightData = new List<int>();
             StringBuilder content = new StringBuilder();
             bool flag = false;
-            char[] contentArray = contentHightlighted.ToCharArray();
+            char[] contentArray = contentHighlighted.ToCharArray();
             int count = 0;
             for (int i = 0; i < contentArray.Length; i++)
             {
-                char current = contentHightlighted[i];
+                char current = contentHighlighted[i];
                 if (current == '*')
                 {
                     flag = !flag;
@@ -208,7 +208,7 @@ namespace Community.PowerToys.Run.Plugin.Everything.SearchHelper
                 {
                     if (flag)
                     {
-                        hightlightData.Add(i - count);
+                        highlightData.Add(i - count);
                     }
                     content.Append(current);
                 }
