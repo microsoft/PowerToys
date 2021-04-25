@@ -1,4 +1,4 @@
-# Microsoft PowerToys With Everything Plugin
+# Microsoft PowerToys
 
 <img src="./doc/images/overview/PT%20hero%20image.png"/>
 
@@ -13,8 +13,6 @@
 ## About
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity. For more info on [PowerToys overviews and guides][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://docs.microsoft.com/windows/dev-environment/overview), head over to [docs.microsoft.com][usingPowerToys-docs-link]! 
-
-**This version adds plugin that allows using everything to search file!!!**
 
 |              | Current utilities: |              |
 |--------------|--------------------|--------------|
