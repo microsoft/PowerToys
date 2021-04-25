@@ -1,4 +1,4 @@
-# Microsoft PowerToys
+# Microsoft PowerToys With Everything Plugin
 
 <img src="./doc/images/overview/PT%20hero%20image.png"/>
 
@@ -13,6 +13,8 @@
 ## About
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity. For more info on [PowerToys overviews and guides][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://docs.microsoft.com/windows/dev-environment/overview), head over to [docs.microsoft.com][usingPowerToys-docs-link]! 
+
+**This version adds plugin that allows using everything to search file!!!**
 
 |              | Current utilities: |              |
 |--------------|--------------------|--------------|
@@ -29,26 +31,6 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 - Have [.NET Core 3.1.13 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.13-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
-
-#### Stable version
-
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.35.0-x64.exe` to download the PowerToys installer.
-
-This is our preferred method.
-
-#### Experimental version
-To install the Video Conference mute, please use the [v0.36 experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.35 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
-
-### Via WinGet (Preview)
-Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). To install PowerToys, run the following command from the command line / PowerShell:
-
-```powershell
-WinGet install powertoys
-```
-
-### Other install methods
-
-There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop.  If these are your preferred install solutions, this will have the install instructions.
 
 ### Processor support
 
