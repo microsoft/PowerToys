@@ -1,0 +1,13 @@
+﻿{
+  "ID": "2140FC9819AD43A3A616E2735815C27D",
+  "ActionKeyword": "@",
+  "IsGlobal": true,
+  "Name": "Everything",
+  "Author": "IzaiahSun",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://aka.ms/PowerToys",
+  "ExecuteFileName": "Community.PowerToys.Run.Plugin.Everything.dll",
+  "IcoPathDark": "Images\\everything.dark.png",
+  "IcoPathLight": "Images\\everything.light.png"
+}
