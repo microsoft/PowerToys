@@ -17,7 +17,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 {
     init_apartment();
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Engine", LogSettings::keyboardManagerLoggerName);
+    
     InitUnhandledExceptionHandler_x64();
+
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {
@@ -31,6 +33,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     }
 
     Trace::RegisterProvider();
+
     std::wstring pid = std::wstring(lpCmdLine);
     if (!pid.empty())
     {
@@ -42,18 +45,21 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
             }
             else
             {
-                Logger::info(L"PowerToys runner exited.");
+                Logger::trace(L"PowerToys runner exited.");
             }
 
-            Logger::info(L"Exiting KeyboardManager engine");
+            Logger::trace(L"Exiting KeyboardManager engine");
             PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
         });
     }
 
     auto kbm = KeyboardManager();
-    kbm.start_lowlevel_keyboard_hook();
+    kbm.StartLowlevelKeyboardHook();
+    
     run_message_loop();
-    kbm.stop_lowlevel_keyboard_hook();
+    
+    kbm.StopLowlevelKeyboardHook();
     Trace::UnregisterProvider();
+    
     return 0;
 }

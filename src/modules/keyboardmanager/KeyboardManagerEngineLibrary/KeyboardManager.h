@@ -5,6 +5,13 @@
 
 class KeyboardManager
 {
+public:
+    // Constructor
+    KeyboardManager();
+
+    void StartLowlevelKeyboardHook();
+    void StopLowlevelKeyboardHook();
+
 private:
     //contains the non localized key of the powertoy
     std::wstring app_key = KeyboardManagerConstants::ModuleName;
@@ -24,23 +31,16 @@ private:
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;
 
+    // TODO: add comment
     EventWaiter eventWaiter;
 
     std::atomic_bool loadingSettings = false;
-public:
-    // Constructor
-    KeyboardManager();
-
-    // Load settings from the file.
-    void load_settings();
 
     // Hook procedure definition
-    static LRESULT CALLBACK hook_proc(int nCode, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
 
-    void start_lowlevel_keyboard_hook();
-
-    // Function to terminate the low level hook
-    void stop_lowlevel_keyboard_hook();
+    // Load settings from the file.
+    void LoadSettings();
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

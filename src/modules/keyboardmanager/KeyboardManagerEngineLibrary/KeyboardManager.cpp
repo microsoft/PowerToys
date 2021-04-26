@@ -25,7 +25,7 @@ KeyboardManager* KeyboardManager::keyboardmanager_object_ptr;
 KeyboardManager::KeyboardManager()
 {
     // Load the initial settings.
-    load_settings();
+    LoadSettings();
 
     // Set the static pointer to the newest object of the class
     keyboardmanager_object_ptr = this;
@@ -42,7 +42,7 @@ KeyboardManager::KeyboardManager()
         try
         {
             Logger::trace("Load settings");
-            load_settings();
+            LoadSettings();
         }
         catch (...)
         {
@@ -55,12 +55,12 @@ KeyboardManager::KeyboardManager()
     eventWaiter = EventWaiter(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
 }
 
-void KeyboardManager::load_settings()
+void KeyboardManager::LoadSettings()
 {
     SettingsHelper::LoadSettings(keyboardManagerState);
 }
 
-LRESULT CALLBACK KeyboardManager::hook_proc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK KeyboardManager::HookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     LowlevelKeyboardEvent event;
     if (nCode == HC_ACTION)
@@ -80,7 +80,7 @@ LRESULT CALLBACK KeyboardManager::hook_proc(int nCode, WPARAM wParam, LPARAM lPa
     return CallNextHookEx(hook_handle_copy, nCode, wParam, lParam);
 }
 
-void KeyboardManager::start_lowlevel_keyboard_hook()
+void KeyboardManager::StartLowlevelKeyboardHook()
 {
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
     if (IsDebuggerPresent())
@@ -91,19 +91,19 @@ void KeyboardManager::start_lowlevel_keyboard_hook()
 
     if (!hook_handle)
     {
-        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, hook_proc, GetModuleHandle(NULL), NULL);
+        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, HookProc, GetModuleHandle(NULL), NULL);
         hook_handle_copy = hook_handle;
         if (!hook_handle)
         {
             DWORD errorCode = GetLastError();
             show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager");
             auto errorMessage = get_last_error_message(errorCode);
-            Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
+            Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"StartLowlevelKeyboardHook::SetWindowsHookEx");
         }
     }
 }
 
-void KeyboardManager::stop_lowlevel_keyboard_hook()
+void KeyboardManager::StopLowlevelKeyboardHook()
 {
     if (hook_handle)
     {
