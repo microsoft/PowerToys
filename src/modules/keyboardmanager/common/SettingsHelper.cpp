@@ -7,7 +7,7 @@
 
 #include <common/KeyboardManagerConstants.h>
 
-bool loadSingleKeyRemaps(KeyboardManagerState& keyboardManagerState, const json::JsonObject& jsonData)
+bool LoadSingleKeyRemaps(KeyboardManagerState& keyboardManagerState, const json::JsonObject& jsonData)
 {
     bool result = true;
 
@@ -55,7 +55,7 @@ bool loadSingleKeyRemaps(KeyboardManagerState& keyboardManagerState, const json:
     return result;
 }
 
-bool loadAppSpecificShortcutRemaps(KeyboardManagerState& keyboardManagerState, const json::JsonObject& remapShortcutsData)
+bool LoadAppSpecificShortcutRemaps(KeyboardManagerState& keyboardManagerState, const json::JsonObject& remapShortcutsData)
 {
     bool result = true;
 
@@ -98,7 +98,7 @@ bool loadAppSpecificShortcutRemaps(KeyboardManagerState& keyboardManagerState, c
     return result;
 }
 
-bool loadShortcutRemaps(KeyboardManagerState& keyboardManagerState, const json::JsonObject& jsonData)
+bool LoadShortcutRemaps(KeyboardManagerState& keyboardManagerState, const json::JsonObject& jsonData)
 {
     bool result = true;
 
@@ -146,7 +146,7 @@ bool loadShortcutRemaps(KeyboardManagerState& keyboardManagerState, const json::
             }
 
             // Load app specific shortcut remaps
-            result = result && loadAppSpecificShortcutRemaps(keyboardManagerState, remapShortcutsData);
+            result = result && LoadAppSpecificShortcutRemaps(keyboardManagerState, remapShortcutsData);
         }
     }
     catch (...)
@@ -179,8 +179,8 @@ bool SettingsHelper::LoadSettings(KeyboardManagerState& keyboardManagerState)
             return false;
         }
 
-        bool result = loadSingleKeyRemaps(keyboardManagerState, *configFile);
-        result = result && loadShortcutRemaps(keyboardManagerState, *configFile);
+        bool result = LoadSingleKeyRemaps(keyboardManagerState, *configFile);
+        result = result && LoadShortcutRemaps(keyboardManagerState, *configFile);
 
         return result;
     }
