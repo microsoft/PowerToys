@@ -35,7 +35,7 @@ private:
 
 public:
     // Handle to the current Edit Shortcuts Window
-    static HWND EditShortcutsWindowHandle;
+    static HWND editShortcutsWindowHandle;
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
     // Stores the current list of remappings
@@ -50,8 +50,8 @@ public:
     static void AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"");
 
     // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
-    StackPanel getShortcutControl();
+    StackPanel GetShortcutControl();
 
     // Function to create the detect shortcut UI window
-    static void createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState, const int colIndex, StackPanel table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer);
+    static void CreateDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState, const int colIndex, StackPanel table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer);
 };

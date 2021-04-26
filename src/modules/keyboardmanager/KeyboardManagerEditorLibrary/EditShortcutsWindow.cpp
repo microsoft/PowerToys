@@ -189,7 +189,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     tableHeader.Children().Append(targetAppHeader);
 
     // Store handle of edit shortcuts window
-    ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
+    ShortcutControl::editShortcutsWindowHandle = _hWndEditShortcutsWindow;
     // Store keyboard manager state
     ShortcutControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
