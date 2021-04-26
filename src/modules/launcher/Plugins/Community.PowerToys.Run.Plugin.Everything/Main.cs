@@ -138,7 +138,7 @@ namespace Community.PowerToys.Run.Plugin.Everything
                     results.Add(new Result
                     {
                         Title = Properties.Resources.Community_plugin_everything_is_not_running,
-                        IcoPath = "Images\\warning.png"
+                        IcoPath = WarningIconPath
                     });
                 }
                 catch (System.Exception e)

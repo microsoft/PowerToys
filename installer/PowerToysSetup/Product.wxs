@@ -248,6 +248,10 @@
                   <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
                   <Directory Id="VSCodeWorkspaceLanguagesFolder" Name="Languages" />
                 </Directory>
+                <Directory Id="EverythingPluginFolder" Name="Everything">
+                  <Directory Id="EverythingImagesFolder" Name="Images" />
+                  <Directory Id="EverythingLanguagesFolder" Name="Languages" />
+                </Directory>
                 <Directory Id="WindowWalkerPluginFolder" Name="Microsoft.Plugin.WindowWalker">
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
                   <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
@@ -803,7 +807,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;EverythingPluginFolder;ServicePluginFolder?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
@@ -881,6 +885,9 @@
                 </Component>
                 <Component Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder">
                   <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
+                </Component>
+                <Component Id="Launcher_Everything_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)EverythingPluginFolder">
+                  <File Id="Launcher_Everything_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.PowerToys.Run.Plugin.Everything\$(var.Language)\Community.PowerToys.Run.Plugin.Everything.resources.dll" />
                 </Component>
                 <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
                     <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
@@ -1006,6 +1013,21 @@
         <File Id="VSCodeWorkspaceCodeDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\code-dark.png" />
         <File Id="VSCodeWorkspaceFolder" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\folder.png" />
         <File Id="VSCodeWorkspaceRemote" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Images\monitor.png" />
+      </Component>
+
+      <!-- Everything Plugin -->
+      <Component Id="EverythingComponent" Directory="EverythingPluginFolder" Guid="42BF64E0-2976-416A-9059-D6B543963EE5">
+        <File Id="Everything_deps" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.PowerToys.Run.Plugin.Everything\Community.PowerToys.Run.Plugin.Everything.deps.json" />
+        <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.Everything.dll;Everything64.dll?>
+          <File Id="Everything_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.PowerToys.Run.Plugin.Everything\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="EverythingImagesComponent" Directory="EverythingImagesFolder" Guid="E8D25CFD-784F-4445-922D-D1AAE7521E5C">
+        <File Id="EverythingIconLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.PowerToys.Run.Plugin.Everything\Images\everything.light.png" />
+        <File Id="EverythingIconDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.PowerToys.Run.Plugin.Everything\Images\everything.dark.png" />
+        <File Id="EverythingWarningLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.PowerToys.Run.Plugin.Everything\Images\Warning.light.png" />
+        <File Id="EverythingWarningDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.PowerToys.Run.Plugin.Everything\Images\Warning.dark.png" />
+        <File Id="EverythingError" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.PowerToys.Run.Plugin.Everything\Images\error.png" />
       </Component>
 
       <!-- WindowWalker Plugin -->  
