@@ -916,17 +916,19 @@ namespace FancyZonesEditor.Utils
             }
 
             // Check if percentage is valid. Otherwise, Editor could crash on layout rendering.
-            foreach (int percent in info.RowsPercentage)
+            if (info.RowsPercentage.Exists((x) => (x < 1)) || info.ColumnsPercentage.Exists((x) => (x < 1)))
             {
-                if (percent < 0)
-                {
-                    return null;
-                }
+                return null;
             }
 
-            foreach (int percent in info.ColumnsPercentage)
+            if (info.CellChildMap.Length != info.Rows)
             {
-                if (percent < 0)
+                return null;
+            }
+
+            foreach (var col in info.CellChildMap)
+            {
+                if (col.Length != info.Columns)
                 {
                     return null;
                 }
@@ -942,6 +944,11 @@ namespace FancyZonesEditor.Utils
             }
 
             var layout = new GridLayoutModel(wrapper.Uuid, wrapper.Name, LayoutType.Custom, info.Rows, info.Columns, info.RowsPercentage, info.ColumnsPercentage, cells);
+            if (!layout.IsModelValid())
+            {
+                return null;
+            }
+
             layout.SensitivityRadius = info.SensitivityRadius;
             layout.ShowSpacing = info.ShowSpacing;
             layout.Spacing = info.Spacing;
