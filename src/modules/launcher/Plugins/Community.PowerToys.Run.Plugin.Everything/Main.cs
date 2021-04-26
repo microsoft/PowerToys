@@ -23,7 +23,6 @@ namespace Community.PowerToys.Run.Plugin.Everything
 {
     public class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable, IDelayedExecutionPlugin
     {
-        private const string EverythingNotFound = nameof(EverythingNotFound);
         private PluginJsonStorage<EverythingSettings> _storage;
         private PluginInitContext _context;
         private EverythingSettings _settings;
@@ -169,12 +168,16 @@ namespace Community.PowerToys.Run.Plugin.Everything
             if (_settings.UseLocationAsWorkingDir)
                 workingDir = Path.GetDirectoryName(path);
 
+            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Community_plugin_everything_name, searchResult.FileName);
+            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Community_plugin_everything_path, searchResult.FullPath);
+
             var r = new Result(searchResult.FileNameHightData, searchResult.FullPathHightData)
             {
                 Score = _settings.MaxSearchCount - index,
                 Title = searchResult.FileName,
-                SubTitle = searchResult.FullPath,
+                SubTitle = Properties.Resources.Community_plugin_everything_subtitle_header + ": " + searchResult.FullPath,
                 IcoPath = searchResult.FullPath,
+                ToolTipData = new ToolTipData(toolTipTitle, toolTipText),
                 ContextData = searchResult,
                 Action = _ =>
                 {

@@ -132,11 +132,17 @@
   <data name="Community_plugin_everything_is_not_running" xml:space="preserve">
     <value>Everything is not running</value>
   </data>
+  <data name="Community_plugin_everything_name" xml:space="preserve">
+    <value>Name</value>
+  </data>
   <data name="Community_plugin_everything_open_containing_folder" xml:space="preserve">
     <value>Open containing folder (Ctrl+Shift+E)</value>
   </data>
   <data name="Community_plugin_everything_open_in_console" xml:space="preserve">
     <value>Open path in console (Ctrl+Shift+C)</value>
+  </data>
+  <data name="Community_plugin_everything_path" xml:space="preserve">
+    <value>Path</value>
   </data>
   <data name="Community_plugin_everything_plugin_description" xml:space="preserve">
     <value>Use Everything to search files</value>
@@ -150,7 +156,7 @@
   <data name="Community_plugin_everything_run_as_administrator" xml:space="preserve">
     <value>Run as administrator (Ctrl+Shift+Enter)</value>
   </data>
-  <data name="everything_notfound_warning" xml:space="preserve">
-    <value>Everything is not found on this computer</value>
+  <data name="Community_plugin_everything_subtitle_header" xml:space="preserve">
+    <value>Everything</value>
   </data>
 </root>
