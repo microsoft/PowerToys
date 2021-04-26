@@ -337,6 +337,7 @@ inline void createEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
         ShowWindow(_hWndEditKeyboardWindow, SW_SHOW);
         UpdateWindow(_hWndEditKeyboardWindow);
     }
+
     // Message loop:
     xamlBridge.MessageLoop();
 
