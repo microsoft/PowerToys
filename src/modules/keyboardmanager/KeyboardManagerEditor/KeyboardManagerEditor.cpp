@@ -6,7 +6,7 @@
 
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
-#include <common/utils/UnhandledExceptionHandlerX64.h>
+#include <common/utils/UnhandledExceptionHandler_x64.h>
 
 #include <trace.h>
 
@@ -29,7 +29,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
 
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Editor", LogSettings::keyboardManagerLoggerName);
-    InitUnhandledExceptionHandler();
+    InitUnhandledExceptionHandler_x64();
     Trace::RegisterProvider();
 
     Logger::trace(L"Editor started with pid {}", GetCurrentProcessId());

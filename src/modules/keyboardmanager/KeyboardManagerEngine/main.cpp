@@ -6,7 +6,7 @@
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
-#include <common/utils/UnhandledExceptionHandlerX64.h>
+#include <common/utils/UnhandledExceptionHandler_x64.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
@@ -17,7 +17,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 {
     init_apartment();
     LoggerHelpers::init_logger(KeyboardManagerConstants::ModuleName, L"Engine", LogSettings::keyboardManagerLoggerName);
-    InitUnhandledExceptionHandler();
+    InitUnhandledExceptionHandler_x64();
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {

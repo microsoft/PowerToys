@@ -221,7 +221,7 @@ inline void InitSymbols()
     }
 }
 
-inline void InitUnhandledExceptionHandler(void)
+inline void InitUnhandledExceptionHandler_x64(void)
 {
     try
     {
