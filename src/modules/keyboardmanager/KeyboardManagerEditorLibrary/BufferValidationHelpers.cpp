@@ -88,7 +88,6 @@ namespace BufferValidationHelpers
             else if (dropDownIndex == dropDownCount - 1)
             {
                 // If it is the last drop down
-
                 // If last drop down and a modifier is selected: add a new drop down (max drop down count should be enforced)
                 if (KeyboardManagerHelper::IsModifierKey(selectedKeyCode) && dropDownCount < KeyboardManagerConstants::MaxShortcutSize)
                 {
