@@ -7,7 +7,7 @@ namespace Community.PowerToys.Run.Plugin.Everything.SearchHelper
 {
     internal sealed class EverythingApiDllImport
     {
-        internal const string DllPath = "EverythingSDK/Everything.dll";
+        internal const string DllPath = "Everything64.dll";
 
         [DllImport(DllPath, CharSet = CharSet.Unicode)]
         internal static extern int Everything_SetSearchW(string lpSearchString);
