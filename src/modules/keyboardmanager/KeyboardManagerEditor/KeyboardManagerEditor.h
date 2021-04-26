@@ -15,13 +15,13 @@ public:
     KeyboardManagerEditor(HINSTANCE hInstance);
     ~KeyboardManagerEditor();
 
-    KeyboardManagerInput::Input& getInputHandler() noexcept
+    KeyboardManagerInput::Input& GetInputHandler() noexcept
     {
         return inputHandler;
     }
 
-    bool startLowLevelKeyboardHook();
-    void openEditorWindow(KeyboardManagerEditorType type);
+    bool StartLowLevelKeyboardHook();
+    void OpenEditorWindow(KeyboardManagerEditorType type);
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

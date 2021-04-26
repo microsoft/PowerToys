@@ -45,13 +45,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
-        Logger::warn(L"KBM editor instance is already running");
+        Logger::info(L"KBM editor instance is already running");
         return 0;
     }
 
     int numArgs;
     LPWSTR* cmdArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);
 
+    // TODO: add support to run the editor stand-alone when built in debug mode
     if (cmdArgs == nullptr)
     {
         Logger::error(L"Keyboard Manager Editor cannot start as a standalone application");
@@ -84,7 +85,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     editor = std::make_unique<KeyboardManagerEditor>(hInstance);
-    if (!editor->startLowLevelKeyboardHook())
+    if (!editor->StartLowLevelKeyboardHook())
     {
         DWORD errorCode = GetLastError();
         show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager Editor");
@@ -96,7 +97,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
     
     KeyboardManagerEditorType type = static_cast<KeyboardManagerEditorType>(_wtoi(cmdArgs[1]));
-    editor->openEditorWindow(type);
+    editor->OpenEditorWindow(type);
     
     editor = nullptr;
 
@@ -108,7 +109,7 @@ KeyboardManagerEditor::KeyboardManagerEditor(HINSTANCE hInst) :
     hInstance(hInst)
 {
     SettingsHelper::LoadSettings(keyboardManagerState);
-    startLowLevelKeyboardHook();
+    StartLowLevelKeyboardHook();
 }
 
 KeyboardManagerEditor::~KeyboardManagerEditor()
@@ -116,7 +117,7 @@ KeyboardManagerEditor::~KeyboardManagerEditor()
     UnhookWindowsHookEx(hook);
 }
 
-bool KeyboardManagerEditor::startLowLevelKeyboardHook()
+bool KeyboardManagerEditor::StartLowLevelKeyboardHook()
 {
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
     if (IsDebuggerPresent())
@@ -129,7 +130,7 @@ bool KeyboardManagerEditor::startLowLevelKeyboardHook()
     return (hook != nullptr);
 }
 
-void KeyboardManagerEditor::openEditorWindow(KeyboardManagerEditorType type)
+void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type)
 {
     switch (type)
     {
@@ -192,7 +193,7 @@ LRESULT KeyboardManagerEditor::KeyHookProc(int nCode, WPARAM wParam, LPARAM lPar
             // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
             if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
             {
-                KeyboardEventHandlers::SetNumLockToPreviousState(editor->getInputHandler());
+                KeyboardEventHandlers::SetNumLockToPreviousState(editor->GetInputHandler());
             }
             return 1;
         }
