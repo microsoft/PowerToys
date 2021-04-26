@@ -52,19 +52,27 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int numArgs;
     LPWSTR* cmdArgs = CommandLineToArgvW(GetCommandLineW(), &numArgs);
 
-    // TODO: add support to run the editor stand-alone when built in debug mode
-    if (cmdArgs == nullptr)
+    KeyboardManagerEditorType type = KeyboardManagerEditorType::KeyEditor;
+    if (!IsDebuggerPresent())
     {
-        Logger::error(L"Keyboard Manager Editor cannot start as a standalone application");
-        return -1;
+        if (cmdArgs == nullptr)
+        {
+            Logger::error(L"Keyboard Manager Editor cannot start as a standalone application");
+            return -1;
+        }
+
+        if (numArgs < 2)
+        {
+            Logger::error(L"Invalid arguments on Keyboard Manager Editor start");
+            return -1;
+        }
     }
 
-    if (numArgs < 2)
+    if (numArgs > 1)
     {
-        Logger::error(L"Invalid arguments on Keyboard Manager Editor start");
-        return -1;
+        type = static_cast<KeyboardManagerEditorType>(_wtoi(cmdArgs[1]));
     }
-
+        
     if (numArgs == 3)
     {
         std::wstring pid = std::wstring(cmdArgs[2]);
@@ -96,7 +104,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return -1;
     }
     
-    KeyboardManagerEditorType type = static_cast<KeyboardManagerEditorType>(_wtoi(cmdArgs[1]));
     editor->OpenEditorWindow(type);
     
     editor = nullptr;
