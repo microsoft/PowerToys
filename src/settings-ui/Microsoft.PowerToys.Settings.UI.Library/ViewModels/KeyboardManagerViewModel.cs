@@ -27,10 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private const string PowerToyName = KeyboardManagerSettings.ModuleName;
         private const string JsonFileType = ".json";
 
-        private static string ConfigFileMutexName => interop.Constants.KeyboardManagerConfigFileMutexName();
-
-        private const int ConfigFileMutexWaitTimeoutMilliseconds = 1000;
-
         private const string KeyboardManagerEditorPath = "modules\\KeyboardManager\\KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
         private Process editor;
 
@@ -257,40 +253,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             var success = true;
 
+            // update the UI element here.
             try
             {
-                using (var profileFileMutex = Mutex.OpenExisting(ConfigFileMutexName))
+                string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
+
+                if (_settingsUtils.SettingsExists(PowerToyName, fileName))
                 {
-                    if (profileFileMutex.WaitOne(ConfigFileMutexWaitTimeoutMilliseconds))
-                    {
-                        // update the UI element here.
-                        try
-                        {
-                            string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
-
-                            if (_settingsUtils.SettingsExists(PowerToyName, fileName))
-                            {
-                                _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
-                            }
-                            else
-                            {
-                                // The KBM process out of runner creates the default.json file if it does not exist.
-                                success = false;
-                            }
-
-                            FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
-                        }
-                        finally
-                        {
-                            // Make sure to release the mutex.
-                            profileFileMutex.ReleaseMutex();
-                        }
-                    }
-                    else
-                    {
-                        success = false;
-                    }
+                    _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
                 }
+                else
+                {
+                    // The KBM process out of runner creates the default.json file if it does not exist.
+                    success = false;
+                }
+
+                FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
             }
             catch (Exception e)
             {
