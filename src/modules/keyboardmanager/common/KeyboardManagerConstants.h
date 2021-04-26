@@ -1,12 +1,12 @@
 #pragma once
-#include <string>
-#include <winrt/base.h>
-#include <common/utils/resources.h>
-#include "keyboardmanager/dll/Generated Files/resource.h"
-#include "common/interop/shared_constants.h"
 
 namespace KeyboardManagerConstants
 {
+    // Event name for signaling settings changes
+    inline const std::wstring SettingsEventName = L"PowerToys_KeyboardManager_Event_Settings"; 
+
+    inline const std::wstring EditorWindowEventName = L"PowerToys_KeyboardManager_Event_EditorWindow"; 
+
     // Name of the powertoy module.
     inline const std::wstring ModuleName = L"Keyboard Manager";
 
@@ -39,9 +39,6 @@ namespace KeyboardManagerConstants
 
     // Name of the default configuration.
     inline const std::wstring DefaultConfiguration = L"default";
-
-    // Name of the named mutex used for configuration file.
-    inline const std::wstring ConfigFileMutexName = CommonSharedConstants::KEYBOARD_MANAGER_CONFIG_FILE_MUTEX_NAME;
 
     // Name of the dummy update file.
     inline const std::wstring DummyUpdateFileName = L"settings-updated.json";
@@ -105,9 +102,6 @@ namespace KeyboardManagerConstants
 
     // Number of key messages required while sending a dummy key event
     inline const size_t DUMMY_KEY_EVENT_SIZE = 2;
-
-    // String constant for the default app name in Remap shortcuts
-    inline const std::wstring DefaultAppName = GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);
 
     // String constant to represent no activated application in app-specific shortcuts
     inline const std::wstring NoActivatedApp = L"";

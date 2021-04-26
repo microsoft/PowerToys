@@ -5,24 +5,17 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include "KeyDelay.h"
 #include "Helpers.h"
+#include <common/logger/logger.h>
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
     uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutUI1(nullptr), currentShortcutUI2(nullptr), currentSingleKeyUI(nullptr), detectedRemapKey(NULL), remappingsEnabled(true)
 {
-    configFile_mutex = CreateMutex(
-        NULL, // default security descriptor
-        FALSE, // mutex not owned
-        KeyboardManagerConstants::ConfigFileMutexName.c_str());
 }
 
 // Destructor
 KeyboardManagerState::~KeyboardManagerState()
 {
-    if (configFile_mutex)
-    {
-        CloseHandle(configFile_mutex);
-    }
 }
 
 // Function to check the if the UI state matches the argument state. For states with detect windows it also checks if the window is in focus.
@@ -579,28 +572,28 @@ bool KeyboardManagerState::SaveConfigToFile()
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
 
-    // Set timeout of 1sec to wait for file to get free.
-    DWORD timeout = 1000;
-    auto dwWaitResult = WaitForSingleObject(
-        configFile_mutex,
-        timeout);
-    if (dwWaitResult == WAIT_OBJECT_0)
+    try
     {
-        try
-        {
-            json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + GetCurrentConfigName() + L".json"), configJson);
-        }
-        catch (...)
-        {
-            result = false;
-        }
-
-        // Make sure to release the Mutex.
-        ReleaseMutex(configFile_mutex);
+        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + GetCurrentConfigName() + L".json"), configJson);
     }
-    else
+    catch (...)
     {
         result = false;
+        Logger::error(L"Failed to save the settings");
+    }
+
+    if (result)
+    {
+        auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
+        if (hEvent)
+        {
+            SetEvent(hEvent);
+            Logger::trace(L"Signaled {} event", KeyboardManagerConstants::SettingsEventName);
+        }
+        else
+        {
+            Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
+        }
     }
 
     return result;
@@ -628,21 +621,4 @@ void KeyboardManagerState::SetActivatedApp(const std::wstring& appName)
 std::wstring KeyboardManagerState::GetActivatedApp()
 {
     return activatedAppSpecificShortcutTarget;
-}
-
-bool KeyboardManagerState::AreRemappingsEnabled()
-{
-    return remappingsEnabled;
-}
-
-void KeyboardManagerState::RemappingsDisabledWrapper(std::function<void()> method)
-{
-    // Disable keyboard remappings
-    remappingsEnabled = false;
-
-    // Run the method which requires the remappings to be disabled
-    method();
-
-    // Re-enable the keyboard remappings
-    remappingsEnabled = true;
 }

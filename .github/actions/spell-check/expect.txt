@@ -5,6 +5,7 @@ abcdef
 abcdefgh
 abgr
 ABlocked
+ABOUTBOX
 Abug
 accctrl
 Acceleratorkeys
@@ -118,6 +119,7 @@ atlstr
 attr
 Attribs
 aumid
+Aut
 AUTHN
 AUTOAPPEND
 autocomplete
@@ -396,6 +398,7 @@ davidegiacometti
 Dayof
 dbdfc
 Dbg
+Dbghelp
 DBLCLKS
 DBLEPSILON
 DCOM
@@ -1117,6 +1120,7 @@ KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
 keyboardmanagercommon
+KEYBOARDMANAGEREDITOR
 keyboardmanagerstate
 keyboardmanagerui
 keycode
@@ -1510,6 +1514,7 @@ oldnewthing
 oldpath
 oldtheme
 oleaut
+OleAut
 OLECHAR
 OLEDB
 OLIVEGREEN
@@ -1737,6 +1742,7 @@ readme
 READMODE
 readonly
 READWRITE
+REALTIME
 RECTDESTINATION
 RECTL
 rectp
@@ -2008,6 +2014,7 @@ stdcall
 stdcpp
 stdcpplatest
 stdexcept
+stdio
 stdin
 stdlib
 STDMETHODCALLTYPE
@@ -2027,6 +2034,7 @@ Strikethrough
 Stringified
 stringify
 STRINGIZE
+stringstream
 stringtable
 stringval
 Strmiids
@@ -2179,6 +2187,7 @@ Tz
 UAC
 UAL
 uap
+UCHAR
 udit
 UIA
 Uid
@@ -2423,6 +2432,7 @@ wstr
 wstring
 wstringstream
 wsz
+wtoi
 WTS
 WTSAT
 wu

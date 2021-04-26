@@ -103,8 +103,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerExt", "src\modu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageResizerUITest", "src\modules\imageresizer\tests\ImageResizerUITest.csproj", "{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerUI", "src\modules\keyboardmanager\ui\KeyboardManagerUI.vcxproj", "{EAF23649-EF6E-478B-980E-81FAD96CCA2A}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "action_runner", "src\action_runner\action_runner.vcxproj", "{D29DDD63-E2CF-4657-9FD5-2AEDE4257E5D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{17DA04DF-E393-4397-9CF0-84DABE11032E} = {17DA04DF-E393-4397-9CF0-84DABE11032E}
@@ -210,8 +208,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerLauncher.Telemetry", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedTelemetry", "src\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj", "{5D00D290-4016-4CFE-9E41-1E7C724509BA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerTest", "src\modules\keyboardmanager\test\KeyboardManagerTest.vcxproj", "{62173D9A-6724-4C00-A1C8-FB646480A9EC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCommon", "src\common\ManagedCommon\ManagedCommon.csproj", "{4AED67B6-55FD-486F-B917-E543DEE2CB3C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Program.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Program.UnitTests\Microsoft.Plugin.Program.UnitTests.csproj", "{42851751-CBC8-45A6-97F5-7A0753F7B4D1}"
@@ -285,14 +281,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\appMutex.h = src\common\utils\appMutex.h
 		src\common\utils\com_object_factory.h = src\common\utils\com_object_factory.h
 		src\common\utils\elevation.h = src\common\utils\elevation.h
+		src\common\utils\EventLocker.h = src\common\utils\EventLocker.h
+		src\common\utils\EventWaiter.h = src\common\utils\EventWaiter.h
 		src\common\utils\exec.h = src\common\utils\exec.h
 		src\common\utils\json.h = src\common\utils\json.h
 		src\common\utils\logger_helper.h = src\common\utils\logger_helper.h
 		src\common\utils\os-detect.h = src\common\utils\os-detect.h
 		src\common\utils\process_path.h = src\common\utils\process_path.h
+		src\common\utils\ProcessWaiter.h = src\common\utils\ProcessWaiter.h
 		src\common\utils\resources.h = src\common\utils\resources.h
 		src\common\utils\string_utils.h = src\common\utils\string_utils.h
 		src\common\utils\timeutil.h = src\common\utils\timeutil.h
+		src\common\utils\UnhandledExceptionHandler_x64.h = src\common\utils\UnhandledExceptionHandler_x64.h
 		src\common\utils\winapi_error.h = src\common\utils\winapi_error.h
 		src\common\utils\window.h = src\common\utils\window.h
 	EndProjectSection
@@ -311,6 +311,18 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Registry.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry.UnitTest\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.csproj", "{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings", "src\settings-ui\PowerToys.Settings\PowerToys.Settings.csproj", "{6ED2F4FC-E122-4CEE-90F1-97E4CCC8BC7A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEngine", "src\modules\keyboardmanager\KeyboardManagerEngine\KeyboardManagerEngine.vcxproj", "{BA661F5B-1D5A-4FFC-9BF1-FC39DF280BDD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEngineLibrary", "src\modules\keyboardmanager\KeyboardManagerEngineLibrary\KeyboardManagerEngineLibrary.vcxproj", "{E496B7FC-1E99-4BAB-849B-0E8367040B02}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEngineTest", "src\modules\keyboardmanager\KeyboardManagerEngineTest\KeyboardManagerEngineTest.vcxproj", "{7F4B3A60-BC27-45A7-8000-68B0B6EA7466}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditor", "src\modules\keyboardmanager\KeyboardManagerEditor\KeyboardManagerEditor.vcxproj", "{8DF78B53-200E-451F-9328-01EB907193AE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorLibrary", "src\modules\keyboardmanager\KeyboardManagerEditorLibrary\KeyboardManagerEditorLibrary.vcxproj", "{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorTest", "src\modules\keyboardmanager\KeyboardManagerEditorTest\KeyboardManagerEditorTest.vcxproj", "{62173D9A-6724-4C00-A1C8-FB646480A9EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -390,10 +402,6 @@ Global
 		{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}.Debug|x64.Build.0 = Debug|x64
 		{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}.Release|x64.ActiveCfg = Release|x64
 		{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}.Release|x64.Build.0 = Release|x64
-		{EAF23649-EF6E-478B-980E-81FAD96CCA2A}.Debug|x64.ActiveCfg = Debug|x64
-		{EAF23649-EF6E-478B-980E-81FAD96CCA2A}.Debug|x64.Build.0 = Debug|x64
-		{EAF23649-EF6E-478B-980E-81FAD96CCA2A}.Release|x64.ActiveCfg = Release|x64
-		{EAF23649-EF6E-478B-980E-81FAD96CCA2A}.Release|x64.Build.0 = Release|x64
 		{D29DDD63-E2CF-4657-9FD5-2AEDE4257E5D}.Debug|x64.ActiveCfg = Debug|x64
 		{D29DDD63-E2CF-4657-9FD5-2AEDE4257E5D}.Debug|x64.Build.0 = Debug|x64
 		{D29DDD63-E2CF-4657-9FD5-2AEDE4257E5D}.Release|x64.ActiveCfg = Release|x64
@@ -506,10 +514,6 @@ Global
 		{5D00D290-4016-4CFE-9E41-1E7C724509BA}.Debug|x64.Build.0 = Debug|x64
 		{5D00D290-4016-4CFE-9E41-1E7C724509BA}.Release|x64.ActiveCfg = Release|x64
 		{5D00D290-4016-4CFE-9E41-1E7C724509BA}.Release|x64.Build.0 = Release|x64
-		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Debug|x64.ActiveCfg = Debug|x64
-		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Debug|x64.Build.0 = Debug|x64
-		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Release|x64.ActiveCfg = Release|x64
-		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Release|x64.Build.0 = Release|x64
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C}.Debug|x64.ActiveCfg = Debug|x64
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C}.Debug|x64.Build.0 = Debug|x64
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C}.Release|x64.ActiveCfg = Release|x64
@@ -634,6 +638,30 @@ Global
 		{6ED2F4FC-E122-4CEE-90F1-97E4CCC8BC7A}.Debug|x64.Build.0 = Debug|x64
 		{6ED2F4FC-E122-4CEE-90F1-97E4CCC8BC7A}.Release|x64.ActiveCfg = Release|x64
 		{6ED2F4FC-E122-4CEE-90F1-97E4CCC8BC7A}.Release|x64.Build.0 = Release|x64
+		{BA661F5B-1D5A-4FFC-9BF1-FC39DF280BDD}.Debug|x64.ActiveCfg = Debug|x64
+		{BA661F5B-1D5A-4FFC-9BF1-FC39DF280BDD}.Debug|x64.Build.0 = Debug|x64
+		{BA661F5B-1D5A-4FFC-9BF1-FC39DF280BDD}.Release|x64.ActiveCfg = Release|x64
+		{BA661F5B-1D5A-4FFC-9BF1-FC39DF280BDD}.Release|x64.Build.0 = Release|x64
+		{E496B7FC-1E99-4BAB-849B-0E8367040B02}.Debug|x64.ActiveCfg = Debug|x64
+		{E496B7FC-1E99-4BAB-849B-0E8367040B02}.Debug|x64.Build.0 = Debug|x64
+		{E496B7FC-1E99-4BAB-849B-0E8367040B02}.Release|x64.ActiveCfg = Release|x64
+		{E496B7FC-1E99-4BAB-849B-0E8367040B02}.Release|x64.Build.0 = Release|x64
+		{7F4B3A60-BC27-45A7-8000-68B0B6EA7466}.Debug|x64.ActiveCfg = Debug|x64
+		{7F4B3A60-BC27-45A7-8000-68B0B6EA7466}.Debug|x64.Build.0 = Debug|x64
+		{7F4B3A60-BC27-45A7-8000-68B0B6EA7466}.Release|x64.ActiveCfg = Release|x64
+		{7F4B3A60-BC27-45A7-8000-68B0B6EA7466}.Release|x64.Build.0 = Release|x64
+		{8DF78B53-200E-451F-9328-01EB907193AE}.Debug|x64.ActiveCfg = Debug|x64
+		{8DF78B53-200E-451F-9328-01EB907193AE}.Debug|x64.Build.0 = Debug|x64
+		{8DF78B53-200E-451F-9328-01EB907193AE}.Release|x64.ActiveCfg = Release|x64
+		{8DF78B53-200E-451F-9328-01EB907193AE}.Release|x64.Build.0 = Release|x64
+		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}.Debug|x64.ActiveCfg = Debug|x64
+		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}.Debug|x64.Build.0 = Debug|x64
+		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}.Release|x64.ActiveCfg = Release|x64
+		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}.Release|x64.Build.0 = Release|x64
+		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Debug|x64.ActiveCfg = Debug|x64
+		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Debug|x64.Build.0 = Debug|x64
+		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Release|x64.ActiveCfg = Release|x64
+		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -659,7 +687,6 @@ Global
 		{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34} = {6C7F47CC-2151-44A3-A546-41C70025132C}
 		{0B43679E-EDFA-4DA0-AD30-F4628B308B1B} = {6C7F47CC-2151-44A3-A546-41C70025132C}
 		{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8} = {6C7F47CC-2151-44A3-A546-41C70025132C}
-		{EAF23649-EF6E-478B-980E-81FAD96CCA2A} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{17DA04DF-E393-4397-9CF0-84DABE11032E} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{38BDB927-829B-4C65-9CD9-93FB05D66D65} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{8AFFA899-0B73-49EC-8C50-0FADDA57B2FC} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
@@ -691,7 +718,6 @@ Global
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{08C8C05F-0362-41BC-818C-724572DF8B06} = {C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}
 		{5D00D290-4016-4CFE-9E41-1E7C724509BA} = {1AFB6476-670D-4E80-A464-657E01DFF482}
-		{62173D9A-6724-4C00-A1C8-FB646480A9EC} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{42851751-CBC8-45A6-97F5-7A0753F7B4D1} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{1EF1EEF0-10F0-4F2E-8550-39B6D8044D3E} = {2F305555-C296-497E-AC20-5FA1B237996A}
@@ -729,6 +755,12 @@ Global
 		{4BABF3FE-3451-42FD-873F-3C332E18DCEF} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{6ED2F4FC-E122-4CEE-90F1-97E4CCC8BC7A} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
+		{BA661F5B-1D5A-4FFC-9BF1-FC39DF280BDD} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
+		{E496B7FC-1E99-4BAB-849B-0E8367040B02} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
+		{7F4B3A60-BC27-45A7-8000-68B0B6EA7466} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
+		{8DF78B53-200E-451F-9328-01EB907193AE} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
+		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
+		{62173D9A-6724-4C00-A1C8-FB646480A9EC} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

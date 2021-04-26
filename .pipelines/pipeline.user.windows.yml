@@ -98,6 +98,8 @@ build:
             - 'modules\ImageResizer\ManagedTelemetry.dll'
             - 'modules\ImageResizer\Microsoft.PowerToys.Common.UI.dll'
             - 'modules\KeyboardManager\KeyboardManager.dll'
+            - 'modules\KeyboardManager\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe'
+            - 'modules\KeyboardManager\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe'
             - 'modules\launcher\Microsoft.PowerToys.Settings.UI.Lib.dll'
             - 'modules\launcher\ManagedCommon.dll'
             - 'modules\launcher\Microsoft.PowerToys.Common.UI.dll'
