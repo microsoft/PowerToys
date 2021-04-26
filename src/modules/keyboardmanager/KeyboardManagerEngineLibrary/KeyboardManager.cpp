@@ -56,7 +56,14 @@ KeyboardManager::KeyboardManager()
 
 void KeyboardManager::LoadSettings()
 {
-    SettingsHelper::LoadSettings(keyboardManagerState);
+    bool loadedSuccessful = SettingsHelper::LoadSettings(keyboardManagerState);
+    if (!loadedSuccessful)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        // retry once
+        SettingsHelper::LoadSettings(keyboardManagerState);
+    }
 }
 
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, WPARAM wParam, LPARAM lParam)

@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -26,10 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private const string PowerToyName = KeyboardManagerSettings.ModuleName;
         private const string JsonFileType = ".json";
-
-        private static string ConfigFileMutexName => interop.Constants.KeyboardManagerConfigFileMutexName();
-
-        private const int ConfigFileMutexWaitTimeoutMilliseconds = 1000;
 
         private const string KeyboardManagerEditorPath = "modules\\KeyboardManager\\KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
         private Process editor;
@@ -255,42 +252,50 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         public bool LoadProfile()
         {
+            // The KBM process out of runner creates the default.json file if it does not exist.
             var success = true;
+            var readSuccessfully = false;
+
+            string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
 
             try
             {
-                using (var profileFileMutex = Mutex.OpenExisting(ConfigFileMutexName))
+                // retry loop for reading
+                CancellationTokenSource ts = new CancellationTokenSource();
+                Task t = Task.Run(() =>
                 {
-                    if (profileFileMutex.WaitOne(ConfigFileMutexWaitTimeoutMilliseconds))
+                    while (!readSuccessfully && !ts.IsCancellationRequested)
                     {
-                        // update the UI element here.
-                        try
+                        if (_settingsUtils.SettingsExists(PowerToyName, fileName))
                         {
-                            string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
-
-                            if (_settingsUtils.SettingsExists(PowerToyName, fileName))
+                            try
                             {
                                 _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
+                                readSuccessfully = true;
                             }
-                            else
+                            catch (Exception e)
                             {
-                                // The KBM process out of runner creates the default.json file if it does not exist.
-                                success = false;
+                                Logger.LogError($"Exception encountered when reading {PowerToyName} settings", e);
                             }
+                        }
 
-                            FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
-                        }
-                        finally
+                        if (!readSuccessfully)
                         {
-                            // Make sure to release the mutex.
-                            profileFileMutex.ReleaseMutex();
+                            Task.Delay(500).Wait();
                         }
                     }
-                    else
-                    {
-                        success = false;
-                    }
+                });
+
+                t.Wait(1000, ts.Token);
+                ts.Cancel();
+                ts.Dispose();
+
+                if (!readSuccessfully)
+                {
+                    success = false;
                 }
+
+                FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
             }
             catch (Exception e)
             {
