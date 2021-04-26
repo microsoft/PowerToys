@@ -5,7 +5,7 @@
 #include <common/Display/dpi_aware.h>
 #include <common/interop/shared_constants.h>
 #include <common/themes/windows_colors.h>
-#include <common/utils/event_locker.h>
+#include <common/utils/EventLocker.h>
 
 #include <KeyboardManagerConstants.h>
 #include <KeyboardManagerState.h>
@@ -95,7 +95,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 inline void createEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
     Logger::trace("Creating Remap keys window");
-    event_locker locker(KeyboardManagerConstants::EditorWindowEventName.c_str());
+    EventLocker locker(KeyboardManagerConstants::EditorWindowEventName.c_str());
     Logger::trace(L"Signaled {} event. Remapping is suspended", KeyboardManagerConstants::EditorWindowEventName);
 
     // Window Registration

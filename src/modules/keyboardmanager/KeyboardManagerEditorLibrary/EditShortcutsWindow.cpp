@@ -2,7 +2,7 @@
 #include "EditShortcutsWindow.h"
 
 #include <common/Display/dpi_aware.h>
-#include <common/utils/event_locker.h>
+#include <common/utils/EventLocker.h>
 
 #include <KeyboardManagerState.h>
 
@@ -50,7 +50,7 @@ static IAsyncAction OnClickAccept(
 inline void createEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
     Logger::trace("Creating Remap shortcuts window");
-    event_locker locker(KeyboardManagerConstants::EditorWindowEventName.c_str());
+    EventLocker locker(KeyboardManagerConstants::EditorWindowEventName.c_str());
     Logger::trace(L"Signaled {} event. Remapping is suspended", KeyboardManagerConstants::EditorWindowEventName);
 
     // Window Registration

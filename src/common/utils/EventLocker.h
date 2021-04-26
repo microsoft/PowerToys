@@ -1,22 +1,22 @@
 #include <windows.h>
 #include <string>
 
-class event_locker
+class EventLocker
 {
 public:
-    event_locker(HANDLE h)
+    EventLocker(HANDLE h)
     {
         eventHandle = h;
         SetEvent(eventHandle);
     }
 
-    event_locker(std::wstring eventName)
+    EventLocker(std::wstring eventName)
     {
         eventHandle = CreateEvent(nullptr, true, false, eventName.c_str());
         SetEvent(eventHandle);
     }
 
-    ~event_locker()
+    ~EventLocker()
     {
         ResetEvent(eventHandle);
         CloseHandle(eventHandle);
