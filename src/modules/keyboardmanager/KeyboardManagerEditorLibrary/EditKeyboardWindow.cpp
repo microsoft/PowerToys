@@ -27,11 +27,14 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
 // This Hwnd will be the window handler for the Xaml Island: A child window that contains Xaml.
 HWND hWndXamlIslandEditKeyboardWindow = nullptr;
+
 // This variable is used to check if window registration has been done to avoid repeated registration leading to an error.
 bool isEditKeyboardWindowRegistrationCompleted = false;
+
 // Holds the native window handle of EditKeyboard Window.
 HWND hwndEditKeyboardNativeWindow = nullptr;
 std::mutex editKeyboardWindowMutex;
+
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
 static XamlBridge* xamlBridgePtr = nullptr;
 
@@ -57,6 +60,7 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
         orphanKeyString.append(state.keyboardMap.GetKeyName(k));
         orphanKeyString.append(L", ");
     }
+
     orphanKeyString = orphanKeyString.substr(0, max(0, orphanKeyString.length() - 2));
     orphanKeysBlock.Text(winrt::hstring(orphanKeyString));
     orphanKeysBlock.TextWrapping(TextWrapping::Wrap);
@@ -89,6 +93,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
             co_return;
         }
     }
+
     ApplyRemappings();
 }
 
@@ -121,6 +126,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
             48,
             48,
             LR_DEFAULTCOLOR);
+        
         if (RegisterClassEx(&windowClass) == NULL)
         {
             MessageBox(NULL, GET_RESOURCE_STRING(IDS_REGISTERCLASSFAILED_ERRORMESSAGE).c_str(), GET_RESOURCE_STRING(IDS_REGISTERCLASSFAILED_ERRORTITLE).c_str(), NULL);
@@ -151,11 +157,13 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
         NULL,
         hInst,
         NULL);
+    
     if (_hWndEditKeyboardWindow == NULL)
     {
         MessageBox(NULL, GET_RESOURCE_STRING(IDS_CREATEWINDOWFAILED_ERRORMESSAGE).c_str(), GET_RESOURCE_STRING(IDS_CREATEWINDOWFAILED_ERRORTITLE).c_str(), NULL);
         return;
     }
+
     // Ensures the window is in foreground on first startup. If this is not done, the window appears behind because the thread is not on the foreground.
     if (_hWndEditKeyboardWindow)
     {
@@ -169,8 +177,10 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
 
     // Create the xaml bridge object
     XamlBridge xamlBridge(_hWndEditKeyboardWindow);
+
     // DesktopSource needs to be declared before the RelativePanel xamlContainer object to avoid errors
     winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource;
+    
     // Create the desktop window xaml source object and set its content
     hWndXamlIslandEditKeyboardWindow = xamlBridge.InitDesktopWindowsXamlSource(desktopSource);
 
@@ -232,11 +242,14 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
 
     // Store handle of edit keyboard window
     SingleKeyRemapControl::EditKeyboardWindowHandle = _hWndEditKeyboardWindow;
+
     // Store keyboard manager state
     SingleKeyRemapControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
+    
     // Clear the single key remap buffer
     SingleKeyRemapControl::singleKeyRemapBuffer.clear();
+    
     // Vector to store dynamically allocated control objects to avoid early destruction
     std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>> keyboardRemapControlObjects;
 
@@ -445,6 +458,7 @@ bool CheckEditKeyboardWindowActive()
         {
             ShowWindow(hwndEditKeyboardNativeWindow, SW_RESTORE);
         }
+        
         // If there is an already existing window no need to create a new open bring it on foreground.
         SetForegroundWindow(hwndEditKeyboardNativeWindow);
         result = true;

@@ -15,9 +15,8 @@ namespace KeyboardEventHandlers
     intptr_t HandleSingleKeyRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
 
     /* This feature has not been enabled (code from proof of concept stage)
-    * 
-    // Function to a change a key's behavior from toggle to modifier
-    __declspec(dllexport) intptr_t HandleSingleKeyToggleToModEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
+        // Function to a change a key's behavior from toggle to modifier
+        __declspec(dllexport) intptr_t HandleSingleKeyToggleToModEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
     */
 
     // Function to a handle a shortcut remap

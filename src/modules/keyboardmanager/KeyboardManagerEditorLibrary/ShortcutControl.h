@@ -36,10 +36,13 @@ private:
 public:
     // Handle to the current Edit Shortcuts Window
     static HWND editShortcutsWindowHandle;
+
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
+
     // Stores the current list of remappings
     static RemapBuffer shortcutRemapBuffer;
+
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
     std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
 

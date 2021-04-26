@@ -17,7 +17,9 @@ DWORD KeyDropDownControl::GetSelectedValue(ComboBox comboBox)
 {
     auto dataContext = comboBox.SelectedValue();
     if (!dataContext)
+    {
         return -1;
+    }
 
     auto value = winrt::unbox_value<hstring>(dataContext);
     return stoi(std::wstring(value));
@@ -55,7 +57,9 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     {
         dropDown.as<ComboBox>().Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
     }
+
     dropDown.as<ComboBox>().MaxDropDownHeight(KeyboardManagerConstants::TableDropDownHeight);
+    
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
     dropDown.as<ComboBox>().SelectedValuePath(L"DataContext");
@@ -76,6 +80,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     style.Setters().Append(Setter(Windows::UI::Xaml::Controls::Control::TabNavigationProperty(), winrt::box_value(Windows::UI::Xaml::Input::KeyboardNavigationMode::Cycle)));
     warningFlyout.as<Flyout>().FlyoutPresenterStyle(style);
     dropDown.as<ComboBox>().ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>(), warningFlyout.as<Flyout>());
+    
     // To set the accessible name of the combo-box (by default index 1)
     SetAccessibleNameForComboBox(dropDown.as<ComboBox>(), 1);
 }
@@ -114,6 +119,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
 
         ComboBox currentDropDown = sender.as<ComboBox>();
         int selectedKeyCode = GetSelectedValue(currentDropDown);
+        
         // Validate current remap selection
         KeyboardManagerHelper::ErrorType errorType = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(rowIndex, colIndex, selectedKeyCode, singleKeyRemapBuffer);
 
@@ -201,6 +207,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
             }
 
             parent.Children().RemoveAt(dropDownIndex);
+            
             // delete drop down control object from the vector so that it can be destructed
             keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
             parent.UpdateLayout();
@@ -253,6 +260,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
                     shortcutRemapBuffer[validationResult.second].first[colIndex] = tempShortcut;
                 }
             }
+
             if (targetApp != nullptr)
             {
                 std::wstring newText = targetApp.Text().c_str();
@@ -374,6 +382,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
 {
     // Delete the existing drop down menus
     parent.Children().Clear();
+    
     // Remove references to the old drop down objects to destroy them
     keyDropDownControlObjects.clear();
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
@@ -399,6 +408,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
             }
         }
     }
+    
     parent.UpdateLayout();
 }
 

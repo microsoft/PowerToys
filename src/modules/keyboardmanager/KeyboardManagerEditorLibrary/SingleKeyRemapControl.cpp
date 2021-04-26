@@ -89,6 +89,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     auto originalElement = keyboardRemapControlObjects.back()[0]->getSingleKeyRemapControl();
     originalElement.Width(KeyboardManagerConstants::RemapTableDropDownWidth);
     row.Children().Append(originalElement);
+
     // Arrow icon
     FontIcon arrowIcon;
     arrowIcon.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
@@ -159,6 +160,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         children.RemoveAt(rowIndex);
         parent.UpdateLayout();
         singleKeyRemapBuffer.erase(singleKeyRemapBuffer.begin() + rowIndex);
+    
         // delete the SingleKeyRemapControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + rowIndex);
     });
@@ -212,10 +214,12 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         if (detectedKey != NULL)
         {
             std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList();
+
             // Update the drop down list with the new language to ensure that the correct key is displayed
             linkedRemapDropDown.ItemsSource(UIHelpers::ToBoxValue(keyboardManagerState.keyboardMap.GetKeyNameList()));
             linkedRemapDropDown.SelectedValue(winrt::box_value(std::to_wstring(detectedKey)));
         }
+
         // Hide the type key UI
         detectRemapKeyBox.Hide();
     };
@@ -277,6 +281,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
 
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
+
         // Revert UI state back to Edit Keyboard window
         keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, EditKeyboardWindowHandle);
         unregisterKeys();
@@ -286,6 +291,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
     cancelButton.Margin({ 2, 2, 2, 2 });
     cancelButton.Content(cancelButtonText);
+
     // Cancel button
     cancelButton.Click([onCancel](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         onCancel();

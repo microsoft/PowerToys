@@ -22,11 +22,14 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 
 // This Hwnd will be the window handler for the Xaml Island: A child window that contains Xaml.
 HWND hWndXamlIslandEditShortcutsWindow = nullptr;
+
 // This variable is used to check if window registration has been done to avoid repeated registration leading to an error.
 bool isEditShortcutsWindowRegistrationCompleted = false;
+
 // Holds the native window handle of EditShortcuts Window.
 HWND hwndEditShortcutsNativeWindow = nullptr;
 std::mutex editShortcutsWindowMutex;
+
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
 static XamlBridge* xamlBridgePtr = nullptr;
 
@@ -107,11 +110,13 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
         NULL,
         hInst,
         NULL);
+    
     if (_hWndEditShortcutsWindow == NULL)
     {
         MessageBox(NULL, GET_RESOURCE_STRING(IDS_CREATEWINDOWFAILED_ERRORMESSAGE).c_str(), GET_RESOURCE_STRING(IDS_CREATEWINDOWFAILED_ERRORTITLE).c_str(), NULL);
         return;
     }
+    
     // Ensures the window is in foreground on first startup. If this is not done, the window appears behind because the thread is not on the foreground.
     if (_hWndEditShortcutsWindow)
     {
@@ -125,8 +130,10 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
 
     // Create the xaml bridge object
     XamlBridge xamlBridge(_hWndEditShortcutsWindow);
+    
     // DesktopSource needs to be declared before the RelativePanel xamlContainer object to avoid errors
     winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource;
+    
     // Create the desktop window xaml source object and set its content
     hWndXamlIslandEditShortcutsWindow = xamlBridge.InitDesktopWindowsXamlSource(desktopSource);
 
@@ -196,11 +203,14 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
 
     // Store handle of edit shortcuts window
     ShortcutControl::editShortcutsWindowHandle = _hWndEditShortcutsWindow;
+    
     // Store keyboard manager state
     ShortcutControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
+    
     // Clear the shortcut remap buffer
     ShortcutControl::shortcutRemapBuffer.clear();
+    
     // Vector to store dynamically allocated control objects to avoid early destruction
     std::vector<std::vector<std::unique_ptr<ShortcutControl>>> keyboardRemapControlObjects;
 

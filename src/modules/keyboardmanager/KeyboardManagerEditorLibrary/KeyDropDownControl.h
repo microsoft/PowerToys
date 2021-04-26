@@ -31,12 +31,16 @@ class KeyDropDownControl
 private:
     // Stores the drop down combo box
     winrt::Windows::Foundation::IInspectable dropDown;
+
     // Stores the previous layout
     HKL previousLayout = 0;
+
     // Stores the flyout warning message
     winrt::Windows::Foundation::IInspectable warningMessage;
+
     // Stores the flyout attached to the current drop down
     winrt::Windows::Foundation::IInspectable warningFlyout;
+
     // Stores whether a key to shortcut warning has to be ignored
     bool ignoreKeyToShortcutWarning;
 
@@ -51,6 +55,7 @@ private:
 
     // Function to set accessible name for combobox
     static void SetAccessibleNameForComboBox(ComboBox dropDown, int index);
+
 public:
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
