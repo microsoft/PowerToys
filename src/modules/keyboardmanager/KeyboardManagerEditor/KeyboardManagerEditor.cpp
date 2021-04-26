@@ -135,10 +135,10 @@ void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type)
     switch (type)
     {
     case KeyboardManagerEditorType::KeyEditor:
-        createEditKeyboardWindow(hInstance, keyboardManagerState);
+        CreateEditKeyboardWindow(hInstance, keyboardManagerState);
         break;
     case KeyboardManagerEditorType::ShortcutEditor:
-        createEditShortcutsWindow(hInstance, keyboardManagerState);
+        CreateEditShortcutsWindow(hInstance, keyboardManagerState);
     }
 }
 

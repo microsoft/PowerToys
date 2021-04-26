@@ -47,7 +47,7 @@ static IAsyncAction OnClickAccept(
 }
 
 // Function to create the Edit Shortcuts Window
-inline void createEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
     Logger::trace("Creating Remap shortcuts window");
     EventLocker locker(KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -330,10 +330,10 @@ inline void createEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     xamlBridge.ClearXamlIslands();
 }
 
-void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+void CreateEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
     // Move implementation into the separate method so resources get destroyed correctly
-    createEditShortcutsWindowImpl(hInst, keyboardManagerState);
+    CreateEditShortcutsWindowImpl(hInst, keyboardManagerState);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
