@@ -85,9 +85,10 @@ namespace BufferValidationHelpers
                 // warn and reset the drop down
                 errorType = KeyboardManagerHelper::ErrorType::ShortcutStartWithModifier;
             }
-            // If it is the last drop down
             else if (dropDownIndex == dropDownCount - 1)
             {
+                // If it is the last drop down
+
                 // If last drop down and a modifier is selected: add a new drop down (max drop down count should be enforced)
                 if (KeyboardManagerHelper::IsModifierKey(selectedKeyCode) && dropDownCount < KeyboardManagerConstants::MaxShortcutSize)
                 {
@@ -97,21 +98,21 @@ namespace BufferValidationHelpers
                         // warn and reset the drop down
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutCannotHaveRepeatedModifier;
                     }
-                    // If not, add a new drop down
                     else
                     {
+                        // If not, add a new drop down
                         dropDownAction = BufferValidationHelpers::DropDownAction::AddDropDown;
                     }
                 }
-                // If last drop down and a modifier is selected but there are already max drop downs: warn the user
                 else if (KeyboardManagerHelper::IsModifierKey(selectedKeyCode) && dropDownCount >= KeyboardManagerConstants::MaxShortcutSize)
                 {
+                    // If last drop down and a modifier is selected but there are already max drop downs: warn the user
                     // warn and reset the drop down
                     errorType = KeyboardManagerHelper::ErrorType::ShortcutMaxShortcutSizeOneActionKey;
                 }
-                // If None is selected but it's the last index: warn
                 else if (selectedKeyCode == 0)
                 {
+                    // If None is selected but it's the last index: warn
                     // If it is a hybrid control and there are 2 drop downs then deletion is allowed
                     if (isHybridControl && dropDownCount == KeyboardManagerConstants::MinShortcutSize)
                     {
@@ -125,16 +126,16 @@ namespace BufferValidationHelpers
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutOneActionKey;
                     }
                 }
-                // Disable can not be selected if one modifier key has already been selected
                 else if (selectedKeyCode == CommonSharedConstants::VK_DISABLED && dropDownIndex)
                 {
+                    // Disable can not be selected if one modifier key has already been selected
                     errorType = KeyboardManagerHelper::ErrorType::ShortcutDisableAsActionKey;
                 }
                 // If none of the above, then the action key will be set
             }
-            // If it is not the last drop down
             else
             {
+                // If it is not the last drop down
                 if (KeyboardManagerHelper::IsModifierKey(selectedKeyCode))
                 {
                     // If it matched any of the previous modifiers then reset that drop down
@@ -145,9 +146,9 @@ namespace BufferValidationHelpers
                     }
                     // If not, the modifier key will be set
                 }
-                // If None is selected and there are more than 2 drop downs
                 else if (selectedKeyCode == 0 && dropDownCount > KeyboardManagerConstants::MinShortcutSize)
                 {
+                    // If None is selected and there are more than 2 drop downs
                     // set delete drop down flag
                     dropDownAction = BufferValidationHelpers::DropDownAction::DeleteDropDown;
                     // do not delete the drop down now since there may be some other error which would cause the drop down to be invalid after removal
@@ -167,14 +168,15 @@ namespace BufferValidationHelpers
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutAtleast2Keys;
                     }
                 }
-                // Allow selection of VK_DISABLE only in first dropdown
                 else if (selectedKeyCode == CommonSharedConstants::VK_DISABLED && dropDownIndex)
                 {
+                    // Allow selection of VK_DISABLE only in first dropdown
                     errorType = KeyboardManagerHelper::ErrorType::ShortcutDisableAsActionKey;
                 }
-                // If the user tries to set an action key check if all drop down menus after this are empty if it is not the first key. If it is a hybrid control, this can be done even on the first key
                 else if (dropDownIndex != 0 || isHybridControl)
                 {
+                    // If the user tries to set an action key check if all drop down menus after this are empty if it is not the first key.
+                    // If it is a hybrid control, this can be done even on the first key
                     bool isClear = true;
                     for (int i = dropDownIndex + 1; i < (int)dropDownCount; i++)
                     {
@@ -195,9 +197,9 @@ namespace BufferValidationHelpers
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutNotMoreThanOneActionKey;
                     }
                 }
-                // If there an action key is chosen on the first drop down and there are more than one drop down menus
                 else
                 {
+                    // If there an action key is chosen on the first drop down and there are more than one drop down menus
                     // warn and reset the drop down
                     errorType = KeyboardManagerHelper::ErrorType::ShortcutStartWithModifier;
                 }

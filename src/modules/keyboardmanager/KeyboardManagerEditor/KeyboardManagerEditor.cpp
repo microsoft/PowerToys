@@ -72,6 +72,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         type = static_cast<KeyboardManagerEditorType>(_wtoi(cmdArgs[1]));
     }
+    
     if (numArgs == 3)
     {
         std::wstring pid = std::wstring(cmdArgs[2]);

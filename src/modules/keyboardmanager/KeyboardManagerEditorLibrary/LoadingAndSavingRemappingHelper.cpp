@@ -44,6 +44,7 @@ namespace LoadingAndSavingRemappingHelper
                 isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
             }
         }
+
         return isSuccess;
     }
 
@@ -177,6 +178,7 @@ namespace LoadingAndSavingRemappingHelper
         DWORD successfulOSLevelShortcutToKeyRemapCount = 0;
         DWORD successfulAppSpecificShortcutToShortcutRemapCount = 0;
         DWORD successfulAppSpecificShortcutToKeyRemapCount = 0;
+        
         // Save the shortcuts that are valid and report if any of them were invalid
         for (int i = 0; i < remappings.size(); i++)
         {

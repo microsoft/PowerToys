@@ -77,6 +77,7 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             return 1;
         }
     }
+    
     return CallNextHookEx(hookHandleCopy, nCode, wParam, lParam);
 }
 
@@ -142,10 +143,9 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     }
 
     /* This feature has not been enabled (code from proof of concept stage)
-        * 
-        //// Remap a key to behave like a modifier instead of a toggle
-        //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
-        */
+        // Remap a key to behave like a modifier instead of a toggle
+        intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
+    */
 
     // Handle an app-specific shortcut remapping
     intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, keyboardManagerState);

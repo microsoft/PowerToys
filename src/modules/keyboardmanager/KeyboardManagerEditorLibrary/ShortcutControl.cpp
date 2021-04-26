@@ -32,6 +32,7 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
         // Using the XamlRoot of the typeShortcut to get the root of the XAML host
         CreateDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState, colIndex, table, keyDropDownControlObjects, row, targetApp, isHybridControl, false, editShortcutsWindowHandle, shortcutRemapBuffer);
     });
+
     // Set an accessible name for the type shortcut button
     typeShortcut.as<Button>().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
 
@@ -52,6 +53,7 @@ void ShortcutControl::SetAccessibleNameForTextBox(TextBox targetAppTextBox, int 
     {
         targetAppTextBoxAccessibleName += GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);
     }
+    
     targetAppTextBox.SetValue(Automation::AutomationProperties::NameProperty(), box_value(targetAppTextBoxAccessibleName));
 }
 

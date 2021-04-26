@@ -34,10 +34,13 @@ private:
 public:
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
     std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
+
     // Handle to the current Edit Keyboard Window
     static HWND EditKeyboardWindowHandle;
+
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
+
     // Stores the current list of remappings
     static RemapBuffer singleKeyRemapBuffer;
 
