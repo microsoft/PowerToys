@@ -579,6 +579,7 @@ bool KeyboardManagerState::SaveConfigToFile()
     catch (...)
     {
         result = false;
+        Logger::error(L"Failed to save the settings");
     }
 
     if (result)
