@@ -27,7 +27,6 @@ namespace BufferValidationHelpers
             }
 
             // If one column is shortcut and other is key no warning required
-
             if (errorType == KeyboardManagerHelper::ErrorType::NoError && colIndex == 0)
             {
                 // Check if the key is already remapped to something else
