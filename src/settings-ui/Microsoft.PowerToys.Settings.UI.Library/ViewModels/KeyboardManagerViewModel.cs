@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -251,20 +252,46 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         public bool LoadProfile()
         {
+            // The KBM process out of runner creates the default.json file if it does not exist.
             var success = true;
+            var readSuccessfully = false;
 
-            // update the UI element here.
+            string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
+
             try
             {
-                string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
+                // retry loop for reading
+                CancellationTokenSource ts = new CancellationTokenSource();
+                Task t = Task.Run(() =>
+                {
+                    while (!readSuccessfully && !ts.IsCancellationRequested)
+                    {
+                        if (_settingsUtils.SettingsExists(PowerToyName, fileName))
+                        {
+                            try
+                            {
+                                _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
+                                readSuccessfully = true;
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.LogError($"Exception encountered when reading {PowerToyName} settings", e);
+                            }
+                        }
 
-                if (_settingsUtils.SettingsExists(PowerToyName, fileName))
+                        if (!readSuccessfully)
+                        {
+                            Task.Delay(500).Wait();
+                        }
+                    }
+                });
+
+                t.Wait(1000, ts.Token);
+                ts.Cancel();
+                ts.Dispose();
+
+                if (!readSuccessfully)
                 {
-                    _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
-                }
-                else
-                {
-                    // The KBM process out of runner creates the default.json file if it does not exist.
                     success = false;
                 }
 
