@@ -13,17 +13,18 @@ public:
     void StopLowlevelKeyboardHook();
 
 private:
-    //contains the non localized key of the powertoy
-    std::wstring app_key = KeyboardManagerConstants::ModuleName;
+    // Contains the non localized module name
+    std::wstring moduleName = KeyboardManagerConstants::ModuleName;
 
     // Low level hook handles
-    static HHOOK hook_handle;
+    static HHOOK hookHandle;
 
     // Required for Unhook in old versions of Windows
-    static HHOOK hook_handle_copy;
+    static HHOOK hookHandleCopy;
 
-    // Static pointer to the current keyboardmanager object required for accessing the HandleKeyboardHookEvent function in the hook procedure (Only global or static variables can be accessed in a hook procedure CALLBACK)
-    static KeyboardManager* keyboardmanager_object_ptr;
+    // Static pointer to the current KeyboardManager object required for accessing the HandleKeyboardHookEvent function in the hook procedure
+    // Only global or static variables can be accessed in a hook procedure CALLBACK
+    static KeyboardManager* keyboardManagerObjectPtr;
 
     // Variable which stores all the state information to be shared between the UI and back-end
     KeyboardManagerState keyboardManagerState;

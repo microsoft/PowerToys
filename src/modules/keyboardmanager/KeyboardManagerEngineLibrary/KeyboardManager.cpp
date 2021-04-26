@@ -18,9 +18,9 @@
 #include "KeyboardEventHandlers.h"
 #include "trace.h"
 
-HHOOK KeyboardManager::hook_handle_copy;
-HHOOK KeyboardManager::hook_handle;
-KeyboardManager* KeyboardManager::keyboardmanager_object_ptr;
+HHOOK KeyboardManager::hookHandleCopy;
+HHOOK KeyboardManager::hookHandle;
+KeyboardManager* KeyboardManager::keyboardManagerObjectPtr;
 
 KeyboardManager::KeyboardManager()
 {
@@ -28,9 +28,9 @@ KeyboardManager::KeyboardManager()
     LoadSettings();
 
     // Set the static pointer to the newest object of the class
-    keyboardmanager_object_ptr = this;
+    keyboardManagerObjectPtr = this;
 
-    std::filesystem::path modulePath(PTSettingsHelper::get_module_save_folder_location(app_key));
+    std::filesystem::path modulePath(PTSettingsHelper::get_module_save_folder_location(moduleName));
     auto changeSettingsCallback = [this](DWORD err) {
         Logger::trace(L"{} event was signaled", KeyboardManagerConstants::SettingsEventName);
         if (err != ERROR_SUCCESS)
@@ -67,17 +67,17 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, WPARAM wParam, LPARAM lPar
     {
         event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         event.wParam = wParam;
-        if (keyboardmanager_object_ptr->HandleKeyboardHookEvent(&event) == 1)
+        if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
         {
             // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
             if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
             {
-                KeyboardEventHandlers::SetNumLockToPreviousState(keyboardmanager_object_ptr->inputHandler);
+                KeyboardEventHandlers::SetNumLockToPreviousState(keyboardManagerObjectPtr->inputHandler);
             }
             return 1;
         }
     }
-    return CallNextHookEx(hook_handle_copy, nCode, wParam, lParam);
+    return CallNextHookEx(hookHandleCopy, nCode, wParam, lParam);
 }
 
 void KeyboardManager::StartLowlevelKeyboardHook()
@@ -89,11 +89,11 @@ void KeyboardManager::StartLowlevelKeyboardHook()
     }
 #endif
 
-    if (!hook_handle)
+    if (!hookHandle)
     {
-        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, HookProc, GetModuleHandle(NULL), NULL);
-        hook_handle_copy = hook_handle;
-        if (!hook_handle)
+        hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, HookProc, GetModuleHandle(NULL), NULL);
+        hookHandleCopy = hookHandle;
+        if (!hookHandle)
         {
             DWORD errorCode = GetLastError();
             show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager");
@@ -105,10 +105,10 @@ void KeyboardManager::StartLowlevelKeyboardHook()
 
 void KeyboardManager::StopLowlevelKeyboardHook()
 {
-    if (hook_handle)
+    if (hookHandle)
     {
-        UnhookWindowsHookEx(hook_handle);
-        hook_handle = nullptr;
+        UnhookWindowsHookEx(hookHandle);
+        hookHandle = nullptr;
     }
 }
 
