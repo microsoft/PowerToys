@@ -10,19 +10,52 @@ public:
         SetEvent(eventHandle);
     }
 
-    EventLocker(std::wstring eventName)
+    static std::optional<EventLocker> Get(std::wstring eventName)
     {
-        // TODO: CreateEvent can fail, we need to check the returned value
-        eventHandle = CreateEvent(nullptr, true, false, eventName.c_str());
-        SetEvent(eventHandle);
+        EventLocker locker(eventName);
+        if (!locker.eventHandle)
+        {
+            return {};
+        }
+
+        return locker;
+    }
+
+    EventLocker(EventLocker& e) = delete;
+    EventLocker& operator=(EventLocker& e) = delete;
+
+    EventLocker(EventLocker&& e) noexcept
+    {
+        this->eventHandle = e.eventHandle;
+        e.eventHandle = nullptr;
+    }
+    
+    EventLocker& operator=(EventLocker&& e) noexcept
+    {
+        this->eventHandle = e.eventHandle;
+        e.eventHandle = nullptr;
     }
 
     ~EventLocker()
     {
-        ResetEvent(eventHandle);
-        CloseHandle(eventHandle);
+        if (eventHandle)
+        {
+            ResetEvent(eventHandle);
+            CloseHandle(eventHandle);
+            eventHandle = nullptr;
+        }
+    }
+private:
+    EventLocker(std::wstring eventName)
+    {
+        eventHandle = CreateEvent(nullptr, true, false, eventName.c_str());
+        if (!eventHandle)
+        {
+            return;
+        }
+
+        SetEvent(eventHandle);
     }
 
-private:
     HANDLE eventHandle;
 };

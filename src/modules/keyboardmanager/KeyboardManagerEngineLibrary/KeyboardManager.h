@@ -32,8 +32,8 @@ private:
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;
 
-    // TODO: add comment
-    EventWaiter eventWaiter;
+    // Auto reset event for waiting for settings changes. The event is signaled when settings are changed
+    EventWaiter settingsEventWaiter;
 
     std::atomic_bool loadingSettings = false;
 

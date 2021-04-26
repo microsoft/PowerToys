@@ -52,7 +52,7 @@ KeyboardManager::KeyboardManager()
         loadingSettings = false;
     };
 
-    eventWaiter = EventWaiter(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
+    settingsEventWaiter = EventWaiter(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
 }
 
 void KeyboardManager::LoadSettings()

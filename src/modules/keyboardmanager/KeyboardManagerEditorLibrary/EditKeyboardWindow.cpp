@@ -19,6 +19,7 @@
 #include "Dialog.h"
 #include "LoadingAndSavingRemappingHelper.h"
 #include "UIHelpers.h"
+#include <common/utils/winapi_error.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -95,7 +96,12 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
     Logger::trace("Creating Remap keys window");
-    EventLocker locker(KeyboardManagerConstants::EditorWindowEventName.c_str());
+    auto locker = EventLocker::Get(KeyboardManagerConstants::EditorWindowEventName.c_str());
+    if (!locker.has_value())
+    {
+        Logger::error(L"Failed to lock event {}. {}", KeyboardManagerConstants::EditorWindowEventName, get_last_error_or_default(GetLastError()));
+    }
+
     Logger::trace(L"Signaled {} event. Remapping is suspended", KeyboardManagerConstants::EditorWindowEventName);
 
     // Window Registration
