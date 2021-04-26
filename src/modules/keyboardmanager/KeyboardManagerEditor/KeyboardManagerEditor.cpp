@@ -16,7 +16,7 @@
 
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
-#include <common/utils/process_waiter.h>
+#include <common/utils/ProcessWaiter.h>
 
 std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
 const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEditor_InstanceMutex";
@@ -71,7 +71,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         if (!pid.empty())
         {
             auto mainThreadId = GetCurrentThreadId();
-            on_process_terminate(pid, [mainThreadId](int err) {
+            ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
                 if (err != ERROR_SUCCESS)
                 {
                     Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));

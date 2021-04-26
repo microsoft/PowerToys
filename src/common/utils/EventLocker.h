@@ -12,6 +12,7 @@ public:
 
     EventLocker(std::wstring eventName)
     {
+        // TODO: CreateEvent can fail, we need to check the returned value
         eventHandle = CreateEvent(nullptr, true, false, eventName.c_str());
         SetEvent(eventHandle);
     }
@@ -21,6 +22,7 @@ public:
         ResetEvent(eventHandle);
         CloseHandle(eventHandle);
     }
+
 private:
     HANDLE eventHandle;
 };

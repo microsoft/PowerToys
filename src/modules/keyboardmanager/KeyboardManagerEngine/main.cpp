@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include <common/utils/window.h>
-#include <common/utils/process_waiter.h>
+#include <common/utils/ProcessWaiter.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
@@ -35,7 +35,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     if (!pid.empty())
     {
         auto mainThreadId = GetCurrentThreadId();
-        on_process_terminate(pid, [mainThreadId](int err) {
+        ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
             if (err != ERROR_SUCCESS)
             {
                 Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
