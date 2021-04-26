@@ -1,5 +1,5 @@
 #pragma once
-#include <common/utils/event_waiter.h>
+#include <common/utils/EventWaiter.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/Input.h>
 
@@ -24,7 +24,7 @@ private:
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;
 
-    event_waiter eventWaiter;
+    EventWaiter eventWaiter;
 
     std::atomic_bool loadingSettings = false;
 public:
