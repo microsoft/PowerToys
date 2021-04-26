@@ -160,6 +160,7 @@ bool LoadShortcutRemaps(KeyboardManagerState& keyboardManagerState, const json::
 
 bool SettingsHelper::LoadSettings(KeyboardManagerState& keyboardManagerState)
 {
+    Logger::trace(L"SettingsHelper::LoadSettings()");
     try
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
@@ -186,7 +187,7 @@ bool SettingsHelper::LoadSettings(KeyboardManagerState& keyboardManagerState)
     }
     catch (...)
     {
-        Logger::error(L"Unable to load inital config.");
+        Logger::error(L"SettingsHelper::LoadSettings() failed");
     }
 
     return false;

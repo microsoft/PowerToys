@@ -100,14 +100,14 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 // Function to create the Edit Keyboard Window
 inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
-    Logger::trace("Creating Remap keys window");
+    Logger::trace("CreateEditKeyboardWindowImpl()");
     auto locker = EventLocker::Get(KeyboardManagerConstants::EditorWindowEventName.c_str());
     if (!locker.has_value())
     {
         Logger::error(L"Failed to lock event {}. {}", KeyboardManagerConstants::EditorWindowEventName, get_last_error_or_default(GetLastError()));
     }
 
-    Logger::trace(L"Signaled {} event. Remapping is suspended", KeyboardManagerConstants::EditorWindowEventName);
+    Logger::trace(L"Signaled {} event to suspend the KBM engine", KeyboardManagerConstants::EditorWindowEventName);
 
     // Window Registration
     const wchar_t szWindowClass[] = L"EditKeyboardWindow";
@@ -403,7 +403,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     auto message = getMessage(messageCode);
     if (message != L"")
     {
-        Logger::trace(L"Edit keyboard message handler, messageCode={}", getMessage(messageCode));
+        Logger::trace(L"EditKeyboardWindowProc() messageCode={}", getMessage(messageCode));
     }
     
     switch (messageCode)
@@ -473,7 +473,7 @@ void CloseActiveEditKeyboardWindow()
     std::unique_lock<std::mutex> hwndLock(editKeyboardWindowMutex);
     if (hwndEditKeyboardNativeWindow != nullptr)
     {
-        Logger::trace("Closing edit Keyboard window");
+        Logger::trace("CloseActiveEditKeyboardWindow()");
         PostMessage(hwndEditKeyboardNativeWindow, WM_CLOSE, 0, 0);
     }
 }

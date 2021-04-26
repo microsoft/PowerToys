@@ -32,7 +32,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     InitUnhandledExceptionHandler_x64();
     Trace::RegisterProvider();
 
-    Logger::trace(L"Editor started with pid {}", GetCurrentProcessId());
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {
@@ -86,7 +85,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                     Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
                 }
 
-                Logger::info(L"Parent process exited. Exiting KeyboardManager editor");
+                Logger::trace(L"Parent process exited. Exiting KeyboardManager editor");
                 PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
             });
         }

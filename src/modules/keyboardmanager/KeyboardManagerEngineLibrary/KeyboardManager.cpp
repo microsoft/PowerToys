@@ -41,7 +41,6 @@ KeyboardManager::KeyboardManager()
         loadingSettings = true;
         try
         {
-            Logger::trace("Load settings");
             LoadSettings();
         }
         catch (...)
