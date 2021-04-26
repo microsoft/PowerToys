@@ -192,26 +192,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             IntPtr handle = process.MainWindowHandle;
-            if (IsIconic(handle))
+            if (NativeMethods.IsIconic(handle))
             {
-                ShowWindow(handle, SWRESTORE);
+                NativeMethods.ShowWindow(handle, NativeMethods.SWRESTORE);
             }
 
-            SetForegroundWindow(handle);
+            NativeMethods.SetForegroundWindow(handle);
         }
-
-        private const int SWRESTORE = 9;
-
-        [System.Runtime.InteropServices.DllImport("User32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr handle);
-
-        [System.Runtime.InteropServices.DllImport("User32.dll")]
-
-        private static extern bool ShowWindow(IntPtr handle, int nCmdShow);
-
-        [System.Runtime.InteropServices.DllImport("User32.dll")]
-
-        private static extern bool IsIconic(IntPtr handle);
 
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         private void OpenEditor(int type)
