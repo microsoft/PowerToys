@@ -18,6 +18,15 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
     [TestFixture]
     public class Win32Tests
     {
+        private static readonly Win32Program _imagingDevices = new Win32Program
+        {
+            Name = "Imaging Devices",
+            ExecutableName = "imagingdevices.exe",
+            FullPath = "c:\\program files\\windows photo viewer\\imagingdevices.exe",
+            LnkResolvedPath = null,
+            AppType = Win32Program.ApplicationType.Win32Application,
+        };
+
         private static readonly Win32Program _notepadAppdata = new Win32Program
         {
             Name = "Notepad",
@@ -430,6 +439,12 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
 
             // the query matches the name (cmd) and is therefore not filtered (case-insensitive)
             Assert.IsTrue(_cmdRunCommand.QueryEqualsNameForRunCommands(query));
+        }
+
+        [TestCase("ımaging")]
+        public void Win32ApplicationsShouldNotHaveIncorrectPathWhenExecuting(string query)
+        {
+            Assert.IsFalse(_imagingDevices.FullPath.Contains(query, StringComparison.Ordinal));
         }
 
         [Test]
