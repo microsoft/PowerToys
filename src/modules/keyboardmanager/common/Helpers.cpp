@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Helpers.h"
+#include <sstream>
 
 #include <common/interop/shared_constants.h>
 #include <common/utils/process_path.h>

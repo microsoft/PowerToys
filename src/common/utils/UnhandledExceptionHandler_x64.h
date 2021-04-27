@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <DbgHelp.h>
 #include <signal.h>
+#include <sstream>
 #include <stdio.h>
 #include "../logger/logger.h"
 
