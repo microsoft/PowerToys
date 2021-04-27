@@ -39,7 +39,7 @@
     <ClCompile Include="KeyboardEventHandlers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyboardManagereShortcuts.cpp">
+    <ClCompile Include="KeyboardManagerShortcuts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
