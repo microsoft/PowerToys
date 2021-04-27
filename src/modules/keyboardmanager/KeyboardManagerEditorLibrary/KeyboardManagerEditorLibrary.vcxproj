@@ -38,6 +38,7 @@
     <ClInclude Include="EditKeyboardWindow.h" />
     <ClInclude Include="EditShortcutsWindow.h" />
     <ClInclude Include="KeyboardManagerEditorStrings.h" />
+    <ClInclude Include="KeyboardManagerState.h" />
     <ClInclude Include="KeyDropDownControl.h" />
     <ClInclude Include="LoadingAndSavingRemappingHelper.h" />
     <ClInclude Include="pch.h" />
@@ -55,6 +56,7 @@
     <ClCompile Include="EditKeyboardWindow.cpp" />
     <ClCompile Include="EditShortcutsWindow.cpp" />
     <ClCompile Include="KeyboardManagerEditorStrings.cpp" />
+    <ClCompile Include="KeyboardManagerState.cpp" />
     <ClCompile Include="KeyDropDownControl.cpp" />
     <ClCompile Include="LoadingAndSavingRemappingHelper.cpp" />
     <ClCompile Include="pch.cpp">
