@@ -91,7 +91,7 @@ The SCOOBE dialog builds off the currently implemented OOBE dialog originally dr
 
 | **No.** | **Requirement** | **Implication** | **Pri** |
 | --- | --- | --- | --- |
-|1. | Date/Time of first-run following upgrade | Helps to categorize usage and retention trends across users who&#39;ve been exposed to SCOOBE. | P0 |
+|1. | Date/Time of first-run following upgrade | Helps to categorize usage and retention trends across users who've been exposed to SCOOBE. | P0 |
 |2. | SCOOBE section viewed | Used to measure activation of the SCOOBE dialog. Should be 100% for the current version of PowerToys following SCOOBE&#39;s inclusion. | P0 |
 |3. | Accesses to linked documentation | Used to gauge interest in user&#39;s desire to learn more about the PowerToys described. | P1 |
 |4. | Access to linked settings pages | Used to gauge whether the settings presented to users in the dialog are sufficient for user needs. | P1 |

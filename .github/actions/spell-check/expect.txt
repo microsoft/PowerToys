@@ -186,6 +186,7 @@ BTNFACE
 Bto
 buf
 BUFSIZE
+Bugfixes
 bugreport
 Buid
 buildcommand
@@ -425,6 +426,7 @@ DELA
 deletethis
 delims
 DENORMAL
+Deondre
 depersist
 deprioritized
 deps
@@ -1851,6 +1853,7 @@ SAVEFAILED
 scancode
 scanled
 Scn
+SCOOBE
 SCOPEID
 screenshot
 scrollable
