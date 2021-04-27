@@ -1,7 +1,7 @@
 #pragma once
 
 #include <KeyboardManagerState.h>
-#include <Input.h>
+#include <common/Input.h>
 
 enum class KeyboardManagerEditorType
 {

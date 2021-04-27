@@ -10,7 +10,7 @@
 
 #include <trace.h>
 
-#include <KeyboardEventHandlers.h>
+#include <common/KeyboardEventHandlers.h>
 #include <KeyboardManagerState.h>
 #include <SettingsHelper.h>
 
