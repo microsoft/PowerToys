@@ -82,9 +82,6 @@ private:
     std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
     std::mutex keyDelays_mutex;
 
-    // Stores the activated target application in app-specific shortcut
-    std::wstring activatedAppSpecificShortcutTarget;
-
     // Thread safe boolean value to check if remappings are currently enabled. This is used to disable remappings while the remap tables are being updated by the UI thread
     std::atomic_bool remappingsEnabled;
 
@@ -150,16 +147,6 @@ public:
     // Function to add a new App specific level shortcut remapping
     bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC);
 
-    // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
-    std::optional<SingleKeyRemapTable::iterator> GetSingleKeyRemap(const DWORD& originalKey);
-
-    bool CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName);
-
-    std::vector<Shortcut>& GetSortedShortcutRemapVector(const std::optional<std::wstring>& appName);
-
-    // Function to get the source and target of a shortcut remap given the source shortcut. Returns nullopt if it isn't remapped
-    ShortcutRemapTable& GetShortcutRemapTable(const std::optional<std::wstring>& appName);
-
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock1, const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock2);
 
@@ -221,10 +208,4 @@ public:
 
     // Gets the Current Active Configuration Name.
     std::wstring GetCurrentConfigName();
-
-    // Sets the activated target application in app-specific shortcut
-    void SetActivatedApp(const std::wstring& appName);
-
-    // Gets the activated target application in app-specific shortcut
-    std::wstring GetActivatedApp();
 };

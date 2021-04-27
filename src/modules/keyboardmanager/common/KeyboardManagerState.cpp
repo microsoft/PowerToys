@@ -175,54 +175,6 @@ bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const
     return true;
 }
 
-// Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
-std::optional<SingleKeyRemapTable::iterator> KeyboardManagerState::GetSingleKeyRemap(const DWORD& originalKey)
-{
-    auto it = singleKeyReMap.find(originalKey);
-    if (it != singleKeyReMap.end())
-    {
-        return it;
-    }
-
-    return std::nullopt;
-}
-
-bool KeyboardManagerState::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName)
-{
-    // Assumes appName exists in the app-specific remap table
-    ShortcutRemapTable& currentRemapTable = appName ? appSpecificShortcutReMap[*appName] : osLevelShortcutReMap;
-    for (auto& it : currentRemapTable)
-    {
-        if (it.second.isShortcutInvoked)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-std::vector<Shortcut>& KeyboardManagerState::GetSortedShortcutRemapVector(const std::optional<std::wstring>& appName)
-{
-    // Assumes appName exists in the app-specific remap table
-    return appName ? appSpecificShortcutReMapSortedKeys[*appName] : osLevelShortcutReMapSortedKeys;
-}
-
-// Function to get the source and target of a shortcut remap given the source shortcut. Returns nullopt if it isn't remapped
-ShortcutRemapTable& KeyboardManagerState::GetShortcutRemapTable(const std::optional<std::wstring>& appName)
-{
-    if (appName)
-    {
-        auto itTable = appSpecificShortcutReMap.find(*appName);
-        if (itTable != appSpecificShortcutReMap.end())
-        {
-            return itTable->second;
-        }
-    }
-
-    return osLevelShortcutReMap;
-}
-
 // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
 void KeyboardManagerState::ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2)
 {
@@ -609,16 +561,4 @@ std::wstring KeyboardManagerState::GetCurrentConfigName()
 {
     std::lock_guard<std::mutex> lock(currentConfig_mutex);
     return currentConfig;
-}
-
-// Sets the activated target application in app-specific shortcut
-void KeyboardManagerState::SetActivatedApp(const std::wstring& appName)
-{
-    activatedAppSpecificShortcutTarget = appName;
-}
-
-// Gets the activated target application in app-specific shortcut
-std::wstring KeyboardManagerState::GetActivatedApp()
-{
-    return activatedAppSpecificShortcutTarget;
 }
