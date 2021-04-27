@@ -3,18 +3,18 @@
 
 #include <common/Display/dpi_aware.h>
 #include <common/utils/EventLocker.h>
+#include <common/utils/winapi_error.h>
+
+#include <common/ErrorTypes.h>
 
 #include <KeyboardManagerState.h>
-
 #include <Dialog.h>
-#include <ErrorTypes.h>
 #include <KeyDropDownControl.h>
 #include <LoadingAndSavingRemappingHelper.h>
 #include <ShortcutControl.h>
 #include <Styles.h>
 #include <UIHelpers.h>
 #include <XamlBridge.h>
-#include <common/utils/winapi_error.h>
 
 using namespace winrt::Windows::Foundation;
 

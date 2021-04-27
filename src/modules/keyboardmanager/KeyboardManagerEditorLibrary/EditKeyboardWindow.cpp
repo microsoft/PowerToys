@@ -7,11 +7,11 @@
 #include <common/themes/windows_colors.h>
 #include <common/utils/EventLocker.h>
 
-#include <KeyboardManagerConstants.h>
-#include <KeyboardManagerState.h>
+#include <common/KeyboardManagerConstants.h>
+#include <common/ErrorTypes.h>
 
+#include <KeyboardManagerState.h>
 #include "EditKeyboardWindow.h"
-#include "ErrorTypes.h"
 #include "SingleKeyRemapControl.h"
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"

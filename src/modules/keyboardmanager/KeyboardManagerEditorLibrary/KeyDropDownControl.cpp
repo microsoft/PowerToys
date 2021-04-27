@@ -2,11 +2,11 @@
 #include "KeyDropDownControl.h"
 
 #include <common/interop/shared_constants.h>
-#include <KeyboardManagerState.h>
+#include <common/ErrorTypes.h>
 
+#include <KeyboardManagerState.h>
 #include <BufferValidationHelpers.h>
 #include <KeyboardManagerEditorStrings.h>
-#include <ErrorTypes.h>
 #include <UIHelpers.h>
 
 // Initialized to null
