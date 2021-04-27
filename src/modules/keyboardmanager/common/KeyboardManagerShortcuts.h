@@ -2,9 +2,9 @@
 
 #include <common/utils/json.h>
 
-#include <common/KeyboardManagerConstants.h>
-#include <common/Shortcut.h>
-#include <common/RemapShortcut.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <keyboardmanager/common/Shortcut.h>
+#include <keyboardmanager/common/RemapShortcut.h>
 
 using SingleKeyRemapTable = std::unordered_map<DWORD, KeyShortcutUnion>;
 using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
