@@ -134,7 +134,10 @@ public:
         else
         {
             m_hProcess = sei.hProcess;
-            SetPriorityClass(m_hProcess, REALTIME_PRIORITY_CLASS);
+            if (m_hProcess)
+            {
+                SetPriorityClass(m_hProcess, REALTIME_PRIORITY_CLASS);
+            }
         }
     }
 
