@@ -8,7 +8,7 @@ using namespace KBMEditor;
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
-    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutUI1(nullptr), currentShortcutUI2(nullptr), currentSingleKeyUI(nullptr), detectedRemapKey(NULL), remappingsEnabled(true)
+    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutUI1(nullptr), currentShortcutUI2(nullptr), currentSingleKeyUI(nullptr), detectedRemapKey(NULL)
 {
 }
 

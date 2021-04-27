@@ -13,11 +13,6 @@ namespace KeyboardManagerHelper
     enum class KeyboardHookDecision;
 }
 
-namespace winrt::Windows::UI::Xaml::Controls
-{
-    struct StackPanel;
-}
-
 namespace KBMEditor
 {
     // Enum type to store different states of the UI
@@ -73,12 +68,6 @@ namespace KBMEditor
         // Registered KeyDelay objects, used to notify delayed key events.
         std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
         std::mutex keyDelays_mutex;
-
-        // Stores the activated target application in app-specific shortcut
-        std::wstring activatedAppSpecificShortcutTarget;
-
-        // Thread safe boolean value to check if remappings are currently enabled. This is used to disable remappings while the remap tables are being updated by the UI thread
-        std::atomic_bool remappingsEnabled;
 
         // Display a key by appending a border Control as a child of the panel.
         void AddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
