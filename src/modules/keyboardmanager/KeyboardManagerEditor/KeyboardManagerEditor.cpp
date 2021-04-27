@@ -6,17 +6,17 @@
 
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/ProcessWaiter.h>
 #include <common/utils/UnhandledExceptionHandler_x64.h>
 
 #include <trace.h>
 
 #include <common/KeyboardEventHandlers.h>
-#include <KeyboardManagerState.h>
 #include <SettingsHelper.h>
 
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
-#include <common/utils/ProcessWaiter.h>
+#include <KeyboardManagerState.h>
 
 std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
 const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEditor_InstanceMutex";

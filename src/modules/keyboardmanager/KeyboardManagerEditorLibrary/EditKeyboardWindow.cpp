@@ -39,7 +39,7 @@ std::mutex editKeyboardWindowMutex;
 static XamlBridge* xamlBridgePtr = nullptr;
 
 static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
-    KeyboardManagerState& state,
+    KBMEditor::KeyboardManagerState& state,
     const std::vector<DWORD>& keys,
     XamlRoot root)
 {
@@ -71,7 +71,7 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     co_return res == ContentDialogResult::Primary;
 }
 
-static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
+static IAsyncAction OnClickAccept(KBMEditor::KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
     KeyboardManagerHelper::ErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
 
@@ -98,7 +98,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 }
 
 // Function to create the Edit Keyboard Window
-inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState)
 {
     Logger::trace("CreateEditKeyboardWindowImpl()");
     auto locker = EventLocker::Get(KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -254,7 +254,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>> keyboardRemapControlObjects;
 
     // Set keyboard manager UI state so that remaps are not applied while on this window
-    keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, _hWndEditKeyboardWindow);
+    keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditKeyboardWindowActivated, _hWndEditKeyboardWindow);
 
     // Load existing remaps into UI
     SingleKeyRemapTable singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
@@ -372,7 +372,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     xamlBridge.ClearXamlIslands();
 }
 
-void CreateEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+void CreateEditKeyboardWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState)
 {
     // Move implementation into the separate method so resources get destroyed correctly
     CreateEditKeyboardWindowImpl(hInst, keyboardManagerState);

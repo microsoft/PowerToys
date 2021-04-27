@@ -34,7 +34,7 @@ std::mutex editShortcutsWindowMutex;
 static XamlBridge* xamlBridgePtr = nullptr;
 
 static IAsyncAction OnClickAccept(
-    KeyboardManagerState& keyboardManagerState,
+    KBMEditor::KeyboardManagerState& keyboardManagerState,
     XamlRoot root,
     std::function<void()> ApplyRemappings)
 {
@@ -51,7 +51,7 @@ static IAsyncAction OnClickAccept(
 }
 
 // Function to create the Edit Shortcuts Window
-inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState)
 {
     Logger::trace("CreateEditShortcutsWindowImpl()");
     auto locker = EventLocker::Get(KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -215,7 +215,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     std::vector<std::vector<std::unique_ptr<ShortcutControl>>> keyboardRemapControlObjects;
 
     // Set keyboard manager UI state so that shortcut remaps are not applied while on this window
-    keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, _hWndEditShortcutsWindow);
+    keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditShortcutsWindowActivated, _hWndEditShortcutsWindow);
 
     // Load existing os level shortcuts into UI
     // Create copy of the remaps to avoid concurrent access
@@ -346,7 +346,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     xamlBridge.ClearXamlIslands();
 }
 
-void CreateEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState)
 {
     // Move implementation into the separate method so resources get destroyed correctly
     CreateEditShortcutsWindowImpl(hInst, keyboardManagerState);

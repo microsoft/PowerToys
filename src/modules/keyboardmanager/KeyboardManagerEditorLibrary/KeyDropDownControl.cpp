@@ -10,7 +10,7 @@
 #include <UIHelpers.h>
 
 // Initialized to null
-KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
+KBMEditor::KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
 
 // Get selected value of dropdown or -1 if nothing is selected
 DWORD KeyDropDownControl::GetSelectedValue(ComboBox comboBox)
@@ -378,7 +378,7 @@ void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring mess
 }
 
 // Function to add a shortcut to the UI control as combo boxes
-void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
+void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel table, StackPanel parent, KBMEditor::KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
 {
     // Delete the existing drop down menus
     parent.Children().Clear();

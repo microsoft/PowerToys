@@ -32,7 +32,7 @@ private:
     inline static HHOOK hook;
     HINSTANCE hInstance;
 
-    KeyboardManagerState keyboardManagerState;
+    KBMEditor::KeyboardManagerState keyboardManagerState;
     
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;

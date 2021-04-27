@@ -1,11 +1,10 @@
 #include "pch.h"
 #include "KeyboardManagerState.h"
-#include <common/Shortcut.h>
-#include <common/RemapShortcut.h>
-#include <common/SettingsAPI/settings_helpers.h>
+
 #include <common/KeyDelay.h>
 #include <common/Helpers.h>
-#include <common/logger/logger.h>
+
+using namespace KBMEditor;
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
@@ -92,87 +91,6 @@ void KeyboardManagerState::ResetUIState()
     std::unique_lock<std::mutex> detectedRemapKey_lock(detectedRemapKey_mutex);
     detectedRemapKey = NULL;
     detectedRemapKey_lock.unlock();
-}
-
-// Function to clear the OS Level shortcut remapping table
-void KeyboardManagerState::ClearOSLevelShortcuts()
-{
-    osLevelShortcutReMap.clear();
-    osLevelShortcutReMapSortedKeys.clear();
-}
-
-// Function to clear the Keys remapping table.
-void KeyboardManagerState::ClearSingleKeyRemaps()
-{
-    singleKeyReMap.clear();
-}
-
-// Function to clear the App specific shortcut remapping table
-void KeyboardManagerState::ClearAppSpecificShortcuts()
-{
-    appSpecificShortcutReMap.clear();
-    appSpecificShortcutReMapSortedKeys.clear();
-}
-
-// Function to add a new OS level shortcut remapping
-bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutUnion& newSC)
-{
-    // Check if the shortcut is already remapped
-    auto it = osLevelShortcutReMap.find(originalSC);
-    if (it != osLevelShortcutReMap.end())
-    {
-        return false;
-    }
-
-    osLevelShortcutReMap[originalSC] = RemapShortcut(newSC);
-    osLevelShortcutReMapSortedKeys.push_back(originalSC);
-    KeyboardManagerHelper::SortShortcutVectorBasedOnSize(osLevelShortcutReMapSortedKeys);
-
-    return true;
-}
-
-// Function to add a new single key to key/shortcut remapping
-bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutUnion& newRemapKey)
-{
-    // Check if the key is already remapped
-    auto it = singleKeyReMap.find(originalKey);
-    if (it != singleKeyReMap.end())
-    {
-        return false;
-    }
-
-    singleKeyReMap[originalKey] = newRemapKey;
-    return true;
-}
-
-// Function to add a new App specific shortcut remapping
-bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC)
-{
-    // Convert app name to lower case
-    std::wstring process_name;
-    process_name.resize(app.length());
-    std::transform(app.begin(), app.end(), process_name.begin(), towlower);
-
-    // Check if there are any app specific shortcuts for this app
-    auto appIt = appSpecificShortcutReMap.find(process_name);
-    if (appIt != appSpecificShortcutReMap.end())
-    {
-        // Check if the shortcut is already remapped
-        auto shortcutIt = appSpecificShortcutReMap[process_name].find(originalSC);
-        if (shortcutIt != appSpecificShortcutReMap[process_name].end())
-        {
-            return false;
-        }
-    }
-    else
-    {
-        appSpecificShortcutReMapSortedKeys[process_name] = std::vector<Shortcut>();
-    }
-
-    appSpecificShortcutReMap[process_name][originalSC] = RemapShortcut(newSC);
-    appSpecificShortcutReMapSortedKeys[process_name].push_back(originalSC);
-    KeyboardManagerHelper::SortShortcutVectorBasedOnSize(appSpecificShortcutReMapSortedKeys[process_name]);
-    return true;
 }
 
 // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
@@ -440,125 +358,4 @@ bool KeyboardManagerState::HandleKeyDelayEvent(LowlevelKeyboardEvent* ev)
 
     keyDelays[ev->lParam->vkCode]->KeyEvent(ev);
     return true;
-}
-
-// Save the updated configuration.
-bool KeyboardManagerState::SaveConfigToFile()
-{
-    bool result = true;
-    json::JsonObject configJson;
-    json::JsonObject remapShortcuts;
-    json::JsonObject remapKeys;
-    json::JsonArray inProcessRemapKeysArray;
-    json::JsonArray appSpecificRemapShortcutsArray;
-    json::JsonArray globalRemapShortcutsArray;
-    for (const auto& it : singleKeyReMap)
-    {
-        json::JsonObject keys;
-        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.first)));
-
-        // For key to key remapping
-        if (it.second.index() == 0)
-        {
-            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(it.second))));
-        }
-
-        // For key to shortcut remapping
-        else
-        {
-            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second).ToHstringVK()));
-        }
-
-        inProcessRemapKeysArray.Append(keys);
-    }
-
-    for (const auto& it : osLevelShortcutReMap)
-    {
-        json::JsonObject keys;
-        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(it.first.ToHstringVK()));
-
-        // For shortcut to key remapping
-        if (it.second.targetShortcut.index() == 0)
-        {
-            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(it.second.targetShortcut))));
-        }
-
-        // For shortcut to shortcut remapping
-        else
-        {
-            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second.targetShortcut).ToHstringVK()));
-        }
-
-        globalRemapShortcutsArray.Append(keys);
-    }
-
-    for (const auto& itApp : appSpecificShortcutReMap)
-    {
-        // Iterate over apps
-        for (const auto& itKeys : itApp.second)
-        {
-            json::JsonObject keys;
-            keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(itKeys.first.ToHstringVK()));
-
-            // For shortcut to key remapping
-            if (itKeys.second.targetShortcut.index() == 0)
-            {
-                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(itKeys.second.targetShortcut))));
-            }
-
-            // For shortcut to shortcut remapping
-            else
-            {
-                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(itKeys.second.targetShortcut).ToHstringVK()));
-            }
-
-            keys.SetNamedValue(KeyboardManagerConstants::TargetAppSettingName, json::value(itApp.first));
-
-            appSpecificRemapShortcutsArray.Append(keys);
-        }
-    }
-
-    remapShortcuts.SetNamedValue(KeyboardManagerConstants::GlobalRemapShortcutsSettingName, globalRemapShortcutsArray);
-    remapShortcuts.SetNamedValue(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName, appSpecificRemapShortcutsArray);
-    remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
-    configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
-    configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
-
-    try
-    {
-        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + GetCurrentConfigName() + L".json"), configJson);
-    }
-    catch (...)
-    {
-        result = false;
-        Logger::error(L"Failed to save the settings");
-    }
-
-    if (result)
-    {
-        auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
-        if (hEvent)
-        {
-            SetEvent(hEvent);
-            Logger::trace(L"Signaled {} event", KeyboardManagerConstants::SettingsEventName);
-        }
-        else
-        {
-            Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
-        }
-    }
-
-    return result;
-}
-
-void KeyboardManagerState::SetCurrentConfigName(const std::wstring& configName)
-{
-    std::lock_guard<std::mutex> lock(currentConfig_mutex);
-    currentConfig = configName;
-}
-
-std::wstring KeyboardManagerState::GetCurrentConfigName()
-{
-    std::lock_guard<std::mutex> lock(currentConfig_mutex);
-    return currentConfig;
 }
