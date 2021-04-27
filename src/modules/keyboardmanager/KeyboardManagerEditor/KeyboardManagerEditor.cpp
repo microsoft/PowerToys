@@ -12,7 +12,6 @@
 #include <trace.h>
 
 #include <common/KeyboardEventHandlers.h>
-#include <SettingsHelper.h>
 
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
@@ -114,13 +113,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 KeyboardManagerEditor::KeyboardManagerEditor(HINSTANCE hInst) :
     hInstance(hInst)
 {
-    bool loadedSuccessful = SettingsHelper::LoadSettings(keyboardManagerState);
+    bool loadedSuccessful = keyboardManagerShortcuts.LoadSettings();
     if (!loadedSuccessful)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // retry once
-        SettingsHelper::LoadSettings(keyboardManagerState);
+        keyboardManagerShortcuts.LoadSettings();
     }
 
     StartLowLevelKeyboardHook();
@@ -149,10 +148,10 @@ void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type)
     switch (type)
     {
     case KeyboardManagerEditorType::KeyEditor:
-        CreateEditKeyboardWindow(hInstance, keyboardManagerState);
+        CreateEditKeyboardWindow(hInstance, keyboardManagerState, keyboardManagerShortcuts);
         break;
     case KeyboardManagerEditorType::ShortcutEditor:
-        CreateEditShortcutsWindow(hInstance, keyboardManagerState);
+        CreateEditShortcutsWindow(hInstance, keyboardManagerState, keyboardManagerShortcuts);
     }
 }
 

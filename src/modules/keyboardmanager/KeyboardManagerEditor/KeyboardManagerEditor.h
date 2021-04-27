@@ -2,6 +2,7 @@
 
 #include <KeyboardManagerState.h>
 #include <common/Input.h>
+#include <common/KeyboardManagerShortcuts.h>
 
 enum class KeyboardManagerEditorType
 {
@@ -33,6 +34,7 @@ private:
     HINSTANCE hInstance;
 
     KBMEditor::KeyboardManagerState keyboardManagerState;
+    KeyboardManagerShortcuts keyboardManagerShortcuts;
     
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;

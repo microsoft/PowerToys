@@ -6,6 +6,7 @@
 #include <common/utils/winapi_error.h>
 
 #include <common/ErrorTypes.h>
+#include <common/KeyboardManagerShortcuts.h>
 
 #include <KeyboardManagerState.h>
 #include <Dialog.h>
@@ -51,7 +52,7 @@ static IAsyncAction OnClickAccept(
 }
 
 // Function to create the Edit Shortcuts Window
-inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState)
+inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, KeyboardManagerShortcuts& keyboardManagerShortcuts)
 {
     Logger::trace("CreateEditShortcutsWindowImpl()");
     auto locker = EventLocker::Get(KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -207,6 +208,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     // Store keyboard manager state
     ShortcutControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
+    KeyDropDownControl::keyboardManagerShortcuts = &keyboardManagerShortcuts;
     
     // Clear the shortcut remap buffer
     ShortcutControl::shortcutRemapBuffer.clear();
@@ -219,7 +221,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Load existing os level shortcuts into UI
     // Create copy of the remaps to avoid concurrent access
-    ShortcutRemapTable osLevelShortcutReMapCopy = keyboardManagerState.osLevelShortcutReMap;
+    ShortcutRemapTable osLevelShortcutReMapCopy = keyboardManagerShortcuts.osLevelShortcutReMap;
 
     for (const auto& it : osLevelShortcutReMapCopy)
     {
@@ -228,7 +230,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Load existing app-specific shortcuts into UI
     // Create copy of the remaps to avoid concurrent access
-    AppSpecificShortcutRemapTable appSpecificShortcutReMapCopy = keyboardManagerState.appSpecificShortcutReMap;
+    AppSpecificShortcutRemapTable appSpecificShortcutReMapCopy = keyboardManagerShortcuts.appSpecificShortcutReMap;
 
     // Iterate through all the apps
     for (const auto& itApp : appSpecificShortcutReMapCopy)
@@ -249,9 +251,9 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
 
-    auto ApplyRemappings = [&keyboardManagerState, _hWndEditShortcutsWindow]() {
-        LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(keyboardManagerState, ShortcutControl::shortcutRemapBuffer, true);
-        bool saveResult = keyboardManagerState.SaveConfigToFile();
+    auto ApplyRemappings = [&keyboardManagerShortcuts, _hWndEditShortcutsWindow]() {
+        LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(keyboardManagerShortcuts, ShortcutControl::shortcutRemapBuffer, true);
+        bool saveResult = keyboardManagerShortcuts.SaveSettingsToFile();
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     };
 
@@ -346,10 +348,10 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     xamlBridge.ClearXamlIslands();
 }
 
-void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState)
+void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, KeyboardManagerShortcuts& keyboardManagerShortcuts)
 {
     // Move implementation into the separate method so resources get destroyed correctly
-    CreateEditShortcutsWindowImpl(hInst, keyboardManagerState);
+    CreateEditShortcutsWindowImpl(hInst, keyboardManagerState, keyboardManagerShortcuts);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906

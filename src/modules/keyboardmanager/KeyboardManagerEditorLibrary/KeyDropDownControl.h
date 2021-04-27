@@ -7,6 +7,8 @@ namespace KBMEditor
     class KeyboardManagerState;
 }
 
+class KeyboardManagerShortcuts;
+
 namespace winrt::Windows
 {
     namespace Foundation
@@ -62,6 +64,7 @@ private:
 public:
     // Pointer to the keyboard manager state
     static KBMEditor::KeyboardManagerState* keyboardManagerState;
+    static KeyboardManagerShortcuts* keyboardManagerShortcuts;
 
     // Constructor - the last default parameter should be passed as false only if it originates from Type shortcut or when an old shortcut is reloaded
     KeyDropDownControl(bool isShortcut, bool fromAddShortcutToControl = false, bool renderDisable = false) :
