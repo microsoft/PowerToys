@@ -2418,6 +2418,7 @@ wixtoolset
 WIXUI
 WKSG
 wmain
+wmf
 WMKEYDOWN
 WMKEYUP
 wmonk
