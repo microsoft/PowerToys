@@ -399,6 +399,7 @@
     "Area": "NetworkAndInternet",
     "Name": "Manage known networks",
     "AltNames": [ "Wi-Fi settings" ],
+    "Note": "only available if the device has a wifi adapter",
     "Command": "ms-settings:network-wifisettings"
   },
   {
