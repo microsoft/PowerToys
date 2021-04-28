@@ -1,12 +1,12 @@
 #include "pch.h"
 #include "TestHelpers.h"
 #include "MockedInput.h"
-#include "keyboardmanager/common/KeyboardManagerState.h"
+#include <keyboardmanager/KeyboardManagerEngineLibrary/State.h>
 
 namespace TestHelpers
 {
     // Function to reset the environment variables for tests
-    void ResetTestEnv(KeyboardManagerInput::MockedInput& input, KeyboardManagerState& state)
+    void ResetTestEnv(KeyboardManagerInput::MockedInput& input, State& state)
     {
         input.ResetKeyboardState();
         input.SetHookProc(nullptr);
