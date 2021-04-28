@@ -13,6 +13,11 @@ namespace KeyboardManagerHelper
     enum class KeyboardHookDecision;
 }
 
+namespace winrt::Windows::UI::Xaml::Controls
+{
+    struct StackPanel;
+}
+
 namespace KBMEditor
 {
     // Enum type to store different states of the UI
