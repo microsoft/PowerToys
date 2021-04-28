@@ -18,7 +18,22 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         private PluginInitContext _context;
         private static string _icon_path;
         private bool _disposed;
-        private static readonly QuantityType[] _included = new QuantityType[] { QuantityType.Acceleration, QuantityType.Length, QuantityType.Mass, QuantityType.Speed, QuantityType.Temperature, QuantityType.Volume };
+        private static readonly QuantityType[] _included = new QuantityType[] {
+            QuantityType.Acceleration,
+            QuantityType.Angle,
+            QuantityType.Area,
+            QuantityType.Energy,
+            QuantityType.Information,
+            QuantityType.Length,
+            QuantityType.Mass,
+            QuantityType.Pressure,
+            QuantityType.Speed,
+            QuantityType.Temperature,
+            QuantityType.Volume,
+            QuantityType.Power,
+            QuantityType.Duration
+        };
+
         private CultureInfo _currentCulture = CultureInfo.CurrentCulture;
         private int _roundingFractionalDigits = 4;
 
@@ -38,7 +53,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             }
 
             string[] split = query.Search.Split(' ');
-            split = Array.ConvertAll(split, x => x.ToLower());
 
             InputInterpreter.ShorthandFeetInchHandler(ref split, _currentCulture);
             InputInterpreter.InputSpaceInserter(ref split);
@@ -49,7 +63,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 // 10 ft to cm
                 return new List<Result>();
             }
-            
+
             InputInterpreter.DegreePrefixer(ref split);
 
             List<Result> final_list = new List<Result>();
