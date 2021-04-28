@@ -222,11 +222,11 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
  - [ ] Test tab navigation. 
 
  * Test Plugin Manager
-   - [ ] Enable/disable plugins and verify changes are populated to PT Run
-   - [ ] Change `Direct activation phrase` and verify changes are populated to PT Run
-   - [ ] Change `Include in global result` and verify changes are populated to PT Run
-   - [ ] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message
-   - [ ] Disable all plugins and verify the warning message
+   - [ ] Enable/disable plugins and verify changes are picked up by PT Run
+   - [ ] Change `Direct activation phrase` and verify changes are picked up by PT Run
+   - [ ] Change `Include in global result` and verify changes picked up by PT Run
+   - [ ] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
+   - [ ] Disable all plugins and verify the warning message is shown.
   
 ## Shortcut Guide
  * Run PowerToys as user:
