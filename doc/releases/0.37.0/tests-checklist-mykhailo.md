@@ -195,50 +195,47 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 ## PowerToys Run
 
  * Enable PT Run in settings and ensure that the hotkey brings up PT Run 
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [X] when PowerToys is running unelevated on start-up
+   - [X] when PowerToys is running as admin on start-up
+   - [X] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] Program - launch a Win32 application and a packaged application
-   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] Indexer - open a file on the disk.
-   - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space.
-   - [ ] Folder - Search and open a sub-folder on entering the path.
-   - [ ] Uri - launch a web page on entering the uri.
-   - [ ] Window walker - Switch focus to a running window.
-   - [ ] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
-   - [ ] Registry - navigate through the registry tree, copy key path, open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] System - test shutdown, sleep, lock, sign out, restart, hibernate, empty recycle bin.
+   - [X] Program - launch a Win32 application
+   - [X] Program - launch a Win32 application as admin
+   - [X] Program - launch a packaged application
+   - [X] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [X] Windows Search - open a file on the disk.
+   - [X] Windows Search - find a file and copy file path.
+   - [X] Windows Search - find a file and open containing folder.
+   - [X] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
+   - [X] Folder - Search and open a sub-folder on entering the path.
+   - [X] Uri - launch a web page on entering the uri.
+   - [X] Window walker - Switch focus to a running window.
+   - [X] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
+   - [X] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [X] Registry - navigate through the registry tree and copy key path.
+   - [X] System - test `lock`.
+   - [X] System - test `empty recycle bin`.
+   - [ ] System - test `shutdown`.
  
- * Validate that the context menu items and corresponding shortcuts work as expected for each of the plugins
-   - [ ] Run as admin
-   - [ ] Copy file path
-   - [ ] Open in console
-   - [ ] Open containing folder
-   - [ ] Start, Stop, Restart service
-   - [ ] Open Services
-   - [ ] Copy key name
-   - [ ] Open key in registry editor
-
- - [ ] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
+ - [X] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
  
- - [ ] Test tab navigation. 
+ - [X] Test tab navigation. 
 
  * Test Plugin Manager
-   - [ ] Enable/disable plugins and verify changes are populated to PT Run
-   - [ ] Change `Direct activation phrase` and verify changes are populated to PT Run
-   - [ ] Change `Include in global result` and verify changes are populated to PT Run
-   - [ ] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message
-   - [ ] Disable all plugins and verify the warning message
+   - [X] Enable/disable plugins and verify changes are picked up by PT Run
+   - [X] Change `Direct activation phrase` and verify changes are picked up by PT Run
+   - [X] Change `Include in global result` and verify changes picked up by PT Run
+   - [X] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
+   - [X] Disable all plugins and verify the warning message is shown.
 
 ### OOBE
  * Quit PowerToys
  * Delete %localappdata%\Microsoft\PowerToys
- - [ ] Start PowerToys and verify OOBE opens
+ - [X] Start PowerToys and verify OOBE opens
  * Visit each OOBE section and for each section:
-   - [ ] open the Settings for that module
-   - [ ] verify the Settings work as expected (toggle some controls on/off etc.)
-   - [ ] close the Settings
-   - [ ] if it's available, test the `Launch module name` button
+   - [X] open the Settings for that module
+   - [X] verify the Settings work as expected (toggle some controls on/off etc.)
+   - [X] close the Settings
+   - [X] if it's available, test the `Launch module name` button
  * Close OOBE
- - [ ] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
+ - [X] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
