@@ -234,18 +234,18 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
   
 ## Shortcut Guide
  * Run PowerToys as user:
-   - [ ] Verify holding the `Win` key opens the guide
-   - [ ] Verify `Win + ?` opens the guide
+   - [x] Verify holding the `Win` key opens the guide
+   - [x] Verify `Win + ?` opens the guide
    * In the Settings change the duration from 900ms to 200ms
-   - [ ] Verify the guide open after quicker when holding the `Win` key
+   - [x] Verify the guide open after quicker when holding the `Win` key
    * Restore the 900ms duration
  * Run PowerToys as admin:
-   - [ ] Open an elevated app and keep it on foreground
-   - [ ] Verify holding the `Win` key opens the guide
-   - [ ] Verify `Win + ?` opens the guide
+   * Open an elevated app and keep it on foreground
+   - [x] Verify holding the `Win` key opens the guide
+   - [x] Verify `Win + ?` opens the guide
  * Run PowerToys as user
     - [ ] Verify the taskbar shortcut `Win + digit` works
-    - [ ] Verify the first four shortcuts work
+    - [x] Verify the first four shortcuts work
 
 ### OOBE
  * Quit PowerToys
