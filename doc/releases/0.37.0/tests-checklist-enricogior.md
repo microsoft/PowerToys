@@ -82,11 +82,11 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
   - [ ] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
 
 ## PowerRename
-- [ ] Check if disable and enable of the module works.
-- [ ] Check that with the `Show icon on context menu` icon is shown and vice versa.
-- [ ] Check if `Appear only in extended context menu` works.
-- [ ] Enable/disable autocomplete.
-- [ ] Enable/disable `Show values from last use`.
+- [x] Check if disable and enable of the module works.
+- [x] Check that with the `Show icon on context menu` icon is shown and vice versa.
+- [x] Check if `Appear only in extended context menu` works.
+- [x] Enable/disable autocomplete.
+- [x] Enable/disable `Show values from last use`.
 * Select several files and folders and check PowerRename options:
     - [ ] Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
     - [ ] Exclude Folders/Files/Subfolder Items (could be selected several)
