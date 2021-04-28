@@ -185,8 +185,10 @@ Bokm
 BOKMAL
 Bools
 bootstrapper
+Bopomofo
 BOTTOMALIGN
 BPBF
+bpmf
 bpmfime
 bpp
 bricelam
@@ -209,6 +211,7 @@ BValue
 bytearray
 callbackptr
 callhistory
+Cangjie
 cangjieime
 CANRENAME
 capitalized
@@ -468,6 +471,8 @@ deviceencryption
 devicemanagenent
 DEVMON
 DFactory
+DHCP
+Dialpad
 diffing
 difftime
 dimm
@@ -690,6 +695,7 @@ FILETYPE
 FILEVERSION
 Filterkeyboard
 finalizer
+findfast
 findmydevice
 findstr
 FIXEDFILEINFO
@@ -1388,11 +1394,13 @@ ndp
 Nefario
 neq
 NESW
+netconnections
 netcore
 netcoreapp
 Netcpl
 netframework
 NETFX
+netsetup
 netsh
 netstandard
 Neue
@@ -1470,6 +1478,7 @@ NUMLOCK
 NUMPAD
 nunit
 Nvidia
+nwc
 NWSE
 Objbase
 OBJID
@@ -1826,6 +1835,7 @@ SAVEFAILED
 savelocations
 scancode
 scanled
+schedtasks
 Scn
 SCOOBE
 SCOPEID
@@ -1836,6 +1846,7 @@ scrollviewer
 sddl
 sdk
 SDKDDK
+SDNS
 searchbox
 SEARCHFOR
 SEARCHREPLACEGROUP
@@ -2108,8 +2119,10 @@ THICKFRAME
 THISCOMPONENT
 thre
 tif
+timedate
 TILEDWINDOW
 timediff
+Timeline
 TIMERID
 timeunion
 timeutil
