@@ -713,6 +713,7 @@
   {
     "Area": "System",
     "Name": "About",
+    "AltNames": [ "RAM", "Processor", "OS", "ID", "Edition", "Version" ],
     "Command": "ms-settings:about"
   },
   {
@@ -810,6 +811,7 @@
   {
     "Area": "System",
     "Name": "Multitasking",
+    "AltNames": [ "Timeline", "Tab", "Alt+Tab", "Virtual desktops" ],
     "Command": "ms-settings:multitasking"
   },
   {
@@ -999,7 +1001,7 @@
   {
     "Area": "UpdateAndSecurity",
     "Name": "Windows Security",
-    "AltNames": [ "Windows Defender" ],
+    "AltNames": [ "Windows Defender", "Firewall", "Virus", "Core isolation", "Security processor", "Isolated browsing", "Exploit protection" ],
     "Command": "ms-settings:windowsdefender"
   },
   {
@@ -1116,6 +1118,7 @@
   {
     "Area": "UserAccounts",
     "Name": "Credential manager",
+    "AltNames": [ "Password" ],
     "Command": "control /name Microsoft.CredentialManager"
   },
   {
