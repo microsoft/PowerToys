@@ -200,29 +200,23 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
    - [ ] Program - launch a Win32 application
+   - [ ] Program - launch a Win32 application as admin
    - [ ] Program - launch a packaged application
    - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
    - [ ] Windows Search - open a file on the disk.
+   - [ ] Windows Search - find a file and copy file path.
+   - [ ] Windows Search - find a file and open containing folder.
    - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
    - [ ] Folder - Search and open a sub-folder on entering the path.
    - [ ] Uri - launch a web page on entering the uri.
    - [ ] Window walker - Switch focus to a running window.
    - [ ] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
-   - [ ] Registry - navigate through the registry tree, copy key path, open registry editor. Enter the action keyword `:` to get the root keys.
+   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [ ] Registry - navigate through the registry tree and copy key path.
    - [ ] System - test `lock`.
    - [ ] System - test `empty recycle bin`.
    - [ ] System - test `shutdown`.
  
- * Validate that the context menu items and corresponding shortcuts work as expected for each of the plugins
-   - [ ] Run as admin
-   - [ ] Copy file path
-   - [ ] Open in console
-   - [ ] Open containing folder
-   - [ ] Start, Stop, Restart service
-   - [ ] Open Services
-   - [ ] Copy key name
-   - [ ] Open key in registry editor
-
  - [ ] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
  
  - [ ] Test tab navigation. 
