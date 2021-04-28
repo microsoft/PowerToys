@@ -2,7 +2,7 @@
 
  Regressions:  
  - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
+ - [x] https://github.com/microsoft/PowerToys/issues/1524
 
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
