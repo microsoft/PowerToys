@@ -7,7 +7,7 @@
     * apply the custom canvas layout to the primary desktop
     * create a virtual desktop and apply the custom grid layout
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
- * install the new version (it will uninstall the old version and install the new version)
+ * install the new version (it will uninstall the old version and install the new version). In case version of PowerToys is still 0.0.1 delete old version and install new.
  - [ ] verify the settings are preserved and FancyZones configuration is still the same
 
 ## Functional tests
