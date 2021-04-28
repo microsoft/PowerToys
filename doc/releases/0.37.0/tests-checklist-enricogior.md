@@ -121,26 +121,16 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [x] Registry - navigate through the registry tree, copy key path, open registry editor. Enter the action keyword `:` to get the root keys.
    - [x] System - test lock, sign out, restart, empty recycle bin.
  
- * Validate that the context menu items and corresponding shortcuts work as expected for each of the plugins
-   - [ ] Run as admin
-   - [ ] Copy file path
-   - [ ] Open in console
-   - [ ] Open containing folder
-   - [ ] Start, Stop, Restart service
-   - [ ] Open Services
-   - [ ] Copy key name
-   - [ ] Open key in registry editor
-
- - [ ] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
+ - [x] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
  
- - [ ] Test tab navigation. 
+ - [x] Test tab navigation. 
 
  * Test Plugin Manager
-   - [ ] Enable/disable plugins and verify changes are populated to PT Run
-   - [ ] Change `Direct activation phrase` and verify changes are populated to PT Run
-   - [ ] Change `Include in global result` and verify changes are populated to PT Run
-   - [ ] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message
-   - [ ] Disable all plugins and verify the warning message
+   - [x] Enable/disable plugins and verify changes are populated to PT Run
+   - [x] Change `Direct activation phrase` and verify changes are populated to PT Run
+   - [x] Change `Include in global result` and verify changes are populated to PT Run
+   - [x] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message
+   - [x] Disable all plugins and verify the warning message
   
 ## Shortcut Guide
  * Run PowerToys as user:
@@ -154,7 +144,6 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [x] Verify holding the `Win` key opens the guide
    - [x] Verify `Win + ?` opens the guide
  * Run PowerToys as user
-    - [ ] Verify the taskbar shortcut `Win + digit` works
     - [x] Verify the first four shortcuts work
 
 ### OOBE
