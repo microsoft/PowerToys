@@ -342,3 +342,6 @@ src/common/Telemetry/*.etl
 !**/MergeModules/Release/
 !**/MergeModules/Debug/
 /src/modules/previewpane/SvgThumbnailProvider/$(SolutionDir)$(Platform)/$(Configuration)/modules/FileExplorerPreview/SvgThumbnailProvider.xml
+
+# Don't ignore doc/releases
+!doc/releases
