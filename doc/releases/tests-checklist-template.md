@@ -209,7 +209,9 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [ ] Window walker - Switch focus to a running window.
    - [ ] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
    - [ ] Registry - navigate through the registry tree, copy key path, open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] System - test shutdown, sleep, lock, sign out, restart, hibernate, empty recycle bin.
+   - [ ] System - test `lock`.
+   - [ ] System - test `empty recycle bin`.
+   - [ ] System - test `shutdown`.
  
  * Validate that the context menu items and corresponding shortcuts work as expected for each of the plugins
    - [ ] Run as admin
