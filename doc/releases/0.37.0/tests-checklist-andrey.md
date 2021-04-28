@@ -8,31 +8,31 @@
     * create a virtual desktop and apply the custom grid layout
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
  * install the new version (it will uninstall the old version and install the new version)
- - [ ] verify the settings are preserved and FancyZones configuration is still the same
+ - [x] verify the settings are preserved and FancyZones configuration is still the same
 
 ## Functional tests
 
  Regressions:  
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
+ - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
+ - [x] https://github.com/microsoft/PowerToys/issues/1524
 
 ## General Settings
 
 **Admin mode:**
- - [ ] restart as admin and verify FZ can snap an elevated window
- - [ ] restart PT and verify it now runs as user
+ - [x] restart as admin and verify FZ can snap an elevated window
+ - [x] restart PT and verify it now runs as user
  * restart as admin and set "Always run as admin"
- - [ ] restart PT and verify it still runs as admin
+ - [x] restart PT and verify it still runs as admin
  * if it's not on, turn on "Run at startup"
- - [ ] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
+ - [x] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
  * turn Always run as admin" off
- - [ ] reboot the machine and verify it now runs as user
+ - [x] reboot the machine and verify it now runs as user
 
 **Modules on/off:**
- - [ ] turn off all the modules and verify all module are off
- - [ ] restart PT and verify that all module are still off in the settings page and they are actually inactive
- - [ ] turn on all the module, all module are now working
- - [ ] restart PT and verify that all module are still on in the settings page and they are actually working
+ - [x] turn off all the modules and verify all module are off
+ - [x] restart PT and verify that all module are still off in the settings page and they are actually inactive
+ - [x] turn on all the module, all module are now working
+ - [x] restart PT and verify that all module are still on in the settings page and they are actually working
 
 **Elevated app notification:**
  - run PT as a user
