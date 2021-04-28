@@ -228,35 +228,14 @@
   <data name="AreaAccounts" xml:space="preserve">
     <value>Accounts</value>
   </data>
+  <data name="AreaAppearanceAndPersonalization" xml:space="preserve">
+    <value>Appearance and Personalization</value>
+  </data>
   <data name="AreaApps" xml:space="preserve">
     <value>Apps</value>
   </data>
-  <data name="AreaControlPanel" xml:space="preserve">
-    <value>ControlPanel</value>
-  </data>
-  <data name="AreaControlPanelAppearanceAndPersonalization" xml:space="preserve">
-    <value>Control Panel - Appearance and Personalization</value>
-  </data>
-  <data name="AreaControlPanelClockAndRegion" xml:space="preserve">
-    <value>Control Panel - Clock and Region</value>
-  </data>
-  <data name="AreaControlPanelEaseOfAccess" xml:space="preserve">
-    <value>Control Panel - Ease of Access</value>
-  </data>
-  <data name="AreaControlPanelHardwareAndSound" xml:space="preserve">
-    <value>Control Panel - Hardware and Sound</value>
-  </data>
-  <data name="AreaControlPanelNetworkAndInternet" xml:space="preserve">
-    <value>Control Panel - Network and Internet</value>
-  </data>
-  <data name="AreaControlPanelPrograms" xml:space="preserve">
-    <value>Control Panel - Programs</value>
-  </data>
-  <data name="AreaControlPanelSystemAndSecurity" xml:space="preserve">
-    <value>Control Panel - System and Security</value>
-  </data>
-  <data name="AreaControlPanelUserAccounts" xml:space="preserve">
-    <value>Control Panel - User Accounts</value>
+  <data name="AreaClockAndRegion" xml:space="preserve">
+    <value>Clock and Region</value>
   </data>
   <data name="AreaCortana" xml:space="preserve">
     <value>Cortana</value>
@@ -272,6 +251,9 @@
   </data>
   <data name="AreaGaming" xml:space="preserve">
     <value>Gaming</value>
+  </data>
+  <data name="AreaHardwareAndSound" xml:space="preserve">
+    <value>Hardware and Sound</value>
   </data>
   <data name="AreaHomePage" xml:space="preserve">
     <value>Home page</value>
@@ -291,11 +273,17 @@
   <data name="AreaPrivacy" xml:space="preserve">
     <value>Privacy</value>
   </data>
+  <data name="AreaPrograms" xml:space="preserve">
+    <value>Programs</value>
+  </data>
   <data name="AreaSurfaceHub" xml:space="preserve">
     <value>SurfaceHub</value>
   </data>
   <data name="AreaSystem" xml:space="preserve">
     <value>System</value>
+  </data>
+  <data name="AreaSystemAndSecurity" xml:space="preserve">
+    <value>System and Security</value>
   </data>
   <data name="AreaTimeAndLanguage" xml:space="preserve">
     <value>Time and language</value>
@@ -1430,6 +1418,10 @@
   <data name="TruePlay" xml:space="preserve">
     <value>TruePlay</value>
     <comment>Area Gaming</comment>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>Type</value>
+    <comment>The type of the setting "Settings App" or "Control Panel"</comment>
   </data>
   <data name="Typing" xml:space="preserve">
     <value>Typing</value>
