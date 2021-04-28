@@ -7,7 +7,7 @@
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
   - [x] when PowerToys is running unelevated on start-up
-  - [ ] when PowerToys is running as admin on start-up
+  - [x] when PowerToys is running as admin on start-up
   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
 - [x] Change `Activate Color Picker shortcut` and check the new shortcut is working
 - [x] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
