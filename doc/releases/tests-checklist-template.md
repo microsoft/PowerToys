@@ -185,8 +185,8 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
     * Use regular expressions
         - [ ] Search with an expression (e.g. `(.*).png`)
         - [ ] Replace with an expression (e.g. `foo_$1.png`)
-        - [ ] Replace using file creation date and time (e.g. $hh-$mm-$ss-$fff $DD_$MMMM_$YYYY)
-        - [ ] Turn on `Use Boost library` and test with Perl Regular Expression Syntax.
+        - [ ] Replace using file creation date and time (e.g. `$hh-$mm-$ss-$fff` `$DD_$MMMM_$YYYY`)
+        - [ ] Turn on `Use Boost library` and test with Perl Regular Expression Syntax (e.g. `(?<=t)est`)
     * File list filters. 
         - [ ] In the `preview` window uncheck some items to exclude them from renaming. 
         - [ ] Click on the `Renamed` column to filter results. 
