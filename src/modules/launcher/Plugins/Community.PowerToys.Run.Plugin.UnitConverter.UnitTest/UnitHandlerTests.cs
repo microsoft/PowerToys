@@ -19,5 +19,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
             double result = UnitHandler.ConvertInput(input, UnitsNet.QuantityType.Length, CultureInfo.InvariantCulture);
             Assert.AreEqual(expectedResult, result);
         }
+
+        [TestCase(new string[] { "1", "kB", "in", "kb" }, 8)]
+        public void HandlesByteCapitals(string[] input, double expectedResult) { 
+            double result = UnitHandler.ConvertInput(input, UnitsNet.QuantityType.Information, CultureInfo.InvariantCulture);
+            Assert.AreEqual(expectedResult, result);
+        }
     }
 }
