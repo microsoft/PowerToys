@@ -298,6 +298,10 @@
                 <Directory Id="SystemPluginFolder" Name="System">
                   <Directory Id="SystemImagesFolder" Name="Images" />
                 </Directory>
+                <Directory Id="WindowsSettingsPluginFolder" Name="Microsoft.PowerToys.Run.Plugin.WindowsSettings">
+                  <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
+                  <Directory Id="WindowsSettingsLanguagesFolder" Name="Languages" />
+                </Directory>
               </Directory>
             </Directory>
           </Directory>
@@ -912,6 +916,7 @@
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
         <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;WindowsSettingsPluginFolder;?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
@@ -1004,6 +1009,9 @@
                 </Component>
                 <Component Id="Launcher_System_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder">
                     <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
+                </Component>
+                <Component Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
+                    <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
                 </Component>
                 <?undef IdSafeLanguage?>
             <?endforeach?>
@@ -1185,6 +1193,17 @@
         <File Id="SystemShutdownLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\shutdown.light.png" />
         <File Id="SystemSleepDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.dark.png" />
         <File Id="SystemSleepLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.light.png" />
+      </Component>
+
+      <!-- WindowsSettings Plugin -->
+      <Component Id="WindowsSettingsComponent" Directory="WindowsSettingsPluginFolder" Guid="ACEC2B6D-8E95-43BF-A1E4-137E95F07C96">
+        <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;ManagedTelemetry.dll?>
+          <File Id="WindowsSettings_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="WindowsSettingsImagesComponent" Directory="WindowsSettingsImagesFolder" Guid="E1CE33A7-6318-4FA6-A46B-9302A00BD6AA">
+          <File Id="WindowsSettingsDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Images\WindowsSettings.dark.png" />
+          <File Id="WindowsSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Images\WindowsSettings.light.png" />
       </Component>
 
     </ComponentGroup>
