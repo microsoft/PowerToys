@@ -240,7 +240,6 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [ ] Verify holding the `Win` key opens the guide
    - [ ] Verify `Win + ?` opens the guide
  * Run PowerToys as user
-    - [ ] Verify the taskbar shortcut `Win + digit` works
     - [ ] Verify the first four shortcuts work
 
 ### OOBE
