@@ -1056,410 +1056,410 @@
     "Command": "ms-settings:windowsanywhere"
   },
   {
-    "Area": "ControlPanelEaseOfAccess",
+    "Area": "EaseOfAccess",
     "Name": "Accessibility Options",
     "AltNames": [ "access.cpl" ],
     "Command": "control access.cpl"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Action Center",
     "Command": "control /name Microsoft.ActionCenter"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Add Hardware",
     "Command": "control /name Microsoft.AddHardware"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Add/Remove Programs",
     "AltNames": [ "appwiz.cpl" ],
     "Command": "control appwiz.cpl"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Administrative Tools",
     "Command": "control /name Microsoft.AdministrativeTools"
   },
   {
-    "Area": "ControlPanelPrograms",
+    "Area": "Programs",
     "Name": "AutoPlay",
     "Command": "control /name Microsoft.AutoPlay"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Backup and Restore",
     "Command": "control /name Microsoft.BackupAndRestore"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Biometric Devices",
     "Command": "control /name Microsoft.BiometricDevices"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "BitLocker Drive Encryption",
     "Command": "control /name Microsoft.BitLockerDriveEncryption"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Bluetooth devices",
     "Command": "control /name Microsoft.BluetoothDevices"
   },
   {
-    "Area": "ControlPanelAppearanceAndPersonalization",
+    "Area": "AppearanceAndPersonalization",
     "Name": "Color management",
     "Command": "control /name Microsoft.ColorManagement"
   },
   {
-    "Area": "ControlPanelUserAccounts",
+    "Area": "UserAccounts",
     "Name": "Credential manager",
     "Command": "control /name Microsoft.CredentialManager"
   },
   {
-    "Area": "ControlPanelPrograms",
+    "Area": "Programs",
     "Name": "Client service for NetWare",
     "AltNames": [ "nwc.cpl" ],
     "Command": "control nwc.cpl"
   },
   {
-    "Area": "ControlPanelClockAndRegion",
+    "Area": "ClockAndRegion",
     "Name": "Date and time",
     "AltNames": [ "timedate.cpl" ],
     "Command": "control /name Microsoft.DateAndTime"
   },
   {
-    "Area": "ControlPanelClockAndRegion",
+    "Area": "ClockAndRegion",
     "Name": "Default location",
     "Command": "control /name Microsoft.DefaultLocation"
   },
   {
-    "Area": "ControlPanelPrograms",
+    "Area": "Programs",
     "Name": "Default programs",
     "Command": "control /name Microsoft.DefaultPrograms"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Device manager",
     "Command": "control /name Microsoft.DeviceManager"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Devices and printers",
     "Command": "control /name Microsoft.DevicesAndPrinters"
   },
   {
-    "Area": "ControlPanelEaseOfAccess",
+    "Area": "EaseOfAccess",
     "Name": "Ease of access center",
     "Command": "control /name Microsoft.EaseOfAccessCenter"
   },
   {
-    "Area": "ControlPanelAppearanceAndPersonalization",
+    "Area": "AppearanceAndPersonalization",
     "Name": "Folder options",
     "Command": "control /name Microsoft.FolderOptions"
   },
   {
-    "Area": "ControlPanelAppearanceAndPersonalization",
+    "Area": "AppearanceAndPersonalization",
     "Name": "Fonts",
     "Command": "control /name Microsoft.Fonts"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Game controllers",
     "Command": "control /name Microsoft.GameControllers"
   },
   {
-    "Area": "ControlPanelPrograms",
+    "Area": "Programs",
     "Name": "Get programs",
     "Command": "control /name Microsoft.GetPrograms"
   },
   {
-    "Area": "ControlPanel",
+    "Area": "",
     "Name": "Getting started",
     "Command": "control /name Microsoft.GettingStarted"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Home group",
     "Command": "control /name Microsoft.HomeGroup"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Indexing options",
     "Command": "control /name Microsoft.IndexingOptions"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Infrared",
     "Command": "control /name Microsoft.Infrared"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Internet options",
     "AltNames": [ "inetcpl.cpl" ],
     "Command": "control /name Microsoft.InternetOptions"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Mail - Microsoft Exchange or Windows Messaging",
     "AltNames": [ "mlcfg32.cpl" ],
     "Command": "control mlcfg32.cpl"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Mouse",
     "Command": "control /name Microsoft.Mouse"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Network and sharing center",
     "Command": "control /name Microsoft.NetworkAndSharingCenter"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Network connection",
     "Command": "control netconnections"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Network Setup Wizard",
     "AltNames": [ "netsetup.cpl" ],
     "Command": "control netsetup.cpl"
   },
   {
-    "Area": "ControlPanelPrograms",
+    "Area": "Programs",
     "Name": "ODBC Data Source Administrator (32-bit)",
     "AltNames": [ "odbccp32.cpl" ],
     "Command": "control odbccp32.cpl"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Offline files",
     "Command": "control /name Microsoft.OfflineFiles"
   },
   {
-    "Area": "ControlPanelUserAccounts",
+    "Area": "UserAccounts",
     "Name": "Parental controls",
     "Command": "control /name Microsoft.ParentalControls"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Pen and input devices",
     "Command": "control /name Microsoft.PenAndInputDevices"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Pen and touch",
     "Command": "control /name Microsoft.PenAndTouch"
   },
   {
-    "Area": "ControlPanelUserAccounts",
+    "Area": "UserAccounts",
     "Name": "People Near Me",
     "Command": "control /name Microsoft.PeopleNearMe"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Performance information and tools",
     "Command": "control /name Microsoft.PerformanceInformationAndTools"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Phone and modem - Options",
     "Command": "control /name Microsoft.PhoneAndModemOptions"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Phone and modem",
     "AltNames": [ "modem.cpl" ],
     "Command": "control /name Microsoft.PhoneAndModem"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Power options",
     "AltNames": [ "powercfg.cpl" ],
     "Command": "control /name Microsoft.PowerOptions"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Printers",
     "Command": "control /name Microsoft.Printers"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Problem reports and solutions",
     "Command": "control /name Microsoft.ProblemReportsAndSolutions"
   },
   {
-    "Area": "ControlPanelPrograms",
+    "Area": "Programs",
     "Name": "Programs and features",
     "Command": "control /name Microsoft.ProgramsAndFeatures"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Recovery",
     "Command": "control /name Microsoft.Recovery"
   },
   {
-    "Area": "ControlPanelClockAndRegion",
+    "Area": "ClockAndRegion",
     "Name": "Region and language",
     "Command": "control /name Microsoft.RegionAndLanguage"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "RemoteApp and desktop connections",
     "Command": "control /name Microsoft.RemoteAppAndDesktopConnections"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Scanners and cameras",
     "AltNames": [ "sticpl.cpl" ],
     "Command": "control /name Microsoft.ScannersAndCameras"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Scheduled tasks",
     "AltNames": [ "schedtasks" ],
     "Command": "control schedtasks"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Security Center",
     "Command": "control /name Microsoft.SecurityCenter"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Sound",
     "Command": "control /name Microsoft.Sound"
   },
   {
-    "Area": "ControlPanelEaseOfAccess",
+    "Area": "EaseOfAccess",
     "Name": "Speech recognition",
     "Command": "control /name Microsoft.SpeechRecognition"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Sync center",
     "Command": "control /name Microsoft.SyncCenter"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "System",
     "AltNames": [ "sysdm.cpl" ],
     "Command": "control sysdm.cpl"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Tablet PC settings",
     "Command": "control /name Microsoft.TabletPCSettings"
   },
   {
-    "Area": "ControlPanelEaseOfAccess",
+    "Area": "EaseOfAccess",
     "Name": "Text to speech",
     "Command": "control /name Microsoft.TextToSpeech"
   },
   {
-    "Area": "ControlPanelUserAccounts",
+    "Area": "UserAccounts",
     "Name": "User accounts",
     "Command": "control /name Microsoft.UserAccounts"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Welcome center",
     "Command": "control /name Microsoft.WelcomeCenter"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Windows Anytime Upgrade",
     "Command": "control /name Microsoft.WindowsAnytimeUpgrade"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Windows CardSpace",
     "Command": "control /name Microsoft.CardSpace"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Windows Defender",
     "Command": "control /name Microsoft.WindowsDefender"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "Windows Firewall",
     "Command": "control /name Microsoft.WindowsFirewall"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Windows Mobility Center",
     "Command": "control /name Microsoft.MobilityCenter"
   },
   {
-    "Area": "ControlPanelAppearanceAndPersonalization",
+    "Area": "AppearanceAndPersonalization",
     "Name": "Windows Sidebar Properties",
     "Command": "control /name Microsoft.WindowsSidebarProperties"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Display properties",
     "AltNames": [ "desk.cpl" ],
     "Command": "control Desk.cpl"
   },
   {
-    "Area": "ControlPanelSystemAndSecurity",
+    "Area": "SystemAndSecurity",
     "Name": "FindFast",
     "AltNames": [ "findfast.cpl" ],
     "Command": "control FindFast.cpl"
   },
   {
-    "Area": "ControlPanelEaseOfAccess",
+    "Area": "EaseOfAccess",
     "Name": "Regional settings properties",
     "AltNames": [ "intl.cpl" ],
     "Command": "control Intl.cpl"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Joystick properties",
     "AltNames": [ "joy.cpl" ],
     "Command": "control Joy.cpl"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Mouse, Fonts, Keyboard, and Printers properties",
     "AltNames": [ "main.cpl" ],
     "Command": "control Main.cpl"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "Multimedia properties",
     "AltNames": [ "mmsys.cpl" ],
     "Command": "control Mmsys.cpl"
   },
   {
-    "Area": "ControlPanelNetworkAndInternet",
+    "Area": "NetworkAndInternet",
     "Name": "Network properties",
     "AltNames": [ "netcpl.cpl" ],
     "Command": "control Netcpl.cpl"
   },
   {
-    "Area": "ControlPanelUserAccounts",
+    "Area": "UserAccounts",
     "Name": "Password properties",
     "AltNames": [ "password.cpl" ],
     "Command": "control Password.cpl"
   },
   {
-    "Area": "ControlPanelHardwareAndSound",
+    "Area": "HardwareAndSound",
     "Name": "System properties and Add New Hardware wizard",
     "AltNames": [ "sysdm.cpl" ],
     "Command": "control Sysdm.cpl"
   },
   {
-    "Area": "ControlPanelAppearanceAndPersonalization",
+    "Area": "AppearanceAndPersonalization",
     "Name": "Desktop themes",
     "AltNames": [ "themes.cpl" ],
     "Command": "control Themes.cpl"
   },
   {
-    "Area": "ControlPanelPrograms",
+    "Area": "Programs",
     "Name": "Microsoft Mail Post Office",
     "AltNames": [ "wgpocpl.cpl" ],
     "Command": "control Wgpocpl.cpl"

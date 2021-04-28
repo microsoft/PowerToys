@@ -34,11 +34,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
 
             foreach (var entry in list)
             {
+                var type = entry.Command.StartsWith("ms-settings", StringComparison.InvariantCultureIgnoreCase)
+                    ? Resources.Settings_app
+                    : Resources.Control_panel;
+
                 var result = new Result
                 {
                     Action = (_) => DoOpenSettingsAction(entry),
                     IcoPath = iconPath,
-                    SubTitle = $"{Resources.Area}: {entry.Area}",
+                    SubTitle = $"{Resources.Area}: {entry.Area} - {Resources.Type}: {type}",
                     Title = entry.Name,
                     ContextData = entry,
                 };

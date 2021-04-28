@@ -322,6 +322,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Appearance and Personalization.
+        /// </summary>
+        internal static string AreaAppearanceAndPersonalization {
+            get {
+                return ResourceManager.GetString("AreaAppearanceAndPersonalization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Apps.
         /// </summary>
         internal static string AreaApps {
@@ -331,83 +340,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ControlPanel.
+        ///   Looks up a localized string similar to Clock and Region.
         /// </summary>
-        internal static string AreaControlPanel {
+        internal static string AreaClockAndRegion {
             get {
-                return ResourceManager.GetString("AreaControlPanel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Control Panel - Appearance and Personalization.
-        /// </summary>
-        internal static string AreaControlPanelAppearanceAndPersonalization {
-            get {
-                return ResourceManager.GetString("AreaControlPanelAppearanceAndPersonalization", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Control Panel - Clock and Region.
-        /// </summary>
-        internal static string AreaControlPanelClockAndRegion {
-            get {
-                return ResourceManager.GetString("AreaControlPanelClockAndRegion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Control Panel - Ease of Access.
-        /// </summary>
-        internal static string AreaControlPanelEaseOfAccess {
-            get {
-                return ResourceManager.GetString("AreaControlPanelEaseOfAccess", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Control Panel - Hardware and Sound.
-        /// </summary>
-        internal static string AreaControlPanelHardwareAndSound {
-            get {
-                return ResourceManager.GetString("AreaControlPanelHardwareAndSound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Control Panel - Network and Internet.
-        /// </summary>
-        internal static string AreaControlPanelNetworkAndInternet {
-            get {
-                return ResourceManager.GetString("AreaControlPanelNetworkAndInternet", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Control Panel - Programs.
-        /// </summary>
-        internal static string AreaControlPanelPrograms {
-            get {
-                return ResourceManager.GetString("AreaControlPanelPrograms", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Control Panel - System and Security.
-        /// </summary>
-        internal static string AreaControlPanelSystemAndSecurity {
-            get {
-                return ResourceManager.GetString("AreaControlPanelSystemAndSecurity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Control Panel - User Accounts.
-        /// </summary>
-        internal static string AreaControlPanelUserAccounts {
-            get {
-                return ResourceManager.GetString("AreaControlPanelUserAccounts", resourceCulture);
+                return ResourceManager.GetString("AreaClockAndRegion", resourceCulture);
             }
         }
         
@@ -453,6 +390,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string AreaGaming {
             get {
                 return ResourceManager.GetString("AreaGaming", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hardware and Sound.
+        /// </summary>
+        internal static string AreaHardwareAndSound {
+            get {
+                return ResourceManager.GetString("AreaHardwareAndSound", resourceCulture);
             }
         }
         
@@ -511,6 +457,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Programs.
+        /// </summary>
+        internal static string AreaPrograms {
+            get {
+                return ResourceManager.GetString("AreaPrograms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SurfaceHub.
         /// </summary>
         internal static string AreaSurfaceHub {
@@ -525,6 +480,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string AreaSystem {
             get {
                 return ResourceManager.GetString("AreaSystem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System and Security.
+        /// </summary>
+        internal static string AreaSystemAndSecurity {
+            get {
+                return ResourceManager.GetString("AreaSystemAndSecurity", resourceCulture);
             }
         }
         
@@ -3189,6 +3153,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string TruePlay {
             get {
                 return ResourceManager.GetString("TruePlay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type.
+        /// </summary>
+        internal static string Type {
+            get {
+                return ResourceManager.GetString("Type", resourceCulture);
             }
         }
         
