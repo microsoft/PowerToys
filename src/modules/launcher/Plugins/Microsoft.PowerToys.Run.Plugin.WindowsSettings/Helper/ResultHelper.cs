@@ -20,11 +20,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
     internal static class ResultHelper
     {
         /// <summary>
-        /// Return a list with <see cref="Result"/>s, based on the given list
+        /// Return a list with <see cref="Result"/>s, based on the given list.
         /// </summary>
-        /// <param name="list">The original result list to convert</param>
-        /// <param name="iconPath">The path to the icon of each entry</param>
-        /// <returns>A list with <see cref="Result"/></returns>
+        /// <param name="list">The original result list to convert.</param>
+        /// <param name="iconPath">The path to the icon of each entry.</param>
+        /// <returns>A list with <see cref="Result"/>.</returns>
         internal static List<Result> GetResultList(
             in IEnumerable<IWindowsSetting> list,
             string query,
@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
             {
                 var result = new Result
                 {
-                    Action = (_) => DoAction(entry),
+                    Action = (_) => DoOpenSettingsAction(entry),
                     IcoPath = iconPath,
                     SubTitle = $"{Resources.Area}: {entry.Area}",
                     Title = entry.Name,
@@ -53,6 +53,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
             return resultList;
         }
 
+        /// <summary>
+        /// Add a tool-tip to the given <see cref="Result"/>, based o the given <see cref="IWindowsSetting"/>.
+        /// </summary>
+        /// <param name="entry">The <see cref="IWindowsSetting"/> that contain informations for the tool-tip.</param>
+        /// <param name="result">The <see cref="Result"/> that need a tool-tip.</param>
         private static void AddOptionalToolTip(IWindowsSetting entry, Result result)
         {
             var toolTipText = new StringBuilder();
@@ -73,6 +78,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
             if (!string.IsNullOrEmpty(entry.Note))
             {
                 toolTipText.AppendLine(string.Empty);
+                toolTipText.AppendLine(string.Empty);
                 toolTipText.Append(Resources.Note);
                 toolTipText.Append(": ");
                 toolTipText.Append(entry.Note);
@@ -85,7 +91,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
             result.ToolTipData = new ToolTipData(type, toolTipText.ToString());
         }
 
-        private static bool DoAction(IWindowsSetting entry)
+        /// <summary>
+        /// Open the settings page of the given <see cref="IWindowsSetting"/>.
+        /// </summary>
+        /// <param name="entry">The <see cref="IWindowsSetting"/> that contain the information to open the setting on command level.</param>
+        /// <returns><see langword="true"/> if the settings could be opened, otherwise <see langword="false"/>.</returns>
+        private static bool DoOpenSettingsAction(IWindowsSetting entry)
         {
             ProcessStartInfo processStartInfo;
 
@@ -120,6 +131,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
             }
         }
 
+        /// <summary>
+        /// Set the score (known as order number or ranking number)
+        /// for all <see cref="Results"/> in the given list, based on the given query.
+        /// </summary>
+        /// <param name="resultList">A list with <see cref="Result"/>s that need scores.</param>
+        /// <param name="query">The query to calculated the score for the <see cref="Result"/>s.</param>
         private static void SetScores(IEnumerable<Result> resultList, string query)
         {
             var lowScore = 1_000;
