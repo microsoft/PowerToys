@@ -964,6 +964,7 @@ ILogon
 IMAGEHLP
 imageresizer
 IMAGERESIZEREXT
+imagingdevices
 IMain
 IMarkdown
 ime
