@@ -202,7 +202,7 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [ ] Program - launch a Win32 applicationn
    - [ ] Program - launch a packaged application
    - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] Indexer - open a file on the disk.
+   - [ ] Windows Search - open a file on the disk.
    - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space.
    - [ ] Folder - Search and open a sub-folder on entering the path.
    - [ ] Uri - launch a web page on entering the uri.
