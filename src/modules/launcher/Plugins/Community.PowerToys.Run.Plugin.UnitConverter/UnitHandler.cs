@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 using UnitsNet;
 
 
@@ -39,13 +40,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     return UnitsNet.UnitConverter.ConvertByName(double.Parse(split[0], currentCulture), unitInfo.Name, input_first_unit, input_second_unit);
 
                 case Abbreviated.Second:
-                    UnitInfo first = Array.Find(unitInfo.UnitInfos, info => info.Name == input_first_unit);
+                    UnitInfo first = Array.Find(unitInfo.UnitInfos, info => info.Name.ToLower() == input_first_unit.ToLower());
                     UnitParser.Default.TryParse(split[3], unitInfo.UnitType, out Enum second_unit);
                     return UnitsNet.UnitConverter.Convert(double.Parse(split[0], currentCulture), first.Value, second_unit);
 
                 case Abbreviated.First:
                     UnitParser.Default.TryParse(split[1], unitInfo.UnitType, out Enum first_unit);
-                    UnitInfo second = Array.Find(unitInfo.UnitInfos, info => info.Name == input_second_unit);
+                    UnitInfo second = Array.Find(unitInfo.UnitInfos, info => info.Name.ToLower() == input_second_unit.ToLower());
                     return UnitsNet.UnitConverter.Convert(double.Parse(split[0], currentCulture), first_unit, second.Value);
 
                 case Abbreviated.NotFound:
@@ -80,8 +81,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             }
             else if ((!first_unit_is_abbreviated) && (!second_unit_is_abbreviated)) {
                 // b
-                bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name == input_first_unit);
-                bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name == input_second_unit);
+                bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_first_unit);
+                bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit);
 
                 if (first_unabbreviated && second_unabbreviated) {
                     return (Abbreviated.Neither, unit_info);
@@ -90,14 +91,14 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             else if ((first_unit_is_abbreviated && !second_unit_is_abbreviated) || (!first_unit_is_abbreviated && second_unit_is_abbreviated)) {
                 // c
                 if (first_unit_is_abbreviated) {
-                    bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name == input_second_unit);
+                    bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit);
 
                     if (second_unabbreviated) {
                         return (Abbreviated.First, unit_info);
                     }
                 }
                 else if (second_unit_is_abbreviated) {
-                    bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name == input_first_unit);
+                    bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_first_unit);
 
                     if (first_unabbreviated) {
                         return (Abbreviated.Second, unit_info);
