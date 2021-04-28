@@ -1,8 +1,8 @@
 # Unit Converter Plugin
 The Unit Convert plugin as the name suggests is used to perform unit conversion on the user entered query.
-This plugin uses a package called [UnitsNet](https://github.com/angularsen/UnitsNet)
+This plugin uses a package called [UnitsNet](https://github.com/angularsen/UnitsNet).
 
-![Image of Calculator plugin](/doc/images/launcher/plugins/calculator.png)
+![Image of Calculator plugin](/doc/images/launcher/plugins/community.unitconverter.png)
 
 ### Currently Supported Units
  - [Acceleration](https://github.com/angularsen/UnitsNet/blob/master/UnitsNet/GeneratedCode/Units/AccelerationUnit.g.cs)

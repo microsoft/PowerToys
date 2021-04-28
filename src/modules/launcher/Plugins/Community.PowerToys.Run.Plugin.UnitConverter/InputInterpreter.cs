@@ -12,7 +12,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Seperates input like: "1ft in cm" to "1 ft in cm"
+        /// Separates input like: "1ft in cm" to "1 ft in cm"
         /// </summary>
         /// <param name="split"></param>
         public static void InputSpaceInserter(ref string[] split) {

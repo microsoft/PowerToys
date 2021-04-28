@@ -49,6 +49,7 @@ AModifier
 AMPROPERTY
 AMPROPSETID
 anges
+angularsen
 ansicolor
 ANull
 AOC
