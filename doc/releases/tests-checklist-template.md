@@ -199,7 +199,8 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [ ] when PowerToys is running as admin on start-up
    - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] Program - launch a Win32 application and a packaged application
+   - [ ] Program - launch a Win32 applicationn
+   - [ ] Program - launch a packaged application
    - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
    - [ ] Indexer - open a file on the disk.
    - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space.
