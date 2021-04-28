@@ -1,0 +1,1466 @@
+[
+  {
+    "Area": "Accounts",
+    "Name": "Access work or school",
+    "AltNames": [ "Workplace" ],
+    "Command": "ms-settings:workplace"
+  },
+  {
+    "Area": "Accounts",
+    "Name": "Email and app accounts",
+    "Command": "ms-settings:emailandaccounts"
+  },
+  {
+    "Area": "Accounts",
+    "Name": "Family and other people",
+    "AltNames": [ "Other users" ],
+    "Command": "ms-settings:otherusers"
+  },
+  {
+    "Area": "Accounts",
+    "Name": "Set up a kiosk",
+    "AltNames": [ "Assigned access" ],
+    "Command": "ms-settings:assignedaccess"
+  },
+  {
+    "Area": "Accounts",
+    "Name": "Sign-in options",
+    "Command": "ms-settings:signinoptions"
+  },
+  {
+    "Area": "Accounts",
+    "Name": "Sign-in options - Dynamic lock",
+    "Command": "ms-settings:signinoptions-dynamiclock"
+  },
+  {
+    "Area": "Accounts",
+    "Name": "Sync your settings",
+    "Command": "ms-settings:sync"
+  },
+  {
+    "Area": "Accounts",
+    "Name": "Windows Hello setup - Face",
+    "Command": "ms-settings:signinoptions-launchfaceenrollment"
+  },
+  {
+    "Area": "Accounts",
+    "Name": "Windows Hello setup - Fingerprint",
+    "Command": "ms-settings:signinoptions-launchfingerprintenrollment"
+  },
+  {
+    "Area": "Accounts",
+    "Name": "Your info",
+    "Command": "ms-settings:yourinfo"
+  },
+  {
+    "Area": "Apps",
+    "Name": "Apps and Features",
+    "Command": "ms-settings:appsfeatures"
+  },
+  {
+    "Area": "Apps",
+    "Name": "App features",
+    "Note": "Reset, manage add-on and downloadable content, etc. for the app",
+    "Command": "ms-settings:appsfeatures-app"
+  },
+  {
+    "Area": "Apps",
+    "Name": "Apps for websites",
+    "Command": "ms-settings:appsforwebsites"
+  },
+  {
+    "Area": "Apps",
+    "Name": "Default apps",
+    "Command": "ms-settings:defaultapps"
+  },
+  {
+    "Area": "Apps",
+    "Name": "Manage optional features",
+    "Command": "ms-settings:optionalfeatures"
+  },
+  {
+    "Area": "Apps",
+    "Name": "Offline Maps",
+    "Command": "ms-settings:maps"
+  },
+  {
+    "Area": "Apps",
+    "Name": "Offline Maps - Download maps",
+    "Command": "ms-settings:maps-downloadmaps"
+  },
+  {
+    "Area": "Apps",
+    "Name": "Startup apps",
+    "Command": "ms-settings:startupapps"
+  },
+  {
+    "Area": "Apps",
+    "Name": "Video playback",
+    "Command": "ms-settings:videoplayback"
+  },
+  {
+    "Area": "Cortana",
+    "Name": "Notifications",
+    "Command": "ms-settings:cortana-notifications"
+  },
+  {
+    "Area": "Cortana",
+    "Name": "More details",
+    "Command": "ms-settings:cortana-moredetails"
+  },
+  {
+    "Area": "Cortana",
+    "Name": "Permissions and history",
+    "Command": "ms-settings:cortana-permissions"
+  },
+  {
+    "Area": "Cortana",
+    "Name": "Windows search",
+    "Command": "ms-settings:cortana-windowssearch"
+  },
+  {
+    "Area": "Cortana",
+    "Name": "Cortana - Language",
+    "AltNames": [ "Talk" ],
+    "Command": "ms-settings:cortana-language"
+  },
+  {
+    "Area": "Cortana",
+    "Name": "Cortana",
+    "Command": "ms-settings:cortana"
+  },
+  {
+    "Area": "Cortana",
+    "Name": "Talk to Cortana",
+    "Command": "ms-settings:cortana-talktocortana"
+  },
+  {
+    "Area": "Devices",
+    "Name": "AutoPlay",
+    "Command": "ms-settings:autoplay"
+  },
+  {
+    "Area": "Devices",
+    "Name": "Bluetooth",
+    "Command": "ms-settings:bluetooth"
+  },
+  {
+    "Area": "Devices",
+    "Name": "Connected Devices",
+    "Command": "ms-settings:connecteddevices"
+  },
+  {
+    "Area": "Devices",
+    "Name": "Default camera",
+    "DeprecatedInVersion": 1809,
+    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Command": "ms-settings:camera"
+  },
+  {
+    "Area": "Devices",
+    "Name": "Mouse and touchpad",
+    "Note": "touchpad settings only available on devices that have a touchpad",
+    "Command": "ms-settings:mousetouchpad"
+  },
+  {
+    "Area": "Devices",
+    "Name": "Pen and Windows Ink",
+    "Command": "ms-settings:pen"
+  },
+  {
+    "Area": "Devices",
+    "Name": "Printers and scanners",
+    "Command": "ms-settings:printers"
+  },
+  {
+    "Area": "Devices",
+    "Name": "Touchpad",
+    "Note": "only available if touchpad hardware is present",
+    "Command": "ms-settings:devices-touchpad"
+  },
+  {
+    "Area": "Devices",
+    "Name": "Typing",
+    "Command": "ms-settings:typing"
+  },
+  {
+    "Area": "Devices",
+    "Name": "USB",
+    "Command": "ms-settings:usb"
+  },
+  {
+    "Area": "Devices",
+    "Name": "Wheel",
+    "Note": "only available if Dial is paired",
+    "Command": "ms-settings:wheel"
+  },
+  {
+    "Area": "Devices",
+    "Name": "Mobile devices",
+    "AltNames": [ "Your phone" ],
+    "Command": "ms-settings:mobile-devices"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Audio",
+    "AltNames": [ "Mono", "Volume", "Audio alerts" ],
+    "Command": "ms-settings:easeofaccess-audio"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Closed captions",
+    "Command": "ms-settings:easeofaccess-closedcaptioning"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Color filters",
+    "AltNames": [ "Inverted colors", "Grayscale", "Red-green", "Blue-yellow", "Green week", "Red week", "deuteranopia", "protanopia", "tritanopia" ],
+    "Command": "ms-settings:easeofaccess-colorfilter"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Mouse pointer",
+    "AltNames": [ "Touch feedback" ],
+    "Command": "ms-settings:easeofaccess-cursorandpointersize"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Display",
+    "AltNames": [ "Transparency", "Animations", "Scroll bars", "Size" ],
+    "Command": "ms-settings:easeofaccess-display"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Eye control",
+    "Command": "ms-settings:easeofaccess-eyecontrol"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Fonts",
+    "DeprecatedInVersion": 1809,
+    "Command": "ms-settings:fonts"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "High contrast",
+    "Command": "ms-settings:easeofaccess-highcontrast"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Keyboard",
+    "AltNames": [ "Print screen", "Shortcuts", "On-Screen", "Keys", "Scroll Lock", "Caps Lock", "Num Lock" ],
+    "Command": "ms-settings:easeofaccess-keyboard"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Magnifier",
+    "AltNames": [ "Zoom" ],
+    "Command": "ms-settings:easeofaccess-magnifier"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Mouse",
+    "AltNames": [ "Keypad", "Touch" ],
+    "Command": "ms-settings:easeofaccess-mouse"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Narrator",
+    "Command": "ms-settings:easeofaccess-narrator"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Other options",
+    "DeprecatedInVersion": 1809,
+    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Command": "ms-settings:easeofaccess-otheroptions"
+  },
+  {
+    "Area": "EaseOfAccess",
+    "Name": "Speech",
+    "AltNames": [ "Recognition", "Talk" ],
+    "Command": "ms-settings:easeofaccess-speechrecognition"
+  },
+  {
+    "Area": "Extras",
+    "Name": "Extras",
+    "Note": "only available if \u0022settings apps\u0022 are installed, for example, by a 3rd party",
+    "Command": "ms-settings:extras"
+  },
+  {
+    "Area": "Gaming",
+    "Name": "Broadcasting",
+    "Command": "ms-settings:gaming-broadcasting"
+  },
+  {
+    "Area": "Gaming",
+    "Name": "Game bar",
+    "Command": "ms-settings:gaming-gamebar"
+  },
+  {
+    "Area": "Gaming",
+    "Name": "Game DVR",
+    "Command": "ms-settings:gaming-gamedvr"
+  },
+  {
+    "Area": "Gaming",
+    "Name": "Game Mode",
+    "Command": "ms-settings:gaming-gamemode"
+  },
+  {
+    "Area": "Gaming",
+    "Name": "Playing a game full screen",
+    "AltNames": [ "Quiet moments game" ],
+    "Command": "ms-settings:quietmomentsgame"
+  },
+  {
+    "Area": "Gaming",
+    "Name": "TruePlay",
+    "DeprecatedInVersion": 1809,
+    "Note": "As of Windows 10, version 1809 (10.0; Build 17763), this feature is removed from Windows",
+    "Command": "ms-settings:gaming-trueplay"
+  },
+  {
+    "Area": "Gaming",
+    "Name": "Xbox Networking",
+    "Command": "ms-settings:gaming-xboxnetworking"
+  },
+  {
+    "Area": "HomePage",
+    "Name": "Settings home page",
+    "Command": "ms-settings:"
+  },
+  {
+    "Area": "MixedReality",
+    "Name": "Audio and speech",
+    "AltNames": [ "Holographic audio" ],
+    "Note": "only available if the Mixed Reality Portal app is installed.",
+    "Command": "ms-settings:holographic-audio"
+  },
+  {
+    "Area": "MixedReality",
+    "Name": "Environment",
+    "AltNames": [ "Holographic Environment" ],
+    "Note": "only available if the Mixed Reality Portal app is installed.",
+    "Command": "ms-settings:privacy-holographic-environment"
+  },
+  {
+    "Area": "MixedReality",
+    "Name": "Headset display",
+    "AltNames": [ "Holographic Headset" ],
+    "Note": "only available if the Mixed Reality Portal app is installed.",
+    "Command": "ms-settings:holographic-headset"
+  },
+  {
+    "Area": "MixedReality",
+    "Name": "Uninstall",
+    "AltNames": [ "Holographic Management" ],
+    "Note": "only available if the Mixed Reality Portal app is installed.",
+    "Command": "ms-settings:holographic-management"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Airplane mode",
+    "Command": "ms-settings:network-airplanemode"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Proximity",
+    "Command": "ms-settings:proximity"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Cellular and SIM",
+    "Command": "ms-settings:network-cellular"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Data usage",
+    "Command": "ms-settings:datausage"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Dial-up",
+    "Command": "ms-settings:network-dialup"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Direct access",
+    "Note": "only available if DirectAccess is enabled",
+    "Command": "ms-settings:network-directaccess"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Ethernet",
+    "AltNames": [ "DNS", "SDNS", "SecureDNS", "Gateway", "DHCP", "IP" ],
+    "Command": "ms-settings:network-ethernet"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Manage known networks",
+    "AltNames": [ "Wi-Fi settings" ],
+    "Command": "ms-settings:network-wifisettings"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Mobile hotspot",
+    "Command": "ms-settings:network-mobilehotspot"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "NFC",
+    "AltNames": [ "NFC Transactions" ],
+    "Command": "ms-settings:nfctransactions"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Proxy",
+    "Command": "ms-settings:network-proxy"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Network status",
+    "Command": "ms-settings:network-status"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Network",
+    "AltNames": [ "DNS", "SDNS", "SecureDNS", "Gateway", "DHCP", "IP" ],
+    "Command": "ms-settings:network"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "VPN",
+    "Command": "ms-settings:network-vpn"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Wi-Fi",
+    "AltNames": [ "Wireless", "Metered connection" ],
+    "Note": "only available if the device has a wifi adapter",
+    "Command": "ms-settings:network-wifi"
+  },
+  {
+    "Area": "NetworkAndInternet",
+    "Name": "Wi-Fi Calling",
+    "Note": "only available if Wi-Fi calling is enabled",
+    "Command": "ms-settings:network-wificalling"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Background",
+    "AltNames": [ "Wallpaper", "Picture", "Image" ],
+    "Command": "ms-settings:personalization-background"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Choose which folders appear on Start",
+    "AltNames": [ "Start places" ],
+    "Command": "ms-settings:personalization-start-places"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Colors",
+    "Command": "ms-settings:personalization-colors"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Colors",
+    "AltNames": [ "Dark mode", "Light mode", "Dark color", "Light color", "App color", "Taskbar color", "Window border" ],
+    "Command": "ms-settings:colors"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Glance",
+    "DeprecatedInVersion": 1809,
+    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Command": "ms-settings:personalization-glance"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Lock screen",
+    "AltNames": [ "Image", "Picture" ],
+    "Command": "ms-settings:lockscreen"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Navigation bar",
+    "DeprecatedInVersion": 1809,
+    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Command": "ms-settings:personalization-navbar"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Personalization (category)",
+    "Command": "ms-settings:personalization"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Start",
+    "Command": "ms-settings:personalization-start"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Taskbar",
+    "Command": "ms-settings:taskbar"
+  },
+  {
+    "Area": "Personalization",
+    "Name": "Themes",
+    "Command": "ms-settings:themes"
+  },
+  {
+    "Area": "Phone",
+    "Name": "Add your phone",
+    "Command": "ms-settings:mobile-devices-addphone"
+  },
+  {
+    "Area": "Phone",
+    "Name": "Direct open your phone",
+    "Note": "Opens Your Phone app",
+    "Command": "ms-settings:mobile-devices-addphone-direct"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Accessory apps",
+    "DeprecatedInVersion": 1809,
+    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Command": "ms-settings:privacy-accessoryapps"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Account info",
+    "Command": "ms-settings:privacy-accountinfo"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Activity history",
+    "Command": "ms-settings:privacy-activityhistory"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Advertising ID",
+    "DeprecatedInVersion": 1809,
+    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Command": "ms-settings:privacy-advertisingid"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "App diagnostics",
+    "Command": "ms-settings:privacy-appdiagnostics"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Automatic file downloads",
+    "Command": "ms-settings:privacy-automaticfiledownloads"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Background Apps",
+    "Command": "ms-settings:privacy-backgroundapps"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Calendar",
+    "Command": "ms-settings:privacy-calendar"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Call history",
+    "Command": "ms-settings:privacy-callhistory"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Camera",
+    "Command": "ms-settings:privacy-webcam"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Contacts",
+    "Command": "ms-settings:privacy-contacts"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Documents",
+    "Command": "ms-settings:privacy-documents"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Email",
+    "Command": "ms-settings:privacy-email"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Eye tracker",
+    "Note": "requires eyetracker hardware",
+    "Command": "ms-settings:privacy-eyetracker"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Feedback and diagnostics",
+    "Command": "ms-settings:privacy-feedback"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "File system",
+    "Command": "ms-settings:privacy-broadfilesystemaccess"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "General",
+    "Command": "ms-settings:privacy or privacy-general"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Inking and typing",
+    "AltNames": [ "Speech typing" ],
+    "Command": "ms-settings:privacy-speechtyping"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Location",
+    "Command": "ms-settings:privacy-location"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Messaging",
+    "Command": "ms-settings:privacy-messaging"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Microphone",
+    "Command": "ms-settings:privacy-microphone"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Motion",
+    "Command": "ms-settings:privacy-motion"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Notifications",
+    "Command": "ms-settings:privacy-notifications"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Other devices",
+    "AltNames": [ "Custom devices" ],
+    "Command": "ms-settings:privacy-customdevices"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Phone calls",
+    "Command": "ms-settings:privacy-phonecalls"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Pictures",
+    "Command": "ms-settings:privacy-pictures"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Radios",
+    "Command": "ms-settings:privacy-radios"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Speech",
+    "Command": "ms-settings:privacy-speech"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Tasks",
+    "Command": "ms-settings:privacy-tasks"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Videos",
+    "Command": "ms-settings:privacy-videos"
+  },
+  {
+    "Area": "Privacy",
+    "Name": "Voice activation",
+    "Command": "ms-settings:privacy-voiceactivation"
+  },
+  {
+    "Area": "SurfaceHub",
+    "Name": "Accounts",
+    "Command": "ms-settings:surfacehub-accounts"
+  },
+  {
+    "Area": "SurfaceHub",
+    "Name": "Session cleanup",
+    "Command": "ms-settings:surfacehub-sessioncleanup"
+  },
+  {
+    "Area": "SurfaceHub",
+    "Name": "Team Conferencing",
+    "AltNames": [ "calling" ],
+    "Command": "ms-settings:surfacehub-calling"
+  },
+  {
+    "Area": "SurfaceHub",
+    "Name": "Team device management",
+    "Command": "ms-settings:surfacehub-devicemanagenent"
+  },
+  {
+    "Area": "SurfaceHub",
+    "Name": "Welcome screen",
+    "Command": "ms-settings:surfacehub-welcome"
+  },
+  {
+    "Area": "System",
+    "Name": "About",
+    "Command": "ms-settings:about"
+  },
+  {
+    "Area": "System",
+    "Name": "Advanced display settings",
+    "Note": "only available on devices that support advanced display options",
+    "Command": "ms-settings:display-advanced"
+  },
+  {
+    "Area": "System",
+    "Name": "App volume and device preferences",
+    "IntroducedInVersion": 1903,
+    "Note": "Added in Windows 10, version 1903",
+    "Command": "ms-settings:apps-volume"
+  },
+  {
+    "Area": "System",
+    "Name": "Battery Saver",
+    "Note": "only available on devices that have a battery, such as a tablet",
+    "Command": "ms-settings:batterysaver"
+  },
+  {
+    "Area": "System",
+    "Name": "Battery Saver settings",
+    "Note": "only available on devices that have a battery, such as a tablet",
+    "Command": "ms-settings:batterysaver-settings"
+  },
+  {
+    "Area": "System",
+    "Name": "Battery use",
+    "AltNames": [ "Battery saver usage details" ],
+    "Note": "only available on devices that have a battery, such as a tablet",
+    "Command": "ms-settings:batterysaver-usagedetails"
+  },
+  {
+    "Area": "System",
+    "Name": "Clipboard",
+    "Command": "ms-settings:clipboard"
+  },
+  {
+    "Area": "System",
+    "Name": "Display",
+    "AltNames": [ "Night light", "Blue light", "Warmer color", "Red eye" ],
+    "Command": "ms-settings:display"
+  },
+  {
+    "Area": "System",
+    "Name": "Default Save Locations",
+    "Command": "ms-settings:savelocations"
+  },
+  {
+    "Area": "System",
+    "Name": "Screen rotation",
+    "Command": "ms-settings:screenrotation"
+  },
+  {
+    "Area": "System",
+    "Name": "Duplicating my display",
+    "AltNames": [ "Presentation" ],
+    "Command": "ms-settings:quietmomentspresentation"
+  },
+  {
+    "Area": "System",
+    "Name": "During these hours",
+    "AltNames": [ "Scheduled" ],
+    "Command": "ms-settings:quietmomentsscheduled"
+  },
+  {
+    "Area": "System",
+    "Name": "Encryption",
+    "Command": "ms-settings:deviceencryption"
+  },
+  {
+    "Area": "System",
+    "Name": "Focus assist - Quiet hours",
+    "Command": "ms-settings:quiethours"
+  },
+  {
+    "Area": "System",
+    "Name": "Focus assist - Quiet moments",
+    "Command": "ms-settings:quietmomentshome"
+  },
+  {
+    "Area": "System",
+    "Name": "Graphics settings",
+    "AltNames": [ "Advanced graphics" ],
+    "Note": "only available on devices that support advanced graphics options",
+    "Command": "ms-settings:display-advancedgraphics"
+  },
+  {
+    "Area": "System",
+    "Name": "Messaging",
+    "Command": "ms-settings:messaging"
+  },
+  {
+    "Area": "System",
+    "Name": "Multitasking",
+    "Command": "ms-settings:multitasking"
+  },
+  {
+    "Area": "System",
+    "Name": "Night light settings",
+    "Command": "ms-settings:nightlight"
+  },
+  {
+    "Area": "System",
+    "Name": "Phone - Default apps",
+    "Command": "ms-settings:phone-defaultapps"
+  },
+  {
+    "Area": "System",
+    "Name": "Projecting to this PC",
+    "Command": "ms-settings:project"
+  },
+  {
+    "Area": "System",
+    "Name": "Shared experiences",
+    "AltNames": [ "Crossdevice" ],
+    "Command": "ms-settings:crossdevice"
+  },
+  {
+    "Area": "System",
+    "Name": "Tablet mode",
+    "Command": "ms-settings:tabletmode"
+  },
+  {
+    "Area": "System",
+    "Name": "Taskbar",
+    "Command": "ms-settings:taskbar"
+  },
+  {
+    "Area": "System",
+    "Name": "Notifications and actions",
+    "Command": "ms-settings:notifications"
+  },
+  {
+    "Area": "System",
+    "Name": "Remote Desktop",
+    "Command": "ms-settings:remotedesktop"
+  },
+  {
+    "Area": "System",
+    "Name": "Phone",
+    "DeprecatedInVersion": 1809,
+    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Command": "ms-settings:phone"
+  },
+  {
+    "Area": "System",
+    "Name": "Power and sleep",
+    "Command": "ms-settings:powersleep"
+  },
+  {
+    "Area": "System",
+    "Name": "Sound",
+    "Command": "ms-settings:sound"
+  },
+  {
+    "Area": "System",
+    "Name": "Storage Sense",
+    "Command": "ms-settings:storagesense"
+  },
+  {
+    "Area": "System",
+    "Name": "Storage policies",
+    "Command": "ms-settings:storagepolicies"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Date and time",
+    "Command": "ms-settings:dateandtime"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Japan IME settings",
+    "AltNames": [ "jpnime" ],
+    "Note": "available if the Microsoft Japan input method editor is installed",
+    "Command": "ms-settings:regionlanguage-jpnime"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Region",
+    "AltNames": [ "Region formatting" ],
+    "Command": "ms-settings:regionformatting"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Keyboard",
+    "Command": "ms-settings:keyboard"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Regional language",
+    "Command": "ms-settings:regionlanguage"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Bopomofo IME",
+    "AltNames": [ "bpmf" ],
+    "Command": "ms-settings:regionlanguage-bpmfime"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Cangjie IME",
+    "Command": "ms-settings:regionlanguage-cangjieime"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Pinyin IME settings - domain lexicon",
+    "Command": "ms-settings:regionlanguage-chsime-pinyin-domainlexicon"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Pinyin IME settings - Key configuration",
+    "Command": "ms-settings:regionlanguage-chsime-pinyin-keyconfig"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Pinyin IME settings - UDP",
+    "Command": "ms-settings:regionlanguage-chsime-pinyin-udp"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Wubi IME settings - UDP",
+    "Command": "ms-settings:regionlanguage-chsime-wubi-udp"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Quickime",
+    "Command": "ms-settings:regionlanguage-quickime"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Pinyin IME settings",
+    "Note": "available if the Microsoft Pinyin input method editor is installed",
+    "Command": "ms-settings:regionlanguage-chsime-pinyin"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Speech",
+    "Command": "ms-settings:speech"
+  },
+  {
+    "Area": "TimeAndLanguage",
+    "Name": "Wubi IME settings",
+    "Note": "available if the Microsoft Wubi input method editor is installed",
+    "Command": "ms-settings:regionlanguage-chsime-wubi"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Activation",
+    "Command": "ms-settings:activation"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Backup",
+    "Command": "ms-settings:backup"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Delivery Optimization",
+    "Command": "ms-settings:delivery-optimization"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Find My Device",
+    "Command": "ms-settings:findmydevice"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "For developers",
+    "Command": "ms-settings:developers"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Recovery",
+    "Command": "ms-settings:recovery"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Troubleshoot",
+    "Command": "ms-settings:troubleshoot"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Windows Security",
+    "AltNames": [ "Windows Defender" ],
+    "Command": "ms-settings:windowsdefender"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Windows Insider Program",
+    "Note": "only present if user is enrolled in WIP",
+    "Command": "ms-settings:windowsinsider"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Windows Insider Program",
+    "Command": "ms-settings:windowsinsider-optin"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Windows Update",
+    "Command": "ms-settings:windowsupdate"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Windows Update - Actions",
+    "Command": "ms-settings:windowsupdate-action"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Windows Update - Advanced options",
+    "Command": "ms-settings:windowsupdate-options"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Windows Update - Restart options",
+    "Command": "ms-settings:windowsupdate-restartoptions"
+  },
+  {
+    "Area": "UpdateAndSecurity",
+    "Name": "Windows Update - View update history",
+    "Command": "ms-settings:windowsupdate-history"
+  },
+  {
+    "Area": "UserAccounts",
+    "Name": "Workplace provisioning",
+    "Note": "only available if enterprise has deployed a provisioning package",
+    "Command": "ms-settings:workplace-provisioning"
+  },
+  {
+    "Area": "UserAccounts",
+    "Name": "Provisioning",
+    "Note": "only available on mobile and if the enterprise has deployed a provisioning package",
+    "Command": "ms-settings:provisioning"
+  },
+  {
+    "Area": "UserAccounts",
+    "Name": "Windows Anywhere",
+    "Note": "device must be Windows Anywhere-capable",
+    "Command": "ms-settings:windowsanywhere"
+  },
+  {
+    "Area": "ControlPanelEaseOfAccess",
+    "Name": "Accessibility Options",
+    "AltNames": [ "access.cpl" ],
+    "Command": "control access.cpl"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Action Center",
+    "Command": "control /name Microsoft.ActionCenter"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Add Hardware",
+    "Command": "control /name Microsoft.AddHardware"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Add/Remove Programs",
+    "AltNames": [ "appwiz.cpl" ],
+    "Command": "control appwiz.cpl"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Administrative Tools",
+    "Command": "control /name Microsoft.AdministrativeTools"
+  },
+  {
+    "Area": "ControlPanelPrograms",
+    "Name": "AutoPlay",
+    "Command": "control /name Microsoft.AutoPlay"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Backup and Restore",
+    "Command": "control /name Microsoft.BackupAndRestore"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Biometric Devices",
+    "Command": "control /name Microsoft.BiometricDevices"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "BitLocker Drive Encryption",
+    "Command": "control /name Microsoft.BitLockerDriveEncryption"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Bluetooth devices",
+    "Command": "control /name Microsoft.BluetoothDevices"
+  },
+  {
+    "Area": "ControlPanelAppearanceAndPersonalization",
+    "Name": "Color management",
+    "Command": "control /name Microsoft.ColorManagement"
+  },
+  {
+    "Area": "ControlPanelUserAccounts",
+    "Name": "Credential manager",
+    "Command": "control /name Microsoft.CredentialManager"
+  },
+  {
+    "Area": "ControlPanelPrograms",
+    "Name": "Client service for NetWare",
+    "AltNames": [ "nwc.cpl" ],
+    "Command": "control nwc.cpl"
+  },
+  {
+    "Area": "ControlPanelClockAndRegion",
+    "Name": "Date and time",
+    "AltNames": [ "timedate.cpl" ],
+    "Command": "control /name Microsoft.DateAndTime"
+  },
+  {
+    "Area": "ControlPanelClockAndRegion",
+    "Name": "Default location",
+    "Command": "control /name Microsoft.DefaultLocation"
+  },
+  {
+    "Area": "ControlPanelPrograms",
+    "Name": "Default programs",
+    "Command": "control /name Microsoft.DefaultPrograms"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Device manager",
+    "Command": "control /name Microsoft.DeviceManager"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Devices and printers",
+    "Command": "control /name Microsoft.DevicesAndPrinters"
+  },
+  {
+    "Area": "ControlPanelEaseOfAccess",
+    "Name": "Ease of access center",
+    "Command": "control /name Microsoft.EaseOfAccessCenter"
+  },
+  {
+    "Area": "ControlPanelAppearanceAndPersonalization",
+    "Name": "Folder options",
+    "Command": "control /name Microsoft.FolderOptions"
+  },
+  {
+    "Area": "ControlPanelAppearanceAndPersonalization",
+    "Name": "Fonts",
+    "Command": "control /name Microsoft.Fonts"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Game controllers",
+    "Command": "control /name Microsoft.GameControllers"
+  },
+  {
+    "Area": "ControlPanelPrograms",
+    "Name": "Get programs",
+    "Command": "control /name Microsoft.GetPrograms"
+  },
+  {
+    "Area": "ControlPanel",
+    "Name": "Getting started",
+    "Command": "control /name Microsoft.GettingStarted"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Home group",
+    "Command": "control /name Microsoft.HomeGroup"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Indexing options",
+    "Command": "control /name Microsoft.IndexingOptions"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Infrared",
+    "Command": "control /name Microsoft.Infrared"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Internet options",
+    "AltNames": [ "inetcpl.cpl" ],
+    "Command": "control /name Microsoft.InternetOptions"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Mail - Microsoft Exchange or Windows Messaging",
+    "AltNames": [ "mlcfg32.cpl" ],
+    "Command": "control mlcfg32.cpl"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Mouse",
+    "Command": "control /name Microsoft.Mouse"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Network and sharing center",
+    "Command": "control /name Microsoft.NetworkAndSharingCenter"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Network connection",
+    "Command": "control netconnections"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Network Setup Wizard",
+    "AltNames": [ "netsetup.cpl" ],
+    "Command": "control netsetup.cpl"
+  },
+  {
+    "Area": "ControlPanelPrograms",
+    "Name": "ODBC Data Source Administrator (32-bit)",
+    "AltNames": [ "odbccp32.cpl" ],
+    "Command": "control odbccp32.cpl"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Offline files",
+    "Command": "control /name Microsoft.OfflineFiles"
+  },
+  {
+    "Area": "ControlPanelUserAccounts",
+    "Name": "Parental controls",
+    "Command": "control /name Microsoft.ParentalControls"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Pen and input devices",
+    "Command": "control /name Microsoft.PenAndInputDevices"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Pen and touch",
+    "Command": "control /name Microsoft.PenAndTouch"
+  },
+  {
+    "Area": "ControlPanelUserAccounts",
+    "Name": "People Near Me",
+    "Command": "control /name Microsoft.PeopleNearMe"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Performance information and tools",
+    "Command": "control /name Microsoft.PerformanceInformationAndTools"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Phone and modem - Options",
+    "Command": "control /name Microsoft.PhoneAndModemOptions"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Phone and modem",
+    "AltNames": [ "modem.cpl" ],
+    "Command": "control /name Microsoft.PhoneAndModem"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Power options",
+    "AltNames": [ "powercfg.cpl" ],
+    "Command": "control /name Microsoft.PowerOptions"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Printers",
+    "Command": "control /name Microsoft.Printers"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Problem reports and solutions",
+    "Command": "control /name Microsoft.ProblemReportsAndSolutions"
+  },
+  {
+    "Area": "ControlPanelPrograms",
+    "Name": "Programs and features",
+    "Command": "control /name Microsoft.ProgramsAndFeatures"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Recovery",
+    "Command": "control /name Microsoft.Recovery"
+  },
+  {
+    "Area": "ControlPanelClockAndRegion",
+    "Name": "Region and language",
+    "Command": "control /name Microsoft.RegionAndLanguage"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "RemoteApp and desktop connections",
+    "Command": "control /name Microsoft.RemoteAppAndDesktopConnections"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Scanners and cameras",
+    "AltNames": [ "sticpl.cpl" ],
+    "Command": "control /name Microsoft.ScannersAndCameras"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Scheduled tasks",
+    "AltNames": [ "schedtasks" ],
+    "Command": "control schedtasks"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Security Center",
+    "Command": "control /name Microsoft.SecurityCenter"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Sound",
+    "Command": "control /name Microsoft.Sound"
+  },
+  {
+    "Area": "ControlPanelEaseOfAccess",
+    "Name": "Speech recognition",
+    "Command": "control /name Microsoft.SpeechRecognition"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Sync center",
+    "Command": "control /name Microsoft.SyncCenter"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "System",
+    "AltNames": [ "sysdm.cpl" ],
+    "Command": "control sysdm.cpl"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Tablet PC settings",
+    "Command": "control /name Microsoft.TabletPCSettings"
+  },
+  {
+    "Area": "ControlPanelEaseOfAccess",
+    "Name": "Text to speech",
+    "Command": "control /name Microsoft.TextToSpeech"
+  },
+  {
+    "Area": "ControlPanelUserAccounts",
+    "Name": "User accounts",
+    "Command": "control /name Microsoft.UserAccounts"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Welcome center",
+    "Command": "control /name Microsoft.WelcomeCenter"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Windows Anytime Upgrade",
+    "Command": "control /name Microsoft.WindowsAnytimeUpgrade"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Windows CardSpace",
+    "Command": "control /name Microsoft.CardSpace"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Windows Defender",
+    "Command": "control /name Microsoft.WindowsDefender"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "Windows Firewall",
+    "Command": "control /name Microsoft.WindowsFirewall"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Windows Mobility Center",
+    "Command": "control /name Microsoft.MobilityCenter"
+  },
+  {
+    "Area": "ControlPanelAppearanceAndPersonalization",
+    "Name": "Windows Sidebar Properties",
+    "Command": "control /name Microsoft.WindowsSidebarProperties"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Display properties",
+    "AltNames": [ "desk.cpl" ],
+    "Command": "control Desk.cpl"
+  },
+  {
+    "Area": "ControlPanelSystemAndSecurity",
+    "Name": "FindFast",
+    "AltNames": [ "findfast.cpl" ],
+    "Command": "control FindFast.cpl"
+  },
+  {
+    "Area": "ControlPanelEaseOfAccess",
+    "Name": "Regional settings properties",
+    "AltNames": [ "intl.cpl" ],
+    "Command": "control Intl.cpl"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Joystick properties",
+    "AltNames": [ "joy.cpl" ],
+    "Command": "control Joy.cpl"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Mouse, Fonts, Keyboard, and Printers properties",
+    "AltNames": [ "main.cpl" ],
+    "Command": "control Main.cpl"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "Multimedia properties",
+    "AltNames": [ "mmsys.cpl" ],
+    "Command": "control Mmsys.cpl"
+  },
+  {
+    "Area": "ControlPanelNetworkAndInternet",
+    "Name": "Network properties",
+    "AltNames": [ "netcpl.cpl" ],
+    "Command": "control Netcpl.cpl"
+  },
+  {
+    "Area": "ControlPanelUserAccounts",
+    "Name": "Password properties",
+    "AltNames": [ "password.cpl" ],
+    "Command": "control Password.cpl"
+  },
+  {
+    "Area": "ControlPanelHardwareAndSound",
+    "Name": "System properties and Add New Hardware wizard",
+    "AltNames": [ "sysdm.cpl" ],
+    "Command": "control Sysdm.cpl"
+  },
+  {
+    "Area": "ControlPanelAppearanceAndPersonalization",
+    "Name": "Desktop themes",
+    "AltNames": [ "themes.cpl" ],
+    "Command": "control Themes.cpl"
+  },
+  {
+    "Area": "ControlPanelPrograms",
+    "Name": "Microsoft Mail Post Office",
+    "AltNames": [ "wgpocpl.cpl" ],
+    "Command": "control Wgpocpl.cpl"
+  }
+]
