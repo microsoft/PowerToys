@@ -14,7 +14,6 @@
 
  Regressions:  
  - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
 
 ## General Settings
 
