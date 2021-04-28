@@ -106,19 +106,19 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 ## PowerToys Run
 
  * Enable PT Run in settings and ensure that the hotkey brings up PT Run 
-   - [ ] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running unelevated on start-up
    - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] Program - launch a Win32 application and a packaged application
-   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] Indexer - open a file on the disk.
-   - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space.
-   - [ ] Folder - Search and open a sub-folder on entering the path.
-   - [ ] Uri - launch a web page on entering the uri.
-   - [ ] Window walker - Switch focus to a running window.
-   - [ ] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
-   - [ ] Registry - navigate through the registry tree, copy key path, open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Program - launch a Win32 application and a packaged application
+   - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] Indexer - open a file on the disk.
+   - [x] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space.
+   - [x] Folder - Search and open a sub-folder on entering the path.
+   - [x] Uri - launch a web page on entering the uri.
+   - [x] Window walker - Switch focus to a running window.
+   - [x] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
+   - [x] Registry - navigate through the registry tree, copy key path, open registry editor. Enter the action keyword `:` to get the root keys.
    - [ ] System - test shutdown, sleep, lock, sign out, restart, hibernate, empty recycle bin.
  
  * Validate that the context menu items and corresponding shortcuts work as expected for each of the plugins
