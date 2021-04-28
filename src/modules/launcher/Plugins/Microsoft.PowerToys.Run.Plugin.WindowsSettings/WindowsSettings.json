@@ -398,8 +398,8 @@
   {
     "Area": "NetworkAndInternet",
     "Name": "Manage known networks",
-    "AltNames": [ "Wi-Fi settings" ],
-    "Note": "only available if the device has a wifi adapter",
+    "AltNames": [ "Wi-Fi settings", "WiFi" ],
+    "Note": "only available if the device has a Wi-Fi adapter",
     "Command": "ms-settings:network-wifisettings"
   },
   {
@@ -437,13 +437,14 @@
   {
     "Area": "NetworkAndInternet",
     "Name": "Wi-Fi",
-    "AltNames": [ "Wireless", "Metered connection" ],
-    "Note": "only available if the device has a wifi adapter",
+    "AltNames": [ "Wireless", "Metered connection", "WiFi" ],
+    "Note": "only available if the device has a Wi-Fi adapter",
     "Command": "ms-settings:network-wifi"
   },
   {
     "Area": "NetworkAndInternet",
     "Name": "Wi-Fi Calling",
+    "AltNames": [ "WiFi" ],
     "Note": "only available if Wi-Fi calling is enabled",
     "Command": "ms-settings:network-wificalling"
   },
