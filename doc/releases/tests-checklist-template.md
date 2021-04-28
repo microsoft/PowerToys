@@ -203,7 +203,7 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [ ] Program - launch a packaged application
    - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
    - [ ] Windows Search - open a file on the disk.
-   - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space.
+   - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
    - [ ] Folder - Search and open a sub-folder on entering the path.
    - [ ] Uri - launch a web page on entering the uri.
    - [ ] Window walker - Switch focus to a running window.
