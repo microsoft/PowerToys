@@ -37,7 +37,6 @@
 - [x] Resize images using dimension: Percents
 - [x] Resize images using dimension: Pixels
 
-- [ ] Try to resize wmf image. Resized image has to be of fallback encoder type
 - [x] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
 - [x] Check `Use original date modified` and verify that modified date is not changed for resized images
 - [x] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
