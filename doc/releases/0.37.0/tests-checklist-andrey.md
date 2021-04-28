@@ -98,7 +98,7 @@
  * Running as user:
    * go to PowerToys repo root
    - [ ] verify the README.md Preview Pane shows the correct content
-   # go to PowerToys repo and visit src\runner\svgs
+   * go to PowerToys repo and visit src\runner\svgs
    - [ ] verify Preview Pane works for the SVG files
    - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
  * Running as admin:
