@@ -142,7 +142,8 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     // Calculate DPI dependent window size
     int windowWidth = KeyboardManagerConstants::DefaultEditKeyboardWindowWidth;
     int windowHeight = KeyboardManagerConstants::DefaultEditKeyboardWindowHeight;
-    DPIAware::Convert(nullptr, windowWidth, windowHeight);
+
+    DPIAware::ConvertByCursorPosition(windowWidth, windowHeight);
     
     // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
@@ -422,7 +423,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
         LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
         int minWidth = KeyboardManagerConstants::MinimumEditKeyboardWindowWidth;
         int minHeight = KeyboardManagerConstants::MinimumEditKeyboardWindowHeight;
-        DPIAware::Convert(nullptr, minWidth, minHeight);
+        DPIAware::Convert(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), minWidth, minHeight);
         lpMMI->ptMinTrackSize.x = minWidth;
         lpMMI->ptMinTrackSize.y = minHeight;
     }
