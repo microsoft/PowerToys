@@ -667,8 +667,7 @@ void CPowerRenameUI::_OnInitDlg()
     m_initialWidth = RECT_WIDTH(rc);
     m_initialHeight = RECT_HEIGHT(rc);
 
-    UINT dummy = 0;
-    DPIAware::GetScreenDPIForWindow(m_hwnd, m_initialDPI, dummy);
+    DPIAware::GetScreenDPIForWindow(m_hwnd, m_initialDPI);
 
     for (UINT u = 0; u < ARRAYSIZE(g_repositionMap); u++)
     {
@@ -887,8 +886,8 @@ void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags)
     int width = rcWindow.right - rcWindow.left;
     int height = rcWindow.bottom - rcWindow.top;
 
-    UINT currentDPI = 0, dummy;
-    DPIAware::GetScreenDPIForWindow(m_hwnd, currentDPI, dummy);
+    UINT currentDPI = 0;
+    DPIAware::GetScreenDPIForWindow(m_hwnd, currentDPI);
     float scale = (float)currentDPI / m_initialDPI;
 
     switch (id)
