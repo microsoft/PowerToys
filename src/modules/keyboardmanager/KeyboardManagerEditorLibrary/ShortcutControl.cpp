@@ -11,7 +11,7 @@
 
 //Both static members are initialized to null
 HWND ShortcutControl::editShortcutsWindowHandle = nullptr;
-KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
+KBMEditor::KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
 // Initialized as new vector
 RemapBuffer ShortcutControl::shortcutRemapBuffer;
 
@@ -28,7 +28,7 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
     typeShortcut.as<Button>().Content(winrt::box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
     typeShortcut.as<Button>().Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
     typeShortcut.as<Button>().Click([&, table, row, colIndex, isHybridControl, targetApp](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, editShortcutsWindowHandle);
+        keyboardManagerState->SetUIState(KBMEditor::KeyboardManagerUIState::DetectShortcutWindowActivated, editShortcutsWindowHandle);
         // Using the XamlRoot of the typeShortcut to get the root of the XAML host
         CreateDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState, colIndex, table, keyDropDownControlObjects, row, targetApp, isHybridControl, false, editShortcutsWindowHandle, shortcutRemapBuffer);
     });
@@ -269,7 +269,7 @@ StackPanel ShortcutControl::GetShortcutControl()
 }
 
 // Function to create the detect shortcut UI window
-void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState, const int colIndex, StackPanel table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer)
+void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KBMEditor::KeyboardManagerState& keyboardManagerState, const int colIndex, StackPanel table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer)
 {
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
@@ -325,12 +325,12 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         if (isSingleKeyWindow)
         {
             // Revert UI state back to Edit Keyboard window
-            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, parentWindow);
+            keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditKeyboardWindowActivated, parentWindow);
         }
         else
         {
             // Revert UI state back to Edit Shortcut window
-            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
+            keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
         }
 
         unregisterKeys();
@@ -391,12 +391,12 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         if (isSingleKeyWindow)
         {
             // Revert UI state back to Edit Keyboard window
-            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, parentWindow);
+            keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditKeyboardWindowActivated, parentWindow);
         }
         else
         {
             // Revert UI state back to Edit Shortcut window
-            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
+            keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
         }
         unregisterKeys();
     };

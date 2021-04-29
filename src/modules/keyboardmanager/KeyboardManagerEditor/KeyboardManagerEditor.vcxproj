@@ -109,7 +109,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;./../common;./../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Display.lib;shcore.lib;Dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -118,7 +118,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;./../common;./../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

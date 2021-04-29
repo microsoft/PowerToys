@@ -6,12 +6,14 @@
 #include <common/interop/shared_constants.h>
 #include <common/themes/windows_colors.h>
 #include <common/utils/EventLocker.h>
+#include <common/utils/winapi_error.h>
 
-#include <KeyboardManagerConstants.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <keyboardmanager/common/MappingConfiguration.h>
+#include <keyboardmanager/common/ErrorTypes.h>
+
 #include <KeyboardManagerState.h>
-
 #include "EditKeyboardWindow.h"
-#include "ErrorTypes.h"
 #include "SingleKeyRemapControl.h"
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
@@ -19,7 +21,6 @@
 #include "Dialog.h"
 #include "LoadingAndSavingRemappingHelper.h"
 #include "UIHelpers.h"
-#include <common/utils/winapi_error.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -39,7 +40,7 @@ std::mutex editKeyboardWindowMutex;
 static XamlBridge* xamlBridgePtr = nullptr;
 
 static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
-    KeyboardManagerState& state,
+    KBMEditor::KeyboardManagerState& state,
     const std::vector<DWORD>& keys,
     XamlRoot root)
 {
@@ -71,7 +72,7 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     co_return res == ContentDialogResult::Primary;
 }
 
-static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
+static IAsyncAction OnClickAccept(KBMEditor::KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
     KeyboardManagerHelper::ErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
 
@@ -98,7 +99,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 }
 
 // Function to create the Edit Keyboard Window
-inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
 {
     Logger::trace("CreateEditKeyboardWindowImpl()");
     auto locker = EventLocker::Get(KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -246,6 +247,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     // Store keyboard manager state
     SingleKeyRemapControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
+    KeyDropDownControl::mappingConfiguration = &mappingConfiguration;
     
     // Clear the single key remap buffer
     SingleKeyRemapControl::singleKeyRemapBuffer.clear();
@@ -254,10 +256,10 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>> keyboardRemapControlObjects;
 
     // Set keyboard manager UI state so that remaps are not applied while on this window
-    keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, _hWndEditKeyboardWindow);
+    keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditKeyboardWindowActivated, _hWndEditKeyboardWindow);
 
     // Load existing remaps into UI
-    SingleKeyRemapTable singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
+    SingleKeyRemapTable singleKeyRemapCopy = mappingConfiguration.singleKeyReMap;
 
     LoadingAndSavingRemappingHelper::PreProcessRemapTable(singleKeyRemapCopy);
 
@@ -275,9 +277,9 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
 
-    auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow]() {
-        LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(keyboardManagerState, SingleKeyRemapControl::singleKeyRemapBuffer, true);
-        bool saveResult = keyboardManagerState.SaveConfigToFile();
+    auto ApplyRemappings = [&mappingConfiguration, _hWndEditKeyboardWindow]() {
+        LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(mappingConfiguration, SingleKeyRemapControl::singleKeyRemapBuffer, true);
+        bool saveResult = mappingConfiguration.SaveSettingsToFile();
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
     };
 
@@ -372,10 +374,10 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     xamlBridge.ClearXamlIslands();
 }
 
-void CreateEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+void CreateEditKeyboardWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
 {
     // Move implementation into the separate method so resources get destroyed correctly
-    CreateEditKeyboardWindowImpl(hInst, keyboardManagerState);
+    CreateEditKeyboardWindowImpl(hInst, keyboardManagerState, mappingConfiguration);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
