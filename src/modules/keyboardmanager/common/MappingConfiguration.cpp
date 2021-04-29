@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "ShortcutsMapping.h"
+#include "MappingConfiguration.h"
 
 #include <common/KeyboardManagerConstants.h>
 
@@ -12,7 +12,7 @@
 #include <common/logger/logger.h>
 
 // Function to clear the OS Level shortcut remapping table
-void ShortcutsMapping::ClearOSLevelShortcuts()
+void MappingConfiguration::ClearOSLevelShortcuts()
 {
     osLevelShortcutReMap.clear();
     osLevelShortcutReMapSortedKeys.clear();
@@ -20,20 +20,20 @@ void ShortcutsMapping::ClearOSLevelShortcuts()
 
 
 // Function to clear the Keys remapping table.
-void ShortcutsMapping::ClearSingleKeyRemaps()
+void MappingConfiguration::ClearSingleKeyRemaps()
 {
     singleKeyReMap.clear();
 }
 
 // Function to clear the App specific shortcut remapping table
-void ShortcutsMapping::ClearAppSpecificShortcuts()
+void MappingConfiguration::ClearAppSpecificShortcuts()
 {
     appSpecificShortcutReMap.clear();
     appSpecificShortcutReMapSortedKeys.clear();
 }
 
 // Function to add a new OS level shortcut remapping
-bool ShortcutsMapping::AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutUnion& newSC)
+bool MappingConfiguration::AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutUnion& newSC)
 {
     // Check if the shortcut is already remapped
     auto it = osLevelShortcutReMap.find(originalSC);
@@ -50,7 +50,7 @@ bool ShortcutsMapping::AddOSLevelShortcut(const Shortcut& originalSC, const KeyS
 }
 
 // Function to add a new single key to key/shortcut remapping
-bool ShortcutsMapping::AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutUnion& newRemapKey)
+bool MappingConfiguration::AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutUnion& newRemapKey)
 {
     // Check if the key is already remapped
     auto it = singleKeyReMap.find(originalKey);
@@ -64,7 +64,7 @@ bool ShortcutsMapping::AddSingleKeyRemap(const DWORD& originalKey, const KeyShor
 }
 
 // Function to add a new App specific shortcut remapping
-bool ShortcutsMapping::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC)
+bool MappingConfiguration::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC)
 {
     // Convert app name to lower case
     std::wstring process_name;
@@ -94,7 +94,7 @@ bool ShortcutsMapping::AddAppSpecificShortcut(const std::wstring& app, const Sho
 }
 
 
-bool ShortcutsMapping::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
+bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
 {
     bool result = true;
 
@@ -142,7 +142,7 @@ bool ShortcutsMapping::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
     return result;
 }
 
-bool ShortcutsMapping::LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData)
+bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData)
 {
     bool result = true;
 
@@ -185,7 +185,7 @@ bool ShortcutsMapping::LoadAppSpecificShortcutRemaps(const json::JsonObject& rem
     return result;
 }
 
-bool ShortcutsMapping::LoadShortcutRemaps(const json::JsonObject& jsonData)
+bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData)
 {
     bool result = true;
 
@@ -245,11 +245,11 @@ bool ShortcutsMapping::LoadShortcutRemaps(const json::JsonObject& jsonData)
     return result;
 }
 
-ShortcutsMapping::ShortcutsMapping()
+MappingConfiguration::MappingConfiguration()
 {
 }
 
-bool ShortcutsMapping::LoadSettings()
+bool MappingConfiguration::LoadSettings()
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
     try
@@ -285,7 +285,7 @@ bool ShortcutsMapping::LoadSettings()
 }
 
 // Save the updated configuration.
-bool ShortcutsMapping::SaveSettingsToFile()
+bool MappingConfiguration::SaveSettingsToFile()
 {
     bool result = true;
     json::JsonObject configJson;

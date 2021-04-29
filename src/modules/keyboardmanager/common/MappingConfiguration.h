@@ -10,12 +10,12 @@ using SingleKeyRemapTable = std::unordered_map<DWORD, KeyShortcutUnion>;
 using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
 using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>;
 
-class ShortcutsMapping
+class MappingConfiguration
 {
 public:
-    ShortcutsMapping();
+    MappingConfiguration();
 
-    ~ShortcutsMapping() = default;
+    ~MappingConfiguration() = default;
 
     // Load the configuration.
     bool LoadSettings();

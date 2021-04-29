@@ -6,7 +6,7 @@
 #include <common/utils/winapi_error.h>
 
 #include <keyboardmanager/common/ErrorTypes.h>
-#include <keyboardmanager/common/ShortcutsMapping.h>
+#include <keyboardmanager/common/MappingConfiguration.h>
 
 #include <KeyboardManagerState.h>
 #include <Dialog.h>
@@ -52,7 +52,7 @@ static IAsyncAction OnClickAccept(
 }
 
 // Function to create the Edit Shortcuts Window
-inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, ShortcutsMapping& shortcutsMapping)
+inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
 {
     Logger::trace("CreateEditShortcutsWindowImpl()");
     auto locker = EventLocker::Get(KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -208,7 +208,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     // Store keyboard manager state
     ShortcutControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
-    KeyDropDownControl::shortcutsMapping = &shortcutsMapping;
+    KeyDropDownControl::mappingConfiguration = &mappingConfiguration;
     
     // Clear the shortcut remap buffer
     ShortcutControl::shortcutRemapBuffer.clear();
@@ -221,7 +221,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Load existing os level shortcuts into UI
     // Create copy of the remaps to avoid concurrent access
-    ShortcutRemapTable osLevelShortcutReMapCopy = shortcutsMapping.osLevelShortcutReMap;
+    ShortcutRemapTable osLevelShortcutReMapCopy = mappingConfiguration.osLevelShortcutReMap;
 
     for (const auto& it : osLevelShortcutReMapCopy)
     {
@@ -230,7 +230,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
     // Load existing app-specific shortcuts into UI
     // Create copy of the remaps to avoid concurrent access
-    AppSpecificShortcutRemapTable appSpecificShortcutReMapCopy = shortcutsMapping.appSpecificShortcutReMap;
+    AppSpecificShortcutRemapTable appSpecificShortcutReMapCopy = mappingConfiguration.appSpecificShortcutReMap;
 
     // Iterate through all the apps
     for (const auto& itApp : appSpecificShortcutReMapCopy)
@@ -251,9 +251,9 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
 
-    auto ApplyRemappings = [&shortcutsMapping, _hWndEditShortcutsWindow]() {
-        LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(shortcutsMapping, ShortcutControl::shortcutRemapBuffer, true);
-        bool saveResult = shortcutsMapping.SaveSettingsToFile();
+    auto ApplyRemappings = [&mappingConfiguration, _hWndEditShortcutsWindow]() {
+        LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(mappingConfiguration, ShortcutControl::shortcutRemapBuffer, true);
+        bool saveResult = mappingConfiguration.SaveSettingsToFile();
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     };
 
@@ -348,10 +348,10 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     xamlBridge.ClearXamlIslands();
 }
 
-void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, ShortcutsMapping& shortcutsMapping)
+void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
 {
     // Move implementation into the separate method so resources get destroyed correctly
-    CreateEditShortcutsWindowImpl(hInst, keyboardManagerState, shortcutsMapping);
+    CreateEditShortcutsWindowImpl(hInst, keyboardManagerState, mappingConfiguration);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906

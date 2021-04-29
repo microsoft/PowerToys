@@ -113,13 +113,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 KeyboardManagerEditor::KeyboardManagerEditor(HINSTANCE hInst) :
     hInstance(hInst)
 {
-    bool loadedSuccessful = shortcutsMapping.LoadSettings();
+    bool loadedSuccessful = mappingConfiguration.LoadSettings();
     if (!loadedSuccessful)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // retry once
-        shortcutsMapping.LoadSettings();
+        mappingConfiguration.LoadSettings();
     }
 
     StartLowLevelKeyboardHook();
@@ -148,10 +148,10 @@ void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type)
     switch (type)
     {
     case KeyboardManagerEditorType::KeyEditor:
-        CreateEditKeyboardWindow(hInstance, keyboardManagerState, shortcutsMapping);
+        CreateEditKeyboardWindow(hInstance, keyboardManagerState, mappingConfiguration);
         break;
     case KeyboardManagerEditorType::ShortcutEditor:
-        CreateEditShortcutsWindow(hInstance, keyboardManagerState, shortcutsMapping);
+        CreateEditShortcutsWindow(hInstance, keyboardManagerState, mappingConfiguration);
     }
 }
 
