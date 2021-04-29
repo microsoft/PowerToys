@@ -33,4 +33,18 @@ namespace EditorHelpers
             return ErrorType::NoError;
         }
     }
+
+    // Function to check if a modifier has been repeated in the previous drop downs
+    bool CheckRepeatedModifier(const std::vector<int32_t>& currentKeys, int selectedKeyCode)
+    {
+        // Count the number of keys that are equal to 'selectedKeyCode'
+        int numberOfSameType = 0;
+        for (int i = 0; i < currentKeys.size(); i++)
+        {
+            numberOfSameType += Helpers::GetKeyType(selectedKeyCode) == Helpers::GetKeyType(currentKeys[i]);
+        }
+
+        // If we have at least two keys equal to 'selectedKeyCode' than modifier was repeated
+        return numberOfSameType > 1;
+    }
 }

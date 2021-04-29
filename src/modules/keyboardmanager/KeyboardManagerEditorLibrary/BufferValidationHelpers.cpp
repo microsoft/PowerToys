@@ -95,7 +95,7 @@ namespace BufferValidationHelpers
                 if (Helpers::IsModifierKey(selectedKeyCode) && dropDownCount < KeyboardManagerConstants::MaxShortcutSize)
                 {
                     // If it matched any of the previous modifiers then reset that drop down
-                    if (Helpers::CheckRepeatedModifier(selectedCodes, selectedKeyCode))
+                    if (EditorHelpers::CheckRepeatedModifier(selectedCodes, selectedKeyCode))
                     {
                         // warn and reset the drop down
                         errorType = Helpers::ErrorType::ShortcutCannotHaveRepeatedModifier;
@@ -141,7 +141,7 @@ namespace BufferValidationHelpers
                 if (Helpers::IsModifierKey(selectedKeyCode))
                 {
                     // If it matched any of the previous modifiers then reset that drop down
-                    if (Helpers::CheckRepeatedModifier(selectedCodes, selectedKeyCode))
+                    if (EditorHelpers::CheckRepeatedModifier(selectedCodes, selectedKeyCode))
                     {
                         // warn and reset the drop down
                         errorType = Helpers::ErrorType::ShortcutCannotHaveRepeatedModifier;

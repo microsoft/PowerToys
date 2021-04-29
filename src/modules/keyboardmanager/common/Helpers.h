@@ -41,7 +41,4 @@ namespace Helpers
 
     // Function to sort a vector of shortcuts based on it's size
     void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector);
-
-    // Function to check if a modifier has been repeated in the previous drop downs
-    bool CheckRepeatedModifier(const std::vector<int32_t>& currentKeys, int selectedKeyCodes);
 }

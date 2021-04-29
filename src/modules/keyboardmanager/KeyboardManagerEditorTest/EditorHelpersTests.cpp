@@ -95,6 +95,45 @@ namespace EditorHelpersTests
             // Assert
             Assert::IsTrue(result == Helpers::ErrorType::NoError);
         }
+
+                // Test if the CheckRepeatedModifier method returns true on passing vector with same modifier repeated
+        TEST_METHOD (CheckRepeatedModifier_ShouldReturnTrue_OnPassingSameModifierRepeated)
+        {
+            // Arrange
+            std::vector<int32_t> keys = { VK_CONTROL, VK_CONTROL, 0x41 };
+
+            // Act
+            bool result = EditorHelpers::CheckRepeatedModifier(keys, VK_CONTROL);
+
+            // Assert
+            Assert::IsTrue(result);
+        }
+
+        // Test if the CheckRepeatedModifier method returns true on passing vector with conflicting modifier repeated
+        TEST_METHOD (CheckRepeatedModifier_ShouldReturnTrue_OnPassingConflictingModifierRepeated)
+        {
+            // Arrange
+            std::vector<int32_t> keys = { VK_CONTROL, VK_LCONTROL, 0x41 };
+
+            // Act
+            bool result = EditorHelpers::CheckRepeatedModifier(keys, VK_LCONTROL);
+
+            // Assert
+            Assert::IsTrue(result);
+        }
+
+        // Test if the CheckRepeatedModifier method returns false on passing vector with different modifiers
+        TEST_METHOD (CheckRepeatedModifier_ShouldReturnFalse_OnPassingDifferentModifiers)
+        {
+            // Arrange
+            std::vector<int32_t> keys = { VK_CONTROL, VK_SHIFT, 0x41 };
+
+            // Act
+            bool result = EditorHelpers::CheckRepeatedModifier(keys, VK_SHIFT);
+
+            // Assert
+            Assert::IsFalse(result);
+        }
     };
 }
 
