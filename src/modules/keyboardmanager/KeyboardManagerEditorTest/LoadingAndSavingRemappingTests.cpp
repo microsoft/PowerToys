@@ -3,7 +3,6 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/ShortcutsMapping.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.h>
-#include "TestHelpers.h"
 #include <common/interop/shared_constants.h>
 #include <keyboardmanager/common/ErrorTypes.h>
 
