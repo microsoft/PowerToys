@@ -24,8 +24,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
 
         [TestCase(new string[] { "1'", "in", "cm" }, new string[] {"1", "foot", "in", "cm" })]
         [TestCase(new string[] { "1\"", "in", "cm" }, new string[] { "1", "inch", "in", "cm" })]
-        [TestCase(new string[] { "1'6", "in", "cm" }, new string[] { "1,5", "foot", "in", "cm" })]
-        [TestCase(new string[] { "1'6\"", "in", "cm" }, new string[] { "1,5", "foot", "in", "cm" })]
+        [TestCase(new string[] { "1'6", "in", "cm" }, new string[] { "1.5", "foot", "in", "cm" })]
+        [TestCase(new string[] { "1'6\"", "in", "cm" }, new string[] { "1.5", "foot", "in", "cm" })]
         public void HandlesShorthandFeetInchNotation(string[] input, string[] expectedResult) {
             InputInterpreter.ShorthandFeetInchHandler(ref input, CultureInfo.InvariantCulture);
             Assert.AreEqual(expectedResult, input);

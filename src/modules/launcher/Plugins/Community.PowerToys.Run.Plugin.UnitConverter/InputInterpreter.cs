@@ -70,8 +70,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                                 break;
                             }
 
-                            double totalInFeet = Length.FromFeetInches(feet, inches).Feet;
-                            string convertedTotalInFeet = totalInFeet.ToString();
+                            string convertedTotalInFeet = Length.FromFeetInches(feet, inches).Feet.ToString(culture);
 
                             string[] newInput = new string[] { convertedTotalInFeet, "foot", split[1], split[2] };
                             split = newInput;
