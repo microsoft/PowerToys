@@ -42,6 +42,8 @@ namespace Espresso.Shell
             
             log.Info("Launching Espresso...");
             log.Info(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
+            log.Debug($"OS: {Environment.OSVersion}");
+            log.Debug($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
 
             var configOption = new Option<string>(
                     aliases: new[] { "--config", "-c" },
@@ -106,6 +108,7 @@ namespace Espresso.Shell
 
         private static void HandleCommandLineArguments(string config, bool displayOn, long timeLimit)
         {
+            log.Info($"The value for --config is: {config}");
             log.Info($"The value for --display-on is: {displayOn}");
             log.Info($"The value for --time-limit is: {timeLimit}");
 
@@ -251,9 +254,10 @@ namespace Espresso.Shell
             }
             catch (Exception ex)
             {
-                var errorMessage = $"There was a problem reading the configuration file.\n{ex.Message}";
+                var errorMessage = $"There was a problem reading the configuration file. Error: {ex.Message}";
                 log.Info(errorMessage);
                 log.Debug(errorMessage);
+                log.Debug($"Configuration path: {fullPath}");
             }
         }
 

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.Win32;
 using NLog;
 using System;
 using System.Runtime.InteropServices;
@@ -25,6 +26,8 @@ namespace Espresso.Shell.Core
     /// </summary>
     public class APIHelper
     {
+        private const string BUILD_REGISTRY_LOCATION = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
+
         private static CancellationTokenSource TokenSource = new CancellationTokenSource();
         private static CancellationToken ThreadToken;
 
@@ -152,6 +155,22 @@ namespace Espresso.Shell.Core
             {
                 // Task was clearly cancelled.
                 return success;
+            }
+        }
+
+        public static string GetOperatingSystemBuild()
+        {
+            try
+            {
+                RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(BUILD_REGISTRY_LOCATION);
+
+                var versionString = $"{registryKey.GetValue("ProductName")} {registryKey.GetValue("DisplayVersion")} {registryKey.GetValue("BuildLabEx")}";
+                return versionString;
+            }
+            catch (Exception ex)
+            {
+                log.Debug($"Could not get registry key for the build number. Error: {ex.Message}");
+                return string.Empty;
             }
         }
     }
