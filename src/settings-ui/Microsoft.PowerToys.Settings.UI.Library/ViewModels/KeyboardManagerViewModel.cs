@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -24,15 +26,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private readonly ISettingsUtils _settingsUtils;
 
         private const string PowerToyName = KeyboardManagerSettings.ModuleName;
-        private const string RemapKeyboardActionName = "RemapKeyboard";
-        private const string RemapKeyboardActionValue = "Open Remap Keyboard Window";
-        private const string EditShortcutActionName = "EditShortcut";
-        private const string EditShortcutActionValue = "Open Edit Shortcut Window";
         private const string JsonFileType = ".json";
 
-        private static string ConfigFileMutexName => interop.Constants.KeyboardManagerConfigFileMutexName();
+        private const string KeyboardManagerEditorPath = "modules\\KeyboardManager\\KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
+        private Process editor;
 
-        private const int ConfigFileMutexWaitTimeoutMilliseconds = 1000;
+        private enum KeyboardManagerEditorType
+        {
+            KeyEditor = 0,
+            ShortcutEditor,
+        }
 
         public KeyboardManagerSettings Settings { get; set; }
 
@@ -103,6 +106,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     GeneralSettingsConfig.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
+
+                    if (!Enabled && editor != null)
+                    {
+                        editor.CloseMainWindow();
+                    }
+
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(outgoing.ToString());
@@ -165,31 +174,60 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));
 
-        // Note: FxCop suggests calling ConfigureAwait() for the following methods,
-        // and calling ConfigureAwait(true) has the same behavior as not explicitly
-        // calling it (continuations are scheduled on the task-creating thread)
-        private async void OnRemapKeyboard()
+        private void OnRemapKeyboard()
         {
-            await Task.Run(() => OnRemapKeyboardBackground()).ConfigureAwait(true);
+            OpenEditor((int)KeyboardManagerEditorType.KeyEditor);
         }
 
-        private async void OnEditShortcut()
+        private void OnEditShortcut()
         {
-            await Task.Run(() => OnEditShortcutBackground()).ConfigureAwait(true);
+            OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
         }
 
-        private async Task OnRemapKeyboardBackground()
+        private static void BringProcessToFront(Process process)
         {
-            Helper.AllowRunnerToForeground();
-            SendConfigMSG(Helper.GetSerializedCustomAction(PowerToyName, RemapKeyboardActionName, RemapKeyboardActionValue));
-            await Task.CompletedTask.ConfigureAwait(true);
+            if (process == null)
+            {
+                return;
+            }
+
+            IntPtr handle = process.MainWindowHandle;
+            if (NativeMethods.IsIconic(handle))
+            {
+                NativeMethods.ShowWindow(handle, NativeMethods.SWRESTORE);
+            }
+
+            NativeMethods.SetForegroundWindow(handle);
         }
 
-        private async Task OnEditShortcutBackground()
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
+        private void OpenEditor(int type)
         {
-            Helper.AllowRunnerToForeground();
-            SendConfigMSG(Helper.GetSerializedCustomAction(PowerToyName, EditShortcutActionName, EditShortcutActionValue));
-            await Task.CompletedTask.ConfigureAwait(true);
+            try
+            {
+                if (editor != null && editor.HasExited)
+                {
+                    Logger.LogInfo($"Previous instance of {PowerToyName} editor exited");
+                    editor = null;
+                }
+
+                if (editor != null)
+                {
+                    Logger.LogInfo($"The {PowerToyName} editor instance {editor.Id} exists. Bringing the process to the front");
+                    BringProcessToFront(editor);
+                    return;
+                }
+
+                string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
+                Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
+
+                // InvariantCulture: type represents the KeyboardManagerEditorType enum value
+                editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Process.GetCurrentProcess().Id}");
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Exception encountered when opening an {PowerToyName} editor", e);
+            }
         }
 
         public void NotifyFileChanged()
@@ -201,42 +239,50 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         public bool LoadProfile()
         {
+            // The KBM process out of runner creates the default.json file if it does not exist.
             var success = true;
+            var readSuccessfully = false;
+
+            string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
 
             try
             {
-                using (var profileFileMutex = Mutex.OpenExisting(ConfigFileMutexName))
+                // retry loop for reading
+                CancellationTokenSource ts = new CancellationTokenSource();
+                Task t = Task.Run(() =>
                 {
-                    if (profileFileMutex.WaitOne(ConfigFileMutexWaitTimeoutMilliseconds))
+                    while (!readSuccessfully && !ts.IsCancellationRequested)
                     {
-                        // update the UI element here.
-                        try
+                        if (_settingsUtils.SettingsExists(PowerToyName, fileName))
                         {
-                            string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
-
-                            if (_settingsUtils.SettingsExists(PowerToyName, fileName))
+                            try
                             {
                                 _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
+                                readSuccessfully = true;
                             }
-                            else
+                            catch (Exception e)
                             {
-                                // The KBM process out of runner creates the default.json file if it does not exist.
-                                success = false;
+                                Logger.LogError($"Exception encountered when reading {PowerToyName} settings", e);
                             }
+                        }
 
-                            FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
-                        }
-                        finally
+                        if (!readSuccessfully)
                         {
-                            // Make sure to release the mutex.
-                            profileFileMutex.ReleaseMutex();
+                            Task.Delay(500).Wait();
                         }
                     }
-                    else
-                    {
-                        success = false;
-                    }
+                });
+
+                t.Wait(1000, ts.Token);
+                ts.Cancel();
+                ts.Dispose();
+
+                if (!readSuccessfully)
+                {
+                    success = false;
                 }
+
+                FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
             }
             catch (Exception e)
             {

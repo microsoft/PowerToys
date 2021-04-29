@@ -78,9 +78,6 @@ private:
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
     std::mutex currentConfig_mutex;
 
-    // Handle of named mutex used for configuration file.
-    HANDLE configFile_mutex;
-
     // Registered KeyDelay objects, used to notify delayed key events.
     std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
     std::mutex keyDelays_mutex;
@@ -230,8 +227,4 @@ public:
 
     // Gets the activated target application in app-specific shortcut
     std::wstring GetActivatedApp();
-
-    bool AreRemappingsEnabled();
-
-    void RemappingsDisabledWrapper(std::function<void()> method);
 };
