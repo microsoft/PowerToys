@@ -6,10 +6,12 @@ using Espresso.Shell.Core;
 using Espresso.Shell.Models;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Specialized;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 
@@ -21,10 +23,6 @@ namespace Espresso.Shell
         private const string appName = "Espresso";
         private static FileSystemWatcher watcher = null;
         public static Mutex Mutex { get => mutex; set => mutex = value; }
-
-        private static MemoryCache _memoryCache;
-        private static CacheItemPolicy _cacheItemPolicy;
-        private const int CacheExpirationTimeframe = 1000;
 
         static int Main(string[] args)
         {
@@ -107,16 +105,8 @@ namespace Espresso.Shell
             {
                 // Configuration file is used, therefore we disregard any other command-line parameter
                 // and instead watch for changes in the file.
-
                 try
                 {
-                    var cacheConfig = new NameValueCollection()
-                    {
-                        {"CacheMemoryLimitMegabytes", "1"},
-                        {"PollingInterval", TimeSpan.FromMilliseconds(1000).ToString()},
-                    };
-                    _memoryCache = new MemoryCache("EventCache", cacheConfig);
-
                     watcher = new FileSystemWatcher
                     {
                         Path = Path.GetDirectoryName(config),
@@ -125,12 +115,14 @@ namespace Espresso.Shell
                         Filter = Path.GetFileName(config)
                     };
 
-                    _cacheItemPolicy = new CacheItemPolicy()
-                    {
-                        RemovedCallback = HandleCacheRemoval
-                    };
-                    
-                    watcher.Changed += new FileSystemEventHandler(HandleEspressoConfigChange);
+                    Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                            h => watcher.Changed += h,
+                            h => watcher.Changed -= h
+                        )
+                        .SubscribeOn(TaskPoolScheduler.Default)
+                        .Select(e => e.EventArgs)
+                        .Throttle(TimeSpan.FromMilliseconds(25))
+                        .Subscribe(HandleEspressoConfigChange);
 
                     // Initially the file might not be updated, so we need to start processing
                     // settings right away.
@@ -166,21 +158,12 @@ namespace Espresso.Shell
             new ManualResetEvent(false).WaitOne();
         }
 
-        private static void HandleCacheRemoval(CacheEntryRemovedArguments args)
+        private static void HandleEspressoConfigChange(FileSystemEventArgs fileEvent)
         {
-            if (args.RemovedReason != CacheEntryRemovedReason.Expired) return;
-
-            var fileEvent = (FileSystemEventArgs)args.CacheItem.Value;
             Console.WriteLine("Resetting keep-awake to normal state due to settings change.");
             ResetNormalPowerState();
             Console.WriteLine("Detected a file change. Reacting...");
             ProcessSettings(fileEvent.FullPath);
-        }
-
-        private static void HandleEspressoConfigChange(object sender, FileSystemEventArgs e)
-        {
-            _cacheItemPolicy.AbsoluteExpiration = DateTimeOffset.Now.AddMilliseconds(CacheExpirationTimeframe);
-            _memoryCache.Set(e.Name, e, _cacheItemPolicy);
         }
 
         private static void ProcessSettings(string fullPath)
