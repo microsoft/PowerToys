@@ -14,9 +14,9 @@
 namespace LoadingAndSavingRemappingHelper
 {
     // Function to check if the set of remappings in the buffer are valid
-    KeyboardManagerHelper::ErrorType CheckIfRemappingsAreValid(const RemapBuffer& remappings)
+    Helpers::ErrorType CheckIfRemappingsAreValid(const RemapBuffer& remappings)
     {
-        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
+        Helpers::ErrorType isSuccess = Helpers::ErrorType::NoError;
         std::map<std::wstring, std::set<KeyShortcutUnion>> ogKeys;
         for (int i = 0; i < remappings.size(); i++)
         {
@@ -39,11 +39,11 @@ namespace LoadingAndSavingRemappingHelper
             }
             else if (ogKeyValidity && newKeyValidity && ogKeys[appName].find(ogKey) != ogKeys[appName].end())
             {
-                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                isSuccess = Helpers::ErrorType::RemapUnsuccessful;
             }
             else
             {
-                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                isSuccess = Helpers::ErrorType::RemapUnsuccessful;
             }
         }
 

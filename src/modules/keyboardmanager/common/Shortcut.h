@@ -7,7 +7,7 @@ namespace KeyboardManagerInput
     class InputInterface;
 }
 class LayoutMap;
-namespace KeyboardManagerHelper
+namespace Helpers
 {
     enum class ErrorType;
 }
@@ -169,10 +169,10 @@ public:
     int GetCommonModifiersCount(const Shortcut& input) const;
 
     // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
-    static KeyboardManagerHelper::ErrorType DoKeysOverlap(const Shortcut& first, const Shortcut& second);
+    static Helpers::ErrorType DoKeysOverlap(const Shortcut& first, const Shortcut& second);
 
     // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
-    KeyboardManagerHelper::ErrorType IsShortcutIllegal() const;
+    Helpers::ErrorType IsShortcutIllegal() const;
 };
 
 using KeyShortcutUnion = std::variant<DWORD, Shortcut>;

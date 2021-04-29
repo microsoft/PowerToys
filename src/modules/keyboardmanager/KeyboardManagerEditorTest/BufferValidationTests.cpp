@@ -59,10 +59,10 @@ namespace RemappingUITests
 
             // Validate and update the element when -1 i.e. null selection is made on an empty row.
             ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, -1 };
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
+            Helpers::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
 
             // Assert that the element is validated and buffer is updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, error == Helpers::ErrorType::NoError);
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].first[0]));
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].first[1]));
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
@@ -79,10 +79,10 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting B on an empty row
             ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, 0x42 };
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
+            Helpers::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
 
             // Assert that the element is validated and buffer is updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, error == Helpers::ErrorType::NoError);
             Assert::AreEqual((DWORD)0x42, std::get<DWORD>(remapBuffer[0].first[0]));
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].first[1]));
         }
@@ -97,10 +97,10 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting B on a row
             ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, 0x42 };
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
+            Helpers::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
 
             // Assert that the element is validated and buffer is updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, error == Helpers::ErrorType::NoError);
             Assert::AreEqual((DWORD)0x42, std::get<DWORD>(remapBuffer[0].first[0]));
             Assert::AreEqual((DWORD)0x41, std::get<DWORD>(remapBuffer[0].first[1]));
         }
@@ -115,10 +115,10 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting B on a row
             ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, 0x42 };
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
+            Helpers::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
 
             // Assert that the element is validated and buffer is updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, error == Helpers::ErrorType::NoError);
             Assert::AreEqual((DWORD)0x42, std::get<DWORD>(remapBuffer[0].first[0]));
             Assert::AreEqual(true, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[0].first[1]));
         }
@@ -133,10 +133,10 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting A on a row
             ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, 0x41 };
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
+            Helpers::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
 
             // Assert that the element is invalid and buffer is not updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::MapToSameKey);
+            Assert::AreEqual(true, error == Helpers::ErrorType::MapToSameKey);
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[0].first[0]));
             Assert::AreEqual((DWORD)0x41, std::get<DWORD>(remapBuffer[0].first[1]));
         }
@@ -152,10 +152,10 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting A on second row
             ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, 0x41 };
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
+            Helpers::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
 
             // Assert that the element is invalid and buffer is not updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::SameKeyPreviouslyMapped);
+            Assert::AreEqual(true, error == Helpers::ErrorType::SameKeyPreviouslyMapped);
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
             Assert::AreEqual((DWORD)0x43, std::get<DWORD>(remapBuffer[1].first[1]));
         }
@@ -171,10 +171,10 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting A on second row
             ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, 0x41 };
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
+            Helpers::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
 
             // Assert that the element is invalid and buffer is not updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::SameKeyPreviouslyMapped);
+            Assert::AreEqual(true, error == Helpers::ErrorType::SameKeyPreviouslyMapped);
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
             Assert::AreEqual(true, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[1].first[1]));
         }
@@ -190,10 +190,10 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting LCtrl on second row
             ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, VK_LCONTROL };
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
+            Helpers::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
 
             // Assert that the element is invalid and buffer is not updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::ConflictingModifierKey);
+            Assert::AreEqual(true, error == Helpers::ErrorType::ConflictingModifierKey);
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
             Assert::AreEqual((DWORD)0x43, std::get<DWORD>(remapBuffer[1].first[1]));
         }
@@ -209,10 +209,10 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting LCtrl on second row
             ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, VK_LCONTROL };
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
+            Helpers::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedCodeFromDropDown, remapBuffer);
 
             // Assert that the element is invalid and buffer is not updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::ConflictingModifierKey);
+            Assert::AreEqual(true, error == Helpers::ErrorType::ConflictingModifierKey);
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
             Assert::AreEqual(true, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[1].first[1]));
         }
@@ -266,10 +266,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid and no drop down action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -293,10 +293,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no drop down action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutStartWithModifier);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutStartWithModifier);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -316,10 +316,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid and no drop down action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -339,10 +339,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no drop down action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutNotMoreThanOneActionKey);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutNotMoreThanOneActionKey);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -362,10 +362,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no drop down action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutNotMoreThanOneActionKey);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutNotMoreThanOneActionKey);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -393,10 +393,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid and no drop down action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -424,10 +424,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid and ClearUnusedDropDowns action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::ClearUnusedDropDowns);
             });
         }
@@ -445,10 +445,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid and ClearUnusedDropDowns action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::ClearUnusedDropDowns);
             });
         }
@@ -480,10 +480,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid and AddDropDown action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::AddDropDown);
             });
         }
@@ -507,10 +507,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutCannotHaveRepeatedModifier);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutCannotHaveRepeatedModifier);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -544,10 +544,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutMaxShortcutSizeOneActionKey);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutMaxShortcutSizeOneActionKey);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -575,10 +575,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutMaxShortcutSizeOneActionKey);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutMaxShortcutSizeOneActionKey);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -612,10 +612,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid and no action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -649,10 +649,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutCannotHaveRepeatedModifier);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutCannotHaveRepeatedModifier);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -672,10 +672,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutStartWithModifier);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutStartWithModifier);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -693,10 +693,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutOneActionKey);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutOneActionKey);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -720,10 +720,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutAtleast2Keys);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutAtleast2Keys);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -747,10 +747,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutOneActionKey);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutOneActionKey);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -774,10 +774,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid and DeleteDropDown action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::DeleteDropDown);
             });
         }
@@ -817,10 +817,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid and DeleteDropDown action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::DeleteDropDown);
             });
         }
@@ -848,10 +848,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid and no action is required
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutOneActionKey);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutOneActionKey);
                 Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
             });
         }
@@ -887,10 +887,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::WinL);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::WinL);
             });
         }
 
@@ -919,10 +919,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::WinL);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::WinL);
             });
         }
 
@@ -951,10 +951,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::CtrlAltDel);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::CtrlAltDel);
             });
         }
 
@@ -985,10 +985,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameKey);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::MapToSameKey);
             });
         }
 
@@ -1023,10 +1023,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameShortcut);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::MapToSameShortcut);
             });
         }
 
@@ -1101,10 +1101,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameShortcut);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::MapToSameShortcut);
             });
         }
 
@@ -1127,10 +1127,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::SameShortcutPreviouslyMapped);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::SameShortcutPreviouslyMapped);
             });
         }
 
@@ -1155,10 +1155,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
             });
         }
 
@@ -1181,10 +1181,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ConflictingModifierShortcut);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ConflictingModifierShortcut);
             });
         }
 
@@ -1207,10 +1207,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
             });
         }
 
@@ -1247,10 +1247,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::SameShortcutPreviouslyMapped);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::SameShortcutPreviouslyMapped);
             });
         }
 
@@ -1287,10 +1287,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
             });
         }
 
@@ -1327,10 +1327,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is invalid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ConflictingModifierShortcut);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::ConflictingModifierShortcut);
             });
         }
 
@@ -1367,10 +1367,10 @@ namespace RemappingUITests
                 remapBuffer.push_back(testCase.bufferRow);
 
                 // Act
-                std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+                std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
                 // Assert that the element is valid
-                Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+                Assert::AreEqual(true, result.first == Helpers::ErrorType::NoError);
             });
         }
 
@@ -1386,10 +1386,10 @@ namespace RemappingUITests
             };
 
             // Act
-            std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(0, 1, 1, selectedCodes, testApp1, true, remapBuffer, true);
+            std::pair<Helpers::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(0, 1, 1, selectedCodes, testApp1, true, remapBuffer, true);
 
             // Assert
-            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutDisableAsActionKey);
+            Assert::AreEqual(true, result.first == Helpers::ErrorType::ShortcutDisableAsActionKey);
             Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
         }
     };

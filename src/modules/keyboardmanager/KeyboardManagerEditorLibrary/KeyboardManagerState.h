@@ -8,9 +8,15 @@
 
 class KeyDelay;
 
-namespace KeyboardManagerHelper
+namespace Helpers
 {
-    enum class KeyboardHookDecision;
+    // Enum type to store possible decision for input in the low level hook
+    enum class KeyboardHookDecision
+    {
+        ContinueExec,
+        Suppress,
+        SkipHook
+    };
 }
 
 namespace winrt::Windows::UI::Xaml::Controls
@@ -118,10 +124,10 @@ namespace KBMEditor
         DWORD GetDetectedSingleRemapKey();
 
         // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
-        KeyboardManagerHelper::KeyboardHookDecision DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data);
+        Helpers::KeyboardHookDecision DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data);
 
         // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
-        KeyboardManagerHelper::KeyboardHookDecision DetectShortcutUIBackend(LowlevelKeyboardEvent* data, bool isRemapKey);
+        Helpers::KeyboardHookDecision DetectShortcutUIBackend(LowlevelKeyboardEvent* data, bool isRemapKey);
 
         // Add a KeyDelay object to get delayed key presses events for a given virtual key
         // NOTE: this will throw an exception if a virtual key is registered twice.

@@ -2,9 +2,9 @@
 #include "KeyboardManagerEditorStrings.h"
 
 // Function to return the error message
-winrt::hstring KeyboardManagerEditorStrings::GetErrorMessage(KeyboardManagerHelper::ErrorType errorType)
+winrt::hstring KeyboardManagerEditorStrings::GetErrorMessage(Helpers::ErrorType errorType)
 {
-    using namespace KeyboardManagerHelper;
+    using namespace Helpers;
 
     switch (errorType)
     {

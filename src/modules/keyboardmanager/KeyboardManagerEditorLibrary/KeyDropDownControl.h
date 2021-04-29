@@ -25,7 +25,7 @@ namespace winrt::Windows
     }
 }
 
-namespace KeyboardManagerHelper
+namespace Helpers
 {
     enum class ErrorType;
 }
@@ -77,7 +77,7 @@ public:
     void SetSelectionHandler(StackPanel& table, StackPanel row, int colIndex, RemapBuffer& singleKeyRemapBuffer);
 
     // Function for validating the selection of shortcuts for the drop down
-    std::pair<KeyboardManagerHelper::ErrorType, int> ValidateShortcutSelection(StackPanel table, StackPanel row, StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
+    std::pair<Helpers::ErrorType, int> ValidateShortcutSelection(StackPanel table, StackPanel row, StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
 
     // Function to set selection handler for shortcut drop down.
     void SetSelectionHandler(StackPanel& table, StackPanel row, winrt::Windows::UI::Xaml::Controls::StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox& targetApp, bool isHybridControl, bool isSingleKeyWindow);

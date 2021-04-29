@@ -9,8 +9,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace KeyboardManagerCommonTests
 {
-    // Tests for methods in the KeyboardManagerHelper namespace
-    TEST_CLASS (KeyboardManagerHelperTests)
+    // Tests for methods in the Helpers namespace
+    TEST_CLASS (HelpersTests)
     {
     public:
         TEST_METHOD_INITIALIZE(InitializeTestEnv)
@@ -25,10 +25,10 @@ namespace KeyboardManagerCommonTests
             DWORD key2 = key1;
 
             // Act
-            auto result = KeyboardManagerHelper::DoKeysOverlap(key1, key2);
+            auto result = Helpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == KeyboardManagerHelper::ErrorType::SameKeyPreviouslyMapped);
+            Assert::IsTrue(result == Helpers::ErrorType::SameKeyPreviouslyMapped);
         }
 
         // Test if the DoKeysOverlap method returns ConflictingModifierKey on passing left modifier and common modifier
@@ -39,10 +39,10 @@ namespace KeyboardManagerCommonTests
             DWORD key2 = VK_CONTROL;
 
             // Act
-            auto result = KeyboardManagerHelper::DoKeysOverlap(key1, key2);
+            auto result = Helpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == KeyboardManagerHelper::ErrorType::ConflictingModifierKey);
+            Assert::IsTrue(result == Helpers::ErrorType::ConflictingModifierKey);
         }
 
         // Test if the DoKeysOverlap method returns ConflictingModifierKey on passing right modifier and common modifier
@@ -53,10 +53,10 @@ namespace KeyboardManagerCommonTests
             DWORD key2 = VK_CONTROL;
 
             // Act
-            auto result = KeyboardManagerHelper::DoKeysOverlap(key1, key2);
+            auto result = Helpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == KeyboardManagerHelper::ErrorType::ConflictingModifierKey);
+            Assert::IsTrue(result == Helpers::ErrorType::ConflictingModifierKey);
         }
 
         // Test if the DoKeysOverlap method returns NoError on passing left modifier and right modifier
@@ -67,10 +67,10 @@ namespace KeyboardManagerCommonTests
             DWORD key2 = VK_RCONTROL;
 
             // Act
-            auto result = KeyboardManagerHelper::DoKeysOverlap(key1, key2);
+            auto result = Helpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::IsTrue(result == Helpers::ErrorType::NoError);
         }
 
         // Test if the DoKeysOverlap method returns NoError on passing keys of different types
@@ -81,10 +81,10 @@ namespace KeyboardManagerCommonTests
             DWORD key2 = VK_SHIFT;
 
             // Act
-            auto result = KeyboardManagerHelper::DoKeysOverlap(key1, key2);
+            auto result = Helpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::IsTrue(result == Helpers::ErrorType::NoError);
         }
 
         // Test if the DoKeysOverlap method returns NoError on passing different action keys
@@ -95,10 +95,10 @@ namespace KeyboardManagerCommonTests
             DWORD key2 = 0x42;
 
             // Act
-            auto result = KeyboardManagerHelper::DoKeysOverlap(key1, key2);
+            auto result = Helpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::IsTrue(result == Helpers::ErrorType::NoError);
         }
 
         // Test if the CheckRepeatedModifier method returns true on passing vector with same modifier repeated
@@ -108,7 +108,7 @@ namespace KeyboardManagerCommonTests
             std::vector<int32_t> keys = { VK_CONTROL, VK_CONTROL, 0x41 };
 
             // Act
-            bool result = KeyboardManagerHelper::CheckRepeatedModifier(keys, VK_CONTROL);
+            bool result = Helpers::CheckRepeatedModifier(keys, VK_CONTROL);
 
             // Assert
             Assert::IsTrue(result);
@@ -121,7 +121,7 @@ namespace KeyboardManagerCommonTests
             std::vector<int32_t> keys = { VK_CONTROL, VK_LCONTROL, 0x41 };
 
             // Act
-            bool result = KeyboardManagerHelper::CheckRepeatedModifier(keys, VK_LCONTROL);
+            bool result = Helpers::CheckRepeatedModifier(keys, VK_LCONTROL);
 
             // Assert
             Assert::IsTrue(result);
@@ -134,7 +134,7 @@ namespace KeyboardManagerCommonTests
             std::vector<int32_t> keys = { VK_CONTROL, VK_SHIFT, 0x41 };
 
             // Act
-            bool result = KeyboardManagerHelper::CheckRepeatedModifier(keys, VK_SHIFT);
+            bool result = Helpers::CheckRepeatedModifier(keys, VK_SHIFT);
 
             // Assert
             Assert::IsFalse(result);

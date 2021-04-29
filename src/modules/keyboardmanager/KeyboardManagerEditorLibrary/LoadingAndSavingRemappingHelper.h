@@ -7,7 +7,7 @@ class MappingConfiguration;
 namespace LoadingAndSavingRemappingHelper
 {
     // Function to check if the set of remappings in the buffer are valid
-    KeyboardManagerHelper::ErrorType CheckIfRemappingsAreValid(const RemapBuffer& remappings);
+    Helpers::ErrorType CheckIfRemappingsAreValid(const RemapBuffer& remappings);
 
     // Function to return the set of keys that have been orphaned from the remap buffer
     std::vector<DWORD> GetOrphanedKeys(const RemapBuffer& remappings);

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace KeyboardManagerHelper
+namespace Helpers
 {
     // Type to store codes for different errors
     enum class ErrorType

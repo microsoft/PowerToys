@@ -3,7 +3,7 @@
 
 class LayoutMap;
 
-namespace KeyboardManagerHelper
+namespace Helpers
 {
     // Type to distinguish between keys
     enum class KeyType
@@ -13,14 +13,6 @@ namespace KeyboardManagerHelper
         Alt,
         Shift,
         Action
-    };
-
-    // Enum type to store possible decision for input in the low level hook
-    enum class KeyboardHookDecision
-    {
-        ContinueExec,
-        Suppress,
-        SkipHook
     };
 
     // Function to split a wstring based on a delimiter and return a vector of split strings
