@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using NLog;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -27,6 +28,13 @@ namespace Espresso.Shell.Core
         private static CancellationTokenSource TokenSource = new CancellationTokenSource();
         private static CancellationToken ThreadToken;
 
+        private static Logger log;
+
+        static APIHelper()
+        {
+            log = LogManager.GetCurrentClassLogger();
+        }
+
         // More details about the API used: https://docs.microsoft.com/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
@@ -44,7 +52,6 @@ namespace Espresso.Shell.Core
             {
                 var stateResult = SetThreadExecutionState(state);
                 bool stateSettingSucceeded = (stateResult != 0);
-                Console.WriteLine($"State setting result:  {stateResult}");
 
                 if (stateSettingSucceeded)
                 {
@@ -103,7 +110,7 @@ namespace Espresso.Shell.Core
                     success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
                     if (success)
                     {
-                        Console.WriteLine("Timed keep-awake with display on.");
+                        log.Info("Timed keep-awake with display on.");
                         var startTime = DateTime.UtcNow;
                         while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
                         {
@@ -124,7 +131,7 @@ namespace Espresso.Shell.Core
                     success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
                     if (success)
                     {
-                        Console.WriteLine("Timed keep-awake with display off.");
+                        log.Info("Timed keep-awake with display off.");
                         var startTime = DateTime.UtcNow;
                         while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
                         {
