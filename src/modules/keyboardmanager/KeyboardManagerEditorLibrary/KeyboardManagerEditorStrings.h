@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include <ErrorTypes.h>
+#include <keyboardmanager/common/ErrorTypes.h>
 
 namespace KeyboardManagerEditorStrings
 {

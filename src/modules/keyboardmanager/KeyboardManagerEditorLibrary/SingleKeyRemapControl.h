@@ -1,10 +1,14 @@
 #pragma once
 
-#include <Shortcut.h>
+#include <keyboardmanager/common/Shortcut.h>
 
 #include <KeyDropDownControl.h>
 
-class KeyboardManagerState;
+namespace KBMEditor
+{
+    class KeyboardManagerState;
+}
+
 namespace winrt::Windows::UI::Xaml
 {
     struct XamlRoot;
@@ -39,7 +43,7 @@ public:
     static HWND EditKeyboardWindowHandle;
 
     // Pointer to the keyboard manager state
-    static KeyboardManagerState* keyboardManagerState;
+    static KBMEditor::KeyboardManagerState* keyboardManagerState;
 
     // Stores the current list of remappings
     static RemapBuffer singleKeyRemapBuffer;
@@ -54,5 +58,5 @@ public:
     winrt::Windows::UI::Xaml::Controls::StackPanel getSingleKeyRemapControl();
 
     // Function to create the detect remap keys UI window
-    void createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState);
+    void createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KBMEditor::KeyboardManagerState& keyboardManagerState);
 };

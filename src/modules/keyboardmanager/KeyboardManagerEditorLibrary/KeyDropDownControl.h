@@ -1,8 +1,13 @@
 #pragma once
 
-#include <Shortcut.h>
+#include <keyboardmanager/common/Shortcut.h>
 
-class KeyboardManagerState;
+namespace KBMEditor
+{
+    class KeyboardManagerState;
+}
+
+class MappingConfiguration;
 
 namespace winrt::Windows
 {
@@ -58,7 +63,8 @@ private:
 
 public:
     // Pointer to the keyboard manager state
-    static KeyboardManagerState* keyboardManagerState;
+    static KBMEditor::KeyboardManagerState* keyboardManagerState;
+    static MappingConfiguration* mappingConfiguration;
 
     // Constructor - the last default parameter should be passed as false only if it originates from Type shortcut or when an old shortcut is reloaded
     KeyDropDownControl(bool isShortcut, bool fromAddShortcutToControl = false, bool renderDisable = false) :
@@ -95,7 +101,7 @@ public:
     void SetSelectedValue(std::wstring value);
 
     // Function to add a shortcut to the UI control as combo boxes
-    static void AddShortcutToControl(Shortcut shortcut, StackPanel table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
+    static void AddShortcutToControl(Shortcut shortcut, StackPanel table, StackPanel parent, KBMEditor::KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
 
     // Get keys name list depending if Disable is in dropdown
     static std::vector<std::pair<DWORD,std::wstring>> GetKeyList(bool isShortcut, bool renderDisable);
