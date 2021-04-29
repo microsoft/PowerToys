@@ -95,7 +95,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     // Calculate DPI dependent window size
     int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth;
     int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight;
-    DPIAware::Convert(nullptr, windowWidth, windowHeight);
+    DPIAware::ConvertByCursorPosition(windowWidth, windowHeight);
 
     // Window Creation
     HWND _hWndEditShortcutsWindow = CreateWindow(
@@ -377,7 +377,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
         LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
         int minWidth = KeyboardManagerConstants::MinimumEditShortcutsWindowWidth;
         int minHeight = KeyboardManagerConstants::MinimumEditShortcutsWindowHeight;
-        DPIAware::Convert(nullptr, minWidth, minHeight);
+        DPIAware::Convert(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), minWidth, minHeight);
         lpMMI->ptMinTrackSize.x = minWidth;
         lpMMI->ptMinTrackSize.y = minHeight;
     }

@@ -51,6 +51,19 @@ namespace DPIAware
         }
     }
 
+    void ConvertByCursorPosition(int& width, int& height)
+    {
+        HMONITOR targetMonitor = nullptr;
+        POINT currentCursorPos{};
+
+        if (GetCursorPos(&currentCursorPos))
+        {
+            targetMonitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
+        }
+        
+        Convert(targetMonitor, width, height);
+    }
+
     void InverseConvert(HMONITOR monitor_handle, int& width, int& height)
     {
         if (monitor_handle == NULL)
