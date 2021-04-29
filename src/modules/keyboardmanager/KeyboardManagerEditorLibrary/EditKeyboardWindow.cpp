@@ -6,10 +6,11 @@
 #include <common/interop/shared_constants.h>
 #include <common/themes/windows_colors.h>
 #include <common/utils/EventLocker.h>
+#include <common/utils/winapi_error.h>
 
-#include <common/KeyboardManagerConstants.h>
-#include <common/KeyboardManagerShortcuts.h>
-#include <common/ErrorTypes.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <keyboardmanager/common/KeyboardManagerShortcuts.h>
+#include <keyboardmanager/common/ErrorTypes.h>
 
 #include <KeyboardManagerState.h>
 #include "EditKeyboardWindow.h"
@@ -20,7 +21,6 @@
 #include "Dialog.h"
 #include "LoadingAndSavingRemappingHelper.h"
 #include "UIHelpers.h"
-#include <common/utils/winapi_error.h>
 
 using namespace winrt::Windows::Foundation;
 

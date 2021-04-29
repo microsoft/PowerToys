@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "KeyboardManagerState.h"
 
-#include <common/KeyDelay.h>
-#include <common/Helpers.h>
+#include <keyboardmanager/common/KeyDelay.h>
+#include <keyboardmanager/common/Helpers.h>
 
 using namespace KBMEditor;
 

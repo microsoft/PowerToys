@@ -2,8 +2,9 @@
 #include "KeyDropDownControl.h"
 
 #include <common/interop/shared_constants.h>
-#include <common/ErrorTypes.h>
-#include <common/KeyboardManagerShortcuts.h>
+
+#include <keyboardmanager/common/ErrorTypes.h>
+#include <keyboardmanager/common/KeyboardManagerShortcuts.h>
 
 #include <KeyboardManagerState.h>
 #include <BufferValidationHelpers.h>

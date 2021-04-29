@@ -3,8 +3,8 @@
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include <common/interop/keyboard_layout.h>
 
-#include <common/KeyboardManagerConstants.h>
-#include <common/Shortcut.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <keyboardmanager/common/Shortcut.h>
 
 class KeyDelay;
 

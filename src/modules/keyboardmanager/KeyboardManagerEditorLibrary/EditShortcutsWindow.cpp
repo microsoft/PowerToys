@@ -5,8 +5,8 @@
 #include <common/utils/EventLocker.h>
 #include <common/utils/winapi_error.h>
 
-#include <common/ErrorTypes.h>
-#include <common/KeyboardManagerShortcuts.h>
+#include <keyboardmanager/common/ErrorTypes.h>
+#include <keyboardmanager/common/KeyboardManagerShortcuts.h>
 
 #include <KeyboardManagerState.h>
 #include <Dialog.h>

@@ -3,7 +3,7 @@
 
 #include <common/interop/shared_constants.h>
 
-#include <common/KeyboardManagerConstants.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
 
 #include <KeyboardManagerEditorStrings.h>
 #include <KeyDropDownControl.h>

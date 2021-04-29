@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Shortcut.h>
+#include <keyboardmanager/common/Shortcut.h>
 
 namespace KBMEditor
 {

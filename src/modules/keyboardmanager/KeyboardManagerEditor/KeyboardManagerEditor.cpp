@@ -11,7 +11,7 @@
 
 #include <trace.h>
 
-#include <common/KeyboardEventHandlers.h>
+#include <keyboardmanager/common/KeyboardEventHandlers.h>
 
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
