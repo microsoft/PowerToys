@@ -15,20 +15,11 @@ namespace Helpers
         Action
     };
 
-    // Function to split a wstring based on a delimiter and return a vector of split strings
-    std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
-
-    // Function to return if the key is an extended key which requires the use of the extended key flag
-    bool IsExtendedKey(DWORD key);
-
     // Function to check if the key is a modifier key
     bool IsModifierKey(DWORD key);
 
     // Function to get the type of the key
     KeyType GetKeyType(DWORD key);
-
-    // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
-    ErrorType DoKeysOverlap(DWORD first, DWORD second);
 
     // Function to set the value of a key event based on the arguments
     void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);

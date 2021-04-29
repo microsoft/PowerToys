@@ -10,20 +10,6 @@
 
 namespace Helpers
 {
-    // Function to split a wstring based on a delimiter and return a vector of split strings
-    std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter)
-    {
-        std::wstringstream ss(input);
-        std::wstring item;
-        std::vector<std::wstring> splittedStrings;
-        while (std::getline(ss, item, delimiter))
-        {
-            splittedStrings.push_back(item);
-        }
-
-        return splittedStrings;
-    }
-
     // Function to check if the key is a modifier key
     bool IsModifierKey(DWORD key)
     {
@@ -80,33 +66,6 @@ namespace Helpers
             return true;
         default:
             return false;
-        }
-    }
-
-    // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
-    ErrorType DoKeysOverlap(DWORD first, DWORD second)
-    {
-        // If the keys are same
-        if (first == second)
-        {
-            return ErrorType::SameKeyPreviouslyMapped;
-        }
-        else if ((GetKeyType(first) == GetKeyType(second)) && GetKeyType(first) != KeyType::Action)
-        {
-            // If the keys are of the same modifier type and overlapping, i.e. one is L/R and other is common
-            if (((first == VK_LWIN && second == VK_RWIN) || (first == VK_RWIN && second == VK_LWIN)) || ((first == VK_LCONTROL && second == VK_RCONTROL) || (first == VK_RCONTROL && second == VK_LCONTROL)) || ((first == VK_LMENU && second == VK_RMENU) || (first == VK_RMENU && second == VK_LMENU)) || ((first == VK_LSHIFT && second == VK_RSHIFT) || (first == VK_RSHIFT && second == VK_LSHIFT)))
-            {
-                return ErrorType::NoError;
-            }
-            else
-            {
-                return ErrorType::ConflictingModifierKey;
-            }
-        }
-        // If no overlap
-        else
-        {
-            return ErrorType::NoError;
         }
     }
 

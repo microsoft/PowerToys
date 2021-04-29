@@ -7,6 +7,8 @@
 
 #include <KeyboardManagerEditorStrings.h>
 #include <KeyDropDownControl.h>
+#include <UIHelpers.h>
+#include <EditorHelpers.h>
 
 namespace BufferValidationHelpers
 {
@@ -38,7 +40,7 @@ namespace BufferValidationHelpers
                     {
                         if (remapBuffer[i].first[colIndex].index() == 0)
                         {
-                            Helpers::ErrorType result = Helpers::DoKeysOverlap(std::get<DWORD>(remapBuffer[i].first[colIndex]), selectedKeyCode);
+                            Helpers::ErrorType result = EditorHelpers::DoKeysOverlap(std::get<DWORD>(remapBuffer[i].first[colIndex]), selectedKeyCode);
                             if (result != Helpers::ErrorType::NoError)
                             {
                                 errorType = result;
@@ -278,7 +280,7 @@ namespace BufferValidationHelpers
                             {
                                 if (std::get<DWORD>(tempShortcut) != NULL && std::get<DWORD>(remapBuffer[i].first[colIndex]) != NULL)
                                 {
-                                    result = Helpers::DoKeysOverlap(std::get<DWORD>(remapBuffer[i].first[colIndex]), std::get<DWORD>(tempShortcut));
+                                    result = EditorHelpers::DoKeysOverlap(std::get<DWORD>(remapBuffer[i].first[colIndex]), std::get<DWORD>(tempShortcut));
                                 }
                             }
                             else if (tempShortcut.index() == 1 && remapBuffer[i].first[colIndex].index() == 1)

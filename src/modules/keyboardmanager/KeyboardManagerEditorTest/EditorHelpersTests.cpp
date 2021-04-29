@@ -1,0 +1,100 @@
+#include "pch.h"
+#include "CppUnitTest.h"
+#include <keyboardmanager/common/ErrorTypes.h>
+#include <keyboardmanager/common/Helpers.h>
+#include <common/interop/keyboard_layout.h>
+#include <keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.h>
+
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+namespace EditorHelpersTests
+{
+    TEST_CLASS (EditorHelpersTests)
+    {
+    public:
+        // Test if the DoKeysOverlap method returns SameKeyPreviouslyMapped on passing the same key for both arguments
+        TEST_METHOD (DoKeysOverlap_ShouldReturnSameKeyPreviouslyMapped_OnPassingSameKeyForBothArguments)
+        {
+            // Arrange
+            DWORD key1 = 0x41;
+            DWORD key2 = key1;
+
+            // Act
+            auto result = EditorHelpers::DoKeysOverlap(key1, key2);
+
+            // Assert
+            Assert::IsTrue(result == Helpers::ErrorType::SameKeyPreviouslyMapped);
+        }
+
+        // Test if the DoKeysOverlap method returns ConflictingModifierKey on passing left modifier and common modifier
+        TEST_METHOD (DoKeysOverlap_ShouldReturnConflictingModifierKey_OnPassingLeftModifierAndCommonModifierOfSameType)
+        {
+            // Arrange
+            DWORD key1 = VK_LCONTROL;
+            DWORD key2 = VK_CONTROL;
+
+            // Act
+            auto result = EditorHelpers::DoKeysOverlap(key1, key2);
+
+            // Assert
+            Assert::IsTrue(result == Helpers::ErrorType::ConflictingModifierKey);
+        }
+
+        // Test if the DoKeysOverlap method returns ConflictingModifierKey on passing right modifier and common modifier
+        TEST_METHOD (DoKeysOverlap_ShouldReturnConflictingModifierKey_OnPassingRightModifierAndCommonModifierOfSameType)
+        {
+            // Arrange
+            DWORD key1 = VK_RCONTROL;
+            DWORD key2 = VK_CONTROL;
+
+            // Act
+            auto result = EditorHelpers::DoKeysOverlap(key1, key2);
+
+            // Assert
+            Assert::IsTrue(result == Helpers::ErrorType::ConflictingModifierKey);
+        }
+
+        // Test if the DoKeysOverlap method returns NoError on passing left modifier and right modifier
+        TEST_METHOD (DoKeysOverlap_ShouldReturnNoError_OnPassingLeftModifierAndRightModifierOfSameType)
+        {
+            // Arrange
+            DWORD key1 = VK_LCONTROL;
+            DWORD key2 = VK_RCONTROL;
+
+            // Act
+            auto result = EditorHelpers::DoKeysOverlap(key1, key2);
+
+            // Assert
+            Assert::IsTrue(result == Helpers::ErrorType::NoError);
+        }
+
+        // Test if the DoKeysOverlap method returns NoError on passing keys of different types
+        TEST_METHOD (DoKeysOverlap_ShouldReturnNoError_OnPassingKeysOfDifferentTypes)
+        {
+            // Arrange
+            DWORD key1 = VK_CONTROL;
+            DWORD key2 = VK_SHIFT;
+
+            // Act
+            auto result = EditorHelpers::DoKeysOverlap(key1, key2);
+
+            // Assert
+            Assert::IsTrue(result == Helpers::ErrorType::NoError);
+        }
+
+        // Test if the DoKeysOverlap method returns NoError on passing different action keys
+        TEST_METHOD (DoKeysOverlap_ShouldReturnNoError_OnPassingDifferentActionKeys)
+        {
+            // Arrange
+            DWORD key1 = 0x41;
+            DWORD key2 = 0x42;
+
+            // Act
+            auto result = EditorHelpers::DoKeysOverlap(key1, key2);
+
+            // Assert
+            Assert::IsTrue(result == Helpers::ErrorType::NoError);
+        }
+    };
+}
+

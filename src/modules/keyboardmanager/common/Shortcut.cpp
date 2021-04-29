@@ -6,11 +6,26 @@
 #include "Helpers.h"
 #include "InputInterface.h"
 
+
+// Function to split a wstring based on a delimiter and return a vector of split strings
+std::vector<std::wstring> Shortcut::splitwstring(const std::wstring& input, wchar_t delimiter)
+{
+    std::wstringstream ss(input);
+    std::wstring item;
+    std::vector<std::wstring> splittedStrings;
+    while (std::getline(ss, item, delimiter))
+    {
+        splittedStrings.push_back(item);
+    }
+
+    return splittedStrings;
+}
+
 // Constructor to initialize Shortcut from it's virtual key code string representation.
 Shortcut::Shortcut(const std::wstring& shortcutVK) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
-    auto keys = Helpers::splitwstring(shortcutVK, ';');
+    auto keys = splitwstring(shortcutVK, ';');
     for (auto it : keys)
     {
         auto vkKeyCode = std::stoul(it);
