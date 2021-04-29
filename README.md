@@ -112,7 +112,6 @@ Our [prioritized roadmap][roadmap] of features and utilities will dictate what t
 
 ### Keyboard manager 
 - Now an independent exe.  This now runs high priority in its own process.  When your CPU is under load, this should allow the process to continue to be prioritized
-- Now DPI Aware
 
 ### Color Picker 
 - uses a centralized keyhook.  This should improve activation
