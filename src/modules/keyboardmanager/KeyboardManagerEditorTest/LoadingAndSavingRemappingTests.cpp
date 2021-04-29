@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>
-#include <keyboardmanager/common/KeyboardManagerShortcuts.h>
+#include <keyboardmanager/common/ShortcutsMapping.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.h>
 #include "TestHelpers.h"
 #include <common/interop/shared_constants.h>
@@ -362,7 +362,7 @@ namespace RemappingUITests
         // Test if the ApplySingleKeyRemappings method resets the keyboard manager state's single key remappings on passing an empty buffer
         TEST_METHOD (ApplySingleKeyRemappings_ShouldResetSingleKeyRemappings_OnPassingEmptyBuffer)
         {
-            KeyboardManagerShortcuts testShortcuts;
+            ShortcutsMapping testShortcuts;
             RemapBuffer remapBuffer;
 
             // Remap A to B
@@ -378,7 +378,7 @@ namespace RemappingUITests
         // Test if the ApplySingleKeyRemappings method copies only the valid remappings to the keyboard manager state variable when some of the remappings are invalid
         TEST_METHOD (ApplySingleKeyRemappings_ShouldCopyOnlyValidRemappings_OnPassingBufferWithSomeInvalidRemappings)
         {
-            KeyboardManagerShortcuts testShortcuts;
+            ShortcutsMapping testShortcuts;
             RemapBuffer remapBuffer;
 
             // Add A->B, B->Ctrl+V, C to incomplete shortcut and D to incomplete key remappings to the buffer
@@ -407,7 +407,7 @@ namespace RemappingUITests
         // Test if the ApplySingleKeyRemappings method splits common modifiers to their left and right version when copying to the keyboard manager state variable if remappings from common modifiers are passed
         TEST_METHOD (ApplySingleKeyRemappings_ShouldSplitRemappingsFromCommonModifiers_OnPassingBufferWithSomeMappingsFromCommonModifiers)
         {
-            KeyboardManagerShortcuts testShortcuts;
+            ShortcutsMapping testShortcuts;
             RemapBuffer remapBuffer;
 
             // Add Ctrl->A, Alt->B, Shift->C and Win->D remappings to the buffer
@@ -437,7 +437,7 @@ namespace RemappingUITests
         // Test if the ApplyShortcutRemappings method resets the keyboard manager state's os level and app specific shortcut remappings on passing an empty buffer
         TEST_METHOD (ApplyShortcutRemappings_ShouldResetShortcutRemappings_OnPassingEmptyBuffer)
         {
-            KeyboardManagerShortcuts testShortcuts;
+            ShortcutsMapping testShortcuts;
             RemapBuffer remapBuffer;
 
             // Remap Ctrl+A to Ctrl+B for all apps and Ctrl+C to Alt+V for testApp1
@@ -467,7 +467,7 @@ namespace RemappingUITests
         // Test if the ApplyShortcutRemappings method copies only the valid remappings to the keyboard manager state variable when some of the remappings are invalid
         TEST_METHOD (ApplyShortcutRemappings_ShouldCopyOnlyValidRemappings_OnPassingBufferWithSomeInvalidRemappings)
         {
-            KeyboardManagerShortcuts testShortcuts;
+            ShortcutsMapping testShortcuts;
             RemapBuffer remapBuffer;
 
             // Add Ctrl+A->Ctrl+B, Ctrl+C->Alt+V, Ctrl+F->incomplete shortcut and Ctrl+G->incomplete key os level remappings to buffer

@@ -2,7 +2,7 @@
 
 #include <keyboardmanager/common/Helpers.h>
 
-class KeyboardManagerShortcuts;
+class ShortcutsMapping;
 
 namespace LoadingAndSavingRemappingHelper
 {
@@ -19,8 +19,8 @@ namespace LoadingAndSavingRemappingHelper
     void PreProcessRemapTable(std::unordered_map<DWORD, KeyShortcutUnion>& table);
 
     // Function to apply the single key remappings from the buffer to the KeyboardManagerState variable
-    void ApplySingleKeyRemappings(KeyboardManagerShortcuts& keyboardManagerShortcut, const RemapBuffer& remappings, bool isTelemetryRequired);
+    void ApplySingleKeyRemappings(ShortcutsMapping& shortcutsMapping, const RemapBuffer& remappings, bool isTelemetryRequired);
 
     // Function to apply the shortcut remappings from the buffer to the KeyboardManagerState variable
-    void ApplyShortcutRemappings(KeyboardManagerShortcuts& keyboardManagerShortcut, const RemapBuffer& remappings, bool isTelemetryRequired);
+    void ApplyShortcutRemappings(ShortcutsMapping& shortcutsMapping, const RemapBuffer& remappings, bool isTelemetryRequired);
 }

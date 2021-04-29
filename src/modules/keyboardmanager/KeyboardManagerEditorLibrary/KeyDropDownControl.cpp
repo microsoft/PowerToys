@@ -4,7 +4,7 @@
 #include <common/interop/shared_constants.h>
 
 #include <keyboardmanager/common/ErrorTypes.h>
-#include <keyboardmanager/common/KeyboardManagerShortcuts.h>
+#include <keyboardmanager/common/ShortcutsMapping.h>
 
 #include <KeyboardManagerState.h>
 #include <BufferValidationHelpers.h>
@@ -13,7 +13,7 @@
 
 // Initialized to null
 KBMEditor::KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
-KeyboardManagerShortcuts* KeyDropDownControl::keyboardManagerShortcuts = nullptr;
+ShortcutsMapping* KeyDropDownControl::shortcutsMapping = nullptr;
 
 // Get selected value of dropdown or -1 if nothing is selected
 DWORD KeyDropDownControl::GetSelectedValue(ComboBox comboBox)

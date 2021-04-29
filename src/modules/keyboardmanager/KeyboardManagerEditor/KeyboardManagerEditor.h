@@ -1,7 +1,7 @@
 #pragma once
 
 #include <keyboardmanager/common/Input.h>
-#include <keyboardmanager/common/KeyboardManagerShortcuts.h>
+#include <keyboardmanager/common/ShortcutsMapping.h>
 
 #include <KeyboardManagerState.h>
 
@@ -35,7 +35,7 @@ private:
     HINSTANCE hInstance;
 
     KBMEditor::KeyboardManagerState keyboardManagerState;
-    KeyboardManagerShortcuts keyboardManagerShortcuts;
+    ShortcutsMapping shortcutsMapping;
     
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;

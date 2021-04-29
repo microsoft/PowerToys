@@ -39,7 +39,7 @@
     <ClCompile Include="KeyboardEventHandlers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyboardManagerShortcuts.cpp">
+    <ClCompile Include="ShortcutsMapping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -83,7 +83,7 @@
     <ClInclude Include="ErrorTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardManagerShortcuts.h">
+    <ClInclude Include="ShortcutsMapping.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

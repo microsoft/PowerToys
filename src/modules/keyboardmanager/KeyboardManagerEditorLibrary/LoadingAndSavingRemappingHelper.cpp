@@ -6,7 +6,7 @@
 #include <common/interop/shared_constants.h>
 
 #include <keyboardmanager/common/ErrorTypes.h>
-#include <keyboardmanager/common/KeyboardManagerShortcuts.h>
+#include <keyboardmanager/common/ShortcutsMapping.h>
 
 #include <KeyboardManagerState.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/trace.h>
@@ -107,10 +107,10 @@ namespace LoadingAndSavingRemappingHelper
     }
 
     // Function to apply the single key remappings from the buffer to the KeyboardManagerState variable
-    void ApplySingleKeyRemappings(KeyboardManagerShortcuts& keyboardManagerShortcut, const RemapBuffer& remappings, bool isTelemetryRequired)
+    void ApplySingleKeyRemappings(ShortcutsMapping& shortcutsMapping, const RemapBuffer& remappings, bool isTelemetryRequired)
     {
         // Clear existing Key Remaps
-        keyboardManagerShortcut.ClearSingleKeyRemaps();
+        shortcutsMapping.ClearSingleKeyRemaps();
         DWORD successfulKeyToKeyRemapCount = 0;
         DWORD successfulKeyToShortcutRemapCount = 0;
         for (int i = 0; i < remappings.size(); i++)
@@ -126,27 +126,27 @@ namespace LoadingAndSavingRemappingHelper
                 switch (originalKey)
                 {
                 case VK_CONTROL:
-                    res1 = keyboardManagerShortcut.AddSingleKeyRemap(VK_LCONTROL, newKey);
-                    res2 = keyboardManagerShortcut.AddSingleKeyRemap(VK_RCONTROL, newKey);
+                    res1 = shortcutsMapping.AddSingleKeyRemap(VK_LCONTROL, newKey);
+                    res2 = shortcutsMapping.AddSingleKeyRemap(VK_RCONTROL, newKey);
                     result = res1 && res2;
                     break;
                 case VK_MENU:
-                    res1 = keyboardManagerShortcut.AddSingleKeyRemap(VK_LMENU, newKey);
-                    res2 = keyboardManagerShortcut.AddSingleKeyRemap(VK_RMENU, newKey);
+                    res1 = shortcutsMapping.AddSingleKeyRemap(VK_LMENU, newKey);
+                    res2 = shortcutsMapping.AddSingleKeyRemap(VK_RMENU, newKey);
                     result = res1 && res2;
                     break;
                 case VK_SHIFT:
-                    res1 = keyboardManagerShortcut.AddSingleKeyRemap(VK_LSHIFT, newKey);
-                    res2 = keyboardManagerShortcut.AddSingleKeyRemap(VK_RSHIFT, newKey);
+                    res1 = shortcutsMapping.AddSingleKeyRemap(VK_LSHIFT, newKey);
+                    res2 = shortcutsMapping.AddSingleKeyRemap(VK_RSHIFT, newKey);
                     result = res1 && res2;
                     break;
                 case CommonSharedConstants::VK_WIN_BOTH:
-                    res1 = keyboardManagerShortcut.AddSingleKeyRemap(VK_LWIN, newKey);
-                    res2 = keyboardManagerShortcut.AddSingleKeyRemap(VK_RWIN, newKey);
+                    res1 = shortcutsMapping.AddSingleKeyRemap(VK_LWIN, newKey);
+                    res2 = shortcutsMapping.AddSingleKeyRemap(VK_RWIN, newKey);
                     result = res1 && res2;
                     break;
                 default:
-                    result = keyboardManagerShortcut.AddSingleKeyRemap(originalKey, newKey);
+                    result = shortcutsMapping.AddSingleKeyRemap(originalKey, newKey);
                 }
 
                 if (result)
@@ -171,11 +171,11 @@ namespace LoadingAndSavingRemappingHelper
     }
 
     // Function to apply the shortcut remappings from the buffer to the KeyboardManagerState variable
-    void ApplyShortcutRemappings(KeyboardManagerShortcuts& keyboardManagerShortcut, const RemapBuffer& remappings, bool isTelemetryRequired)
+    void ApplyShortcutRemappings(ShortcutsMapping& shortcutsMapping, const RemapBuffer& remappings, bool isTelemetryRequired)
     {
         // Clear existing shortcuts
-        keyboardManagerShortcut.ClearOSLevelShortcuts();
-        keyboardManagerShortcut.ClearAppSpecificShortcuts();
+        shortcutsMapping.ClearOSLevelShortcuts();
+        shortcutsMapping.ClearAppSpecificShortcuts();
         DWORD successfulOSLevelShortcutToShortcutRemapCount = 0;
         DWORD successfulOSLevelShortcutToKeyRemapCount = 0;
         DWORD successfulAppSpecificShortcutToShortcutRemapCount = 0;
@@ -191,7 +191,7 @@ namespace LoadingAndSavingRemappingHelper
             {
                 if (remappings[i].second == L"")
                 {
-                    bool result = keyboardManagerShortcut.AddOSLevelShortcut(originalShortcut, newShortcut);
+                    bool result = shortcutsMapping.AddOSLevelShortcut(originalShortcut, newShortcut);
                     if (result)
                     {
                         if (newShortcut.index() == 0)
@@ -206,7 +206,7 @@ namespace LoadingAndSavingRemappingHelper
                 }
                 else
                 {
-                    bool result = keyboardManagerShortcut.AddAppSpecificShortcut(remappings[i].second, originalShortcut, newShortcut);
+                    bool result = shortcutsMapping.AddAppSpecificShortcut(remappings[i].second, originalShortcut, newShortcut);
                     if (result)
                     {
                         if (newShortcut.index() == 0)

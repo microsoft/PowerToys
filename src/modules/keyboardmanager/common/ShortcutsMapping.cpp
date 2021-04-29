@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "KeyboardManagerShortcuts.h"
+#include "ShortcutsMapping.h"
 
 #include <common/KeyboardManagerConstants.h>
 
@@ -12,7 +12,7 @@
 #include <common/logger/logger.h>
 
 // Function to clear the OS Level shortcut remapping table
-void KeyboardManagerShortcuts::ClearOSLevelShortcuts()
+void ShortcutsMapping::ClearOSLevelShortcuts()
 {
     osLevelShortcutReMap.clear();
     osLevelShortcutReMapSortedKeys.clear();
@@ -20,20 +20,20 @@ void KeyboardManagerShortcuts::ClearOSLevelShortcuts()
 
 
 // Function to clear the Keys remapping table.
-void KeyboardManagerShortcuts::ClearSingleKeyRemaps()
+void ShortcutsMapping::ClearSingleKeyRemaps()
 {
     singleKeyReMap.clear();
 }
 
 // Function to clear the App specific shortcut remapping table
-void KeyboardManagerShortcuts::ClearAppSpecificShortcuts()
+void ShortcutsMapping::ClearAppSpecificShortcuts()
 {
     appSpecificShortcutReMap.clear();
     appSpecificShortcutReMapSortedKeys.clear();
 }
 
 // Function to add a new OS level shortcut remapping
-bool KeyboardManagerShortcuts::AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutUnion& newSC)
+bool ShortcutsMapping::AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutUnion& newSC)
 {
     // Check if the shortcut is already remapped
     auto it = osLevelShortcutReMap.find(originalSC);
@@ -50,7 +50,7 @@ bool KeyboardManagerShortcuts::AddOSLevelShortcut(const Shortcut& originalSC, co
 }
 
 // Function to add a new single key to key/shortcut remapping
-bool KeyboardManagerShortcuts::AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutUnion& newRemapKey)
+bool ShortcutsMapping::AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutUnion& newRemapKey)
 {
     // Check if the key is already remapped
     auto it = singleKeyReMap.find(originalKey);
@@ -64,7 +64,7 @@ bool KeyboardManagerShortcuts::AddSingleKeyRemap(const DWORD& originalKey, const
 }
 
 // Function to add a new App specific shortcut remapping
-bool KeyboardManagerShortcuts::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC)
+bool ShortcutsMapping::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC)
 {
     // Convert app name to lower case
     std::wstring process_name;
@@ -94,7 +94,7 @@ bool KeyboardManagerShortcuts::AddAppSpecificShortcut(const std::wstring& app, c
 }
 
 
-bool KeyboardManagerShortcuts::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
+bool ShortcutsMapping::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
 {
     bool result = true;
 
@@ -142,7 +142,7 @@ bool KeyboardManagerShortcuts::LoadSingleKeyRemaps(const json::JsonObject& jsonD
     return result;
 }
 
-bool KeyboardManagerShortcuts::LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData)
+bool ShortcutsMapping::LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData)
 {
     bool result = true;
 
@@ -185,7 +185,7 @@ bool KeyboardManagerShortcuts::LoadAppSpecificShortcutRemaps(const json::JsonObj
     return result;
 }
 
-bool KeyboardManagerShortcuts::LoadShortcutRemaps(const json::JsonObject& jsonData)
+bool ShortcutsMapping::LoadShortcutRemaps(const json::JsonObject& jsonData)
 {
     bool result = true;
 
@@ -245,11 +245,11 @@ bool KeyboardManagerShortcuts::LoadShortcutRemaps(const json::JsonObject& jsonDa
     return result;
 }
 
-KeyboardManagerShortcuts::KeyboardManagerShortcuts()
+ShortcutsMapping::ShortcutsMapping()
 {
 }
 
-bool KeyboardManagerShortcuts::LoadSettings()
+bool ShortcutsMapping::LoadSettings()
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
     try
@@ -285,7 +285,7 @@ bool KeyboardManagerShortcuts::LoadSettings()
 }
 
 // Save the updated configuration.
-bool KeyboardManagerShortcuts::SaveSettingsToFile()
+bool ShortcutsMapping::SaveSettingsToFile()
 {
     bool result = true;
     json::JsonObject configJson;
