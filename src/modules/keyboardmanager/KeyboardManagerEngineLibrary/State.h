@@ -1,7 +1,7 @@
 #pragma once
-#include <keyboardmanager/common/KeyboardManagerState.h>
+#include <keyboardmanager/common/MappingConfiguration.h>
 
-class State : public KeyboardManagerState
+class State : public MappingConfiguration
 {
 private:
     // Stores the activated target application in app-specific shortcut

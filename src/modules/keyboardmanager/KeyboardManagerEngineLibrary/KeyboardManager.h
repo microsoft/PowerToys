@@ -1,6 +1,6 @@
 #pragma once
+#include <common/hooks/LowlevelKeyboardEvent.h>
 #include <common/utils/EventWaiter.h>
-#include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/Input.h>
 #include "State.h"
 

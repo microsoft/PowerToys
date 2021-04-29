@@ -12,7 +12,6 @@
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardEventHandlers.h>
-#include <keyboardmanager/common/SettingsHelper.h>
 #include <ctime>
 
 #include "KeyboardEventHandlers.h"
@@ -56,13 +55,13 @@ KeyboardManager::KeyboardManager()
 
 void KeyboardManager::LoadSettings()
 {
-    bool loadedSuccessful = SettingsHelper::LoadSettings(state);
+    bool loadedSuccessful = state.LoadSettings();
     if (!loadedSuccessful)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // retry once
-        SettingsHelper::LoadSettings(state);
+        state.LoadSettings();
     }
 }
 
