@@ -8,8 +8,6 @@
 #include "ErrorTypes.h"
 #include "KeyboardManagerConstants.h"
 
-using namespace winrt::Windows::Foundation;
-
 namespace KeyboardManagerHelper
 {
     // Function to split a wstring based on a delimiter and return a vector of split strings

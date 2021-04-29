@@ -1,15 +1,15 @@
 #include "pch.h"
 #include "MappingConfiguration.h"
 
-#include <common/KeyboardManagerConstants.h>
-
-#include <common/Shortcut.h>
-#include <common/RemapShortcut.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
-#include <common/KeyDelay.h>
-#include <common/Helpers.h>
 #include <common/logger/logger.h>
+
+#include "KeyboardManagerConstants.h"
+#include "Shortcut.h"
+#include "RemapShortcut.h"
+#include "KeyDelay.h"
+#include "Helpers.h"
 
 // Function to clear the OS Level shortcut remapping table
 void MappingConfiguration::ClearOSLevelShortcuts()
