@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "KeyboardEventHandlers.h"
-#include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
 
 namespace KeyboardEventHandlers
 {

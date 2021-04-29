@@ -36,6 +36,7 @@
     <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="KeyboardManager.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="State.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
@@ -44,6 +45,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="State.cpp" />
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>

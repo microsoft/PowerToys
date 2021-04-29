@@ -47,12 +47,10 @@
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="KeyboardEventHandlers.cpp" />
     <ClCompile Include="MappingConfiguration.cpp" />
-    <ClCompile Include="KeyboardManagerState.cpp" />
     <ClCompile Include="KeyDelay.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SettingsHelper.cpp" />
     <ClCompile Include="Shortcut.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -64,11 +62,9 @@
     <ClInclude Include="InputInterface.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="KeyboardManagerConstants.h" />
-    <ClInclude Include="KeyboardManagerState.h" />
     <ClInclude Include="KeyDelay.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemapShortcut.h" />
-    <ClInclude Include="SettingsHelper.h" />
     <ClInclude Include="Shortcut.h" />
   </ItemGroup>
   <ItemGroup>

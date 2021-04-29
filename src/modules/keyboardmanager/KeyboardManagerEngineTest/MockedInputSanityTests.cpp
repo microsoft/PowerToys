@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include "MockedInput.h"
-#include <keyboardmanager/common/KeyboardManagerState.h>
+#include <keyboardmanager/KeyboardManagerEngineLibrary/State.h>
 #include <keyboardmanager/common/KeyboardEventHandlers.h>
 #include "TestHelpers.h"
 
@@ -14,7 +14,7 @@ namespace RemappingLogicTests
     {
     private:
         KeyboardManagerInput::MockedInput mockedInputHandler;
-        KeyboardManagerState testState;
+        State testState;
 
     public:
         TEST_METHOD_INITIALIZE(InitializeTestEnv)
