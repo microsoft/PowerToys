@@ -163,7 +163,8 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      **\KeyboardManagerTest.dll
+      **\KeyboardManagerEngineTest.dll
+      **\KeyboardManagerEditorTest.dll
       **\UnitTests-CommonLib.dll
       **\PowerRenameUnitTests.dll
       **\powerpreviewTest.dll

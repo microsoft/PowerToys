@@ -209,7 +209,8 @@
     <comment>FancyZone is a product name, keep as is.</comment>
   </data>
   <data name="Cant_Drag_Elevated" xml:space="preserve">
-    <value>We've detected an application running with administrator privileges. This blocks some functionality in PowerToys. Visit our wiki page to learn more.</value>
+    <value>We've detected an application running with administrator privileges. This will prevent certain interactions with these applications.</value>
+    <comment>administrator is context of user account.</comment> 
   </data>
   <data name="Cant_Drag_Elevated_Learn_More" xml:space="preserve">
     <value>Learn more</value>

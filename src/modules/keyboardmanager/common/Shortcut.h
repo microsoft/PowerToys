@@ -1,7 +1,11 @@
 #pragma once
 #include "ModifierKey.h"
 #include <variant>
-class InputInterface;
+
+namespace KeyboardManagerInput
+{
+    class InputInterface;
+}
 class LayoutMap;
 namespace KeyboardManagerHelper
 {
@@ -156,10 +160,10 @@ public:
     void SetKeyCodes(const std::vector<int32_t>& keys);
 
     // Function to check if all the modifiers in the shortcut have been pressed down
-    bool CheckModifiersKeyboardState(InputInterface& ii) const;
+    bool CheckModifiersKeyboardState(KeyboardManagerInput::InputInterface& ii) const;
 
     // Function to check if any keys are pressed down except those in the shortcut
-    bool IsKeyboardStateClearExceptShortcut(InputInterface& ii) const;
+    bool IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInterface& ii) const;
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;

@@ -212,7 +212,10 @@
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
-            <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)" />
+            <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)">
+              <Directory Id="KeyboardManagerEditorInstallFolder" Name="KeyboardManagerEditor" />
+              <Directory Id="KeyboardManagerEngineInstallFolder" Name="KeyboardManagerEngine" />
+            </Directory>
             <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
               <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
             </Directory>
@@ -385,6 +388,8 @@
         <File Id="FancyZones_Microsoft.PowerToys.Common.UI" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.PowerToys.Common.UI.dll" />
         <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedTelemetry.dll" />
         <File Id="FancyZone_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.IO.Abstractions.dll" />
+        <File Id="FancyZones_System.Runtime.CompilerServices.Unsafe.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Runtime.CompilerServices.Unsafe.dll" />
+        <File Id="FancyZones_System.Text.Encodings.Web.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Encodings.Web.dll" />
       </Component>
     </DirectoryRef>
 
@@ -589,9 +594,21 @@
       </Component>
     </DirectoryRef>
 
+    <DirectoryRef Id="KeyboardManagerEditorInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor">
+      <Component Id="Module_KeyboardManager_Editor" Guid="1240F1B8-17FE-4D68-B9AF-91882B0B1933" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="KeyboardManagerEngineInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine">
+      <Component Id="Module_KeyboardManager_Engine" Guid="14DBAA38-B98D-431F-9439-8EDE1C0670DB" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" />
+      </Component>
+    </DirectoryRef>
+
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
       <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
-        <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPickerUI.exe;ColorPickerUI.dll;ColorPickerUI.deps.json;ColorPickerUI.runtimeconfig.json;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Text.Json.dll;ManagedTelemetry.dll;ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;Microsoft.PowerToys.Common.UI.dll?>
+        <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPickerUI.exe;ColorPickerUI.dll;ColorPickerUI.deps.json;ColorPickerUI.runtimeconfig.json;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Text.Json.dll;ManagedTelemetry.dll;ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;Microsoft.PowerToys.Common.UI.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -779,6 +796,8 @@
       <ComponentRef Id="Module_PowerPreview" />
       <ComponentRef Id="Module_PowerPreview_PerUserRegistry" />
       <ComponentRef Id="Module_KeyboardManager" />
+      <ComponentRef Id="Module_KeyboardManager_Editor" />
+      <ComponentRef Id="Module_KeyboardManager_Engine" />
       <ComponentRef Id="Module_ColorPicker" />
       <ComponentRef Id="Module_ColorPicker_Resources"/>
       <ComponentRef Id="SettingsV2" />
@@ -908,7 +927,7 @@
 
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.Lib.dll" />
