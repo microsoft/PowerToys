@@ -17,7 +17,7 @@
 #include <common/notifications/dont_show_again.h>
 #include <common/updating/installer.h>
 #include <common/updating/updating.h>
-#include <common/updating/update_state.h>
+#include <common/updating/updateState.h>
 #include <common/utils/appMutex.h>
 #include <common/utils/elevation.h>
 #include <common/utils/processApi.h>
