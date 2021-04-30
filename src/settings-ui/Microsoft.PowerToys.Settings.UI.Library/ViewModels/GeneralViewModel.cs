@@ -17,6 +17,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private UpdatingSettings UpdatingSettingsConfig { get; set; }
+
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
@@ -37,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<UpdatingSettings> updatingSettingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -50,6 +52,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
+
+            if (updatingSettingsRepository != null)
+            {
+                UpdatingSettingsConfig = updatingSettingsRepository.RootSettingsConfig;
+            }
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -90,6 +97,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             RunningAsAdminDefaultText = runAsAdminText;
 
             _isAdmin = isAdmin;
+
+            _updatingState = UpdatingSettingsConfig.State;
         }
 
         private bool _packaged;
@@ -102,6 +111,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _isSystemThemeRadioButtonChecked;
         private bool _autoDownloadUpdates;
 
+        private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _latestAvailableVersion = string.Empty;
         private string _updateCheckedDate = string.Empty;
 
@@ -245,7 +255,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return Helper.GetProductVersion() != "v0.0.1";
+                return true;
+                /*return Helper.GetProductVersion() != "v0.0.1";*/
             }
         }
 
