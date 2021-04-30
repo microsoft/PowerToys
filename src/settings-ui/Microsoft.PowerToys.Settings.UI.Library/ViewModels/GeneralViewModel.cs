@@ -389,6 +389,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public UpdatingSettings.UpdatingState PowerToysUpdatingState
+        {
+            get
+            {
+                return _updatingState;
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
