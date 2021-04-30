@@ -123,46 +123,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                 return;
             }
 
-            // translate all settings
-            foreach (var settings in _settingsList)
-            {
-                var area = Resources.ResourceManager.GetString($"Area{settings.Area}");
-                var name = Resources.ResourceManager.GetString(settings.Name);
-                if (string.IsNullOrEmpty(area))
-                {
-                    Debug.WriteLine($"Resource string for [Area{settings.Area}] not found");
-                    Log.Warn($"Resource string for [Area{settings.Area}] not found", typeof(Main));
-                }
-
-                if (string.IsNullOrEmpty(name))
-                {
-                    Debug.WriteLine($"Resource string for [{settings.Name}] not found");
-                    Log.Warn($"Resource string for [{settings.Name}] not found", typeof(Main));
-                }
-
-                settings.Area = area ?? settings.Area;
-                settings.Name = name ?? settings.Name;
-
-                if (!(settings.AltNames is null) && settings.AltNames.Any())
-                {
-                    var translatedAltNames = new Collection<string>();
-
-                    foreach (var altName in settings.AltNames)
-                    {
-                        var translatedAltName = Resources.ResourceManager.GetString(altName);
-
-                        if (string.IsNullOrEmpty(translatedAltName))
-                        {
-                            Debug.WriteLine($"Resource string for [{altName}] not found");
-                            Log.Warn($"Resource string for [{altName}] not found", typeof(Main));
-                        }
-
-                        translatedAltNames.Add(translatedAltName ?? altName);
-                    }
-
-                    settings.AltNames = translatedAltNames;
-                }
-            }
+            TranslateAllSettings();
 
             var currentWindowsVersion = RegistryHelper.GetCurrentWindowsVersion();
 
@@ -233,27 +194,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
             return ContextMenuHelper.GetContextMenu(selectedResult, _assemblyName);
         }
 
-        /// <summary>
-        /// Change all theme-based elements (typical called when the plugin theme has changed)
-        /// </summary>
-        /// <param name="oldtheme">The old <see cref="Theme"/></param>
-        /// <param name="newTheme">The new <see cref="Theme"/></param>
-        private void OnThemeChanged(Theme oldtheme, Theme newTheme)
-        {
-            UpdateIconPath(newTheme);
-        }
-
-        /// <summary>
-        /// Update all icons (typical called when the plugin theme has changed)
-        /// </summary>
-        /// <param name="theme">The new <see cref="Theme"/> for the icons</param>
-        private void UpdateIconPath(Theme theme)
-        {
-            _defaultIconPath = theme == Theme.Light || theme == Theme.HighContrastWhite
-                ? _lightSymbol
-                : _darkSymbol;
-        }
-
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -294,6 +234,91 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         public string GetTranslatedPluginDescription()
         {
             return Description;
+        }
+
+        /// <summary>
+        /// Change all theme-based elements (typical called when the plugin theme has changed)
+        /// </summary>
+        /// <param name="oldtheme">The old <see cref="Theme"/></param>
+        /// <param name="newTheme">The new <see cref="Theme"/></param>
+        private void OnThemeChanged(Theme oldtheme, Theme newTheme)
+        {
+            UpdateIconPath(newTheme);
+        }
+
+        /// <summary>
+        /// Update all icons (typical called when the plugin theme has changed)
+        /// </summary>
+        /// <param name="theme">The new <see cref="Theme"/> for the icons</param>
+        private void UpdateIconPath(Theme theme)
+        {
+            _defaultIconPath = theme == Theme.Light || theme == Theme.HighContrastWhite
+                ? _lightSymbol
+                : _darkSymbol;
+        }
+
+        /// <summary>
+        /// Translate all setting entires
+        /// </summary>
+        private void TranslateAllSettings()
+        {
+            if (_settingsList is null)
+            {
+                return;
+            }
+
+            foreach (var settings in _settingsList)
+            {
+                var area = Resources.ResourceManager.GetString($"Area{settings.Area}");
+                var name = Resources.ResourceManager.GetString(settings.Name);
+
+                if (string.IsNullOrEmpty(area))
+                {
+                    Debug.WriteLine($"Resource string for [Area{settings.Area}] not found");
+                    Log.Warn($"Resource string for [Area{settings.Area}] not found", typeof(Main));
+                }
+
+                if (string.IsNullOrEmpty(name))
+                {
+                    Debug.WriteLine($"Resource string for [{settings.Name}] not found");
+                    Log.Warn($"Resource string for [{settings.Name}] not found", typeof(Main));
+                }
+
+                settings.Area = area ?? settings.Area;
+                settings.Name = name ?? settings.Name;
+
+                if (!string.IsNullOrEmpty(settings.Note))
+                {
+                    var note = Resources.ResourceManager.GetString(settings.Note);
+                    settings.Note = note ?? settings.Note;
+
+                    if (string.IsNullOrEmpty(note))
+                    {
+                        Debug.WriteLine($"Resource string for [{settings.Note}] not found");
+                        Log.Warn($"Resource string for [{settings.Note}] not found", typeof(Main));
+                    }
+                }
+
+                if (!(settings.AltNames is null) && settings.AltNames.Any())
+                {
+                    var translatedAltNames = new Collection<string>();
+
+                    foreach (var altName in settings.AltNames)
+                    {
+                        var translatedAltName = Resources.ResourceManager.GetString(altName);
+
+                        if (string.IsNullOrEmpty(translatedAltName))
+                        {
+                            Debug.WriteLine($"Resource string for [{altName}] not found");
+                            Log.Warn($"Resource string for [{altName}] not found", typeof(Main));
+                        }
+
+                        translatedAltNames.Add(translatedAltName ?? altName);
+                    }
+
+                    settings.AltNames = translatedAltNames;
+                }
+            }
         }
     }
 }

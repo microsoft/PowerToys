@@ -980,6 +980,63 @@
   <data name="Note" xml:space="preserve">
     <value>Note</value>
   </data>
+  <data name="NoteAdvancedGraphics" xml:space="preserve">
+    <value>only available on devices that support advanced graphics options</value>
+  </data>
+  <data name="NoteBattery" xml:space="preserve">
+    <value>only available on devices that have a battery, such as a tablet</value>
+  </data>
+  <data name="NoteDeprecated1809" xml:space="preserve">
+    <value>Deprecated in Windows 10, version 1809 and later</value>
+  </data>
+  <data name="NoteDialPaired" xml:space="preserve">
+    <value>only available if Dial is paired</value>
+  </data>
+  <data name="NoteDirectAccess" xml:space="preserve">
+    <value>only available if DirectAccess is enabled</value>
+  </data>
+  <data name="NoteDisplayGraphics" xml:space="preserve">
+    <value>only available on devices that support advanced display options</value>
+  </data>
+  <data name="NoteEnrolledWip" xml:space="preserve">
+    <value>only present if user is enrolled in WIP</value>
+  </data>
+  <data name="NoteEyetrackerHardware" xml:space="preserve">
+    <value>requires eyetracker hardware</value>
+  </data>
+  <data name="NoteImeJapan" xml:space="preserve">
+    <value>available if the Microsoft Japan input method editor is installed</value>
+  </data>
+  <data name="NoteImePinyin" xml:space="preserve">
+    <value>available if the Microsoft Pinyin input method editor is installed</value>
+  </data>
+  <data name="NoteImeWubi" xml:space="preserve">
+    <value>available if the Microsoft Wubi input method editor is installed</value>
+  </data>
+  <data name="NoteMixedReality" xml:space="preserve">
+    <value>only available if the Mixed Reality Portal app is installed.</value>
+  </data>
+  <data name="NoteMobileProvisioning" xml:space="preserve">
+    <value>only available on mobile and if the enterprise has deployed a provisioning package</value>
+  </data>
+  <data name="NoteSince1903" xml:space="preserve">
+    <value>Added in Windows 10, version 1903</value>
+  </data>
+  <data name="NoteThirdParty" xml:space="preserve">
+    <value>only available if "settings apps" are installed, for example, by a 3rd party</value>
+  </data>
+  <data name="NoteTouchpad" xml:space="preserve">
+    <value>only available if touchpad hardware is present</value>
+  </data>
+  <data name="NoteWiFiAdapter" xml:space="preserve">
+    <value>only available if the device has a Wi-Fi adapter</value>
+  </data>
+  <data name="NoteWindowsAnywhere" xml:space="preserve">
+    <value>device must be Windows Anywhere-capable</value>
+  </data>
+  <data name="NoteWorkplaceProvisioning" xml:space="preserve">
+    <value>only available if enterprise has deployed a provisioning package</value>
+  </data>
   <data name="Notifications" xml:space="preserve">
     <value>Notifications</value>
     <comment>Area Privacy</comment>

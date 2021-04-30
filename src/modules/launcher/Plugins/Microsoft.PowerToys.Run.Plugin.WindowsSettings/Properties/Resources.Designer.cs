@@ -2131,6 +2131,177 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to only available on devices that support advanced graphics options.
+        /// </summary>
+        internal static string NoteAdvancedGraphics {
+            get {
+                return ResourceManager.GetString("NoteAdvancedGraphics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only available on devices that have a battery, such as a tablet.
+        /// </summary>
+        internal static string NoteBattery {
+            get {
+                return ResourceManager.GetString("NoteBattery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deprecated in Windows 10, version 1809 and later.
+        /// </summary>
+        internal static string NoteDeprecated1809 {
+            get {
+                return ResourceManager.GetString("NoteDeprecated1809", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only available if Dial is paired.
+        /// </summary>
+        internal static string NoteDialPaired {
+            get {
+                return ResourceManager.GetString("NoteDialPaired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only available if DirectAccess is enabled.
+        /// </summary>
+        internal static string NoteDirectAccess {
+            get {
+                return ResourceManager.GetString("NoteDirectAccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only available on devices that support advanced display options.
+        /// </summary>
+        internal static string NoteDisplayGraphics {
+            get {
+                return ResourceManager.GetString("NoteDisplayGraphics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only present if user is enrolled in WIP.
+        /// </summary>
+        internal static string NoteEnrolledWip {
+            get {
+                return ResourceManager.GetString("NoteEnrolledWip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to requires eyetracker hardware.
+        /// </summary>
+        internal static string NoteEyetrackerHardware {
+            get {
+                return ResourceManager.GetString("NoteEyetrackerHardware", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to available if the Microsoft Japan input method editor is installed.
+        /// </summary>
+        internal static string NoteImeJapan {
+            get {
+                return ResourceManager.GetString("NoteImeJapan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to available if the Microsoft Pinyin input method editor is installed.
+        /// </summary>
+        internal static string NoteImePinyin {
+            get {
+                return ResourceManager.GetString("NoteImePinyin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to available if the Microsoft Wubi input method editor is installed.
+        /// </summary>
+        internal static string NoteImeWubi {
+            get {
+                return ResourceManager.GetString("NoteImeWubi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only available if the Mixed Reality Portal app is installed..
+        /// </summary>
+        internal static string NoteMixedReality {
+            get {
+                return ResourceManager.GetString("NoteMixedReality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only available on mobile and if the enterprise has deployed a provisioning package.
+        /// </summary>
+        internal static string NoteMobileProvisioning {
+            get {
+                return ResourceManager.GetString("NoteMobileProvisioning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Added in Windows 10, version 1903.
+        /// </summary>
+        internal static string NoteSince1903 {
+            get {
+                return ResourceManager.GetString("NoteSince1903", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only available if &quot;settings apps&quot; are installed, for example, by a 3rd party.
+        /// </summary>
+        internal static string NoteThirdParty {
+            get {
+                return ResourceManager.GetString("NoteThirdParty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only available if touchpad hardware is present.
+        /// </summary>
+        internal static string NoteTouchpad {
+            get {
+                return ResourceManager.GetString("NoteTouchpad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only available if the device has a Wi-Fi adapter.
+        /// </summary>
+        internal static string NoteWiFiAdapter {
+            get {
+                return ResourceManager.GetString("NoteWiFiAdapter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to device must be Windows Anywhere-capable.
+        /// </summary>
+        internal static string NoteWindowsAnywhere {
+            get {
+                return ResourceManager.GetString("NoteWindowsAnywhere", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to only available if enterprise has deployed a provisioning package.
+        /// </summary>
+        internal static string NoteWorkplaceProvisioning {
+            get {
+                return ResourceManager.GetString("NoteWorkplaceProvisioning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Notifications.
         /// </summary>
         internal static string Notifications {
