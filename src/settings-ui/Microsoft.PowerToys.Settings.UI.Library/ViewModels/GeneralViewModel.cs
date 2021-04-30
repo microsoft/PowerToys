@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<UpdatingSettings> updatingSettingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -52,11 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
-
-            if (updatingSettingsRepository != null)
-            {
-                UpdatingSettingsConfig = updatingSettingsRepository.RootSettingsConfig;
-            }
+            UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;

@@ -2,13 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
+using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class UpdatingSettings : ISettingsConfig
+    public class UpdatingSettings
     {
         public enum UpdatingState
         {
@@ -34,21 +36,45 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("downloadedInstallerFilename")]
         public string DownloadedInstallerFilename { get; set; }
 
+        // Non-localizable strings: Files
+        private const string SettingsFile = "\\Microsoft\\PowerToys\\update_state.json";
+
         public UpdatingSettings()
         {
             State = UpdatingState.UpToDate;
         }
 
-        public string GetModuleName()
+        public static UpdatingSettings LoadSettings()
         {
-            return "update_state.json";
+            FileSystem fileSystem = new FileSystem();
+            var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var file = localAppDataDir + SettingsFile;
+
+            if (fileSystem.File.Exists(file))
+            {
+                try
+                {
+                    Stream inputStream = fileSystem.File.Open(file, FileMode.Open);
+                    StreamReader reader = new StreamReader(inputStream);
+                    string data = reader.ReadToEnd();
+                    inputStream.Close();
+                    reader.Dispose();
+
+                    return JsonSerializer.Deserialize<UpdatingSettings>(data);
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                }
+            }
+
+            return new UpdatingSettings();
         }
 
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
         }
-
-        public bool UpgradeSettingsConfiguration() => false;
     }
 }
