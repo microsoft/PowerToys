@@ -8,7 +8,7 @@
 #include <string_view>
 
 #include <common/updating/updating.h>
-#include <common/updating/update_state.h>
+#include <common/updating/updateState.h>
 #include <common/updating/installer.h>
 #include <common/updating/http_client.h>
 #include <common/updating/dotnet_installation.h>

@@ -20,6 +20,6 @@ struct UpdateState
 
     // To prevent concurrent modification of the file, we enforce this interface, which locks the file while
     // the state_modifier is active.
-    static void store(std::function<void(UpdateState&)> state_modifier);
+    static void store(std::function<void(UpdateState&)> stateModifier);
     static UpdateState read();
 };
