@@ -1207,6 +1207,9 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download and install</value>
   </data>
+  <data name="General_FailedToDownloadTheNewVersion.Text" xml:space="preserve">
+    <value>Failed to download the new version</value>
+  </data>
   <data name="General_InstallNow.Content" xml:space="preserve">
     <value>Install now</value>
   </data>

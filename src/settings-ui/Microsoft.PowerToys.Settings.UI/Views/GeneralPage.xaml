@@ -122,7 +122,6 @@
                           IsOn="{Binding Mode=TwoWay, Path=Startup}"/>
 
 
-
             <TextBlock x:Uid="General_Updates"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
             <StackPanel Orientation="Horizontal" 
@@ -207,6 +206,10 @@
                     Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToInstallToVisibilityConverter}}"
                     />
 
+            <TextBlock x:Name="General_FailedToDownloadTheNewVersion" x:Uid="General_FailedToDownloadTheNewVersion"
+                       Margin="{StaticResource Small}"
+                       Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateCannotDownloadToVisibilityConverter}}"/>
+            
             <Button x:Uid="General_TryAgain"
                     Style="{StaticResource AccentButtonStyle}"
                     Foreground="White"
