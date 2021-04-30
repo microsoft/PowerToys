@@ -3094,6 +3094,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to wifi.
+        /// </summary>
+        internal static string ShortNameWiFi {
+            get {
+                return ResourceManager.GetString("ShortNameWiFi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sign-in options.
         /// </summary>
         internal static string SignInOptions {
