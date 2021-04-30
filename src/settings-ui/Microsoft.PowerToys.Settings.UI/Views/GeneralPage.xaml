@@ -16,6 +16,9 @@
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
         <converters:BoolToVisibilityConverter x:Key="VisibleIfTrueConverter"/>
         <localConverters:UpdatingStateUpToDateToVisibilityConverter x:Key="UpdatingStateUpToDateToVisibilityConverter" />
+        <localConverters:UpdatingStateCannotDownloadToVisibilityConverter x:Key="UpdatingStateCannotDownloadToVisibilityConverter" />
+        <localConverters:UpdatingStateReadyToDownloadToVisibilityConverter x:Key="UpdatingStateReadyToDownloadToVisibilityConverter" />
+        <localConverters:UpdatingStateReadyToInstallToVisibilityConverter x:Key="UpdatingStateReadyToInstallToVisibilityConverter" />
         <localConverters:UpdatingStateNotUpToDateToVisibilityConverter x:Key="UpdatingStateNotUpToDateToVisibilityConverter" />
     </Page.Resources>
 

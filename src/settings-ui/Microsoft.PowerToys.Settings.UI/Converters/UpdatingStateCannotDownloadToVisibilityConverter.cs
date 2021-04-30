@@ -9,11 +9,11 @@ using Windows.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class UpdatingStateNotUpToDateToVisibilityConverter : IValueConverter
+    public sealed class UpdatingStateCannotDownloadToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return (UpdatingSettings.UpdatingState)value != UpdatingSettings.UpdatingState.UpToDate ? Visibility.Visible : Visibility.Collapsed;
+            return (UpdatingSettings.UpdatingState)value == UpdatingSettings.UpdatingState.CannotDownload ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

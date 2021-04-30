@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
@@ -12,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return (int)value == 0 ? Visibility.Visible : Visibility.Collapsed;
+            return (UpdatingSettings.UpdatingState)value == UpdatingSettings.UpdatingState.UpToDate ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
