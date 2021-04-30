@@ -429,7 +429,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     break;
     case WM_DPICHANGED:
     {
-        UINT newDPI = static_cast<UINT>(wParam);
+        UINT newDPI = static_cast<UINT>(LOWORD(wParam));
         g_currentDPI = newDPI;
 
         RECT* rect = reinterpret_cast<RECT*>(lParam);
@@ -443,7 +443,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
             SWP_NOZORDER | SWP_NOACTIVATE
         );
 
-        Logger::trace(L"WM_DPICHANGED: rect {} {} ", rect->right - rect->left, rect->bottom - rect->top);
+        Logger::trace(L"WM_DPICHANGED: new dpi {} rect {} {} ", newDPI, rect->right - rect->left, rect->bottom - rect->top);
     }
     break;
     default:
