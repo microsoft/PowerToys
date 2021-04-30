@@ -35,8 +35,8 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
             foreach (var entry in list)
             {
                 var type = entry.Command.StartsWith("ms-settings", StringComparison.InvariantCultureIgnoreCase)
-                    ? Resources.Settings_app
-                    : Resources.Control_panel;
+                    ? Resources.SettingsApp
+                    : Resources.ControlPanel;
 
                 var result = new Result
                 {
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
             {
                 var altList = entry.AltNames.Aggregate((current, next) => $"{current}, {next}");
 
-                toolTipText.Append(Resources.Alternative_name);
+                toolTipText.Append(Resources.AlternativeName);
                 toolTipText.Append(": ");
                 toolTipText.AppendLine(altList);
             }
@@ -89,8 +89,8 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
             }
 
             var type = entry.Command.StartsWith("ms-settings", StringComparison.InvariantCultureIgnoreCase)
-                ? Resources.Settings_app
-                : Resources.Control_panel;
+                ? Resources.SettingsApp
+                : Resources.ControlPanel;
 
             result.ToolTipData = new ToolTipData(type, toolTipText.ToString());
         }
