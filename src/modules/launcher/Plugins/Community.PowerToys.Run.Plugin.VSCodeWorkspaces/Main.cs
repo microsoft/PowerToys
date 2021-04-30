@@ -92,7 +92,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                 {
                     var title = $"{a.Host}";
 
-                    if (a.User != null && a.User != String.Empty && a.HostName != null && a.HostName != String.Empty)
+                    if (a.User != null && a.User != string.Empty && a.HostName != null && a.HostName != string.Empty)
                     {
                         title += $" [{a.User}@{a.HostName}]";
                     }
@@ -148,7 +148,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                 }
 
                 //intersect the title with the query
-                var intersection = Convert.ToInt32(x.Title.ToLowerInvariant().Intersect(query.Search.ToLower()).Count() * query.Search.Count());
+                var intersection = Convert.ToInt32(x.Title.ToLowerInvariant().Intersect(query.Search.ToLowerInvariant()).Count() * query.Search.Count());
                 var differenceWithQuery = Convert.ToInt32((x.Title.Count() - intersection) * query.Search.Count() * 0.7);
                 x.Score = x.Score - differenceWithQuery + intersection;
 
@@ -160,7 +160,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
             });
 
             results = results.OrderByDescending(x => x.Score).ToList();
-            if (query.Search == String.Empty || query.Search.Replace(" ", "") == String.Empty)
+            if (query.Search == string.Empty || query.Search.Replace(" ", "") == string.Empty)
             {
                 results = results.OrderBy(x => x.Title).ToList();
             }
