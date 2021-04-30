@@ -155,15 +155,29 @@
                            Margin="16,0,0,0" />
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" 
-                        Margin="{StaticResource SmallBottomMargin}"
-                        AutomationProperties.LabeledBy="{Binding ElementName=General_VersionLastChecked}"
-                        Visibility="{Binding AutoUpdatesEnabled,
-                                             Converter={StaticResource VisibleIfTrueConverter}}">
-                 <TextBlock x:Name="General_VersionLastChecked" x:Uid="General_VersionLastChecked" />
-                 <TextBlock Text="{x:Bind ViewModel.UpdateCheckedDate, Mode=OneWay}"
-                            Foreground="{ThemeResource ListViewItemForegroundPointerOver}"
-                            Margin="6,0" />
+            <StackPanel Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateUpToDateToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal"
+                            Margin="{StaticResource SmallBottomMargin}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=General_VersionLastChecked}"
+                            Visibility="{Binding AutoUpdatesEnabled,
+                                                 Converter={StaticResource VisibleIfTrueConverter}}">
+                     <TextBlock x:Name="General_VersionLastChecked" x:Uid="General_VersionLastChecked" />
+                     <TextBlock Text="{x:Bind ViewModel.UpdateCheckedDate, Mode=OneWay}"
+                                Foreground="{ThemeResource ListViewItemForegroundPointerOver}"
+                                Margin="6,0" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateNotUpToDateToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal"
+                            Margin="{StaticResource SmallBottomMargin}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=General_ReadMore}"
+                            Visibility="{Binding AutoUpdatesEnabled,
+                                                 Converter={StaticResource VisibleIfTrueConverter}}">
+                    <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases">
+                        <TextBlock x:Name="General_ReadMore" x:Uid="General_ReadMore" />
+                    </HyperlinkButton>
+                </StackPanel>
             </StackPanel>
 
             <Button x:Uid="GeneralPage_CheckForUpdates"

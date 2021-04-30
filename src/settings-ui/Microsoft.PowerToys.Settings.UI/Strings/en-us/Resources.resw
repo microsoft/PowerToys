@@ -1204,4 +1204,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_NewVersion.Text" xml:space="preserve">
     <value>New version:</value>
   </data>
+  <data name="General_ReadMore.Text" xml:space="preserve">
+    <value>Read more</value>
+  </data>
 </root>
