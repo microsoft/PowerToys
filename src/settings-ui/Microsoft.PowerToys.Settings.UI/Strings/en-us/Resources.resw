@@ -1198,4 +1198,10 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
   </data>
+  <data name="General_CurrentVersion.Text" xml:space="preserve">
+    <value>Current version:</value>
+  </data>
+  <data name="General_NewVersion.Text" xml:space="preserve">
+    <value>New version:</value>
+  </data>
 </root>

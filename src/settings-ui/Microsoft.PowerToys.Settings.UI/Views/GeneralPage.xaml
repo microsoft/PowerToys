@@ -124,11 +124,32 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
             <StackPanel Orientation="Horizontal" 
                         Margin="{StaticResource SmallTopMargin}"
-                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
+                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}"
+                        Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateUpToDateToVisibilityConverter}}">
                 <TextBlock x:Name="General_Version" x:Uid="General_Version" />
                 <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
                     <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
                 </HyperlinkButton>
+
+                <TextBlock Text="{x:Bind ViewModel.LatestAvailableVersion, Mode=OneWay}"
+                           Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                           Margin="16,0,0,0" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" 
+                        Margin="{StaticResource SmallTopMargin}"
+                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}"
+                        Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateNotUpToDateToVisibilityConverter}}">
+                <TextBlock x:Name="General_CurrentVersion" x:Uid="General_CurrentVersion" />
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
+                    <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
+                </HyperlinkButton>
+
+                <TextBlock x:Name="General_NewVersion" x:Uid="General_NewVersion" Margin="8,0,0,0" />
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
+                    <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
+                </HyperlinkButton>
+
                 <TextBlock Text="{x:Bind ViewModel.LatestAvailableVersion, Mode=OneWay}"
                            Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                            Margin="16,0,0,0" />
