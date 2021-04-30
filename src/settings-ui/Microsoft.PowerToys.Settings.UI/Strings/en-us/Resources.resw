@@ -1204,7 +1204,16 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_NewVersion.Text" xml:space="preserve">
     <value>New version:</value>
   </data>
+  <data name="General_DownloadAndInstall.Content" xml:space="preserve">
+    <value>Download and install</value>
+  </data>
+  <data name="General_InstallNow.Content" xml:space="preserve">
+    <value>Install now</value>
+  </data>
   <data name="General_ReadMore.Text" xml:space="preserve">
     <value>Read more</value>
+  </data>
+  <data name="General_TryAgain.Content" xml:space="preserve">
+    <value>Try again</value>
   </data>
 </root>

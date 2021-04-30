@@ -188,6 +188,31 @@
                     Foreground="White"
                     Command="{Binding CheckForUpdatesEventHandler}"
                     IsEnabled="{Binding AutoUpdatesEnabled}"
+                    Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateUpToDateToVisibilityConverter}}"
+                    />
+
+            <Button x:Uid="General_DownloadAndInstall"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Foreground="White"
+                    Command="{Binding CheckForUpdatesEventHandler}"
+                    IsEnabled="{Binding AutoUpdatesEnabled}"
+                    Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToDownloadToVisibilityConverter}}"
+                    />
+
+            <Button x:Uid="General_InstallNow"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Foreground="White"
+                    Command="{Binding CheckForUpdatesEventHandler}"
+                    IsEnabled="{Binding AutoUpdatesEnabled}"
+                    Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToInstallToVisibilityConverter}}"
+                    />
+
+            <Button x:Uid="General_TryAgain"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Foreground="White"
+                    Command="{Binding CheckForUpdatesEventHandler}"
+                    IsEnabled="{Binding AutoUpdatesEnabled}"
+                    Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateCannotDownloadToVisibilityConverter}}"
                     />
 
             <Button x:Uid="GeneralPage_UpdateNow"
