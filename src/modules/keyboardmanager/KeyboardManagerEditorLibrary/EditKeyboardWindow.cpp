@@ -23,6 +23,8 @@
 
 using namespace winrt::Windows::Foundation;
 
+static UINT g_currentDPI = DPIAware::DEFAULT_DPI;
+
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
 // This Hwnd will be the window handler for the Xaml Island: A child window that contains Xaml.
@@ -144,6 +146,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     int windowHeight = KeyboardManagerConstants::DefaultEditKeyboardWindowHeight;
 
     DPIAware::ConvertByCursorPosition(windowWidth, windowHeight);
+    DPIAware::GetScreenDPIForCursor(g_currentDPI);
     
     // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
@@ -385,47 +388,62 @@ void CreateEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     TerminateProcess(GetCurrentProcess(), 0);
 }
 
-inline std::wstring getMessage(UINT messageCode)
-{
-    switch (messageCode)
-    {
-    case WM_SIZE:
-        return L"WM_SIZE";
-    case WM_NCDESTROY:
-        return L"WM_NCDESTROY";
-    default:
-        return L"";
-    }
-}
-
 LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM lParam)
 {
-    RECT rcClient;
-    auto message = getMessage(messageCode);
-    if (message != L"")
-    {
-        Logger::trace(L"EditKeyboardWindowProc() messageCode={}", getMessage(messageCode));
-    }
-    
     switch (messageCode)
     {
     // Resize the XAML window whenever the parent window is painted or resized
     case WM_PAINT:
     case WM_SIZE:
     {
-        GetClientRect(hWnd, &rcClient);
-        SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
+        RECT rect = { 0 };
+        GetClientRect(hWnd, &rect);
+        SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, rect.left, rect.top, rect.right, rect.bottom, SWP_SHOWWINDOW);
     }
     break;
     // To avoid UI elements overlapping on making the window smaller enforce a minimum window size
     case WM_GETMINMAXINFO:
     {
-        LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
+        LPMINMAXINFO mmi = (LPMINMAXINFO)lParam;
         int minWidth = KeyboardManagerConstants::MinimumEditKeyboardWindowWidth;
         int minHeight = KeyboardManagerConstants::MinimumEditKeyboardWindowHeight;
         DPIAware::Convert(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), minWidth, minHeight);
-        lpMMI->ptMinTrackSize.x = minWidth;
-        lpMMI->ptMinTrackSize.y = minHeight;
+        mmi->ptMinTrackSize.x = minWidth;
+        mmi->ptMinTrackSize.y = minHeight;
+    }
+    break;
+    case WM_GETDPISCALEDSIZE:
+    {
+        UINT newDPI = static_cast<UINT>(wParam);
+        SIZE* size = reinterpret_cast<SIZE*>(lParam);
+        Logger::trace(L"WM_GETDPISCALEDSIZE: DPI {} size X {} Y {}", newDPI, size->cx, size->cy);
+
+        float scalingFactor = static_cast<float>(newDPI) / g_currentDPI;
+        Logger::trace(L"WM_GETDPISCALEDSIZE: scaling factor {}", scalingFactor);
+
+        size->cx = static_cast<LONG>(size->cx * scalingFactor);
+        size->cy = static_cast<LONG>(size->cy * scalingFactor);
+
+        return 1;
+    }
+    break;
+    case WM_DPICHANGED:
+    {
+        UINT newDPI = static_cast<UINT>(LOWORD(wParam));
+        g_currentDPI = newDPI;
+
+        RECT* rect = reinterpret_cast<RECT*>(lParam);
+        SetWindowPos(
+            hWnd,
+            nullptr,
+            rect->left,
+            rect->top,
+            rect->right - rect->left,
+            rect->bottom - rect->top,
+            SWP_NOZORDER | SWP_NOACTIVATE
+        );
+
+        Logger::trace(L"WM_DPICHANGED: new dpi {} rect {} {} ", newDPI, rect->right - rect->left, rect->bottom - rect->top);
     }
     break;
     default:
