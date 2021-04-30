@@ -39,10 +39,13 @@ advertisingid
 advfirewall
 AFeature
 AFX
+AGame
 AGGREGATABLE
 AHybrid
 airplanemode
 Aissue
+akamaihd
+AKiosk
 ALarger
 alekhyareddy
 ALIGNLEFT
@@ -498,7 +501,11 @@ dllexport
 dllhost
 dllmain
 DNLEN
+<<<<<<< HEAD
 docsmsft
+=======
+Dns
+>>>>>>> 0ecf3a15c (fix typo)
 doctype
 domainlexicon
 DONTVALIDATEPATH
@@ -1095,6 +1102,7 @@ keyboardmanagercommon
 KEYBOARDMANAGEREDITOR
 keyboardmanagerstate
 keyboardmanagerui
+keyborad
 keycode
 keyconfig
 keydown
@@ -1408,6 +1416,7 @@ newitem
 newpath
 newrow
 Newtonsoft
+Nfc
 nfctransactions
 niels
 nielslaute
@@ -2312,6 +2321,8 @@ webclient
 webpack
 webpage
 website
+webview
+weekness
 wekyb
 Wevtapi
 Wgpocpl
@@ -2368,6 +2379,7 @@ winspool
 winstore
 winui
 winxamlmanager
+Wip
 wistd
 withinrafael
 Withscript
