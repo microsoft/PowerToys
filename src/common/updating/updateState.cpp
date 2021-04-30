@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "update_state.h"
+#include "updateState.h"
 
 #include <common/utils/json.h>
 #include <common/utils/timeutil.h>
@@ -39,32 +39,32 @@ json::JsonObject serialize(const UpdateState& state)
 
 UpdateState UpdateState::read()
 {
-    const auto file_name = PTSettingsHelper::get_root_save_folder_location() + PERSISTENT_STATE_FILENAME;
+    const auto filename = PTSettingsHelper::get_root_save_folder_location() + PERSISTENT_STATE_FILENAME;
     std::optional<json::JsonObject> json;
     {
         wil::unique_mutex_nothrow mutex{ CreateMutexW(nullptr, FALSE, UPDATE_STATE_MUTEX) };
         auto lock = mutex.acquire();
-        json = json::from_file(file_name);
+        json = json::from_file(filename);
     }
     return json ? deserialize(*json) : UpdateState{};
 }
 
-void UpdateState::store(std::function<void(UpdateState&)> state_modifier)
+void UpdateState::store(std::function<void(UpdateState&)> stateModifier)
 {
-    const auto file_name = PTSettingsHelper::get_root_save_folder_location() + PERSISTENT_STATE_FILENAME;
+    const auto filename = PTSettingsHelper::get_root_save_folder_location() + PERSISTENT_STATE_FILENAME;
 
     std::optional<json::JsonObject> json;
     {
         wil::unique_mutex_nothrow mutex{ CreateMutexW(nullptr, FALSE, UPDATE_STATE_MUTEX) };
         auto lock = mutex.acquire();
-        json = json::from_file(file_name);
+        json = json::from_file(filename);
         UpdateState state;
         if (json)
         {
             state = deserialize(*json);
         }
-        state_modifier(state);
+        stateModifier(state);
         json.emplace(serialize(state));
-        json::to_file(file_name, *json);
+        json::to_file(filename, *json);
     }
 }

@@ -21,7 +21,7 @@
 #include <common/utils/process_path.h>
 #include <common/utils/timeutil.h>
 #include <common/utils/winapi_error.h>
-#include <common/updating/update_state.h>
+#include <common/updating/updateState.h>
 #include <common/themes/windows_colors.h>
 
 #define BUFSIZE 1024
