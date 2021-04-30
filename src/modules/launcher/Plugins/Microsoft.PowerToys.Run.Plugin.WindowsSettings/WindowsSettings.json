@@ -60,7 +60,6 @@
   {
     "Area": "Apps",
     "Name": "AppFeatures",
-    "Note": "Reset, manage add-on and downloadable content, etc. for the app",
     "Command": "ms-settings:appsfeatures-app"
   },
   {
@@ -153,13 +152,13 @@
     "Area": "Devices",
     "Name": "DefaultCamera",
     "DeprecatedInVersion": 1809,
-    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Note": "NoteDeprecated1809",
     "Command": "ms-settings:camera"
   },
   {
     "Area": "Devices",
     "Name": "MouseAndTouchpad",
-    "Note": "touchpad settings only available on devices that have a touchpad",
+    "Note": "NoteTouchpad",
     "Command": "ms-settings:mousetouchpad"
   },
   {
@@ -175,7 +174,7 @@
   {
     "Area": "Devices",
     "Name": "Touchpad",
-    "Note": "only available if touchpad hardware is present",
+    "Note": "NoteTouchpad",
     "Command": "ms-settings:devices-touchpad"
   },
   {
@@ -191,7 +190,7 @@
   {
     "Area": "Devices",
     "Name": "Wheel",
-    "Note": "only available if Dial is paired",
+    "Note": "NoteDialPaired",
     "Command": "ms-settings:wheel"
   },
   {
@@ -272,7 +271,7 @@
     "Area": "EaseOfAccess",
     "Name": "OtherOptions",
     "DeprecatedInVersion": 1809,
-    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Note": "NoteDeprecated1809",
     "Command": "ms-settings:easeofaccess-otheroptions"
   },
   {
@@ -284,7 +283,7 @@
   {
     "Area": "Extras",
     "Name": "Extras",
-    "Note": "only available if \u0022settings apps\u0022 are installed, for example, by a 3rd party",
+    "Note": "NoteThirdParty",
     "Command": "ms-settings:extras"
   },
   {
@@ -317,7 +316,7 @@
     "Area": "Gaming",
     "Name": "TruePlay",
     "DeprecatedInVersion": 1809,
-    "Note": "As of Windows 10, version 1809 (10.0; Build 17763), this feature is removed from Windows",
+    "Note": "NoteDeprecated1809",
     "Command": "ms-settings:gaming-trueplay"
   },
   {
@@ -334,28 +333,28 @@
     "Area": "MixedReality",
     "Name": "AudioAndSpeech",
     "AltNames": [ "HolographicAudio" ],
-    "Note": "only available if the Mixed Reality Portal app is installed.",
+    "Note": "NoteMixedReality",
     "Command": "ms-settings:holographic-audio"
   },
   {
     "Area": "MixedReality",
     "Name": "Environment",
     "AltNames": [ "HolographicEnvironment" ],
-    "Note": "only available if the Mixed Reality Portal app is installed.",
+    "Note": "NoteMixedReality",
     "Command": "ms-settings:privacy-holographic-environment"
   },
   {
     "Area": "MixedReality",
     "Name": "HeadsetDisplay",
     "AltNames": [ "HolographicHeadset" ],
-    "Note": "only available if the Mixed Reality Portal app is installed.",
+    "Note": "NoteMixedReality",
     "Command": "ms-settings:holographic-headset"
   },
   {
     "Area": "MixedReality",
     "Name": "Uninstall",
     "AltNames": [ "HolographicManagement" ],
-    "Note": "only available if the Mixed Reality Portal app is installed.",
+    "Note": "NoteMixedReality",
     "Command": "ms-settings:holographic-management"
   },
   {
@@ -386,7 +385,7 @@
   {
     "Area": "NetworkAndInternet",
     "Name": "DirectAccess",
-    "Note": "only available if DirectAccess is enabled",
+    "Note": "NoteDirectAccess",
     "Command": "ms-settings:network-directaccess"
   },
   {
@@ -399,7 +398,7 @@
     "Area": "NetworkAndInternet",
     "Name": "ManageKnownNetworks",
     "AltNames": [ "WiFiSettings", "WiFi" ],
-    "Note": "only available if the device has a Wi-Fi adapter",
+    "Note": "NoteWiFiAdapter",
     "Command": "ms-settings:network-wifisettings"
   },
   {
@@ -438,14 +437,14 @@
     "Area": "NetworkAndInternet",
     "Name": "WiFi",
     "AltNames": [ "Wireless", "MeteredConnection", "WiFi" ],
-    "Note": "only available if the device has a Wi-Fi adapter",
+    "Note": "NoteWiFiAdapter",
     "Command": "ms-settings:network-wifi"
   },
   {
     "Area": "NetworkAndInternet",
     "Name": "WiFiCalling",
     "AltNames": [ "WiFi" ],
-    "Note": "only available if Wi-Fi calling is enabled",
+    "Note": "NoteWiFiAdapter",
     "Command": "ms-settings:network-wificalling"
   },
   {
@@ -475,7 +474,7 @@
     "Area": "Personalization",
     "Name": "Glance",
     "DeprecatedInVersion": 1809,
-    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Note": "NoteDeprecated1809",
     "Command": "ms-settings:personalization-glance"
   },
   {
@@ -488,7 +487,7 @@
     "Area": "Personalization",
     "Name": "NavigationBar",
     "DeprecatedInVersion": 1809,
-    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Note": "NoteDeprecated1809",
     "Command": "ms-settings:personalization-navbar"
   },
   {
@@ -519,14 +518,13 @@
   {
     "Area": "Phone",
     "Name": "DirectOpenYourPhone",
-    "Note": "Opens Your Phone app",
     "Command": "ms-settings:mobile-devices-addphone-direct"
   },
   {
     "Area": "Privacy",
     "Name": "AccessoryApps",
     "DeprecatedInVersion": 1809,
-    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Note": "NoteDeprecated1809",
     "Command": "ms-settings:privacy-accessoryapps"
   },
   {
@@ -543,7 +541,7 @@
     "Area": "Privacy",
     "Name": "AdvertisingId",
     "DeprecatedInVersion": 1809,
-    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Note": "NoteDeprecated1809",
     "Command": "ms-settings:privacy-advertisingid"
   },
   {
@@ -594,7 +592,7 @@
   {
     "Area": "Privacy",
     "Name": "EyeTracker",
-    "Note": "requires eyetracker hardware",
+    "Note": "NoteEyetrackerHardware",
     "Command": "ms-settings:privacy-eyetracker"
   },
   {
@@ -719,33 +717,33 @@
   {
     "Area": "System",
     "Name": "AdvancedDisplaySettings",
-    "Note": "only available on devices that support advanced display options",
+    "Note": "NoteDisplayGraphics",
     "Command": "ms-settings:display-advanced"
   },
   {
     "Area": "System",
     "Name": "AppVolumeAndDevicePreferences",
     "IntroducedInVersion": 1903,
-    "Note": "Added in Windows 10, version 1903",
+    "Note": "NoteSince1903",
     "Command": "ms-settings:apps-volume"
   },
   {
     "Area": "System",
     "Name": "BatterySaver",
-    "Note": "only available on devices that have a battery, such as a tablet",
+    "Note": "NoteBattery",
     "Command": "ms-settings:batterysaver"
   },
   {
     "Area": "System",
     "Name": "BatterySaverSettings",
-    "Note": "only available on devices that have a battery, such as a tablet",
+    "Note": "NoteBattery",
     "Command": "ms-settings:batterysaver-settings"
   },
   {
     "Area": "System",
     "Name": "BatteryUse",
     "AltNames": [ "BatterySaverUsageDetails" ],
-    "Note": "only available on devices that have a battery, such as a tablet",
+    "Note": "NoteBattery",
     "Command": "ms-settings:batterysaver-usagedetails"
   },
   {
@@ -800,7 +798,7 @@
     "Area": "System",
     "Name": "GraphicsSettings",
     "AltNames": [ "AdvancedGraphics" ],
-    "Note": "only available on devices that support advanced graphics options",
+    "Note": "NoteAdvancedGraphics",
     "Command": "ms-settings:display-advancedgraphics"
   },
   {
@@ -859,7 +857,7 @@
     "Area": "System",
     "Name": "Phone",
     "DeprecatedInVersion": 1809,
-    "Note": "Deprecated in Windows 10, version 1809 and later",
+    "Note": "NoteDeprecated1809",
     "Command": "ms-settings:phone"
   },
   {
@@ -891,7 +889,7 @@
     "Area": "TimeAndLanguage",
     "Name": "JapanImeSettings",
     "AltNames": [ "jpnime" ],
-    "Note": "available if the Microsoft Japan input method editor is installed",
+    "Note": "NoteImeJapan",
     "Command": "ms-settings:regionlanguage-jpnime"
   },
   {
@@ -949,7 +947,7 @@
   {
     "Area": "TimeAndLanguage",
     "Name": "PinyinImeSettings",
-    "Note": "available if the Microsoft Pinyin input method editor is installed",
+    "Note": "NoteImePinyin",
     "Command": "ms-settings:regionlanguage-chsime-pinyin"
   },
   {
@@ -960,7 +958,7 @@
   {
     "Area": "TimeAndLanguage",
     "Name": "WubiImeSettings",
-    "Note": "available if the Microsoft Wubi input method editor is installed",
+    "Note": "NoteImeWubi",
     "Command": "ms-settings:regionlanguage-chsime-wubi"
   },
   {
@@ -1007,7 +1005,7 @@
   {
     "Area": "UpdateAndSecurity",
     "Name": "WindowsInsiderProgram",
-    "Note": "only present if user is enrolled in WIP",
+    "Note": "NoteEnrolledWip",
     "Command": "ms-settings:windowsinsider"
   },
   {
@@ -1043,19 +1041,19 @@
   {
     "Area": "UserAccounts",
     "Name": "WorkplaceProvisioning",
-    "Note": "only available if enterprise has deployed a provisioning package",
+    "Note": "NoteWorkplaceProvisioning",
     "Command": "ms-settings:workplace-provisioning"
   },
   {
     "Area": "UserAccounts",
     "Name": "Provisioning",
-    "Note": "only available on mobile and if the enterprise has deployed a provisioning package",
+    "Note": "NoteMobileProvisioning",
     "Command": "ms-settings:provisioning"
   },
   {
     "Area": "UserAccounts",
     "Name": "WindowsAnywhere",
-    "Note": "device must be Windows Anywhere-capable",
+    "Note": "NoteWindowsAnywhere",
     "Command": "ms-settings:windowsanywhere"
   },
   {
