@@ -153,6 +153,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
 
                         if (string.IsNullOrEmpty(translatedAltName))
                         {
+                            Debug.WriteLine($"Resource string for [{altName}] not found");
                             Log.Warn($"Resource string for [{altName}] not found", typeof(Main));
                         }
 
