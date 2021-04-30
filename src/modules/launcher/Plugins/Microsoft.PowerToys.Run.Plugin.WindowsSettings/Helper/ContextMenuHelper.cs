@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
-                    Title = $"{Resources.Copy_command} (Ctrl+C)",
+                    Title = $"{Resources.CopyCommand} (Ctrl+C)",
                 },
             };
 
