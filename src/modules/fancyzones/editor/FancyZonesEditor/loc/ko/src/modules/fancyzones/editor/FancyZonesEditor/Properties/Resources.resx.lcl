@@ -205,12 +205,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Distance_adjacent_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Distance_adjacent_zones" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Distance to highlight adjacent zones]]></Val>
+          <Val><![CDATA[Highlight distance]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[인접한 영역을 강조할 거리]]></Val>
+            <Val><![CDATA[강조 표시 간격]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Distance to highlight adjacent zones]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -505,11 +508,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";QuickKey_Select" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Number_of_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select a key to quickly apply the layout (Win + Ctrl + Alt + key)]]></Val>
+          <Val><![CDATA[Number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[레이아웃을 빠르게 적용하려면 키 선택(Win + Ctrl + Alt + 키)]]></Val>
+            <Val><![CDATA[영역 수]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Pixels" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[px]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[px]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Press Win + Ctrl + Alt + selected key to apply this layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이 레이아웃을 적용하려면 Win + Ctrl + Alt + 선택된 키를 누르세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Layout shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[레이아웃 바로 가기]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
