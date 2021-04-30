@@ -1374,6 +1374,10 @@
   <data name="Shortcuts" xml:space="preserve">
     <value>Shortcuts</value>
   </data>
+  <data name="ShortNameWiFi" xml:space="preserve">
+    <value>wifi</value>
+    <comment>dont tanslate this, is a short term to find entries</comment>
+  </data>
   <data name="SignInOptions" xml:space="preserve">
     <value>Sign-in options</value>
     <comment>Area UserAccounts</comment>

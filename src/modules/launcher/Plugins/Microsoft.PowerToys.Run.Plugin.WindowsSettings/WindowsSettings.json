@@ -397,7 +397,7 @@
   {
     "Area": "NetworkAndInternet",
     "Name": "ManageKnownNetworks",
-    "AltNames": [ "WiFiSettings", "WiFi" ],
+    "AltNames": [ "WiFiSettings", "ShortNameWiFi" ],
     "Note": "NoteWiFiAdapter",
     "Command": "ms-settings:network-wifisettings"
   },
@@ -436,14 +436,14 @@
   {
     "Area": "NetworkAndInternet",
     "Name": "WiFi",
-    "AltNames": [ "Wireless", "MeteredConnection", "WiFi" ],
+    "AltNames": [ "Wireless", "MeteredConnection", "ShortNameWiFi" ],
     "Note": "NoteWiFiAdapter",
     "Command": "ms-settings:network-wifi"
   },
   {
     "Area": "NetworkAndInternet",
     "Name": "WiFiCalling",
-    "AltNames": [ "WiFi" ],
+    "AltNames": [ "ShortNameWiFi" ],
     "Note": "NoteWiFiAdapter",
     "Command": "ms-settings:network-wificalling"
   },
