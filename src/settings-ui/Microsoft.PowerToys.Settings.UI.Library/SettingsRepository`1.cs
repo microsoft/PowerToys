@@ -66,5 +66,28 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
             }
         }
+
+        // Settings configurations from the root folder
+        public T RootSettingsConfig
+        {
+            get
+            {
+                if (settingsConfig == null)
+                {
+                    T settingsItem = new T();
+                    settingsConfig = _settingsUtils.GetSettingsOrDefault<T>(string.Empty, settingsItem.GetModuleName());
+                }
+
+                return settingsConfig;
+            }
+
+            set
+            {
+                if (value != null)
+                {
+                    settingsConfig = value;
+                }
+            }
+        }
     }
 }
