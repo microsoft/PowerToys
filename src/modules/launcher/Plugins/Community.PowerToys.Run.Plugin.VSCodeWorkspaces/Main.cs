@@ -135,9 +135,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                 });
             }
 
-            if (query.ActionKeyword == String.Empty || (query.ActionKeyword != String.Empty && query.Search != String.Empty))
+            if (query.ActionKeyword == string.Empty || (query.ActionKeyword != string.Empty && query.Search != string.Empty))
             {
-                results = results.Where(a => a.Title.ToLower().Contains(query.Search.ToLower())).ToList();
+                results = results.Where(a => a.Title.ToLowerInvariant().Contains(query.Search.ToLowerInvariant())).ToList();
             }
 
             results.ForEach(x =>
@@ -148,7 +148,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                 }
 
                 //intersect the title with the query
-                var intersection = Convert.ToInt32(x.Title.ToLower().Intersect(query.Search.ToLower()).Count() * query.Search.Count());
+                var intersection = Convert.ToInt32(x.Title.ToLowerInvariant().Intersect(query.Search.ToLower()).Count() * query.Search.Count());
                 var differenceWithQuery = Convert.ToInt32((x.Title.Count() - intersection) * query.Search.Count() * 0.7);
                 x.Score = x.Score - differenceWithQuery + intersection;
 
