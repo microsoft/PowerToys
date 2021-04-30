@@ -106,6 +106,8 @@
       <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
+    <Compile Include="Converters\UpdatingStateNotUpToDateToVisibilityConverter.cs" />
+    <Compile Include="Converters\UpdatingStateUpToDateToVisibilityConverter.cs" />
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
