@@ -188,6 +188,10 @@
     <value>Airplane mode</value>
     <comment>Area NetworkAndInternet</comment>
   </data>
+  <data name="AltAndTab" xml:space="preserve">
+    <value>Alt+Tab</value>
+    <comment>Means the key  combination "Tabulator+Alt" on the keyborad</comment>
+  </data>
   <data name="AlternativeName" xml:space="preserve">
     <value>Alternative name</value>
   </data>
@@ -294,7 +298,7 @@
   <data name="AreaUserAccounts" xml:space="preserve">
     <value>User accounts</value>
   </data>
-  <data name="Assigned access" xml:space="preserve">
+  <data name="AssignedAccess" xml:space="preserve">
     <value>Assigned access</value>
   </data>
   <data name="Audio" xml:space="preserve">
@@ -459,6 +463,10 @@
   <data name="CopyCommand" xml:space="preserve">
     <value>Copy command</value>
   </data>
+  <data name="CoreIsolation" xml:space="preserve">
+    <value>Core Isolation</value>
+    <comment>Means the protection of the system core</comment>
+  </data>
   <data name="Cortana" xml:space="preserve">
     <value>Cortana</value>
     <comment>Area Cortana</comment>
@@ -583,6 +591,10 @@
     <value>Ease of access center</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
+  <data name="Edition" xml:space="preserve">
+    <value>Edition</value>
+    <comment>Means the "Windows Edition"</comment>
+  </data>
   <data name="Email" xml:space="preserve">
     <value>Email</value>
     <comment>Area Privacy</comment>
@@ -602,6 +614,9 @@
   <data name="Ethernet" xml:space="preserve">
     <value>Ethernet</value>
     <comment>Area NetworkAndInternet</comment>
+  </data>
+  <data name="ExploitProtection" xml:space="preserve">
+    <value>Exploit Protection</value>
   </data>
   <data name="Extras" xml:space="preserve">
     <value>Extras</value>
@@ -638,6 +653,9 @@
   <data name="FindMyDevice" xml:space="preserve">
     <value>Find My Device</value>
     <comment>Area UpdateAndSecurity</comment>
+  </data>
+  <data name="Firewall" xml:space="preserve">
+    <value>Firewall</value>
   </data>
   <data name="FocusAssistQuietHours" xml:space="preserve">
     <value>Focus assist - Quiet hours</value>
@@ -730,6 +748,10 @@
     <value>Home group</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
+  <data name="Id" xml:space="preserve">
+    <value>ID</value>
+    <comment>MEans The "Windows Identifier"</comment>
+  </data>
   <data name="Image" xml:space="preserve">
     <value>Image</value>
   </data>
@@ -763,6 +785,9 @@
   <data name="Ip" xml:space="preserve">
     <value>IP</value>
     <comment>Should not translated</comment>
+  </data>
+  <data name="IsolatedBrowsing" xml:space="preserve">
+    <value>Isolated Browsing</value>
   </data>
   <data name="JapanImeSettings" xml:space="preserve">
     <value>Japan IME settings</value>
@@ -994,6 +1019,10 @@
   <data name="OnScreen" xml:space="preserve">
     <value>On-Screen</value>
   </data>
+  <data name="Os" xml:space="preserve">
+    <value>OS</value>
+    <comment>Means the "Operating System"</comment>
+  </data>
   <data name="OtherDevices" xml:space="preserve">
     <value>Other devices</value>
     <comment>Area Privacy</comment>
@@ -1008,6 +1037,9 @@
   <data name="ParentalControls" xml:space="preserve">
     <value>Parental controls</value>
     <comment>Area Control Panel (legacy settings)</comment>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
   </data>
   <data name="password.cpl" xml:space="preserve">
     <value>password.cpl</value>
@@ -1129,6 +1161,9 @@
     <value>Problem reports and solutions</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
+  <data name="Processor" xml:space="preserve">
+    <value>Processor</value>
+  </data>
   <data name="ProgramsAndFeatures" xml:space="preserve">
     <value>Programs and features</value>
     <comment>Area Control Panel (legacy settings)</comment>
@@ -1163,6 +1198,10 @@
   <data name="Radios" xml:space="preserve">
     <value>Radios</value>
     <comment>Area Privacy</comment>
+  </data>
+  <data name="Ram" xml:space="preserve">
+    <value>RAM</value>
+    <comment>Means the Read-Access-Memory (typical the used to inform about the size)</comment>
   </data>
   <data name="Recognition" xml:space="preserve">
     <value>Recognition</value>
@@ -1251,6 +1290,9 @@
   <data name="SecurityCenter" xml:space="preserve">
     <value>Security Center</value>
     <comment>Area Control Panel (legacy settings)</comment>
+  </data>
+  <data name="SecurityProcessor" xml:space="preserve">
+    <value>Security Processor</value>
   </data>
   <data name="SessionCleanup" xml:space="preserve">
     <value>Session cleanup</value>
@@ -1349,6 +1391,10 @@
     <value>System properties and Add New Hardware wizard</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
+  <data name="Tab" xml:space="preserve">
+    <value>Tab</value>
+    <comment>Means the key "Tabulator" on the keyborad</comment>
+  </data>
   <data name="TabletMode" xml:space="preserve">
     <value>Tablet mode</value>
     <comment>Area System</comment>
@@ -1399,6 +1445,9 @@
     <value>timedate.cpl</value>
     <comment>File name, Should not translated</comment>
   </data>
+  <data name="Timeline" xml:space="preserve">
+    <value>Timeline</value>
+  </data>
   <data name="Touch" xml:space="preserve">
     <value>Touch</value>
   </data>
@@ -1444,6 +1493,10 @@
     <value>User accounts</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version</value>
+    <comment>Means The "Windows Version"</comment>
+  </data>
   <data name="VideoPlayback" xml:space="preserve">
     <value>Video playback</value>
     <comment>Area Apps</comment>
@@ -1451,6 +1504,13 @@
   <data name="Videos" xml:space="preserve">
     <value>Videos</value>
     <comment>Area Privacy</comment>
+  </data>
+  <data name="VirtualDesktops" xml:space="preserve">
+    <value>Virtual Desktops</value>
+  </data>
+  <data name="Virus" xml:space="preserve">
+    <value>Virus</value>
+    <comment>Means the virus in computers and software</comment>
   </data>
   <data name="VoiceActivation" xml:space="preserve">
     <value>Voice activation</value>

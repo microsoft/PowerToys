@@ -13,13 +13,13 @@
   {
     "Area": "Accounts",
     "Name": "FamilyAndOtherPeople",
-    "AltNames": [ "Other users" ],
+    "AltNames": [ "OtherUsers" ],
     "Command": "ms-settings:otherusers"
   },
   {
     "Area": "Accounts",
     "Name": "SetUpAKiosk",
-    "AltNames": [ "Assigned access" ],
+    "AltNames": [ "AssignedAccess" ],
     "Command": "ms-settings:assignedaccess"
   },
   {
@@ -197,13 +197,13 @@
   {
     "Area": "Devices",
     "Name": "MobileDevices",
-    "AltNames": [ "Your phone" ],
+    "AltNames": [ "YourPhone" ],
     "Command": "ms-settings:mobile-devices"
   },
   {
     "Area": "EaseOfAccess",
     "Name": "Audio",
-    "AltNames": [ "Mono", "Volume", "Audio alerts" ],
+    "AltNames": [ "Mono", "Volume", "AudioAlerts" ],
     "Command": "ms-settings:easeofaccess-audio"
   },
   {
@@ -214,19 +214,19 @@
   {
     "Area": "EaseOfAccess",
     "Name": "ColorFilters",
-    "AltNames": [ "Inverted colors", "Grayscale", "Red-green", "Blue-yellow", "Green week", "Red week", "deuteranopia", "protanopia", "tritanopia" ],
+    "AltNames": [ "InvertedColors", "Grayscale", "RedGreen", "BlueYellow", "GreenWeek", "RedWeek", "deuteranopia", "protanopia", "tritanopia" ],
     "Command": "ms-settings:easeofaccess-colorfilter"
   },
   {
     "Area": "EaseOfAccess",
     "Name": "MousePointer",
-    "AltNames": [ "Touch feedback" ],
+    "AltNames": [ "TouchFeedback" ],
     "Command": "ms-settings:easeofaccess-cursorandpointersize"
   },
   {
     "Area": "EaseOfAccess",
     "Name": "Display",
-    "AltNames": [ "Transparency", "Animations", "Scroll bars", "Size" ],
+    "AltNames": [ "Transparency", "Animations", "ScrollBars", "Size" ],
     "Command": "ms-settings:easeofaccess-display"
   },
   {
@@ -248,7 +248,7 @@
   {
     "Area": "EaseOfAccess",
     "Name": "Keyboard",
-    "AltNames": [ "Print screen", "Shortcuts", "On-Screen", "Keys", "Scroll Lock", "Caps Lock", "Num Lock" ],
+    "AltNames": [ "PrintScreen", "Shortcuts", "OnScreen", "Keys", "ScrollLock", "CapsLock", "NumLock" ],
     "Command": "ms-settings:easeofaccess-keyboard"
   },
   {
@@ -310,7 +310,7 @@
   {
     "Area": "Gaming",
     "Name": "PlayingAGameFullScreen",
-    "AltNames": [ "Quiet moments game" ],
+    "AltNames": [ "QuietMomentsGame" ],
     "Command": "ms-settings:quietmomentsgame"
   },
   {
@@ -333,28 +333,28 @@
   {
     "Area": "MixedReality",
     "Name": "AudioAndSpeech",
-    "AltNames": [ "Holographic audio" ],
+    "AltNames": [ "HolographicAudio" ],
     "Note": "only available if the Mixed Reality Portal app is installed.",
     "Command": "ms-settings:holographic-audio"
   },
   {
     "Area": "MixedReality",
     "Name": "Environment",
-    "AltNames": [ "Holographic Environment" ],
+    "AltNames": [ "HolographicEnvironment" ],
     "Note": "only available if the Mixed Reality Portal app is installed.",
     "Command": "ms-settings:privacy-holographic-environment"
   },
   {
     "Area": "MixedReality",
     "Name": "HeadsetDisplay",
-    "AltNames": [ "Holographic Headset" ],
+    "AltNames": [ "HolographicHeadset" ],
     "Note": "only available if the Mixed Reality Portal app is installed.",
     "Command": "ms-settings:holographic-headset"
   },
   {
     "Area": "MixedReality",
     "Name": "Uninstall",
-    "AltNames": [ "Holographic Management" ],
+    "AltNames": [ "HolographicManagement" ],
     "Note": "only available if the Mixed Reality Portal app is installed.",
     "Command": "ms-settings:holographic-management"
   },
@@ -437,7 +437,7 @@
   {
     "Area": "NetworkAndInternet",
     "Name": "WiFi",
-    "AltNames": [ "Wireless", "Metered connection", "WiFi" ],
+    "AltNames": [ "Wireless", "MeteredConnection", "WiFi" ],
     "Note": "only available if the device has a Wi-Fi adapter",
     "Command": "ms-settings:network-wifi"
   },
@@ -457,7 +457,7 @@
   {
     "Area": "Personalization",
     "Name": "ChooseWhichFoldersAppearOnStart",
-    "AltNames": [ "Start places" ],
+    "AltNames": [ "StartPlaces" ],
     "Command": "ms-settings:personalization-start-places"
   },
   {
@@ -468,7 +468,7 @@
   {
     "Area": "Personalization",
     "Name": "Colors",
-    "AltNames": [ "Dark mode", "Light mode", "Dark color", "Light color", "App color", "Taskbar color", "Window border" ],
+    "AltNames": [ "DarkMode", "LightMode", "DarkColor", "LightColor", "AppColor", "TaskbarColor", "WindowBorder" ],
     "Command": "ms-settings:colors"
   },
   {
@@ -615,7 +615,7 @@
   {
     "Area": "Privacy",
     "Name": "InkingAndTyping",
-    "AltNames": [ "Speech typing" ],
+    "AltNames": [ "SpeechTyping" ],
     "Command": "ms-settings:privacy-speechtyping"
   },
   {
@@ -646,7 +646,7 @@
   {
     "Area": "Privacy",
     "Name": "OtherDevices",
-    "AltNames": [ "Custom devices" ],
+    "AltNames": [ "CustomDevices" ],
     "Command": "ms-settings:privacy-customdevices"
   },
   {
@@ -713,7 +713,7 @@
   {
     "Area": "System",
     "Name": "About",
-    "AltNames": [ "RAM", "Processor", "OS", "ID", "Edition", "Version" ],
+    "AltNames": [ "Ram", "Processor", "Os", "Id", "Edition", "Version" ],
     "Command": "ms-settings:about"
   },
   {
@@ -744,7 +744,7 @@
   {
     "Area": "System",
     "Name": "BatteryUse",
-    "AltNames": [ "Battery saver usage details" ],
+    "AltNames": [ "BatterySaverUsageDetails" ],
     "Note": "only available on devices that have a battery, such as a tablet",
     "Command": "ms-settings:batterysaver-usagedetails"
   },
@@ -756,7 +756,7 @@
   {
     "Area": "System",
     "Name": "Display",
-    "AltNames": [ "Night light", "Blue light", "Warmer color", "Red eye" ],
+    "AltNames": [ "NightLight", "BlueLight", "WarmerColor", "RedEye" ],
     "Command": "ms-settings:display"
   },
   {
@@ -799,7 +799,7 @@
   {
     "Area": "System",
     "Name": "GraphicsSettings",
-    "AltNames": [ "Advanced graphics" ],
+    "AltNames": [ "AdvancedGraphics" ],
     "Note": "only available on devices that support advanced graphics options",
     "Command": "ms-settings:display-advancedgraphics"
   },
@@ -811,7 +811,7 @@
   {
     "Area": "System",
     "Name": "Multitasking",
-    "AltNames": [ "Timeline", "Tab", "Alt+Tab", "Virtual desktops" ],
+    "AltNames": [ "Timeline", "Tab", "AltAndTab", "VirtualDesktops" ],
     "Command": "ms-settings:multitasking"
   },
   {
@@ -897,7 +897,7 @@
   {
     "Area": "TimeAndLanguage",
     "Name": "Region",
-    "AltNames": [ "Region formatting" ],
+    "AltNames": [ "RegionFormatting" ],
     "Command": "ms-settings:regionformatting"
   },
   {
@@ -1001,7 +1001,7 @@
   {
     "Area": "UpdateAndSecurity",
     "Name": "WindowsSecurity",
-    "AltNames": [ "Windows Defender", "Firewall", "Virus", "Core isolation", "Security processor", "Isolated browsing", "Exploit protection" ],
+    "AltNames": [ "WindowsDefender", "Firewall", "Virus", "CoreIsolation", "SecurityProcessor", "IsolatedBrowsing", "ExploitProtection" ],
     "Command": "ms-settings:windowsdefender"
   },
   {
