@@ -18,10 +18,9 @@ namespace Espresso.Shell.Core
         {
             for (int i = 0; i < retries; i++)
             {
-                FileStream fileStream = null;
                 try
                 {
-                    fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+                    FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
                     return fileStream;
                 }
                 catch (IOException ex)
