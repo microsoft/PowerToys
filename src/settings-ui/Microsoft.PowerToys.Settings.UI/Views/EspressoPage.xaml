@@ -65,7 +65,7 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
             <ToggleSwitch x:Uid="Espresso_EnableDisplayKeepAwake"
                           IsEnabled="{Binding IsEnabled}"
-                          IsOn="True" />
+                          IsOn="{Binding KeepDisplayOn, Mode=TwoWay}" />
             <!--Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"-->
 
             <StackPanel Margin="{StaticResource MediumTopMargin}">
