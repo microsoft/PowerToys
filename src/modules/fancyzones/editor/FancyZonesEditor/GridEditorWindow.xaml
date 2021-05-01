@@ -58,15 +58,15 @@
                     <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button Content="{x:Static props:Resources.Cancel}"
-                    Style="{StaticResource DefaultButtonStyle}"
-                    HorizontalAlignment="Stretch"
-                    Grid.Column="2"
-                    Click="OnCancel" />
                 <Button Content="{x:Static props:Resources.Save_Apply}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    HorizontalAlignment="Stretch"
-                    Click="OnSaveApplyTemplate" />
+                        Style="{StaticResource AccentButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Click="OnSaveApplyTemplate" />
+                <Button Content="{x:Static props:Resources.Cancel}"
+                        Style="{StaticResource DefaultButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Grid.Column="2"
+                        Click="OnCancel" />
             </Grid>
         </StackPanel>
     </Grid>
