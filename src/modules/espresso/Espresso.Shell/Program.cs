@@ -17,16 +17,21 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning disable CS8603 // Possible null reference return.
+
 namespace Espresso.Shell
 {
     class Program
     {
-        private static Mutex mutex = null;
+        private static Mutex? mutex = null;
         private const string appName = "Espresso";
-        private static FileSystemWatcher watcher = null;
+        private static FileSystemWatcher? watcher = null;
+
         public static Mutex Mutex { get => mutex; set => mutex = value; }
 
-        private static Logger log;
+        private static Logger? log;
 
         static int Main(string[] args)
         {
@@ -193,6 +198,7 @@ namespace Espresso.Shell
                     using (fileStream)
                     {
                         using StreamReader reader = new StreamReader(fileStream);
+
                         settings = JsonConvert.DeserializeObject<EspressoSettingsModel>(reader.ReadToEnd());
                     }
 

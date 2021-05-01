@@ -162,10 +162,20 @@ namespace Espresso.Shell.Core
         {
             try
             {
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(BUILD_REGISTRY_LOCATION);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
-                var versionString = $"{registryKey.GetValue("ProductName")} {registryKey.GetValue("DisplayVersion")} {registryKey.GetValue("BuildLabEx")}";
-                return versionString;
+                if (registryKey != null)
+                {
+                    var versionString = $"{registryKey.GetValue("ProductName")} {registryKey.GetValue("DisplayVersion")} {registryKey.GetValue("BuildLabEx")}";
+                    return versionString;
+                }
+                else
+                {
+                    log.Debug("Registry key acquisition for OS failed.");
+                    return string.Empty;
+                }
             }
             catch (Exception ex)
             {

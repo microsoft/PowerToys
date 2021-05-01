@@ -14,7 +14,7 @@ namespace Espresso.Shell.Core
         const int ERROR_SHARING_VIOLATION = 32;
         const int ERROR_LOCK_VIOLATION = 33;
 
-        public static FileStream GetSettingsFile(string path, int retries)
+        public static FileStream? GetSettingsFile(string path, int retries)
         {
             for (int i = 0; i < retries; i++)
             {
