@@ -152,8 +152,8 @@ namespace Espresso.Shell.Core
             }
             catch (OperationCanceledException ex)
             {
-                log.Debug($"Background thread termination. Message: {ex.Message}");
                 // Task was clearly cancelled.
+                log.Debug($"Background thread termination. Message: {ex.Message}");
                 return success;
             }
         }

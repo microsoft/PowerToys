@@ -44,16 +44,6 @@ const static wchar_t* MODULE_DESC = L"<no description>";
 // These are the properties shown in the Settings page.
 struct ModuleSettings
 {
-    // Add the PowerToy module properties with default values.
-    // Currently available types:
-    // - int
-    // - bool
-    // - string
-
-    //bool bool_prop = true;
-    //int int_prop = 10;
-    //std::wstring string_prop = L"The quick brown fox jumps over the lazy dog";
-    //std::wstring color_prop = L"#1212FF";
 
 } g_settings;
 
@@ -68,8 +58,47 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
 
+    HANDLE m_hProcess;
+
+    HANDLE send_telemetry_event;
+
+    // Handle to event used to invoke Espresso
+    HANDLE m_hInvokeEvent;
+
     // Load initial settings from the persisted values.
     void init_settings();
+
+    bool is_process_running()
+    {
+        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
+    }
+
+    void launch_process()
+    {
+        Logger::trace(L"Launching Espresso process");
+        unsigned long powertoys_pid = GetCurrentProcessId();
+
+        // Get the configuration file that will be passed to the process.
+        std::wstring espresso_settings_location = PTSettingsHelper::get_module_save_file_location(MODULE_NAME);
+
+        std::wstring executable_args = L"--config " + espresso_settings_location;
+        executable_args.append(std::to_wstring(powertoys_pid));
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"modules\\Espresso\\Espresso.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (!ShellExecuteExW(&sei))
+        {
+            DWORD error = GetLastError();
+            std::wstring message = L"Espresso failed to start with error = ";
+            message += std::to_wstring(error);
+            Logger::error(message);
+        }
+
+        m_hProcess = sei.hProcess;
+    }
 
 public:
     // Constructor
@@ -95,6 +124,7 @@ public:
     {
         return MODULE_NAME;
     }
+
 
     //// Return array of the names of all events that this powertoy listens for, with
     //// nullptr as the last element of the array. Nullptr can also be retured for empty
@@ -239,15 +269,23 @@ public:
         }
     }
 
-    // Enable the powertoy
     virtual void enable()
     {
+        ResetEvent(send_telemetry_event);
+        ResetEvent(m_hInvokeEvent);
+        launch_process();
         m_enabled = true;
-    }
+    };
 
-    // Disable the powertoy
     virtual void disable()
     {
+        if (m_enabled)
+        {
+            ResetEvent(send_telemetry_event);
+            ResetEvent(m_hInvokeEvent);
+            TerminateProcess(m_hProcess, 1);
+        }
+
         m_enabled = false;
     }
 
