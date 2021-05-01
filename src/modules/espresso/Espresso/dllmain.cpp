@@ -82,11 +82,11 @@ private:
         std::wstring espresso_settings_location = PTSettingsHelper::get_module_save_file_location(MODULE_NAME);
 
         std::wstring executable_args = L"--config " + espresso_settings_location;
-        executable_args.append(std::to_wstring(powertoys_pid));
+        //executable_args.append(std::to_wstring(powertoys_pid));
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\Espresso\\Espresso.exe";
+        sei.lpFile = L"modules\\Espresso\\Espresso.Shell.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
         if (!ShellExecuteExW(&sei))
