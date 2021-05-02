@@ -1170,9 +1170,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to DNS.
         /// </summary>
-        internal static string Dns {
+        internal static string DNS {
             get {
-                return ResourceManager.GetString("Dns", resourceCulture);
+                return ResourceManager.GetString("DNS", resourceCulture);
             }
         }
         
@@ -2088,18 +2088,18 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to NFC.
         /// </summary>
-        internal static string Nfc {
+        internal static string NFC {
             get {
-                return ResourceManager.GetString("Nfc", resourceCulture);
+                return ResourceManager.GetString("NFC", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to NFC Transactions.
         /// </summary>
-        internal static string NfcTransactions {
+        internal static string NFCTransactions {
             get {
-                return ResourceManager.GetString("NfcTransactions", resourceCulture);
+                return ResourceManager.GetString("NFCTransactions", resourceCulture);
             }
         }
         
@@ -2187,9 +2187,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to only present if user is enrolled in WIP.
         /// </summary>
-        internal static string NoteEnrolledWip {
+        internal static string NoteEnrolledWIP {
             get {
-                return ResourceManager.GetString("NoteEnrolledWip", resourceCulture);
+                return ResourceManager.GetString("NoteEnrolledWIP", resourceCulture);
             }
         }
         
@@ -2628,9 +2628,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Playing a game full screen.
         /// </summary>
-        internal static string PlayingAGameFullScreen {
+        internal static string PlayingGameFullScreen {
             get {
-                return ResourceManager.GetString("PlayingAGameFullScreen", resourceCulture);
+                return ResourceManager.GetString("PlayingGameFullScreen", resourceCulture);
             }
         }
         
@@ -3015,9 +3015,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to SecureDNS.
         /// </summary>
-        internal static string SecureDns {
+        internal static string SecureDNS {
             get {
-                return ResourceManager.GetString("SecureDns", resourceCulture);
+                return ResourceManager.GetString("SecureDNS", resourceCulture);
             }
         }
         
@@ -3069,9 +3069,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Set up a kiosk.
         /// </summary>
-        internal static string SetUpAKiosk {
+        internal static string SetUpKiosk {
             get {
-                return ResourceManager.GetString("SetUpAKiosk", resourceCulture);
+                return ResourceManager.GetString("SetUpKiosk", resourceCulture);
             }
         }
         
