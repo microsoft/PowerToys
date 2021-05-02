@@ -118,7 +118,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 SndEspressoSettings outsettings = new SndEspressoSettings(Settings);
                 SndModuleSettings<SndEspressoSettings> ipcMessage = new SndModuleSettings<SndEspressoSettings>(outsettings);
-                SendConfigMSG(ipcMessage.ToJsonString());
+
+                var targetMessage = ipcMessage.ToJsonString();
+                SendConfigMSG(targetMessage);
             }
         }
 

@@ -6,11 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class SndEspressoSettings
     {
+        [JsonPropertyName("Espresso")]
         public EspressoSettings Settings { get; set; }
 
         public SndEspressoSettings()
