@@ -108,7 +108,7 @@
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}"
                             MinWidth="90"
-                            IsEnabled="{Binding IsEnabled}"
+                            IsEnabled="{Binding Mode, Converter={StaticResource EspressoModeToReverseBoolConverter}}"
                             SmallChange="1" 
                             LargeChange="5"/>
                     <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Minutes"
@@ -118,7 +118,7 @@
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallLeftTopRightBottomMargin}"
                             MinWidth="90"
-                            IsEnabled="{Binding IsEnabled}"
+                            IsEnabled="{Binding Mode, Converter={StaticResource EspressoModeToReverseBoolConverter}}"
                             SmallChange="1" 
                             LargeChange="5"/>
                 </StackPanel>
