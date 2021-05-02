@@ -18,7 +18,6 @@ namespace ColorPicker.Helpers
     [Export(typeof(ZoomWindowHelper))]
     public class ZoomWindowHelper
     {
-        private const int ZoomWindowChangeDelayInMS = 50;
         private const int ZoomFactor = 2;
         private const int BaseZoomImageSize = 50;
         private const int MaxZoomLevel = 4;
@@ -26,7 +25,6 @@ namespace ColorPicker.Helpers
 
         private readonly IZoomViewModel _zoomViewModel;
         private readonly AppStateHandler _appStateHandler;
-        private readonly IThrottledActionInvoker _throttledActionInvoker;
 
         private int _currentZoomLevel;
         private int _previousZoomLevel;
@@ -40,11 +38,10 @@ namespace ColorPicker.Helpers
         private double _previousScaledY;
 
         [ImportingConstructor]
-        public ZoomWindowHelper(IZoomViewModel zoomViewModel, AppStateHandler appStateHandler, IThrottledActionInvoker throttledActionInvoker)
+        public ZoomWindowHelper(IZoomViewModel zoomViewModel, AppStateHandler appStateHandler)
         {
             _zoomViewModel = zoomViewModel;
             _appStateHandler = appStateHandler;
-            _throttledActionInvoker = throttledActionInvoker;
             _appStateHandler.AppClosed += AppStateHandler_AppClosed;
             _appStateHandler.AppHidden += AppStateHandler_AppClosed;
         }
@@ -104,10 +101,7 @@ namespace ColorPicker.Helpers
             }
             else
             {
-                var enlarge = (_currentZoomLevel - _previousZoomLevel) > 0 ? true : false;
-                var currentZoomFactor = enlarge ? ZoomFactor : 1.0 / ZoomFactor;
-
-                _zoomViewModel.ZoomFactor *= currentZoomFactor;
+                _zoomViewModel.ZoomFactor = Math.Pow(ZoomFactor, _currentZoomLevel - 1);
             }
 
             ShowZoomWindow((int)point.X, (int)point.Y);
@@ -156,8 +150,8 @@ namespace ColorPicker.Helpers
                 _previousScaledY = y / dpi.DpiScaleY;
             }
 
-            _lastLeft = Math.Floor(_previousScaledX - (BaseZoomImageSize * Math.Pow(ZoomFactor, _currentZoomLevel - 1) / 2));
-            _lastTop = Math.Floor(_previousScaledY - (BaseZoomImageSize * Math.Pow(ZoomFactor, _currentZoomLevel - 1) / 2));
+            _lastLeft = _previousScaledX - (_zoomWindow.Width / 2);
+            _lastTop = _previousScaledY - (_zoomWindow.Width / 2);
 
             var justShown = false;
             if (!_zoomWindow.IsVisible)
@@ -182,15 +176,10 @@ namespace ColorPicker.Helpers
                 SessionEventHelper.Event.ZoomUsed = true;
             }
 
-            _throttledActionInvoker.ScheduleAction(
-            () =>
-            {
-                _zoomWindow.DesiredLeft = _lastLeft;
-                _zoomWindow.DesiredTop = _lastTop;
-                _zoomViewModel.DesiredHeight = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
-                _zoomViewModel.DesiredWidth = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
-            },
-            ZoomWindowChangeDelayInMS);
+            _zoomWindow.Left = _lastLeft;
+            _zoomWindow.Top = _lastTop;
+            _zoomViewModel.DesiredHeight = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
+            _zoomViewModel.DesiredWidth = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
         }
 
         private void ZoomWindow_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
