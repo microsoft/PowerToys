@@ -368,5 +368,120 @@ namespace FancyZonesEditor
             snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge);
             snappyY = null;
         }
+
+        private void Border_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Tab)
+            {
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine(e.Key);
+
+                if (e.Key == Key.Right)
+                {
+                    if (IsShiftKeyDown())
+                    {
+                        // Make the zone larger (height)
+                        MoveZoneX(6, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                        MoveZoneX(-6, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                    }
+                    else
+                    {
+                        // Move zone right
+                        MoveZoneX(12, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                    }
+                }
+                else if (e.Key == Key.Left)
+                {
+                    if (IsShiftKeyDown())
+                    {
+                        // Make the zone smaller (height)
+                        MoveZoneX(-6, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                        MoveZoneX(6, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                    }
+                    else
+                    {
+                        // Move zone left
+                        MoveZoneX(-12, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                    }
+                }
+                else if (e.Key == Key.Up)
+                {
+                    if (IsShiftKeyDown())
+                    {
+                        // Make the zone larger (height)
+                        MoveZoneY(6, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                        MoveZoneY(-6, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                    }
+                    else
+                    {
+                        // Move zone up
+                        MoveZoneY(-12, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                    }
+                }
+                else if (e.Key == Key.Down)
+                {
+                    if (IsShiftKeyDown())
+                    {
+                        // Make the zone smaller (height)
+                        MoveZoneY(-6, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                        MoveZoneY(6, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                    }
+                    else
+                    {
+                        // Move zone down
+                        MoveZoneY(12, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                    }
+                }
+            }
+        }
+
+        private void MoveZoneX(int value, ResizeMode top, ResizeMode bottom)
+        {
+            snappyX = NewDefaultSnappyHelper(true, top);
+            snappyY = NewDefaultSnappyHelper(false, bottom);
+            snappyX.Move(value);
+            UpdateFromSnappyHelpers();
+        }
+
+        private void MoveZoneY(int value, ResizeMode top, ResizeMode bottom)
+        {
+            snappyX = NewDefaultSnappyHelper(true, bottom);
+            snappyY = NewDefaultSnappyHelper(false, top);
+            snappyY.Move(value);
+            UpdateFromSnappyHelpers();
+        }
+
+        private bool IsShiftKeyDown()
+        {
+            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private void Border_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Mouse down!");
+        }
+
+        private void UserControl_GotFocus(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Got focus: " + LabelID.Content);
+        }
+
+        private void UserControl_LostFocus(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Lost focus: " + LabelID.Content);
+        }
+
+        private void UserControl_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            this.Focus();
+            System.Diagnostics.Debug.WriteLine("Preview Mouse down!");
+        }
     }
 }

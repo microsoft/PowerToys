@@ -5,8 +5,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:props="clr-namespace:FancyZonesEditor.Properties"
              xmlns:local="clr-namespace:FancyZonesEditor"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
+             FocusManager.IsFocusScope="True"
+             KeyDown="Border_KeyDown"
+             FocusVisualStyle="{DynamicResource MyFocusVisual}"
+             MouseDown="Border_MouseDown"
+             PreviewMouseDown="UserControl_PreviewMouseDown"
              Background="Transparent"
+             Focusable="True"
+             
+            GotFocus="UserControl_GotFocus" 
+             LostFocus="UserControl_LostFocus"
+             KeyboardNavigation.TabNavigation="Local"
              d:DesignHeight="450" d:DesignWidth="800">
 
     <UserControl.Resources>
@@ -84,11 +94,29 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="MyFocusVisual">
+            <Setter Property="UserControl.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="-2"
+                                   StrokeThickness="1"
+                                   Stroke="Red"
+                                   StrokeDashArray="1 2" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
+    
+    
+    
+    
     <Border BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
             Background="{DynamicResource CanvasZoneBackgroundBrush}"
             CornerRadius="0"
+        
             BorderThickness="1">
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
