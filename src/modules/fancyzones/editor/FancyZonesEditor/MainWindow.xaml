@@ -31,19 +31,13 @@
         <Converters:LayoutTypeTemplateToVisibilityConverter x:Key="LayoutTypeTemplateToVisibilityConverter" />
         <Converters:LayoutModelTypeBlankToVisibilityConverter x:Key="LayoutModelTypeBlankToVisibilityConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        
-
 
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
                     Width="{Binding DisplayWidth}"
                     Height="{Binding DisplayHeight}"
                     AutomationProperties.Name="{x:Static props:Resources.Monitor}"
-                    AutomationProperties.HelpText="{Binding Index}"
-                    Margin="8,2,8,8"
-                    KeyDown="MonitorItem_KeyDown"
-                    MouseDown="MonitorItem_MouseDown"
-                   >
+                    AutomationProperties.HelpText="{Binding Index}">
                 <Border.ToolTip>
                     <ToolTip>
                         <StackPanel>
@@ -65,7 +59,7 @@
                                FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                               Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
                     <TextBlock Name="ResolutionText"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding Dimensions}"
@@ -75,224 +69,86 @@
                                FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                               Opacity="0.6"
+                               Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
                 </StackPanel>
             </Border>
-            <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Selected}"
-                             Value="true">
-                    <Setter TargetName="IndexText"
-                            Property="Foreground"
-                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                    <Setter TargetName="ResolutionText"
-                            Property="Foreground"
-                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                    
-                    <Setter TargetName="MonitorItem"
-                            Property="BorderBrush"
-                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                </DataTrigger>
-            </DataTemplate.Triggers>
+
         </DataTemplate>
 
-        <DataTemplate x:Key="SimpleItemTemplate">
-            <Grid Background="Red"
-                  AutomationProperties.Name="Woehoe">
-                <TextBlock Text="{Binding Name}"
-                           AutomationProperties.Name="Woehoe" />
-            </Grid>
-        </DataTemplate>
-        
         <DataTemplate x:Key="LayoutItemTemplate">
-            <Grid Background="Transparent"
-                  Width="216"
-                  AutomationProperties.Name="Woehoe"
-                  Height="172">
-                <Border x:Name="LayoutItem"
-                        Margin="16">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="24" />
-                            <RowDefinition Height="124" />
-                            <RowDefinition Height="0" />
-                        </Grid.RowDefinitions>
-                        <TextBlock Name="layoutName"
-                                   TextTrimming="CharacterEllipsis"
-                                   Text="{Binding Name}"
-                                   FontSize="15"
-                                   Grid.Row="0"
-                                   FontWeight="SemiBold"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   Margin="0,-4,24,0"
-                                   ToolTip="{Binding Name}"
-                                   Foreground="{DynamicResource PrimaryForegroundBrush}" />
-                        <local:LayoutPreview Grid.Row="1"
-                                             Margin="0,8,0,8" 
-                                             VerticalAlignment="Stretch"
-                                             HorizontalAlignment="Stretch" />
-                    </Grid>
-                </Border>
-                <Border x:Name="SelectionHighlight"
-                        CornerRadius="4"
-                        BorderThickness="3"
-                        Margin="0"
-                        Visibility="Collapsed"
-                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" />
+            <Grid  Background="Transparent">
+                <Grid.ContextMenu>
+                    <ContextMenu Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}">
+                        <MenuItem Header="{x:Static props:Resources.Duplicate}"
+                                  Click="DuplicateLayout_Click"
+                                  Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                            <MenuItem.Icon>
+                                <ui:FontIcon Glyph="&#xE8C8;" />
+                            </MenuItem.Icon>
+                        </MenuItem>
 
+                        <MenuItem Header="{x:Static props:Resources.Create_Custom_From_Template}"
+                                  Click="DuplicateLayout_Click"
+                                  Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
+                            <MenuItem.Icon>
+                                <ui:FontIcon Glyph="&#xE8C8;" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        
+                        <MenuItem Header="{x:Static props:Resources.Delete}"
+                                  Click="DeleteLayout_Click"
+                                  Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                            <MenuItem.Icon>
+                                <ui:FontIcon Glyph="&#xE107;" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </Grid.ContextMenu>
+                <Grid
+                      Width="180"
+                      Height="140"
+                      Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="24" />
+                        <RowDefinition Height="124" />
+                        <RowDefinition Height="0" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Name="layoutName"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Name}"
+                               FontSize="15"
+                               FontWeight="SemiBold"
+                               Margin="0,-4,24,0"
+                               ToolTip="{Binding Name}"
+                               Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}" />
+                    <local:LayoutPreview Grid.Row="1"
+                                         Margin="0,8,0,8"
+                                         VerticalAlignment="Stretch"
+                                         HorizontalAlignment="Stretch" />
+                </Grid>
                 <Button Content="&#xE104;"
                         x:Name="EditLayoutButton"
                         FontFamily="Segoe MDL2 Assets"
                         FontSize="14"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
-                        Margin="4           "
+                        Margin="4"
                         Height="36"
                         Width="36"
                         Padding="0"
+                        Grid.RowSpan="4"
                         BorderBrush="Transparent"
                         Click="EditLayout_Click"
                         Background="Transparent"
                         Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}"
-                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                        Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}"
                         ToolTip="{x:Static props:Resources.Edit_Layout}"
                         AutomationProperties.Name="{x:Static props:Resources.Edit_Layout}"
                         Style="{StaticResource AccentButtonStyle}"
                         ui:ControlHelper.CornerRadius="36" />
             </Grid>
-            <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding IsApplied}"
-                             Value="true">
-                    <Setter TargetName="layoutName"
-                            Property="Foreground"
-                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                    <Setter TargetName="SelectionHighlight"
-                            Property="Visibility"
-                            Value="Visible" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsSelected}"
-                             Value="true">
-                    <Setter TargetName="LayoutItem"
-                            Property="BorderBrush"
-                            Value="{DynamicResource LayoutItemBorderPointerOverBrush}" />
-
-                    <Setter TargetName="EditLayoutButton"
-                            Property="Foreground"
-                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                </DataTrigger>
-            </DataTemplate.Triggers>
         </DataTemplate>
-
-        <Style x:Key="GridViewCardStyle" TargetType="ui:GridViewItem">
-            <Setter Property="Background"
-                    Value="Transparent" />
-            <Setter Property="Foreground"
-                    Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
-            <Setter Property="KeyboardNavigation.TabNavigation"
-                    Value="Local" />
-            <!--<Setter Property="IsHoldingEnabled" Value="True" />-->
-            <Setter Property="Margin"
-                    Value="8" />
-            <Setter Property="FocusVisualStyle"
-                    Value="{StaticResource UWPFocusVisualStyle}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ui:GridViewItem">
-                        <Border x:Name="ContentBorder"
-                                CornerRadius="4"
-                                Padding="0"
-                                AutomationProperties.Name="Woehoe"
-                                Background="{StaticResource LayoutItemBackgroundBrush}"
-                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="6"
-                                                  Opacity="0.24"
-                                                  ShadowDepth="1" />
-                            </Border.Effect>
-                            <VisualStateManager.CustomVisualStateManager>
-                                <ui:SimpleVisualStateManager />
-                            </VisualStateManager.CustomVisualStateManager>
-                            <Grid>
-                                <ContentPresenter x:Name="ContentPresenter"
-                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                  Margin="0"
-                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                            </Grid>
-                        </Border>
-                        <ControlTemplate.Triggers>
-
-                            <!-- PointerOver -->
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsMouseOver"
-                                               Value="True" />
-                                    <Condition Property="IsSelected"
-                                               Value="False" />
-                                </MultiTrigger.Conditions>
-                                <Setter Property="Background"
-                                        TargetName="ContentBorder"
-                                        Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
-                                <Setter Property="BorderBrush"
-                                        TargetName="ContentBorder"
-                                        Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
-                 
-                            </MultiTrigger>
-                            <!-- Selected -->
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsMouseOver"
-                                               Value="False" />
-                                    <Condition Property="IsSelected"
-                                               Value="True" />
-                                </MultiTrigger.Conditions>
-
-                            </MultiTrigger>
-                            <!-- PointerOverSelected -->
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsMouseOver"
-                                               Value="True" />
-                                    <Condition Property="IsSelected"
-                                               Value="True" />
-                                </MultiTrigger.Conditions>
-                                <Setter Property="Background"
-                                        TargetName="ContentBorder"
-                                        Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
-                                <Setter Property="BorderBrush"
-                                        TargetName="ContentBorder"
-                                        Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
-                   
-
-                            </MultiTrigger>
-                            <!-- Disabled -->
-                            <Trigger Property="IsEnabled"
-                                     Value="False">
-                                <Setter TargetName="ContentBorder"
-                                        Property="Opacity"
-                                        Value="{DynamicResource ListViewItemDisabledThemeOpacity}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     </Window.Resources>
 
     <Grid>
@@ -300,8 +156,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
-
 
         <Grid Grid.Row="1"
               Background="{DynamicResource PrimaryBackgroundBrush}">
@@ -322,29 +176,16 @@
 
                     <ui:GridView ItemsSource="{Binding DefaultModels}"
                                  Grid.Row="1"
-                                 ItemTemplate="{StaticResource SimpleItemTemplate}"
+                                 ItemTemplate="{StaticResource LayoutItemTemplate}"
                                  AutomationProperties.LabeledBy="{Binding ElementName=TemplatesHeaderBlock}"
-                                 TabIndex="4"
+                                 TabIndex="1"
                                  IsItemClickEnabled="True"
                                  SelectionMode="Single"
-                                 SelectedIndex="1"
-                            
-                                 ItemClick="DefaultModelsItemsControl_ItemClick"
-                                 x:Name="DefaultModelsItemsControl"
-                                 Margin="-8,8,-8,0"
-                                
-                                 
-                                 >
-                        <!--ItemContainerStyle="{StaticResource GridViewCardStyle}"-->
-                        <!--<ui:GridView.ItemContainerStyle>
-                            <Style TargetType="ui:GridViewItem">
-                                <Setter Property="Margin"
-                                        Value="0" />
-                             
-                                <Setter Property="FocusVisualStyle"
-                                        Value="{StaticResource UWPFocusVisualStyle}" />
-                            </Style>
-                        </ui:GridView.ItemContainerStyle>-->
+                                 IsSelectionEnabled="True"
+                                 ItemContainerStyle="{StaticResource LayoutItemContainerStyle}"
+                                 ItemClick="Layout_ItemClick"
+                                 Margin="-8,8,-8,0">
+                     
                     </ui:GridView>
 
                     <TextBlock Text="{x:Static props:Resources.Custom}"
@@ -382,17 +223,18 @@
                         <TextBlock Text="{x:Static props:Resources.No_Custom_Layouts_Message}" Margin="0,16,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}" />
                     </StackPanel>
                     <ui:GridView ItemsSource="{Binding CustomModels}"
-                                  TabIndex="6"
-                                 IsItemClickEnabled="True"
+                                 TabIndex="2"
+                                 ItemTemplate="{StaticResource LayoutItemTemplate}"
+                                 IsSelectionEnabled="True"
                                  SelectionMode="Single"
-                                 ItemClick="DefaultModelsItemsControl_ItemClick"
+                                 IsItemClickEnabled="True"
+                                 ItemClick="Layout_ItemClick"
                                  AutomationProperties.LabeledBy="{Binding ElementName=CustomHeaderBlock}"
-                                  ItemTemplate="{StaticResource LayoutItemTemplate}"
-                                 ItemContainerStyle="{StaticResource GridViewCardStyle}"
-                                  Margin="-8,12,-8,0"
-                                  Grid.Row="4">
-                    </ui:GridView>
-                   
+                                 ItemContainerStyle="{StaticResource LayoutItemContainerStyle}"
+                                 Margin="-8,8,-8,0"
+                                 Grid.Row="4" />
+
+
                 </Grid>
             </ScrollViewer>
 
@@ -401,7 +243,7 @@
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
                     AutomationProperties.Name="{x:Static props:Resources.Create_new_layout}"
-                    TabIndex="5"
+                    TabIndex="3"
                     Padding="0"
                     Height="36"
                     Margin="16"
@@ -440,19 +282,15 @@
                     <local1:MonitorViewModel x:Name="monitorViewModel" />
                 </ScrollViewer.DataContext>
                 <Grid>
-                    <ItemsControl x:Name="MainWindowItemControl"
-                                  TabIndex="0"
-                                  ItemTemplate="{StaticResource MonitorItemTemplate}"
-                                  ItemsSource="{Binding MonitorInfoForViewModel}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Background="Transparent"
-                                            Orientation="Horizontal"
-                                            HorizontalAlignment="Center"
-                                            Margin="8, 0, 8, 16" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
+                    <ui:GridView TabIndex="0"
+                                 HorizontalAlignment="Center"
+                                 IsSelectionEnabled="True"
+                                 SelectionMode="Single"
+                                 IsItemClickEnabled="True"
+                                 ItemClick="Monitor_ItemClick"
+                                 ItemContainerStyle="{StaticResource MonitorItemContainerStyle}"
+                                 ItemTemplate="{StaticResource MonitorItemTemplate}"
+                                 ItemsSource="{Binding MonitorInfoForViewModel}" />
                 </Grid>
             </ScrollViewer>
         </Grid>

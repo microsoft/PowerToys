@@ -325,19 +325,6 @@ namespace FancyZonesEditor
             InvalidateVisual();
         }
 
-        private void MonitorItem_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Return || e.Key == Key.Space)
-            {
-                monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
-            }
-        }
-
-        private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
-        }
-
         // EditLayout: Cancel changes
         private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
@@ -373,12 +360,12 @@ namespace FancyZonesEditor
 
         private async void DeleteLayout(FrameworkElement element)
         {
-            var dialog = new ModernWpf.Controls.ContentDialog()
+            var dialog = new ContentDialog()
             {
-                Title = FancyZonesEditor.Properties.Resources.Are_You_Sure,
-                Content = FancyZonesEditor.Properties.Resources.Are_You_Sure_Description,
-                PrimaryButtonText = FancyZonesEditor.Properties.Resources.Delete,
-                SecondaryButtonText = FancyZonesEditor.Properties.Resources.Cancel,
+                Title = Properties.Resources.Are_You_Sure,
+                Content = Properties.Resources.Are_You_Sure_Description,
+                PrimaryButtonText = Properties.Resources.Delete,
+                SecondaryButtonText = Properties.Resources.Cancel,
             };
 
             var result = await dialog.ShowAsync();
@@ -424,11 +411,15 @@ namespace FancyZonesEditor
             }
         }
 
-        private void DefaultModelsItemsControl_ItemClick(object sender, ItemClickEventArgs e)
+        private void Layout_ItemClick(object sender, ItemClickEventArgs e)
         {
-            LayoutModel selectedLayoutModel = e.ClickedItem as LayoutModel;
-            Select(selectedLayoutModel);
+            Select(e.ClickedItem as LayoutModel);
             Apply();
+        }
+
+        private void Monitor_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            monitorViewModel.SelectCommand.Execute(e.ClickedItem as MonitorInfoModel);
         }
     }
 }
