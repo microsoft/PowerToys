@@ -105,6 +105,8 @@
     <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
       <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\EspressoModeToBoolConverter.cs" />
+    <Compile Include="Converters\EspressoModeToReverseBoolConverter.cs" />
     <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>

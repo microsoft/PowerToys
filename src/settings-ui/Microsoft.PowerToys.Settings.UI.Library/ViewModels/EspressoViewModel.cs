@@ -63,6 +63,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public EspressoMode Mode
+        {
+            get => _mode;
+            set
+            {
+                if (_mode != value)
+                {
+                    _mode = value;
+                    OnPropertyChanged(nameof(Mode));
+
+                    Settings.Properties.Mode = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public bool KeepDisplayOn
         {
             get => _keepDisplayOn;

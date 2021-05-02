@@ -5,7 +5,8 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:c="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:Custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:Color="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels" xmlns:Interactivity="using:Microsoft.Xaml.Interactivity" xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d"
@@ -14,6 +15,11 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
 
+    <Page.Resources>
+        <c:EspressoModeToBoolConverter x:Key="EspressoModeToBoolConverter" />
+        <c:EspressoModeToReverseBoolConverter x:Key="EspressoModeToReverseBoolConverter" />
+    </Page.Resources>
+    
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -70,7 +76,8 @@
 
             <StackPanel Margin="{StaticResource MediumTopMargin}">
                 <RadioButton x:Uid="Espresso_IndefiniteKeepAwake"
-                             IsEnabled="{Binding IsEnabled}">
+                             IsEnabled="{Binding IsEnabled}"
+                             IsChecked="{Binding Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}}">
                     <RadioButton.Content>
                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Espresso_IndefiniteKeepAwakeContent"/>
@@ -81,7 +88,8 @@
                     </RadioButton.Content>
                 </RadioButton>
                 <RadioButton x:Uid="Espresso_TemporaryKeepAwake"
-                             IsEnabled="{Binding IsEnabled}">
+                             IsEnabled="{Binding IsEnabled}"
+                             IsChecked="{Binding Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToReverseBoolConverter}}">
                     <RadioButton.Content>
                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Espresso_TemporaryKeepAwakeContent"/>
