@@ -39,13 +39,11 @@ advertisingid
 advfirewall
 AFeature
 AFX
-AGame
 AGGREGATABLE
 AHybrid
 airplanemode
 Aissue
 akamaihd
-AKiosk
 ALarger
 alekhyareddy
 ALIGNLEFT
@@ -502,11 +500,8 @@ dllexport
 dllhost
 dllmain
 DNLEN
-<<<<<<< HEAD
 docsmsft
-=======
 Dns
->>>>>>> 0ecf3a15c (fix typo)
 doctype
 domainlexicon
 DONTVALIDATEPATH
@@ -1103,14 +1098,12 @@ keyboardmanagercommon
 KEYBOARDMANAGEREDITOR
 keyboardmanagerstate
 keyboardmanagerui
-keyborad
 keycode
 keyconfig
 keydown
 keydropdowncontrol
 keyevent
 KEYEVENTF
-keyhook
 keynum
 keyremaps
 keystokes
@@ -1399,7 +1392,6 @@ NCRBUTTONDOWN
 NCRBUTTONUP
 NDEBUG
 ndp
-Nefario
 neq
 NESW
 netconnections
@@ -1417,7 +1409,6 @@ newitem
 newpath
 newrow
 Newtonsoft
-Nfc
 nfctransactions
 niels
 nielslaute
@@ -1846,7 +1837,6 @@ scancode
 scanled
 schedtasks
 Scn
-SCOOBE
 SCOPEID
 screenrotation
 screenshot
@@ -2327,7 +2317,6 @@ webpack
 webpage
 website
 webview
-weekness
 wekyb
 Wevtapi
 Wgpocpl
@@ -2384,7 +2373,6 @@ winspool
 winstore
 winui
 winxamlmanager
-Wip
 wistd
 withinrafael
 Withscript

@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -274,13 +273,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
 
                 if (string.IsNullOrEmpty(area))
                 {
-                    Debug.WriteLine($"Resource string for [Area{settings.Area}] not found");
                     Log.Warn($"Resource string for [Area{settings.Area}] not found", typeof(Main));
                 }
 
                 if (string.IsNullOrEmpty(name))
                 {
-                    Debug.WriteLine($"Resource string for [{settings.Name}] not found");
                     Log.Warn($"Resource string for [{settings.Name}] not found", typeof(Main));
                 }
 
@@ -294,7 +291,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
 
                     if (string.IsNullOrEmpty(note))
                     {
-                        Debug.WriteLine($"Resource string for [{settings.Note}] not found");
                         Log.Warn($"Resource string for [{settings.Note}] not found", typeof(Main));
                     }
                 }
@@ -309,7 +305,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
 
                         if (string.IsNullOrEmpty(translatedAltName))
                         {
-                            Debug.WriteLine($"Resource string for [{altName}] not found");
                             Log.Warn($"Resource string for [{altName}] not found", typeof(Main));
                         }
 

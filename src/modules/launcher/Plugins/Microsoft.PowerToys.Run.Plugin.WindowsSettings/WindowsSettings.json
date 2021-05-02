@@ -18,7 +18,7 @@
   },
   {
     "Area": "Accounts",
-    "Name": "SetUpAKiosk",
+    "Name": "SetUpKiosk",
     "AltNames": [ "AssignedAccess" ],
     "Command": "ms-settings:assignedaccess"
   },
@@ -308,7 +308,7 @@
   },
   {
     "Area": "Gaming",
-    "Name": "PlayingAGameFullScreen",
+    "Name": "PlayingGameFullScreen",
     "AltNames": [ "QuietMomentsGame" ],
     "Command": "ms-settings:quietmomentsgame"
   },
@@ -391,7 +391,7 @@
   {
     "Area": "NetworkAndInternet",
     "Name": "Ethernet",
-    "AltNames": [ "Dns", "Sdns", "SecureDns", "Gateway", "Dhcp", "Ip" ],
+    "AltNames": [ "DNS", "Sdns", "SecureDNS", "Gateway", "Dhcp", "Ip" ],
     "Command": "ms-settings:network-ethernet"
   },
   {
@@ -408,8 +408,8 @@
   },
   {
     "Area": "NetworkAndInternet",
-    "Name": "Nfc",
-    "AltNames": [ "NfcTransactions" ],
+    "Name": "NFC",
+    "AltNames": [ "NFCTransactions" ],
     "Command": "ms-settings:nfctransactions"
   },
   {
@@ -425,7 +425,7 @@
   {
     "Area": "NetworkAndInternet",
     "Name": "Network",
-    "AltNames": [ "Dns", "Sdns", "SecureDns", "Gateway", "Dhcp", "Ip" ],
+    "AltNames": [ "DNS", "Sdns", "SecureDNS", "Gateway", "Dhcp", "Ip" ],
     "Command": "ms-settings:network"
   },
   {
@@ -1005,7 +1005,7 @@
   {
     "Area": "UpdateAndSecurity",
     "Name": "WindowsInsiderProgram",
-    "Note": "NoteEnrolledWip",
+    "Note": "NoteEnrolledWIP",
     "Command": "ms-settings:windowsinsider"
   },
   {
