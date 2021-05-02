@@ -32,36 +32,7 @@
         <Converters:LayoutModelTypeBlankToVisibilityConverter x:Key="LayoutModelTypeBlankToVisibilityConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         
-        <DropShadowEffect x:Key="CardShadow" BlurRadius="6"
-                          Opacity="0.24"
-                          ShadowDepth="1" />
 
-        <Style x:Key="CardStyle"
-               TargetType="Border">
-            <Setter Property="Background"
-                    Value="{DynamicResource LayoutItemBackgroundBrush}" />
-            <Setter Property="BorderBrush"
-                    Value="{DynamicResource LayoutItemBackgroundBrush}" />
-            <Setter Property="BorderThickness"
-                    Value="2" />
-            <Setter Property="CornerRadius"
-                    Value="4" />
-            <Setter Property="Focusable"
-                    Value="True" />
-            <Setter Property="FocusVisualStyle"
-                    Value="{StaticResource UWPFocusVisualStyle}" />
-            <Setter Property="Border.Effect"
-                    Value="{StaticResource CardShadow}" />
-            <Style.Triggers>
-                <Trigger Property="Border.IsMouseOver"
-                         Value="True">
-                    <Setter Property="Border.Background"
-                            Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
-                    <Setter Property="Border.BorderBrush"
-                            Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
 
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
@@ -72,7 +43,7 @@
                     Margin="8,2,8,8"
                     KeyDown="MonitorItem_KeyDown"
                     MouseDown="MonitorItem_MouseDown"
-                    Style="{StaticResource CardStyle}">
+                   >
                 <Border.ToolTip>
                     <ToolTip>
                         <StackPanel>
@@ -124,22 +95,22 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
-
-       
-
+        <DataTemplate x:Key="SimpleItemTemplate">
+            <Grid Background="Red"
+                  AutomationProperties.Name="Woehoe">
+                <TextBlock Text="{Binding Name}"
+                           AutomationProperties.Name="Woehoe" />
+            </Grid>
+        </DataTemplate>
+        
         <DataTemplate x:Key="LayoutItemTemplate">
             <Grid Background="Transparent"
                   Width="216"
-                  KeyDown="LayoutItem_KeyDown"
-                  MouseDown="LayoutItem_Click"
-                  Margin="0,0,0,12">
-
+                  AutomationProperties.Name="Woehoe"
+                  Height="172">
                 <Border x:Name="LayoutItem"
-                        Style="{StaticResource CardStyle}"
-                        Margin="8"
-                        FocusManager.GotFocus="LayoutItem_Focused">
-
-                    <Grid Margin="16">
+                        Margin="16">
+                    <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="24" />
                             <RowDefinition Height="124" />
@@ -156,30 +127,8 @@
                                    Margin="0,-4,24,0"
                                    ToolTip="{Binding Name}"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
-
-                        <Button Content="&#xE104;"
-                                x:Name="EditLayoutButton"
-                                FontFamily="Segoe MDL2 Assets"
-                                FontSize="14"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Bottom"
-                                Margin="-8,-16,-8,0"
-                                Height="36"
-                                Width="36"
-                                Padding="0"
-                                BorderBrush="Transparent"
-                                Click="EditLayout_Click"
-                                Background="Transparent"
-                                Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}"
-                                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                ToolTip="{x:Static props:Resources.Edit_Layout}"
-                                AutomationProperties.Name="{x:Static props:Resources.Edit_Layout}"
-                                Style="{StaticResource AccentButtonStyle}"
-                                ui:ControlHelper.CornerRadius="36">
-                        </Button>
-
                         <local:LayoutPreview Grid.Row="1"
-                                             Margin="0,8,0,8"
+                                             Margin="0,8,0,8" 
                                              VerticalAlignment="Stretch"
                                              HorizontalAlignment="Stretch" />
                     </Grid>
@@ -187,9 +136,29 @@
                 <Border x:Name="SelectionHighlight"
                         CornerRadius="4"
                         BorderThickness="3"
-                        Margin="6"
+                        Margin="0"
                         Visibility="Collapsed"
                         BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" />
+
+                <Button Content="&#xE104;"
+                        x:Name="EditLayoutButton"
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="14"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="4           "
+                        Height="36"
+                        Width="36"
+                        Padding="0"
+                        BorderBrush="Transparent"
+                        Click="EditLayout_Click"
+                        Background="Transparent"
+                        Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}"
+                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                        ToolTip="{x:Static props:Resources.Edit_Layout}"
+                        AutomationProperties.Name="{x:Static props:Resources.Edit_Layout}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        ui:ControlHelper.CornerRadius="36" />
             </Grid>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding IsApplied}"
@@ -213,6 +182,117 @@
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
+
+        <Style x:Key="GridViewCardStyle" TargetType="ui:GridViewItem">
+            <Setter Property="Background"
+                    Value="Transparent" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+            <Setter Property="KeyboardNavigation.TabNavigation"
+                    Value="Local" />
+            <!--<Setter Property="IsHoldingEnabled" Value="True" />-->
+            <Setter Property="Margin"
+                    Value="8" />
+            <Setter Property="FocusVisualStyle"
+                    Value="{StaticResource UWPFocusVisualStyle}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ui:GridViewItem">
+                        <Border x:Name="ContentBorder"
+                                CornerRadius="4"
+                                Padding="0"
+                                AutomationProperties.Name="Woehoe"
+                                Background="{StaticResource LayoutItemBackgroundBrush}"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="6"
+                                                  Opacity="0.24"
+                                                  ShadowDepth="1" />
+                            </Border.Effect>
+                            <VisualStateManager.CustomVisualStateManager>
+                                <ui:SimpleVisualStateManager />
+                            </VisualStateManager.CustomVisualStateManager>
+                            <Grid>
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  Margin="0"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+
+                            <!-- PointerOver -->
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver"
+                                               Value="True" />
+                                    <Condition Property="IsSelected"
+                                               Value="False" />
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background"
+                                        TargetName="ContentBorder"
+                                        Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
+                                <Setter Property="BorderBrush"
+                                        TargetName="ContentBorder"
+                                        Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
+                 
+                            </MultiTrigger>
+                            <!-- Selected -->
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver"
+                                               Value="False" />
+                                    <Condition Property="IsSelected"
+                                               Value="True" />
+                                </MultiTrigger.Conditions>
+
+                            </MultiTrigger>
+                            <!-- PointerOverSelected -->
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver"
+                                               Value="True" />
+                                    <Condition Property="IsSelected"
+                                               Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background"
+                                        TargetName="ContentBorder"
+                                        Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
+                                <Setter Property="BorderBrush"
+                                        TargetName="ContentBorder"
+                                        Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
+                   
+
+                            </MultiTrigger>
+                            <!-- Disabled -->
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter TargetName="ContentBorder"
+                                        Property="Opacity"
+                                        Value="{DynamicResource ListViewItemDisabledThemeOpacity}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </Window.Resources>
 
     <Grid>
@@ -240,20 +320,32 @@
                                FontWeight="SemiBold"
                                FontSize="24" />
 
-                    <ItemsControl ItemsSource="{Binding DefaultModels}"
-                                  Grid.Row="1"
-                                  ItemTemplate="{StaticResource LayoutItemTemplate}"
-                                  AutomationProperties.LabeledBy="{Binding ElementName=TemplatesHeaderBlock}"
-                                  TabIndex="4"
-                                  x:Name="DefaultModelsItemsControl"
-                                  Margin="-8,8,-8,0">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"
-                                           x:Name="DefaultModelsWrapPanel" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
+                    <ui:GridView ItemsSource="{Binding DefaultModels}"
+                                 Grid.Row="1"
+                                 ItemTemplate="{StaticResource SimpleItemTemplate}"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=TemplatesHeaderBlock}"
+                                 TabIndex="4"
+                                 IsItemClickEnabled="True"
+                                 SelectionMode="Single"
+                                 SelectedIndex="1"
+                            
+                                 ItemClick="DefaultModelsItemsControl_ItemClick"
+                                 x:Name="DefaultModelsItemsControl"
+                                 Margin="-8,8,-8,0"
+                                
+                                 
+                                 >
+                        <!--ItemContainerStyle="{StaticResource GridViewCardStyle}"-->
+                        <!--<ui:GridView.ItemContainerStyle>
+                            <Style TargetType="ui:GridViewItem">
+                                <Setter Property="Margin"
+                                        Value="0" />
+                             
+                                <Setter Property="FocusVisualStyle"
+                                        Value="{StaticResource UWPFocusVisualStyle}" />
+                            </Style>
+                        </ui:GridView.ItemContainerStyle>-->
+                    </ui:GridView>
 
                     <TextBlock Text="{x:Static props:Resources.Custom}"
                                x:Name="CustomHeaderBlock"
@@ -289,19 +381,17 @@
                             Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z" />
                         <TextBlock Text="{x:Static props:Resources.No_Custom_Layouts_Message}" Margin="0,16,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}" />
                     </StackPanel>
-                    <ItemsControl ItemsSource="{Binding CustomModels}"
+                    <ui:GridView ItemsSource="{Binding CustomModels}"
                                   TabIndex="6"
-                                  AutomationProperties.LabeledBy="{Binding ElementName=CustomHeaderBlock}"
+                                 IsItemClickEnabled="True"
+                                 SelectionMode="Single"
+                                 ItemClick="DefaultModelsItemsControl_ItemClick"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=CustomHeaderBlock}"
                                   ItemTemplate="{StaticResource LayoutItemTemplate}"
+                                 ItemContainerStyle="{StaticResource GridViewCardStyle}"
                                   Margin="-8,12,-8,0"
                                   Grid.Row="4">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"
-                                           x:Name="CustomModelsWrapPanel" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
+                    </ui:GridView>
                    
                 </Grid>
             </ScrollViewer>

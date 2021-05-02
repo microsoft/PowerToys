@@ -104,13 +104,6 @@ namespace FancyZonesEditor
             // Select(((Grid)sender).DataContext as LayoutModel);
         }
 
-        private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
-        {
-            LayoutModel selectedLayoutModel = ((Grid)sender).DataContext as LayoutModel;
-            Select(selectedLayoutModel);
-            Apply();
-        }
-
         private void LayoutItem_Focused(object sender, RoutedEventArgs e)
         {
             // Ignore focus on Edit button click
@@ -429,6 +422,13 @@ namespace FancyZonesEditor
             {
                 e.Handled = true;
             }
+        }
+
+        private void DefaultModelsItemsControl_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            LayoutModel selectedLayoutModel = e.ClickedItem as LayoutModel;
+            Select(selectedLayoutModel);
+            Apply();
         }
     }
 }
