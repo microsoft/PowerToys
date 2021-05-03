@@ -70,7 +70,7 @@
     <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
-    <Property Id="WixShellExecTarget" Value="[#action_runner.exe]" />
+    <Property Id="WixShellExecTarget" Value="[#PowerToys_ActionRunner.exe]" />
 
     <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
       <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
@@ -318,8 +318,8 @@
       <Component Id="BackgroundActivator_dll" Guid="23B25EE4-BCA2-45DF-BBCD-82FBDF01C5AB" Win64="yes">
         <File Id="BackgroundActivatorDLL.dll" KeyPath="yes" Checksum="yes" />
       </Component>
-      <Component Id="action_runner_exe" Guid="626ABB17-16F0-4007-9A58-6998724A5E14" Win64="yes">
-        <File Id="action_runner.exe" KeyPath="yes" Checksum="yes" />
+      <Component Id="PowerToys_ActionRunner_exe" Guid="626ABB17-16F0-4007-9A58-6998724A5E14" Win64="yes">
+        <File Id="PowerToys.ActionRunner.exe" KeyPath="yes" Checksum="yes" />
       </Component>
       <Component Id="License_rtf" Guid="3E5AE43B-CFB4-449B-A346-94CAAFF3312E" Win64="yes">
         <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="yes" />
@@ -780,7 +780,7 @@
       <ComponentRef Id="powertoys_exe" />
       <ComponentRef Id="PowerToysStartMenuShortcut"/>
       <ComponentRef Id="BackgroundActivator_dll" />
-      <ComponentRef Id="action_runner_exe" />
+      <ComponentRef Id="PowerToys_ActionRunner_exe" />
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />

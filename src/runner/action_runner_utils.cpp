@@ -17,7 +17,7 @@ SHELLEXECUTEINFOW launch_action_runner(const wchar_t* cmdline)
         action_runner_path = get_module_folderpath();
     }
 
-    action_runner_path += L"\\action_runner.exe";
+    action_runner_path += L"\\PowerToys.ActionRunner.exe";
     SHELLEXECUTEINFOW sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS };
     sei.lpFile = action_runner_path.c_str();
