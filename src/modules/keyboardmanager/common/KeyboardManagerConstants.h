@@ -50,13 +50,22 @@ namespace KeyboardManagerConstants
     // Default window sizes
     inline const int DefaultEditKeyboardWindowWidth = 800;
     inline const int DefaultEditKeyboardWindowHeight = 600;
-    inline const int MinimumEditKeyboardWindowWidth = 500;
-    inline const int MinimumEditKeyboardWindowHeight = 450;
+    
+    // Increasing the min size can cause issues when moving the window between
+    // monitors with different DPI scaling factor
+    inline const int MinimumEditKeyboardWindowWidth = 200;
+    inline const int MinimumEditKeyboardWindowHeight = 200;
+
     inline const int EditKeyboardTableMinWidth = 700;
+    
     inline const int DefaultEditShortcutsWindowWidth = 1050;
     inline const int DefaultEditShortcutsWindowHeight = 600;
-    inline const int MinimumEditShortcutsWindowWidth = 500;
-    inline const int MinimumEditShortcutsWindowHeight = 500;
+    
+    // Increasing the min size can cause issues when moving the window between
+    // monitors with different DPI scaling factor
+    inline const int MinimumEditShortcutsWindowWidth = 200;
+    inline const int MinimumEditShortcutsWindowHeight = 200;
+    
     inline const int EditShortcutsTableMinWidth = 1000;
 
     // Key Remap table constants

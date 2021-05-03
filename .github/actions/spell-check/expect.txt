@@ -766,6 +766,7 @@ GDISCALED
 generatesqlfromuserquery
 GETDISPINFO
 GETDLGCODE
+GETDPISCALEDSIZE
 GETEMPTYMARKUP
 GETICON
 getline
@@ -1130,6 +1131,7 @@ keyevent
 KEYEVENTF
 keynum
 keyof
+keyhook
 keyparts
 keyremaps
 keystokes
@@ -1412,6 +1414,7 @@ NCRBUTTONDOWN
 NCRBUTTONUP
 NDEBUG
 ndp
+Nefario
 neq
 NESW
 netcore
@@ -1851,6 +1854,7 @@ SAVEFAILED
 scancode
 scanled
 Scn
+SCOOBE
 SCOPEID
 screenshot
 scrollable
@@ -1917,6 +1921,7 @@ SHORTCUTMAXONEACTIONKEY
 SHORTCUTNOREPEATEDMODIFIER
 SHORTCUTONEACTIONKEY
 SHORTCUTSTARTWITHMODIFIER
+Shortcutguide
 Shortcuttool
 shortdate
 SHORTPATH

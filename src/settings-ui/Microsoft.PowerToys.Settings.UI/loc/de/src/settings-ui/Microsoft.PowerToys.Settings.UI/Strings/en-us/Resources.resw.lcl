@@ -754,7 +754,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FileExplorerPreview_Image.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FileExplorerPreview_Image.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[File Explorer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -966,12 +966,12 @@
       </Item>
       <Item ItemId=";GeneralSettings_VersionIsLatest" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[PowerToys is up-to-date.]]></Val>
+          <Val><![CDATA[PowerToys is up to date.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[PowerToys ist auf dem neuesten Stand.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[You have the latest available version.]]></Val>
+            <Val><![CDATA[PowerToys is up-to-date.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1821,12 +1821,12 @@
       </Item>
       <Item ItemId=";Oobe_FancyZones_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {`} to open the FancyZones editor.]]></Val>
+          <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {Shift} + {`} to open the FancyZones editor.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Halten Sie beim Ziehen des Fensters die UMSCHALTTASTE gedrückt, um ein Fenster an einer Zone auszurichten, und legen Sie das Fenster in der gewünschten Zone ab. Über WINDOWS+` können Sie den FancyZones-Editor öffnen.]]></Val>
+            <Val><![CDATA[Halten Sie beim Ziehen des Fensters die UMSCHALTTASTE gedrückt, um ein Fenster an einer Zone auszurichten, und legen Sie das Fenster in der gewünschten Zone ab. Über WINDOWS+UMSCHALTTASTE+` können Sie den FancyZones-Editor öffnen.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Shift + drag while dragging the window to snap a window to a zone, and release the window in the desired zone.]D;]A;Win + ` to open the FancyZones editor.]]></Val>
+            <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {`} to open the FancyZones editor.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2236,12 +2236,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Oobe_Welcome" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";Oobe_Welcome" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Welcome to PowerToys]]></Val>
+          <Val><![CDATA[Welcome]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Willkommen bei PowerToys]]></Val>
+            <Val><![CDATA[Willkommen!]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Welcome to PowerToys]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
