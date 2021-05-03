@@ -1821,12 +1821,12 @@
       </Item>
       <Item ItemId=";Oobe_FancyZones_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {`} to open the FancyZones editor.]]></Val>
+          <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {Shift} + {`} to open the FancyZones editor.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Halten Sie beim Ziehen des Fensters die UMSCHALTTASTE gedrückt, um ein Fenster an einer Zone auszurichten, und legen Sie das Fenster in der gewünschten Zone ab. Über WINDOWS+` können Sie den FancyZones-Editor öffnen.]]></Val>
+            <Val><![CDATA[Halten Sie beim Ziehen des Fensters die UMSCHALTTASTE gedrückt, um ein Fenster an einer Zone auszurichten, und legen Sie das Fenster in der gewünschten Zone ab. Über WINDOWS+UMSCHALTTASTE+` können Sie den FancyZones-Editor öffnen.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Shift + drag while dragging the window to snap a window to a zone, and release the window in the desired zone.]D;]A;Win + ` to open the FancyZones editor.]]></Val>
+            <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {`} to open the FancyZones editor.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
