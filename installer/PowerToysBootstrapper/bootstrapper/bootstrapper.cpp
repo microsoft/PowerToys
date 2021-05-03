@@ -207,12 +207,8 @@ int Bootstrapper(HINSTANCE hInstance)
     {
     }
 
-    spdlog::level::level_enum severity = spdlog::level::off;
-    if (logLevel == "debug")
-    {
-        severity = spdlog::level::debug;
-    }
-    else if (logLevel == "error")
+    spdlog::level::level_enum severity = spdlog::level::debug;
+    if (logLevel == "error")
     {
         severity = spdlog::level::err;
     }
