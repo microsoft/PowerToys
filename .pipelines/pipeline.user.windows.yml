@@ -64,7 +64,7 @@ build:
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
-            - 'action_runner.exe'
+            - 'PowerToys.ActionRunner.exe'
             - 'BugReportTool\BugReportTool.exe'
             - 'modules\ColorPicker\ColorPicker.dll'
             - 'modules\ColorPicker\ColorPickerUI.dll'
