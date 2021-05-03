@@ -1,11 +1,11 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by action_runner.rc
+// Used by PowerToys.ActionRunner.rc
 
 //////////////////////////////
 // Non-localizable
 
 #define FILE_DESCRIPTION "PowerToys ActionRunner"
-#define INTERNAL_NAME "action_runner"
-#define ORIGINAL_FILENAME "action_runner.exe"
+#define INTERNAL_NAME "PowerToys.ActionRunner"
+#define ORIGINAL_FILENAME "PowerToys.ActionRunner.exe"
 

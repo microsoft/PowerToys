@@ -62,7 +62,7 @@ namespace fs = std::filesystem;
 std::optional<fs::path> copy_self_to_temp_dir()
 {
     std::error_code error;
-    auto dst_path = fs::temp_directory_path() / "action_runner.exe";
+    auto dst_path = fs::temp_directory_path() / "PowerToys.ActionRunner.exe";
     fs::copy_file(get_module_filename(), dst_path, fs::copy_options::overwrite_existing, error);
     if (error)
     {
