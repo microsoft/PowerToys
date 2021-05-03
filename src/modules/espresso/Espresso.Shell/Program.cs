@@ -4,6 +4,7 @@
 
 using Espresso.Shell.Core;
 using Espresso.Shell.Models;
+using ManagedCommon;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -89,16 +90,30 @@ namespace Espresso.Shell
 
             timeOption.Required = false;
 
+            var powerToysPidOption = new Option<int>(
+                    aliases: new[] { "--ptpid", "-p" },
+                    getDefaultValue: () => 0,
+                    description: "Reference to PowerToys PID, when executed under the application context.")
+            {
+                Argument = new Argument<int>(() => 0)
+                {
+                    Arity = ArgumentArity.ZeroOrOne,
+                },
+            };
+
+            powerToysPidOption.Required = false;
+
             var rootCommand = new RootCommand
             {
                 configOption,
                 displayOption,
-                timeOption
+                timeOption,
+                powerToysPidOption
             };
 
             rootCommand.Description = appName;
 
-            rootCommand.Handler = CommandHandler.Create<string, bool, long>(HandleCommandLineArguments);
+            rootCommand.Handler = CommandHandler.Create<string, bool, long, int>(HandleCommandLineArguments);
 
             return rootCommand.InvokeAsync(args).Result;
         }
@@ -111,11 +126,12 @@ namespace Espresso.Shell
             Environment.Exit(exitCode);
         }
 
-        private static void HandleCommandLineArguments(string config, bool displayOn, long timeLimit)
+        private static void HandleCommandLineArguments(string config, bool displayOn, long timeLimit, int ptpid)
         {
             log.Info($"The value for --config is: {config}");
             log.Info($"The value for --display-on is: {displayOn}");
             log.Info($"The value for --time-limit is: {timeLimit}");
+            log.Info($"The value for --ptpid is: {ptpid}");
 
             if (!string.IsNullOrWhiteSpace(config))
             {
@@ -149,6 +165,14 @@ namespace Espresso.Shell
                     var errorString = $"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}";
                     log.Info(errorString);
                     log.Debug(errorString);
+                }
+
+                if (ptpid != 0)
+                {
+                    RunnerHelper.WaitForPowerToysRunner(ptpid, () =>
+                    {
+                        Environment.Exit(0);
+                    });
                 }
             }
             else
