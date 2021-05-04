@@ -1523,7 +1523,12 @@ HRESULT CPowerRenameProgressUI::Start()
 {
     _Cleanup();
     m_canceled = false;
+    AddRef();
     m_workerThreadHandle = CreateThread(nullptr, 0, s_workerThread, this, 0, nullptr);
+    if (!m_workerThreadHandle)
+    {
+        Release();
+    }
     return (m_workerThreadHandle) ? S_OK : E_FAIL;
 }
 
@@ -1563,6 +1568,8 @@ DWORD WINAPI CPowerRenameProgressUI::s_workerThread(_In_ void* pv)
 
             KillTimer(hwndMessage, TIMERID_CHECKCANCELED);
             DestroyWindow(hwndMessage);
+
+            pThis->Release();
         }
 
         CoUninitialize();
