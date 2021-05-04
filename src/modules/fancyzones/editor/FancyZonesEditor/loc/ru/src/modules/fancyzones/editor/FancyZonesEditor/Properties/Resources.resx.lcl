@@ -205,12 +205,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Distance_adjacent_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Distance_adjacent_zones" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Distance to highlight adjacent zones]]></Val>
+          <Val><![CDATA[Highlight distance]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Расстояние для выделения соседних зон]]></Val>
+            <Val><![CDATA[Расстояние выделения]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Distance to highlight adjacent zones]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -505,11 +508,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";QuickKey_Select" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Number_of_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select a key to quickly apply the layout (Win + Ctrl + Alt + key)]]></Val>
+          <Val><![CDATA[Number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Выберите клавишу для быстрого применения макета (WIN + CTRL + ALT + клавиша)]]></Val>
+            <Val><![CDATA[Число зон]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Pixels" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[px]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[пкс]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Press Win + Ctrl + Alt + selected key to apply this layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Нажмите WIN+CTRL+ALT+выбранный ключ, чтобы применить этот макет]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Layout shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ярлык макета]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
