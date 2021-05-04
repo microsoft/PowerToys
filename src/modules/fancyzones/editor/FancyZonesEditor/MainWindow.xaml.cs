@@ -254,6 +254,8 @@ namespace FancyZonesEditor
 
         private void EditZones_Click(object sender, RoutedEventArgs e)
         {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            Select((LayoutModel)dataContext);
             EditLayoutDialog.Hide();
             var mainEditor = App.Overlay;
             if (!(mainEditor.CurrentDataContext is LayoutModel model))
