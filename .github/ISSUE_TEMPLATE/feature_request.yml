@@ -16,7 +16,7 @@ body:
     value: |
       Please limit one request per issue.
 - type: checkboxes
-  id: 👍-force
+  id: thumbsUpForce
   attributes:
     label: Adding 👍 reminder to post
     options:
