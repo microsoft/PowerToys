@@ -2331,6 +2331,7 @@ winapi
 wincolor
 windef
 windevbuildagents
+windir
 Windowcontrols
 WINDOWCREATED
 WINDOWEDGE
