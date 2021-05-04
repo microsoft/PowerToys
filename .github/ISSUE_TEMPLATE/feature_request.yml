@@ -15,10 +15,3 @@ body:
   attributes:
     value: |
       Please limit one request per issue.
-- type: checkboxes
-  id: thumbsUpForce
-  attributes:
-    label: Adding 👍 reminder to post
-    options:
-      - label: If you'd like to see this feature implemented, add a 👍 reaction to this post.
-        required: true
