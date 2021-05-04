@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Enumerations;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes
 {
@@ -16,19 +17,23 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes
         /// </summary>
         public WindowsSetting()
         {
-            Area = string.Empty;
             Name = string.Empty;
+            Area = string.Empty;
             Command = string.Empty;
+            Type = WindowsSettingsType.SettingsApp;
         }
-
-        /// <inheritdoc/>
-        public string Area { get; set; }
 
         /// <inheritdoc/>
         public string Name { get; set; }
 
         /// <inheritdoc/>
+        public string Area { get; set; }
+
+        /// <inheritdoc/>
         public string Command { get; set; }
+
+        /// <inheritdoc/>
+        public WindowsSettingsType Type { get; set; }
 
         /// <inheritdoc/>
         public IEnumerable<string>? AltNames { get; set; }

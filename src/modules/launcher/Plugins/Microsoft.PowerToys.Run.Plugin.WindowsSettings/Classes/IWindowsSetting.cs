@@ -3,23 +3,29 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Enumerations;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes
 {
     internal interface IWindowsSetting
     {
         /// <summary>
-        /// Gets or sets the area of this setting.
-        /// </summary>
-        string Area { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of this setting.
         /// </summary>
         string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the command of this setting
+        /// Gets or sets the area of this setting.
+        /// </summary>
+        string Area { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the windows setting.
+        /// </summary>
+        WindowsSettingsType Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the command of this setting.
         /// </summary>
         string Command { get; set; }
 
