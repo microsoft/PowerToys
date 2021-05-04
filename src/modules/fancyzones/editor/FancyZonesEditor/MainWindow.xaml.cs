@@ -423,5 +423,18 @@ namespace FancyZonesEditor
         {
             monitorViewModel.SelectCommand.Execute(e.ClickedItem as MonitorInfoModel);
         }
+
+        private void ComboBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                ComboBox selectedComboBox = sender as ComboBox;
+                if (!selectedComboBox.IsDropDownOpen)
+                {
+                    selectedComboBox.IsDropDownOpen = true;
+                }
+            }
+        }
     }
 }

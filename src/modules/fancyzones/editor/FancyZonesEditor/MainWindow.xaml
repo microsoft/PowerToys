@@ -158,7 +158,8 @@
                         Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}"
                         Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}"
                         ToolTip="{x:Static props:Resources.Edit}"
-                        AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                        AutomationProperties.HelpText="{x:Static props:Resources.Edit}"
+                        AutomationProperties.Name="{Binding Name}"
                         Style="{StaticResource AccentButtonStyle}"
                         ui:ControlHelper.CornerRadius="36" />
             </Grid>
@@ -422,6 +423,7 @@
                                       AutomationProperties.HelpText="{x:Static props:Resources.QuickKey_Description}"
                                       AutomationProperties.Name="{x:Static props:Resources.QuickKey_Title}"
                                       ItemsSource="{Binding QuickKeysAvailable}"
+                                      KeyDown="ComboBox_KeyDown"
                                       SelectedItem="{Binding QuickKey}" />
                         </StackPanel>
 
@@ -472,6 +474,7 @@
                                       KeyDown="EditDialogNumberBox_KeyDown"
                                       Margin="12,0,0,0"
                                       Header="{x:Static props:Resources.Number_of_zones}"
+                                      AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
                                       SpinButtonPlacementMode="Compact"
                                       Text="{Binding TemplateZoneCount}" />
                     </StackPanel>
