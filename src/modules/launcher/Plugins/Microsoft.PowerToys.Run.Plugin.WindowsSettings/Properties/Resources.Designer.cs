@@ -232,7 +232,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Alternative name.
+        ///   Looks up a localized string similar to Alternative names.
         /// </summary>
         internal static string AlternativeName {
             get {
@@ -273,6 +273,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string AppFeatures {
             get {
                 return ResourceManager.GetString("AppFeatures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to App.
+        /// </summary>
+        internal static string Application {
+            get {
+                return ResourceManager.GetString("Application", resourceCulture);
             }
         }
         
@@ -916,7 +925,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Control panel.
+        ///   Looks up a localized string similar to Control Panel.
         /// </summary>
         internal static string ControlPanel {
             get {
@@ -3085,7 +3094,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings app.
+        ///   Looks up a localized string similar to System settings.
         /// </summary>
         internal static string SettingsApp {
             get {
@@ -3261,6 +3270,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string StorageSense {
             get {
                 return ResourceManager.GetString("StorageSense", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to in.
+        /// </summary>
+        internal static string SubtitlePreposition {
+            get {
+                return ResourceManager.GetString("SubtitlePreposition", resourceCulture);
             }
         }
         
@@ -3504,15 +3522,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string TruePlay {
             get {
                 return ResourceManager.GetString("TruePlay", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Type.
-        /// </summary>
-        internal static string Type {
-            get {
-                return ResourceManager.GetString("Type", resourceCulture);
             }
         }
         

@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
                 {
                     Action = (_) => DoOpenSettingsAction(entry),
                     IcoPath = iconPath,
-                    SubTitle = $"{Resources.Area}: {entry.Area} - {Resources.Type}: {type}",
+                    SubTitle = $"{Resources.Area} \"{entry.Area}\" {Resources.SubtitlePreposition} {type}",
                     Title = entry.Name,
                     ContextData = entry,
                 };
@@ -64,6 +64,16 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
         {
             var toolTipText = new StringBuilder();
 
+            var type = Resources.ResourceManager.GetString($"{entry.Type}");
+
+            toolTipText.Append(Resources.Application);
+            toolTipText.Append(": ");
+            toolTipText.AppendLine(type);
+
+            toolTipText.Append(Resources.Area);
+            toolTipText.Append(": ");
+            toolTipText.AppendLine(entry.Area);
+
             if (entry.AltNames != null && entry.AltNames.Any())
             {
                 var altList = entry.AltNames.Aggregate((current, next) => $"{current}, {next}");
@@ -86,9 +96,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
                 toolTipText.Append(entry.Note);
             }
 
-            var type = Resources.ResourceManager.GetString($"{entry.Type}");
-
-            result.ToolTipData = new ToolTipData(type, toolTipText.ToString());
+            result.ToolTipData = new ToolTipData(entry.Name, toolTipText.ToString());
         }
 
         /// <summary>

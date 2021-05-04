@@ -193,7 +193,7 @@
     <comment>Means the key  combination "Tabulator+Alt" on the keyboard</comment>
   </data>
   <data name="AlternativeName" xml:space="preserve">
-    <value>Alternative name</value>
+    <value>Alternative names</value>
   </data>
   <data name="Animations" xml:space="preserve">
     <value>Animations</value>
@@ -208,6 +208,10 @@
   <data name="AppFeatures" xml:space="preserve">
     <value>App features</value>
     <comment>Area Apps</comment>
+  </data>
+  <data name="Application" xml:space="preserve">
+    <value>App</value>
+    <comment>Short/modern name for application</comment>
   </data>
   <data name="AppsAndFeatures" xml:space="preserve">
     <value>Apps and Features</value>
@@ -464,7 +468,7 @@
     <comment>Area Privacy</comment>
   </data>
   <data name="ControlPanel" xml:space="preserve">
-    <value>Control panel</value>
+    <value>Control Panel</value>
     <comment>Type of the setting is a "(legacy) Control Panel setting"</comment>
   </data>
   <data name="CopyCommand" xml:space="preserve">
@@ -1370,7 +1374,7 @@
     <comment>Area SurfaceHub</comment>
   </data>
   <data name="SettingsApp" xml:space="preserve">
-    <value>Settings app</value>
+    <value>System settings</value>
     <comment>Type of the setting is a "Modern Windows settings"</comment>
   </data>
   <data name="SettingsHomePage" xml:space="preserve">
@@ -1445,6 +1449,9 @@
   <data name="StorageSense" xml:space="preserve">
     <value>Storage Sense</value>
     <comment>Area System</comment>
+  </data>
+  <data name="SubtitlePreposition" xml:space="preserve">
+    <value>in</value>
   </data>
   <data name="SyncCenter" xml:space="preserve">
     <value>Sync center</value>
@@ -1547,10 +1554,6 @@
   <data name="TruePlay" xml:space="preserve">
     <value>TruePlay</value>
     <comment>Area Gaming</comment>
-  </data>
-  <data name="Type" xml:space="preserve">
-    <value>Type</value>
-    <comment>The type of the setting "Settings App" or "Control Panel"</comment>
   </data>
   <data name="Typing" xml:space="preserve">
     <value>Typing</value>
