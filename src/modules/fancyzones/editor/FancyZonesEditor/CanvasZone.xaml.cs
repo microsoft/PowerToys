@@ -303,12 +303,6 @@ namespace FancyZonesEditor
             UpdateFromSnappyHelpers();
         }
 
-        private void OnClose(object sender, RoutedEventArgs e)
-        {
-            ((Panel)Parent).Children.Remove(this);
-            Model.RemoveZoneAt(ZoneIndex);
-        }
-
         // Corner dragging
         private void Caption_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
@@ -369,14 +363,28 @@ namespace FancyZonesEditor
             snappyY = null;
         }
 
+        private void OnClose(object sender, RoutedEventArgs e)
+        {
+            RemoveZone();
+        }
+
+        private void RemoveZone()
+        {
+            ((Panel)Parent).Children.Remove(this);
+            Model.RemoveZoneAt(ZoneIndex);
+        }
+
         private void Border_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key != Key.Tab)
             {
                 e.Handled = true;
                 System.Diagnostics.Debug.WriteLine(e.Key);
-
-                if (e.Key == Key.Right)
+                if (e.Key == Key.Delete)
+                {
+                    RemoveZone();
+                }
+                else if (e.Key == Key.Right)
                 {
                     if (IsShiftKeyDown())
                     {
@@ -463,25 +471,12 @@ namespace FancyZonesEditor
             }
         }
 
-        private void Border_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Border_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Mouse down!");
-        }
-
-        private void UserControl_GotFocus(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("Got focus: " + LabelID.Content);
-        }
-
-        private void UserControl_LostFocus(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("Lost focus: " + LabelID.Content);
-        }
-
-        private void UserControl_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            this.Focus();
-            System.Diagnostics.Debug.WriteLine("Preview Mouse down!");
+            // Set (keyboard)focus on this zone when click
+            Border selectedBorder = sender as Border;
+            selectedBorder.Focus();
+            Keyboard.Focus(selectedBorder);
         }
     }
 }
