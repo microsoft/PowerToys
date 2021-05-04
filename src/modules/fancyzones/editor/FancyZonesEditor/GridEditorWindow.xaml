@@ -12,7 +12,7 @@
                     BorderThickness="0"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
                     ui:WindowHelper.UseModernWindowStyle="True"
-                    ui:TitleBar.IsIconVisible="True"
+                    ui:TitleBar.IsIconVisible="False"
                     SizeToContent="Height"
                     Background="{DynamicResource PrimaryBackgroundBrush}"
                     ResizeMode="NoResize"
