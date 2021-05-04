@@ -331,6 +331,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Administrative Tools.
+        /// </summary>
+        internal static string AreaAdministrativeTools {
+            get {
+                return ResourceManager.GetString("AreaAdministrativeTools", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Appearance and Personalization.
         /// </summary>
         internal static string AreaAppearanceAndPersonalization {
@@ -2131,7 +2140,16 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available on devices that support advanced graphics options.
+        ///   Looks up a localized string similar to Only available when you have connected a mobile device to your device..
+        /// </summary>
+        internal static string NoteAddYourPhone {
+            get {
+                return ResourceManager.GetString("NoteAddYourPhone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only available on devices that support advanced graphics options..
         /// </summary>
         internal static string NoteAdvancedGraphics {
             get {
@@ -2140,7 +2158,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available on devices that have a battery, such as a tablet.
+        ///   Looks up a localized string similar to Only available on devices that have a battery, such as a tablet..
         /// </summary>
         internal static string NoteBattery {
             get {
@@ -2149,7 +2167,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Deprecated in Windows 10, version 1809 and later.
+        ///   Looks up a localized string similar to Deprecated in Windows 10, version 1809 and later..
         /// </summary>
         internal static string NoteDeprecated1809 {
             get {
@@ -2158,7 +2176,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available if Dial is paired.
+        ///   Looks up a localized string similar to Only available if Dial is paired..
         /// </summary>
         internal static string NoteDialPaired {
             get {
@@ -2167,7 +2185,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available if DirectAccess is enabled.
+        ///   Looks up a localized string similar to Only available if DirectAccess is enabled..
         /// </summary>
         internal static string NoteDirectAccess {
             get {
@@ -2176,7 +2194,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available on devices that support advanced display options.
+        ///   Looks up a localized string similar to Only available on devices that support advanced display options..
         /// </summary>
         internal static string NoteDisplayGraphics {
             get {
@@ -2185,7 +2203,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only present if user is enrolled in WIP.
+        ///   Looks up a localized string similar to Only present if user is enrolled in WIP..
         /// </summary>
         internal static string NoteEnrolledWIP {
             get {
@@ -2194,7 +2212,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to requires eyetracker hardware.
+        ///   Looks up a localized string similar to Requires eyetracker hardware..
         /// </summary>
         internal static string NoteEyetrackerHardware {
             get {
@@ -2203,7 +2221,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to available if the Microsoft Japan input method editor is installed.
+        ///   Looks up a localized string similar to Available if the Microsoft Japan input method editor is installed..
         /// </summary>
         internal static string NoteImeJapan {
             get {
@@ -2212,7 +2230,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to available if the Microsoft Pinyin input method editor is installed.
+        ///   Looks up a localized string similar to Available if the Microsoft Pinyin input method editor is installed..
         /// </summary>
         internal static string NoteImePinyin {
             get {
@@ -2221,7 +2239,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to available if the Microsoft Wubi input method editor is installed.
+        ///   Looks up a localized string similar to Available if the Microsoft Wubi input method editor is installed..
         /// </summary>
         internal static string NoteImeWubi {
             get {
@@ -2230,7 +2248,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available if the Mixed Reality Portal app is installed..
+        ///   Looks up a localized string similar to Only available if the Mixed Reality Portal app is installed..
         /// </summary>
         internal static string NoteMixedReality {
             get {
@@ -2239,7 +2257,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available on mobile and if the enterprise has deployed a provisioning package.
+        ///   Looks up a localized string similar to Only available on mobile and if the enterprise has deployed a provisioning package..
         /// </summary>
         internal static string NoteMobileProvisioning {
             get {
@@ -2248,7 +2266,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Added in Windows 10, version 1903.
+        ///   Looks up a localized string similar to Added in Windows 10, version 1903..
         /// </summary>
         internal static string NoteSince1903 {
             get {
@@ -2257,7 +2275,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available if &quot;settings apps&quot; are installed, for example, by a 3rd party.
+        ///   Looks up a localized string similar to Only available if &quot;settings apps&quot; are installed, for example, by a 3rd party..
         /// </summary>
         internal static string NoteThirdParty {
             get {
@@ -2266,7 +2284,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available if touchpad hardware is present.
+        ///   Looks up a localized string similar to Only available if touchpad hardware is present..
         /// </summary>
         internal static string NoteTouchpad {
             get {
@@ -2275,7 +2293,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available if the device has a Wi-Fi adapter.
+        ///   Looks up a localized string similar to Only available if the device has a Wi-Fi adapter..
         /// </summary>
         internal static string NoteWiFiAdapter {
             get {
@@ -2284,7 +2302,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to device must be Windows Anywhere-capable.
+        ///   Looks up a localized string similar to Device must be Windows Anywhere-capable..
         /// </summary>
         internal static string NoteWindowsAnywhere {
             get {
@@ -2293,7 +2311,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to only available if enterprise has deployed a provisioning package.
+        ///   Looks up a localized string similar to Only available if enterprise has deployed a provisioning package..
         /// </summary>
         internal static string NoteWorkplaceProvisioning {
             get {
@@ -2349,9 +2367,18 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to ODBC Data Source Administrator (32-bit).
         /// </summary>
-        internal static string OdbcDataSourceAdministrator {
+        internal static string OdbcDataSourceAdministrator32Bit {
             get {
-                return ResourceManager.GetString("OdbcDataSourceAdministrator", resourceCulture);
+                return ResourceManager.GetString("OdbcDataSourceAdministrator32Bit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ODBC Data Source Administrator (64-bit).
+        /// </summary>
+        internal static string OdbcDataSourceAdministrator64Bit {
+            get {
+                return ResourceManager.GetString("OdbcDataSourceAdministrator64Bit", resourceCulture);
             }
         }
         
@@ -3900,15 +3927,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string YourInfo {
             get {
                 return ResourceManager.GetString("YourInfo", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Your phone.
-        /// </summary>
-        internal static string YourPhone {
-            get {
-                return ResourceManager.GetString("YourPhone", resourceCulture);
             }
         }
         
