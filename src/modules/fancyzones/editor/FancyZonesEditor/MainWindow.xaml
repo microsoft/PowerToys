@@ -32,6 +32,47 @@
         <Converters:LayoutModelTypeBlankToVisibilityConverter x:Key="LayoutModelTypeBlankToVisibilityConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
+        <ContextMenu x:Key="LayoutContextMenu" Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}">
+            <MenuItem Header="{x:Static props:Resources.Edit}"
+                      Click="EditLayout_Click">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xE104;" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="{x:Static props:Resources.Edit_zones}"
+                      Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"
+                      Click="EditZones_Click">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xED35;" />
+                </MenuItem.Icon>
+            </MenuItem>
+
+
+            <MenuItem Header="{x:Static props:Resources.Duplicate}"
+                      Click="DuplicateLayout_Click"
+                      Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xE8C8;" />
+                </MenuItem.Icon>
+            </MenuItem>
+
+            <MenuItem Header="{x:Static props:Resources.Create_Custom_From_Template}"
+                      Click="DuplicateLayout_Click"
+                      Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xE8C8;" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
+            <MenuItem Header="{x:Static props:Resources.Delete}"
+                      Click="DeleteLayout_Click"
+                      Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xE107;" />
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+        
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
                     Width="{Binding DisplayWidth}"
@@ -77,49 +118,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="LayoutItemTemplate">
-            <Grid  Background="Transparent">
-                <Grid.ContextMenu>
-                    <ContextMenu Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}">
-                        <MenuItem Header="{x:Static props:Resources.Edit}"
-                                  Click="EditLayout_Click">
-                            <MenuItem.Icon>
-                                <ui:FontIcon Glyph="&#xE104;" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                        <MenuItem Header="{x:Static props:Resources.Edit_zones}"
-                                  Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"
-                                  Click="EditZones_Click">
-                            <MenuItem.Icon>
-                                <ui:FontIcon Glyph="&#xED35;" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-
-                       
-                        <MenuItem Header="{x:Static props:Resources.Duplicate}"
-                                  Click="DuplicateLayout_Click"
-                                  Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
-                            <MenuItem.Icon>
-                                <ui:FontIcon Glyph="&#xE8C8;" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-
-                        <MenuItem Header="{x:Static props:Resources.Create_Custom_From_Template}"
-                                  Click="DuplicateLayout_Click"
-                                  Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
-                            <MenuItem.Icon>
-                                <ui:FontIcon Glyph="&#xE8C8;" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                        <Separator Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
-                        <MenuItem Header="{x:Static props:Resources.Delete}"
-                                  Click="DeleteLayout_Click"
-                                  Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
-                            <MenuItem.Icon>
-                                <ui:FontIcon Glyph="&#xE107;" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                    </ContextMenu>
-                </Grid.ContextMenu>
+            <Grid Background="Transparent">
                 <Grid
                       Width="180"
                       Height="140"
@@ -197,10 +196,16 @@
                                  IsItemClickEnabled="True"
                                  SelectionMode="Single"
                                  IsSelectionEnabled="True"
-                                 ItemContainerStyle="{StaticResource LayoutItemContainerStyle}"
                                  ItemClick="Layout_ItemClick"
                                  Margin="-8,8,-8,0">
-                     
+                        <ui:GridView.ItemContainerStyle>
+                            <Style BasedOn="{StaticResource LayoutItemContainerStyle}"
+                                   TargetType="ui:GridViewItem">
+                                <Setter Property="ContextMenu"
+                                        Value="{StaticResource LayoutContextMenu}">
+                                </Setter>
+                            </Style>
+                        </ui:GridView.ItemContainerStyle>
                     </ui:GridView>
 
                     <TextBlock Text="{x:Static props:Resources.Custom}"
@@ -245,9 +250,17 @@
                                  IsItemClickEnabled="True"
                                  ItemClick="Layout_ItemClick"
                                  AutomationProperties.LabeledBy="{Binding ElementName=CustomHeaderBlock}"
-                                 ItemContainerStyle="{StaticResource LayoutItemContainerStyle}"
                                  Margin="-8,8,-8,0"
-                                 Grid.Row="4" />
+                                 Grid.Row="4">
+                        <ui:GridView.ItemContainerStyle>
+                            <Style BasedOn="{StaticResource LayoutItemContainerStyle}"
+                                   TargetType="ui:GridViewItem">
+                                <Setter Property="ContextMenu"
+                                        Value="{StaticResource LayoutContextMenu}">
+                                </Setter>
+                            </Style>
+                        </ui:GridView.ItemContainerStyle>
+                    </ui:GridView>
 
 
                 </Grid>

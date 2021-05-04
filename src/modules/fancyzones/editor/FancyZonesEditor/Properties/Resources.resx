@@ -292,7 +292,7 @@
     <value>Are you sure you want to delete this layout?</value>
   </data>
   <data name="Edit_zones" xml:space="preserve">
-    <value>Edit zones layout</value>
+    <value>Edit zones</value>
   </data>
   <data name="No_Custom_Layouts_Message" xml:space="preserve">
     <value>Create or duplicate a layout to get started</value>
