@@ -195,8 +195,8 @@
   },
   {
     "Area": "Devices",
-    "Name": "MobileDevices",
-    "AltNames": [ "YourPhone" ],
+    "Name": "Phone",
+    "AltNames": [ "MobileDevices" ],
     "Command": "ms-settings:mobile-devices"
   },
   {
@@ -513,12 +513,14 @@
   {
     "Area": "Phone",
     "Name": "AddYourPhone",
-    "Command": "ms-settings:mobile-devices-addphone"
+    "Command": "ms-settings:mobile-devices-addphone",
+    "Note": "NoteAddYourPhone"
   },
   {
     "Area": "Phone",
     "Name": "DirectOpenYourPhone",
-    "Command": "ms-settings:mobile-devices-addphone-direct"
+    "Command": "ms-settings:mobile-devices-addphone-direct",
+    "Note": "NoteAddYourPhone"
   },
   {
     "Area": "Privacy",
@@ -1230,10 +1232,15 @@
     "Command": "control netsetup.cpl"
   },
   {
-    "Area": "Programs",
-    "Name": "OdbcDataSourceAdministrator",
+    "Area": "AdministrativeTools",
+    "Name": "OdbcDataSourceAdministrator32Bit",
     "AltNames": [ "odbccp32.cpl" ],
-    "Command": "control odbccp32.cpl"
+    "Command": "%windir%/syswow64/odbcad32.exe"
+  },
+  {
+    "Area": "AdministrativeTools",
+    "Name": "OdbcDataSourceAdministrator64Bit",
+    "Command": "%windir%/system32/odbcad32.exe"
   },
   {
     "Area": "NetworkAndInternet",

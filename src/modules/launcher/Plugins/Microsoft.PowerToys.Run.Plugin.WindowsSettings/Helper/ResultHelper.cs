@@ -104,11 +104,19 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
         {
             ProcessStartInfo processStartInfo;
 
-            if (entry.Command.Contains(' '))
+            var command = entry.Command;
+
+            if (command.Contains("%windir%", StringComparison.InvariantCultureIgnoreCase))
             {
-                var commandSplit = entry.Command.Split(' ');
+                var windowsFolder = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                command = command.Replace("%windir%", windowsFolder, StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            if (command.Contains(' '))
+            {
+                var commandSplit = command.Split(' ');
                 var file = commandSplit.FirstOrDefault();
-                var arguments = entry.Command[file.Length..].TrimStart();
+                var arguments = command[file.Length..].TrimStart();
 
                 processStartInfo = new ProcessStartInfo(file, arguments)
                 {
@@ -117,7 +125,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
             }
             else
             {
-                processStartInfo = new ProcessStartInfo(entry.Command)
+                processStartInfo = new ProcessStartInfo(command)
                 {
                     UseShellExecute = true,
                 };
