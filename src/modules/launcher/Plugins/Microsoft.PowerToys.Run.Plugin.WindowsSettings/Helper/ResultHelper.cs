@@ -34,9 +34,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
 
             foreach (var entry in list)
             {
-                var type = entry.Command.StartsWith("ms-settings", StringComparison.InvariantCultureIgnoreCase)
-                    ? Resources.SettingsApp
-                    : Resources.ControlPanel;
+                var type = Resources.ResourceManager.GetString($"{entry.Type}");
 
                 var result = new Result
                 {
@@ -88,9 +86,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
                 toolTipText.Append(entry.Note);
             }
 
-            var type = entry.Command.StartsWith("ms-settings", StringComparison.InvariantCultureIgnoreCase)
-                ? Resources.SettingsApp
-                : Resources.ControlPanel;
+            var type = Resources.ResourceManager.GetString($"{entry.Type}");
 
             result.ToolTipData = new ToolTipData(type, toolTipText.ToString());
         }
@@ -156,27 +152,30 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
 
             foreach (var result in resultList)
             {
-                var context = (IWindowsSetting)result.ContextData;
+                if (!(result.ContextData is IWindowsSetting windowsSetting))
+                {
+                    continue;
+                }
 
-                if (context.Name.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
+                if (windowsSetting.Name.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
                 {
                     result.Score = highScore--;
                     continue;
                 }
 
-                if (context.Area.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
+                if (windowsSetting.Area.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
                 {
                     result.Score = highScore--;
                     continue;
                 }
 
-                if (context.AltNames is null)
+                if (windowsSetting.AltNames is null)
                 {
                     result.Score = lowScore--;
                     continue;
                 }
 
-                if (context.AltNames.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
+                if (windowsSetting.AltNames.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
                 {
                     result.Score = highScore--;
                     continue;
