@@ -60,14 +60,24 @@ namespace FancyZonesEditor
         {
             if (e.Key == Key.Escape)
             {
-                if (_openedDialog != null)
-                {
-                    _openedDialog.Hide();
-                }
-                else
-                {
-                    OnClosing(sender, null);
-                }
+                CloseDialog(sender);
+            }
+        }
+
+        private void LayoutItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            CloseDialog(sender);
+        }
+
+        private void CloseDialog(object sender)
+        {
+            if (_openedDialog != null)
+            {
+                _openedDialog.Hide();
+            }
+            else
+            {
+                OnClosing(sender, null);
             }
         }
 
