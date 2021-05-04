@@ -198,6 +198,7 @@
                                  SelectionMode="Single"
                                  IsSelectionEnabled="True"
                                  ItemClick="Layout_ItemClick"
+                                 MouseDoubleClick="LayoutItem_MouseDoubleClick"
                                  Margin="-8,8,-8,0">
                         <ui:GridView.ItemContainerStyle>
                             <Style BasedOn="{StaticResource LayoutItemContainerStyle}"
@@ -250,6 +251,7 @@
                                  SelectionMode="Single"
                                  IsItemClickEnabled="True"
                                  ItemClick="Layout_ItemClick"
+                                 MouseDoubleClick="LayoutItem_MouseDoubleClick"
                                  AutomationProperties.LabeledBy="{Binding ElementName=CustomHeaderBlock}"
                                  Margin="-8,8,-8,0"
                                  Grid.Row="4">
