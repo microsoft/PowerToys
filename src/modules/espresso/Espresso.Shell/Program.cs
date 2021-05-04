@@ -90,10 +90,10 @@ namespace Espresso.Shell
 
             timeOption.Required = false;
 
-            var powerToysPidOption = new Option<int>(
-                    aliases: new[] { "--ptpid", "-p" },
+            var pidOption = new Option<int>(
+                    aliases: new[] { "--pid", "-p" },
                     getDefaultValue: () => 0,
-                    description: "Reference to PowerToys PID, when executed under the application context.")
+                    description: "Bind the execution of Espresso to another process.")
             {
                 Argument = new Argument<int>(() => 0)
                 {
@@ -101,14 +101,14 @@ namespace Espresso.Shell
                 },
             };
 
-            powerToysPidOption.Required = false;
+            pidOption.Required = false;
 
             var rootCommand = new RootCommand
             {
                 configOption,
                 displayOption,
                 timeOption,
-                powerToysPidOption
+                pidOption
             };
 
             rootCommand.Description = appName;
@@ -126,12 +126,12 @@ namespace Espresso.Shell
             Environment.Exit(exitCode);
         }
 
-        private static void HandleCommandLineArguments(string config, bool displayOn, long timeLimit, int ptpid)
+        private static void HandleCommandLineArguments(string config, bool displayOn, long timeLimit, int pid)
         {
             log.Info($"The value for --config is: {config}");
             log.Info($"The value for --display-on is: {displayOn}");
             log.Info($"The value for --time-limit is: {timeLimit}");
-            log.Info($"The value for --ptpid is: {ptpid}");
+            log.Info($"The value for --pid is: {pid}");
 
             if (!string.IsNullOrWhiteSpace(config))
             {
@@ -166,14 +166,6 @@ namespace Espresso.Shell
                     log.Info(errorString);
                     log.Debug(errorString);
                 }
-
-                if (ptpid != 0)
-                {
-                    RunnerHelper.WaitForPowerToysRunner(ptpid, () =>
-                    {
-                        Environment.Exit(0);
-                    });
-                }
             }
             else
             {
@@ -197,6 +189,14 @@ namespace Espresso.Shell
                     // Timed keep-awake.
                     APIHelper.SetTimedKeepAwake(timeLimit, LogTimedKeepAwakeCompletion, LogUnexpectedOrCancelledKeepAwakeCompletion, displayOn);
                 }
+            }
+
+            if (pid != 0)
+            {
+                RunnerHelper.WaitForPowerToysRunner(pid, () =>
+                {
+                    Environment.Exit(0);
+                });
             }
 
             new ManualResetEvent(false).WaitOne();
@@ -233,7 +233,7 @@ namespace Espresso.Shell
                         // TIMED = 1
                         switch (settings.Properties.Mode)
                         {
-                            case 0:
+                            case EspressoMode.INDEFINITE:
                                 {
                                     // Indefinite keep awake.
                                     bool success = APIHelper.SetIndefiniteKeepAwake(settings.Properties.KeepDisplayOn.Value);
@@ -249,7 +249,7 @@ namespace Espresso.Shell
                                     }
                                     break;
                                 }
-                            case 1:
+                            case EspressoMode.TIMED:
                                 {
                                     // Timed keep-awake.
                                     long computedTime = (settings.Properties.Hours.Value * 60 * 60) + (settings.Properties.Minutes.Value * 60);

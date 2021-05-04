@@ -6,6 +6,12 @@ using Newtonsoft.Json;
 
 namespace Espresso.Shell.Models
 {
+    public enum EspressoMode
+    {
+        INDEFINITE = 0,
+        TIMED = 1,
+    }
+
     public class EspressoSettingsModel
     {
         [JsonProperty("properties")]
@@ -21,7 +27,7 @@ namespace Espresso.Shell.Models
         [JsonProperty("espresso_keep_display_on")]
         public KeepDisplayOn? KeepDisplayOn { get; set; }
         [JsonProperty("espresso_mode")]
-        public int? Mode { get; set; }
+        public EspressoMode Mode { get; set; }
         [JsonProperty("espresso_hours")]
         public Hours? Hours { get; set; }
         [JsonProperty("espresso_minutes")]

@@ -81,7 +81,7 @@ private:
         // Get the configuration file that will be passed to the process.
         std::wstring espresso_settings_location = PTSettingsHelper::get_module_save_file_location(MODULE_NAME);
 
-        std::wstring executable_args = L"--config " + espresso_settings_location + L" --ptpid " + std::to_wstring(powertoys_pid);
+        std::wstring executable_args = L"--config " + espresso_settings_location + L" --pid " + std::to_wstring(powertoys_pid);
         Logger::trace(L"Espresso launching with parameters: " + executable_args);
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
