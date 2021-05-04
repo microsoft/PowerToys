@@ -1,8 +1,10 @@
-﻿using Espresso.Shell.Models;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Espresso.Shell.Models;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace Espresso.Shell.Core
@@ -39,6 +41,12 @@ namespace Espresso.Shell.Core
                 indefiniteMenuItem.Checked = true;
             }
             operationContextMenu.Items.Add(indefiniteMenuItem);
+
+            // Timed keep-awake menu item
+
+            // Exit menu item
+
+            // About menu item
         }
     }
 }
