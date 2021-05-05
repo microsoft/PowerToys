@@ -199,6 +199,8 @@ namespace Espresso.Shell
                 });
             }
 
+            TrayHelper.InitializeEspressoTray("Espresso", EspressoMode.INDEFINITE, true, new Action(()=>Console.WriteLine("test")), new Action(() => Console.WriteLine("test")));
+
             new ManualResetEvent(false).WaitOne();
         }
 

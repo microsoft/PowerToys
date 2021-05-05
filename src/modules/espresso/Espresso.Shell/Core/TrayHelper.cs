@@ -5,6 +5,7 @@
 using Espresso.Shell.Models;
 using System;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Espresso.Shell.Core
@@ -23,14 +24,16 @@ namespace Espresso.Shell.Core
             trayIcon.Icon = icon;
             trayIcon.ContextMenuStrip = contextMenu;
             trayIcon.Visible = true;
+
+            Application.Run();
         }
 
-        internal static void InitializeEspressoTray(EspressoMode mode, bool keepDisplayOn, Action indefiniteSelectionCallback, Action timedSelectionCallback)
+        internal static void InitializeEspressoTray(string text, EspressoMode mode, bool keepDisplayOn, Action indefiniteSelectionCallback, Action timedSelectionCallback)
         {
             var contextMenuStrip = new ContextMenuStrip();
-
+          
             // Main toolstrip.
-            var operationContextMenu = new ToolStrip();
+            var operationContextMenu = new ToolStripMenuItem();
             operationContextMenu.Text = "Mode";
 
             // Indefinite keep-awake menu item.
@@ -40,13 +43,32 @@ namespace Espresso.Shell.Core
             {
                 indefiniteMenuItem.Checked = true;
             }
-            operationContextMenu.Items.Add(indefiniteMenuItem);
 
             // Timed keep-awake menu item
+            var timedMenuItem = new ToolStripMenuItem();
+            timedMenuItem.Text = "Timed";
 
-            // Exit menu item
+            var halfHourMenuItem = new ToolStripMenuItem();
+            halfHourMenuItem.Text = "30 minutes";
 
-            // About menu item
+            var oneHourMenuItem = new ToolStripMenuItem();
+            halfHourMenuItem.Text = "1 hour";
+
+            var twoHousrMenuItem = new ToolStripMenuItem();
+            halfHourMenuItem.Text = "2 hours";
+
+            timedMenuItem.DropDownItems.Add(halfHourMenuItem);
+            timedMenuItem.DropDownItems.Add(oneHourMenuItem);
+            timedMenuItem.DropDownItems.Add(twoHousrMenuItem);
+
+            operationContextMenu.DropDownItems.Add(indefiniteMenuItem);
+            operationContextMenu.DropDownItems.Add(timedMenuItem);
+
+            contextMenuStrip.Items.Add(operationContextMenu);
+
+#pragma warning disable CS8604 // Possible null reference argument.
+            Task.Factory.StartNew(() => InitializeTrayIcon(text, APIHelper.Extract("shell32.dll", 42, true), contextMenuStrip));
+#pragma warning restore CS8604 // Possible null reference argument.
         }
     }
 }

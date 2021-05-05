@@ -5,6 +5,7 @@
 using Microsoft.Win32;
 using NLog;
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,14 +34,17 @@ namespace Espresso.Shell.Core
 
         private static Logger log;
 
+        // More details about the API used: https://docs.microsoft.com/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+
+        [DllImport("Shell32.dll", EntryPoint = "ExtractIconExW", CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+        private static extern int ExtractIconEx(string sFile, int iIndex, out IntPtr piLargeVersion, out IntPtr piSmallVersion, int amountIcons);
+
         static APIHelper()
         {
             log = LogManager.GetCurrentClassLogger();
         }
-
-        // More details about the API used: https://docs.microsoft.com/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 
         /// <summary>
         /// Sets the computer awake state using the native Win32 SetThreadExecutionState API. This
@@ -183,5 +187,23 @@ namespace Espresso.Shell.Core
                 return string.Empty;
             }
         }
+
+
+        public static Icon? Extract(string file, int number, bool largeIcon)
+        {
+            IntPtr large;
+            IntPtr small;
+            ExtractIconEx(file, number, out large, out small, 1);
+            try
+            {
+                return Icon.FromHandle(largeIcon ? large : small);
+            }
+            catch
+            {
+                return null;
+            }
+
+        }
+        
     }
 }
