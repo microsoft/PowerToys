@@ -333,10 +333,13 @@
       </Item>
       <Item ItemId=";Input_Resize" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[_Resize]]></Val>
+          <Val><![CDATA[Resize]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fo_rmaat wijzigen]]></Val>
+            <Val><![CDATA[Formaat wijzigen]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[_Resize]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -682,7 +685,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TiffCompressOption_Ccitt3" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TiffCompressOption_Ccitt3" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[CCITT3]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -691,7 +694,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TiffCompressOption_Ccitt4" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TiffCompressOption_Ccitt4" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[CCITT4]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -709,7 +712,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TiffCompressOption_Lzw" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TiffCompressOption_Lzw" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[LZW]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -727,7 +730,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TiffCompressOption_Rle" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TiffCompressOption_Rle" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[RLE]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -736,12 +739,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";TiffCompressOption_Zip" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";TiffCompressOption_Zip" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Zip]]></Val>
+          <Val><![CDATA[ZIP]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zip]]></Val>
+            <Val><![CDATA[Postcode]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Zip]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

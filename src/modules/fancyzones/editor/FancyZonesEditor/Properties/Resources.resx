@@ -148,9 +148,6 @@
     <value>Highlight distance</value>
     <comment>Distance of when an adjacent zone should light up when the window is close to it</comment>
   </data>
-  <data name="Edit_Layout" xml:space="preserve">
-    <value>Edit layout</value>
-  </data>
   <data name="Fancy_Zones_Editor_App_Title" xml:space="preserve">
     <value>FancyZones Editor</value>
   </data>
@@ -295,7 +292,7 @@
     <value>Are you sure you want to delete this layout?</value>
   </data>
   <data name="Edit_zones" xml:space="preserve">
-    <value>Edit zone layout</value>
+    <value>Edit zones</value>
   </data>
   <data name="No_Custom_Layouts_Message" xml:space="preserve">
     <value>Create or duplicate a layout to get started</value>
@@ -359,5 +356,8 @@
   </data>
   <data name="QuickKey_Title" xml:space="preserve">
     <value>Layout shortcut</value>
+  </data>
+  <data name="Edit_Layout" xml:space="preserve">
+    <value>Edit layout</value>
   </data>
 </root>

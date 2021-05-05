@@ -205,12 +205,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Distance_adjacent_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Distance_adjacent_zones" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Distance to highlight adjacent zones]]></Val>
+          <Val><![CDATA[Highlight distance]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[與醒目提示之相鄰區域的距離]]></Val>
+            <Val><![CDATA[醒目提示距離]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Distance to highlight adjacent zones]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -505,11 +508,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";QuickKey_Select" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Number_of_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select a key to quickly apply the layout (Win + Ctrl + Alt + key)]]></Val>
+          <Val><![CDATA[Number of zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[選取按鍵以快速套用版面配置 (Windows 鍵 + Ctrl + Alt + 按鍵)]]></Val>
+            <Val><![CDATA[區域數目]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Pixels" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[px]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[px]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Press Win + Ctrl + Alt + selected key to apply this layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[按 Win + Ctrl + Alt + 選取的索引鍵，即可套用此版面配置]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";QuickKey_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Layout shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[版面配置快捷鍵]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
