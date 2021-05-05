@@ -169,7 +169,7 @@ public:
     int GetCommonModifiersCount(const Shortcut& input) const;
 
     // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
-    static ShortcutErrorType DoKeysOverlap(const Shortcut& first, const Shortcut& second);
+    static ShortcutErrorType DoShortcutsOverlap(const Shortcut& first, const Shortcut& second);
 
     // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
     ShortcutErrorType IsShortcutIllegal() const;

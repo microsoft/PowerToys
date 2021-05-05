@@ -84,7 +84,7 @@ namespace KeyboardManagerCommonTests
             Shortcut s2(std::vector<int32_t>{ VK_CONTROL, 0x41 });
 
             // Act
-            auto result = Shortcut::DoKeysOverlap(s1, s2);
+            auto result = Shortcut::DoShortcutsOverlap(s1, s2);
 
             // Assert
             Assert::IsTrue(result == ShortcutErrorType::NoError);
@@ -98,7 +98,7 @@ namespace KeyboardManagerCommonTests
             Shortcut s2 = s1;
 
             // Act
-            auto result = Shortcut::DoKeysOverlap(s1, s2);
+            auto result = Shortcut::DoShortcutsOverlap(s1, s2);
 
             // Assert
             Assert::IsTrue(result == ShortcutErrorType::SameShortcutPreviouslyMapped);
@@ -112,7 +112,7 @@ namespace KeyboardManagerCommonTests
             Shortcut s2(std::vector<int32_t>{ VK_CONTROL, 0x41 });
 
             // Act
-            auto result = Shortcut::DoKeysOverlap(s1, s2);
+            auto result = Shortcut::DoShortcutsOverlap(s1, s2);
 
             // Assert
             Assert::IsTrue(result == ShortcutErrorType::NoError);
@@ -126,7 +126,7 @@ namespace KeyboardManagerCommonTests
             Shortcut s2(std::vector<int32_t>{ VK_SHIFT, 0x42 });
 
             // Act
-            auto result = Shortcut::DoKeysOverlap(s1, s2);
+            auto result = Shortcut::DoShortcutsOverlap(s1, s2);
 
             // Assert
             Assert::IsTrue(result == ShortcutErrorType::NoError);
@@ -140,7 +140,7 @@ namespace KeyboardManagerCommonTests
             Shortcut s2(std::vector<int32_t>{ VK_CONTROL, 0x42 });
 
             // Act
-            auto result = Shortcut::DoKeysOverlap(s1, s2);
+            auto result = Shortcut::DoShortcutsOverlap(s1, s2);
 
             // Assert
             Assert::IsTrue(result == ShortcutErrorType::ConflictingModifierShortcut);
@@ -154,7 +154,7 @@ namespace KeyboardManagerCommonTests
             Shortcut s2(std::vector<int32_t>{ VK_CONTROL, 0x42 });
 
             // Act
-            auto result = Shortcut::DoKeysOverlap(s1, s2);
+            auto result = Shortcut::DoShortcutsOverlap(s1, s2);
 
             // Assert
             Assert::IsTrue(result == ShortcutErrorType::ConflictingModifierShortcut);
@@ -168,7 +168,7 @@ namespace KeyboardManagerCommonTests
             Shortcut s2(std::vector<int32_t>{ VK_RCONTROL, 0x42 });
 
             // Act
-            auto result = Shortcut::DoKeysOverlap(s1, s2);
+            auto result = Shortcut::DoShortcutsOverlap(s1, s2);
 
             // Assert
             Assert::IsTrue(result == ShortcutErrorType::NoError);

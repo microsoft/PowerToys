@@ -272,7 +272,7 @@ namespace BufferValidationHelpers
                         ShortcutErrorType result = ShortcutErrorType::NoError;
                         if (!isHybridControl)
                         {
-                            result = Shortcut::DoKeysOverlap(std::get<Shortcut>(remapBuffer[i].first[colIndex]), std::get<Shortcut>(tempShortcut));
+                            result = Shortcut::DoShortcutsOverlap(std::get<Shortcut>(remapBuffer[i].first[colIndex]), std::get<Shortcut>(tempShortcut));
                         }
                         else
                         {
@@ -287,7 +287,7 @@ namespace BufferValidationHelpers
                             {
                                 if (std::get<Shortcut>(tempShortcut).IsValidShortcut() && std::get<Shortcut>(remapBuffer[i].first[colIndex]).IsValidShortcut())
                                 {
-                                    result = Shortcut::DoKeysOverlap(std::get<Shortcut>(remapBuffer[i].first[colIndex]), std::get<Shortcut>(tempShortcut));
+                                    result = Shortcut::DoShortcutsOverlap(std::get<Shortcut>(remapBuffer[i].first[colIndex]), std::get<Shortcut>(tempShortcut));
                                 }
                             }
                             // Other scenarios not possible since key to shortcut is with key to key, and shortcut to key is with shortcut to shortcut

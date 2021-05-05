@@ -859,7 +859,7 @@ int Shortcut::GetCommonModifiersCount(const Shortcut& input) const
 }
 
 // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
-ShortcutErrorType Shortcut::DoKeysOverlap(const Shortcut& first, const Shortcut& second)
+ShortcutErrorType Shortcut::DoShortcutsOverlap(const Shortcut& first, const Shortcut& second)
 {
     if (first.IsValidShortcut() && second.IsValidShortcut())
     {
