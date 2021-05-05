@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -19,6 +20,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
+
+        public ButtonClickCommand UpdateNowButtonEventHandler { get; set; }
 
         public Func<string, int> UpdateUIThemeCallBack { get; }
 
@@ -38,6 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
+            UpdateNowButtonEventHandler = new ButtonClickCommand(UpdateNowClick);
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
             if (settingsRepository == null)
@@ -396,6 +400,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendCheckForUpdatesConfigMSG(customaction.ToString());
+        }
+
+        private void UpdateNowClick()
+        {
+            Process.Start(new ProcessStartInfo("powertoys://update_now") { UseShellExecute = true });
         }
 
         public void RequestUpdateCheckedDate()
