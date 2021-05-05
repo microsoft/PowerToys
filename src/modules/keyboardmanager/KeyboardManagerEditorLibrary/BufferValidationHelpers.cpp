@@ -13,9 +13,9 @@
 namespace BufferValidationHelpers
 {
     // Function to validate and update an element of the key remap buffer when the selection has changed
-    Helpers::ErrorType ValidateAndUpdateKeyBufferElement(int rowIndex, int colIndex, int selectedKeyCode, RemapBuffer& remapBuffer)
+    ShortcutErrorType ValidateAndUpdateKeyBufferElement(int rowIndex, int colIndex, int selectedKeyCode, RemapBuffer& remapBuffer)
     {
-        Helpers::ErrorType errorType = Helpers::ErrorType::NoError;
+        ShortcutErrorType errorType = ShortcutErrorType::NoError;
 
         // Check if the element was not found or the index exceeds the known keys
         if (selectedKeyCode != -1)
@@ -25,13 +25,13 @@ namespace BufferValidationHelpers
             {
                 if (std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]) == selectedKeyCode)
                 {
-                    errorType = Helpers::ErrorType::MapToSameKey;
+                    errorType = ShortcutErrorType::MapToSameKey;
                 }
             }
 
             // If one column is shortcut and other is key no warning required
 
-            if (errorType == Helpers::ErrorType::NoError && colIndex == 0)
+            if (errorType == ShortcutErrorType::NoError && colIndex == 0)
             {
                 // Check if the key is already remapped to something else
                 for (int i = 0; i < remapBuffer.size(); i++)
@@ -40,8 +40,8 @@ namespace BufferValidationHelpers
                     {
                         if (remapBuffer[i].first[colIndex].index() == 0)
                         {
-                            Helpers::ErrorType result = EditorHelpers::DoKeysOverlap(std::get<DWORD>(remapBuffer[i].first[colIndex]), selectedKeyCode);
-                            if (result != Helpers::ErrorType::NoError)
+                            ShortcutErrorType result = EditorHelpers::DoKeysOverlap(std::get<DWORD>(remapBuffer[i].first[colIndex]), selectedKeyCode);
+                            if (result != ShortcutErrorType::NoError)
                             {
                                 errorType = result;
                                 break;
@@ -54,7 +54,7 @@ namespace BufferValidationHelpers
             }
 
             // If there is no error, set the buffer
-            if (errorType == Helpers::ErrorType::NoError)
+            if (errorType == ShortcutErrorType::NoError)
             {
                 remapBuffer[rowIndex].first[colIndex] = selectedKeyCode;
             }
@@ -73,10 +73,10 @@ namespace BufferValidationHelpers
     }
 
     // Function to validate an element of the shortcut remap buffer when the selection has changed
-    std::pair<Helpers::ErrorType, DropDownAction> ValidateShortcutBufferElement(int rowIndex, int colIndex, uint32_t dropDownIndex, const std::vector<int32_t>& selectedCodes, std::wstring appName, bool isHybridControl, const RemapBuffer& remapBuffer, bool dropDownFound)
+    std::pair<ShortcutErrorType, DropDownAction> ValidateShortcutBufferElement(int rowIndex, int colIndex, uint32_t dropDownIndex, const std::vector<int32_t>& selectedCodes, std::wstring appName, bool isHybridControl, const RemapBuffer& remapBuffer, bool dropDownFound)
     {
         BufferValidationHelpers::DropDownAction dropDownAction = BufferValidationHelpers::DropDownAction::NoAction;
-        Helpers::ErrorType errorType = Helpers::ErrorType::NoError;
+        ShortcutErrorType errorType = ShortcutErrorType::NoError;
         size_t dropDownCount = selectedCodes.size();
         DWORD selectedKeyCode = dropDownFound ? selectedCodes[dropDownIndex] : -1;
 
@@ -86,7 +86,7 @@ namespace BufferValidationHelpers
             if (dropDownCount == 1 && !Helpers::IsModifierKey(selectedKeyCode) && !isHybridControl)
             {
                 // warn and reset the drop down
-                errorType = Helpers::ErrorType::ShortcutStartWithModifier;
+                errorType = ShortcutErrorType::ShortcutStartWithModifier;
             }
             else if (dropDownIndex == dropDownCount - 1)
             {
@@ -98,7 +98,7 @@ namespace BufferValidationHelpers
                     if (EditorHelpers::CheckRepeatedModifier(selectedCodes, selectedKeyCode))
                     {
                         // warn and reset the drop down
-                        errorType = Helpers::ErrorType::ShortcutCannotHaveRepeatedModifier;
+                        errorType = ShortcutErrorType::ShortcutCannotHaveRepeatedModifier;
                     }
                     else
                     {
@@ -110,7 +110,7 @@ namespace BufferValidationHelpers
                 {
                     // If last drop down and a modifier is selected but there are already max drop downs: warn the user
                     // warn and reset the drop down
-                    errorType = Helpers::ErrorType::ShortcutMaxShortcutSizeOneActionKey;
+                    errorType = ShortcutErrorType::ShortcutMaxShortcutSizeOneActionKey;
                 }
                 else if (selectedKeyCode == 0)
                 {
@@ -125,13 +125,13 @@ namespace BufferValidationHelpers
                     else
                     {
                         // warn and reset the drop down
-                        errorType = Helpers::ErrorType::ShortcutOneActionKey;
+                        errorType = ShortcutErrorType::ShortcutOneActionKey;
                     }
                 }
                 else if (selectedKeyCode == CommonSharedConstants::VK_DISABLED && dropDownIndex)
                 {
                     // Disable can not be selected if one modifier key has already been selected
-                    errorType = Helpers::ErrorType::ShortcutDisableAsActionKey;
+                    errorType = ShortcutErrorType::ShortcutDisableAsActionKey;
                 }
                 // If none of the above, then the action key will be set
             }
@@ -144,7 +144,7 @@ namespace BufferValidationHelpers
                     if (EditorHelpers::CheckRepeatedModifier(selectedCodes, selectedKeyCode))
                     {
                         // warn and reset the drop down
-                        errorType = Helpers::ErrorType::ShortcutCannotHaveRepeatedModifier;
+                        errorType = ShortcutErrorType::ShortcutCannotHaveRepeatedModifier;
                     }
                     // If not, the modifier key will be set
                 }
@@ -167,13 +167,13 @@ namespace BufferValidationHelpers
                     else
                     {
                         // warn and reset the drop down
-                        errorType = Helpers::ErrorType::ShortcutAtleast2Keys;
+                        errorType = ShortcutErrorType::ShortcutAtleast2Keys;
                     }
                 }
                 else if (selectedKeyCode == CommonSharedConstants::VK_DISABLED && dropDownIndex)
                 {
                     // Allow selection of VK_DISABLE only in first dropdown
-                    errorType = Helpers::ErrorType::ShortcutDisableAsActionKey;
+                    errorType = ShortcutErrorType::ShortcutDisableAsActionKey;
                 }
                 else if (dropDownIndex != 0 || isHybridControl)
                 {
@@ -196,20 +196,20 @@ namespace BufferValidationHelpers
                     else
                     {
                         // warn and reset the drop down
-                        errorType = Helpers::ErrorType::ShortcutNotMoreThanOneActionKey;
+                        errorType = ShortcutErrorType::ShortcutNotMoreThanOneActionKey;
                     }
                 }
                 else
                 {
                     // If there an action key is chosen on the first drop down and there are more than one drop down menus
                     // warn and reset the drop down
-                    errorType = Helpers::ErrorType::ShortcutStartWithModifier;
+                    errorType = ShortcutErrorType::ShortcutStartWithModifier;
                 }
             }
         }
 
         // After validating the shortcut, now for errors like remap to same shortcut, remap shortcut more than once, Win L and Ctrl Alt Del
-        if (errorType == Helpers::ErrorType::NoError)
+        if (errorType == ShortcutErrorType::NoError)
         {
             KeyShortcutUnion tempShortcut;
             if (isHybridControl && KeyDropDownControl::GetNumberOfSelectedKeys(selectedCodes) == 1)
@@ -239,7 +239,7 @@ namespace BufferValidationHelpers
                 {
                     if (std::get<Shortcut>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]) == std::get<Shortcut>(tempShortcut) && std::get<Shortcut>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]).IsValidShortcut() && std::get<Shortcut>(tempShortcut).IsValidShortcut())
                     {
-                        errorType = Helpers::ErrorType::MapToSameShortcut;
+                        errorType = ShortcutErrorType::MapToSameShortcut;
                     }
                 }
 
@@ -252,14 +252,14 @@ namespace BufferValidationHelpers
                 {
                     if (std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]) == std::get<DWORD>(tempShortcut) && std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]) != NULL && std::get<DWORD>(tempShortcut) != NULL)
                     {
-                        errorType = Helpers::ErrorType::MapToSameKey;
+                        errorType = ShortcutErrorType::MapToSameKey;
                     }
                 }
 
                 // If one column is shortcut and other is key no warning required
             }
 
-            if (errorType == Helpers::ErrorType::NoError && colIndex == 0)
+            if (errorType == ShortcutErrorType::NoError && colIndex == 0)
             {
                 // Check if the key is already remapped to something else for the same target app
                 for (int i = 0; i < remapBuffer.size(); i++)
@@ -269,7 +269,7 @@ namespace BufferValidationHelpers
 
                     if (i != rowIndex && currAppName == appName)
                     {
-                        Helpers::ErrorType result = Helpers::ErrorType::NoError;
+                        ShortcutErrorType result = ShortcutErrorType::NoError;
                         if (!isHybridControl)
                         {
                             result = Shortcut::DoKeysOverlap(std::get<Shortcut>(remapBuffer[i].first[colIndex]), std::get<Shortcut>(tempShortcut));
@@ -292,7 +292,7 @@ namespace BufferValidationHelpers
                             }
                             // Other scenarios not possible since key to shortcut is with key to key, and shortcut to key is with shortcut to shortcut
                         }
-                        if (result != Helpers::ErrorType::NoError)
+                        if (result != ShortcutErrorType::NoError)
                         {
                             errorType = result;
                             break;
@@ -301,7 +301,7 @@ namespace BufferValidationHelpers
                 }
             }
 
-            if (errorType == Helpers::ErrorType::NoError && tempShortcut.index() == 1)
+            if (errorType == ShortcutErrorType::NoError && tempShortcut.index() == 1)
             {
                 errorType = std::get<Shortcut>(tempShortcut).IsShortcutIllegal();
             }

@@ -5,7 +5,7 @@
 #include <common/interop/shared_constants.h>
 #include <common/utils/process_path.h>
 
-#include "ErrorTypes.h"
+#include "ShortcutErrorType.h"
 #include "KeyboardManagerConstants.h"
 
 namespace Helpers

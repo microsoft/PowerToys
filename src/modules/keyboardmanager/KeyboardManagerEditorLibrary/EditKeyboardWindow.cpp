@@ -10,7 +10,7 @@
 
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
-#include <keyboardmanager/common/ErrorTypes.h>
+#include <keyboardmanager/common/ShortcutErrorType.h>
 
 #include <KeyboardManagerState.h>
 #include "EditKeyboardWindow.h"
@@ -74,9 +74,9 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
 
 static IAsyncAction OnClickAccept(KBMEditor::KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
-    Helpers::ErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
+    ShortcutErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
 
-    if (isSuccess != Helpers::ErrorType::NoError)
+    if (isSuccess != ShortcutErrorType::NoError)
     {
         if (!co_await Dialog::PartialRemappingConfirmationDialog(root, GET_RESOURCE_STRING(IDS_EDITKEYBOARD_PARTIALCONFIRMATIONDIALOGTITLE)))
         {

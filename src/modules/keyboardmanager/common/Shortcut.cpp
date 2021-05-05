@@ -2,7 +2,7 @@
 #include "Shortcut.h"
 #include <common/interop/keyboard_layout.h>
 #include <common/interop/shared_constants.h>
-#include "ErrorTypes.h"
+#include "ShortcutErrorType.h"
 #include "Helpers.h"
 #include "InputInterface.h"
 
@@ -859,14 +859,14 @@ int Shortcut::GetCommonModifiersCount(const Shortcut& input) const
 }
 
 // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
-Helpers::ErrorType Shortcut::DoKeysOverlap(const Shortcut& first, const Shortcut& second)
+ShortcutErrorType Shortcut::DoKeysOverlap(const Shortcut& first, const Shortcut& second)
 {
     if (first.IsValidShortcut() && second.IsValidShortcut())
     {
         // If the shortcuts are equal
         if (first == second)
         {
-            return Helpers::ErrorType::SameShortcutPreviouslyMapped;
+            return ShortcutErrorType::SameShortcutPreviouslyMapped;
         }
         // action keys match
         else if (first.actionKey == second.actionKey)
@@ -883,29 +883,29 @@ Helpers::ErrorType Shortcut::DoKeysOverlap(const Shortcut& first, const Shortcut
                     (first.altKey == ModifierKey::Both || second.altKey == ModifierKey::Both) ||
                     (first.shiftKey == ModifierKey::Both || second.shiftKey == ModifierKey::Both))
                 {
-                    return Helpers::ErrorType::ConflictingModifierShortcut;
+                    return ShortcutErrorType::ConflictingModifierShortcut;
                 }
             }
         }
     }
 
-    return Helpers::ErrorType::NoError;
+    return ShortcutErrorType::NoError;
 }
 
 // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
-Helpers::ErrorType Shortcut::IsShortcutIllegal() const
+ShortcutErrorType Shortcut::IsShortcutIllegal() const
 {
     // Win+L
     if (winKey != ModifierKey::Disabled && ctrlKey == ModifierKey::Disabled && altKey == ModifierKey::Disabled && shiftKey == ModifierKey::Disabled && actionKey == 0x4C)
     {
-        return Helpers::ErrorType::WinL;
+        return ShortcutErrorType::WinL;
     }
 
     // Ctrl+Alt+Del
     if (winKey == ModifierKey::Disabled && ctrlKey != ModifierKey::Disabled && altKey != ModifierKey::Disabled && shiftKey == ModifierKey::Disabled && actionKey == VK_DELETE)
     {
-        return Helpers::ErrorType::CtrlAltDel;
+        return ShortcutErrorType::CtrlAltDel;
     }
 
-    return Helpers::ErrorType::NoError;
+    return ShortcutErrorType::NoError;
 }

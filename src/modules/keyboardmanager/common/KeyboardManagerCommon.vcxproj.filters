@@ -68,7 +68,7 @@
     <ClInclude Include="Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ErrorTypes.h">
+    <ClInclude Include="ShortcutErrorType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MappingConfiguration.h">

@@ -5,7 +5,7 @@
 
 #include <common/interop/shared_constants.h>
 
-#include <keyboardmanager/common/ErrorTypes.h>
+#include <keyboardmanager/common/ShortcutErrorType.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
 #include <KeyboardManagerState.h>
@@ -14,9 +14,9 @@
 namespace LoadingAndSavingRemappingHelper
 {
     // Function to check if the set of remappings in the buffer are valid
-    Helpers::ErrorType CheckIfRemappingsAreValid(const RemapBuffer& remappings)
+    ShortcutErrorType CheckIfRemappingsAreValid(const RemapBuffer& remappings)
     {
-        Helpers::ErrorType isSuccess = Helpers::ErrorType::NoError;
+        ShortcutErrorType isSuccess = ShortcutErrorType::NoError;
         std::map<std::wstring, std::set<KeyShortcutUnion>> ogKeys;
         for (int i = 0; i < remappings.size(); i++)
         {
@@ -39,11 +39,11 @@ namespace LoadingAndSavingRemappingHelper
             }
             else if (ogKeyValidity && newKeyValidity && ogKeys[appName].find(ogKey) != ogKeys[appName].end())
             {
-                isSuccess = Helpers::ErrorType::RemapUnsuccessful;
+                isSuccess = ShortcutErrorType::RemapUnsuccessful;
             }
             else
             {
-                isSuccess = Helpers::ErrorType::RemapUnsuccessful;
+                isSuccess = ShortcutErrorType::RemapUnsuccessful;
             }
         }
 

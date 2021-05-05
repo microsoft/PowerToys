@@ -54,7 +54,7 @@
     <ClCompile Include="Shortcut.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ErrorTypes.h" />
+    <ClInclude Include="ShortcutErrorType.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="MappingConfiguration.h" />

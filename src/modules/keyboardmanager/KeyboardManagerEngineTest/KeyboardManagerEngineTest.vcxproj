@@ -49,7 +49,6 @@
     </ClCompile>
     <ClCompile Include="ShortcutTests.cpp" />
     <ClCompile Include="SingleKeyRemappingTests.cpp" />
-    <ClCompile Include="HelperTests.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>

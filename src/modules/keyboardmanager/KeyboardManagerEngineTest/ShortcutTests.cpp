@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
-#include <keyboardmanager/common/ErrorTypes.h>
+#include <keyboardmanager/common/ShortcutErrorType.h>
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/Helpers.h>
 #include "TestHelpers.h"
@@ -87,7 +87,7 @@ namespace KeyboardManagerCommonTests
             auto result = Shortcut::DoKeysOverlap(s1, s2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::NoError);
+            Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
 
         // Test if the DoKeysOverlap method returns SameShortcutPreviouslyMapped on passing same shortcut for both arguments
@@ -101,7 +101,7 @@ namespace KeyboardManagerCommonTests
             auto result = Shortcut::DoKeysOverlap(s1, s2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::SameShortcutPreviouslyMapped);
+            Assert::IsTrue(result == ShortcutErrorType::SameShortcutPreviouslyMapped);
         }
 
         // Test if the DoKeysOverlap method returns NoError on passing shortcuts with different action keys
@@ -115,7 +115,7 @@ namespace KeyboardManagerCommonTests
             auto result = Shortcut::DoKeysOverlap(s1, s2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::NoError);
+            Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
 
         // Test if the DoKeysOverlap method returns NoError on passing shortcuts with different modifiers
@@ -129,7 +129,7 @@ namespace KeyboardManagerCommonTests
             auto result = Shortcut::DoKeysOverlap(s1, s2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::NoError);
+            Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
 
         // Test if the DoKeysOverlap method returns ConflictingModifierShortcut on passing shortcuts with left modifier and common modifier
@@ -143,7 +143,7 @@ namespace KeyboardManagerCommonTests
             auto result = Shortcut::DoKeysOverlap(s1, s2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::ConflictingModifierShortcut);
+            Assert::IsTrue(result == ShortcutErrorType::ConflictingModifierShortcut);
         }
 
         // Test if the DoKeysOverlap method returns ConflictingModifierShortcut on passing shortcuts with right modifier and common modifier
@@ -157,7 +157,7 @@ namespace KeyboardManagerCommonTests
             auto result = Shortcut::DoKeysOverlap(s1, s2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::ConflictingModifierShortcut);
+            Assert::IsTrue(result == ShortcutErrorType::ConflictingModifierShortcut);
         }
 
         // Test if the DoKeysOverlap method returns ConflictingModifierShortcut on passing shortcuts with left modifier and right modifier
@@ -171,7 +171,7 @@ namespace KeyboardManagerCommonTests
             auto result = Shortcut::DoKeysOverlap(s1, s2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::NoError);
+            Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
     };
 }

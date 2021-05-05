@@ -25,10 +25,7 @@ namespace winrt::Windows
     }
 }
 
-namespace Helpers
-{
-    enum class ErrorType;
-}
+enum class ShortcutErrorType;
 
 // Wrapper class for the key drop down menu
 class KeyDropDownControl
@@ -77,7 +74,7 @@ public:
     void SetSelectionHandler(StackPanel& table, StackPanel row, int colIndex, RemapBuffer& singleKeyRemapBuffer);
 
     // Function for validating the selection of shortcuts for the drop down
-    std::pair<Helpers::ErrorType, int> ValidateShortcutSelection(StackPanel table, StackPanel row, StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
+    std::pair<ShortcutErrorType, int> ValidateShortcutSelection(StackPanel table, StackPanel row, StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
 
     // Function to set selection handler for shortcut drop down.
     void SetSelectionHandler(StackPanel& table, StackPanel row, winrt::Windows::UI::Xaml::Controls::StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox& targetApp, bool isHybridControl, bool isSingleKeyWindow);

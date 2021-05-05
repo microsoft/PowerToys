@@ -1,6 +1,7 @@
 #pragma once
 
 #include <keyboardmanager/common/Helpers.h>
+#include <keyboardmanager/common/ShortcutErrorType.h>
 
 namespace BufferValidationHelpers
 {
@@ -13,8 +14,8 @@ namespace BufferValidationHelpers
     };
 
     // Function to validate and update an element of the key remap buffer when the selection has changed
-    Helpers::ErrorType ValidateAndUpdateKeyBufferElement(int rowIndex, int colIndex, int selectedKeyCode, RemapBuffer& remapBuffer);
+    ShortcutErrorType ValidateAndUpdateKeyBufferElement(int rowIndex, int colIndex, int selectedKeyCode, RemapBuffer& remapBuffer);
 
     // Function to validate an element of the shortcut remap buffer when the selection has changed
-    std::pair<Helpers::ErrorType, DropDownAction> ValidateShortcutBufferElement(int rowIndex, int colIndex, uint32_t dropDownIndex, const std::vector<int32_t>& selectedCodes, std::wstring appName, bool isHybridControl, const RemapBuffer& remapBuffer, bool dropDownFound);
+    std::pair<ShortcutErrorType, DropDownAction> ValidateShortcutBufferElement(int rowIndex, int colIndex, uint32_t dropDownIndex, const std::vector<int32_t>& selectedCodes, std::wstring appName, bool isHybridControl, const RemapBuffer& remapBuffer, bool dropDownFound);
 }

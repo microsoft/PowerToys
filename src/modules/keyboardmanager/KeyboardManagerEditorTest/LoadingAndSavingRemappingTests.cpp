@@ -3,7 +3,7 @@
 #include <keyboardmanager/common/MappingConfiguration.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.h>
 #include <common/interop/shared_constants.h>
-#include <keyboardmanager/common/ErrorTypes.h>
+#include <keyboardmanager/common/ShortcutErrorType.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -26,7 +26,7 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -40,7 +40,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x42, 0x43 }), std::wstring()));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -60,7 +60,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x42, s2 }), std::wstring()));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -80,7 +80,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, 0x42 }), std::wstring()));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -106,7 +106,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest2 }), std::wstring()));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -134,7 +134,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x42, dest2 }), std::wstring()));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -147,7 +147,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, NULL }), std::wstring()));
 
             // Assert that remapping set is invalid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::RemapUnsuccessful);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -162,7 +162,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, src1 }), std::wstring()));
 
             // Assert that remapping set is invalid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::RemapUnsuccessful);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -179,7 +179,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, src1 }), std::wstring()));
 
             // Assert that remapping set is invalid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::RemapUnsuccessful);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -199,7 +199,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
 
             // Assert that remapping set is invalid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::RemapUnsuccessful);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -219,7 +219,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), testApp1));
 
             // Assert that remapping set is invalid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::RemapUnsuccessful);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -239,7 +239,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), testApp2));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == Helpers::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 

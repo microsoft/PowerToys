@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
-#include <keyboardmanager/common/ErrorTypes.h>
+#include <keyboardmanager/common/ShortcutErrorType.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <common/interop/keyboard_layout.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.h>
@@ -23,7 +23,7 @@ namespace EditorHelpersTests
             auto result = EditorHelpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::SameKeyPreviouslyMapped);
+            Assert::IsTrue(result == ShortcutErrorType::SameKeyPreviouslyMapped);
         }
 
         // Test if the DoKeysOverlap method returns ConflictingModifierKey on passing left modifier and common modifier
@@ -37,7 +37,7 @@ namespace EditorHelpersTests
             auto result = EditorHelpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::ConflictingModifierKey);
+            Assert::IsTrue(result == ShortcutErrorType::ConflictingModifierKey);
         }
 
         // Test if the DoKeysOverlap method returns ConflictingModifierKey on passing right modifier and common modifier
@@ -51,7 +51,7 @@ namespace EditorHelpersTests
             auto result = EditorHelpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::ConflictingModifierKey);
+            Assert::IsTrue(result == ShortcutErrorType::ConflictingModifierKey);
         }
 
         // Test if the DoKeysOverlap method returns NoError on passing left modifier and right modifier
@@ -65,7 +65,7 @@ namespace EditorHelpersTests
             auto result = EditorHelpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::NoError);
+            Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
 
         // Test if the DoKeysOverlap method returns NoError on passing keys of different types
@@ -79,7 +79,7 @@ namespace EditorHelpersTests
             auto result = EditorHelpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::NoError);
+            Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
 
         // Test if the DoKeysOverlap method returns NoError on passing different action keys
@@ -93,7 +93,7 @@ namespace EditorHelpersTests
             auto result = EditorHelpers::DoKeysOverlap(key1, key2);
 
             // Assert
-            Assert::IsTrue(result == Helpers::ErrorType::NoError);
+            Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
 
                 // Test if the CheckRepeatedModifier method returns true on passing vector with same modifier repeated
