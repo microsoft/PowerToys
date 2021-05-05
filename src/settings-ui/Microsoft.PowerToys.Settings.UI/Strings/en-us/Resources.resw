@@ -400,6 +400,9 @@
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
   </data>
+  <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
+    <value>Update now</value>
+  </data>  
   <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
     <value>Privacy statement</value>
   </data>

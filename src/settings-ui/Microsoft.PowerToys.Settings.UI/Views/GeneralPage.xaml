@@ -149,6 +149,12 @@
                     IsEnabled="{Binding AutoUpdatesEnabled}"
                     />
 
+            <Button x:Uid="GeneralPage_UpdateNow"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Foreground="White"
+                    Command="{Binding UpdateNowButtonEventHandler}"
+                    IsEnabled="{Binding AutoUpdatesEnabled}" />
+
             <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates" 
                           Margin="{StaticResource MediumTopMargin}"
                           Visibility="{Binding Mode=TwoWay, Path=IsAdmin, Converter={StaticResource VisibleIfTrueConverter}}"
