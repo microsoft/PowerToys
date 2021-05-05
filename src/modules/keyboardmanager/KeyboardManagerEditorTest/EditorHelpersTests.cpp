@@ -96,7 +96,7 @@ namespace EditorHelpersTests
             Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
 
-                // Test if the CheckRepeatedModifier method returns true on passing vector with same modifier repeated
+        // Test if the CheckRepeatedModifier method returns true on passing vector with same modifier repeated
         TEST_METHOD (CheckRepeatedModifier_ShouldReturnTrue_OnPassingSameModifierRepeated)
         {
             // Arrange
@@ -136,4 +136,3 @@ namespace EditorHelpersTests
         }
     };
 }
-
