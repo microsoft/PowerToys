@@ -5,6 +5,8 @@
 #include <Shlobj.h>
 #include <winrt/Windows.Data.Json.h>
 #include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.System.UserProfile.h>
+#include <winrt/Windows.Globalization.h>
 
 #include "ZipTools/ZipFolder.h"
 #include <common/SettingsAPI/settings_helpers.h>
@@ -185,6 +187,40 @@ void reportWindowsVersion(const filesystem::path& tmpDir)
     }
 }
 
+void reportWindowsSettings(const filesystem::path& tmpDir)
+{
+    std::wstring userLanguage;
+    std::wstring userLocale;
+    try
+    {
+        const auto lang = winrt::Windows::System::UserProfile::GlobalizationPreferences::Languages().GetAt(0);
+        userLanguage = winrt::Windows::Globalization::Language{lang}.DisplayName().c_str();
+        wchar_t localeName[LOCALE_NAME_MAX_LENGTH]{};
+        if (!LCIDToLocaleName(GetThreadLocale(), localeName, LOCALE_NAME_MAX_LENGTH, 0))
+        {
+            throw -1;
+        }
+        userLocale = localeName;
+    }
+    catch (...)
+    {
+        printf("Failed to get windows settings\n");
+        return;
+    }
+
+    try
+    {
+        wofstream settingsReport(tmpDir / "windows-settings.txt");
+        settingsReport << "Preferred user language: " << userLanguage << endl;
+        settingsReport << "User locale: " << userLocale << endl;
+    }
+    catch(...)
+    {
+        printf("Failed to write windows settings\n");
+    }
+
+}
+
 void reportDotNetInstallationInfo(const filesystem::path& tmpDir)
 {
     auto dotnetInfoPath = tmpDir;
@@ -255,6 +291,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Hide sensitive information
     hideUserPrivateInfo(tmpDir);
+
+    // Write windows settings to the temporary folder
+    reportWindowsSettings(tmpDir);
 
     // Write monitors info to the temporary folder
     reportMonitorInfo(tmpDir);
