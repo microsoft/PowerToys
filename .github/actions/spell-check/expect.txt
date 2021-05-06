@@ -728,6 +728,7 @@ FILEFLAGS
 FILEFLAGSMASK
 FILEOP
 FILEOS
+filepath
 FILESUBTYPE
 FILESYSPATH
 filesystem
@@ -1799,6 +1800,8 @@ rectp
 rects
 recyclebin
 redirectedfrom
+reencode
+reencoded
 refactor
 refactoring
 REFCLSID
@@ -1918,6 +1921,7 @@ SEARCHFOR
 SEARCHREPLACEGROUP
 searchterm
 Secur
+seekg
 Segoe
 Sekan
 SENDCHANGE
@@ -2083,6 +2087,7 @@ stoll
 stoul
 stoull
 strcmp
+streampos
 strftime
 Strikethrough
 Stringified
@@ -2164,6 +2169,7 @@ TCustom
 td
 TDevice
 Telemarketer
+tellg
 Templated
 templatenamespace
 Temporarilypeekatthedesktop
