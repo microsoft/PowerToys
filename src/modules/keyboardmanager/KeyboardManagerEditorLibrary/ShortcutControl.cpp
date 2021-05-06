@@ -8,6 +8,7 @@
 #include <KeyboardManagerEditorStrings.h>
 #include <KeyDropDownControl.h>
 #include <UIHelpers.h>
+#include <EditorHelpers.h>
 
 //Both static members are initialized to null
 HWND ShortcutControl::editShortcutsWindowHandle = nullptr;
@@ -240,7 +241,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     UpdateAccessibleNames(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->GetShortcutControl(), keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->GetShortcutControl(), targetAppTextBox, deleteShortcut, (int)keyboardRemapControlObjects.size());
 
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
-    if (originalKeys.IsValidShortcut() && !(newKeys.index() == 0 && std::get<DWORD>(newKeys) == NULL) && !(newKeys.index() == 1 && !std::get<Shortcut>(newKeys).IsValidShortcut()))
+    if (EditorHelpers::IsValidShortcut(originalKeys) && !(newKeys.index() == 0 && std::get<DWORD>(newKeys) == NULL) && !(newKeys.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKeys))))
     {
         // change to load app name
         shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));

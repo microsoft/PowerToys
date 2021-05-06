@@ -10,6 +10,7 @@
 #include <BufferValidationHelpers.h>
 #include <KeyboardManagerEditorStrings.h>
 #include <UIHelpers.h>
+#include <EditorHelpers.h>
 
 // Initialized to null
 KBMEditor::KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -365,7 +366,7 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(StackPanel table, Stac
         }
 
         // If the key/shortcut is valid and that drop down is not empty
-        if (((currentShortcut.index() == 0 && std::get<DWORD>(currentShortcut) != NULL) || (currentShortcut.index() == 1 && std::get<Shortcut>(currentShortcut).IsValidShortcut())) && GetSelectedValue(keyDropDownControlObjects[i]->GetComboBox()) != -1)
+        if (((currentShortcut.index() == 0 && std::get<DWORD>(currentShortcut) != NULL) || (currentShortcut.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(currentShortcut)))) && GetSelectedValue(keyDropDownControlObjects[i]->GetComboBox()) != -1)
         {
             keyDropDownControlObjects[i]->ValidateShortcutSelection(table, row, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
         }

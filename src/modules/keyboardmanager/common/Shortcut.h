@@ -12,16 +12,16 @@ enum class ShortcutErrorType;
 class Shortcut
 {
 private:
+    // Function to split a wstring based on a delimiter and return a vector of split strings
+    std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
+
+public:
     ModifierKey winKey;
     ModifierKey ctrlKey;
     ModifierKey altKey;
     ModifierKey shiftKey;
     DWORD actionKey;
 
-    // Function to split a wstring based on a delimiter and return a vector of split strings
-    std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
-
-public:
     // By default create an empty shortcut
     Shortcut() :
         winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
@@ -111,9 +111,6 @@ public:
     // Function to reset all the keys in the shortcut
     void Reset();
 
-    // Function to return true if the shortcut is valid. A valid shortcut has atleast one modifier, as well as an action key
-    bool IsValidShortcut() const;
-
     // Function to return the action key
     DWORD GetActionKey() const;
 
@@ -167,9 +164,6 @@ public:
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;
-
-    // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
-    static ShortcutErrorType DoShortcutsOverlap(const Shortcut& first, const Shortcut& second);
 
     // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
     ShortcutErrorType IsShortcutIllegal() const;
