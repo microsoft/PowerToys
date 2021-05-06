@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <common/interop/keyboard_layout.h>
 #include <keyboardmanager/common/ShortcutErrorType.h>
 #include <keyboardmanager/common/Helpers.h>
 
@@ -94,4 +95,32 @@ namespace EditorHelpers
 
         return ShortcutErrorType::NoError;
     }
+
+    // Function to return a vector of hstring for each key in the display order
+    std::vector<winrt::hstring> GetKeyVector(Shortcut shortcut, LayoutMap& keyboardMap)
+    {
+        std::vector<winrt::hstring> keys;
+        if (shortcut.winKey != ModifierKey::Disabled)
+        {
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetWinKey(ModifierKey::Both)).c_str()));
+        }
+        if (shortcut.ctrlKey != ModifierKey::Disabled)
+        {
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetCtrlKey()).c_str()));
+        }
+        if (shortcut.altKey != ModifierKey::Disabled)
+        {
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetAltKey()).c_str()));
+        }
+        if (shortcut.shiftKey != ModifierKey::Disabled)
+        {
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetShiftKey()).c_str()));
+        }
+        if (shortcut.actionKey != NULL)
+        {
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.actionKey).c_str()));
+        }
+        return keys;
+    }
+
 }

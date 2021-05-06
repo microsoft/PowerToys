@@ -419,33 +419,6 @@ void Shortcut::ResetKey(const DWORD& input)
     }
 }
 
-// Function to return a vector of hstring for each key in the display order
-std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap) const
-{
-    std::vector<winrt::hstring> keys;
-    if (winKey != ModifierKey::Disabled)
-    {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetWinKey(ModifierKey::Both)).c_str()));
-    }
-    if (ctrlKey != ModifierKey::Disabled)
-    {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetCtrlKey()).c_str()));
-    }
-    if (altKey != ModifierKey::Disabled)
-    {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetAltKey()).c_str()));
-    }
-    if (shiftKey != ModifierKey::Disabled)
-    {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetShiftKey()).c_str()));
-    }
-    if (actionKey != NULL)
-    {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(actionKey).c_str()));
-    }
-    return keys;
-}
-
 // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
 winrt::hstring Shortcut::ToHstringVK() const
 {

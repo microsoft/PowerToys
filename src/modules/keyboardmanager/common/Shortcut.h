@@ -147,9 +147,6 @@ public:
     // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
     winrt::hstring ToHstringVK() const;
 
-    // Function to return a vector of hstring for each key in the display order
-    std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap) const;
-
     // Function to return a vector of key codes in the display order
     std::vector<DWORD> GetKeyCodes();
 

@@ -15,4 +15,7 @@ namespace EditorHelpers
 
     // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
     ShortcutErrorType DoShortcutsOverlap(const Shortcut& first, const Shortcut& second);
+
+    // Function to return a vector of hstring for each key in the display order
+    std::vector<winrt::hstring> GetKeyVector(Shortcut shortcut, LayoutMap& keyboardMap);
 }

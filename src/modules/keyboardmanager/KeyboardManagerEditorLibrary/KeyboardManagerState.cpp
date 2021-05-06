@@ -3,6 +3,7 @@
 
 #include <keyboardmanager/common/KeyDelay.h>
 #include <keyboardmanager/common/Helpers.h>
+#include <EditorHelpers.h>
 
 using namespace KBMEditor;
 
@@ -144,7 +145,7 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
     detectedShortcut_lock.unlock();
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
     currentShortcutUI1.as<StackPanel>().Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, detectedShortcutCopy]() {
-        std::vector<hstring> shortcut = detectedShortcutCopy.GetKeyVector(keyboardMap);
+        std::vector<hstring> shortcut = EditorHelpers::GetKeyVector(detectedShortcutCopy, keyboardMap);
         currentShortcutUI1.as<StackPanel>().Children().Clear();
         currentShortcutUI2.as<StackPanel>().Children().Clear();
 
