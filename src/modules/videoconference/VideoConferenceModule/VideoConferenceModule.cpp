@@ -251,9 +251,11 @@ void VideoConferenceModule::onModuleSettingsChanged()
             {
                 toolbar.setHideToolbarWhenUnmuted(val.value());
             }
-            if (const auto val = values.get_string_value(L"selected_mic"))
+            
+            const auto selectedMic = values.get_string_value(L"selected_mic");
+            if (selectedMic && selectedMic != settings.selectedMicrophone)
             {
-                settings.selectedMicrophone = *val;
+                settings.selectedMicrophone = *selectedMic;
                 updateControlledMicrophones(settings.selectedMicrophone);
             }
 
