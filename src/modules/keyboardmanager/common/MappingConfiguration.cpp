@@ -8,7 +8,6 @@
 #include "KeyboardManagerConstants.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
-#include "KeyDelay.h"
 #include "Helpers.h"
 
 // Function to clear the OS Level shortcut remapping table

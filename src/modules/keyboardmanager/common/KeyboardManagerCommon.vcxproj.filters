@@ -24,9 +24,6 @@
     <ClCompile Include="Shortcut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyDelay.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\common\interop\keyboard_layout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,9 +45,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RemapShortcut.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyDelay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardManagerConstants.h">

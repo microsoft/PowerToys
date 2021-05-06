@@ -69,6 +69,9 @@
     <ClInclude Include="ShortcutErrorType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="KeyDelay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -117,6 +120,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EditorHelpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyDelay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
