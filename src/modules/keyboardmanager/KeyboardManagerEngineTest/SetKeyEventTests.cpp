@@ -36,7 +36,7 @@ namespace RemappingLogicTests
             for (int i = 0; i < nInputs; i++)
             {
                 // Set key events for all the extended keys
-                KeyboardManagerHelper::SetKeyEvent(input, i, INPUT_KEYBOARD, keyCodes[i], 0, 0);
+                Helpers::SetKeyEvent(input, i, INPUT_KEYBOARD, keyCodes[i], 0, 0);
                 // Extended key flag should be set
                 Assert::AreEqual(true, bool(input[i].ki.dwFlags & KEYEVENTF_EXTENDEDKEY));
             }
@@ -49,7 +49,7 @@ namespace RemappingLogicTests
             INPUT input[nInputs] = {};
 
             int index = 0;
-            KeyboardManagerHelper::SetDummyKeyEvent(input, index, 0);
+            Helpers::SetDummyKeyEvent(input, index, 0);
 
             // Assert that wScan for both inputs is 0
             Assert::AreEqual<unsigned int>(0, input[0].ki.wScan);

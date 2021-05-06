@@ -1,15 +1,14 @@
 #include "pch.h"
 #include "MappingConfiguration.h"
 
-#include <common/KeyboardManagerConstants.h>
-
-#include <common/Shortcut.h>
-#include <common/RemapShortcut.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
-#include <common/KeyDelay.h>
-#include <common/Helpers.h>
 #include <common/logger/logger.h>
+
+#include "KeyboardManagerConstants.h"
+#include "Shortcut.h"
+#include "RemapShortcut.h"
+#include "Helpers.h"
 
 // Function to clear the OS Level shortcut remapping table
 void MappingConfiguration::ClearOSLevelShortcuts()
@@ -44,7 +43,7 @@ bool MappingConfiguration::AddOSLevelShortcut(const Shortcut& originalSC, const 
 
     osLevelShortcutReMap[originalSC] = RemapShortcut(newSC);
     osLevelShortcutReMapSortedKeys.push_back(originalSC);
-    KeyboardManagerHelper::SortShortcutVectorBasedOnSize(osLevelShortcutReMapSortedKeys);
+    Helpers::SortShortcutVectorBasedOnSize(osLevelShortcutReMapSortedKeys);
 
     return true;
 }
@@ -89,7 +88,7 @@ bool MappingConfiguration::AddAppSpecificShortcut(const std::wstring& app, const
 
     appSpecificShortcutReMap[process_name][originalSC] = RemapShortcut(newSC);
     appSpecificShortcutReMapSortedKeys[process_name].push_back(originalSC);
-    KeyboardManagerHelper::SortShortcutVectorBasedOnSize(appSpecificShortcutReMapSortedKeys[process_name]);
+    Helpers::SortShortcutVectorBasedOnSize(appSpecificShortcutReMapSortedKeys[process_name]);
     return true;
 }
 

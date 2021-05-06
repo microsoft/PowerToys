@@ -1,10 +1,9 @@
 #include "pch.h"
+#include <array>
+#include <algorithm>
+
 #include "keyboard_layout_impl.h"
 #include "shared_constants.h"
-
-#include <winrt/Windows.UI.Core.h>
-
-using namespace winrt;
 
 LayoutMap::LayoutMap() :
     impl(new LayoutMap::LayoutMapImpl())

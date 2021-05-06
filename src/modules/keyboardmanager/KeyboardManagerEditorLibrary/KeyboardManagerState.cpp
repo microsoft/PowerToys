@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "KeyboardManagerState.h"
 
-#include <keyboardmanager/common/KeyDelay.h>
 #include <keyboardmanager/common/Helpers.h>
+
+#include "EditorHelpers.h"
+#include "KeyDelay.h"
 
 using namespace KBMEditor;
 
@@ -144,7 +146,7 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
     detectedShortcut_lock.unlock();
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
     currentShortcutUI1.as<StackPanel>().Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, detectedShortcutCopy]() {
-        std::vector<hstring> shortcut = detectedShortcutCopy.GetKeyVector(keyboardMap);
+        std::vector<hstring> shortcut = EditorHelpers::GetKeyVector(detectedShortcutCopy, keyboardMap);
         currentShortcutUI1.as<StackPanel>().Children().Clear();
         currentShortcutUI2.as<StackPanel>().Children().Clear();
 
@@ -235,14 +237,14 @@ void KeyboardManagerState::ResetDetectedShortcutKey(DWORD key)
 }
 
 // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
-KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data)
+Helpers::KeyboardHookDecision KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data)
 {
     // Check if the detect key UI window has been activated
     if (CheckUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated))
     {
         if (HandleKeyDelayEvent(data))
         {
-            return KeyboardManagerHelper::KeyboardHookDecision::Suppress;
+            return Helpers::KeyboardHookDecision::Suppress;
         }
         // detect the key if it is pressed down
         if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
@@ -251,27 +253,27 @@ KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectSingleRe
         }
 
         // Suppress the keyboard event
-        return KeyboardManagerHelper::KeyboardHookDecision::Suppress;
+        return Helpers::KeyboardHookDecision::Suppress;
     }
 
     // If the settings window is up, remappings should not be applied, but we should not suppress events in the hook
     else if (CheckUIState(KeyboardManagerUIState::EditKeyboardWindowActivated))
     {
-        return KeyboardManagerHelper::KeyboardHookDecision::SkipHook;
+        return Helpers::KeyboardHookDecision::SkipHook;
     }
 
-    return KeyboardManagerHelper::KeyboardHookDecision::ContinueExec;
+    return Helpers::KeyboardHookDecision::ContinueExec;
 }
 
 // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
-KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data, bool isRemapKey)
+Helpers::KeyboardHookDecision KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data, bool isRemapKey)
 {
     // Check if the detect shortcut UI window has been activated
     if ((!isRemapKey && CheckUIState(KeyboardManagerUIState::DetectShortcutWindowActivated)) || (isRemapKey && CheckUIState(KeyboardManagerUIState::DetectShortcutWindowInEditKeyboardWindowActivated)))
     {
         if (HandleKeyDelayEvent(data))
         {
-            return KeyboardManagerHelper::KeyboardHookDecision::Suppress;
+            return Helpers::KeyboardHookDecision::Suppress;
         }
 
         // Add the key if it is pressed down
@@ -286,7 +288,7 @@ KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectShortcut
         }
 
         // Suppress the keyboard event
-        return KeyboardManagerHelper::KeyboardHookDecision::Suppress;
+        return Helpers::KeyboardHookDecision::Suppress;
     }
 
     // If the detect shortcut UI window is not activated, then clear the shortcut buffer if it isn't empty
@@ -302,10 +304,10 @@ KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectShortcut
     // If the settings window is up, shortcut remappings should not be applied, but we should not suppress events in the hook
     if (!isRemapKey && (CheckUIState(KeyboardManagerUIState::EditShortcutsWindowActivated)) || (isRemapKey && uiState == KeyboardManagerUIState::DetectShortcutWindowInEditKeyboardWindowActivated))
     {
-        return KeyboardManagerHelper::KeyboardHookDecision::SkipHook;
+        return Helpers::KeyboardHookDecision::SkipHook;
     }
 
-    return KeyboardManagerHelper::KeyboardHookDecision::ContinueExec;
+    return Helpers::KeyboardHookDecision::ContinueExec;
 }
 
 void KeyboardManagerState::RegisterKeyDelay(

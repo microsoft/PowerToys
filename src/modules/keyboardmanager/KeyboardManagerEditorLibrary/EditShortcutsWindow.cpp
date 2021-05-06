@@ -4,18 +4,18 @@
 #include <common/Display/dpi_aware.h>
 #include <common/utils/EventLocker.h>
 #include <common/utils/winapi_error.h>
-
-#include <keyboardmanager/common/ErrorTypes.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
-#include <KeyboardManagerState.h>
-#include <Dialog.h>
-#include <KeyDropDownControl.h>
-#include <LoadingAndSavingRemappingHelper.h>
-#include <ShortcutControl.h>
-#include <Styles.h>
-#include <UIHelpers.h>
-#include <XamlBridge.h>
+#include "KeyboardManagerState.h"
+#include "Dialog.h"
+#include "KeyDropDownControl.h"
+#include "LoadingAndSavingRemappingHelper.h"
+#include "ShortcutControl.h"
+#include "Styles.h"
+#include "UIHelpers.h"
+#include "XamlBridge.h"
+#include "ShortcutErrorType.h"
+#include "EditorConstants.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -41,9 +41,9 @@ static IAsyncAction OnClickAccept(
     XamlRoot root,
     std::function<void()> ApplyRemappings)
 {
-    KeyboardManagerHelper::ErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(ShortcutControl::shortcutRemapBuffer);
+    ShortcutErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(ShortcutControl::shortcutRemapBuffer);
 
-    if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
+    if (isSuccess != ShortcutErrorType::NoError)
     {
         if (!co_await Dialog::PartialRemappingConfirmationDialog(root, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_PARTIALCONFIRMATIONDIALOGTITLE)))
         {
@@ -96,8 +96,8 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     RECT desktopRect = UIHelpers::GetForegroundWindowDesktopRect();
 
     // Calculate DPI dependent window size
-    int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth;
-    int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight;
+    int windowWidth = EditorConstants::DefaultEditShortcutsWindowWidth;
+    int windowHeight = EditorConstants::DefaultEditShortcutsWindowHeight;
     DPIAware::ConvertByCursorPosition(windowWidth, windowHeight);
     DPIAware::GetScreenDPIForCursor(g_currentDPI);
 
@@ -199,9 +199,9 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     StackPanel tableHeader = StackPanel();
     tableHeader.Orientation(Orientation::Horizontal);
     tableHeader.Margin({ 10, 0, 0, 10 });
-    auto originalShortcutContainer = UIHelpers::GetWrapped(originalShortcutHeader, KeyboardManagerConstants::ShortcutOriginColumnWidth + (double)KeyboardManagerConstants::ShortcutArrowColumnWidth);
+    auto originalShortcutContainer = UIHelpers::GetWrapped(originalShortcutHeader, EditorConstants::ShortcutOriginColumnWidth + (double)EditorConstants::ShortcutArrowColumnWidth);
     tableHeader.Children().Append(originalShortcutContainer.as<FrameworkElement>());
-    auto newShortcutHeaderContainer = UIHelpers::GetWrapped(newShortcutHeader, KeyboardManagerConstants::ShortcutTargetColumnWidth);
+    auto newShortcutHeaderContainer = UIHelpers::GetWrapped(newShortcutHeader, EditorConstants::ShortcutTargetColumnWidth);
     tableHeader.Children().Append(newShortcutHeaderContainer.as<FrameworkElement>());
     tableHeader.Children().Append(targetAppHeader);
 
@@ -249,8 +249,8 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     Button applyButton;
     applyButton.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_OK_BUTTON)));
     applyButton.Style(AccentButtonStyle());
-    applyButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
-    cancelButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
+    applyButton.MinWidth(EditorConstants::HeaderButtonWidth);
+    cancelButton.MinWidth(EditorConstants::HeaderButtonWidth);
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
 
@@ -288,7 +288,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
 
         // Set focus to the first Type Button in the newly added row
-        UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, KeyboardManagerConstants::ShortcutTableColCount);
+        UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, EditorConstants::ShortcutTableColCount);
     });
 
     // Set accessible name for the add shortcut button
@@ -380,8 +380,8 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     case WM_GETMINMAXINFO:
     {
         LPMINMAXINFO mmi = (LPMINMAXINFO)lParam;
-        int minWidth = KeyboardManagerConstants::MinimumEditShortcutsWindowWidth;
-        int minHeight = KeyboardManagerConstants::MinimumEditShortcutsWindowHeight;
+        int minWidth = EditorConstants::MinimumEditShortcutsWindowWidth;
+        int minHeight = EditorConstants::MinimumEditShortcutsWindowHeight;
         DPIAware::Convert(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), minWidth, minHeight);
         mmi->ptMinTrackSize.x = minWidth;
         mmi->ptMinTrackSize.y = minHeight;

@@ -2,21 +2,20 @@
 #include "LoadingAndSavingRemappingHelper.h"
 
 #include <set>
-
 #include <common/interop/shared_constants.h>
-
-#include <keyboardmanager/common/ErrorTypes.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
-#include <KeyboardManagerState.h>
-#include <keyboardmanager/KeyboardManagerEditorLibrary/trace.h>
+#include "KeyboardManagerState.h"
+#include "keyboardmanager/KeyboardManagerEditorLibrary/trace.h"
+#include "EditorHelpers.h"
+#include "ShortcutErrorType.h"
 
 namespace LoadingAndSavingRemappingHelper
 {
     // Function to check if the set of remappings in the buffer are valid
-    KeyboardManagerHelper::ErrorType CheckIfRemappingsAreValid(const RemapBuffer& remappings)
+    ShortcutErrorType CheckIfRemappingsAreValid(const RemapBuffer& remappings)
     {
-        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
+        ShortcutErrorType isSuccess = ShortcutErrorType::NoError;
         std::map<std::wstring, std::set<KeyShortcutUnion>> ogKeys;
         for (int i = 0; i < remappings.size(); i++)
         {
@@ -24,8 +23,8 @@ namespace LoadingAndSavingRemappingHelper
             KeyShortcutUnion newKey = remappings[i].first[1];
             std::wstring appName = remappings[i].second;
 
-            bool ogKeyValidity = (ogKey.index() == 0 && std::get<DWORD>(ogKey) != NULL) || (ogKey.index() == 1 && std::get<Shortcut>(ogKey).IsValidShortcut());
-            bool newKeyValidity = (newKey.index() == 0 && std::get<DWORD>(newKey) != NULL) || (newKey.index() == 1 && std::get<Shortcut>(newKey).IsValidShortcut());
+            bool ogKeyValidity = (ogKey.index() == 0 && std::get<DWORD>(ogKey) != NULL) || (ogKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(ogKey)));
+            bool newKeyValidity = (newKey.index() == 0 && std::get<DWORD>(newKey) != NULL) || (newKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey)));
 
             // Add new set for a new target app name
             if (ogKeys.find(appName) == ogKeys.end())
@@ -39,11 +38,11 @@ namespace LoadingAndSavingRemappingHelper
             }
             else if (ogKeyValidity && newKeyValidity && ogKeys[appName].find(ogKey) != ogKeys[appName].end())
             {
-                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                isSuccess = ShortcutErrorType::RemapUnsuccessful;
             }
             else
             {
-                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                isSuccess = ShortcutErrorType::RemapUnsuccessful;
             }
         }
 
@@ -61,7 +60,7 @@ namespace LoadingAndSavingRemappingHelper
             DWORD ogKey = std::get<DWORD>(remappings[i].first[0]);
             KeyShortcutUnion newKey = remappings[i].first[1];
 
-            if (ogKey != NULL && ((newKey.index() == 0 && std::get<DWORD>(newKey) != 0) || (newKey.index() == 1 && std::get<Shortcut>(newKey).IsValidShortcut())))
+            if (ogKey != NULL && ((newKey.index() == 0 && std::get<DWORD>(newKey) != 0) || (newKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey)))))
             {
                 ogKeys.insert(ogKey);
 
@@ -118,7 +117,7 @@ namespace LoadingAndSavingRemappingHelper
             DWORD originalKey = std::get<DWORD>(remappings[i].first[0]);
             KeyShortcutUnion newKey = remappings[i].first[1];
 
-            if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !std::get<Shortcut>(newKey).IsValidShortcut()))
+            if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey))))
             {
                 // If Ctrl/Alt/Shift are added, add their L and R versions instead to the same key
                 bool result = false;
@@ -187,7 +186,7 @@ namespace LoadingAndSavingRemappingHelper
             Shortcut originalShortcut = std::get<Shortcut>(remappings[i].first[0]);
             KeyShortcutUnion newShortcut = remappings[i].first[1];
 
-            if (originalShortcut.IsValidShortcut() && ((newShortcut.index() == 0 && std::get<DWORD>(newShortcut) != NULL) || (newShortcut.index() == 1 && std::get<Shortcut>(newShortcut).IsValidShortcut())))
+            if (EditorHelpers::IsValidShortcut(originalShortcut) && ((newShortcut.index() == 0 && std::get<DWORD>(newShortcut) != NULL) || (newShortcut.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newShortcut)))))
             {
                 if (remappings[i].second == L"")
                 {
