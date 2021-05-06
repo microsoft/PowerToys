@@ -36,6 +36,7 @@
     <ClInclude Include="BufferValidationHelpers.h" />
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="EditKeyboardWindow.h" />
+    <ClInclude Include="EditorConstants.h" />
     <ClInclude Include="EditorHelpers.h" />
     <ClInclude Include="EditShortcutsWindow.h" />
     <ClInclude Include="KeyboardManagerEditorStrings.h" />

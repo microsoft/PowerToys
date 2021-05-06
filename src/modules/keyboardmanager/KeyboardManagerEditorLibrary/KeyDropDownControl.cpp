@@ -11,6 +11,7 @@
 #include "UIHelpers.h"
 #include "EditorHelpers.h"
 #include "ShortcutErrorType.h"
+#include "EditorConstants.h"
 
 // Initialized to null
 KBMEditor::KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -55,14 +56,14 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
 
     if (!isShortcut)
     {
-        dropDown.as<ComboBox>().Width(KeyboardManagerConstants::RemapTableDropDownWidth);
+        dropDown.as<ComboBox>().Width(EditorConstants::RemapTableDropDownWidth);
     }
     else
     {
-        dropDown.as<ComboBox>().Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+        dropDown.as<ComboBox>().Width(EditorConstants::ShortcutTableDropDownWidth);
     }
 
-    dropDown.as<ComboBox>().MaxDropDownHeight(KeyboardManagerConstants::TableDropDownHeight);
+    dropDown.as<ComboBox>().MaxDropDownHeight(EditorConstants::TableDropDownHeight);
     
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);

@@ -21,6 +21,7 @@
 #include "LoadingAndSavingRemappingHelper.h"
 #include "UIHelpers.h"
 #include "ShortcutErrorType.h"
+#include "EditorConstants.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -141,8 +142,8 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     RECT desktopRect = UIHelpers::GetForegroundWindowDesktopRect();
 
     // Calculate DPI dependent window size
-    int windowWidth = KeyboardManagerConstants::DefaultEditKeyboardWindowWidth;
-    int windowHeight = KeyboardManagerConstants::DefaultEditKeyboardWindowHeight;
+    int windowWidth = EditorConstants::DefaultEditKeyboardWindowWidth;
+    int windowHeight = EditorConstants::DefaultEditKeyboardWindowHeight;
     DPIAware::Convert(nullptr, windowWidth, windowHeight);
     
     // Window Creation
@@ -228,7 +229,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     TextBlock originalKeyRemapHeader;
     originalKeyRemapHeader.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_SOURCEHEADER));
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
-    StackPanel originalKeyHeaderContainer = UIHelpers::GetWrapped(originalKeyRemapHeader, KeyboardManagerConstants::RemapTableDropDownWidth + KeyboardManagerConstants::TableArrowColWidth).as<StackPanel>();
+    StackPanel originalKeyHeaderContainer = UIHelpers::GetWrapped(originalKeyRemapHeader, EditorConstants::RemapTableDropDownWidth + EditorConstants::TableArrowColWidth).as<StackPanel>();
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
@@ -272,8 +273,8 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     Button applyButton;
     applyButton.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_OK_BUTTON)));
     applyButton.Style(AccentButtonStyle());
-    applyButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
-    cancelButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
+    applyButton.MinWidth(EditorConstants::HeaderButtonWidth);
+    cancelButton.MinWidth(EditorConstants::HeaderButtonWidth);
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
 
@@ -311,7 +312,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
 
         // Set focus to the first Type Button in the newly added row
-        UIHelpers::SetFocusOnTypeButtonInLastRow(keyRemapTable, KeyboardManagerConstants::RemapTableColCount);
+        UIHelpers::SetFocusOnTypeButtonInLastRow(keyRemapTable, EditorConstants::RemapTableColCount);
     });
 
     // Set accessible name for the addRemapKey button
@@ -422,8 +423,8 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     case WM_GETMINMAXINFO:
     {
         LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
-        int minWidth = KeyboardManagerConstants::MinimumEditKeyboardWindowWidth;
-        int minHeight = KeyboardManagerConstants::MinimumEditKeyboardWindowHeight;
+        int minWidth = EditorConstants::MinimumEditKeyboardWindowWidth;
+        int minHeight = EditorConstants::MinimumEditKeyboardWindowHeight;
         DPIAware::Convert(nullptr, minWidth, minHeight);
         lpMMI->ptMinTrackSize.x = minWidth;
         lpMMI->ptMinTrackSize.y = minHeight;

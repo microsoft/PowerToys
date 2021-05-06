@@ -2,13 +2,13 @@
 #include "BufferValidationHelpers.h"
 
 #include <common/interop/shared_constants.h>
-
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 
-#include <KeyboardManagerEditorStrings.h>
-#include <KeyDropDownControl.h>
-#include <UIHelpers.h>
-#include <EditorHelpers.h>
+#include "KeyboardManagerEditorStrings.h"
+#include "KeyDropDownControl.h"
+#include "UIHelpers.h"
+#include "EditorHelpers.h"
+#include "EditorConstants.h"
 
 namespace BufferValidationHelpers
 {
@@ -92,7 +92,7 @@ namespace BufferValidationHelpers
             {
                 // If it is the last drop down
                 // If last drop down and a modifier is selected: add a new drop down (max drop down count should be enforced)
-                if (Helpers::IsModifierKey(selectedKeyCode) && dropDownCount < KeyboardManagerConstants::MaxShortcutSize)
+                if (Helpers::IsModifierKey(selectedKeyCode) && dropDownCount < EditorConstants::MaxShortcutSize)
                 {
                     // If it matched any of the previous modifiers then reset that drop down
                     if (EditorHelpers::CheckRepeatedModifier(selectedCodes, selectedKeyCode))
@@ -106,7 +106,7 @@ namespace BufferValidationHelpers
                         dropDownAction = BufferValidationHelpers::DropDownAction::AddDropDown;
                     }
                 }
-                else if (Helpers::IsModifierKey(selectedKeyCode) && dropDownCount >= KeyboardManagerConstants::MaxShortcutSize)
+                else if (Helpers::IsModifierKey(selectedKeyCode) && dropDownCount >= EditorConstants::MaxShortcutSize)
                 {
                     // If last drop down and a modifier is selected but there are already max drop downs: warn the user
                     // warn and reset the drop down
@@ -116,7 +116,7 @@ namespace BufferValidationHelpers
                 {
                     // If None is selected but it's the last index: warn
                     // If it is a hybrid control and there are 2 drop downs then deletion is allowed
-                    if (isHybridControl && dropDownCount == KeyboardManagerConstants::MinShortcutSize)
+                    if (isHybridControl && dropDownCount == EditorConstants::MinShortcutSize)
                     {
                         // set delete drop down flag
                         dropDownAction = BufferValidationHelpers::DropDownAction::DeleteDropDown;
@@ -148,17 +148,17 @@ namespace BufferValidationHelpers
                     }
                     // If not, the modifier key will be set
                 }
-                else if (selectedKeyCode == 0 && dropDownCount > KeyboardManagerConstants::MinShortcutSize)
+                else if (selectedKeyCode == 0 && dropDownCount > EditorConstants::MinShortcutSize)
                 {
                     // If None is selected and there are more than 2 drop downs
                     // set delete drop down flag
                     dropDownAction = BufferValidationHelpers::DropDownAction::DeleteDropDown;
                     // do not delete the drop down now since there may be some other error which would cause the drop down to be invalid after removal
                 }
-                else if (selectedKeyCode == 0 && dropDownCount <= KeyboardManagerConstants::MinShortcutSize)
+                else if (selectedKeyCode == 0 && dropDownCount <= EditorConstants::MinShortcutSize)
                 {
                     // If it is a hybrid control and there are 2 drop downs then deletion is allowed
-                    if (isHybridControl && dropDownCount == KeyboardManagerConstants::MinShortcutSize)
+                    if (isHybridControl && dropDownCount == EditorConstants::MinShortcutSize)
                     {
                         // set delete drop down flag
                         dropDownAction = BufferValidationHelpers::DropDownAction::DeleteDropDown;

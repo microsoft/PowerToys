@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "SingleKeyRemapControl.h"
 
-#include <KeyboardManagerState.h>
-
-#include <ShortcutControl.h>
-#include <UIHelpers.h>
-#include <EditorHelpers.h>
+#include "KeyboardManagerState.h"
+#include "ShortcutControl.h"
+#include "UIHelpers.h"
+#include "EditorHelpers.h"
+#include "EditorConstants.h"
 
 //Both static members are initialized to null
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;
@@ -16,7 +16,7 @@ RemapBuffer SingleKeyRemapControl::singleKeyRemapBuffer;
 SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, const int colIndex)
 {
     typeKey = Button();
-    typeKey.as<Button>().Width(KeyboardManagerConstants::RemapTableDropDownWidth);
+    typeKey.as<Button>().Width(EditorConstants::RemapTableDropDownWidth);
     typeKey.as<Button>().Content(winrt::box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
 
     singleKeyRemapControlLayout = StackPanel();
@@ -36,7 +36,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
     else
     {
         hybridDropDownStackPanel = StackPanel();
-        hybridDropDownStackPanel.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+        hybridDropDownStackPanel.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
         hybridDropDownStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
         KeyDropDownControl::AddDropDown(table, row, hybridDropDownStackPanel.as<StackPanel>(), colIndex, singleKeyRemapBuffer, keyDropDownControlObjects, nullptr, true, true);
         singleKeyRemapControlLayout.as<StackPanel>().Children().Append(hybridDropDownStackPanel.as<StackPanel>());
@@ -88,7 +88,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
 
     // SingleKeyRemapControl for the original key.
     auto originalElement = keyboardRemapControlObjects.back()[0]->getSingleKeyRemapControl();
-    originalElement.Width(KeyboardManagerConstants::RemapTableDropDownWidth);
+    originalElement.Width(EditorConstants::RemapTableDropDownWidth);
     row.Children().Append(originalElement);
 
     // Arrow icon
@@ -97,14 +97,14 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     arrowIcon.Glyph(L"\xE72A");
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
-    auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, KeyboardManagerConstants::TableArrowColWidth).as<StackPanel>();
+    auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, EditorConstants::TableArrowColWidth).as<StackPanel>();
     arrowIconContainer.Orientation(Orientation::Vertical);
     arrowIconContainer.VerticalAlignment(VerticalAlignment::Center);
     row.Children().Append(arrowIconContainer);
 
     // SingleKeyRemapControl for the new remap key
     auto targetElement = keyboardRemapControlObjects.back()[1]->getSingleKeyRemapControl();
-    targetElement.Width(KeyboardManagerConstants::ShortcutTargetColumnWidth);
+    targetElement.Width(EditorConstants::ShortcutTargetColumnWidth);
     row.Children().Append(targetElement);
 
     // Set the key text if the two keys are not null (i.e. default args)

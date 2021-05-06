@@ -72,6 +72,9 @@
     <ClInclude Include="KeyDelay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EditorConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
