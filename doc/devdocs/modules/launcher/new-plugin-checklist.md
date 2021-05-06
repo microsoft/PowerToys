@@ -28,3 +28,10 @@
 - [ ] Test the plugin with a local build. Build the installer, install, check that the plugin works as expected
 - [ ] All plugin's binaries have to be included in the signed build [`pipeline.user.windows.yml`](/.pipelines/pipeline.user.windows.yml)
 - [ ] The plugin target framework has to be .NET Core 3.1. All dependencies have to have .NET 5 version
+
+Some localization steps can only be done after the first pass by the localization team to provide the localized resources.
+In the PR that adds a new plugin, reference a new issue to track the work for fully enabling localization for the new plugin.
+
+ - [ ] Add the resource folder to https://github.com/microsoft/PowerToys/blob/21247c0bb09a1bee3d14d6efa53d0c247f7236af/installer/PowerToysSetup/Product.wxs#L825
+ - [ ] Add the resource files under the section https://github.com/microsoft/PowerToys/blob/21247c0bb09a1bee3d14d6efa53d0c247f7236af/installer/PowerToysSetup/Product.wxs#L882
+ 
