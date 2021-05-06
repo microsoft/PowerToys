@@ -118,6 +118,8 @@ namespace ColorPicker.Helpers
             if (_zoomWindow != null)
             {
                 _zoomWindow.Opacity = 0;
+                _zoomViewModel.DesiredWidth = 0;
+                _zoomViewModel.DesiredHeight = 0;
 
                 if (fully)
                 {
