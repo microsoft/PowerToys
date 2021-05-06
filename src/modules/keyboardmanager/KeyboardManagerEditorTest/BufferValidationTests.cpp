@@ -4,7 +4,7 @@
 #include <common/interop/keyboard_layout.h>
 #include <common/interop/shared_constants.h>
 #include <functional>
-#include <keyboardmanager/common/ShortcutErrorType.h>
+#include <keyboardmanager/KeyboardManagerEditorLibrary/ShortcutErrorType.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

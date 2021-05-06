@@ -1,7 +1,8 @@
 #include "pch.h"
 #include <common/interop/keyboard_layout.h>
-#include <keyboardmanager/common/ShortcutErrorType.h>
 #include <keyboardmanager/common/Helpers.h>
+
+#include "ShortcutErrorType.h"
 
 using Helpers::GetKeyType;
 

@@ -2,15 +2,13 @@
 #include "LoadingAndSavingRemappingHelper.h"
 
 #include <set>
-
 #include <common/interop/shared_constants.h>
-
-#include <keyboardmanager/common/ShortcutErrorType.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
-#include <KeyboardManagerState.h>
-#include <keyboardmanager/KeyboardManagerEditorLibrary/trace.h>
-#include <EditorHelpers.h>
+#include "KeyboardManagerState.h"
+#include "keyboardmanager/KeyboardManagerEditorLibrary/trace.h"
+#include "EditorHelpers.h"
+#include "ShortcutErrorType.h"
 
 namespace LoadingAndSavingRemappingHelper
 {

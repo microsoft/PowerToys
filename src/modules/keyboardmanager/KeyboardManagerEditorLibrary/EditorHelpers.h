@@ -1,6 +1,7 @@
 #pragma once
-#include <keyboardmanager/common/ShortcutErrorType.h>
 #include <keyboardmanager/common/Shortcut.h>
+
+#include "ShortcutErrorType.h"
 
 namespace EditorHelpers
 {

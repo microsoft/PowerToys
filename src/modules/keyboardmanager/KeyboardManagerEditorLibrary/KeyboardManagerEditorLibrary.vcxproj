@@ -44,6 +44,7 @@
     <ClInclude Include="LoadingAndSavingRemappingHelper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ShortcutControl.h" />
+    <ClInclude Include="ShortcutErrorType.h" />
     <ClInclude Include="SingleKeyRemapControl.h" />
     <ClInclude Include="Styles.h" />
     <ClInclude Include="targetver.h" />

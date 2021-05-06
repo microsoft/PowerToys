@@ -10,7 +10,6 @@
 
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
-#include <keyboardmanager/common/ShortcutErrorType.h>
 
 #include <KeyboardManagerState.h>
 #include "EditKeyboardWindow.h"
@@ -21,6 +20,7 @@
 #include "Dialog.h"
 #include "LoadingAndSavingRemappingHelper.h"
 #include "UIHelpers.h"
+#include "ShortcutErrorType.h"
 
 using namespace winrt::Windows::Foundation;
 

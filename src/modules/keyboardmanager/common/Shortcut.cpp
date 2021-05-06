@@ -2,7 +2,6 @@
 #include "Shortcut.h"
 #include <common/interop/keyboard_layout.h>
 #include <common/interop/shared_constants.h>
-#include "ShortcutErrorType.h"
 #include "Helpers.h"
 #include "InputInterface.h"
 

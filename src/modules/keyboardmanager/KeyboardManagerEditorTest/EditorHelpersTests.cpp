@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
-#include <keyboardmanager/common/ShortcutErrorType.h>
+#include <keyboardmanager/KeyboardManagerEditorLibrary/ShortcutErrorType.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <common/interop/keyboard_layout.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.h>

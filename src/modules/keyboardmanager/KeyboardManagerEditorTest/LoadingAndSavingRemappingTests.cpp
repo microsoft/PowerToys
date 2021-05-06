@@ -3,7 +3,7 @@
 #include <keyboardmanager/common/MappingConfiguration.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.h>
 #include <common/interop/shared_constants.h>
-#include <keyboardmanager/common/ShortcutErrorType.h>
+#include <keyboardmanager/KeyboardManagerEditorLibrary/ShortcutErrorType.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

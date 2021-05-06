@@ -2,6 +2,8 @@
 
 #include <keyboardmanager/common/Helpers.h>
 
+#include "ShortcutErrorType.h"
+
 class MappingConfiguration;
 
 namespace LoadingAndSavingRemappingHelper

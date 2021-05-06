@@ -7,7 +7,6 @@ namespace KeyboardManagerInput
     class InputInterface;
 }
 class LayoutMap;
-enum class ShortcutErrorType;
 
 class Shortcut
 {

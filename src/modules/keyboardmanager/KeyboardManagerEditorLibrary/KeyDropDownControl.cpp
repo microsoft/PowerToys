@@ -3,14 +3,14 @@
 
 #include <common/interop/shared_constants.h>
 
-#include <keyboardmanager/common/ShortcutErrorType.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
-#include <KeyboardManagerState.h>
-#include <BufferValidationHelpers.h>
-#include <KeyboardManagerEditorStrings.h>
-#include <UIHelpers.h>
-#include <EditorHelpers.h>
+#include "KeyboardManagerState.h"
+#include "BufferValidationHelpers.h"
+#include "KeyboardManagerEditorStrings.h"
+#include "UIHelpers.h"
+#include "EditorHelpers.h"
+#include "ShortcutErrorType.h"
 
 // Initialized to null
 KBMEditor::KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
