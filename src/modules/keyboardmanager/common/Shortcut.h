@@ -161,9 +161,6 @@ public:
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;
-
-    // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
-    ShortcutErrorType IsShortcutIllegal() const;
 };
 
 using KeyShortcutUnion = std::variant<DWORD, Shortcut>;

@@ -305,7 +305,7 @@ namespace BufferValidationHelpers
 
             if (errorType == ShortcutErrorType::NoError && tempShortcut.index() == 1)
             {
-                errorType = std::get<Shortcut>(tempShortcut).IsShortcutIllegal();
+                errorType = EditorHelpers::IsShortcutIllegal(std::get<Shortcut>(tempShortcut));
             }
         }
 

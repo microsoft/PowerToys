@@ -816,21 +816,3 @@ int Shortcut::GetCommonModifiersCount(const Shortcut& input) const
 
     return commonElements;
 }
-
-// Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
-ShortcutErrorType Shortcut::IsShortcutIllegal() const
-{
-    // Win+L
-    if (winKey != ModifierKey::Disabled && ctrlKey == ModifierKey::Disabled && altKey == ModifierKey::Disabled && shiftKey == ModifierKey::Disabled && actionKey == 0x4C)
-    {
-        return ShortcutErrorType::WinL;
-    }
-
-    // Ctrl+Alt+Del
-    if (winKey == ModifierKey::Disabled && ctrlKey != ModifierKey::Disabled && altKey != ModifierKey::Disabled && shiftKey == ModifierKey::Disabled && actionKey == VK_DELETE)
-    {
-        return ShortcutErrorType::CtrlAltDel;
-    }
-
-    return ShortcutErrorType::NoError;
-}
