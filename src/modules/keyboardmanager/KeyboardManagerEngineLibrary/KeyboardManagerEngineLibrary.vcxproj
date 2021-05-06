@@ -51,6 +51,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">
+      <Project>{8affa899-0b73-49ec-8c50-0fadda57b2fc}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
