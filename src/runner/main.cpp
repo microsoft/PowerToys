@@ -155,7 +155,7 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
             L"modules/KeyboardManager/KeyboardManager.dll",
             L"modules/Launcher/Microsoft.Launcher.dll",
             L"modules/PowerRename/PowerRenameExt.dll",
-            L"modules/ShortcutGuide/ShortcutGuide.dll",
+            L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
             L"modules/ColorPicker/ColorPicker.dll",
         };
 
