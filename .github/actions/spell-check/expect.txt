@@ -752,6 +752,7 @@ hxx
 Hyperlink
 IAction
 IActivated
+IAnimatable
 IApp
 IApplication
 IAppx
@@ -796,6 +797,7 @@ IDrop
 idx
 IDXGI
 IDYES
+IEasing
 IEnum
 IEnumerable
 IEnumerator
