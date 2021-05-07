@@ -325,6 +325,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shortcutguide", "shortcutgu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuideModuleInterface", "src\modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.vcxproj", "{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuide", "src\modules\ShortcutGuide\ShortcutGuide\ShortcutGuide.vcxproj", "{2EDB3EB4-FA92-4BFF-B2D8-566584837231}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -663,6 +665,10 @@ Global
 		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Debug|x64.Build.0 = Debug|x64
 		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Release|x64.ActiveCfg = Release|x64
 		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Release|x64.Build.0 = Release|x64
+		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|x64.ActiveCfg = Debug|x64
+		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|x64.Build.0 = Debug|x64
+		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.ActiveCfg = Release|x64
+		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -763,6 +769,7 @@ Global
 		{62173D9A-6724-4C00-A1C8-FB646480A9EC} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{106CBECA-0701-4FC3-838C-9DF816A19AE2} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81} = {106CBECA-0701-4FC3-838C-9DF816A19AE2}
+		{2EDB3EB4-FA92-4BFF-B2D8-566584837231} = {106CBECA-0701-4FC3-838C-9DF816A19AE2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
