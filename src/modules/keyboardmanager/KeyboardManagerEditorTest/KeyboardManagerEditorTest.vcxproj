@@ -40,17 +40,14 @@
   <ItemGroup>
     <ClCompile Include="BufferValidationTests.cpp" />
     <ClCompile Include="LoadingAndSavingRemappingTests.cpp" />
-    <ClCompile Include="MockedInput.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TestHelpers.cpp" />
+    <ClCompile Include="EditorHelpersTests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MockedInput.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="TestHelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">

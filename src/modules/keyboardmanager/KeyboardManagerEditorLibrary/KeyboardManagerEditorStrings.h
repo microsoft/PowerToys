@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include <ErrorTypes.h>
+#include "ShortcutErrorType.h"
 
 namespace KeyboardManagerEditorStrings
 {
@@ -10,5 +10,5 @@ namespace KeyboardManagerEditorStrings
     inline const std::wstring DefaultAppName = GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);
         
     // Function to return the error message
-    winrt::hstring GetErrorMessage(KeyboardManagerHelper::ErrorType errorType);
+    winrt::hstring GetErrorMessage(ShortcutErrorType errorType);
 }

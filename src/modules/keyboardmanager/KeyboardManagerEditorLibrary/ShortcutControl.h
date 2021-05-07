@@ -1,8 +1,12 @@
 #pragma once
 
-#include <Shortcut.h>
+#include <keyboardmanager/common/Shortcut.h>
 
-class KeyboardManagerState;
+namespace KBMEditor
+{
+    class KeyboardManagerState;
+}
+
 class KeyDropDownControl;
 namespace winrt::Windows::UI::Xaml
 {
@@ -38,7 +42,7 @@ public:
     static HWND editShortcutsWindowHandle;
 
     // Pointer to the keyboard manager state
-    static KeyboardManagerState* keyboardManagerState;
+    static KBMEditor::KeyboardManagerState* keyboardManagerState;
 
     // Stores the current list of remappings
     static RemapBuffer shortcutRemapBuffer;
@@ -56,5 +60,5 @@ public:
     StackPanel GetShortcutControl();
 
     // Function to create the detect shortcut UI window
-    static void CreateDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState, const int colIndex, StackPanel table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer);
+    static void CreateDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KBMEditor::KeyboardManagerState& keyboardManagerState, const int colIndex, StackPanel table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer);
 };

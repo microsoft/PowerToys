@@ -39,12 +39,6 @@
     <ClCompile Include="AppSpecificShortcutRemappingTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HelperTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShortcutTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">

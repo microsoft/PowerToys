@@ -6,12 +6,13 @@
 #include <common/interop/shared_constants.h>
 #include <common/themes/windows_colors.h>
 #include <common/utils/EventLocker.h>
+#include <common/utils/winapi_error.h>
 
-#include <KeyboardManagerConstants.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <keyboardmanager/common/MappingConfiguration.h>
+
 #include <KeyboardManagerState.h>
-
 #include "EditKeyboardWindow.h"
-#include "ErrorTypes.h"
 #include "SingleKeyRemapControl.h"
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
@@ -19,7 +20,8 @@
 #include "Dialog.h"
 #include "LoadingAndSavingRemappingHelper.h"
 #include "UIHelpers.h"
-#include <common/utils/winapi_error.h>
+#include "ShortcutErrorType.h"
+#include "EditorConstants.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -41,7 +43,7 @@ std::mutex editKeyboardWindowMutex;
 static XamlBridge* xamlBridgePtr = nullptr;
 
 static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
-    KeyboardManagerState& state,
+    KBMEditor::KeyboardManagerState& state,
     const std::vector<DWORD>& keys,
     XamlRoot root)
 {
@@ -73,11 +75,11 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     co_return res == ContentDialogResult::Primary;
 }
 
-static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
+static IAsyncAction OnClickAccept(KBMEditor::KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
-    KeyboardManagerHelper::ErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
+    ShortcutErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
 
-    if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
+    if (isSuccess != ShortcutErrorType::NoError)
     {
         if (!co_await Dialog::PartialRemappingConfirmationDialog(root, GET_RESOURCE_STRING(IDS_EDITKEYBOARD_PARTIALCONFIRMATIONDIALOGTITLE)))
         {
@@ -100,7 +102,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 }
 
 // Function to create the Edit Keyboard Window
-inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
 {
     Logger::trace("CreateEditKeyboardWindowImpl()");
     auto locker = EventLocker::Get(KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -142,8 +144,8 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     RECT desktopRect = UIHelpers::GetForegroundWindowDesktopRect();
 
     // Calculate DPI dependent window size
-    int windowWidth = KeyboardManagerConstants::DefaultEditKeyboardWindowWidth;
-    int windowHeight = KeyboardManagerConstants::DefaultEditKeyboardWindowHeight;
+    int windowWidth = EditorConstants::DefaultEditKeyboardWindowWidth;
+    int windowHeight = EditorConstants::DefaultEditKeyboardWindowHeight;
 
     DPIAware::ConvertByCursorPosition(windowWidth, windowHeight);
     DPIAware::GetScreenDPIForCursor(g_currentDPI);
@@ -231,7 +233,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     TextBlock originalKeyRemapHeader;
     originalKeyRemapHeader.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_SOURCEHEADER));
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
-    StackPanel originalKeyHeaderContainer = UIHelpers::GetWrapped(originalKeyRemapHeader, KeyboardManagerConstants::RemapTableDropDownWidth + KeyboardManagerConstants::TableArrowColWidth).as<StackPanel>();
+    StackPanel originalKeyHeaderContainer = UIHelpers::GetWrapped(originalKeyRemapHeader, EditorConstants::RemapTableDropDownWidth + EditorConstants::TableArrowColWidth).as<StackPanel>();
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
@@ -250,6 +252,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     // Store keyboard manager state
     SingleKeyRemapControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
+    KeyDropDownControl::mappingConfiguration = &mappingConfiguration;
     
     // Clear the single key remap buffer
     SingleKeyRemapControl::singleKeyRemapBuffer.clear();
@@ -258,10 +261,10 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>> keyboardRemapControlObjects;
 
     // Set keyboard manager UI state so that remaps are not applied while on this window
-    keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, _hWndEditKeyboardWindow);
+    keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditKeyboardWindowActivated, _hWndEditKeyboardWindow);
 
     // Load existing remaps into UI
-    SingleKeyRemapTable singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
+    SingleKeyRemapTable singleKeyRemapCopy = mappingConfiguration.singleKeyReMap;
 
     LoadingAndSavingRemappingHelper::PreProcessRemapTable(singleKeyRemapCopy);
 
@@ -274,14 +277,14 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     Button applyButton;
     applyButton.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_OK_BUTTON)));
     applyButton.Style(AccentButtonStyle());
-    applyButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
-    cancelButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
+    applyButton.MinWidth(EditorConstants::HeaderButtonWidth);
+    cancelButton.MinWidth(EditorConstants::HeaderButtonWidth);
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
 
-    auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow]() {
-        LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(keyboardManagerState, SingleKeyRemapControl::singleKeyRemapBuffer, true);
-        bool saveResult = keyboardManagerState.SaveConfigToFile();
+    auto ApplyRemappings = [&mappingConfiguration, _hWndEditKeyboardWindow]() {
+        LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(mappingConfiguration, SingleKeyRemapControl::singleKeyRemapBuffer, true);
+        bool saveResult = mappingConfiguration.SaveSettingsToFile();
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
     };
 
@@ -313,7 +316,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
 
         // Set focus to the first Type Button in the newly added row
-        UIHelpers::SetFocusOnTypeButtonInLastRow(keyRemapTable, KeyboardManagerConstants::RemapTableColCount);
+        UIHelpers::SetFocusOnTypeButtonInLastRow(keyRemapTable, EditorConstants::RemapTableColCount);
     });
 
     // Set accessible name for the addRemapKey button
@@ -376,10 +379,10 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KeyboardManagerState& 
     xamlBridge.ClearXamlIslands();
 }
 
-void CreateEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+void CreateEditKeyboardWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
 {
     // Move implementation into the separate method so resources get destroyed correctly
-    CreateEditKeyboardWindowImpl(hInst, keyboardManagerState);
+    CreateEditKeyboardWindowImpl(hInst, keyboardManagerState, mappingConfiguration);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
@@ -405,8 +408,8 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     case WM_GETMINMAXINFO:
     {
         LPMINMAXINFO mmi = (LPMINMAXINFO)lParam;
-        int minWidth = KeyboardManagerConstants::MinimumEditKeyboardWindowWidth;
-        int minHeight = KeyboardManagerConstants::MinimumEditKeyboardWindowHeight;
+        int minWidth = EditorConstants::MinimumEditKeyboardWindowWidth;
+        int minHeight = EditorConstants::MinimumEditKeyboardWindowHeight;
         DPIAware::Convert(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), minWidth, minHeight);
         mmi->ptMinTrackSize.x = minWidth;
         mmi->ptMinTrackSize.y = minHeight;
