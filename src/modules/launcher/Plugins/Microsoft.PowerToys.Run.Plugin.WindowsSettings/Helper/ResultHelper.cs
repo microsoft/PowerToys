@@ -66,34 +66,23 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
 
             var type = Resources.ResourceManager.GetString($"{entry.Type}");
 
-            toolTipText.Append(Resources.Application);
-            toolTipText.Append(": ");
-            toolTipText.AppendLine(type);
-
-            toolTipText.Append(Resources.Area);
-            toolTipText.Append(": ");
-            toolTipText.AppendLine(entry.Area);
+            toolTipText.AppendLine($"{Resources.Application}: {type}");
+            toolTipText.AppendLine($"{Resources.Area}: {entry.Area}");
 
             if (entry.AltNames != null && entry.AltNames.Any())
             {
                 var altList = entry.AltNames.Aggregate((current, next) => $"{current}, {next}");
 
-                toolTipText.Append(Resources.AlternativeName);
-                toolTipText.Append(": ");
-                toolTipText.AppendLine(altList);
+                toolTipText.AppendLine($"{Resources.AlternativeName}: {altList}");
             }
 
-            toolTipText.Append(Resources.Command);
-            toolTipText.Append(": ");
-            toolTipText.Append(entry.Command);
+            toolTipText.AppendLine($"{Resources.Command}: {entry.Command}");
 
             if (!string.IsNullOrEmpty(entry.Note))
             {
                 toolTipText.AppendLine(string.Empty);
                 toolTipText.AppendLine(string.Empty);
-                toolTipText.Append(Resources.Note);
-                toolTipText.Append(": ");
-                toolTipText.Append(entry.Note);
+                toolTipText.AppendLine($"{Resources.Note}: {entry.Note}");
             }
 
             result.ToolTipData = new ToolTipData(entry.Name, toolTipText.ToString());
