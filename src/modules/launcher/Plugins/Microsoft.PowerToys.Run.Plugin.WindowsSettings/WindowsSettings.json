@@ -232,7 +232,7 @@
   },
   {
     "Name": "Phone",
-    "Area": "Devices",
+    "Area": "Phone",
     "Type": "SettingsApp",
     "AltNames": [ "MobileDevices" ],
     "Command": "ms-settings:mobile-devices"
