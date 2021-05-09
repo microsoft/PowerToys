@@ -758,6 +758,7 @@ gmx
 GNumber
 google
 GPTR
+Grayscale
 gui
 guiddef
 GUITHREADINFO
@@ -1104,6 +1105,7 @@ keydown
 keydropdowncontrol
 keyevent
 KEYEVENTF
+keyhook
 keynum
 keyremaps
 keystokes
@@ -1392,6 +1394,7 @@ NCRBUTTONDOWN
 NCRBUTTONUP
 NDEBUG
 ndp
+Nefario
 neq
 NESW
 netconnections
@@ -1837,6 +1840,7 @@ scancode
 scanled
 schedtasks
 Scn
+SCOOBE
 SCOPEID
 screenrotation
 screenshot
@@ -2118,9 +2122,9 @@ THICKFRAME
 THISCOMPONENT
 thre
 tif
-timedate
 TILEDWINDOW
 timediff
+timedate
 Timeline
 TIMERID
 timeunion
