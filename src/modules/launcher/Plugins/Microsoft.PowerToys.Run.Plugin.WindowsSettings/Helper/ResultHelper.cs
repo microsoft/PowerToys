@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
         /// <param name="iconPath">The path to the icon of each entry.</param>
         /// <returns>A list with <see cref="Result"/>.</returns>
         internal static List<Result> GetResultList(
-            in IEnumerable<IWindowsSetting> list,
+            in IEnumerable<WindowsSetting> list,
             string query,
             in string iconPath)
         {
@@ -58,9 +58,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
         /// <summary>
         /// Add a tool-tip to the given <see cref="Result"/>, based o the given <see cref="IWindowsSetting"/>.
         /// </summary>
-        /// <param name="entry">The <see cref="IWindowsSetting"/> that contain informations for the tool-tip.</param>
+        /// <param name="entry">The <see cref="WindowsSetting"/> that contain informations for the tool-tip.</param>
         /// <param name="result">The <see cref="Result"/> that need a tool-tip.</param>
-        private static void AddOptionalToolTip(IWindowsSetting entry, Result result)
+        private static void AddOptionalToolTip(WindowsSetting entry, Result result)
         {
             var toolTipText = new StringBuilder();
 
@@ -102,9 +102,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
         /// <summary>
         /// Open the settings page of the given <see cref="IWindowsSetting"/>.
         /// </summary>
-        /// <param name="entry">The <see cref="IWindowsSetting"/> that contain the information to open the setting on command level.</param>
+        /// <param name="entry">The <see cref="WindowsSetting"/> that contain the information to open the setting on command level.</param>
         /// <returns><see langword="true"/> if the settings could be opened, otherwise <see langword="false"/>.</returns>
-        private static bool DoOpenSettingsAction(IWindowsSetting entry)
+        private static bool DoOpenSettingsAction(WindowsSetting entry)
         {
             ProcessStartInfo processStartInfo;
 
@@ -160,7 +160,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
 
             foreach (var result in resultList)
             {
-                if (!(result.ContextData is IWindowsSetting windowsSetting))
+                if (!(result.ContextData is WindowsSetting windowsSetting))
                 {
                     continue;
                 }

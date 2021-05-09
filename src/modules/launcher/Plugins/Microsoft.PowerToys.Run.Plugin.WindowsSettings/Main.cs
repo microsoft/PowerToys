@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         /// </summary>
         private bool _disposed;
 
-        private IEnumerable<IWindowsSetting>? _settingsList;
+        private IEnumerable<WindowsSetting>? _settingsList;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Main"/> class.
@@ -154,7 +154,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
             var newList = ResultHelper.GetResultList(filteredList, query.Search, _defaultIconPath);
             return newList;
 
-            bool Predicate(IWindowsSetting found)
+            bool Predicate(WindowsSetting found)
             {
                 if (found.Name.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
                 {
