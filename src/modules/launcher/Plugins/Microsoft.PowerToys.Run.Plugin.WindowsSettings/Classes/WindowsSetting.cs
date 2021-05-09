@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes
+namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
 {
     /// <summary>
     /// A windows setting
