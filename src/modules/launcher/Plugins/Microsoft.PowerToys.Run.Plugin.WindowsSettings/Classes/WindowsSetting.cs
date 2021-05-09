@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Enumerations;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes
 {
@@ -20,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes
             Name = string.Empty;
             Area = string.Empty;
             Command = string.Empty;
-            Type = WindowsSettingsType.SettingsApp;
+            Type = string.Empty;
         }
 
         /// <summary>
@@ -41,7 +40,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes
         /// <summary>
         /// Gets or sets the type of the windows setting.
         /// </summary>
-        public WindowsSettingsType Type { get; set; }
+        public string Type { get; set; }
 
         /// <summary>
         /// Gets or sets the alternative names of this setting.

@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
 
             foreach (var entry in list)
             {
-                var type = Resources.ResourceManager.GetString($"{entry.Type}");
+                var type = Resources.ResourceManager.GetString(entry.Type);
 
                 var result = new Result
                 {
@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
         {
             var toolTipText = new StringBuilder();
 
-            var type = Resources.ResourceManager.GetString($"{entry.Type}");
+            var type = Resources.ResourceManager.GetString(entry.Type);
 
             toolTipText.AppendLine($"{Resources.Application}: {type}");
             toolTipText.AppendLine($"{Resources.Area}: {entry.Area}");
