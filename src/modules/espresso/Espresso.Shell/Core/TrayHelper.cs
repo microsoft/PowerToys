@@ -54,12 +54,12 @@ namespace Espresso.Shell.Core
             var oneHourMenuItem = new ToolStripMenuItem();
             halfHourMenuItem.Text = "1 hour";
 
-            var twoHousrMenuItem = new ToolStripMenuItem();
+            var twoHoursMenuItem = new ToolStripMenuItem();
             halfHourMenuItem.Text = "2 hours";
 
             timedMenuItem.DropDownItems.Add(halfHourMenuItem);
             timedMenuItem.DropDownItems.Add(oneHourMenuItem);
-            timedMenuItem.DropDownItems.Add(twoHousrMenuItem);
+            timedMenuItem.DropDownItems.Add(twoHoursMenuItem);
 
             operationContextMenu.DropDownItems.Add(indefiniteMenuItem);
             operationContextMenu.DropDownItems.Add(timedMenuItem);

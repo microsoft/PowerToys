@@ -167,13 +167,13 @@
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
                 <HyperlinkButton Margin="0,-3,0,0"
-                                NavigateUri="https://github.com/microsoft/PowerToys/">
-                    <TextBlock Text="Den Delimarsky's Espresso" TextWrapping="Wrap" />
+                                x:Uid="Espresso_ModuleAttributionHyperlink">
+                    <TextBlock x:Uid="Espresso_ModuleAttributionLabel" TextWrapping="Wrap" />
                 </HyperlinkButton>
 
                 <HyperlinkButton Margin="0,-3,0,0"
-                                NavigateUri="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c">
-                    <TextBlock Text="Niels Laute's UX concept" TextWrapping="Wrap" />
+                                x:Uid="Espresso_UXAttributionHyperlink">
+                    <TextBlock x:Uid="Espresso_UXAttributionLabel" TextWrapping="Wrap" />
                 </HyperlinkButton>
 
             </StackPanel>

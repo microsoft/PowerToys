@@ -1198,4 +1198,18 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Espresso_TemporaryKeepAwake_Minutes.Header" xml:space="preserve">
     <value>Minutes</value>
   </data>
+  <data name="Espresso_ModuleAttributionLabel.Text" xml:space="preserve">
+    <value>Den Delimarsky's Espresso</value>
+  </data>
+  <data name="Espresso_UXAttributionLabel.Text" xml:space="preserve">
+    <value>Niels Laute's UX concept</value>
+  </data>
+  <data name="Espresso_UXAttributionHyperlink.NavigateUri" xml:space="preserve">
+    <value>https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c</value>
+    <comment>URL. Do not loc</comment>
+  </data>
+  <data name="Espresso_ModuleAttributionHyperlink.NavigateUri" xml:space="preserve">
+    <value>https://espresso.den.dev</value>
+    <comment>URL. Do not loc</comment>
+  </data>
 </root>
