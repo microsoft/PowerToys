@@ -1375,7 +1375,7 @@
   </data>
   <data name="SettingsApp" xml:space="preserve">
     <value>System settings</value>
-    <comment>Type of the setting is a "Modern Windows settings"</comment>
+    <comment>Type of the setting is a "Modern Windows settings". We use the same term as used in start menu search at the moment. </comment>
   </data>
   <data name="SettingsHomePage" xml:space="preserve">
     <value>Settings home page</value>
@@ -1452,6 +1452,7 @@
   </data>
   <data name="SubtitlePreposition" xml:space="preserve">
     <value>in</value>
+    <comment>Example: Area "System" in System settings</comment>
   </data>
   <data name="SyncCenter" xml:space="preserve">
     <value>Sync center</value>
