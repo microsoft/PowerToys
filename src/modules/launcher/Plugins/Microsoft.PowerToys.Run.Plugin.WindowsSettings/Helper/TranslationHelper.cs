@@ -30,6 +30,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             {
                 var area = Resources.ResourceManager.GetString($"Area{settings.Area}");
                 var name = Resources.ResourceManager.GetString(settings.Name);
+                var type = Resources.ResourceManager.GetString(settings.Type);
 
                 if (string.IsNullOrEmpty(area))
                 {
@@ -41,18 +42,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     Log.Warn($"Resource string for [{settings.Name}] not found", typeof(Main));
                 }
 
-                settings.Area = area ?? settings.Area;
-                settings.Name = name ?? settings.Name;
+                if (string.IsNullOrEmpty(type))
+                {
+                    Log.Warn($"Resource string for [{settings.Name}] not found", typeof(Main));
+                }
+
+                settings.Area = area ?? settings.Area ?? string.Empty;
+                settings.Name = name ?? settings.Name ?? string.Empty;
+                settings.Type = type ?? settings.Type ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(settings.Note))
                 {
                     var note = Resources.ResourceManager.GetString(settings.Note);
-                    settings.Note = note ?? settings.Note;
-
                     if (string.IsNullOrEmpty(note))
                     {
                         Log.Warn($"Resource string for [{settings.Note}] not found", typeof(Main));
                     }
+
+                    settings.Note = note ?? settings.Note ?? string.Empty;
                 }
 
                 if (!(settings.AltNames is null) && settings.AltNames.Any())
@@ -61,6 +68,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
                     foreach (var altName in settings.AltNames)
                     {
+                        if (string.IsNullOrWhiteSpace(altName))
+                        {
+                            continue;
+                        }
+
                         var translatedAltName = Resources.ResourceManager.GetString(altName);
 
                         if (string.IsNullOrEmpty(translatedAltName))

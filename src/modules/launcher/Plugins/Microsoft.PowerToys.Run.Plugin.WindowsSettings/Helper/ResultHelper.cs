@@ -34,13 +34,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
 
             foreach (var entry in list)
             {
-                var type = Resources.ResourceManager.GetString(entry.Type);
-
                 var result = new Result
                 {
                     Action = (_) => DoOpenSettingsAction(entry),
                     IcoPath = iconPath,
-                    SubTitle = $"{Resources.Area} \"{entry.Area}\" {Resources.SubtitlePreposition} {type}",
+                    SubTitle = $"{Resources.Area} \"{entry.Area}\" {Resources.SubtitlePreposition} {entry.Type}",
                     Title = entry.Name,
                     ContextData = entry,
                 };
@@ -64,9 +62,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
         {
             var toolTipText = new StringBuilder();
 
-            var type = Resources.ResourceManager.GetString(entry.Type);
-
-            toolTipText.AppendLine($"{Resources.Application}: {type}");
+            toolTipText.AppendLine($"{Resources.Application}: {entry.Type}");
             toolTipText.AppendLine($"{Resources.Area}: {entry.Area}");
 
             if (entry.AltNames != null && entry.AltNames.Any())
@@ -76,13 +72,13 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
                 toolTipText.AppendLine($"{Resources.AlternativeName}: {altList}");
             }
 
-            toolTipText.AppendLine($"{Resources.Command}: {entry.Command}");
+            toolTipText.Append($"{Resources.Command}: {entry.Command}");
 
             if (!string.IsNullOrEmpty(entry.Note))
             {
                 toolTipText.AppendLine(string.Empty);
                 toolTipText.AppendLine(string.Empty);
-                toolTipText.AppendLine($"{Resources.Note}: {entry.Note}");
+                toolTipText.Append($"{Resources.Note}: {entry.Note}");
             }
 
             result.ToolTipData = new ToolTipData(entry.Name, toolTipText.ToString());
