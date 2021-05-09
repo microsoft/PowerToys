@@ -12,7 +12,7 @@ using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
-namespace Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper
+namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 {
     /// <summary>
     /// Helper class to easier work with results
