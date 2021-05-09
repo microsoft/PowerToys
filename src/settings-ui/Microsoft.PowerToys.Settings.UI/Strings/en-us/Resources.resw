@@ -1051,7 +1051,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>To select a color with more precision, {scroll the mouse wheel} to zoom in.</value>
   </data>
   <data name="Oobe_FancyZones_HowToUse.Text" xml:space="preserve">
-    <value>{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {`} to open the FancyZones editor.</value>
+    <value>{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {Shift} + {`} to open the FancyZones editor.</value>
   </data>
   <data name="Oobe_FancyZones_TipsAndTricks.Text" xml:space="preserve">
     <value>Snap a window to multiple zones by holding the {Ctrl} key (while also holding {Shift}) when dragging a window.</value>

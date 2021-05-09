@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <common/version/version.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
 namespace LoggerHelpers
 {
@@ -78,5 +79,21 @@ namespace LoggerHelpers
         }
 
         return result;
+    }
+
+    inline void init_logger(std::wstring moduleName, std::wstring internalPath, std::string loggerName)
+    {
+        std::filesystem::path rootFolder(PTSettingsHelper::get_module_save_folder_location(moduleName));
+        rootFolder.append(internalPath);
+        
+        auto currentFolder = rootFolder;
+        currentFolder.append(LogSettings::logPath);
+        currentFolder.append(get_product_version());
+
+        auto logsPath = currentFolder;
+        logsPath.append(L"log.txt");
+        Logger::init(loggerName, logsPath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+
+        delete_other_versions_log_folders(rootFolder.wstring(), currentFolder); 
     }
 }

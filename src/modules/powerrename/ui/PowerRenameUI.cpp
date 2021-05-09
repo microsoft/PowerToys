@@ -667,8 +667,7 @@ void CPowerRenameUI::_OnInitDlg()
     m_initialWidth = RECT_WIDTH(rc);
     m_initialHeight = RECT_HEIGHT(rc);
 
-    UINT dummy = 0;
-    DPIAware::GetScreenDPIForWindow(m_hwnd, m_initialDPI, dummy);
+    DPIAware::GetScreenDPIForWindow(m_hwnd, m_initialDPI);
 
     for (UINT u = 0; u < ARRAYSIZE(g_repositionMap); u++)
     {
@@ -887,8 +886,8 @@ void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags)
     int width = rcWindow.right - rcWindow.left;
     int height = rcWindow.bottom - rcWindow.top;
 
-    UINT currentDPI = 0, dummy;
-    DPIAware::GetScreenDPIForWindow(m_hwnd, currentDPI, dummy);
+    UINT currentDPI = 0;
+    DPIAware::GetScreenDPIForWindow(m_hwnd, currentDPI);
     float scale = (float)currentDPI / m_initialDPI;
 
     switch (id)
@@ -1524,7 +1523,12 @@ HRESULT CPowerRenameProgressUI::Start()
 {
     _Cleanup();
     m_canceled = false;
+    AddRef();
     m_workerThreadHandle = CreateThread(nullptr, 0, s_workerThread, this, 0, nullptr);
+    if (!m_workerThreadHandle)
+    {
+        Release();
+    }
     return (m_workerThreadHandle) ? S_OK : E_FAIL;
 }
 
@@ -1539,20 +1543,22 @@ DWORD WINAPI CPowerRenameProgressUI::s_workerThread(_In_ void* pv)
 
             SetTimer(hwndMessage, TIMERID_CHECKCANCELED, CANCEL_CHECK_INTERVAL, nullptr);
 
-            if (SUCCEEDED(CoCreateInstance(CLSID_ProgressDialog, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&pThis->m_sppd))))
+            CComPtr<IProgressDialog> sppd;
+            if (SUCCEEDED(CoCreateInstance(CLSID_ProgressDialog, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&sppd))))
             {
+                pThis->m_sppd = sppd;
                 wchar_t buff[100] = { 0 };
                 LoadString(g_hInst, IDS_LOADING, buff, ARRAYSIZE(buff));
-                pThis->m_sppd->SetLine(1, buff, FALSE, NULL);
+                sppd->SetLine(1, buff, FALSE, NULL);
                 LoadString(g_hInst, IDS_LOADING_MSG, buff, ARRAYSIZE(buff));
-                pThis->m_sppd->SetLine(2, buff, FALSE, NULL);
+                sppd->SetLine(2, buff, FALSE, NULL);
                 LoadString(g_hInst, IDS_APP_TITLE, buff, ARRAYSIZE(buff));
-                pThis->m_sppd->SetTitle(buff);
+                sppd->SetTitle(buff);
                 SetTimer(hwndMessage, TIMERID_CHECKCANCELED, CANCEL_CHECK_INTERVAL, nullptr);
-                pThis->m_sppd->StartProgressDialog(NULL, NULL, PROGDLG_MARQUEEPROGRESS, NULL);
+                sppd->StartProgressDialog(NULL, NULL, PROGDLG_MARQUEEPROGRESS, NULL);
             }
 
-            while (pThis->m_sppd && !pThis->m_canceled)
+            while (pThis->m_sppd && !sppd->HasUserCancelled())
             {
                 MSG msg;
                 while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -1562,8 +1568,13 @@ DWORD WINAPI CPowerRenameProgressUI::s_workerThread(_In_ void* pv)
                 }
             }
 
+            // Ensure dialog is stopped
+            sppd->StopProgressDialog();
+
             KillTimer(hwndMessage, TIMERID_CHECKCANCELED);
             DestroyWindow(hwndMessage);
+
+            pThis->Release();
         }
 
         CoUninitialize();
@@ -1588,9 +1599,12 @@ void CPowerRenameProgressUI::_Cleanup()
 
     if (m_workerThreadHandle)
     {
+        // Wait for up to 5 seconds for worker thread to finish
+        WaitForSingleObject(m_workerThreadHandle, 5000);
         CloseHandle(m_workerThreadHandle);
         m_workerThreadHandle = nullptr;
     }
+    
 }
 
 void CPowerRenameProgressUI::_UpdateCancelState()
@@ -1635,6 +1649,7 @@ LRESULT CPowerRenameProgressUI::_WndProc(_In_ HWND hwnd, _In_ UINT msg, _In_ WPA
         break;
 
     case WM_DESTROY:
+        _UpdateCancelState();
         KillTimer(hwnd, TIMERID_CHECKCANCELED);
         break;
 

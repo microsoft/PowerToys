@@ -1,0 +1,14 @@
+{
+    "Projects": [
+        {
+            "LanguageSet": "Azure_Languages",
+            "LocItems": [
+                {
+                    "SourceFile": "src\\modules\\keyboardmanager\\KeyboardManagerEditor\\Resources.resx",
+                    "CopyOption": "LangIDOnName",
+                    "OutputPath": "src\\modules\\keyboardmanager\\KeyboardManagerEditor"
+                }
+            ]
+        }
+    ]
+}
