@@ -1641,6 +1641,7 @@
   {
     "Name": "WindowsCardSpace",
     "Area": "HardwareAndSound",
+    "Type": "ControlPanel",
     "Command": "control /name Microsoft.CardSpace"
   },
   {
