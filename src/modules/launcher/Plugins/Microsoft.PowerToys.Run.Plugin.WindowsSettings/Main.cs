@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -117,22 +116,8 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                 Log.Exception("Error loading settings JSON file", exception, typeof(Main));
             }
 
-            if (_settingsList is null)
-            {
-                return;
-            }
-
-            TranslateAllSettings();
-
-            var currentWindowsVersion = RegistryHelper.GetCurrentWindowsVersion();
-
-            // remove deprecated settings and settings that are for a higher Windows versions
-            _settingsList = _settingsList.Where(found
-                => (found.DeprecatedInVersion == null || currentWindowsVersion < found.DeprecatedInVersion)
-                && (found.IntroducedInVersion == null || currentWindowsVersion >= found.IntroducedInVersion));
-
-            // sort settings list
-            _settingsList = _settingsList.OrderBy(found => found.Name);
+            TranslationHelper.TranslateAllSettings(_settingsList);
+            _settingsList = WindowsVersionHelper.FilterByVersion(_settingsList);
         }
 
         /// <summary>
@@ -254,66 +239,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
             _defaultIconPath = theme == Theme.Light || theme == Theme.HighContrastWhite
                 ? _lightSymbol
                 : _darkSymbol;
-        }
-
-        /// <summary>
-        /// Translate all setting entires
-        /// </summary>
-        private void TranslateAllSettings()
-        {
-            if (_settingsList is null)
-            {
-                return;
-            }
-
-            foreach (var settings in _settingsList)
-            {
-                var area = Resources.ResourceManager.GetString($"Area{settings.Area}");
-                var name = Resources.ResourceManager.GetString(settings.Name);
-
-                if (string.IsNullOrEmpty(area))
-                {
-                    Log.Warn($"Resource string for [Area{settings.Area}] not found", typeof(Main));
-                }
-
-                if (string.IsNullOrEmpty(name))
-                {
-                    Log.Warn($"Resource string for [{settings.Name}] not found", typeof(Main));
-                }
-
-                settings.Area = area ?? settings.Area;
-                settings.Name = name ?? settings.Name;
-
-                if (!string.IsNullOrEmpty(settings.Note))
-                {
-                    var note = Resources.ResourceManager.GetString(settings.Note);
-                    settings.Note = note ?? settings.Note;
-
-                    if (string.IsNullOrEmpty(note))
-                    {
-                        Log.Warn($"Resource string for [{settings.Note}] not found", typeof(Main));
-                    }
-                }
-
-                if (!(settings.AltNames is null) && settings.AltNames.Any())
-                {
-                    var translatedAltNames = new Collection<string>();
-
-                    foreach (var altName in settings.AltNames)
-                    {
-                        var translatedAltName = Resources.ResourceManager.GetString(altName);
-
-                        if (string.IsNullOrEmpty(translatedAltName))
-                        {
-                            Log.Warn($"Resource string for [{altName}] not found", typeof(Main));
-                        }
-
-                        translatedAltNames.Add(translatedAltName ?? altName);
-                    }
-
-                    settings.AltNames = translatedAltNames;
-                }
-            }
         }
     }
 }
