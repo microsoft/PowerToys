@@ -84,9 +84,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
 
             var settingsList = ResourceHelper.ReadAllPossibleSettings();
 
-            TranslationHelper.TranslateAllSettings(settingsList);
+            WindowsVersionHelper.FilterByVersion(settingsList);
 
-            _settingsList = WindowsVersionHelper.FilterByVersion(settingsList);
+            TranslationHelper.TranslateAllSettings(settingsList);
         }
 
         /// <summary>
