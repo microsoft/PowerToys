@@ -388,6 +388,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlwaysOnTopModuleInterface"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.WebSearch", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.WebSearch\Community.PowerToys.Run.Plugin.WebSearch.csproj", "{9F94B303-5E21-4364-9362-64426F8DB932}"
 EndProject
+<<<<<<< HEAD
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MousePointerCrosshairs", "src\modules\MouseUtils\MousePointerCrosshairs\MousePointerCrosshairs.vcxproj", "{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StlThumbnailProvider", "src\modules\previewpane\StlThumbnailProvider\StlThumbnailProvider.csproj", "{F7C8C0F1-5431-4347-89D0-8E5354F93CF2}"
@@ -395,6 +396,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-StlThumbnailProvider", "src\modules\previewpane\UnitTests-StlThumbnailProvider\UnitTests-StlThumbnailProvider.csproj", "{F1F6B6B6-9F18-4A17-8B5C-97DF552C53DC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonacoPreviewHandler", "src\modules\previewpane\MonacoPreviewHandler\MonacoPreviewHandler.csproj", "{04B193D7-3E21-46B8-A958-89B63A8A69DE}"
+=======
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.TimeZone", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.TimeZone\Microsoft.PowerToys.Run.Plugin.TimeZone.csproj", "{F44934A8-36F3-49B0-9465-3831BE041CDE}"
+>>>>>>> f5e943784 (Initial commit - simple idea for a time zone plugin)
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1053,6 +1057,7 @@ Global
 		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x64.ActiveCfg = Release|x64
 		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x64.Build.0 = Release|x64
 		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x86.ActiveCfg = Release|x64
+<<<<<<< HEAD
 		{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E}.Debug|x64.ActiveCfg = Debug|x64
 		{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E}.Debug|x64.Build.0 = Debug|x64
 		{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E}.Debug|x86.ActiveCfg = Debug|x64
@@ -1077,6 +1082,12 @@ Global
 		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Release|x64.ActiveCfg = Release|x64
 		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Release|x64.Build.0 = Release|x64
 		{04B193D7-3E21-46B8-A958-89B63A8A69DE}.Release|x86.ActiveCfg = Release|Any CPU
+=======
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Debug|x64.ActiveCfg = Debug|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Debug|x64.Build.0 = Debug|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Release|x64.ActiveCfg = Release|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Release|x64.Build.0 = Release|x64
+>>>>>>> f5e943784 (Initial commit - simple idea for a time zone plugin)
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1204,10 +1215,14 @@ Global
 		{1DC3BE92-CE89-43FB-8110-9C043A2FE7A2} = {60CD2D4F-C3B9-4897-9821-FCA5098B41CE}
 		{48A0A19E-A0BE-4256-ACF8-CC3B80291AF9} = {60CD2D4F-C3B9-4897-9821-FCA5098B41CE}
 		{9F94B303-5E21-4364-9362-64426F8DB932} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+<<<<<<< HEAD
 		{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E} = {322566EF-20DC-43A6-B9F8-616AF942579A}
 		{F7C8C0F1-5431-4347-89D0-8E5354F93CF2} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{F1F6B6B6-9F18-4A17-8B5C-97DF552C53DC} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{04B193D7-3E21-46B8-A958-89B63A8A69DE} = {2F305555-C296-497E-AC20-5FA1B237996A}
+=======
+		{F44934A8-36F3-49B0-9465-3831BE041CDE} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+>>>>>>> f5e943784 (Initial commit - simple idea for a time zone plugin)
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
