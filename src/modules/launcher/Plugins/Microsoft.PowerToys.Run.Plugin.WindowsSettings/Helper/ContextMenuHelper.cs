@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// <returns>A list with context menu entries</returns>
         internal static List<ContextMenuResult> GetContextMenu(in Result result, in string assemblyName)
         {
-            if (!(result?.ContextData is IWindowsSetting entry))
+            if (!(result?.ContextData is WindowsSetting entry))
             {
                 return new List<ContextMenuResult>(0);
             }

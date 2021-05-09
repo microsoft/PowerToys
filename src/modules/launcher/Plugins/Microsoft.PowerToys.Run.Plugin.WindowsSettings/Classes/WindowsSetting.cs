@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes
     /// <summary>
     /// A windows setting
     /// </summary>
-    internal class WindowsSetting : IWindowsSetting
+    internal class WindowsSetting
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowsSetting"/> class.
@@ -23,28 +23,45 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes
             Type = WindowsSettingsType.SettingsApp;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the name of this setting.
+        /// </summary>
         public string Name { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the area of this setting.
+        /// </summary>
         public string Area { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the command of this setting.
+        /// </summary>
         public string Command { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the type of the windows setting.
+        /// </summary>
         public WindowsSettingsType Type { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the alternative names of this setting.
+        /// </summary>
         public IEnumerable<string>? AltNames { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets a additional note of this settings.
+        /// <para>(e.g. why is not supported on your system)</para>
+        /// </summary>
         public string? Note { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the minimum need Windows version for this setting.
+        /// </summary>
         public ushort? IntroducedInVersion { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the Windows version since this settings is not longer present.
+        /// </summary>
         public ushort? DeprecatedInVersion { get; set; }
     }
 }
