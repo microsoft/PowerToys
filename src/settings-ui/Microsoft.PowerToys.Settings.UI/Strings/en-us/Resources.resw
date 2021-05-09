@@ -1017,6 +1017,10 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>https://aka.ms/PowerToysOverview_ShortcutGuide</value>
     <comment>URL. Do not loc</comment>
   </data>
+  <data name="VideoConference_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_VideoConference</value>
+    <comment>URL. Do not loc</comment>
+  </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition.Content" xml:space="preserve">
     <value>Win + Up/Down/Left/Right to move windows based on relative position</value>
   </data>
