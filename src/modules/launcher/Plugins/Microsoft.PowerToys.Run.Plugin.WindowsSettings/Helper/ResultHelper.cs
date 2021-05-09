@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes;
+using Microsoft.PowerToys.Run.Plugin.WindowsSettings;
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;

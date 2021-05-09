@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.WindowsRegistry.Helper;
-using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Classes;
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper;
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
 using Wox.Plugin;
