@@ -52,10 +52,10 @@ namespace Espresso.Shell.Core
             halfHourMenuItem.Text = "30 minutes";
 
             var oneHourMenuItem = new ToolStripMenuItem();
-            halfHourMenuItem.Text = "1 hour";
+            oneHourMenuItem.Text = "1 hour";
 
             var twoHoursMenuItem = new ToolStripMenuItem();
-            halfHourMenuItem.Text = "2 hours";
+            twoHoursMenuItem.Text = "2 hours";
 
             timedMenuItem.DropDownItems.Add(halfHourMenuItem);
             timedMenuItem.DropDownItems.Add(oneHourMenuItem);

@@ -425,6 +425,7 @@ DEFPUSHBUTTON
 deinitialization
 DELA
 deletethis
+Delimarsky
 delims
 DENORMAL
 depersist
@@ -2161,6 +2162,7 @@ toggleright
 toggleswitch
 toolbar
 toolset
+toolstrip
 tooltip
 toolwindow
 TOPDOWNDIB
@@ -2475,6 +2477,7 @@ XOffset
 xpath
 XResource
 xsd
+xsi
 XSmall
 XStr
 XToolset
