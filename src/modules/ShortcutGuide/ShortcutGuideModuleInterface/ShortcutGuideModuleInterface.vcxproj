@@ -90,7 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files\ShortcutGuideModuleInterface.rc" />
-    <ResourceCompile Include="ShortcutGuideModuleInterface.base.rc" />
+    <None Include="ShortcutGuideModuleInterface.base.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
