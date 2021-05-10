@@ -62,17 +62,6 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
-                            Minimum="100"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}"
-                            MinWidth="240"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" 
-                            SmallChange="50" 
-                            LargeChange="100"/>
-
             <StackPanel Orientation="Horizontal" Margin="{StaticResource MediumTopMargin}" Spacing="12">
                 <Slider x:Uid="ShortcutGuide_OverlayOpacity"
                     Minimum="0"

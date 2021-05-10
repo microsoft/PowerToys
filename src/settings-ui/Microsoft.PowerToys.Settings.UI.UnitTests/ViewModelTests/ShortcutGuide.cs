@@ -47,7 +47,6 @@ namespace ViewModelTests
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.ShortcutGuide, viewModel.IsEnabled);
             Assert.AreEqual(originalSettings.Properties.OverlayOpacity.Value, viewModel.OverlayOpacity);
-            Assert.AreEqual(originalSettings.Properties.PressTime.Value, viewModel.PressTime);
 
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
@@ -105,26 +104,6 @@ namespace ViewModelTests
 
             // Act
             viewModel.ThemeIndex = 0;
-        }
-
-        [TestMethod]
-        public void PressTimeShouldSetPressTimeToOneHundredWhenSuccessful()
-        {
-            // Assert
-            // Initialize mock function of sending IPC message.
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                ShortcutGuideSettingsIPCMessage snd = JsonSerializer.Deserialize<ShortcutGuideSettingsIPCMessage>(msg);
-                Assert.AreEqual(100, snd.Powertoys.ShortcutGuide.Properties.PressTime.Value);
-                return 0;
-            };
-
-            // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), sendMockIPCConfigMSG, ShortCutGuideTestFolderName);
-            Assert.AreEqual(900, viewModel.PressTime);
-
-            // Act
-            viewModel.PressTime = 100;
         }
 
         [TestMethod]
