@@ -45,6 +45,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
+    <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\ShortcutGuide\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\ShortcutGuide\$(ProjectName)\</IntDir>
   </PropertyGroup>
@@ -61,10 +64,12 @@
     <ClInclude Include="d2d_svg.h" />
     <ClInclude Include="d2d_text.h" />
     <ClInclude Include="d2d_window.h" />
+    <ClInclude Include="Generated Files\resource.h" />
     <ClInclude Include="keyboard_state.h" />
     <ClInclude Include="native_event_waiter.h" />
     <ClInclude Include="overlay_window.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.base.h" />
     <ClInclude Include="ShortcutGuideConstants.h" />
     <ClInclude Include="shortcut_guide.h" />
     <ClInclude Include="start_visible.h" />
@@ -156,6 +161,13 @@
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files\ShortcutGuide.rc" />
+    <None Include="ShortcutGuide.base.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />

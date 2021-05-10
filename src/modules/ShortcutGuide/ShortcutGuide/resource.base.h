@@ -7,7 +7,7 @@
 
 #define FILE_DESCRIPTION "PowerToys ShortcutGuide"
 #define INTERNAL_NAME "ShortcutGuide"
-#define ORIGINAL_FILENAME "ShortcutGuide.dll"
+#define ORIGINAL_FILENAME "PowerToys.ShortcutGuide.exe"
 
 // Non-localizable
 //////////////////////////////

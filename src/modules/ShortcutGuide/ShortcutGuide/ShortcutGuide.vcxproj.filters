@@ -16,6 +16,9 @@
     <Filter Include="svgs">
       <UniqueIdentifier>{800507f8-718d-48d1-aa56-96c040795b8a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{cb917ac7-30da-494b-81f1-cbe4415e91f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -59,6 +62,12 @@
     </ClInclude>
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.base.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files\resource.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -149,5 +158,18 @@
     <CopyFileToFolders Include="svgs\overlay_portrait.svg">
       <Filter>svgs</Filter>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Filter>Resource Files</Filter>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ShortcutGuide.base.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="Generated Files\ShortcutGuide.rc">
+      <Filter>Generated Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -27,3 +27,4 @@
 #include <string>
 #include <ProjectTelemetry.h>
 #include <filesystem>
+#include <common/logger/logger.h>

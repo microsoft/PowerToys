@@ -17,15 +17,11 @@ class OverlayWindow
 {
 public:
     OverlayWindow();
-
-    const wchar_t* get_name();
-    const wchar_t* get_key();
     bool get_config(wchar_t* buffer, int* buffer_size);
 
     void set_config(const wchar_t* config);
     void enable();
     void disable();
-    bool is_enabled();
 
     void on_held();
     void on_held_press(DWORD vkCode);
@@ -33,8 +29,6 @@ public:
     void was_hidden();
 
     intptr_t signal_event(LowlevelKeyboardEvent* event);
-
-    void destroy();
 
     bool overlay_visible() const;
 
@@ -48,13 +42,11 @@ private:
     std::wstring app_key;
     std::unique_ptr<TargetState> target_state;
     std::unique_ptr<D2DOverlayWindow> winkey_popup;
-    bool _enabled = false;
     HHOOK hook_handle;
     std::unique_ptr<NativeEventWaiter> event_waiter;
     std::vector<std::wstring> disabled_apps_array;
 
     void init_settings();
-    void disable(bool trace_event);
     void update_disabled_apps();
 
     struct PressTime

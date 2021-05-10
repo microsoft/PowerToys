@@ -7,7 +7,7 @@
 #include <common/debug_control.h>
 #include <common/interop/shared_constants.h>
 #include <sstream>
-#include "ShortcutGuideConstants.h"
+
 
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/SettingsAPI/settings_objects.h>
@@ -18,6 +18,8 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
 #include <Psapi.h>
+
+#include "ShortcutGuideConstants.h"
 
 // TODO: refactor singleton
 OverlayWindow* instance = nullptr;
@@ -119,30 +121,16 @@ OverlayWindow::OverlayWindow()
 {
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
     app_key = ShortcutGuideConstants::ModuleKey;
-    std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
-    logFilePath.append(LogSettings::shortcutGuideLogPath);
-    Logger::init(LogSettings::shortcutGuideLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+
     Logger::info("Overlay Window is creating");
     init_settings();
-}
-
-// Return the localized display name of the powertoy
-const wchar_t* OverlayWindow::get_name()
-{
-    return app_name.c_str();
-}
-
-// Return the non localized key of the powertoy, this will be cached by the runner
-const wchar_t* OverlayWindow::get_key()
-{
-    return app_key.c_str();
 }
 
 bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
 {
     HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
-    PowerToysSettings::Settings settings(hinstance, get_name());
+    PowerToysSettings::Settings settings(hinstance, app_name);
     settings.set_description(GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION));
     settings.set_overview_link(L"https://aka.ms/PowerToysOverview_ShortcutGuide");
     settings.set_icon_key(L"pt-shortcut-guide");
@@ -178,42 +166,38 @@ void OverlayWindow::set_config(const wchar_t* config)
     {
         // save configuration
         PowerToysSettings::PowerToyValues _values =
-            PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
+            PowerToysSettings::PowerToyValues::from_json_string(config, app_key);
         _values.save_to_settings_file();
         Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
 
-        // apply new settings if powertoy is enabled
-        if (_enabled)
+        if (const auto press_delay_time = _values.get_int_value(pressTime.name))
         {
-            if (const auto press_delay_time = _values.get_int_value(pressTime.name))
+            pressTime.value = *press_delay_time;
+            if (target_state)
             {
-                pressTime.value = *press_delay_time;
-                if (target_state)
-                {
-                    target_state->set_delay(*press_delay_time);
-                }
+                target_state->set_delay(*press_delay_time);
             }
-            if (const auto overlay_opacity = _values.get_int_value(overlayOpacity.name))
+        }
+        if (const auto overlay_opacity = _values.get_int_value(overlayOpacity.name))
+        {
+            overlayOpacity.value = *overlay_opacity;
+            if (winkey_popup)
             {
-                overlayOpacity.value = *overlay_opacity;
-                if (winkey_popup)
-                {
-                    winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
-                }
+                winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
             }
-            if (auto val = _values.get_string_value(theme.name))
+        }
+        if (auto val = _values.get_string_value(theme.name))
+        {
+            theme.value = std::move(*val);
+            if (winkey_popup)
             {
-                theme.value = std::move(*val);
-                if (winkey_popup)
-                {
-                    winkey_popup->set_theme(theme.value);
-                }
+                winkey_popup->set_theme(theme.value);
             }
-            if (auto val = _values.get_string_value(disabledApps.name))
-            {
-                disabledApps.value = std::move(*val);
-                update_disabled_apps();
-            }
+        }
+        if (auto val = _values.get_string_value(disabledApps.name))
+        {
+            disabledApps.value = std::move(*val);
+            update_disabled_apps();
         }
     }
     catch (...)
@@ -257,95 +241,65 @@ void OverlayWindow::enable()
         return 0;
     };
 
-    if (!_enabled)
+    winkey_popup = std::make_unique<D2DOverlayWindow>(std::move(switcher));
+    winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
+    winkey_popup->set_theme(theme.value);
+    target_state = std::make_unique<TargetState>(pressTime.value);
+    try
     {
-        Trace::EnableShortcutGuide(true);
-        winkey_popup = std::make_unique<D2DOverlayWindow>(std::move(switcher));
-        winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
-        winkey_popup->set_theme(theme.value);
-        target_state = std::make_unique<TargetState>(pressTime.value);
-        try
-        {
-            winkey_popup->initialize();
-        }
-        catch (...)
-        {
-            Logger::critical("Winkey popup failed to initialize");
-            return;
-        }
+        winkey_popup->initialize();
+    }
+    catch (...)
+    {
+        Logger::critical("Winkey popup failed to initialize");
+        return;
+    }
 
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
-        const bool hook_disabled = IsDebuggerPresent();
+    const bool hook_disabled = IsDebuggerPresent();
 #else
-        const bool hook_disabled = false;
+    const bool hook_disabled = false;
 #endif
-        if (!hook_disabled)
-        {
-            hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
-            if (!hook_handle)
-            {
-                DWORD errorCode = GetLastError();
-                show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Shortcut Guide");
-                auto errorMessage = get_last_error_message(errorCode);
-                Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"OverlayWindow.enable.SetWindowsHookEx");
-            }
-        }
-        RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);
-
-        auto show_action = [&]() {
-            PostMessageW(winkey_popup->get_window_handle(), WM_APP, 0, eventActivateWindow);
-        };
-
-        event_waiter = std::make_unique<NativeEventWaiter>(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT, show_action);
-    }
-    _enabled = true;
-}
-
-void OverlayWindow::disable(bool trace_event)
-{
-    Logger::info("Shortcut Guide is disabling");
-
-    if (_enabled)
+    if (!hook_disabled)
     {
-        _enabled = false;
-        if (trace_event)
+        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
+        if (!hook_handle)
         {
-            Trace::EnableShortcutGuide(false);
-        }
-        UnregisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id);
-        event_waiter.reset();
-        winkey_popup->hide();
-        target_state->exit();
-        target_state.reset();
-        winkey_popup.reset();
-        if (hook_handle)
-        {
-            bool success = UnhookWindowsHookEx(hook_handle);
-            if (success)
-            {
-                hook_handle = nullptr;
-            }
+            DWORD errorCode = GetLastError();
+            show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Shortcut Guide");
+            auto errorMessage = get_last_error_message(errorCode);
+            Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"OverlayWindow.enable.SetWindowsHookEx");
         }
     }
+    RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);
+
+    auto show_action = [&]() {
+        PostMessageW(winkey_popup->get_window_handle(), WM_APP, 0, eventActivateWindow);
+    };
+
+    event_waiter = std::make_unique<NativeEventWaiter>(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT, show_action);
 }
 
 void OverlayWindow::disable()
 {
-    this->disable(true);
-}
-
-bool OverlayWindow::is_enabled()
-{
-    return _enabled;
+    UnregisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id);
+    event_waiter.reset();
+    winkey_popup->hide();
+    target_state->exit();
+    target_state.reset();
+    winkey_popup.reset();
+    if (hook_handle)
+    {
+        bool success = UnhookWindowsHookEx(hook_handle);
+        if (success)
+        {
+            hook_handle = nullptr;
+        }
+    }
 }
 
 intptr_t OverlayWindow::signal_event(LowlevelKeyboardEvent* event)
 {
-    if (!_enabled)
-    {
-        return 0;
-    }
-
     if (event->wParam == WM_KEYDOWN ||
         event->wParam == WM_SYSKEYDOWN ||
         event->wParam == WM_KEYUP ||
@@ -387,13 +341,6 @@ void OverlayWindow::was_hidden()
     target_state->was_hidden();
 }
 
-void OverlayWindow::destroy()
-{
-    this->disable(false);
-    delete this;
-    instance = nullptr;
-}
-
 bool OverlayWindow::overlay_visible() const
 {
     return target_state->active();
@@ -404,7 +351,7 @@ void OverlayWindow::init_settings()
     try
     {
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(OverlayWindow::get_key());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(app_key);
         if (const auto val = settings.get_int_value(pressTime.name))
         {
             pressTime.value = *val;
