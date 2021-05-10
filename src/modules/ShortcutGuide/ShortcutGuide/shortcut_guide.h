@@ -28,8 +28,6 @@ public:
     void quick_hide();
     void was_hidden();
 
-    intptr_t signal_event(LowlevelKeyboardEvent* event);
-
     bool overlay_visible() const;
 
     bool is_disabled_app(wchar_t* exePath);
@@ -42,7 +40,6 @@ private:
     std::wstring app_key;
     std::unique_ptr<TargetState> target_state;
     std::unique_ptr<D2DOverlayWindow> winkey_popup;
-    HHOOK hook_handle;
     std::unique_ptr<NativeEventWaiter> event_waiter;
     std::vector<std::wstring> disabled_apps_array;
 

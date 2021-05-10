@@ -26,21 +26,6 @@ OverlayWindow* instance = nullptr;
 
 namespace
 {
-    LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
-    {
-        LowlevelKeyboardEvent event;
-        if (nCode == HC_ACTION)
-        {
-            event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-            event.wParam = wParam;
-            if (instance->signal_event(&event) != 0)
-            {
-                return 1;
-            }
-        }
-        return CallNextHookEx(NULL, nCode, wParam, lParam);
-    }
-
     // Window properties relevant to ShortcutGuide
     struct ShortcutGuideWindowInfo
     {
@@ -255,22 +240,6 @@ void OverlayWindow::enable()
         return;
     }
 
-#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
-    const bool hook_disabled = IsDebuggerPresent();
-#else
-    const bool hook_disabled = false;
-#endif
-    if (!hook_disabled)
-    {
-        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
-        if (!hook_handle)
-        {
-            DWORD errorCode = GetLastError();
-            show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Shortcut Guide");
-            auto errorMessage = get_last_error_message(errorCode);
-            Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"OverlayWindow.enable.SetWindowsHookEx");
-        }
-    }
     RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);
 
     auto show_action = [&]() {
@@ -288,31 +257,6 @@ void OverlayWindow::disable()
     target_state->exit();
     target_state.reset();
     winkey_popup.reset();
-    if (hook_handle)
-    {
-        bool success = UnhookWindowsHookEx(hook_handle);
-        if (success)
-        {
-            hook_handle = nullptr;
-        }
-    }
-}
-
-intptr_t OverlayWindow::signal_event(LowlevelKeyboardEvent* event)
-{
-    if (event->wParam == WM_KEYDOWN ||
-        event->wParam == WM_SYSKEYDOWN ||
-        event->wParam == WM_KEYUP ||
-        event->wParam == WM_SYSKEYUP)
-    {
-        bool suppress = target_state->signal_event(event->lParam->vkCode,
-                                                   event->wParam == WM_KEYDOWN || event->wParam == WM_SYSKEYDOWN);
-        return suppress ? 1 : 0;
-    }
-    else
-    {
-        return 0;
-    }
 }
 
 void OverlayWindow::on_held()
