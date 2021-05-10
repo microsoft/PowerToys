@@ -38,7 +38,7 @@ namespace
         { HKEY_USERS, L"HKEY_USERS"},
     };
 
-    void queryKey(HKEY key, wofstream& stream, int indent = 1)
+    void QueryKey(HKEY key, wofstream& stream, int indent = 1)
     {
         TCHAR achKey[255];
         DWORD cbName;
@@ -114,7 +114,7 @@ namespace
                 if (RegOpenKeyExW(key, child.c_str(), 0, KEY_READ, &hTestKey) == ERROR_SUCCESS)
                 {
                     stream << wstring(indent, '\t') << child << "\n";
-                    queryKey(hTestKey, stream, indent + 1);
+                    QueryKey(hTestKey, stream, indent + 1);
                     RegCloseKey(hTestKey);
                 }
                 else
@@ -126,7 +126,7 @@ namespace
     }
 }
 
-void reportRegistry(const filesystem::path& tmpDir)
+void ReportRegistry(const filesystem::path& tmpDir)
 {
     auto registryReportPath = tmpDir;
     registryReportPath.append("registry-report-info.txt");
@@ -142,13 +142,14 @@ void reportRegistry(const filesystem::path& tmpDir)
             LONG result = RegOpenKeyExW(rootKey, subKey.c_str(), 0, KEY_READ, &outKey);
             if (result == ERROR_SUCCESS)
             {
-                queryKey(outKey, registryReport);
+                QueryKey(outKey, registryReport);
                 RegCloseKey(rootKey);
             }
             else
             {
                 registryReport << "ERROR " << result << "\n";
             }
+
             registryReport << "\n";
         }
 
@@ -191,12 +192,14 @@ void reportRegistry(const filesystem::path& tmpDir)
                         registryReport << "ERROR " << result << "\n";
                     }
                 }
+
                 RegCloseKey(rootKey);
             }
             else
             {
                 registryReport << "ERROR " << result << "\n";
             }
+
             registryReport << "\n";
         }
     }
