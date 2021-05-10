@@ -246,6 +246,7 @@ void ReportRegistry(const filesystem::path& tmpDir)
             {
                 registryReport << "ERROR " << result << "\n";
             }
+
             registryReport << "\n";
         }
 
@@ -288,12 +289,14 @@ void ReportRegistry(const filesystem::path& tmpDir)
                         registryReport << "ERROR " << result << "\n";
                     }
                 }
+
                 RegCloseKey(rootKey);
             }
             else
             {
                 registryReport << "ERROR " << result << "\n";
             }
+
             registryReport << "\n";
         }
     }
