@@ -1398,6 +1398,7 @@ otating
 OUTOFCONTEXT
 OUTOFMEMORY
 Outptr
+outputtype
 outro
 OVERLAPPEDWINDOW
 overlaywindow
@@ -2168,6 +2169,8 @@ windowsx
 windowwalker
 winerror
 WINEVENT
+winexe
+winforms
 winfx
 winget
 Winhook
