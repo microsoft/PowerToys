@@ -9,6 +9,8 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <UseWindowsForms>true</UseWindowsForms>
+    <!--Per documentation: https://docs.microsoft.com/dotnet/core/compatibility/windows-forms/5.0/automatically-infer-winexe-output-type#outputtype-set-to-winexe-for-wpf-and-winforms-apps -->
+    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AssemblyName>PowerToys.Espresso</AssemblyName>
   </PropertyGroup>
 

@@ -67,7 +67,7 @@ namespace Espresso.Shell.Core
             contextMenuStrip.Items.Add(operationContextMenu);
 
 #pragma warning disable CS8604 // Possible null reference argument.
-            Task.Factory.StartNew(() => InitializeTrayIcon(text, APIHelper.Extract("shell32.dll", 42, true), contextMenuStrip));
+            Task.Factory.StartNew(() => InitializeTrayIcon(text, APIHelper.Extract("shell32.dll", 12, true), contextMenuStrip));
 #pragma warning restore CS8604 // Possible null reference argument.
         }
     }
