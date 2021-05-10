@@ -9,7 +9,15 @@ class KeyboardManager
 public:
     // Constructor
     KeyboardManager();
-
+    
+    ~KeyboardManager()
+    {
+        if (editorIsRunningEvent)
+        {
+            CloseHandle(editorIsRunningEvent);
+        }
+    }
+    
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
 
@@ -37,6 +45,8 @@ private:
     EventWaiter settingsEventWaiter;
 
     std::atomic_bool loadingSettings = false;
+
+    HANDLE editorIsRunningEvent = nullptr;
 
     // Hook procedure definition
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
