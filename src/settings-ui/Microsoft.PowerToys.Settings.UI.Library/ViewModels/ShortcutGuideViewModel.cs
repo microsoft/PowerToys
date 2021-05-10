@@ -136,24 +136,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public int PressTime
-        {
-            get
-            {
-                return _pressTime;
-            }
-
-            set
-            {
-                if (_pressTime != value)
-                {
-                    _pressTime = value;
-                    Settings.Properties.PressTime.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
         public int OverlayOpacity
         {
             get
