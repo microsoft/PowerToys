@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Globalization;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
 using UnitsNet;
-
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
@@ -16,11 +12,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             Second,
             Both,
             Neither,
-            NotFound
+            NotFound,
         }
 
         /// <summary>
-        /// Given user unit input, converts it. (E.g "1 foot in cm")
+        /// Given user unit input, converts it. (E.g "1 foot in cm").
         /// </summary>
         /// <param name="split"></param>
         /// <param name="quantityType"></param>
@@ -105,7 +101,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     }
                 }
             }
-
 
             return (Abbreviated.NotFound, null);
         }

@@ -1,13 +1,14 @@
 ﻿using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnitsNet;
-using System.Linq;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public static class InputInterpreter
     {
-        public static string[] RegexSplitter(string[] split) {
+        public static string[] RegexSplitter(string[] split)
+        {
             return Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)");
         }
 
@@ -15,14 +16,17 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// Separates input like: "1ft in cm" to "1 ft in cm"
         /// </summary>
         /// <param name="split"></param>
-        public static void InputSpaceInserter(ref string[] split) {
-            if (split.Length != 3) {
+        public static void InputSpaceInserter(ref string[] split)
+        {
+            if (split.Length != 3)
+            {
                 return;
             }
 
             string[] parseInputWithoutSpace = Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)");
 
-            if (parseInputWithoutSpace.Length > 1) {
+            if (parseInputWithoutSpace.Length > 1)
+            {
                 string[] firstEntryRemoved = split.Skip(1).ToArray();
                 string[] newSplit = new string[] { parseInputWithoutSpace[0], parseInputWithoutSpace[1] };
 
@@ -31,41 +35,50 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Replaces a split input array with shorthand feet/inch notation (1', 1'2" etc) to 'x foot in cm'. 
+        /// Replaces a split input array with shorthand feet/inch notation (1', 1'2" etc) to 'x foot in cm'.
         /// </summary>
         /// <param name="split"></param>
         /// <param name="culture"></param>
-        public static void ShorthandFeetInchHandler(ref string[] split, CultureInfo culture) {
-            if (!split[0].Contains('\'') && !split[0].Contains('\"')) {
+        public static void ShorthandFeetInchHandler(ref string[] split, CultureInfo culture)
+        {
+            if (!split[0].Contains('\'') && !split[0].Contains('\"'))
+            {
                 return;
             }
 
             // catches 1' || 1" || 1'2 || 1'2" in cm
             // by converting it to "x foot in cm"
-            if (split.Length == 3) {
+            if (split.Length == 3)
+            {
                 string[] shortsplit = RegexSplitter(split);
 
-                switch (shortsplit.Length) {
+                switch (shortsplit.Length)
+                {
                     case 2:
                         // ex: 1' & 1"
-                        if (shortsplit[1] == "\'") {
+                        if (shortsplit[1] == "\'")
+                        {
                             string[] newInput = new string[] { shortsplit[0], "foot", split[1], split[2] };
                             split = newInput;
                         }
-                        else if (shortsplit[1] == "\"") {
+                        else if (shortsplit[1] == "\"")
+                        {
                             string[] newInput = new string[] { shortsplit[0], "inch", split[1], split[2] };
                             split = newInput;
                         }
+
                         break;
 
                     case 3:
                     case 4:
                         // ex: 1'2 and 1'2"
-                        if (shortsplit[1] == "\'") {
+                        if (shortsplit[1] == "\'")
+                        {
                             bool isFeet = double.TryParse(shortsplit[0], NumberStyles.AllowDecimalPoint, culture, out double feet);
                             bool isInches = double.TryParse(shortsplit[2], NumberStyles.AllowDecimalPoint, culture, out double inches);
 
-                            if (!isFeet || !isInches) {
+                            if (!isFeet || !isInches)
+                            {
                                 // atleast one could not be parsed correctly
                                 break;
                             }
@@ -75,6 +88,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                             string[] newInput = new string[] { convertedTotalInFeet, "foot", split[1], split[2] };
                             split = newInput;
                         }
+
                         break;
 
                     default:
@@ -84,11 +98,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' to '10 °c in degreeFahrenheit'. 
+        /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' becomes '10 °c in DegreeFahrenheit'.
         /// </summary>
         /// <param name="split"></param>
-        public static void DegreePrefixer(ref string[] split) {
-            switch (split[1].ToLower()) {
+        public static void DegreePrefixer(ref string[] split)
+        {
+            switch (split[1].ToLower())
+            {
                 case "celsius":
                     split[1] = "DegreeCelsius";
                     break;
@@ -109,7 +125,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
             }
 
-            switch (split[3].ToLower()) {
+            switch (split[3].ToLower())
+            {
                 case "celsius":
                     split[3] = "DegreeCelsius";
                     break;

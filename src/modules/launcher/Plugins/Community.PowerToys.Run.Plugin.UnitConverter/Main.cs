@@ -1,10 +1,10 @@
-﻿using ManagedCommon;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+using ManagedCommon;
 using UnitsNet;
 using Wox.Plugin;
 
@@ -13,15 +13,18 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
     public class Main : IPlugin, IPluginI18n, IDisposable
     {
         public string Name => Properties.Resources.plugin_name;
+
         public string Description => Properties.Resources.plugin_description;
 
         private PluginInitContext _context;
         private static string _icon_path;
         private bool _disposed;
-        private static readonly QuantityType[] _included = new QuantityType[] {
+        private static readonly QuantityType[] _included = new QuantityType[]
+        {
             QuantityType.Acceleration,
             QuantityType.Angle,
             QuantityType.Area,
+            QuantityType.Duration,
             QuantityType.Energy,
             QuantityType.Information,
             QuantityType.Length,
@@ -31,14 +34,15 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             QuantityType.Temperature,
             QuantityType.Volume,
             QuantityType.Power,
-            QuantityType.Duration
         };
 
         private readonly CultureInfo _currentCulture = CultureInfo.CurrentCulture;
         private readonly int _roundingFractionalDigits = 4;
 
-        public void Init(PluginInitContext context) {
-            if (context == null) {
+        public void Init(PluginInitContext context)
+        {
+            if (context == null)
+            {
                 throw new ArgumentNullException(paramName: nameof(context));
             }
 
@@ -47,8 +51,10 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             UpdateIconPath(_context.API.GetCurrentTheme());
         }
 
-        public List<Result> Query(Query query) {
-            if (query == null) {
+        public List<Result> Query(Query query)
+        {
+            if (query == null)
+            {
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
@@ -57,7 +63,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             InputInterpreter.ShorthandFeetInchHandler(ref split, _currentCulture);
             InputInterpreter.InputSpaceInserter(ref split);
 
-            if (split.Length < 4 || split.Length > 4) {
+            if (split.Length < 4 || split.Length > 4)
+            {
                 // deny any other queries than:
                 // 10 ft in cm
                 // 10 ft to cm
@@ -68,9 +75,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
             List<Result> final_list = new List<Result>();
 
-            foreach (QuantityType quantityType in _included) {
+            foreach (QuantityType quantityType in _included)
+            {
                 double convertedValue = UnitHandler.ConvertInput(split, quantityType, _currentCulture);
-                if (!double.IsNaN(convertedValue)) {
+                if (!double.IsNaN(convertedValue))
+                {
                     AddToResult(final_list, Math.Round(convertedValue, _roundingFractionalDigits), split[3], quantityType);
                 }
             }
@@ -78,21 +87,27 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             return final_list;
         }
 
-        private void AddToResult(List<Result> currentList, double converted_value, string unit_name, QuantityType quantity_type) {
+        private void AddToResult(List<Result> currentList, double converted_value, string unit_name, QuantityType quantity_type)
+        {
             // answer found, add result to list
-            currentList.Add(new Result {
+            currentList.Add(new Result
+            {
                 Title = string.Format("{0} {1}", converted_value, unit_name),
                 IcoPath = _icon_path,
                 Score = 300,
                 SubTitle = string.Format(Properties.Resources.copy_to_clipboard, quantity_type),
-                Action = c => {
+                Action = c =>
+                {
                     var ret = false;
-                    var thread = new Thread(() => {
-                        try {
+                    var thread = new Thread(() =>
+                    {
+                        try
+                        {
                             Clipboard.SetText(converted_value.ToString());
                             ret = true;
                         }
-                        catch (ExternalException) {
+                        catch (ExternalException)
+                        {
                             MessageBox.Show(Properties.Resources.copy_failed);
                         }
                     });
@@ -100,38 +115,49 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     thread.Start();
                     thread.Join();
                     return ret;
-                }
+                },
             });
         }
 
-        public string GetTranslatedPluginTitle() {
+        public string GetTranslatedPluginTitle()
+        {
             return Properties.Resources.plugin_name;
         }
 
-        public string GetTranslatedPluginDescription() {
+        public string GetTranslatedPluginDescription()
+        {
             return Properties.Resources.plugin_description;
         }
 
-        private void OnThemeChanged(Theme _, Theme newTheme) {
+        private void OnThemeChanged(Theme _, Theme newTheme)
+        {
             UpdateIconPath(newTheme);
         }
 
-        private static void UpdateIconPath(Theme theme) {
-            if (theme == Theme.Light || theme == Theme.HighContrastWhite) {
+        private static void UpdateIconPath(Theme theme)
+        {
+            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+            {
                 _icon_path = "Images/unitconverter.light.png";
             }
-            else {
+            else
+            {
                 _icon_path = "Images/unitconverter.dark.png";
             }
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
-        protected virtual void Dispose(bool disposing) {
-            if (!_disposed) {
-                if (disposing) {
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
                     _context.API.ThemeChanged -= OnThemeChanged;
                     _disposed = true;
                 }
