@@ -326,7 +326,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorTest",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "espresso", "espresso", "{127F38E0-40AA-4594-B955-5616BF206882}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Espresso", "src\modules\espresso\Espresso.Shell\Espresso.csproj", "{3B77A64A-8005-4D43-B31A-F692E213BAE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Espresso", "src\modules\espresso\Espresso\Espresso.csproj", "{3B77A64A-8005-4D43-B31A-F692E213BAE4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EspressoModuleInterface", "src\modules\espresso\EspressoModuleInterface\EspressoModuleInterface.vcxproj", "{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}"
 EndProject
