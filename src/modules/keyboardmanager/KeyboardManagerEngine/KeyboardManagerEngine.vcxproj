@@ -69,9 +69,6 @@
     <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">
-      <Project>{8affa899-0b73-49ec-8c50-0fadda57b2fc}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\KeyboardManagerEngineLibrary\KeyboardManagerEngineLibrary.vcxproj">
       <Project>{e496b7fc-1e99-4bab-849b-0e8367040b02}</Project>
     </ProjectReference>

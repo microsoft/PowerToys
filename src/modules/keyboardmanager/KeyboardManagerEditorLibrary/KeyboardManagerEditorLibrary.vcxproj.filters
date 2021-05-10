@@ -60,6 +60,21 @@
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="KeyboardManagerState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShortcutErrorType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyDelay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -102,6 +117,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="trace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyboardManagerState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorHelpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyDelay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

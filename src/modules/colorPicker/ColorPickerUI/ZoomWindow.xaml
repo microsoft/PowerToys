@@ -8,7 +8,6 @@
         mc:Ignorable="d"
         Title="Zoom window"
         WindowStyle="None"
-        SizeToContent="WidthAndHeight"
         Topmost="True"
         AllowsTransparency="True"
         Background="Transparent"
@@ -17,6 +16,5 @@
         Focusable="False">
     <e:Interaction.Behaviors>
         <behaviors:CloseZoomWindowBehavior/>
-        <behaviors:MoveWindowBehavior Left="{Binding DesiredLeft, Mode=TwoWay}" Top="{Binding DesiredTop}"/>
     </e:Interaction.Behaviors>
 </Window>

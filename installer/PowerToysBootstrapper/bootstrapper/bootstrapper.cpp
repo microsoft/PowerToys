@@ -219,16 +219,6 @@ int Bootstrapper(HINSTANCE hInstance)
 
     SetupLogger(logDir, severity);
     spdlog::debug("PowerToys Bootstrapper is launched\nnoFullUI: {}\nsilent: {}\nno_start_pt: {}\nskip_dotnet_install: {}\nlog_level: {}\ninstall_dir: {}\nextract_msi: {}\n", noFullUI, g_Silent, noStartPT, skipDotnetInstall, logLevel, installDirArg, extractMsiOnly);
-    
-    const VersionHelper myVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
-
-    // Do not support installing on Windows < 1903
-    if (myVersion >= VersionHelper{0, 36, 0} && updating::is_old_windows_version())
-    {
-      ShowMessageBoxError(IDS_OLD_WINDOWS_ERROR);
-      spdlog::error("PowerToys {} requires at least Windows 1903 to run.", myVersion.toString());
-      return 1;
-    }
 
     // If a user requested an MSI -> extract it and exit
     if (extractMsiOnly)
@@ -241,7 +231,18 @@ int Bootstrapper(HINSTANCE hInstance)
         {
             spdlog::error("MSI installer couldn't be extracted");
         }
+
         return 0;
+    }
+
+    const VersionHelper myVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+
+    // Do not support installing on Windows < 1903
+    if (updating::is_1809_or_older())
+    {
+      ShowMessageBoxError(IDS_OLD_WINDOWS_ERROR);
+      spdlog::error("PowerToys {} requires at least Windows 1903 to run.", myVersion.toString());
+      return 1;
     }
 
     // Check if there's a newer version installed

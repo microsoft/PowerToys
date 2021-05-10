@@ -26,7 +26,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 - Windows 10 v1903 (build 18362) or newer.
    - ⚠️ PowerToys minimum version of Windows 10 is v1903 starting with the 0.37 release
-- Have [.NET Core 3.1.13 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.13-windows-x64-installer). The installer should handle this but we want to directly make people aware.
+- Have [.NET Core 3.1.14 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.14-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
 

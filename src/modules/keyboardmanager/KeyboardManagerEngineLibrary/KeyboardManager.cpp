@@ -12,7 +12,6 @@
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardEventHandlers.h>
-#include <keyboardmanager/common/SettingsHelper.h>
 #include <ctime>
 
 #include "KeyboardEventHandlers.h"
@@ -56,13 +55,13 @@ KeyboardManager::KeyboardManager()
 
 void KeyboardManager::LoadSettings()
 {
-    bool loadedSuccessful = SettingsHelper::LoadSettings(keyboardManagerState);
+    bool loadedSuccessful = state.LoadSettings();
     if (!loadedSuccessful)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // retry once
-        SettingsHelper::LoadSettings(keyboardManagerState);
+        state.LoadSettings();
     }
 }
 
@@ -140,7 +139,7 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     }
 
     // Remap a key
-    intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, keyboardManagerState);
+    intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, state);
 
     // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
     if (SingleKeyRemapResult == 1)
@@ -154,7 +153,7 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     */
 
     // Handle an app-specific shortcut remapping
-    intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, keyboardManagerState);
+    intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, state);
 
     // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
     if (AppSpecificShortcutRemapResult == 1)
@@ -163,5 +162,5 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     }
 
     // Handle an os-level shortcut remapping
-    return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, keyboardManagerState);
+    return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, state);
 }

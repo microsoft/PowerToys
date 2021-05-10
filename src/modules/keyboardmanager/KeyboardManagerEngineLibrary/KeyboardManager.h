@@ -1,7 +1,8 @@
 #pragma once
+#include <common/hooks/LowlevelKeyboardEvent.h>
 #include <common/utils/EventWaiter.h>
-#include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/Input.h>
+#include "State.h"
 
 class KeyboardManager
 {
@@ -27,7 +28,7 @@ private:
     static KeyboardManager* keyboardManagerObjectPtr;
 
     // Variable which stores all the state information to be shared between the UI and back-end
-    KeyboardManagerState keyboardManagerState;
+    State state;
 
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;

@@ -3,15 +3,16 @@
 
 #include <common/interop/shared_constants.h>
 
-#include <KeyboardManagerState.h>
-
-#include <KeyboardManagerEditorStrings.h>
-#include <KeyDropDownControl.h>
-#include <UIHelpers.h>
+#include "KeyboardManagerState.h"
+#include "KeyboardManagerEditorStrings.h"
+#include "KeyDropDownControl.h"
+#include "UIHelpers.h"
+#include "EditorHelpers.h"
+#include "EditorConstants.h"
 
 //Both static members are initialized to null
 HWND ShortcutControl::editShortcutsWindowHandle = nullptr;
-KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
+KBMEditor::KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
 // Initialized as new vector
 RemapBuffer ShortcutControl::shortcutRemapBuffer;
 
@@ -22,13 +23,13 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
     shortcutControlLayout = StackPanel();
     bool isHybridControl = colIndex == 1 ? true : false;
 
-    shortcutDropDownStackPanel.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    shortcutDropDownStackPanel.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
     shortcutDropDownStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
     typeShortcut.as<Button>().Content(winrt::box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
-    typeShortcut.as<Button>().Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+    typeShortcut.as<Button>().Width(EditorConstants::ShortcutTableDropDownWidth);
     typeShortcut.as<Button>().Click([&, table, row, colIndex, isHybridControl, targetApp](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, editShortcutsWindowHandle);
+        keyboardManagerState->SetUIState(KBMEditor::KeyboardManagerUIState::DetectShortcutWindowActivated, editShortcutsWindowHandle);
         // Using the XamlRoot of the typeShortcut to get the root of the XAML host
         CreateDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState, colIndex, table, keyDropDownControlObjects, row, targetApp, isHybridControl, false, editShortcutsWindowHandle, shortcutRemapBuffer);
     });
@@ -36,7 +37,7 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
     // Set an accessible name for the type shortcut button
     typeShortcut.as<Button>().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
 
-    shortcutControlLayout.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    shortcutControlLayout.as<StackPanel>().Spacing(EditorConstants::ShortcutTableDropDownSpacing);
 
     shortcutControlLayout.as<StackPanel>().Children().Append(typeShortcut.as<Button>());
     shortcutControlLayout.as<StackPanel>().Children().Append(shortcutDropDownStackPanel.as<StackPanel>());
@@ -90,7 +91,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 
     // ShortcutControl for the original shortcut
     auto origin = keyboardRemapControlObjects.back()[0]->GetShortcutControl();
-    origin.Width(KeyboardManagerConstants::ShortcutOriginColumnWidth);
+    origin.Width(EditorConstants::ShortcutOriginColumnWidth);
     row.Children().Append(origin);
 
     // Arrow icon
@@ -99,17 +100,17 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     arrowIcon.Glyph(L"\xE72A");
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
-    auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, KeyboardManagerConstants::ShortcutArrowColumnWidth).as<StackPanel>();
+    auto arrowIconContainer = UIHelpers::GetWrapped(arrowIcon, EditorConstants::ShortcutArrowColumnWidth).as<StackPanel>();
     arrowIconContainer.Orientation(Orientation::Vertical);
     arrowIconContainer.VerticalAlignment(VerticalAlignment::Center);
     row.Children().Append(arrowIconContainer);
 
     // ShortcutControl for the new shortcut
     auto target = keyboardRemapControlObjects.back()[1]->GetShortcutControl();
-    target.Width(KeyboardManagerConstants::ShortcutTargetColumnWidth);
+    target.Width(EditorConstants::ShortcutTargetColumnWidth);
     row.Children().Append(target);
 
-    targetAppTextBox.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+    targetAppTextBox.Width(EditorConstants::ShortcutTableDropDownWidth);
     targetAppTextBox.PlaceholderText(KeyboardManagerEditorStrings::DefaultAppName);
     targetAppTextBox.Text(targetAppName);
 
@@ -174,10 +175,10 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     });
 
     // We need two containers in order to align it horizontally and vertically
-    StackPanel targetAppHorizontal = UIHelpers::GetWrapped(targetAppTextBox, KeyboardManagerConstants::TableTargetAppColWidth).as<StackPanel>();
+    StackPanel targetAppHorizontal = UIHelpers::GetWrapped(targetAppTextBox, EditorConstants::TableTargetAppColWidth).as<StackPanel>();
     targetAppHorizontal.Orientation(Orientation::Horizontal);
     targetAppHorizontal.HorizontalAlignment(HorizontalAlignment::Left);
-    StackPanel targetAppContainer = UIHelpers::GetWrapped(targetAppHorizontal, KeyboardManagerConstants::TableTargetAppColWidth).as<StackPanel>();
+    StackPanel targetAppContainer = UIHelpers::GetWrapped(targetAppHorizontal, EditorConstants::TableTargetAppColWidth).as<StackPanel>();
     targetAppContainer.Orientation(Orientation::Vertical);
     targetAppContainer.VerticalAlignment(VerticalAlignment::Bottom);
     row.Children().Append(targetAppContainer);
@@ -240,7 +241,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     UpdateAccessibleNames(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->GetShortcutControl(), keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->GetShortcutControl(), targetAppTextBox, deleteShortcut, (int)keyboardRemapControlObjects.size());
 
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
-    if (originalKeys.IsValidShortcut() && !(newKeys.index() == 0 && std::get<DWORD>(newKeys) == NULL) && !(newKeys.index() == 1 && !std::get<Shortcut>(newKeys).IsValidShortcut()))
+    if (EditorHelpers::IsValidShortcut(originalKeys) && !(newKeys.index() == 0 && std::get<DWORD>(newKeys) == NULL) && !(newKeys.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKeys))))
     {
         // change to load app name
         shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
@@ -269,7 +270,7 @@ StackPanel ShortcutControl::GetShortcutControl()
 }
 
 // Function to create the detect shortcut UI window
-void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState, const int colIndex, StackPanel table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer)
+void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KBMEditor::KeyboardManagerState& keyboardManagerState, const int colIndex, StackPanel table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer)
 {
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
@@ -325,12 +326,12 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         if (isSingleKeyWindow)
         {
             // Revert UI state back to Edit Keyboard window
-            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, parentWindow);
+            keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditKeyboardWindowActivated, parentWindow);
         }
         else
         {
             // Revert UI state back to Edit Shortcut window
-            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
+            keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
         }
 
         unregisterKeys();
@@ -391,12 +392,12 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         if (isSingleKeyWindow)
         {
             // Revert UI state back to Edit Keyboard window
-            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, parentWindow);
+            keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditKeyboardWindowActivated, parentWindow);
         }
         else
         {
             // Revert UI state back to Edit Shortcut window
-            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
+            keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
         }
         unregisterKeys();
     };

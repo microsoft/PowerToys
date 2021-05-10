@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include "MockedInput.h"
-#include <keyboardmanager/common/KeyboardManagerState.h>
+#include <keyboardmanager/KeyboardManagerEngineLibrary/State.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.h>
 #include "TestHelpers.h"
 #include <common/interop/shared_constants.h>
@@ -15,7 +15,7 @@ namespace RemappingLogicTests
     {
     private:
         KeyboardManagerInput::MockedInput mockedInputHandler;
-        KeyboardManagerState testState;
+        State testState;
         std::wstring testApp1 = L"testtrocess1.exe";
         std::wstring testApp2 = L"testprocess2.exe";
 

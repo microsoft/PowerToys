@@ -12,7 +12,7 @@
                     BorderThickness="0"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
                     ui:WindowHelper.UseModernWindowStyle="True"
-                    ui:TitleBar.IsIconVisible="True"
+                    ui:TitleBar.IsIconVisible="False"
                     SizeToContent="Height"
                     Background="{DynamicResource PrimaryBackgroundBrush}"
                     ResizeMode="NoResize"
@@ -61,10 +61,12 @@
                 <Button Content="{x:Static props:Resources.Cancel}"
                     Style="{StaticResource DefaultButtonStyle}"
                     HorizontalAlignment="Stretch"
+                    TabIndex="1"
                     Grid.Column="2"
                     Click="OnCancel" />
                 <Button Content="{x:Static props:Resources.Save_Apply}"
                     Style="{StaticResource AccentButtonStyle}"
+                    TabIndex="0"
                     HorizontalAlignment="Stretch"
                     Click="OnSaveApplyTemplate" />
             </Grid>
