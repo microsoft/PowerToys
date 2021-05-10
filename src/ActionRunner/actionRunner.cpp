@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 #define WIN32_LEAN_AND_MEAN
 #include "Generated Files/resource.h"
 
@@ -33,13 +37,14 @@ auto Strings = create_notifications_strings();
 
 using namespace cmdArg;
 
-int uninstall_msi_action()
+int UninstallMsiAction()
 {
     const auto package_path = updating::get_msi_package_path();
     if (package_path.empty())
     {
         return 0;
     }
+
     if (!updating::uninstall_msi_version(package_path, Strings))
     {
         return -1;
@@ -59,7 +64,7 @@ int uninstall_msi_action()
 
 namespace fs = std::filesystem;
 
-std::optional<fs::path> copy_self_to_temp_dir()
+std::optional<fs::path> CopySelfToTempDir()
 {
     std::error_code error;
     auto dst_path = fs::temp_directory_path() / "PowerToys.ActionRunner.exe";
@@ -68,10 +73,11 @@ std::optional<fs::path> copy_self_to_temp_dir()
     {
         return std::nullopt;
     }
+
     return std::move(dst_path);
 }
 
-std::optional<fs::path> obtain_installer_path()
+std::optional<fs::path> ObtainInstallerPath()
 {
     using namespace updating;
 
@@ -84,6 +90,7 @@ std::optional<fs::path> obtain_installer_path()
             Logger::error(L"Couldn't obtain github version info: {}", new_version_info.error());
             return std::nullopt;
         }
+
         if (!std::holds_alternative<new_version_download_info>(*new_version_info))
         {
             Logger::error("Invoked with -update_now argument, but no update was available");
@@ -95,6 +102,7 @@ std::optional<fs::path> obtain_installer_path()
         {
             Logger::error("Couldn't download new installer");
         }
+
         return downloaded_installer;
     }
     else if (state.state == UpdateState::readyToInstall)
@@ -117,17 +125,17 @@ std::optional<fs::path> obtain_installer_path()
     }
 }
 
-bool install_new_version_stage_1()
+bool InstallNewVersionStage1()
 {
-    const auto installer = obtain_installer_path();
+    const auto installer = ObtainInstallerPath();
     if (!installer)
     {
         return false;
     }
 
-    if (auto copy_in_temp = copy_self_to_temp_dir())
+    if (auto copy_in_temp = CopySelfToTempDir())
     {
-        // detect if PT was running
+        // Detect if PT was running
         const auto pt_main_window = FindWindowW(pt_tray_icon_window_class, nullptr);
         const bool launch_powertoys = pt_main_window != nullptr;
         if (pt_main_window != nullptr)
@@ -156,7 +164,7 @@ bool install_new_version_stage_1()
     }
 }
 
-bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view install_path, bool launch_powertoys)
+bool InstallNewVersionStage2(std::wstring installer_path, std::wstring_view install_path, bool launch_powertoys)
 {
     std::transform(begin(installer_path), end(installer_path), begin(installer_path), ::towlower);
 
@@ -183,9 +191,11 @@ bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view 
         {
             parameters += L"--no_start_pt";
         }
+
         sei.lpParameters = parameters.c_str();
 
         success = ShellExecuteExW(&sei) == TRUE;
+        
         // Wait for the install completion
         if (success)
         {
@@ -219,6 +229,7 @@ bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view 
         sei.lpParameters = UPDATE_REPORT_SUCCESS;
         return ShellExecuteExW(&sei) == TRUE;
     }
+
     return true;
 }
 
@@ -230,6 +241,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         return 1;
     }
+
     std::wstring_view action{ args[1] };
 
     std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
@@ -299,16 +311,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     else if (action == UNINSTALL_MSI)
     {
-        return uninstall_msi_action();
+        return UninstallMsiAction();
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE1)
     {
-        return !install_new_version_stage_1();
+        return !InstallNewVersionStage1();
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE2)
     {
         using namespace std::string_view_literals;
-        return !install_new_version_stage_2(args[2], args[3], args[4] == std::wstring_view{ UPDATE_STAGE2_RESTART_PT });
+        return !InstallNewVersionStage2(args[2], args[3], args[4] == std::wstring_view{ UPDATE_STAGE2_RESTART_PT });
     }
 
     return 0;
