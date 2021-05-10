@@ -9,6 +9,14 @@ public:
     // Constructor
     KeyboardManager();
 
+    ~KeyboardManager()
+    {
+        if (editorIsRunningEvent)
+        {
+            CloseHandle(editorIsRunningEvent);
+        }
+    }
+
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
 
@@ -42,6 +50,8 @@ private:
 
     // Load settings from the file.
     void LoadSettings();
+
+    HANDLE editorIsRunningEvent = nullptr;
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;
