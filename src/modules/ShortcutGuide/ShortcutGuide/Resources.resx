@@ -117,7 +117,58 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Setting_Description_Press_Time" xml:space="preserve">
+    <value>How long to press the Windows key before showing the Shortcut Guide (ms)</value>
+  </data>
+  <data name="Setting_Description_Overlay_Opacity" xml:space="preserve">
+    <value>Opacity of the Shortcut Guide's overlay background (%)</value>
+  </data>
+  <data name="Setting_Description_Theme" xml:space="preserve">
+    <value>Choose Shortcut Guide overlay color</value>
+  </data>
+  <data name="Setting_Description_Theme_Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Setting_Description_Theme_Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Setting_Description_Theme_System" xml:space="preserve">
+    <value>System default app mode</value>
+  </data>
+  <data name="Settings_Description" xml:space="preserve">
+    <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
+  </data>
   <data name="Shortcut_Guide" xml:space="preserve">
     <value>Shortcut Guide</value>
+  </data>
+  <data name="No_Action" xml:space="preserve">
+    <value>No action</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="Snap_Right" xml:space="preserve">
+    <value>Snap right</value>
+  </data>
+  <data name="Snap_Left" xml:space="preserve">
+    <value>Snap left</value>
+  </data>
+  <data name="Snap_Upper_Right" xml:space="preserve">
+    <value>Snap upper right</value>
+  </data>
+  <data name="Snap_Upper_Left" xml:space="preserve">
+    <value>Snap upper left</value>
+  </data>
+  <data name="Snap_Lower_Right" xml:space="preserve">
+    <value>Snap lower right</value>
+  </data>
+  <data name="Snap_Lower_Left" xml:space="preserve">
+    <value>Snap lower left</value>
+  </data>
+  <data name="Minimize" xml:space="preserve">
+    <value>Minimize</value>
+  </data>
+  <data name="Maximize" xml:space="preserve">
+    <value>Maximize</value>
   </data>
 </root>

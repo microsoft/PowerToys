@@ -5,17 +5,20 @@ D2DSVG& D2DSVG::load(const std::wstring& filename, ID2D1DeviceContext5* d2d_dc)
 {
     svg = nullptr;
     winrt::com_ptr<IStream> svg_stream;
-    winrt::check_hresult(SHCreateStreamOnFileEx(filename.c_str(),
-                                                STGM_READ,
-                                                FILE_ATTRIBUTE_NORMAL,
-                                                FALSE,
-                                                nullptr,
-                                                svg_stream.put()));
+    auto h = SHCreateStreamOnFileEx(filename.c_str(),
+                                    STGM_READ,
+                                    FILE_ATTRIBUTE_NORMAL,
+                                    FALSE,
+                                    nullptr,
+                                    svg_stream.put());
+    winrt::check_hresult(h);
 
-    winrt::check_hresult(d2d_dc->CreateSvgDocument(
+    auto h1 = d2d_dc->CreateSvgDocument(
         svg_stream.get(),
         D2D1::SizeF(1, 1),
-        svg.put()));
+        svg.put());
+
+    winrt::check_hresult(h1);
 
     winrt::com_ptr<ID2D1SvgElement> root;
     svg->GetRoot(root.put());
