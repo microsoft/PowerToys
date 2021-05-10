@@ -70,7 +70,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy to clipboard.
+        ///   Looks up a localized string similar to Copy {0} to clipboard.
         /// </summary>
         public static string copy_to_clipboard {
             get {
@@ -88,7 +88,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UnitConverter.
+        ///   Looks up a localized string similar to Unit Converter.
         /// </summary>
         public static string plugin_name {
             get {

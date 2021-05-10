@@ -121,7 +121,7 @@
     <value>Copy failed</value>
   </data>
   <data name="copy_to_clipboard" xml:space="preserve">
-    <value>Copy to clipboard</value>
+    <value>Copy {0} to clipboard</value>
   </data>
   <data name="plugin_description" xml:space="preserve">
     <value>Provides unit conversion.</value>

@@ -31,8 +31,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
             Assert.AreEqual(expectedResult, input);
         }
 
-        [TestCase(new string[] { "5", "celsius", "in", "fahrenheit" }, new string[] { "5", "degreeCelsius", "in", "degreeFahrenheit" })]
-        [TestCase(new string[] { "5", "fahrenheit", "in", "celsius" }, new string[] { "5", "degreeFahrenheit", "in", "degreeCelsius" })]
+        [TestCase(new string[] { "5", "CeLsIuS", "in", "faHrenheiT" }, new string[] { "5", "DegreeCelsius", "in", "DegreeFahrenheit" })]
+        [TestCase(new string[] { "5", "fahrenheit", "in", "celsius" }, new string[] { "5", "DegreeFahrenheit", "in", "DegreeCelsius" })]
         [TestCase(new string[] { "5", "c", "in", "f" }, new string[] { "5", "°c", "in", "°f" })]
         [TestCase(new string[] { "5", "f", "in", "c" }, new string[] { "5", "°f", "in", "°c" })]
         public void PrefixesDegrees(string[] input, string[] expectedResult) {

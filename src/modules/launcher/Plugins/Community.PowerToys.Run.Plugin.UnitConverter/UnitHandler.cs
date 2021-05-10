@@ -81,8 +81,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             }
             else if ((!first_unit_is_abbreviated) && (!second_unit_is_abbreviated)) {
                 // b
-                bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_first_unit);
-                bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit);
+                bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_first_unit.ToLower());
+                bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit.ToLower());
 
                 if (first_unabbreviated && second_unabbreviated) {
                     return (Abbreviated.Neither, unit_info);
@@ -91,14 +91,14 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             else if ((first_unit_is_abbreviated && !second_unit_is_abbreviated) || (!first_unit_is_abbreviated && second_unit_is_abbreviated)) {
                 // c
                 if (first_unit_is_abbreviated) {
-                    bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit);
+                    bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit.ToLower());
 
                     if (second_unabbreviated) {
                         return (Abbreviated.First, unit_info);
                     }
                 }
                 else if (second_unit_is_abbreviated) {
-                    bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_first_unit);
+                    bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_first_unit.ToLower());
 
                     if (first_unabbreviated) {
                         return (Abbreviated.Second, unit_info);

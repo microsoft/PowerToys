@@ -34,8 +34,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             QuantityType.Duration
         };
 
-        private CultureInfo _currentCulture = CultureInfo.CurrentCulture;
-        private int _roundingFractionalDigits = 4;
+        private readonly CultureInfo _currentCulture = CultureInfo.CurrentCulture;
+        private readonly int _roundingFractionalDigits = 4;
 
         public void Init(PluginInitContext context) {
             if (context == null) {
@@ -71,20 +71,20 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             foreach (QuantityType quantityType in _included) {
                 double convertedValue = UnitHandler.ConvertInput(split, quantityType, _currentCulture);
                 if (!double.IsNaN(convertedValue)) {
-                    AddToResult(final_list, convertedValue, split[3]);
+                    AddToResult(final_list, Math.Round(convertedValue, _roundingFractionalDigits), split[3], quantityType);
                 }
             }
 
             return final_list;
         }
 
-        private void AddToResult(List<Result> currentList, double converted_value, string unit_name) {
+        private void AddToResult(List<Result> currentList, double converted_value, string unit_name, QuantityType quantity_type) {
             // answer found, add result to list
             currentList.Add(new Result {
-                Title = string.Format("{0} {1}", Math.Round(converted_value, _roundingFractionalDigits), unit_name),
+                Title = string.Format("{0} {1}", converted_value, unit_name),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = Properties.Resources.copy_to_clipboard,
+                SubTitle = string.Format(Properties.Resources.copy_to_clipboard, quantity_type),
                 Action = c => {
                     var ret = false;
                     var thread = new Thread(() => {

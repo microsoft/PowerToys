@@ -88,13 +88,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// </summary>
         /// <param name="split"></param>
         public static void DegreePrefixer(ref string[] split) {
-            switch (split[1]) {
+            switch (split[1].ToLower()) {
                 case "celsius":
-                    split[1] = "degreeCelsius";
+                    split[1] = "DegreeCelsius";
                     break;
 
                 case "fahrenheit":
-                    split[1] = "degreeFahrenheit";
+                    split[1] = "DegreeFahrenheit";
                     break;
 
                 case "c":
@@ -109,13 +109,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
             }
 
-            switch (split[3]) {
+            switch (split[3].ToLower()) {
                 case "celsius":
-                    split[3] = "degreeCelsius";
+                    split[3] = "DegreeCelsius";
                     break;
 
                 case "fahrenheit":
-                    split[3] = "degreeFahrenheit";
+                    split[3] = "DegreeFahrenheit";
                     break;
 
                 case "c":
@@ -129,8 +129,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 default:
                     break;
             }
-
-
         }
     }
 }
