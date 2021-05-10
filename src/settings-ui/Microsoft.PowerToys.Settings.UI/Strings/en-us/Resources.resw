@@ -477,10 +477,6 @@
   <data name="ShortcutGuide_Description.Text" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
   </data>
-  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
-    <value>Press duration before showing (ms)</value>
-    <comment>pressing a key in milliseconds</comment>
-  </data>
   <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
