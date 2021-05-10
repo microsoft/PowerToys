@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
 {
     [TestFixture]
-    public class DegreePrefixingTests {
+    public class InputInterpreterTests {
         [TestCase(new string[] {"1,5'"}, new string[] { "1,5", "'"})]
         [TestCase(new string[] { "1.5'" }, new string[] { "1.5", "'" })]
         [TestCase(new string[] { "1'" }, new string[] { "1", "'" })]
@@ -32,7 +32,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         }
 
         [TestCase(new string[] { "5", "CeLsIuS", "in", "faHrenheiT" }, new string[] { "5", "DegreeCelsius", "in", "DegreeFahrenheit" })]
-        [TestCase(new string[] { "5", "fahrenheit", "in", "celsius" }, new string[] { "5", "DegreeFahrenheit", "in", "DegreeCelsius" })]
+        [TestCase(new string[] { "5", "f", "in", "celsius" }, new string[] { "5", "°f", "in", "DegreeCelsius" })]
         [TestCase(new string[] { "5", "c", "in", "f" }, new string[] { "5", "°c", "in", "°f" })]
         [TestCase(new string[] { "5", "f", "in", "c" }, new string[] { "5", "°f", "in", "°c" })]
         public void PrefixesDegrees(string[] input, string[] expectedResult) {
