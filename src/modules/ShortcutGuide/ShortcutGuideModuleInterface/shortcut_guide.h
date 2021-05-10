@@ -24,6 +24,9 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
     bool _enabled = false;
+    HANDLE m_hProcess;
 
     void disable(bool trace_event);
+    bool StartProcess();
+    void TerminateProcess();
 };
