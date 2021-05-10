@@ -35,7 +35,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="actionRunner.cpp" />
+    <ClCompile Include="ActionRunner.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\common\logger\logger.vcxproj">
@@ -52,12 +52,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\runner\updating.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="actionRunner.base.rc" />
-    <ResourceCompile Include="Generated Files/actionRunner.rc" />
+    <None Include="ActionRunner.base.rc" />
+    <ResourceCompile Include="Generated Files\ActionRunner.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
