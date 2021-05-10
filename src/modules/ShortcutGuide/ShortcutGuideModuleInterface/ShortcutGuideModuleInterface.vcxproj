@@ -12,7 +12,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h ShortcutGuide.base.rc ShortcutGuide.rc" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h ShortcutGuideModuleInterface.base.rc ShortcutGuideModuleInterface.rc" />
   </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -63,6 +63,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Generated Files\resource.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="shortcut_guide.h" />
@@ -88,7 +89,8 @@
     <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ShortcutGuide.base.rc" />
+    <ResourceCompile Include="Generated Files\ShortcutGuideModuleInterface.rc" />
+    <ResourceCompile Include="ShortcutGuideModuleInterface.base.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
