@@ -3,18 +3,19 @@
 
 #include <common/Display/dpi_aware.h>
 #include <common/utils/EventLocker.h>
-
-#include <KeyboardManagerState.h>
-
-#include <Dialog.h>
-#include <ErrorTypes.h>
-#include <KeyDropDownControl.h>
-#include <LoadingAndSavingRemappingHelper.h>
-#include <ShortcutControl.h>
-#include <Styles.h>
-#include <UIHelpers.h>
-#include <XamlBridge.h>
 #include <common/utils/winapi_error.h>
+#include <keyboardmanager/common/MappingConfiguration.h>
+
+#include "KeyboardManagerState.h"
+#include "Dialog.h"
+#include "KeyDropDownControl.h"
+#include "LoadingAndSavingRemappingHelper.h"
+#include "ShortcutControl.h"
+#include "Styles.h"
+#include "UIHelpers.h"
+#include "XamlBridge.h"
+#include "ShortcutErrorType.h"
+#include "EditorConstants.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -36,13 +37,13 @@ std::mutex editShortcutsWindowMutex;
 static XamlBridge* xamlBridgePtr = nullptr;
 
 static IAsyncAction OnClickAccept(
-    KeyboardManagerState& keyboardManagerState,
+    KBMEditor::KeyboardManagerState& keyboardManagerState,
     XamlRoot root,
     std::function<void()> ApplyRemappings)
 {
-    KeyboardManagerHelper::ErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(ShortcutControl::shortcutRemapBuffer);
+    ShortcutErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(ShortcutControl::shortcutRemapBuffer);
 
-    if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
+    if (isSuccess != ShortcutErrorType::NoError)
     {
         if (!co_await Dialog::PartialRemappingConfirmationDialog(root, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_PARTIALCONFIRMATIONDIALOGTITLE)))
         {
@@ -53,7 +54,7 @@ static IAsyncAction OnClickAccept(
 }
 
 // Function to create the Edit Shortcuts Window
-inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
 {
     Logger::trace("CreateEditShortcutsWindowImpl()");
     auto locker = EventLocker::Get(KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -95,8 +96,8 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     RECT desktopRect = UIHelpers::GetForegroundWindowDesktopRect();
 
     // Calculate DPI dependent window size
-    int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth;
-    int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight;
+    int windowWidth = EditorConstants::DefaultEditShortcutsWindowWidth;
+    int windowHeight = EditorConstants::DefaultEditShortcutsWindowHeight;
     DPIAware::ConvertByCursorPosition(windowWidth, windowHeight);
     DPIAware::GetScreenDPIForCursor(g_currentDPI);
 
@@ -198,9 +199,9 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     StackPanel tableHeader = StackPanel();
     tableHeader.Orientation(Orientation::Horizontal);
     tableHeader.Margin({ 10, 0, 0, 10 });
-    auto originalShortcutContainer = UIHelpers::GetWrapped(originalShortcutHeader, KeyboardManagerConstants::ShortcutOriginColumnWidth + (double)KeyboardManagerConstants::ShortcutArrowColumnWidth);
+    auto originalShortcutContainer = UIHelpers::GetWrapped(originalShortcutHeader, EditorConstants::ShortcutOriginColumnWidth + (double)EditorConstants::ShortcutArrowColumnWidth);
     tableHeader.Children().Append(originalShortcutContainer.as<FrameworkElement>());
-    auto newShortcutHeaderContainer = UIHelpers::GetWrapped(newShortcutHeader, KeyboardManagerConstants::ShortcutTargetColumnWidth);
+    auto newShortcutHeaderContainer = UIHelpers::GetWrapped(newShortcutHeader, EditorConstants::ShortcutTargetColumnWidth);
     tableHeader.Children().Append(newShortcutHeaderContainer.as<FrameworkElement>());
     tableHeader.Children().Append(targetAppHeader);
 
@@ -210,6 +211,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     // Store keyboard manager state
     ShortcutControl::keyboardManagerState = &keyboardManagerState;
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
+    KeyDropDownControl::mappingConfiguration = &mappingConfiguration;
     
     // Clear the shortcut remap buffer
     ShortcutControl::shortcutRemapBuffer.clear();
@@ -218,11 +220,11 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     std::vector<std::vector<std::unique_ptr<ShortcutControl>>> keyboardRemapControlObjects;
 
     // Set keyboard manager UI state so that shortcut remaps are not applied while on this window
-    keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, _hWndEditShortcutsWindow);
+    keyboardManagerState.SetUIState(KBMEditor::KeyboardManagerUIState::EditShortcutsWindowActivated, _hWndEditShortcutsWindow);
 
     // Load existing os level shortcuts into UI
     // Create copy of the remaps to avoid concurrent access
-    ShortcutRemapTable osLevelShortcutReMapCopy = keyboardManagerState.osLevelShortcutReMap;
+    ShortcutRemapTable osLevelShortcutReMapCopy = mappingConfiguration.osLevelShortcutReMap;
 
     for (const auto& it : osLevelShortcutReMapCopy)
     {
@@ -231,7 +233,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
 
     // Load existing app-specific shortcuts into UI
     // Create copy of the remaps to avoid concurrent access
-    AppSpecificShortcutRemapTable appSpecificShortcutReMapCopy = keyboardManagerState.appSpecificShortcutReMap;
+    AppSpecificShortcutRemapTable appSpecificShortcutReMapCopy = mappingConfiguration.appSpecificShortcutReMap;
 
     // Iterate through all the apps
     for (const auto& itApp : appSpecificShortcutReMapCopy)
@@ -247,14 +249,14 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     Button applyButton;
     applyButton.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_OK_BUTTON)));
     applyButton.Style(AccentButtonStyle());
-    applyButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
-    cancelButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
+    applyButton.MinWidth(EditorConstants::HeaderButtonWidth);
+    cancelButton.MinWidth(EditorConstants::HeaderButtonWidth);
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
 
-    auto ApplyRemappings = [&keyboardManagerState, _hWndEditShortcutsWindow]() {
-        LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(keyboardManagerState, ShortcutControl::shortcutRemapBuffer, true);
-        bool saveResult = keyboardManagerState.SaveConfigToFile();
+    auto ApplyRemappings = [&mappingConfiguration, _hWndEditShortcutsWindow]() {
+        LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(mappingConfiguration, ShortcutControl::shortcutRemapBuffer, true);
+        bool saveResult = mappingConfiguration.SaveSettingsToFile();
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     };
 
@@ -286,7 +288,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
 
         // Set focus to the first Type Button in the newly added row
-        UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, KeyboardManagerConstants::ShortcutTableColCount);
+        UIHelpers::SetFocusOnTypeButtonInLastRow(shortcutTable, EditorConstants::ShortcutTableColCount);
     });
 
     // Set accessible name for the add shortcut button
@@ -349,10 +351,10 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KeyboardManagerState&
     xamlBridge.ClearXamlIslands();
 }
 
-void CreateEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
+void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
 {
     // Move implementation into the separate method so resources get destroyed correctly
-    CreateEditShortcutsWindowImpl(hInst, keyboardManagerState);
+    CreateEditShortcutsWindowImpl(hInst, keyboardManagerState, mappingConfiguration);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
@@ -378,8 +380,8 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     case WM_GETMINMAXINFO:
     {
         LPMINMAXINFO mmi = (LPMINMAXINFO)lParam;
-        int minWidth = KeyboardManagerConstants::MinimumEditShortcutsWindowWidth;
-        int minHeight = KeyboardManagerConstants::MinimumEditShortcutsWindowHeight;
+        int minWidth = EditorConstants::MinimumEditShortcutsWindowWidth;
+        int minHeight = EditorConstants::MinimumEditShortcutsWindowHeight;
         DPIAware::Convert(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), minWidth, minHeight);
         mmi->ptMinTrackSize.x = minWidth;
         mmi->ptMinTrackSize.y = minHeight;

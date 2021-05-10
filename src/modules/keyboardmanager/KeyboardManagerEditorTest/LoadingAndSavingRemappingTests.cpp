@@ -1,10 +1,9 @@
 #include "pch.h"
 #include "CppUnitTest.h"
-#include <keyboardmanager/common/KeyboardManagerState.h>
+#include <keyboardmanager/common/MappingConfiguration.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.h>
-#include "TestHelpers.h"
 #include <common/interop/shared_constants.h>
-#include <keyboardmanager/common/ErrorTypes.h>
+#include <keyboardmanager/KeyboardManagerEditorLibrary/ShortcutErrorType.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -27,7 +26,7 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -41,7 +40,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x42, 0x43 }), std::wstring()));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -61,7 +60,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x42, s2 }), std::wstring()));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -81,7 +80,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, 0x42 }), std::wstring()));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -107,7 +106,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest2 }), std::wstring()));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -135,7 +134,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x42, dest2 }), std::wstring()));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -148,7 +147,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, NULL }), std::wstring()));
 
             // Assert that remapping set is invalid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::RemapUnsuccessful);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -163,7 +162,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, src1 }), std::wstring()));
 
             // Assert that remapping set is invalid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::RemapUnsuccessful);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -180,7 +179,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, src1 }), std::wstring()));
 
             // Assert that remapping set is invalid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::RemapUnsuccessful);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -200,7 +199,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
 
             // Assert that remapping set is invalid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::RemapUnsuccessful);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -220,7 +219,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), testApp1));
 
             // Assert that remapping set is invalid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::RemapUnsuccessful);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -240,7 +239,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), testApp2));
 
             // Assert that remapping set is valid
-            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == KeyboardManagerHelper::ErrorType::NoError);
+            bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
             Assert::AreEqual(true, isSuccess);
         }
 
@@ -361,23 +360,23 @@ namespace RemappingUITests
         // Test if the ApplySingleKeyRemappings method resets the keyboard manager state's single key remappings on passing an empty buffer
         TEST_METHOD (ApplySingleKeyRemappings_ShouldResetSingleKeyRemappings_OnPassingEmptyBuffer)
         {
-            KeyboardManagerState testState;
+            MappingConfiguration testShortcuts;
             RemapBuffer remapBuffer;
 
             // Remap A to B
-            testState.AddSingleKeyRemap(0x41, 0x42);
+            testShortcuts.AddSingleKeyRemap(0x41, 0x42);
 
             // Apply the single key remaps from the buffer to the keyboard manager state variable
-            LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(testState, remapBuffer, false);
+            LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(testShortcuts, remapBuffer, false);
 
             // Assert that single key remapping in the kbm state variable is empty
-            Assert::AreEqual((size_t)0, testState.singleKeyReMap.size());
+            Assert::AreEqual((size_t)0, testShortcuts.singleKeyReMap.size());
         }
 
         // Test if the ApplySingleKeyRemappings method copies only the valid remappings to the keyboard manager state variable when some of the remappings are invalid
         TEST_METHOD (ApplySingleKeyRemappings_ShouldCopyOnlyValidRemappings_OnPassingBufferWithSomeInvalidRemappings)
         {
-            KeyboardManagerState testState;
+            MappingConfiguration testShortcuts;
             RemapBuffer remapBuffer;
 
             // Add A->B, B->Ctrl+V, C to incomplete shortcut and D to incomplete key remappings to the buffer
@@ -392,21 +391,21 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x44, s2 }), std::wstring()));
 
             // Apply the single key remaps from the buffer to the keyboard manager state variable
-            LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(testState, remapBuffer, false);
+            LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(testShortcuts, remapBuffer, false);
 
             // Expected A remapped to B, B remapped to Ctrl+V
             SingleKeyRemapTable expectedTable;
             expectedTable[0x41] = 0x42;
             expectedTable[0x42] = s1;
 
-            bool areTablesEqual = (expectedTable == testState.singleKeyReMap);
+            bool areTablesEqual = (expectedTable == testShortcuts.singleKeyReMap);
             Assert::AreEqual(true, areTablesEqual);
         }
 
         // Test if the ApplySingleKeyRemappings method splits common modifiers to their left and right version when copying to the keyboard manager state variable if remappings from common modifiers are passed
         TEST_METHOD (ApplySingleKeyRemappings_ShouldSplitRemappingsFromCommonModifiers_OnPassingBufferWithSomeMappingsFromCommonModifiers)
         {
-            KeyboardManagerState testState;
+            MappingConfiguration testShortcuts;
             RemapBuffer remapBuffer;
 
             // Add Ctrl->A, Alt->B, Shift->C and Win->D remappings to the buffer
@@ -416,7 +415,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ CommonSharedConstants::VK_WIN_BOTH, 0x44 }), std::wstring()));
 
             // Apply the single key remaps from the buffer to the keyboard manager state variable
-            LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(testState, remapBuffer, false);
+            LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(testShortcuts, remapBuffer, false);
 
             // Expected LCtrl/RCtrl remapped to A, LAlt/RAlt to B, LShift/RShift to C, LWin/RWin to D
             SingleKeyRemapTable expectedTable;
@@ -429,14 +428,14 @@ namespace RemappingUITests
             expectedTable[VK_LWIN] = 0x44;
             expectedTable[VK_RWIN] = 0x44;
 
-            bool areTablesEqual = (expectedTable == testState.singleKeyReMap);
+            bool areTablesEqual = (expectedTable == testShortcuts.singleKeyReMap);
             Assert::AreEqual(true, areTablesEqual);
         }
 
         // Test if the ApplyShortcutRemappings method resets the keyboard manager state's os level and app specific shortcut remappings on passing an empty buffer
         TEST_METHOD (ApplyShortcutRemappings_ShouldResetShortcutRemappings_OnPassingEmptyBuffer)
         {
-            KeyboardManagerState testState;
+            MappingConfiguration testShortcuts;
             RemapBuffer remapBuffer;
 
             // Remap Ctrl+A to Ctrl+B for all apps and Ctrl+C to Alt+V for testApp1
@@ -452,21 +451,21 @@ namespace RemappingUITests
             Shortcut dest2;
             dest2.SetKey(VK_MENU);
             dest2.SetKey(0x56);
-            testState.AddOSLevelShortcut(src1, dest1);
-            testState.AddAppSpecificShortcut(testApp1, src1, dest1);
+            testShortcuts.AddOSLevelShortcut(src1, dest1);
+            testShortcuts.AddAppSpecificShortcut(testApp1, src1, dest1);
 
             // Apply the shortcut remaps from the buffer to the keyboard manager state variable
-            LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(testState, remapBuffer, false);
+            LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(testShortcuts, remapBuffer, false);
 
             // Assert that shortcut remappings in the kbm state variable is empty
-            Assert::AreEqual((size_t)0, testState.osLevelShortcutReMap.size());
-            Assert::AreEqual((size_t)0, testState.appSpecificShortcutReMap.size());
+            Assert::AreEqual((size_t)0, testShortcuts.osLevelShortcutReMap.size());
+            Assert::AreEqual((size_t)0, testShortcuts.appSpecificShortcutReMap.size());
         }
 
         // Test if the ApplyShortcutRemappings method copies only the valid remappings to the keyboard manager state variable when some of the remappings are invalid
         TEST_METHOD (ApplyShortcutRemappings_ShouldCopyOnlyValidRemappings_OnPassingBufferWithSomeInvalidRemappings)
         {
-            KeyboardManagerState testState;
+            MappingConfiguration testShortcuts;
             RemapBuffer remapBuffer;
 
             // Add Ctrl+A->Ctrl+B, Ctrl+C->Alt+V, Ctrl+F->incomplete shortcut and Ctrl+G->incomplete key os level remappings to buffer
@@ -501,7 +500,7 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest4 }), testApp1));
 
             // Apply the shortcut remaps from the buffer to the keyboard manager state variable
-            LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(testState, remapBuffer, false);
+            LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(testShortcuts, remapBuffer, false);
 
             // Ctrl+A->Ctrl+B and Ctrl+C->Alt+V
             ShortcutRemapTable expectedOSLevelTable;
@@ -513,8 +512,8 @@ namespace RemappingUITests
             expectedAppSpecificLevelTable[testApp1][src3] = RemapShortcut(dest2);
             expectedAppSpecificLevelTable[testApp1][src4] = RemapShortcut(dest1);
 
-            bool areOSLevelTablesEqual = (expectedOSLevelTable == testState.osLevelShortcutReMap);
-            bool areAppSpecificTablesEqual = (expectedAppSpecificLevelTable == testState.appSpecificShortcutReMap);
+            bool areOSLevelTablesEqual = (expectedOSLevelTable == testShortcuts.osLevelShortcutReMap);
+            bool areAppSpecificTablesEqual = (expectedAppSpecificLevelTable == testShortcuts.appSpecificShortcutReMap);
             Assert::AreEqual(true, areOSLevelTablesEqual);
             Assert::AreEqual(true, areAppSpecificTablesEqual);
         }

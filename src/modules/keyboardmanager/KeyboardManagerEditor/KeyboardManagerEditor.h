@@ -1,7 +1,9 @@
 #pragma once
 
+#include <keyboardmanager/common/Input.h>
+#include <keyboardmanager/common/MappingConfiguration.h>
+
 #include <KeyboardManagerState.h>
-#include <Input.h>
 
 enum class KeyboardManagerEditorType
 {
@@ -32,7 +34,8 @@ private:
     inline static HHOOK hook;
     HINSTANCE hInstance;
 
-    KeyboardManagerState keyboardManagerState;
+    KBMEditor::KeyboardManagerState keyboardManagerState;
+    MappingConfiguration mappingConfiguration;
     
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
     KeyboardManagerInput::Input inputHandler;

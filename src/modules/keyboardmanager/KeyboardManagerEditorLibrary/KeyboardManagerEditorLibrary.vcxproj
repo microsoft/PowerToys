@@ -27,7 +27,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;./../common;./../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -36,12 +36,17 @@
     <ClInclude Include="BufferValidationHelpers.h" />
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="EditKeyboardWindow.h" />
+    <ClInclude Include="EditorConstants.h" />
+    <ClInclude Include="EditorHelpers.h" />
     <ClInclude Include="EditShortcutsWindow.h" />
     <ClInclude Include="KeyboardManagerEditorStrings.h" />
+    <ClInclude Include="KeyboardManagerState.h" />
+    <ClInclude Include="KeyDelay.h" />
     <ClInclude Include="KeyDropDownControl.h" />
     <ClInclude Include="LoadingAndSavingRemappingHelper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ShortcutControl.h" />
+    <ClInclude Include="ShortcutErrorType.h" />
     <ClInclude Include="SingleKeyRemapControl.h" />
     <ClInclude Include="Styles.h" />
     <ClInclude Include="targetver.h" />
@@ -53,8 +58,11 @@
     <ClCompile Include="BufferValidationHelpers.cpp" />
     <ClCompile Include="Dialog.cpp" />
     <ClCompile Include="EditKeyboardWindow.cpp" />
+    <ClCompile Include="EditorHelpers.cpp" />
     <ClCompile Include="EditShortcutsWindow.cpp" />
     <ClCompile Include="KeyboardManagerEditorStrings.cpp" />
+    <ClCompile Include="KeyboardManagerState.cpp" />
+    <ClCompile Include="KeyDelay.cpp" />
     <ClCompile Include="KeyDropDownControl.cpp" />
     <ClCompile Include="LoadingAndSavingRemappingHelper.cpp" />
     <ClCompile Include="pch.cpp">

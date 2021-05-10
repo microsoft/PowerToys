@@ -193,7 +193,7 @@ namespace updating
         co_return false;
     }
 
-    bool is_old_windows_version()
+    bool is_1809_or_older()
     {
         return !Is19H1OrHigher();
     }

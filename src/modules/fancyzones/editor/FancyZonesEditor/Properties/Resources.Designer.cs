@@ -286,7 +286,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit zone layout.
+        ///   Looks up a localized string similar to Edit zones.
         /// </summary>
         public static string Edit_zones {
             get {

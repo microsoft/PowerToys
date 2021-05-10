@@ -24,7 +24,7 @@ namespace KeyboardManagerInput
         // Function to get the foreground process name
         void GetForegroundProcess(_Out_ std::wstring& foregroundProcess)
         {
-            foregroundProcess = KeyboardManagerHelper::GetCurrentApplication(false);
+            foregroundProcess = Helpers::GetCurrentApplication(false);
         }
     };
 }

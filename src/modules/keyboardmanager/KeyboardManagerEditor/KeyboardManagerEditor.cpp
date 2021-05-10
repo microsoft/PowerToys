@@ -6,17 +6,16 @@
 
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/ProcessWaiter.h>
 #include <common/utils/UnhandledExceptionHandler_x64.h>
 
 #include <trace.h>
 
-#include <KeyboardEventHandlers.h>
-#include <KeyboardManagerState.h>
-#include <SettingsHelper.h>
+#include <keyboardmanager/common/KeyboardEventHandlers.h>
 
 #include <EditKeyboardWindow.h>
 #include <EditShortcutsWindow.h>
-#include <common/utils/ProcessWaiter.h>
+#include <KeyboardManagerState.h>
 
 std::unique_ptr<KeyboardManagerEditor> editor = nullptr;
 const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEditor_InstanceMutex";
@@ -114,13 +113,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 KeyboardManagerEditor::KeyboardManagerEditor(HINSTANCE hInst) :
     hInstance(hInst)
 {
-    bool loadedSuccessful = SettingsHelper::LoadSettings(keyboardManagerState);
+    bool loadedSuccessful = mappingConfiguration.LoadSettings();
     if (!loadedSuccessful)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // retry once
-        SettingsHelper::LoadSettings(keyboardManagerState);
+        mappingConfiguration.LoadSettings();
     }
 
     StartLowLevelKeyboardHook();
@@ -149,44 +148,44 @@ void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type)
     switch (type)
     {
     case KeyboardManagerEditorType::KeyEditor:
-        CreateEditKeyboardWindow(hInstance, keyboardManagerState);
+        CreateEditKeyboardWindow(hInstance, keyboardManagerState, mappingConfiguration);
         break;
     case KeyboardManagerEditorType::ShortcutEditor:
-        CreateEditShortcutsWindow(hInstance, keyboardManagerState);
+        CreateEditShortcutsWindow(hInstance, keyboardManagerState, mappingConfiguration);
     }
 }
 
 intptr_t KeyboardManagerEditor::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
     // If the Detect Key Window is currently activated, then suppress the keyboard event
-    KeyboardManagerHelper::KeyboardHookDecision singleKeyRemapUIDetected = keyboardManagerState.DetectSingleRemapKeyUIBackend(data);
-    if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
+    Helpers::KeyboardHookDecision singleKeyRemapUIDetected = keyboardManagerState.DetectSingleRemapKeyUIBackend(data);
+    if (singleKeyRemapUIDetected == Helpers::KeyboardHookDecision::Suppress)
     {
         return 1;
     }
-    else if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
+    else if (singleKeyRemapUIDetected == Helpers::KeyboardHookDecision::SkipHook)
     {
         return 0;
     }
 
     // If the Detect Shortcut Window from Remap Keys is currently activated, then suppress the keyboard event
-    KeyboardManagerHelper::KeyboardHookDecision remapKeyShortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, true);
-    if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
+    Helpers::KeyboardHookDecision remapKeyShortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, true);
+    if (remapKeyShortcutUIDetected == Helpers::KeyboardHookDecision::Suppress)
     {
         return 1;
     }
-    else if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
+    else if (remapKeyShortcutUIDetected == Helpers::KeyboardHookDecision::SkipHook)
     {
         return 0;
     }
 
     // If the Detect Shortcut Window is currently activated, then suppress the keyboard event
-    KeyboardManagerHelper::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, false);
-    if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
+    Helpers::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, false);
+    if (shortcutUIDetected == Helpers::KeyboardHookDecision::Suppress)
     {
         return 1;
     }
-    else if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
+    else if (shortcutUIDetected == Helpers::KeyboardHookDecision::SkipHook)
     {
         return 0;
     }

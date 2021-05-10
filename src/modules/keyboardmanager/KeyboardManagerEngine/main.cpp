@@ -3,10 +3,10 @@
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/UnhandledExceptionHandler_x64.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
-#include <common/utils/UnhandledExceptionHandler_x64.h>
 
 const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEngine_InstanceMutex";
 
