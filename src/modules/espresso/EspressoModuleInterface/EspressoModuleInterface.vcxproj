@@ -16,7 +16,7 @@
     <ProjectGuid>{5e7360a8-d048-4ed3-8f09-0bfd64c5529a}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Espresso</RootNamespace>
-    <ProjectName>Espresso</ProjectName>
+    <ProjectName>EspressoModuleInterface</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -71,7 +71,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Espresso.rc" />
+    <ResourceCompile Include="EspressoModuleInterface.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

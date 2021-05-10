@@ -43,7 +43,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Espresso.rc">
+    <ResourceCompile Include="EspressoModuleInterface.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
