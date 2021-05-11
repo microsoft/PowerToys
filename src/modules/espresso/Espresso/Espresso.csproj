@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -12,6 +12,7 @@
     <!--Per documentation: https://docs.microsoft.com/dotnet/core/compatibility/windows-forms/5.0/automatically-infer-winexe-output-type#outputtype-set-to-winexe-for-wpf-and-winforms-apps -->
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AssemblyName>PowerToys.Espresso</AssemblyName>
+    <Version>$(Version).0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
