@@ -52,12 +52,12 @@ namespace Espresso.Shell
             log.Debug($"OS: {Environment.OSVersion}");
             log.Debug($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
 
-            var configOption = new Option<string>(
-                    aliases: new[] { "--config", "-c" },
-                    getDefaultValue: () => string.Empty,
-                    description: "Pointer to a PowerToys configuration file that the tool will be watching for changes. All other options are disregarded if config is used.")
+            var configOption = new Option<bool>(
+                    aliases: new[] { "--use-pt-config", "-c" },
+                    getDefaultValue: () => true,
+                    description: "Specifies whether Espresso will be using the PowerToys configuration file for managing the state.")
             {
-                Argument = new Argument<string>(() => string.Empty)
+                Argument = new Argument<bool>(() => true)
                 {
                     Arity = ArgumentArity.ZeroOrOne,
                 },
@@ -114,7 +114,7 @@ namespace Espresso.Shell
 
             rootCommand.Description = appName;
 
-            rootCommand.Handler = CommandHandler.Create<string, bool, long, int>(HandleCommandLineArguments);
+            rootCommand.Handler = CommandHandler.Create<bool, bool, long, int>(HandleCommandLineArguments);
 
             return rootCommand.InvokeAsync(args).Result;
         }
@@ -127,25 +127,28 @@ namespace Espresso.Shell
             Environment.Exit(exitCode);
         }
 
-        private static void HandleCommandLineArguments(string config, bool displayOn, long timeLimit, int pid)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, long timeLimit, int pid)
         {
-            log.Info($"The value for --config is: {config}");
+            log.Info($"The value for --use-pt-config is: {usePtConfig}");
             log.Info($"The value for --display-on is: {displayOn}");
             log.Info($"The value for --time-limit is: {timeLimit}");
             log.Info($"The value for --pid is: {pid}");
 
-            if (!string.IsNullOrWhiteSpace(config))
+            if (usePtConfig)
             {
                 // Configuration file is used, therefore we disregard any other command-line parameter
                 // and instead watch for changes in the file.
                 try
                 {
+                    var settingsPath = settingsUtils.GetSettingsFilePath(appName);
+                    log.Info($"Reading configuration file: {settingsPath}");
+
                     watcher = new FileSystemWatcher
                     {
-                        Path = Path.GetDirectoryName(config),
+                        Path = Path.GetDirectoryName(settingsPath),
                         EnableRaisingEvents = true,
                         NotifyFilter = NotifyFilters.LastWrite,
-                        Filter = Path.GetFileName(config)
+                        Filter = Path.GetFileName(settingsPath)
                     };
 
                     Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
