@@ -19,7 +19,6 @@
         <localConverters:UpdatingStateCannotDownloadToVisibilityConverter x:Key="UpdatingStateCannotDownloadToVisibilityConverter" />
         <localConverters:UpdatingStateReadyToDownloadToVisibilityConverter x:Key="UpdatingStateReadyToDownloadToVisibilityConverter" />
         <localConverters:UpdatingStateReadyToInstallToVisibilityConverter x:Key="UpdatingStateReadyToInstallToVisibilityConverter" />
-        <localConverters:UpdatingStateNotUpToDateToVisibilityConverter x:Key="UpdatingStateNotUpToDateToVisibilityConverter" />
     </Page.Resources>
 
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">

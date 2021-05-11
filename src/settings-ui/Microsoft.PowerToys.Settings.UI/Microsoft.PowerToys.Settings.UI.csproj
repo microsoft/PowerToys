@@ -107,7 +107,6 @@
     </Compile>
     <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
     <Compile Include="Converters\UpdatingStateCannotDownloadToVisibilityConverter.cs" />
-    <Compile Include="Converters\UpdatingStateNotUpToDateToVisibilityConverter.cs" />
     <Compile Include="Converters\UpdatingStateReadyToDownloadToVisibilityConverter.cs" />
     <Compile Include="Converters\UpdatingStateReadyToInstallToVisibilityConverter.cs" />
     <Compile Include="Converters\UpdatingStateUpToDateToVisibilityConverter.cs" />
