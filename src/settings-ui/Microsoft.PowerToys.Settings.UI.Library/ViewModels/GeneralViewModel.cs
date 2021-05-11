@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -21,6 +21,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
+        public ButtonClickCommand DownloadAndInstallEventHandler { get; set; }
+
+        public ButtonClickCommand InstallEventHandler { get; set; }
+
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
         public ButtonClickCommand UpdateNowButtonEventHandler { get; set; }
@@ -42,6 +46,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
+            DownloadAndInstallEventHandler = new ButtonClickCommand(DownloadAndInstallClick);
+            InstallEventHandler = new ButtonClickCommand(InstallClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
             UpdateNowButtonEventHandler = new ButtonClickCommand(UpdateNowClick);
 
@@ -441,6 +447,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private void UpdateNowClick()
         {
             Process.Start(new ProcessStartInfo("powertoys://update_now") { UseShellExecute = true });
+        }
+
+        private void DownloadAndInstallClick()
+        {
+            // TODO
+        }
+
+        private void InstallClick()
+        {
+            // TODO
         }
 
         public void RequestUpdateCheckedDate()
