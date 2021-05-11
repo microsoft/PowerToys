@@ -18,6 +18,8 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class CanvasZone : UserControl
     {
+        private readonly int moveAmount = 10;
+
         public CanvasZone()
         {
             InitializeComponent();
@@ -379,7 +381,6 @@ namespace FancyZonesEditor
             if (e.Key != Key.Tab)
             {
                 e.Handled = true;
-                System.Diagnostics.Debug.WriteLine(e.Key);
                 if (e.Key == Key.Delete)
                 {
                     RemoveZone();
@@ -389,13 +390,13 @@ namespace FancyZonesEditor
                     if (IsShiftKeyDown())
                     {
                         // Make the zone larger (height)
-                        MoveZoneX(6, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneX(-6, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                        MoveZoneX(moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                        MoveZoneX(-moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                     }
                     else
                     {
                         // Move zone right
-                        MoveZoneX(12, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                        MoveZoneX(moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
                     }
                 }
                 else if (e.Key == Key.Left)
@@ -403,13 +404,13 @@ namespace FancyZonesEditor
                     if (IsShiftKeyDown())
                     {
                         // Make the zone smaller (height)
-                        MoveZoneX(-6, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneX(6, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                        MoveZoneX(-moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                        MoveZoneX(moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                     }
                     else
                     {
                         // Move zone left
-                        MoveZoneX(-12, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                        MoveZoneX(-moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
                     }
                 }
                 else if (e.Key == Key.Up)
@@ -417,13 +418,13 @@ namespace FancyZonesEditor
                     if (IsShiftKeyDown())
                     {
                         // Make the zone larger (height)
-                        MoveZoneY(6, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneY(-6, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                        MoveZoneY(moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                        MoveZoneY(-moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                     }
                     else
                     {
                         // Move zone up
-                        MoveZoneY(-12, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                        MoveZoneY(-moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
                     }
                 }
                 else if (e.Key == Key.Down)
@@ -431,13 +432,13 @@ namespace FancyZonesEditor
                     if (IsShiftKeyDown())
                     {
                         // Make the zone smaller (height)
-                        MoveZoneY(-6, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneY(6, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                        MoveZoneY(-moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                        MoveZoneY(moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                     }
                     else
                     {
                         // Move zone down
-                        MoveZoneY(12, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                        MoveZoneY(moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
                     }
                 }
             }
