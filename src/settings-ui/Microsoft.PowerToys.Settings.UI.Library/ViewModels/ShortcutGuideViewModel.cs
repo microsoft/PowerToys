@@ -11,6 +11,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
     public class ShortcutGuideViewModel : Observable
     {
+        private ISettingsUtils SettingsUtils { get; set; }
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private ShortcutGuideSettings Settings { get; set; }
@@ -22,8 +24,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private string _settingsConfigFileFolder = string.Empty;
         private string _disabledApps;
 
-        public ShortcutGuideViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public ShortcutGuideViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            SettingsUtils = settingsUtils;
+
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
@@ -180,9 +184,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
-            SndShortcutGuideSettings outsettings = new SndShortcutGuideSettings(Settings);
-            SndModuleSettings<SndShortcutGuideSettings> ipcMessage = new SndModuleSettings<SndShortcutGuideSettings>(outsettings);
-            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
     }
 }
