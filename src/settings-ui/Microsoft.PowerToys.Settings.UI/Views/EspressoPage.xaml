@@ -100,7 +100,7 @@
                     </RadioButton.Content>
                 </RadioButton>
 
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="28,0,0,0" Orientation="Horizontal">
                     <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Hours"
                             Value="{Binding Hours, Mode=TwoWay}"
                             Minimum="0"
