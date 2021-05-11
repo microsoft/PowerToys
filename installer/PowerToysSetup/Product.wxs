@@ -2,12 +2,14 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
 
+  <!-- Names of folders and projects -->
   <?define FancyZonesProjectName="FancyZones"?>
   <?define ImageResizerProjectName="ImageResizer"?>
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
   <?define ShortcutGuideProjectName="ShortcutGuide"?>
   <?define ColorPickerProjectName="ColorPicker"?>
+  <?define EspressoProjectName="Espresso"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
@@ -212,16 +214,26 @@
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
+            <Directory Id="EspressoInstallFolder" Name="$(var.EspressoProjectName)" />
+
+            <!-- KBM -->
             <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)">
               <Directory Id="KeyboardManagerEditorInstallFolder" Name="KeyboardManagerEditor" />
               <Directory Id="KeyboardManagerEngineInstallFolder" Name="KeyboardManagerEngine" />
             </Directory>
+
+            <!-- Color Picker -->
             <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
               <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
             </Directory>
+
+            <!-- Launcher -->
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="AssetsFolder" Name="Assets" />
               <Directory Id="LauncherImagesFolder" Name="Images" />
+              <Directory Id="LauncherPropertiesFolder" Name="Properties" />
+
+              <!-- Plugins -->
               <Directory Id="LauncherPluginsFolder" Name="Plugins">
                 <Directory Id="CalculatorPluginFolder" Name="Calculator">
                   <Directory Id="CalculatorImagesFolder" Name="Images" />
@@ -266,9 +278,10 @@
                   <Directory Id="SystemImagesFolder" Name="Images" />
                 </Directory>
               </Directory>
-              <Directory Id="LauncherPropertiesFolder" Name="Properties" />
             </Directory>
           </Directory>
+
+          <!-- Settings -->
           <Directory Id="SettingsV2InstallFolder" Name="Settings">
             <Directory Id="SettingsV2ViewsInstallFolder" Name="Views"/>
             <Directory Id="SettingsV2StylesInstallFolder" Name="Styles"/>
@@ -355,6 +368,7 @@
       </Component>
     </DirectoryRef>
     
+    <!-- Shortcut guide files -->
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">
       <Component Id="PowerToysSvgs" Guid="7C4D4EED-9338-423D-992C-DCE02F3E2D35" Win64="yes">
         <File Source="$(var.BinX64Dir)svgs\0.svg" />
@@ -372,6 +386,8 @@
         <File Source="$(var.BinX64Dir)svgs\overlay_portrait.svg" />
       </Component>
     </DirectoryRef>
+
+    <!-- FancyZone -->
     <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\fancyzones.dll" KeyPath="yes" />
@@ -477,6 +493,7 @@
       </Component>
     </DirectoryRef>
 
+    <!-- Image Resizer -->
     <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)">
       <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe" />
@@ -506,6 +523,7 @@
           <RegistryValue Value="[ImageResizerInstallFolder]ImageResizerExt.dll" Type="string" />
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
+
         <!-- Registry Key for the drag and drop handler -->
         <RegistryValue Root="HKCR"
                        Key="Directory\ShellEx\DragDropHandlers\ImageResizer"
@@ -567,6 +585,7 @@
       </Component>
     </DirectoryRef>
 
+    <!-- PowerRename -->
     <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
@@ -582,30 +601,35 @@
       </Component>
     </DirectoryRef>
 
+    <!-- Shortcut guide -->
     <DirectoryRef Id="ShortcutGuideInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\">
       <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\$(var.ShortcutGuideProjectName).dll" KeyPath="yes" />
       </Component>
     </DirectoryRef>
 
+    <!-- KBM -->
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\">
       <Component Id="Module_KeyboardManager" Guid="9279BD82-786F-4F0B-8E49-DB484EE34C9B" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManager.dll" />
       </Component>
     </DirectoryRef>
 
+    <!-- KBM Editor -->
     <DirectoryRef Id="KeyboardManagerEditorInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor">
       <Component Id="Module_KeyboardManager_Editor" Guid="1240F1B8-17FE-4D68-B9AF-91882B0B1933" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
       </Component>
     </DirectoryRef>
 
+    <!-- KBM Engine -->
     <DirectoryRef Id="KeyboardManagerEngineInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine">
       <Component Id="Module_KeyboardManager_Engine" Guid="14DBAA38-B98D-431F-9439-8EDE1C0670DB" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" />
       </Component>
     </DirectoryRef>
 
+    <!-- Color Picker -->
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
       <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
         <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPickerUI.exe;ColorPickerUI.dll;ColorPickerUI.deps.json;ColorPickerUI.runtimeconfig.json;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Text.Json.dll;ManagedTelemetry.dll;ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;Microsoft.PowerToys.Common.UI.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
@@ -614,10 +638,32 @@
       </Component>
     </DirectoryRef>
 
+    <!-- Color Picker Resources -->
     <DirectoryRef Id="ColorPickerResourcesFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources">
       <Component Id="Module_ColorPicker_Resources" Guid="7544BD0F-1DB6-4C53-89D3-ADAD472FDCC1">
         <?foreach File in colorPicker.cur;icon.ico?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Espresso -->
+    <DirectoryRef Id="EspressoInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.EspressoProjectName)">
+      <Component Id="Module_Espresso" Guid="F26F5780-5B38-43B2-BC21-8406ED6E2071" Win64="yes">
+          <!-- 
+            EspressoModuleInterface.exp;
+            EspressoModuleInterface.lib;
+            EspressoModuleInterface.pdb;
+            ManagedCommon.pdb;
+            ManagedTelemetry.pdb;
+            Microsoft.PowerToys.Settings.UI.Lib.pdb;
+            PowerToys.Espresso.pdb;
+            PowerToys.Espresso.runtimeconfig.dev.json;
+            PowerToysInterop.pdb;
+            System.Reactive.xml; 
+          -->
+        <?foreach File in EspressoModuleInterface.dll;ManagedCommon.dll;ManagedTelemetry.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.Win32.Registry.dll;Microsoft.Win32.SystemEvents.dll;NLog.config;NLog.dll;PowerToys.Espresso.deps.json;PowerToys.Espresso.dll;PowerToys.Espresso.exe;PowerToys.Espresso.runtimeconfig.json;PowerToysInterop.dll;System.CommandLine.dll;System.Configuration.ConfigurationManager.dll;System.Drawing.Common.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Security.AccessControl.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Permissions.dll;System.Security.Principal.Windows.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Windows.Extensions.dll?>
+        <File Id="EspressoFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
@@ -800,6 +846,7 @@
       <ComponentRef Id="Module_KeyboardManager_Engine" />
       <ComponentRef Id="Module_ColorPicker" />
       <ComponentRef Id="Module_ColorPicker_Resources"/>
+      <ComponentRef Id ="Module_Espresso"/>
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2AssetsModules" />
