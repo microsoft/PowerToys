@@ -113,7 +113,7 @@
                 <Setter Property="Border.Background"
                         Value="{DynamicResource CanvasZoneBackgroundBrush}" />
                 <Setter Property="Border.BorderBrush"
-                        Value="Black" />
+                        Value="{DynamicResource CanvasZoneBorderBrush}" />
                 <Setter Property="Border.BorderThickness"
                         Value="1"/>
                 <Style.Triggers>
