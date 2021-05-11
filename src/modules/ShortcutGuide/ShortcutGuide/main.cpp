@@ -52,13 +52,15 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
             Logger::trace(L"Exiting Shortcut Guide");
             PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
         });
+
+        instance = new OverlayWindow(true);
+    }
+    else
+    {
+        instance = new OverlayWindow(false);
     }
 
-    instance = new OverlayWindow();
-    instance->enable();
-
     run_message_loop();
-    instance->disable();
 
     if (instance)
     {

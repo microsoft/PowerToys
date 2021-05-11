@@ -4,6 +4,7 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
+#include <common/interop/shared_constants.h>
 
 #include "trace.h"
 
@@ -19,6 +20,12 @@ OverlayWindow::OverlayWindow()
     std::filesystem::path oldLogPath(PTSettingsHelper::get_module_save_folder_location(app_key));
     oldLogPath.append("ShortcutGuideLogs");
     LoggerHelpers::delete_old_log_folder(oldLogPath);
+
+    shortcutEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT);
+    if (!shortcutEvent)
+    {
+        Logger::error(L"Failed to create shortcutEvent. {}", get_last_error_or_default(GetLastError()));
+    }
 
     Logger::info("Overlay Window is creating");
 }
@@ -85,11 +92,13 @@ void OverlayWindow::TerminateProcess()
         if (WaitForSingleObject(m_hProcess, 0) != WAIT_OBJECT_0)
         {
             ::TerminateProcess(m_hProcess, 0);
+            CloseHandle(m_hProcess);
             m_hProcess = nullptr;
         }
         else
         {
-            Logger::warn("SG process was already terminated");
+            CloseHandle(m_hProcess);
+            Logger::trace("SG process was already terminated");
         }
     }
     else
@@ -105,10 +114,7 @@ void OverlayWindow::enable()
     if (!_enabled)
     {
         Trace::EnableShortcutGuide(true);
-        if (StartProcess())
-        {
-            _enabled = true;
-        }
+        _enabled = true;
     }
     else
     {
@@ -118,6 +124,7 @@ void OverlayWindow::enable()
 
 void OverlayWindow::disable(bool trace_event)
 {
+    ResetEvent(shortcutEvent);
     Logger::info("Shortcut Guide is disabling");
     if (_enabled)
     {
@@ -147,6 +154,42 @@ bool OverlayWindow::is_enabled()
 
 void OverlayWindow::destroy()
 {
+    ResetEvent(shortcutEvent);
+    CloseHandle(shortcutEvent);
     this->disable(false);
     delete this;
+}
+
+size_t OverlayWindow::get_hotkeys(Hotkey* buffer, size_t buffer_size)
+{
+    if (buffer_size < 1)
+    {
+        return 1;
+    }
+
+    buffer[0].win = true;
+    buffer[0].alt = false;
+    buffer[0].shift = true;
+    buffer[0].ctrl = false;
+    buffer[0].key = VK_OEM_2;
+    return 1;
+}
+
+bool OverlayWindow::on_hotkey(size_t hotkeyId)
+{
+    if (hotkeyId == 0)
+    {
+        Logger::trace("On hotkey");
+        if ((m_hProcess && WaitForSingleObject(m_hProcess, 0) != WAIT_OBJECT_0) || StartProcess())
+        {
+            if (!SetEvent(shortcutEvent))
+            {
+                Logger::error(L"Failed to set shortcutEvent. {}", get_last_error_or_default(GetLastError()));
+            }
+        }
+
+        return true;
+    }
+
+    return false;
 }

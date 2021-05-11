@@ -16,12 +16,10 @@ class TargetState;
 class OverlayWindow
 {
 public:
-    OverlayWindow();
+    OverlayWindow(bool hasParent);
     bool get_config(wchar_t* buffer, int* buffer_size);
 
     void set_config(const wchar_t* config);
-    void enable();
-    void disable();
 
     void on_held();
     void on_held_press(DWORD vkCode);
@@ -33,7 +31,7 @@ public:
     bool is_disabled_app(wchar_t* exePath);
 
     void get_exe_path(HWND window, wchar_t* exePath);
-
+    ~OverlayWindow();
 private:
     std::wstring app_name;
     //contains the non localized key of the powertoy

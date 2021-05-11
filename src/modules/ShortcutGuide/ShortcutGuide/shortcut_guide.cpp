@@ -102,13 +102,81 @@ namespace
     const LPARAM eventActivateWindow = 1;
 }
 
-OverlayWindow::OverlayWindow()
+constexpr int alternative_switch_hotkey_id = 0x2;
+constexpr UINT alternative_switch_modifier_mask = MOD_WIN | MOD_SHIFT;
+constexpr UINT alternative_switch_vk_code = VK_OEM_2;
+
+OverlayWindow::OverlayWindow(bool hasParent)
 {
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
     app_key = ShortcutGuideConstants::ModuleKey;
 
     Logger::info("Overlay Window is creating");
     init_settings();
+
+    auto switcher = [&, hasParent](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
+        if (msg == WM_KEYDOWN && wparam == VK_ESCAPE && instance->target_state->active())
+        {
+            instance->target_state->toggle_force_shown();
+            if (hasParent)
+            {
+                PostQuitMessage(0);
+            }
+
+            return 0;
+        }
+
+        if (msg == WM_APP && lparam == eventActivateWindow)
+        {
+            instance->target_state->toggle_force_shown();
+            if (!instance->target_state->active() && hasParent)
+            {
+                PostQuitMessage(0);
+            }
+
+            return 0;
+        }
+
+        if (msg != WM_HOTKEY)
+        {
+            return 0;
+        }
+
+        const auto vk_code = HIWORD(lparam);
+        const auto modifiers_mask = LOWORD(lparam);
+        if (alternative_switch_vk_code != vk_code || alternative_switch_modifier_mask != modifiers_mask)
+        {
+            return 0;
+        }
+        
+        instance->target_state->toggle_force_shown();
+        return 0;
+    };
+
+    winkey_popup = std::make_unique<D2DOverlayWindow>(std::move(switcher));
+    winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
+    winkey_popup->set_theme(theme.value);
+    target_state = std::make_unique<TargetState>(pressTime.value);
+    try
+    {
+        winkey_popup->initialize();
+    }
+    catch (...)
+    {
+        Logger::critical("Winkey popup failed to initialize");
+        return;
+    }
+
+    if (!hasParent)
+    {
+        RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);
+    }
+
+    auto show_action = [&]() {
+        PostMessageW(winkey_popup->get_window_handle(), WM_APP, 0, eventActivateWindow);
+    };
+
+    event_waiter = std::make_unique<NativeEventWaiter>(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT, show_action);
 }
 
 bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
@@ -191,63 +259,7 @@ void OverlayWindow::set_config(const wchar_t* config)
     }
 }
 
-constexpr int alternative_switch_hotkey_id = 0x2;
-constexpr UINT alternative_switch_modifier_mask = MOD_WIN | MOD_SHIFT;
-constexpr UINT alternative_switch_vk_code = VK_OEM_2;
-
-void OverlayWindow::enable()
-{
-    auto switcher = [&](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
-        if (msg == WM_KEYDOWN && wparam == VK_ESCAPE && instance->target_state->active())
-        {
-            instance->target_state->toggle_force_shown();
-            return 0;
-        }
-
-        if (msg == WM_APP && lparam == eventActivateWindow)
-        {
-            instance->target_state->toggle_force_shown();
-            return 0;
-        }
-
-        if (msg != WM_HOTKEY)
-        {
-            return 0;
-        }
-        const auto vk_code = HIWORD(lparam);
-        const auto modifiers_mask = LOWORD(lparam);
-        if (alternative_switch_vk_code != vk_code || alternative_switch_modifier_mask != modifiers_mask)
-        {
-            return 0;
-        }
-        instance->target_state->toggle_force_shown();
-        return 0;
-    };
-
-    winkey_popup = std::make_unique<D2DOverlayWindow>(std::move(switcher));
-    winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
-    winkey_popup->set_theme(theme.value);
-    target_state = std::make_unique<TargetState>(pressTime.value);
-    try
-    {
-        winkey_popup->initialize();
-    }
-    catch (...)
-    {
-        Logger::critical("Winkey popup failed to initialize");
-        return;
-    }
-
-    RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);
-
-    auto show_action = [&]() {
-        PostMessageW(winkey_popup->get_window_handle(), WM_APP, 0, eventActivateWindow);
-    };
-
-    event_waiter = std::make_unique<NativeEventWaiter>(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT, show_action);
-}
-
-void OverlayWindow::disable()
+OverlayWindow::~OverlayWindow()
 {
     UnregisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id);
     event_waiter.reset();
