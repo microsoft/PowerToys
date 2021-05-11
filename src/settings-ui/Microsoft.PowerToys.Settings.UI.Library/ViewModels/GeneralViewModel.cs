@@ -96,7 +96,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             _updatingState = UpdatingSettingsConfig.State;
             _newAvailableVersion = UpdatingSettingsConfig.NewVersion;
-            _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageUrl.AbsoluteUri;
+            _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageUrl.ToString();
+            _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
         }
 
         private bool _packaged;

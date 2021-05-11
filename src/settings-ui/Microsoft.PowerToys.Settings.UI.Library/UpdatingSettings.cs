@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
@@ -47,6 +48,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     string version = ReleasePageUrl.OriginalString.Substring(ReleasePageUrl.OriginalString.LastIndexOf('/') + 1);
                     return version.Trim();
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                }
+
+                return string.Empty;
+            }
+        }
+
+        public string LastCheckedDateLocalized
+        {
+            get
+            {
+                try
+                {
+                    long seconds = long.Parse(LastCheckedDate, CultureInfo.CurrentCulture);
+                    var date = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
+                    return date.ToLocalTime().ToString(CultureInfo.CurrentCulture);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception)
