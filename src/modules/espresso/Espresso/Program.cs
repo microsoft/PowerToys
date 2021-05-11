@@ -5,7 +5,6 @@
 using Espresso.Shell.Core;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Newtonsoft.Json;
 using NLog;
 using System;
 using System.CommandLine;

@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.PowerToys.Settings.UI.Library;
-using Newtonsoft.Json;
 using System;
 using System.Drawing;
+using System.Text.Json;
 using System.Windows.Forms;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -47,7 +47,8 @@ namespace Espresso.Shell.Core
                     // Set indefinite keep awake.
                     var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(text);
                     currentSettings.Properties.Mode = EspressoMode.INDEFINITE;
-                    ModuleSettings.SaveSettings(JsonConvert.SerializeObject(currentSettings), text);
+
+                    ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), text);
                 },
                 (hours, minutes) => {
                     // Set timed keep awake.
@@ -56,7 +57,7 @@ namespace Espresso.Shell.Core
                     currentSettings.Properties.Hours.Value = hours;
                     currentSettings.Properties.Minutes.Value = minutes;
 
-                    ModuleSettings.SaveSettings(JsonConvert.SerializeObject(currentSettings), text);
+                    ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), text);
                 },
                 () =>
                 {
@@ -64,7 +65,7 @@ namespace Espresso.Shell.Core
                     var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(text);
                     currentSettings.Properties.KeepDisplayOn = settings.Properties.KeepDisplayOn;
 
-                    ModuleSettings.SaveSettings(JsonConvert.SerializeObject(currentSettings), text);
+                    ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), text);
                 });
         }
 
