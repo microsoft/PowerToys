@@ -176,7 +176,7 @@
                             AutomationProperties.LabeledBy="{Binding ElementName=General_ReadMore}"
                             Visibility="{Binding AutoUpdatesEnabled,
                                                  Converter={StaticResource VisibleIfTrueConverter}}">
-                    <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases">
+                    <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink}">
                         <TextBlock x:Name="General_ReadMore" x:Uid="General_ReadMore" />
                     </HyperlinkButton>
                 </StackPanel>
