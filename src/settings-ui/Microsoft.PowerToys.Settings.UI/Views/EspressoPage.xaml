@@ -69,13 +69,21 @@
 
             <TextBlock x:Uid="Espresso_Behavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
-            <ToggleSwitch x:Uid="Espresso_EnableDisplayKeepAwake"
-                          IsEnabled="{Binding IsEnabled}"
-                          IsOn="{Binding KeepDisplayOn, Mode=TwoWay}" />
-            <!--Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"-->
 
-            <StackPanel Margin="{StaticResource MediumTopMargin}">
+            <CheckBox x:Uid="Espresso_EnableDisplayKeepAwake"
+                      IsEnabled="{Binding IsEnabled}"
+                      IsChecked="{Binding KeepDisplayOn, Mode=TwoWay}"
+                      Margin="{StaticResource XSmallTopMargin}" />
+            
+            <TextBlock x:Uid="Espresso_Mode"
+                       Margin="{StaticResource SmallTopMargin}"
+                       x:Name="ModeTitleLabel"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
+                        Margin="0,-4,0,0">
                 <RadioButton x:Uid="Espresso_IndefiniteKeepAwake"
+                             Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{Binding IsEnabled}"
                              IsChecked="{Binding Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}}">
                     <RadioButton.Content>
@@ -88,6 +96,7 @@
                     </RadioButton.Content>
                 </RadioButton>
                 <RadioButton x:Uid="Espresso_TemporaryKeepAwake"
+                             Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{Binding IsEnabled}"
                              IsChecked="{Binding Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToReverseBoolConverter}}">
                     <RadioButton.Content>
@@ -100,13 +109,12 @@
                     </RadioButton.Content>
                 </RadioButton>
 
-                <StackPanel Margin="28,0,0,0" Orientation="Horizontal">
+                <StackPanel Margin="28,8,0,0" Orientation="Horizontal">
                     <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Hours"
                             Value="{Binding Hours, Mode=TwoWay}"
                             Minimum="0"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}"
                             MinWidth="90"
                             IsEnabled="{Binding Mode, Converter={StaticResource EspressoModeToReverseBoolConverter}}"
                             SmallChange="1" 
@@ -115,14 +123,17 @@
                             Value="{Binding Minutes, Mode=TwoWay}"
                             Minimum="0"
                             SpinButtonPlacementMode="Compact"
+                            Margin="8,0,0,0"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallLeftTopRightBottomMargin}"
                             MinWidth="90"
                             IsEnabled="{Binding Mode, Converter={StaticResource EspressoModeToReverseBoolConverter}}"
                             SmallChange="1" 
                             LargeChange="5"/>
                 </StackPanel>
             </StackPanel>
+
+       
+            <!--Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"-->
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 
@@ -167,15 +178,10 @@
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
                 <HyperlinkButton Margin="0,-3,0,0"
-                                x:Uid="Espresso_ModuleAttributionHyperlink">
-                    <TextBlock x:Uid="Espresso_ModuleAttributionLabel" TextWrapping="Wrap" />
+                                 x:Uid="Espresso_ModuleAttributionHyperlink">
+                    <TextBlock x:Uid="Espresso_ModuleAttributionLabel"
+                               TextWrapping="Wrap" />
                 </HyperlinkButton>
-
-                <HyperlinkButton Margin="0,-3,0,0"
-                                x:Uid="Espresso_UXAttributionHyperlink">
-                    <TextBlock x:Uid="Espresso_UXAttributionLabel" TextWrapping="Wrap" />
-                </HyperlinkButton>
-
             </StackPanel>
         </RelativePanel>
     </Grid>
