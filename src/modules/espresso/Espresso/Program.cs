@@ -134,6 +134,10 @@ namespace Espresso.Shell
             log.Info($"The value for --time-limit is: {timeLimit}");
             log.Info($"The value for --pid is: {pid}");
 
+#pragma warning disable CS8604 // Possible null reference argument.
+            TrayHelper.InitializeTray(appName, APIHelper.Extract("shell32.dll", 32, true));
+#pragma warning restore CS8604 // Possible null reference argument.
+
             if (usePtConfig)
             {
                 // Configuration file is used, therefore we disregard any other command-line parameter
@@ -191,10 +195,6 @@ namespace Espresso.Shell
                     Environment.Exit(0);
                 });
             }
-
-#pragma warning disable CS8604 // Possible null reference argument.
-            TrayHelper.InitializeTray(appName, APIHelper.Extract("shell32.dll", 21, true), null);
-#pragma warning restore CS8604 // Possible null reference argument.
 
             new ManualResetEvent(false).WaitOne();
         }

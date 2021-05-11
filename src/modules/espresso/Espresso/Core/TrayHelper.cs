@@ -27,7 +27,7 @@ namespace Espresso.Shell.Core
             ModuleSettings = new SettingsUtils();
         }
 
-        public static void InitializeTray(string text, Icon icon, ContextMenuStrip? contextMenu)
+        public static void InitializeTray(string text, Icon icon, ContextMenuStrip? contextMenu = null)
         {
             System.Threading.Tasks.Task.Factory.StartNew((tray) =>
             {
@@ -42,19 +42,19 @@ namespace Espresso.Shell.Core
 
         internal static void SetTray(string text, EspressoSettings settings)
         {
-            SetTray(text, settings.Properties.KeepDisplayOn.Value, settings.Properties.Mode, settings.Properties.Hours.Value, settings.Properties.Minutes.Value,
+            SetTray(text, settings.Properties.KeepDisplayOn.Value, settings.Properties.Mode,
                 () => {
                     // Set indefinite keep awake.
                     var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(text);
                     currentSettings.Properties.Mode = EspressoMode.INDEFINITE;
                     ModuleSettings.SaveSettings(JsonConvert.SerializeObject(currentSettings), text);
                 },
-                () => {
+                (hours, minutes) => {
                     // Set timed keep awake.
                     var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(text);
                     currentSettings.Properties.Mode = EspressoMode.TIMED;
-                    currentSettings.Properties.Hours.Value = settings.Properties.Hours.Value;
-                    currentSettings.Properties.Minutes.Value = settings.Properties.Minutes.Value;
+                    currentSettings.Properties.Hours.Value = hours;
+                    currentSettings.Properties.Minutes.Value = minutes;
 
                     ModuleSettings.SaveSettings(JsonConvert.SerializeObject(currentSettings), text);
                 },
@@ -68,7 +68,7 @@ namespace Espresso.Shell.Core
                 });
         }
 
-        internal static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, int hours, int minutes, Action indefiniteKeepAwakeCallback, Action timedKeepAwakeCallback, Action keepDisplayOnCallback)
+        internal static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, Action indefiniteKeepAwakeCallback, Action<int, int> timedKeepAwakeCallback, Action keepDisplayOnCallback)
         {
             var contextMenuStrip = new ContextMenuStrip();
 
@@ -111,7 +111,7 @@ namespace Espresso.Shell.Core
             halfHourMenuItem.Click += (e, s) =>
             {
                 // User is setting the keep-awake to 30 minutes.
-                timedKeepAwakeCallback();
+                timedKeepAwakeCallback(0, 30);
             };
 
             var oneHourMenuItem = new ToolStripMenuItem();
@@ -119,7 +119,7 @@ namespace Espresso.Shell.Core
             oneHourMenuItem.Click += (e, s) =>
             {
                 // User is setting the keep-awake to 1 hour.
-                timedKeepAwakeCallback();
+                timedKeepAwakeCallback(1, 0);
             };
 
             var twoHoursMenuItem = new ToolStripMenuItem();
@@ -127,7 +127,7 @@ namespace Espresso.Shell.Core
             twoHoursMenuItem.Click += (e, s) =>
             {
                 // User is setting the keep-awake to 2 hours.
-                timedKeepAwakeCallback();
+                timedKeepAwakeCallback(2, 0);
             };
 
             timedMenuItem.DropDownItems.Add(halfHourMenuItem);
