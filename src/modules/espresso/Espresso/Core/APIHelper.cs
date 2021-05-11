@@ -38,6 +38,7 @@ namespace Espresso.Shell.Core
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 
+        // More details about the API used: https://docs.microsoft.com/windows/win32/api/shellapi/nf-shellapi-extracticonexw
         [DllImport("Shell32.dll", EntryPoint = "ExtractIconExW", CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
         private static extern int ExtractIconEx(string sFile, int iIndex, out IntPtr piLargeVersion, out IntPtr piSmallVersion, int amountIcons);
 
@@ -74,13 +75,23 @@ namespace Espresso.Shell.Core
                 return false;
             }
         }
-
+        
+        /// <summary>
+        /// Attempts to reset the current machine state to one where Espresso doesn't try to keep it awake.
+        /// This does not interfere with the state that can be potentially set by other applications.
+        /// </summary>
+        /// <returns>Status of the attempt. True is successful, false if not.</returns>
         public static bool SetNormalKeepAwake()
         {
             TokenSource.Cancel();
             return SetAwakeState(EXECUTION_STATE.ES_CONTINUOUS);
         }
 
+        /// <summary>
+        /// Sets up the machine to be awake indefinitely.
+        /// </summary>
+        /// <param name="keepDisplayOn">Determines whether the display should be kept on while the machine is awake.</param>
+        /// <returns>Status of the attempt. True if successful, false if not.</returns>
         public static bool SetIndefiniteKeepAwake(bool keepDisplayOn = true)
         {
             if (keepDisplayOn)
