@@ -63,7 +63,7 @@ namespace Espresso.Shell.Core
                 {
                     // Just changing the display mode.
                     var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(text);
-                    currentSettings.Properties.KeepDisplayOn = settings.Properties.KeepDisplayOn;
+                    currentSettings.Properties.KeepDisplayOn.Value = !currentSettings.Properties.KeepDisplayOn.Value;
 
                     ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), text);
                 });
@@ -74,16 +74,24 @@ namespace Espresso.Shell.Core
             var contextMenuStrip = new ContextMenuStrip();
 
             // Main toolstrip.
-            var operationContextMenu = new ToolStripMenuItem();
-            operationContextMenu.Text = "Mode";
+            var operationContextMenu = new ToolStripMenuItem
+            {
+                Text = "Mode"
+            };
 
             // Indefinite keep-awake menu item.
-            var indefiniteMenuItem = new ToolStripMenuItem();
-            indefiniteMenuItem.Text = "Indefinite";
+            var indefiniteMenuItem = new ToolStripMenuItem
+            {
+                Text = "Indefinite"
+            };
 
             if (mode == EspressoMode.INDEFINITE)
             {
                 indefiniteMenuItem.Checked = true;
+            }
+            else
+            {
+                indefiniteMenuItem.Checked = false;
             }
             indefiniteMenuItem.Click += (e, s) =>
             {
@@ -91,11 +99,17 @@ namespace Espresso.Shell.Core
                 indefiniteKeepAwakeCallback();
             };
 
-            var displayOnMenuItem = new ToolStripMenuItem();
-            displayOnMenuItem.Text = "Keep display on";
+            var displayOnMenuItem = new ToolStripMenuItem
+            {
+                Text = "Keep display on"
+            };
             if (keepDisplayOn)
             {
                 displayOnMenuItem.Checked = true;
+            }
+            else
+            {
+                displayOnMenuItem.Checked = false;
             }
             displayOnMenuItem.Click += (e, s) =>
             {
@@ -104,27 +118,35 @@ namespace Espresso.Shell.Core
             };
 
             // Timed keep-awake menu item
-            var timedMenuItem = new ToolStripMenuItem();
-            timedMenuItem.Text = "Timed";
+            var timedMenuItem = new ToolStripMenuItem
+            {
+                Text = "Timed"
+            };
 
-            var halfHourMenuItem = new ToolStripMenuItem();
-            halfHourMenuItem.Text = "30 minutes";
+            var halfHourMenuItem = new ToolStripMenuItem
+            {
+                Text = "30 minutes"
+            };
             halfHourMenuItem.Click += (e, s) =>
             {
                 // User is setting the keep-awake to 30 minutes.
                 timedKeepAwakeCallback(0, 30);
             };
 
-            var oneHourMenuItem = new ToolStripMenuItem();
-            oneHourMenuItem.Text = "1 hour";
+            var oneHourMenuItem = new ToolStripMenuItem
+            {
+                Text = "1 hour"
+            };
             oneHourMenuItem.Click += (e, s) =>
             {
                 // User is setting the keep-awake to 1 hour.
                 timedKeepAwakeCallback(1, 0);
             };
 
-            var twoHoursMenuItem = new ToolStripMenuItem();
-            twoHoursMenuItem.Text = "2 hours";
+            var twoHoursMenuItem = new ToolStripMenuItem
+            {
+                Text = "2 hours"
+            };
             twoHoursMenuItem.Click += (e, s) =>
             {
                 // User is setting the keep-awake to 2 hours.
@@ -142,6 +164,7 @@ namespace Espresso.Shell.Core
 
             contextMenuStrip.Items.Add(operationContextMenu);
 
+            TrayIcon.Text = text;
             TrayIcon.ContextMenuStrip = contextMenuStrip;
         }
     }

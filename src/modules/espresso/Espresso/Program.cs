@@ -230,9 +230,6 @@ namespace Espresso.Shell
 
                 if (settings != null)
                 {
-                    // If the settings were successfully processed, we need to set the right mode of operation.
-                    // INDEFINITE = 0
-                    // TIMED = 1
                     switch (settings.Properties.Mode)
                     {
                         case EspressoMode.INDEFINITE:

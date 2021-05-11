@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Espresso.Shell.Core
 {
-    [FlagsAttribute]
+    [Flags]
     public enum EXECUTION_STATE : uint
     {
         ES_AWAYMODE_REQUIRED = 0x00000040,
@@ -32,7 +32,7 @@ namespace Espresso.Shell.Core
         private static CancellationTokenSource TokenSource = new CancellationTokenSource();
         private static CancellationToken ThreadToken;
 
-        private static Logger log;
+        private static readonly Logger log;
 
         // More details about the API used: https://docs.microsoft.com/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
@@ -191,9 +191,7 @@ namespace Espresso.Shell.Core
 
         public static Icon? Extract(string file, int number, bool largeIcon)
         {
-            IntPtr large;
-            IntPtr small;
-            ExtractIconEx(file, number, out large, out small, 1);
+            ExtractIconEx(file, number, out IntPtr large, out IntPtr small, 1);
             try
             {
                 return Icon.FromHandle(largeIcon ? large : small);
