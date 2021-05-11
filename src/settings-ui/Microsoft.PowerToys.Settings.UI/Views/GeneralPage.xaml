@@ -161,111 +161,69 @@
                 <StackPanel Orientation="Horizontal" 
                         Margin="{StaticResource SmallTopMargin}"
                         AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                    <TextBlock x:Name="General_CurrentVersion_ReadyToDownload" x:Uid="General_CurrentVersion" />
-                    <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
-                        <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
-                    </HyperlinkButton>
-
-                    <TextBlock x:Name="General_NewVersion_ReadyToDownload" x:Uid="General_NewVersion" Margin="8,0,0,0" />
+                    <TextBlock x:Name="General_VersionAvailable_ReadyToDownload" x:Uid="General_VersionAvailable" />
                     <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0">
                         <TextBlock Text="{x:Bind ViewModel.PowerToysNewAvailableVersion }" />
                     </HyperlinkButton>
+                    <TextBlock x:Name="General_IsAvailable_ReadyToDownload" x:Uid="General_IsAvailable" Margin="4,0,0,0" />
+                </StackPanel>
 
-                    <TextBlock Text="{x:Bind ViewModel.LatestAvailableVersion, Mode=OneWay}"
-                           Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                           Margin="16,0,0,0" />
-                </StackPanel>
-                
-                <StackPanel Orientation="Horizontal"
-                            Margin="{StaticResource SmallBottomMargin}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=General_ReadMore}"
-                            Visibility="{Binding AutoUpdatesEnabled,
-                                                 Converter={StaticResource VisibleIfTrueConverter}}">
-                    <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink}">
-                        <TextBlock x:Name="General_ReadMore_ReadyToDownload" x:Uid="General_ReadMore" />
-                    </HyperlinkButton>
-                </StackPanel>
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink}" Margin="0,-6,0,0">
+                    <TextBlock x:Name="General_ReadMore_ReadyToDownload" x:Uid="General_ReadMore" />
+                </HyperlinkButton>
 
                 <Button x:Uid="General_DownloadAndInstall"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Foreground="White"
-                    Command="{Binding CheckForUpdatesEventHandler}"
-                    IsEnabled="{Binding AutoUpdatesEnabled}"/>
+                        Margin="{StaticResource SmallTopMargin}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Foreground="White"
+                        Command="{Binding DownloadAndInstallEventHandler}"
+                        IsEnabled="{Binding AutoUpdatesEnabled}"/>
             </StackPanel>
 
             <StackPanel Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToInstallToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal" 
-                        Margin="{StaticResource SmallTopMargin}"
-                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                    <TextBlock x:Name="General_CurrentVersion_ReadyToInstall" x:Uid="General_CurrentVersion" />
-                    <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
-                        <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
-                    </HyperlinkButton>
-
-                    <TextBlock x:Name="General_NewVersion_ReadyToInstall" x:Uid="General_NewVersion" Margin="8,0,0,0" />
+                            Margin="{StaticResource SmallTopMargin}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
+                    <TextBlock x:Name="General_CurrentVersion_ReadyToInstall" x:Uid="General_VersionAvailable" />
                     <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0">
                         <TextBlock Text="{x:Bind ViewModel.PowerToysNewAvailableVersion }" />
                     </HyperlinkButton>
 
-                    <TextBlock Text="{x:Bind ViewModel.LatestAvailableVersion, Mode=OneWay}"
-                           Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                           Margin="16,0,0,0" />
+                    <TextBlock x:Name="General_NewVersion_ReadyToInstall" x:Uid="General_IsReadyToInstall" Margin="4,0,0,0" />
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal"
-                            Margin="{StaticResource SmallBottomMargin}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=General_ReadMore}"
-                            Visibility="{Binding AutoUpdatesEnabled,
-                                                 Converter={StaticResource VisibleIfTrueConverter}}">
-                    <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink}">
-                        <TextBlock x:Name="General_ReadMore_ReadyToInstall" x:Uid="General_ReadMore" />
-                    </HyperlinkButton>
-                </StackPanel>
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink}" Margin="0,-6,0,0">
+                    <TextBlock x:Name="General_ReadMore_ReadyToInstall" x:Uid="General_ReadMore" />
+                </HyperlinkButton>
 
                 <Button x:Uid="General_InstallNow"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Foreground="White"
-                    Command="{Binding CheckForUpdatesEventHandler}"
-                    IsEnabled="{Binding AutoUpdatesEnabled}"/>
+                        Margin="{StaticResource SmallTopMargin}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Foreground="White"
+                        Command="{Binding InstallEventHandler}"
+                        IsEnabled="{Binding AutoUpdatesEnabled}"/>
             </StackPanel>
 
             <StackPanel Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateCannotDownloadToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal" 
                         Margin="{StaticResource SmallTopMargin}"
                         AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                    <TextBlock x:Name="General_CurrentVersion_CannotDownload" x:Uid="General_CurrentVersion" />
-                    <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
-                        <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
-                    </HyperlinkButton>
-
-                    <TextBlock x:Name="General_NewVersion" x:Uid="General_NewVersion" Margin="8,0,0,0" />
+                    <TextBlock x:Name="General_FailedToDownloadTheNewVersion" x:Uid="General_FailedToDownloadTheNewVersion" />
                     <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0">
                         <TextBlock Text="{x:Bind ViewModel.PowerToysNewAvailableVersion }" />
                     </HyperlinkButton>
-
-                    <TextBlock Text="{x:Bind ViewModel.LatestAvailableVersion, Mode=OneWay}"
-                           Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                           Margin="16,0,0,0" />
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal"
-                            Margin="{StaticResource SmallBottomMargin}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=General_ReadMore}"
-                            Visibility="{Binding AutoUpdatesEnabled,
-                                                 Converter={StaticResource VisibleIfTrueConverter}}">
-                    <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink}">
-                        <TextBlock x:Name="General_ReadMore" x:Uid="General_ReadMore" />
-                    </HyperlinkButton>
-                </StackPanel>
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink}" Margin="0,-6,0,0">
+                    <TextBlock x:Name="General_ReadMore_CannotDownload" x:Uid="General_ReadMore" />
+                </HyperlinkButton>
 
-                <TextBlock x:Name="General_FailedToDownloadTheNewVersion" x:Uid="General_FailedToDownloadTheNewVersion"
-                       Margin="{StaticResource SmallBottomMargin}"/>
-
-                <Button x:Uid="General_TryAgain"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Foreground="White"
-                    Command="{Binding CheckForUpdatesEventHandler}"
-                    IsEnabled="{Binding AutoUpdatesEnabled}"/>
+                <Button x:Uid="General_DownloadAndInstall"
+                        Margin="{StaticResource SmallTopMargin}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Foreground="White"
+                        Command="{Binding DownloadAndInstallEventHandler}"
+                        IsEnabled="{Binding AutoUpdatesEnabled}"/>
             </StackPanel>
 
             <Button x:Uid="GeneralPage_UpdateNow"

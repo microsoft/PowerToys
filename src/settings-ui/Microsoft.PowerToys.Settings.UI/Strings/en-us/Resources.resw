@@ -1208,7 +1208,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Download and install</value>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Text" xml:space="preserve">
-    <value>Failed to download the new version</value>
+    <value>An error occurred trying to download version</value>
   </data>
   <data name="General_InstallNow.Content" xml:space="preserve">
     <value>Install now</value>
@@ -1218,5 +1218,14 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="General_TryAgain.Content" xml:space="preserve">
     <value>Try again</value>
+  </data>
+  <data name="General_IsAvailable.Text" xml:space="preserve">
+    <value>is available.</value>
+  </data>
+  <data name="General_VersionAvailable.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="General_IsReadyToInstall.Text" xml:space="preserve">
+    <value>is ready to install.</value>
   </data>
 </root>
