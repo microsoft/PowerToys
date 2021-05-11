@@ -274,7 +274,7 @@ namespace Espresso.Shell
 
         private static void SetupTimedKeepAwake(long time, bool displayOn)
         {
-            log.Info($"Timed keep-awake. Expected runtime: {time} seconds.");
+            log.Info($"Timed keep-awake. Expected runtime: {time} seconds with display on setting set to {displayOn}.");
 
             APIHelper.SetTimedKeepAwake(time, LogTimedKeepAwakeCompletion, LogUnexpectedOrCancelledKeepAwakeCompletion, displayOn);
         }

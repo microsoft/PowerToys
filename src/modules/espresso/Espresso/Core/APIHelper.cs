@@ -29,7 +29,7 @@ namespace Espresso.Shell.Core
     {
         private const string BUILD_REGISTRY_LOCATION = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
 
-        private static CancellationTokenSource TokenSource = new CancellationTokenSource();
+        private static CancellationTokenSource TokenSource;
         private static CancellationToken ThreadToken;
 
         private static readonly Logger log;
@@ -45,6 +45,7 @@ namespace Espresso.Shell.Core
         static APIHelper()
         {
             log = LogManager.GetCurrentClassLogger();
+            TokenSource = new CancellationTokenSource();
         }
 
         /// <summary>
@@ -106,6 +107,7 @@ namespace Espresso.Shell.Core
 
         public static void SetTimedKeepAwake(long seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
         {
+            TokenSource = new CancellationTokenSource();
             ThreadToken = TokenSource.Token;
 
             Task.Run(() => RunTimedLoop(seconds, keepDisplayOn), ThreadToken)
@@ -119,7 +121,7 @@ namespace Espresso.Shell.Core
             bool success = false;
 
             // In case cancellation was already requested.
-            //ThreadToken.ThrowIfCancellationRequested();
+            ThreadToken.ThrowIfCancellationRequested();
             try
             {
                 if (keepDisplayOn)
@@ -140,6 +142,7 @@ namespace Espresso.Shell.Core
                     }
                     else
                     {
+                        log.Info("Could not set up timed keep-awake with display on.");
                         return success;
                     }
                 }
@@ -161,6 +164,7 @@ namespace Espresso.Shell.Core
                     }
                     else
                     {
+                        log.Info("Could not set up timed keep-awake with display off.");
                         return success;
                     }
                 }
@@ -168,7 +172,7 @@ namespace Espresso.Shell.Core
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                log.Debug($"Background thread termination. Message: {ex.Message}");
+                log.Info($"Background thread termination. Message: {ex.Message}");
                 return success;
             }
         }
