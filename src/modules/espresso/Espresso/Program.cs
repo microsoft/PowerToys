@@ -2,10 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Espresso.Shell.Core;
-using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
-using NLog;
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -16,40 +12,44 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
+using Espresso.Shell.Core;
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
+using NLog;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
 
 namespace Espresso.Shell
 {
-    class Program
+    internal class Program
     {
-        private static Mutex? mutex = null;
-        private const string appName = "Espresso";
-        private static FileSystemWatcher? watcher = null;
-        private static SettingsUtils? settingsUtils = null;
+        private static Mutex? _mutex = null;
+        private const string AppName = "Espresso";
+        private static FileSystemWatcher? _watcher = null;
+        private static SettingsUtils? _settingsUtils = null;
 
-        public static Mutex Mutex { get => mutex; set => mutex = value; }
+        public static Mutex LockMutex { get => _mutex; set => _mutex = value; }
 
-        private static Logger? log;
+        private static Logger? _log;
 
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
             bool instantiated;
-            Mutex = new Mutex(true, appName, out instantiated);
+            LockMutex = new Mutex(true, AppName, out instantiated);
 
             if (!instantiated)
             {
-                ForceExit(appName + " is already running! Exiting the application.", 1);
+                ForceExit(AppName + " is already running! Exiting the application.", 1);
             }
 
-            log = LogManager.GetCurrentClassLogger();
-            settingsUtils = new SettingsUtils();
+            _log = LogManager.GetCurrentClassLogger();
+            _settingsUtils = new SettingsUtils();
 
-            log.Info("Launching Espresso...");
-            log.Info(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
-            log.Debug($"OS: {Environment.OSVersion}");
-            log.Debug($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
+            _log.Info("Launching Espresso...");
+            _log.Info(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
+            _log.Debug($"OS: {Environment.OSVersion}");
+            _log.Debug($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
 
             var configOption = new Option<bool>(
                     aliases: new[] { "--use-pt-config", "-c" },
@@ -108,10 +108,10 @@ namespace Espresso.Shell
                 configOption,
                 displayOption,
                 timeOption,
-                pidOption
+                pidOption,
             };
 
-            rootCommand.Description = appName;
+            rootCommand.Description = AppName;
 
             rootCommand.Handler = CommandHandler.Create<bool, bool, long, int>(HandleCommandLineArguments);
 
@@ -120,21 +120,21 @@ namespace Espresso.Shell
 
         private static void ForceExit(string message, int exitCode)
         {
-            log.Debug(message);
-            log.Info(message);
+            _log.Debug(message);
+            _log.Info(message);
             Console.ReadKey();
             Environment.Exit(exitCode);
         }
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, long timeLimit, int pid)
         {
-            log.Info($"The value for --use-pt-config is: {usePtConfig}");
-            log.Info($"The value for --display-on is: {displayOn}");
-            log.Info($"The value for --time-limit is: {timeLimit}");
-            log.Info($"The value for --pid is: {pid}");
+            _log.Info($"The value for --use-pt-config is: {usePtConfig}");
+            _log.Info($"The value for --display-on is: {displayOn}");
+            _log.Info($"The value for --time-limit is: {timeLimit}");
+            _log.Info($"The value for --pid is: {pid}");
 
 #pragma warning disable CS8604 // Possible null reference argument.
-            TrayHelper.InitializeTray(appName, APIHelper.Extract("shell32.dll", 32, true));
+            TrayHelper.InitializeTray(AppName, APIHelper.Extract("shell32.dll", 32, true));
 #pragma warning restore CS8604 // Possible null reference argument.
 
             if (usePtConfig)
@@ -143,21 +143,20 @@ namespace Espresso.Shell
                 // and instead watch for changes in the file.
                 try
                 {
-                    var settingsPath = settingsUtils.GetSettingsFilePath(appName);
-                    log.Info($"Reading configuration file: {settingsPath}");
+                    var settingsPath = _settingsUtils.GetSettingsFilePath(AppName);
+                    _log.Info($"Reading configuration file: {settingsPath}");
 
-                    watcher = new FileSystemWatcher
+                    _watcher = new FileSystemWatcher
                     {
                         Path = Path.GetDirectoryName(settingsPath),
                         EnableRaisingEvents = true,
                         NotifyFilter = NotifyFilters.LastWrite,
-                        Filter = Path.GetFileName(settingsPath)
+                        Filter = Path.GetFileName(settingsPath),
                     };
 
                     Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
-                            h => watcher.Changed += h,
-                            h => watcher.Changed -= h
-                        )
+                            h => _watcher.Changed += h,
+                            h => _watcher.Changed -= h)
                         .SubscribeOn(TaskPoolScheduler.Default)
                         .Select(e => e.EventArgs)
                         .Throttle(TimeSpan.FromMilliseconds(25))
@@ -170,8 +169,8 @@ namespace Espresso.Shell
                 catch (Exception ex)
                 {
                     var errorString = $"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}";
-                    log.Info(errorString);
-                    log.Debug(errorString);
+                    _log.Info(errorString);
+                    _log.Debug(errorString);
                 }
             }
             else
@@ -204,20 +203,20 @@ namespace Espresso.Shell
             bool success = APIHelper.SetIndefiniteKeepAwake(displayOn);
             if (success)
             {
-                log.Info($"Currently in indefinite keep awake. Display always on: {displayOn}");
+                _log.Info($"Currently in indefinite keep awake. Display always on: {displayOn}");
             }
             else
             {
                 var errorMessage = "Could not set up the state to be indefinite keep awake.";
-                log.Info(errorMessage);
-                log.Debug(errorMessage);
+                _log.Info(errorMessage);
+                _log.Debug(errorMessage);
             }
         }
 
         private static void HandleEspressoConfigChange(FileSystemEventArgs fileEvent)
         {
-            log.Info("Detected a settings file change. Updating configuration...");
-            log.Info("Resetting keep-awake to normal state due to settings change.");
+            _log.Info("Detected a settings file change. Updating configuration...");
+            _log.Info("Resetting keep-awake to normal state due to settings change.");
             ResetNormalPowerState();
             ProcessSettings();
         }
@@ -226,7 +225,7 @@ namespace Espresso.Shell
         {
             try
             {
-                EspressoSettings settings = settingsUtils.GetSettings<EspressoSettings>(appName);
+                EspressoSettings settings = _settingsUtils.GetSettings<EspressoSettings>(AppName);
 
                 if (settings != null)
                 {
@@ -238,6 +237,7 @@ namespace Espresso.Shell
                                 SetupIndefiniteKeepAwake(settings.Properties.KeepDisplayOn.Value);
                                 break;
                             }
+
                         case EspressoMode.TIMED:
                             {
                                 // Timed keep-awake.
@@ -246,35 +246,36 @@ namespace Espresso.Shell
 
                                 break;
                             }
+
                         default:
                             {
                                 var errorMessage = "Unknown mode of operation. Check config file.";
-                                log.Info(errorMessage);
-                                log.Debug(errorMessage);
+                                _log.Info(errorMessage);
+                                _log.Debug(errorMessage);
                                 break;
                             }
                     }
 
-                    TrayHelper.SetTray(appName, settings);
+                    TrayHelper.SetTray(AppName, settings);
                 }
                 else
                 {
                     var errorMessage = "Settings are null.";
-                    log.Info(errorMessage);
-                    log.Debug(errorMessage);
+                    _log.Info(errorMessage);
+                    _log.Debug(errorMessage);
                 }
             }
             catch (Exception ex)
             {
                 var errorMessage = $"There was a problem reading the configuration file. Error: {ex.Message}";
-                log.Info(errorMessage);
-                log.Debug(errorMessage);
+                _log.Info(errorMessage);
+                _log.Debug(errorMessage);
             }
         }
 
         private static void SetupTimedKeepAwake(long time, bool displayOn)
         {
-            log.Info($"Timed keep-awake. Expected runtime: {time} seconds with display on setting set to {displayOn}.");
+            _log.Info($"Timed keep-awake. Expected runtime: {time} seconds with display on setting set to {displayOn}.");
 
             APIHelper.SetTimedKeepAwake(time, LogTimedKeepAwakeCompletion, LogUnexpectedOrCancelledKeepAwakeCompletion, displayOn);
         }
@@ -282,13 +283,13 @@ namespace Espresso.Shell
         private static void LogUnexpectedOrCancelledKeepAwakeCompletion()
         {
             var errorMessage = "The keep-awake thread was terminated early.";
-            log.Info(errorMessage);
-            log.Debug(errorMessage);
+            _log.Info(errorMessage);
+            _log.Debug(errorMessage);
         }
 
         private static void LogTimedKeepAwakeCompletion(bool result)
         {
-            log.Info($"Completed timed keep-awake successfully: {result}");
+            _log.Info($"Completed timed keep-awake successfully: {result}");
         }
 
         private static void ResetNormalPowerState()
@@ -296,13 +297,13 @@ namespace Espresso.Shell
             bool success = APIHelper.SetNormalKeepAwake();
             if (success)
             {
-                log.Info("Returned to normal keep-awake state.");
+                _log.Info("Returned to normal keep-awake state.");
             }
             else
             {
                 var errorMessage = "Could not return to normal keep-awake state.";
-                log.Info(errorMessage);
-                log.Debug(errorMessage);
+                _log.Info(errorMessage);
+                _log.Debug(errorMessage);
             }
         }
     }

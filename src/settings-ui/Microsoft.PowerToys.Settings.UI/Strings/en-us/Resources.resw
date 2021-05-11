@@ -909,6 +909,10 @@
     <value>https://aka.ms/PowerToysOverview_ColorPicker</value>
     <comment>URL. Do not loc</comment>
   </data>
+  <data name="Espresso_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_Espresso</value>
+    <comment>URL. Do not loc</comment>
+  </data>
   <data name="FancyZones_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
     <value>https://aka.ms/PowerToysOverview_FancyZones</value>
     <comment>URL. Do not loc</comment>
@@ -1207,5 +1211,18 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Espresso_ModuleAttributionHyperlink.NavigateUri" xml:space="preserve">
     <value>https://espresso.den.dev</value>
     <comment>URL. Do not loc</comment>
+  </data>
+  <data name="Oobe_Espresso" xml:space="preserve">
+    <value>Espresso</value>
+    <comment>Module name, do not loc</comment>
+  </data>
+  <data name="Oobe_Espresso_Description" xml:space="preserve">
+    <value>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</value>
+  </data>
+  <data name="Oobe_Espresso_HowToUse.Text" xml:space="preserve">
+    <value>Open PowerToys Settings and {turn on Espresso}</value>
+  </data>
+  <data name="Oobe_Espresso_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can always change modes quickly by clicking the {Espresso icon in the system tray}</value>
   </data>
 </root>
