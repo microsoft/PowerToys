@@ -29,11 +29,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             QuantityType.Information,
             QuantityType.Length,
             QuantityType.Mass,
+            QuantityType.Power,
             QuantityType.Pressure,
             QuantityType.Speed,
             QuantityType.Temperature,
             QuantityType.Volume,
-            QuantityType.Power,
         };
 
         private readonly CultureInfo _currentCulture = CultureInfo.CurrentCulture;

@@ -22,13 +22,15 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// <param name="quantityType"></param>
         /// <param name="currentCulture"></param>
         /// <returns>The converted value as a double.</returns>
-        public static double ConvertInput(string[] split, QuantityType quantityType, CultureInfo currentCulture) {
+        public static double ConvertInput(string[] split, QuantityType quantityType, CultureInfo currentCulture)
+        {
             string input_first_unit = split[1];
             string input_second_unit = split[3];
 
             (Abbreviated abbreviated, QuantityInfo unitInfo) = ParseInputForAbbreviation(split, quantityType);
 
-            switch (abbreviated) {
+            switch (abbreviated)
+            {
                 case Abbreviated.Both:
                     return UnitsNet.UnitConverter.ConvertByAbbreviation(double.Parse(split[0], currentCulture), unitInfo.Name, input_first_unit, input_second_unit);
 
@@ -49,7 +51,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 default:
                     return double.NaN;
             }
-
         }
 
         /// <summary>
@@ -58,7 +59,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// <param name="split"></param>
         /// <param name="quantityType"></param>
         /// <returns>A tuple consisting of an Abbreviated enum and QuantityInfo.</returns>
-        public static (Abbreviated Abbreviated, QuantityInfo UnitInfo) ParseInputForAbbreviation(string[] split, QuantityType quantityType) {
+        public static (Abbreviated Abbreviated, QuantityInfo UnitInfo) ParseInputForAbbreviation(string[] split, QuantityType quantityType)
+        {
             string input_first_unit = split[1];
             string input_second_unit = split[3];
 
@@ -71,32 +73,40 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             // b) 10 feet in centimeter (double unabbreviated)
             // c) 10 feet in cm (single abbreviation)
 
-            if (first_unit_is_abbreviated && second_unit_is_abbreviated) {
+            if (first_unit_is_abbreviated && second_unit_is_abbreviated)
+            {
                 // a
                 return (Abbreviated.Both, unit_info);
             }
-            else if ((!first_unit_is_abbreviated) && (!second_unit_is_abbreviated)) {
+            else if ((!first_unit_is_abbreviated) && (!second_unit_is_abbreviated))
+            {
                 // b
                 bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_first_unit.ToLower());
                 bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit.ToLower());
 
-                if (first_unabbreviated && second_unabbreviated) {
+                if (first_unabbreviated && second_unabbreviated)
+                {
                     return (Abbreviated.Neither, unit_info);
                 }
             }
-            else if ((first_unit_is_abbreviated && !second_unit_is_abbreviated) || (!first_unit_is_abbreviated && second_unit_is_abbreviated)) {
+            else if ((first_unit_is_abbreviated && !second_unit_is_abbreviated) || (!first_unit_is_abbreviated && second_unit_is_abbreviated))
+            {
                 // c
-                if (first_unit_is_abbreviated) {
+                if (first_unit_is_abbreviated)
+                {
                     bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit.ToLower());
 
-                    if (second_unabbreviated) {
+                    if (second_unabbreviated)
+                    {
                         return (Abbreviated.First, unit_info);
                     }
                 }
-                else if (second_unit_is_abbreviated) {
+                else if (second_unit_is_abbreviated)
+                {
                     bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_first_unit.ToLower());
 
-                    if (first_unabbreviated) {
+                    if (first_unabbreviated)
+                    {
                         return (Abbreviated.Second, unit_info);
                     }
                 }
