@@ -202,6 +202,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\FluentIcons\FluentIconsColorPicker.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsEspresso.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFancyZones.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFileExplorerPreview.png" />
     <Content Include="Assets\FluentIcons\FluentIconsImageResizer.png" />

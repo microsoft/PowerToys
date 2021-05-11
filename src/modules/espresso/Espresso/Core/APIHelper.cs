@@ -95,14 +95,10 @@ namespace Espresso.Shell.Core
         /// <returns>Status of the attempt. True if successful, false if not.</returns>
         public static bool SetIndefiniteKeepAwake(bool keepDisplayOn = true)
         {
-            if (keepDisplayOn)
-            {
-                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-            }
-            else
-            {
-                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-            }    
+            TokenSource = new CancellationTokenSource();
+            ThreadToken = TokenSource.Token;
+
+            //Put thread for indefinite loop.    
         }
 
         public static void SetTimedKeepAwake(long seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
@@ -116,12 +112,30 @@ namespace Espresso.Shell.Core
 
         }
 
+        private static void RunIndefiniteLoop(bool keepDisplayOn = true)
+        {
+            bool success = false;
+
+            // In case cancellation was already requested.
+            ThreadToken.ThrowIfCancellationRequested();
+
+            if (keepDisplayOn)
+            {
+                SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+            }
+            else
+            {
+                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+            }
+        }
+
         private static bool RunTimedLoop(long seconds, bool keepDisplayOn = true)
         {
             bool success = false;
 
             // In case cancellation was already requested.
             ThreadToken.ThrowIfCancellationRequested();
+
             try
             {
                 if (keepDisplayOn)

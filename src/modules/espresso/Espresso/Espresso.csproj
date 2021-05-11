@@ -12,6 +12,12 @@
     <!--Per documentation: https://docs.microsoft.com/dotnet/core/compatibility/windows-forms/5.0/automatically-infer-winexe-output-type#outputtype-set-to-winexe-for-wpf-and-winforms-apps -->
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AssemblyName>PowerToys.Espresso</AssemblyName>
+    <ApplicationIcon>Espresso.ico</ApplicationIcon>
+    <Company>Den Delimarsky</Company>
+    <Authors>Den Delimarsky</Authors>
+    <Product>Espresso</Product>
+    <PackageProjectUrl>https://espresso.den.dev</PackageProjectUrl>
+    <PackageIcon>Espresso.png</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
