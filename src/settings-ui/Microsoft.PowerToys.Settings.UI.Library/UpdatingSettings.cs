@@ -39,6 +39,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // Non-localizable strings: Files
         private const string SettingsFile = "\\Microsoft\\PowerToys\\UpdateState.json";
 
+        public string NewVersion
+        {
+            get
+            {
+                try
+                {
+                    string version = ReleasePageUrl.OriginalString.Substring(ReleasePageUrl.OriginalString.LastIndexOf('/') + 1);
+                    return version.Trim();
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                }
+
+                return string.Empty;
+            }
+        }
+
         public UpdatingSettings()
         {
             State = UpdatingState.UpToDate;

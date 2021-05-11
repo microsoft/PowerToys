@@ -95,6 +95,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _isAdmin = isAdmin;
 
             _updatingState = UpdatingSettingsConfig.State;
+            _newAvailableVersion = UpdatingSettingsConfig.NewVersion;
+            _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageUrl.AbsoluteUri;
         }
 
         private bool _packaged;
@@ -108,6 +110,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _autoDownloadUpdates;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
+        private string _newAvailableVersion = string.Empty;
+        private string _newAvailableVersionLink = string.Empty;
         private string _latestAvailableVersion = string.Empty;
         private string _updateCheckedDate = string.Empty;
 
@@ -394,6 +398,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get
             {
                 return _updatingState;
+            }
+        }
+
+        public string PowerToysNewAvailableVersion
+        {
+            get
+            {
+                return _newAvailableVersion;
+            }
+        }
+
+        public string PowerToysNewAvailableVersionLink
+        {
+            get
+            {
+                return _newAvailableVersionLink;
             }
         }
 

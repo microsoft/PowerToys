@@ -148,8 +148,8 @@
                 </HyperlinkButton>
 
                 <TextBlock x:Name="General_NewVersion" x:Uid="General_NewVersion" Margin="8,0,0,0" />
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
-                    <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0">
+                    <TextBlock Text="{x:Bind ViewModel.PowerToysNewAvailableVersion }" />
                 </HyperlinkButton>
 
                 <TextBlock Text="{x:Bind ViewModel.LatestAvailableVersion, Mode=OneWay}"
@@ -207,7 +207,7 @@
                     />
 
             <TextBlock x:Name="General_FailedToDownloadTheNewVersion" x:Uid="General_FailedToDownloadTheNewVersion"
-                       Margin="{StaticResource Small}"
+                       Margin="{StaticResource SmallBottomMargin}"
                        Visibility="{x:Bind ViewModel.PowerToysUpdatingState, Converter={StaticResource UpdatingStateCannotDownloadToVisibilityConverter}}"/>
             
             <Button x:Uid="General_TryAgain"
