@@ -40,7 +40,7 @@ private:
     std::unique_ptr<D2DOverlayWindow> winkey_popup;
     std::unique_ptr<NativeEventWaiter> event_waiter;
     std::vector<std::wstring> disabled_apps_array;
-
+    std::atomic_bool terminationInvoked = false;
     void init_settings();
     void update_disabled_apps();
 

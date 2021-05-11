@@ -115,11 +115,17 @@ OverlayWindow::OverlayWindow(bool hasParent)
     init_settings();
 
     auto switcher = [&, hasParent](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
+        if (terminationInvoked)
+        {
+            return 0;
+        }
+
         if (msg == WM_KEYDOWN && wparam == VK_ESCAPE && instance->target_state->active())
         {
             instance->target_state->toggle_force_shown();
             if (hasParent)
             {
+                terminationInvoked = true;
                 PostQuitMessage(0);
             }
 
@@ -131,6 +137,7 @@ OverlayWindow::OverlayWindow(bool hasParent)
             instance->target_state->toggle_force_shown();
             if (!instance->target_state->active() && hasParent)
             {
+                terminationInvoked = true;
                 PostQuitMessage(0);
             }
 
