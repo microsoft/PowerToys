@@ -909,6 +909,10 @@
     <value>https://aka.ms/PowerToysOverview_ColorPicker</value>
     <comment>URL. Do not loc</comment>
   </data>
+  <data name="Espresso_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_Espresso</value>
+    <comment>URL. Do not loc</comment>
+  </data>
   <data name="FancyZones_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
     <value>https://aka.ms/PowerToysOverview_FancyZones</value>
     <comment>URL. Do not loc</comment>
