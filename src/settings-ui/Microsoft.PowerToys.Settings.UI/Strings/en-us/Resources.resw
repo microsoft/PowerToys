@@ -121,10 +121,6 @@
     <value>General</value>
     <comment>Navigation view item name for General</comment>
   </data>
-  <data name="Shell_Espresso.Content" xml:space="preserve">
-    <value>Espresso</value>
-    <comment>Product name: Navigation view item name for Espresso</comment>
-  </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
     <comment>Product name: Navigation view item name for PowerToys Run</comment>
@@ -909,10 +905,6 @@
     <value>https://aka.ms/PowerToysOverview_ColorPicker</value>
     <comment>URL. Do not loc</comment>
   </data>
-  <data name="Espresso_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
-    <value>https://aka.ms/PowerToysOverview_Espresso</value>
-    <comment>URL. Do not loc</comment>
-  </data>
   <data name="FancyZones_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
     <value>https://aka.ms/PowerToysOverview_FancyZones</value>
     <comment>URL. Do not loc</comment>
@@ -1169,60 +1161,38 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
   </data>
-  <data name="About_Espresso.Text" xml:space="preserve">
-    <value>About Espresso</value>
+  <data name="Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
+    <value>Position &amp; appearance</value>
   </data>
-  <data name="Espresso_Description.Text" xml:space="preserve">
-    <value>A convenient way to keep your computer awake on-demand.</value>
+  <data name="Run_PositionHeader.Text" xml:space="preserve">
+    <value>Show PowerToys Run on</value>
+    <comment>as in Show PowerToys Run on primary monitor</comment>
   </data>
-  <data name="Espresso_EnableEspresso.Header" xml:space="preserve">
-    <value>Enable Espresso</value>
+  <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
+    <value>Monitor with mouse cursor</value>
   </data>
-  <data name="Espresso_IndefiniteKeepAwakeContent.Text" xml:space="preserve">
-    <value>Keep awake indefinitely</value>
+  <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
+    <value>Monitor with focused window</value>
   </data>
-  <data name="Espresso_TemporaryKeepAwakeContent.Text" xml:space="preserve">
-    <value>Keep awake temporarily</value>
+  <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
+    <value>Primary monitor</value>
   </data>
-  <data name="Espresso_IndefiniteKeepAwakeDescription.Text" xml:space="preserve">
-    <value>Keeps the computer awake until the setting is disabled.</value>
+  <data name="Run_PluginsLoading.Text" xml:space="preserve">
+    <value>Plugins are loading...</value>
   </data>
-  <data name="Espresso_TemporaryKeepAwakeDescription.Text" xml:space="preserve">
-    <value>Keeps the computer awake until the set time elapses.</value>
+  <data name="ColorPicker_ButtonDown.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color down</value>
   </data>
-  <data name="Espresso_EnableDisplayKeepAwake.Content" xml:space="preserve">
-    <value>Keep screen on</value>
+  <data name="ColorPicker_ButtonUp.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color up</value>
   </data>
-  <data name="Espresso_Mode.Text" xml:space="preserve">
-    <value>Mode</value>
+  <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
+    <value>Flash zones when switching layout</value>
   </data>
-  <data name="Espresso_Behavior_GroupSettings.Text" xml:space="preserve">
-    <value>Behavior</value>
+  <data name="FancyZones_QuickLayoutSwitch.Content" xml:space="preserve">
+    <value>Enable quick layout switch</value>
   </data>
-  <data name="Espresso_TemporaryKeepAwake_Hours.Header" xml:space="preserve">
-    <value>Hours</value>
-  </data>
-  <data name="Espresso_TemporaryKeepAwake_Minutes.Header" xml:space="preserve">
-    <value>Minutes</value>
-  </data>
-  <data name="Espresso_ModuleAttributionLabel.Text" xml:space="preserve">
-    <value>Den Delimarsky's Espresso</value>
-  </data>
-  <data name="Espresso_ModuleAttributionHyperlink.NavigateUri" xml:space="preserve">
-    <value>https://espresso.den.dev</value>
-    <comment>URL. Do not loc</comment>
-  </data>
-  <data name="Oobe_Espresso" xml:space="preserve">
-    <value>Espresso</value>
-    <comment>Module name, do not loc</comment>
-  </data>
-  <data name="Oobe_Espresso_Description" xml:space="preserve">
-    <value>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</value>
-  </data>
-  <data name="Oobe_Espresso_HowToUse.Text" xml:space="preserve">
-    <value>Open PowerToys Settings and {turn on Espresso}</value>
-  </data>
-  <data name="Oobe_Espresso_TipsAndTricks.Text" xml:space="preserve">
-    <value>You can always change modes quickly by clicking the {Espresso icon in the system tray}</value>
+  <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
+    <value>Quick layout switch</value>
   </data>
 </root>
