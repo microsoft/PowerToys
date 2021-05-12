@@ -51,7 +51,16 @@ namespace Espresso.Shell.Core
                 settings.Properties.Mode,
                 IndefiniteKeepAwakeCallback(text),
                 TimedKeepAwakeCallback(text),
-                KeepDisplayOnCallback(text));
+                KeepDisplayOnCallback(text),
+                ExitCallback());
+        }
+
+        private static Action ExitCallback()
+        {
+            return () =>
+            {
+                Environment.Exit(0);
+            };
         }
 
         private static Action KeepDisplayOnCallback(string text)
@@ -92,7 +101,7 @@ namespace Espresso.Shell.Core
             };
         }
 
-        internal static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, Action indefiniteKeepAwakeCallback, Action<int, int> timedKeepAwakeCallback, Action keepDisplayOnCallback)
+        internal static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, Action indefiniteKeepAwakeCallback, Action<int, int> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
         {
             var contextMenuStrip = new ContextMenuStrip();
 
@@ -105,7 +114,7 @@ namespace Espresso.Shell.Core
             // Indefinite keep-awake menu item.
             var indefiniteMenuItem = new ToolStripMenuItem
             {
-                Text = "Indefinite",
+                Text = "Keep awake indefinitely",
             };
 
             if (mode == EspressoMode.INDEFINITE)
@@ -145,8 +154,16 @@ namespace Espresso.Shell.Core
             // Timed keep-awake menu item
             var timedMenuItem = new ToolStripMenuItem
             {
-                Text = "Timed",
+                Text = "Keep awake temporarily",
             };
+            if (mode == EspressoMode.TIMED)
+            {
+                timedMenuItem.Checked = true;
+            }
+            else
+            {
+                timedMenuItem.Checked = false;
+            }
 
             var halfHourMenuItem = new ToolStripMenuItem
             {
@@ -178,6 +195,17 @@ namespace Espresso.Shell.Core
                 timedKeepAwakeCallback(2, 0);
             };
 
+            // Exit menu item.
+            var exitContextMenu = new ToolStripMenuItem
+            {
+                Text = "Exit",
+            };
+            exitContextMenu.Click += (e, s) =>
+            {
+                // User is setting the keep-awake to 2 hours.
+                exitCallback();
+            };
+
             timedMenuItem.DropDownItems.Add(halfHourMenuItem);
             timedMenuItem.DropDownItems.Add(oneHourMenuItem);
             timedMenuItem.DropDownItems.Add(twoHoursMenuItem);
@@ -188,6 +216,8 @@ namespace Espresso.Shell.Core
             operationContextMenu.DropDownItems.Add(displayOnMenuItem);
 
             contextMenuStrip.Items.Add(operationContextMenu);
+            contextMenuStrip.Items.Add(new ToolStripSeparator());
+            contextMenuStrip.Items.Add(exitContextMenu);
 
             TrayIcon.Text = text;
             TrayIcon.ContextMenuStrip = contextMenuStrip;

@@ -6,12 +6,14 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Windows;
 using Espresso.Shell.Core;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -134,7 +136,7 @@ namespace Espresso.Shell
             _log.Info($"The value for --pid is: {pid}");
 
 #pragma warning disable CS8604 // Possible null reference argument.
-            TrayHelper.InitializeTray(AppName, APIHelper.Extract("shell32.dll", 32, true));
+            TrayHelper.InitializeTray(AppName, new Icon(Application.GetResourceStream(new Uri("/Images/Espresso.ico", UriKind.Relative)).Stream));
 #pragma warning restore CS8604 // Possible null reference argument.
 
             if (usePtConfig)

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,10 +35,6 @@ namespace Espresso.Shell.Core
         // More details about the API used: https://docs.microsoft.com/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
-
-        // More details about the API used: https://docs.microsoft.com/windows/win32/api/shellapi/nf-shellapi-extracticonexw
-        [DllImport("Shell32.dll", EntryPoint = "ExtractIconExW", CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-        private static extern int ExtractIconEx(string sFile, int iIndex, out IntPtr piLargeVersion, out IntPtr piSmallVersion, int amountIcons);
 
         static APIHelper()
         {
@@ -223,19 +218,6 @@ namespace Espresso.Shell.Core
             {
                 _log.Debug($"Could not get registry key for the build number. Error: {ex.Message}");
                 return string.Empty;
-            }
-        }
-
-        public static Icon? Extract(string file, int number, bool largeIcon)
-        {
-            ExtractIconEx(file, number, out IntPtr large, out IntPtr small, 1);
-            try
-            {
-                return Icon.FromHandle(largeIcon ? large : small);
-            }
-            catch
-            {
-                return null;
             }
         }
     }
