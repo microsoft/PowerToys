@@ -95,7 +95,6 @@ namespace FancyZonesEditor
 
             // all zones to the right/down, in order
             public List<int> PositiveSideIndices { get; set; }
-
         }
 
         private List<Zone> _zones;
