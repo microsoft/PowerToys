@@ -104,7 +104,7 @@ namespace Espresso.Shell.Core
                 .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
         }
 
-        public static void SetTimedKeepAwake(long seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
+        public static void SetTimedKeepAwake(uint seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
         {
             _tokenSource = new CancellationTokenSource();
             _threadToken = _tokenSource.Token;
@@ -153,7 +153,7 @@ namespace Espresso.Shell.Core
             }
         }
 
-        private static bool RunTimedLoop(long seconds, bool keepDisplayOn = true)
+        private static bool RunTimedLoop(uint seconds, bool keepDisplayOn = true)
         {
             bool success = false;
 
@@ -168,7 +168,7 @@ namespace Espresso.Shell.Core
                     {
                         _log.Info("Timed keep-awake with display on.");
                         var startTime = DateTime.UtcNow;
-                        while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
+                        while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(Math.Abs(seconds)))
                         {
                             if (_threadToken.IsCancellationRequested)
                             {
@@ -191,7 +191,7 @@ namespace Espresso.Shell.Core
                     {
                         _log.Info("Timed keep-awake with display off.");
                         var startTime = DateTime.UtcNow;
-                        while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(seconds))
+                        while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(Math.Abs(seconds)))
                         {
                             if (_threadToken.IsCancellationRequested)
                             {

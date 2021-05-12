@@ -36,10 +36,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             Settings = moduleSettingsRepository.SettingsConfig;
 
             _isEnabled = GeneralSettingsConfig.Enabled.Espresso;
-            _keepDisplayOn = Settings.Properties.KeepDisplayOn.Value;
+            _keepDisplayOn = Settings.Properties.KeepDisplayOn;
             _mode = Settings.Properties.Mode;
-            _hours = Settings.Properties.Hours.Value;
-            _minutes = Settings.Properties.Minutes.Value;
+            _hours = Settings.Properties.Hours;
+            _minutes = Settings.Properties.Minutes;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -89,13 +89,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     _keepDisplayOn = value;
                     OnPropertyChanged(nameof(KeepDisplayOn));
 
-                    Settings.Properties.KeepDisplayOn = new BoolProperty(value);
-                    NotifyPropertyChanged();
+                    Settings.Properties.KeepDisplayOn = value;
                 }
             }
         }
 
-        public int Hours
+        public uint Hours
         {
             get => _hours;
             set
@@ -105,13 +104,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     _hours = value;
                     OnPropertyChanged(nameof(Hours));
 
-                    Settings.Properties.Hours = new IntProperty(value);
+                    Settings.Properties.Hours = value;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        public int Minutes
+        public uint Minutes
         {
             get => _minutes;
             set
@@ -121,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     _minutes = value;
                     OnPropertyChanged(nameof(Minutes));
 
-                    Settings.Properties.Minutes = new IntProperty(value);
+                    Settings.Properties.Minutes = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -141,8 +140,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         }
 
         private bool _isEnabled;
-        private int _hours;
-        private int _minutes;
+        private uint _hours;
+        private uint _minutes;
         private bool _keepDisplayOn;
         private EspressoMode _mode;
     }

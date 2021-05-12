@@ -47,7 +47,7 @@ namespace Espresso.Shell.Core
         {
             SetTray(
                 text,
-                settings.Properties.KeepDisplayOn.Value,
+                settings.Properties.KeepDisplayOn,
                 settings.Properties.Mode,
                 IndefiniteKeepAwakeCallback(text),
                 TimedKeepAwakeCallback(text),
@@ -69,21 +69,21 @@ namespace Espresso.Shell.Core
             {
                 // Just changing the display mode.
                 var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
-                currentSettings.Properties.KeepDisplayOn.Value = !currentSettings.Properties.KeepDisplayOn.Value;
+                currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
 
                 ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
             };
         }
 
-        private static Action<int, int> TimedKeepAwakeCallback(string moduleName)
+        private static Action<uint, uint> TimedKeepAwakeCallback(string moduleName)
         {
             return (hours, minutes) =>
             {
                 // Set timed keep awake.
                 var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
                 currentSettings.Properties.Mode = EspressoMode.TIMED;
-                currentSettings.Properties.Hours.Value = hours;
-                currentSettings.Properties.Minutes.Value = minutes;
+                currentSettings.Properties.Hours = hours;
+                currentSettings.Properties.Minutes = minutes;
 
                 ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
             };
@@ -101,7 +101,7 @@ namespace Espresso.Shell.Core
             };
         }
 
-        public static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, Action indefiniteKeepAwakeCallback, Action<int, int> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
+        public static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, Action indefiniteKeepAwakeCallback, Action<uint, uint> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
         {
             var contextMenuStrip = new ContextMenuStrip();
 

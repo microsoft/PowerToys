@@ -79,12 +79,12 @@ namespace Espresso.Shell
 
             displayOption.Required = false;
 
-            var timeOption = new Option<long>(
+            var timeOption = new Option<uint>(
                     aliases: new[] { "--time-limit", "-t" },
                     getDefaultValue: () => 0,
                     description: "Determines the interval, in seconds, during which the computer is kept awake.")
             {
-                Argument = new Argument<long>(() => 0)
+                Argument = new Argument<uint>(() => 0)
                 {
                     Arity = ArgumentArity.ExactlyOne,
                 },
@@ -115,7 +115,7 @@ namespace Espresso.Shell
 
             rootCommand.Description = AppName;
 
-            rootCommand.Handler = CommandHandler.Create<bool, bool, long, int>(HandleCommandLineArguments);
+            rootCommand.Handler = CommandHandler.Create<bool, bool, uint, int>(HandleCommandLineArguments);
 
             return rootCommand.InvokeAsync(args).Result;
         }
@@ -128,7 +128,7 @@ namespace Espresso.Shell
             Environment.Exit(exitCode);
         }
 
-        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, long timeLimit, int pid)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid)
         {
             if (pid == 0)
             {
@@ -233,15 +233,15 @@ namespace Espresso.Shell
                         case EspressoMode.INDEFINITE:
                             {
                                 // Indefinite keep awake.
-                                SetupIndefiniteKeepAwake(settings.Properties.KeepDisplayOn.Value);
+                                SetupIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
                                 break;
                             }
 
                         case EspressoMode.TIMED:
                             {
                                 // Timed keep-awake.
-                                long computedTime = (settings.Properties.Hours.Value * 60 * 60) + (settings.Properties.Minutes.Value * 60);
-                                SetupTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn.Value);
+                                uint computedTime = (settings.Properties.Hours * 60 * 60) + (settings.Properties.Minutes * 60);
+                                SetupTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
 
                                 break;
                             }
@@ -272,7 +272,7 @@ namespace Espresso.Shell
             }
         }
 
-        private static void SetupTimedKeepAwake(long time, bool displayOn)
+        private static void SetupTimedKeepAwake(uint time, bool displayOn)
         {
             _log.Info($"Timed keep-awake. Expected runtime: {time} seconds with display on setting set to {displayOn}.");
 

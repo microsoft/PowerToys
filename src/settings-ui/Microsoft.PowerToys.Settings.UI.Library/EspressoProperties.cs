@@ -10,23 +10,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public EspressoProperties()
         {
-            KeepDisplayOn = new BoolProperty();
+            KeepDisplayOn = false;
             Mode = EspressoMode.INDEFINITE;
-            Hours = new IntProperty();
-            Minutes = new IntProperty();
+            Hours = 0;
+            Minutes = 0;
         }
 
         [JsonPropertyName("espresso_keep_display_on")]
-        public BoolProperty KeepDisplayOn { get; set; }
+        public bool KeepDisplayOn { get; set; }
 
         [JsonPropertyName("espresso_mode")]
         public EspressoMode Mode { get; set; }
 
         [JsonPropertyName("espresso_hours")]
-        public IntProperty Hours { get; set; }
+        public uint Hours { get; set; }
 
         [JsonPropertyName("espresso_minutes")]
-        public IntProperty Minutes { get; set; }
+        public uint Minutes { get; set; }
     }
 
     public enum EspressoMode
