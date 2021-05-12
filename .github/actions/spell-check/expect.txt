@@ -341,6 +341,7 @@ CTest
 ctime
 CTLCOLORSTATIC
 ctor
+CTriage
 CTRLALTDEL
 Ctrls
 Ctx
@@ -450,6 +451,7 @@ dllexport
 dllhost
 dllmain
 DNLEN
+docsmsft
 doctype
 DONTVALIDATEPATH
 dotnet
@@ -882,6 +884,7 @@ INSTALLLOCATION
 INSTALLLOGATTRIBUTES
 INSTALLLOGMODE
 INSTALLMESSAGE
+installpowertoys
 INSTALLPROPERTY
 INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
@@ -1487,6 +1490,7 @@ powershell
 powertoy
 powertoysinterop
 powertoyssetup
+powertoyswiki
 Powrprof
 ppenum
 ppidl
