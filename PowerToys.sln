@@ -324,12 +324,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorLibrar
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorTest", "src\modules\keyboardmanager\KeyboardManagerEditorTest\KeyboardManagerEditorTest.vcxproj", "{62173D9A-6724-4C00-A1C8-FB646480A9EC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "espresso", "espresso", "{127F38E0-40AA-4594-B955-5616BF206882}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EspressoModuleInterface", "src\modules\espresso\EspressoModuleInterface\EspressoModuleInterface.vcxproj", "{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Espresso", "src\modules\espresso\Espresso\Espresso.csproj", "{D940E07F-532C-4FF3-883F-790DA014F19A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -666,14 +660,6 @@ Global
 		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Debug|x64.Build.0 = Debug|x64
 		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Release|x64.ActiveCfg = Release|x64
 		{62173D9A-6724-4C00-A1C8-FB646480A9EC}.Release|x64.Build.0 = Release|x64
-		{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}.Debug|x64.ActiveCfg = Debug|x64
-		{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}.Debug|x64.Build.0 = Debug|x64
-		{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}.Release|x64.ActiveCfg = Release|x64
-		{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}.Release|x64.Build.0 = Release|x64
-		{D940E07F-532C-4FF3-883F-790DA014F19A}.Debug|x64.ActiveCfg = Debug|x64
-		{D940E07F-532C-4FF3-883F-790DA014F19A}.Debug|x64.Build.0 = Debug|x64
-		{D940E07F-532C-4FF3-883F-790DA014F19A}.Release|x64.ActiveCfg = Release|x64
-		{D940E07F-532C-4FF3-883F-790DA014F19A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -773,9 +759,6 @@ Global
 		{8DF78B53-200E-451F-9328-01EB907193AE} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{23D2070D-E4AD-4ADD-85A7-083D9C76AD49} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{62173D9A-6724-4C00-A1C8-FB646480A9EC} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
-		{127F38E0-40AA-4594-B955-5616BF206882} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
-		{5E7360A8-D048-4ED3-8F09-0BFD64C5529A} = {127F38E0-40AA-4594-B955-5616BF206882}
-		{D940E07F-532C-4FF3-883F-790DA014F19A} = {127F38E0-40AA-4594-B955-5616BF206882}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

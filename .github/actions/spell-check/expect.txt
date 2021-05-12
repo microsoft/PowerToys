@@ -87,7 +87,6 @@ args
 argv
 Arial
 arik
-arity
 arjunbalgovind
 ARPINSTALLLOCATION
 ARPPRODUCTICON
@@ -124,7 +123,6 @@ Autorun
 AUTOSIZECOLUMNS
 autoupdate
 AValid
-AWAYMODE
 azurecr
 azurewebsites
 backend
@@ -1079,8 +1077,6 @@ localport
 localtime
 LOCATIONCHANGE
 Lockyour
-logconsole
-logfile
 LOGFONT
 LOGMSG
 logon
@@ -1195,7 +1191,6 @@ mimetype
 Minimizeallwindows
 MINIMIZEBOX
 miniz
-minlevel
 MINMAXINFO
 Miracast
 MJPG
@@ -1415,7 +1410,6 @@ otating
 OUTOFCONTEXT
 OUTOFMEMORY
 Outptr
-outputtype
 outro
 outsettings
 OVERLAPPEDWINDOW
@@ -1988,7 +1982,6 @@ toggleswitch
 toolbar
 Toolchain
 toolset
-toolstrip
 tooltip
 toolwindow
 TOPDOWNDIB
@@ -2195,8 +2188,6 @@ windowsx
 windowwalker
 winerror
 WINEVENT
-winexe
-winforms
 winfx
 winget
 Winhook
@@ -2284,7 +2275,6 @@ XOffset
 xpath
 XResource
 xsd
-xsi
 XSmall
 XStr
 XToolset
