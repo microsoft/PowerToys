@@ -268,8 +268,8 @@ D2D1_RECT_F D2DOverlaySVG::get_snap_right() const
     return result;
 }
 
-D2DOverlayWindow::D2DOverlayWindow(std::optional<std::function<std::remove_pointer_t<WNDPROC>>> pre_wnd_proc) :
-    total_screen({}), animation(0.3), D2DWindow(std::move(pre_wnd_proc))
+D2DOverlayWindow::D2DOverlayWindow() :
+    total_screen({}), animation(0.3), D2DWindow()
 {
     tasklist_thread = std::thread([&] {
         while (running)

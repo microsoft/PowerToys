@@ -107,18 +107,7 @@ OverlayWindow::OverlayWindow(HWND activeWindow)
 
 void OverlayWindow::ShowWindow()
 {
-    auto switcher = [&](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
-        if (msg == WM_KEYDOWN && wparam == VK_ESCAPE)
-        {
-            Logger::trace(L"ESC key was pressed. Terminating process. PID={}", GetCurrentProcessId());
-            PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
-            return 0;
-        }
-
-        return 0;
-    };
-
-    winkey_popup = std::make_unique<D2DOverlayWindow>(std::move(switcher));
+    winkey_popup = std::make_unique<D2DOverlayWindow>();
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
     winkey_popup->set_theme(theme.value);
     target_state = std::make_unique<TargetState>();

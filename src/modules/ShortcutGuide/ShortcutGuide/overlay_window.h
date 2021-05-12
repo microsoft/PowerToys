@@ -47,7 +47,7 @@ struct AnimateKeys
 class D2DOverlayWindow : public D2DWindow
 {
 public:
-    D2DOverlayWindow(std::optional<std::function<std::remove_pointer_t<WNDPROC>>> pre_wnd_proc = std::nullopt);
+    D2DOverlayWindow();
     void show(HWND active_window, bool snappable);
     void animate(int vk_code);
     ~D2DOverlayWindow();
