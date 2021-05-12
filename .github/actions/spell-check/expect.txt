@@ -404,7 +404,9 @@ DEFPUSHBUTTON
 deinitialization
 DELA
 deletethis
+Delimarsky
 delims
+dend
 DENORMAL
 depersist
 deprioritized
@@ -985,6 +987,7 @@ JPN
 json
 JSONOf
 jsonval
+jsoref
 JSX
 junja
 jxr
@@ -1807,6 +1810,7 @@ SMALLICON
 SMTO
 snd
 somil
+Soref
 SORTDOWN
 SOURCECLIENTAREAONLY
 SOURCEHEADER
