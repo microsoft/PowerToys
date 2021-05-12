@@ -177,4 +177,7 @@
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="ShortcutGuide.exe.manifest" />
+  </ItemGroup>
 </Project>
