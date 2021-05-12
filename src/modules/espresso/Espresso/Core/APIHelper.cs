@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Win32;
 using NLog;
 
-#pragma warning disable SA1116 // Split parameters should start on line after declaration
-
 namespace Espresso.Shell.Core
 {
     [Flags]
@@ -40,7 +38,6 @@ namespace Espresso.Shell.Core
         private static CancellationTokenSource _tokenSource;
         private static CancellationToken _threadToken;
 
-        // More details about the API used: https://docs.microsoft.com/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 
@@ -52,13 +49,14 @@ namespace Espresso.Shell.Core
         public static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr CreateFile([MarshalAs(UnmanagedType.LPTStr)] string filename,
-                                               [MarshalAs(UnmanagedType.U4)] uint access,
-                                               [MarshalAs(UnmanagedType.U4)] FileShare share,
-                                               IntPtr securityAttributes,
-                                               [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-                                               [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
-                                               IntPtr templateFile);
+        public static extern IntPtr CreateFile(
+            [MarshalAs(UnmanagedType.LPTStr)] string filename,
+            [MarshalAs(UnmanagedType.U4)] uint access,
+            [MarshalAs(UnmanagedType.U4)] FileShare share,
+            IntPtr securityAttributes,
+            [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
+            [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
+            IntPtr templateFile);
 
         static APIHelper()
         {
@@ -94,17 +92,6 @@ namespace Espresso.Shell.Core
             {
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Attempts to reset the current machine state to one where Espresso doesn't try to keep it awake.
-        /// This does not interfere with the state that can be potentially set by other applications.
-        /// </summary>
-        /// <returns>Status of the attempt. True is successful, false if not.</returns>
-        public static bool SetNormalKeepAwake()
-        {
-            _tokenSource.Cancel();
-            return SetAwakeState(EXECUTION_STATE.ES_CONTINUOUS);
         }
 
         public static void SetIndefiniteKeepAwake(Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
