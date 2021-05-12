@@ -34,10 +34,9 @@ namespace
         bool disabled = false;
     };
 
-    ShortcutGuideWindowInfo GetShortcutGuideWindowInfo()
+    ShortcutGuideWindowInfo GetShortcutGuideWindowInfo(HWND active_window)
     {
         ShortcutGuideWindowInfo result;
-        auto active_window = GetForegroundWindow();
         active_window = GetAncestor(active_window, GA_ROOT);
         if (!IsWindowVisible(active_window))
         {
@@ -108,6 +107,7 @@ constexpr UINT alternative_switch_vk_code = VK_OEM_2;
 
 OverlayWindow::OverlayWindow()
 {
+    active_window = GetForegroundWindow();
     instance = this;
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
     app_key = ShortcutGuideConstants::ModuleKey;
@@ -219,7 +219,7 @@ OverlayWindow::~OverlayWindow()
 
 void OverlayWindow::on_held()
 {
-    auto windowInfo = GetShortcutGuideWindowInfo();
+    auto windowInfo = GetShortcutGuideWindowInfo(active_window);
     if (windowInfo.disabled)
     {
         target_state->was_hidden();

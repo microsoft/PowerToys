@@ -42,6 +42,7 @@ private:
     std::vector<std::wstring> disabled_apps_array;
     void init_settings();
     void update_disabled_apps();
+    HWND active_window;
 
     struct OverlayOpacity
     {
