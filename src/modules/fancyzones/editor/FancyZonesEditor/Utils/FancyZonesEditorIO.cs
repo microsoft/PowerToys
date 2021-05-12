@@ -707,7 +707,7 @@ namespace FancyZonesEditor.Utils
             // Serialize quick layout switch keys
             foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
             {
-                if (pair.Value != string.Empty)
+                if (!string.IsNullOrEmpty(pair.Value))
                 {
                     try
                     {
