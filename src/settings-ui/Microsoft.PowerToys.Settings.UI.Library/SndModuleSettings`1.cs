@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    // Represents a powertoys module settings setnt to the runner.
+    // Represents a powertoys module settings sent to the runner.
     public class SndModuleSettings<T>
     {
         [JsonPropertyName("powertoys")]
