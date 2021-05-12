@@ -99,10 +99,6 @@
         </Style>
     </UserControl.Resources>
 
-    
-    
-    
-    
     <Border CornerRadius="0"
             Focusable="True"
             x:Name="RootBorder"
