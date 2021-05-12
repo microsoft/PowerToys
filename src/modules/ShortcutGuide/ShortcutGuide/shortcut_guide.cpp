@@ -106,64 +106,29 @@ constexpr int alternative_switch_hotkey_id = 0x2;
 constexpr UINT alternative_switch_modifier_mask = MOD_WIN | MOD_SHIFT;
 constexpr UINT alternative_switch_vk_code = VK_OEM_2;
 
-OverlayWindow::OverlayWindow(bool hasParent)
+OverlayWindow::OverlayWindow()
 {
+    instance = this;
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
     app_key = ShortcutGuideConstants::ModuleKey;
 
     Logger::info("Overlay Window is creating");
     init_settings();
 
-    auto switcher = [&, hasParent](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
-        if (terminationInvoked)
+    auto switcher = [&](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
+        if (msg == WM_KEYDOWN && wparam == VK_ESCAPE)
         {
+            PostQuitMessage(0);
             return 0;
         }
 
-        if (msg == WM_KEYDOWN && wparam == VK_ESCAPE && instance->target_state->active())
-        {
-            instance->target_state->toggle_force_shown();
-            if (hasParent)
-            {
-                terminationInvoked = true;
-                PostQuitMessage(0);
-            }
-
-            return 0;
-        }
-
-        if (msg == WM_APP && lparam == eventActivateWindow)
-        {
-            instance->target_state->toggle_force_shown();
-            if (!instance->target_state->active() && hasParent)
-            {
-                terminationInvoked = true;
-                PostQuitMessage(0);
-            }
-
-            return 0;
-        }
-
-        if (msg != WM_HOTKEY)
-        {
-            return 0;
-        }
-
-        const auto vk_code = HIWORD(lparam);
-        const auto modifiers_mask = LOWORD(lparam);
-        if (alternative_switch_vk_code != vk_code || alternative_switch_modifier_mask != modifiers_mask)
-        {
-            return 0;
-        }
-        
-        instance->target_state->toggle_force_shown();
         return 0;
     };
 
     winkey_popup = std::make_unique<D2DOverlayWindow>(std::move(switcher));
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
     winkey_popup->set_theme(theme.value);
-    target_state = std::make_unique<TargetState>(pressTime.value);
+    target_state = std::make_unique<TargetState>();
     try
     {
         winkey_popup->initialize();
@@ -174,16 +139,7 @@ OverlayWindow::OverlayWindow(bool hasParent)
         return;
     }
 
-    if (!hasParent)
-    {
-        RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);
-    }
-
-    auto show_action = [&]() {
-        PostMessageW(winkey_popup->get_window_handle(), WM_APP, 0, eventActivateWindow);
-    };
-
-    event_waiter = std::make_unique<NativeEventWaiter>(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT, show_action);
+    target_state->toggle_force_shown();
 }
 
 bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
@@ -194,14 +150,6 @@ bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
     settings.set_description(GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION));
     settings.set_overview_link(L"https://aka.ms/PowerToysOverview_ShortcutGuide");
     settings.set_icon_key(L"pt-shortcut-guide");
-
-    settings.add_int_spinner(
-        pressTime.name,
-        pressTime.resourceId,
-        pressTime.value,
-        100,
-        10000,
-        100);
 
     settings.add_int_spinner(
         overlayOpacity.name,
@@ -228,16 +176,8 @@ void OverlayWindow::set_config(const wchar_t* config)
         PowerToysSettings::PowerToyValues _values =
             PowerToysSettings::PowerToyValues::from_json_string(config, app_key);
         _values.save_to_settings_file();
-        Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
+        Trace::SettingsChanged(overlayOpacity.value, theme.value);
 
-        if (const auto press_delay_time = _values.get_int_value(pressTime.name))
-        {
-            pressTime.value = *press_delay_time;
-            if (target_state)
-            {
-                target_state->set_delay(*press_delay_time);
-            }
-        }
         if (const auto overlay_opacity = _values.get_int_value(overlayOpacity.name))
         {
             overlayOpacity.value = *overlay_opacity;
@@ -313,10 +253,7 @@ void OverlayWindow::init_settings()
     {
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(app_key);
-        if (const auto val = settings.get_int_value(pressTime.name))
-        {
-            pressTime.value = *val;
-        }
+
         if (const auto val = settings.get_int_value(overlayOpacity.name))
         {
             overlayOpacity.value = *val;

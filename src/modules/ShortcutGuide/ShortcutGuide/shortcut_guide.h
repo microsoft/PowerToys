@@ -16,7 +16,7 @@ class TargetState;
 class OverlayWindow
 {
 public:
-    OverlayWindow(bool hasParent);
+    OverlayWindow();
     bool get_config(wchar_t* buffer, int* buffer_size);
 
     void set_config(const wchar_t* config);
@@ -40,16 +40,8 @@ private:
     std::unique_ptr<D2DOverlayWindow> winkey_popup;
     std::unique_ptr<NativeEventWaiter> event_waiter;
     std::vector<std::wstring> disabled_apps_array;
-    std::atomic_bool terminationInvoked = false;
     void init_settings();
     void update_disabled_apps();
-
-    struct PressTime
-    {
-        PCWSTR name = L"press_time";
-        int value = 900; // ms
-        int resourceId = IDS_SETTING_DESCRIPTION_PRESS_TIME;
-    } pressTime;
 
     struct OverlayOpacity
     {
