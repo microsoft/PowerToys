@@ -23,9 +23,9 @@ namespace FancyZonesEditor
         private const int MinimalForDefaultWrapPanelsHeight = 900;
 
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
-        private LayoutModel _backup = null;
+        private LayoutModel _backup;
 
-        private ContentDialog _openedDialog = null;
+        private ContentDialog _openedDialog;
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 

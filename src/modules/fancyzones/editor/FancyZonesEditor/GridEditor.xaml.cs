@@ -227,8 +227,8 @@ namespace FancyZonesEditor
             SetupUI();
         }
 
-        private double _dragX = 0;
-        private double _dragY = 0;
+        private double _dragX;
+        private double _dragY;
 
         private void Resizer_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
