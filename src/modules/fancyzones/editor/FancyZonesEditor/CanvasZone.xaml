@@ -9,7 +9,6 @@
              KeyDown="Border_KeyDown"
              Background="Transparent"
              d:DesignHeight="450" d:DesignWidth="800">
-    
     <UserControl.Resources>
         <Style x:Key="CanvasZoneThumbStyle" TargetType="{x:Type Thumb}">
             <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
