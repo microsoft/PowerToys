@@ -55,10 +55,10 @@ namespace Espresso.Shell
 
             var configOption = new Option<bool>(
                     aliases: new[] { "--use-pt-config", "-c" },
-                    getDefaultValue: () => true,
+                    getDefaultValue: () => false,
                     description: "Specifies whether Espresso will be using the PowerToys configuration file for managing the state.")
             {
-                Argument = new Argument<bool>(() => true)
+                Argument = new Argument<bool>(() => false)
                 {
                     Arity = ArgumentArity.ZeroOrOne,
                 },
@@ -130,17 +130,22 @@ namespace Espresso.Shell
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, long timeLimit, int pid)
         {
+            if (pid == 0)
+            {
+                APIHelper.AllocateConsole();
+            }
+
             _log.Info($"The value for --use-pt-config is: {usePtConfig}");
             _log.Info($"The value for --display-on is: {displayOn}");
             _log.Info($"The value for --time-limit is: {timeLimit}");
             _log.Info($"The value for --pid is: {pid}");
 
-#pragma warning disable CS8604 // Possible null reference argument.
-            TrayHelper.InitializeTray(AppName, new Icon(Application.GetResourceStream(new Uri("/Images/Espresso.ico", UriKind.Relative)).Stream));
-#pragma warning restore CS8604 // Possible null reference argument.
-
             if (usePtConfig)
             {
+#pragma warning disable CS8604 // Possible null reference argument.
+                TrayHelper.InitializeTray(AppName, new Icon(Application.GetResourceStream(new Uri("/Images/Espresso.ico", UriKind.Relative)).Stream));
+#pragma warning restore CS8604 // Possible null reference argument.
+
                 // Configuration file is used, therefore we disregard any other command-line parameter
                 // and instead watch for changes in the file.
                 try
@@ -177,13 +182,14 @@ namespace Espresso.Shell
             }
             else
             {
-                if (timeLimit <= 0)
+                var mode = timeLimit <= 0 ? EspressoMode.INDEFINITE : EspressoMode.TIMED;
+
+                if (mode == EspressoMode.INDEFINITE)
                 {
                     SetupIndefiniteKeepAwake(displayOn);
                 }
                 else
                 {
-                    // Timed keep-awake.
                     SetupTimedKeepAwake(timeLimit, displayOn);
                 }
             }

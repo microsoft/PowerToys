@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\Espresso</OutputPath>
     <Nullable>enable</Nullable>

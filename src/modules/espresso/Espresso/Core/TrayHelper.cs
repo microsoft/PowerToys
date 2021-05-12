@@ -63,45 +63,45 @@ namespace Espresso.Shell.Core
             };
         }
 
-        private static Action KeepDisplayOnCallback(string text)
+        private static Action KeepDisplayOnCallback(string moduleName)
         {
             return () =>
             {
                 // Just changing the display mode.
-                var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(text);
+                var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
                 currentSettings.Properties.KeepDisplayOn.Value = !currentSettings.Properties.KeepDisplayOn.Value;
 
-                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), text);
+                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
             };
         }
 
-        private static Action<int, int> TimedKeepAwakeCallback(string text)
+        private static Action<int, int> TimedKeepAwakeCallback(string moduleName)
         {
             return (hours, minutes) =>
             {
                 // Set timed keep awake.
-                var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(text);
+                var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
                 currentSettings.Properties.Mode = EspressoMode.TIMED;
                 currentSettings.Properties.Hours.Value = hours;
                 currentSettings.Properties.Minutes.Value = minutes;
 
-                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), text);
+                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
             };
         }
 
-        private static Action IndefiniteKeepAwakeCallback(string text)
+        private static Action IndefiniteKeepAwakeCallback(string moduleName)
         {
             return () =>
             {
                 // Set indefinite keep awake.
-                var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(text);
+                var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
                 currentSettings.Properties.Mode = EspressoMode.INDEFINITE;
 
-                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), text);
+                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
             };
         }
 
-        internal static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, Action indefiniteKeepAwakeCallback, Action<int, int> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
+        public static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, Action indefiniteKeepAwakeCallback, Action<int, int> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
         {
             var contextMenuStrip = new ContextMenuStrip();
 

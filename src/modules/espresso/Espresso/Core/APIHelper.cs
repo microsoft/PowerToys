@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using NLog;
+
+#pragma warning disable SA1116 // Split parameters should start on line after declaration
 
 namespace Espresso.Shell.Core
 {
@@ -27,6 +30,11 @@ namespace Espresso.Shell.Core
     public class APIHelper
     {
         private const string BuildRegistryLocation = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
+        public const int StdOutputHandle = -11;
+        public const int StdInputHandle = -10;
+        public const int StdErrorHandle = -12;
+        public const uint GenericWrite = 0x40000000;
+        public const uint GenericRead = 0x80000000;
 
         private static readonly Logger _log;
         private static CancellationTokenSource _tokenSource;
@@ -36,10 +44,43 @@ namespace Espresso.Shell.Core
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool AllocConsole();
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr GetStdHandle(int nStdHandle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+
+        public static extern IntPtr CreateFile([MarshalAs(UnmanagedType.LPTStr)] string filename,
+                                               [MarshalAs(UnmanagedType.U4)] uint access,
+                                               [MarshalAs(UnmanagedType.U4)] FileShare share,
+                                               IntPtr securityAttributes,
+                                               [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
+                                               [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
+                                               IntPtr templateFile);
+
         static APIHelper()
         {
             _log = LogManager.GetCurrentClassLogger();
             _tokenSource = new CancellationTokenSource();
+        }
+
+        public static void AllocateConsole()
+        {
+            AllocConsole();
+
+            var outputHandle = GetStdHandle(StdOutputHandle);
+            var outputFilePointer = CreateFile("CONOUT$", GenericRead | GenericWrite, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
+            if (outputFilePointer != outputHandle)
+            {
+                SetStdHandle(StdOutputHandle, outputFilePointer);
+                Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
+            }
         }
 
         /// <summary>
