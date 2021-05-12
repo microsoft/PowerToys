@@ -102,7 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             _updatingState = UpdatingSettingsConfig.State;
             _newAvailableVersion = UpdatingSettingsConfig.NewVersion;
-            _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageUrl.ToString();
+            _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
         }
 
@@ -262,8 +262,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get
             {
-                return true;
-                /*return Helper.GetProductVersion() != "v0.0.1";*/
+                return Helper.GetProductVersion() != "v0.0.1";
             }
         }
 

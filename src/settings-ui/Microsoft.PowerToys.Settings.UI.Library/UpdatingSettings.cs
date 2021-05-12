@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         // Gets or sets a value of the release page url
         [JsonPropertyName("releasePageUrl")]
-        public System.Uri ReleasePageUrl { get; set; }
+        public string ReleasePageLink { get; set; }
 
         // Gets or sets a value of the github last checked date
         [JsonPropertyName("githubUpdateLastCheckedDate")]
@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 try
                 {
-                    string version = ReleasePageUrl.OriginalString.Substring(ReleasePageUrl.OriginalString.LastIndexOf('/') + 1);
+                    string version = ReleasePageLink.Substring(ReleasePageLink.LastIndexOf('/') + 1);
                     return version.Trim();
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
