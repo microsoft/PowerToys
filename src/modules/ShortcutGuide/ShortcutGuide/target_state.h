@@ -22,7 +22,6 @@ public:
 private:
     std::recursive_mutex mutex;
     std::condition_variable_any cv;
-    std::chrono::milliseconds delay;
     enum State
     {
         Hidden,

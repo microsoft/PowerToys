@@ -107,18 +107,7 @@ OverlayWindow::OverlayWindow(HWND activeWindow)
 
 void OverlayWindow::ShowWindow()
 {
-    auto switcher = [&](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
-        if (msg == WM_KEYDOWN && wparam == VK_ESCAPE)
-        {
-            Logger::trace(L"ESC key was pressed. Terminating process. PID={}", GetCurrentProcessId());
-            PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
-            return 0;
-        }
-
-        return 0;
-    };
-
-    winkey_popup = std::make_unique<D2DOverlayWindow>(std::move(switcher));
+    winkey_popup = std::make_unique<D2DOverlayWindow>();
     winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
     winkey_popup->set_theme(theme.value);
     target_state = std::make_unique<TargetState>();
@@ -145,70 +134,6 @@ bool OverlayWindow::IsDisabled()
     }
 
     return false;
-}
-
-bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
-{
-    HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-
-    PowerToysSettings::Settings settings(hinstance, app_name);
-    settings.set_description(GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION));
-    settings.set_overview_link(L"https://aka.ms/PowerToysOverview_ShortcutGuide");
-    settings.set_icon_key(L"pt-shortcut-guide");
-
-    settings.add_int_spinner(
-        overlayOpacity.name,
-        overlayOpacity.resourceId,
-        overlayOpacity.value,
-        0,
-        100,
-        1);
-
-    settings.add_choice_group(
-        theme.name,
-        theme.resourceId,
-        theme.value,
-        theme.keys_and_texts);
-
-    return settings.serialize_to_buffer(buffer, buffer_size);
-}
-
-void OverlayWindow::set_config(const wchar_t* config)
-{
-    try
-    {
-        // save configuration
-        PowerToysSettings::PowerToyValues _values =
-            PowerToysSettings::PowerToyValues::from_json_string(config, app_key);
-        _values.save_to_settings_file();
-        Trace::SettingsChanged(overlayOpacity.value, theme.value);
-
-        if (const auto overlay_opacity = _values.get_int_value(overlayOpacity.name))
-        {
-            overlayOpacity.value = *overlay_opacity;
-            if (winkey_popup)
-            {
-                winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
-            }
-        }
-        if (auto val = _values.get_string_value(theme.name))
-        {
-            theme.value = std::move(*val);
-            if (winkey_popup)
-            {
-                winkey_popup->set_theme(theme.value);
-            }
-        }
-        if (auto val = _values.get_string_value(disabledApps.name))
-        {
-            disabledApps.value = std::move(*val);
-            update_disabled_apps();
-        }
-    }
-    catch (...)
-    {
-        // Improper JSON. TODO: handle the error.
-    }
 }
 
 OverlayWindow::~OverlayWindow()
