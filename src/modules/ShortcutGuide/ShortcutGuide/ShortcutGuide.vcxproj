@@ -169,6 +169,9 @@
     <ResourceCompile Include="Generated Files\ShortcutGuide.rc" />
     <None Include="ShortcutGuide.base.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Shortcut-Guide.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">

@@ -117,6 +117,9 @@
   <ItemGroup>
     <None Include="PropertySheet.props" />
     <None Include="packages.config" />
+    <None Include="ShortcutGuide.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="svgs\0.svg">
@@ -165,11 +168,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ShortcutGuide.base.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
     <ResourceCompile Include="Generated Files\ShortcutGuide.rc">
       <Filter>Generated Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Shortcut-Guide.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
