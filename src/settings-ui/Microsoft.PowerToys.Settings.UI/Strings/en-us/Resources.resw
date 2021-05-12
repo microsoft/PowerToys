@@ -1045,7 +1045,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>release notes</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
-    <value>{Win} + {Ctrl} + {C} to open Color Picker.</value>
+    <value>{Win} + {Shift} + {C} to open Color Picker.</value>
   </data>
   <data name="Oobe_ColorPicker_TipsAndTricks.Text" xml:space="preserve">
     <value>To select a color with more precision, {scroll the mouse wheel} to zoom in.</value>
