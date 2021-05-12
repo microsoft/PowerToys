@@ -1198,4 +1198,25 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
   </data>
+  <data name="General_DownloadAndInstall.Content" xml:space="preserve">
+    <value>Download and install</value>
+  </data>
+  <data name="General_FailedToDownloadTheNewVersion.Text" xml:space="preserve">
+    <value>An error occurred trying to download version</value>
+  </data>
+  <data name="General_InstallNow.Content" xml:space="preserve">
+    <value>Install now</value>
+  </data>
+  <data name="General_ReadMore.Text" xml:space="preserve">
+    <value>Read more</value>
+  </data>
+  <data name="General_IsAvailable.Text" xml:space="preserve">
+    <value>is available.</value>
+  </data>
+  <data name="General_VersionAvailable.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="General_IsReadyToInstall.Text" xml:space="preserve">
+    <value>is ready to install.</value>
+  </data>
 </root>

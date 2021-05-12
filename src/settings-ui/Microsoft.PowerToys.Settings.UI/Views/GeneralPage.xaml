@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
@@ -14,6 +15,10 @@
     <Page.Resources>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
         <converters:BoolToVisibilityConverter x:Key="VisibleIfTrueConverter"/>
+        <localConverters:UpdatingStateUpToDateToVisibilityConverter x:Key="UpdatingStateUpToDateToVisibilityConverter" />
+        <localConverters:UpdatingStateCannotDownloadToVisibilityConverter x:Key="UpdatingStateCannotDownloadToVisibilityConverter" />
+        <localConverters:UpdatingStateReadyToDownloadToVisibilityConverter x:Key="UpdatingStateReadyToDownloadToVisibilityConverter" />
+        <localConverters:UpdatingStateReadyToInstallToVisibilityConverter x:Key="UpdatingStateReadyToInstallToVisibilityConverter" />
     </Page.Resources>
 
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
@@ -62,7 +67,7 @@
                        AutomationProperties.HeadingLevel="Level2"
                        Style="{StaticResource SubtitleTextBlockStyle}"/>
 
-            <TextBlock Text="{x:Bind Mode=TwoWay, Path=ViewModel.RunningAsText}"
+            <TextBlock Text="{Binding Mode=TwoWay, Path=RunningAsText}"
                        TextWrapping="Wrap"
                        Margin="{StaticResource SmallTopMargin}"/>
 
@@ -116,51 +121,132 @@
                           IsOn="{Binding Mode=TwoWay, Path=Startup}"/>
 
 
-
             <TextBlock x:Uid="General_Updates"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
-            <StackPanel Orientation="Horizontal" 
-                        Margin="{StaticResource SmallTopMargin}"
-                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                <TextBlock x:Name="General_Version" x:Uid="General_Version" />
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
-                    <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
-                </HyperlinkButton>
-                <TextBlock Text="{x:Bind ViewModel.LatestAvailableVersion, Mode=OneWay}"
-                           Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                           Margin="16,0,0,0" />
-            </StackPanel>
 
-            <StackPanel Orientation="Horizontal" 
-                        Margin="{StaticResource SmallBottomMargin}"
-                        AutomationProperties.LabeledBy="{Binding ElementName=General_VersionLastChecked}"
-                        Visibility="{Binding AutoUpdatesEnabled,
-                                             Converter={StaticResource VisibleIfTrueConverter}}">
-                 <TextBlock x:Name="General_VersionLastChecked" x:Uid="General_VersionLastChecked" />
-                 <TextBlock Text="{x:Bind ViewModel.UpdateCheckedDate, Mode=OneWay}"
-                            Foreground="{ThemeResource ListViewItemForegroundPointerOver}"
-                            Margin="6,0" />
-            </StackPanel>
+            <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateUpToDateToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal"
+                            Margin="{StaticResource SmallTopMargin}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
+                    <TextBlock x:Name="General_Version" 
+                               x:Uid="General_Version" 
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                    <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" 
+                                     Margin="4,-6,0,0"
+                                     IsEnabled="{Binding AutoUpdatesEnabled}">
+                        <TextBlock Text="{Binding PowerToysVersion }" />
+                    </HyperlinkButton>
 
-            <Button x:Uid="GeneralPage_CheckForUpdates"
+                    <TextBlock Text="{Binding LatestAvailableVersion, Mode=OneWay}"
+                               Margin="16,0,0,0" 
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            Margin="{StaticResource SmallBottomMargin}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=General_VersionLastChecked}"
+                            Visibility="{Binding AutoUpdatesEnabled,
+                                                 Converter={StaticResource VisibleIfTrueConverter}}">
+                    <TextBlock x:Name="General_VersionLastChecked" x:Uid="General_VersionLastChecked" Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                    <TextBlock Text="{Binding UpdateCheckedDate, Mode=OneWay}"
+                                    Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                                    Margin="6,0" />
+                </StackPanel>
+
+                <Button x:Uid="GeneralPage_CheckForUpdates"
                     Style="{StaticResource AccentButtonStyle}"
                     Foreground="White"
                     Command="{Binding CheckForUpdatesEventHandler}"
                     IsEnabled="{Binding AutoUpdatesEnabled}"
                     />
+            </StackPanel>
 
-            <Button x:Uid="GeneralPage_UpdateNow"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Foreground="White"
-                    Command="{Binding UpdateNowButtonEventHandler}"
-                    IsEnabled="{Binding AutoUpdatesEnabled}" />
+            <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToDownloadToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal" 
+                        Margin="{StaticResource SmallTopMargin}"
+                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
+                    <TextBlock x:Name="General_VersionAvailable_ReadyToDownload" 
+                               x:Uid="General_VersionAvailable" 
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                    <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
+                        <TextBlock Text="{Binding PowerToysNewAvailableVersion }" />
+                    </HyperlinkButton>
+                    <TextBlock x:Name="General_IsAvailable_ReadyToDownload" 
+                               x:Uid="General_IsAvailable" 
+                               Margin="4,0,0,0" 
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                </StackPanel>
+
+                <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" Margin="0,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
+                    <TextBlock x:Name="General_ReadMore_ReadyToDownload" x:Uid="General_ReadMore" />
+                </HyperlinkButton>
+
+                <Button x:Uid="General_DownloadAndInstall"
+                        Margin="{StaticResource SmallTopMargin}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Foreground="White"
+                        Command="{Binding DownloadAndInstallEventHandler}"
+                        IsEnabled="{Binding AutoUpdatesEnabled}"/>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToInstallToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal" 
+                            Margin="{StaticResource SmallTopMargin}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
+                    <TextBlock x:Name="General_CurrentVersion_ReadyToInstall" 
+                               x:Uid="General_VersionAvailable" 
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                    <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
+                        <TextBlock Text="{Binding PowerToysNewAvailableVersion }" />
+                    </HyperlinkButton>
+
+                    <TextBlock x:Name="General_NewVersion_ReadyToInstall" 
+                               x:Uid="General_IsReadyToInstall" 
+                               Margin="4,0,0,0" 
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                </StackPanel>
+
+                <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" Margin="0,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
+                    <TextBlock x:Name="General_ReadMore_ReadyToInstall" x:Uid="General_ReadMore" />
+                </HyperlinkButton>
+
+                <Button x:Uid="General_InstallNow"
+                        Margin="{StaticResource SmallTopMargin}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Foreground="White"
+                        Command="{Binding InstallEventHandler}"
+                        IsEnabled="{Binding AutoUpdatesEnabled}"/>
+            </StackPanel>
+
+            <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateCannotDownloadToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal" 
+                        Margin="{StaticResource SmallTopMargin}"
+                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
+                    <TextBlock x:Name="General_FailedToDownloadTheNewVersion" 
+                               x:Uid="General_FailedToDownloadTheNewVersion"
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                    <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
+                        <TextBlock Text="{Binding PowerToysNewAvailableVersion }" />
+                    </HyperlinkButton>
+                </StackPanel>
+
+                <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" Margin="0,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
+                    <TextBlock x:Name="General_ReadMore_CannotDownload" x:Uid="General_ReadMore" />
+                </HyperlinkButton>
+
+                <Button x:Uid="General_DownloadAndInstall"
+                        Margin="{StaticResource SmallTopMargin}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Foreground="White"
+                        Command="{Binding DownloadAndInstallEventHandler}"
+                        IsEnabled="{Binding AutoUpdatesEnabled}"/>
+            </StackPanel>
 
             <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates" 
                           Margin="{StaticResource MediumTopMargin}"
                           Visibility="{Binding Mode=TwoWay, Path=IsAdmin, Converter={StaticResource VisibleIfTrueConverter}}"
                           IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}"
                           IsEnabled="{Binding AutoUpdatesEnabled}" />
-
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 

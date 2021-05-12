@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -17,7 +17,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private UpdatingSettings UpdatingSettingsConfig { get; set; }
+
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
+
+        public ButtonClickCommand DownloadAndInstallEventHandler { get; set; }
+
+        public ButtonClickCommand InstallEventHandler { get; set; }
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
@@ -40,6 +46,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
+            DownloadAndInstallEventHandler = new ButtonClickCommand(DownloadAndInstallClick);
+            InstallEventHandler = new ButtonClickCommand(InstallClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
             UpdateNowButtonEventHandler = new ButtonClickCommand(UpdateNowClick);
 
@@ -50,6 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
+            UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -90,6 +99,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             RunningAsAdminDefaultText = runAsAdminText;
 
             _isAdmin = isAdmin;
+
+            _updatingState = UpdatingSettingsConfig.State;
+            _newAvailableVersion = UpdatingSettingsConfig.NewVersion;
+            _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+            _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
         }
 
         private bool _packaged;
@@ -102,6 +116,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _isSystemThemeRadioButtonChecked;
         private bool _autoDownloadUpdates;
 
+        private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
+        private string _newAvailableVersion = string.Empty;
+        private string _newAvailableVersionLink = string.Empty;
         private string _latestAvailableVersion = string.Empty;
         private string _updateCheckedDate = string.Empty;
 
@@ -382,6 +399,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public UpdatingSettings.UpdatingState PowerToysUpdatingState
+        {
+            get
+            {
+                return _updatingState;
+            }
+        }
+
+        public string PowerToysNewAvailableVersion
+        {
+            get
+            {
+                return _newAvailableVersion;
+            }
+        }
+
+        public string PowerToysNewAvailableVersionLink
+        {
+            get
+            {
+                return _newAvailableVersionLink;
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
@@ -405,6 +446,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private void UpdateNowClick()
         {
             Process.Start(new ProcessStartInfo("powertoys://update_now") { UseShellExecute = true });
+        }
+
+        private void DownloadAndInstallClick()
+        {
+            // TODO
+        }
+
+        private void InstallClick()
+        {
+            // TODO
         }
 
         public void RequestUpdateCheckedDate()
