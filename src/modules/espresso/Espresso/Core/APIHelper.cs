@@ -49,13 +49,9 @@ namespace Espresso.Shell.Core
         private static extern bool AllocConsole();
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr GetStdHandle(int nStdHandle);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-
         public static extern IntPtr CreateFile([MarshalAs(UnmanagedType.LPTStr)] string filename,
                                                [MarshalAs(UnmanagedType.U4)] uint access,
                                                [MarshalAs(UnmanagedType.U4)] FileShare share,
@@ -74,13 +70,10 @@ namespace Espresso.Shell.Core
         {
             AllocConsole();
 
-            var outputHandle = GetStdHandle(StdOutputHandle);
             var outputFilePointer = CreateFile("CONOUT$", GenericRead | GenericWrite, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
-            if (outputFilePointer != outputHandle)
-            {
-                SetStdHandle(StdOutputHandle, outputFilePointer);
-                Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
-            }
+
+            SetStdHandle(StdOutputHandle, outputFilePointer);
+            Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
         }
 
         /// <summary>
