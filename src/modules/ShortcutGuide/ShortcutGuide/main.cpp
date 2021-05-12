@@ -54,7 +54,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         });
     }
 
-    auto ov = OverlayWindow();
+    auto window = OverlayWindow();
     run_message_loop();
 
     return 0;
