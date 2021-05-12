@@ -3,8 +3,7 @@
 
 #include <common/utils/resources.h>
 
-D2DWindow::D2DWindow(std::optional<std::function<std::remove_pointer_t<WNDPROC>>> _pre_wnd_proc) :
-    pre_wnd_proc(std::move(_pre_wnd_proc))
+D2DWindow::D2DWindow()
 {
     static const WCHAR* class_name = L"PToyD2DPopup";
     WNDCLASS wc = {};
@@ -190,12 +189,17 @@ D2DWindow* D2DWindow::this_from_hwnd(HWND window)
 LRESULT __stdcall D2DWindow::d2d_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
     auto self = this_from_hwnd(window);
-    if (self && self->pre_wnd_proc.has_value())
-    {
-        (*self->pre_wnd_proc)(window, message, wparam, lparam);
-    }
     switch (message)
     {
+    case WM_KEYDOWN:
+    {
+        if (wparam == VK_ESCAPE)
+        {
+            Logger::trace(L"ESC key was pressed. Terminating process. PID={}", GetCurrentProcessId());
+            PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
+            return 0;
+        }
+    }
     case WM_NCCREATE:
     {
         auto create_struct = reinterpret_cast<CREATESTRUCT*>(lparam);

@@ -19,9 +19,6 @@ public:
     OverlayWindow(HWND activeWindow);
     void ShowWindow();
     bool IsDisabled();
-    bool get_config(wchar_t* buffer, int* buffer_size);
-
-    void set_config(const wchar_t* config);
 
     void on_held();
     void on_held_press(DWORD vkCode);
