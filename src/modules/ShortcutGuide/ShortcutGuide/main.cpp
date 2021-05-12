@@ -58,7 +58,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     auto window = OverlayWindow(hwnd);
     if (window.IsDisabled())
     {
-        Logger::trace("SG is disabled for foreground app. Exiting SG");
+        Logger::trace("SG is disabled for the current foreground app. Exiting SG");
         return 0;
     }
 

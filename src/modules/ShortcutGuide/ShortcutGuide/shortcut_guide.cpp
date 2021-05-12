@@ -96,14 +96,17 @@ constexpr UINT alternative_switch_vk_code = VK_OEM_2;
 
 OverlayWindow::OverlayWindow(HWND activeWindow)
 {
-    this -> activeWindow = activeWindow;
     instance = this;
+    this -> activeWindow = activeWindow;
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
     app_key = ShortcutGuideConstants::ModuleKey;
 
     Logger::info("Overlay Window is creating");
     init_settings();
+}
 
+void OverlayWindow::ShowWindow()
+{
     auto switcher = [&](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
         if (msg == WM_KEYDOWN && wparam == VK_ESCAPE)
         {
@@ -128,10 +131,7 @@ OverlayWindow::OverlayWindow(HWND activeWindow)
         Logger::critical("Winkey popup failed to initialize");
         return;
     }
-}
 
-void OverlayWindow::ShowWindow()
-{
     target_state->toggle_force_shown();
 }
 
