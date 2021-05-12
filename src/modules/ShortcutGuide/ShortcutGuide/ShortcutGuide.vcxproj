@@ -172,6 +172,9 @@
   <ItemGroup>
     <Image Include="Shortcut-Guide.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="ShortcutGuide.exe.manifest" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">

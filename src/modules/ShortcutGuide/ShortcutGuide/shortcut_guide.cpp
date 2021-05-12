@@ -34,25 +34,13 @@ namespace
         bool disabled = false;
     };
 
-    ShortcutGuideWindowInfo GetShortcutGuideWindowInfo()
+    ShortcutGuideWindowInfo GetShortcutGuideWindowInfo(HWND active_window)
     {
         ShortcutGuideWindowInfo result;
-        auto active_window = GetForegroundWindow();
         active_window = GetAncestor(active_window, GA_ROOT);
         if (!IsWindowVisible(active_window))
         {
             return result;
-        }
-
-        WCHAR exePath[MAX_PATH] = L"";
-        instance->get_exe_path(active_window, exePath);
-        if (wcslen(exePath) > 0)
-        {
-            result.disabled = instance->is_disabled_app(exePath);
-            if (result.disabled)
-            {
-                return result;
-            }
         }
 
         auto style = GetWindowLong(active_window, GWL_STYLE);
@@ -106,15 +94,19 @@ constexpr int alternative_switch_hotkey_id = 0x2;
 constexpr UINT alternative_switch_modifier_mask = MOD_WIN | MOD_SHIFT;
 constexpr UINT alternative_switch_vk_code = VK_OEM_2;
 
-OverlayWindow::OverlayWindow()
+OverlayWindow::OverlayWindow(HWND activeWindow)
 {
     instance = this;
+    this -> activeWindow = activeWindow;
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
     app_key = ShortcutGuideConstants::ModuleKey;
 
     Logger::info("Overlay Window is creating");
     init_settings();
+}
 
+void OverlayWindow::ShowWindow()
+{
     auto switcher = [&](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
         if (msg == WM_KEYDOWN && wparam == VK_ESCAPE)
         {
@@ -141,6 +133,18 @@ OverlayWindow::OverlayWindow()
     }
 
     target_state->toggle_force_shown();
+}
+
+bool OverlayWindow::IsDisabled()
+{
+    WCHAR exePath[MAX_PATH] = L"";
+    instance->get_exe_path(activeWindow, exePath);
+    if (wcslen(exePath) > 0)
+    {
+        return is_disabled_app(exePath);
+    }
+
+    return false;
 }
 
 bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
@@ -219,7 +223,7 @@ OverlayWindow::~OverlayWindow()
 
 void OverlayWindow::on_held()
 {
-    auto windowInfo = GetShortcutGuideWindowInfo();
+    auto windowInfo = GetShortcutGuideWindowInfo(activeWindow);
     if (windowInfo.disabled)
     {
         target_state->was_hidden();
