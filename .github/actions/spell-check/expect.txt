@@ -341,6 +341,7 @@ CTest
 ctime
 CTLCOLORSTATIC
 ctor
+CTriage
 CTRLALTDEL
 Ctrls
 Ctx
@@ -403,7 +404,9 @@ DEFPUSHBUTTON
 deinitialization
 DELA
 deletethis
+Delimarsky
 delims
+dend
 DENORMAL
 depersist
 deprioritized
@@ -450,6 +453,7 @@ dllexport
 dllhost
 dllmain
 DNLEN
+docsmsft
 doctype
 DONTVALIDATEPATH
 dotnet
@@ -882,6 +886,7 @@ INSTALLLOCATION
 INSTALLLOGATTRIBUTES
 INSTALLLOGMODE
 INSTALLMESSAGE
+installpowertoys
 INSTALLPROPERTY
 INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
@@ -982,6 +987,7 @@ JPN
 json
 JSONOf
 jsonval
+jsoref
 JSX
 junja
 jxr
@@ -1487,6 +1493,7 @@ powershell
 powertoy
 powertoysinterop
 powertoyssetup
+powertoyswiki
 Powrprof
 ppenum
 ppidl
@@ -1803,6 +1810,7 @@ SMALLICON
 SMTO
 snd
 somil
+Soref
 SORTDOWN
 SOURCECLIENTAREAONLY
 SOURCEHEADER
