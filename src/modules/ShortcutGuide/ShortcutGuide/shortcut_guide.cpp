@@ -119,7 +119,7 @@ OverlayWindow::OverlayWindow()
         if (msg == WM_KEYDOWN && wparam == VK_ESCAPE)
         {
             Logger::trace(L"ESC key was pressed. Terminating process. PID={}", GetCurrentProcessId());
-            PostQuitMessage(0);
+            PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
             return 0;
         }
 
