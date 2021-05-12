@@ -1198,12 +1198,6 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
   </data>
-  <data name="General_CurrentVersion.Text" xml:space="preserve">
-    <value>Current version:</value>
-  </data>
-  <data name="General_NewVersion.Text" xml:space="preserve">
-    <value>New version:</value>
-  </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download and install</value>
   </data>
@@ -1215,9 +1209,6 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="General_ReadMore.Text" xml:space="preserve">
     <value>Read more</value>
-  </data>
-  <data name="General_TryAgain.Content" xml:space="preserve">
-    <value>Try again</value>
   </data>
   <data name="General_IsAvailable.Text" xml:space="preserve">
     <value>is available.</value>
