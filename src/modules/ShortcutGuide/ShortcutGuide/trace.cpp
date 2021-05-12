@@ -53,12 +53,11 @@ void Trace::EnableShortcutGuide(const bool enabled) noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::SettingsChanged(const int press_delay_time, const int overlay_opacity, const std::wstring& theme) noexcept
+void Trace::SettingsChanged(const int overlay_opacity, const std::wstring& theme) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
         "ShortcutGuide_SettingsChanged",
-        TraceLoggingInt32(press_delay_time, "PressDelayTime"),
         TraceLoggingInt32(overlay_opacity, "OverlayOpacity"),
         TraceLoggingWideString(theme.c_str(), "Theme"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),

@@ -19,14 +19,18 @@ public:
     virtual void disable() override;
     virtual bool is_enabled() override;
     virtual void destroy() override;
+    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) override;
+    virtual bool on_hotkey(size_t hotkeyId) override;
+
 private:
     std::wstring app_name;
     //contains the non localized key of the powertoy
     std::wstring app_key;
     bool _enabled = false;
-    HANDLE m_hProcess;
+    HANDLE m_hProcess = nullptr;
 
     void disable(bool trace_event);
     bool StartProcess();
     void TerminateProcess();
+    bool IsProcessActive();
 };
