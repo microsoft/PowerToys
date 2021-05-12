@@ -121,7 +121,7 @@
                             LargeChange="5"/>
                     <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Minutes"
                             Value="{Binding Minutes, Mode=TwoWay}"
-                            Minimum="0"
+                            Minimum="1"
                             SpinButtonPlacementMode="Compact"
                             Margin="8,0,0,0"
                             HorizontalAlignment="Left"
