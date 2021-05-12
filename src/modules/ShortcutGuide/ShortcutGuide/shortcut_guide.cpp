@@ -43,17 +43,6 @@ namespace
             return result;
         }
 
-        WCHAR exePath[MAX_PATH] = L"";
-        instance->get_exe_path(active_window, exePath);
-        if (wcslen(exePath) > 0)
-        {
-            result.disabled = instance->is_disabled_app(exePath);
-            if (result.disabled)
-            {
-                return result;
-            }
-        }
-
         auto style = GetWindowLong(active_window, GWL_STYLE);
         auto exStyle = GetWindowLong(active_window, GWL_EXSTYLE);
         if ((style & WS_CHILD) == WS_CHILD ||
@@ -105,9 +94,9 @@ constexpr int alternative_switch_hotkey_id = 0x2;
 constexpr UINT alternative_switch_modifier_mask = MOD_WIN | MOD_SHIFT;
 constexpr UINT alternative_switch_vk_code = VK_OEM_2;
 
-OverlayWindow::OverlayWindow()
+OverlayWindow::OverlayWindow(HWND activeWindow)
 {
-    active_window = GetForegroundWindow();
+    this -> activeWindow = activeWindow;
     instance = this;
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
     app_key = ShortcutGuideConstants::ModuleKey;
@@ -139,8 +128,23 @@ OverlayWindow::OverlayWindow()
         Logger::critical("Winkey popup failed to initialize");
         return;
     }
+}
 
+void OverlayWindow::ShowWindow()
+{
     target_state->toggle_force_shown();
+}
+
+bool OverlayWindow::IsDisabled()
+{
+    WCHAR exePath[MAX_PATH] = L"";
+    instance->get_exe_path(activeWindow, exePath);
+    if (wcslen(exePath) > 0)
+    {
+        return is_disabled_app(exePath);
+    }
+
+    return false;
 }
 
 bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
@@ -219,7 +223,7 @@ OverlayWindow::~OverlayWindow()
 
 void OverlayWindow::on_held()
 {
-    auto windowInfo = GetShortcutGuideWindowInfo(active_window);
+    auto windowInfo = GetShortcutGuideWindowInfo(activeWindow);
     if (windowInfo.disabled)
     {
         target_state->was_hidden();

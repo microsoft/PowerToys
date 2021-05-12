@@ -16,7 +16,9 @@ class TargetState;
 class OverlayWindow
 {
 public:
-    OverlayWindow();
+    OverlayWindow(HWND activeWindow);
+    void ShowWindow();
+    bool IsDisabled();
     bool get_config(wchar_t* buffer, int* buffer_size);
 
     void set_config(const wchar_t* config);
@@ -42,7 +44,7 @@ private:
     std::vector<std::wstring> disabled_apps_array;
     void init_settings();
     void update_disabled_apps();
-    HWND active_window;
+    HWND activeWindow;
 
     struct OverlayOpacity
     {
