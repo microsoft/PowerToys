@@ -28,9 +28,9 @@ private:
     std::wstring app_key;
     bool _enabled = false;
     HANDLE m_hProcess = nullptr;
-    HANDLE shortcutEvent;
 
     void disable(bool trace_event);
     bool StartProcess();
     void TerminateProcess();
+    bool IsProcessActive();
 };
