@@ -78,21 +78,14 @@ namespace Espresso.Shell.Core
             return SetAwakeState(EXECUTION_STATE.ES_CONTINUOUS);
         }
 
-        /// <summary>
-        /// Sets up the machine to be awake indefinitely.
-        /// </summary>
-        /// <param name="keepDisplayOn">Determines whether the display should be kept on while the machine is awake.</param>
-        /// <returns>Status of the attempt. True if successful, false if not.</returns>
-        public static bool SetIndefiniteKeepAwake(bool keepDisplayOn = true)
+        public static void SetIndefiniteKeepAwake(Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
         {
-            if (keepDisplayOn)
-            {
-                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-            }
-            else
-            {
-                return SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-            }
+            _tokenSource = new CancellationTokenSource();
+            _threadToken = _tokenSource.Token;
+
+            Task.Run(() => RunIndefiniteLoop(keepDisplayOn), _threadToken)
+                .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
+                .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
         }
 
         public static void SetTimedKeepAwake(long seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
@@ -103,6 +96,45 @@ namespace Espresso.Shell.Core
             Task.Run(() => RunTimedLoop(seconds, keepDisplayOn), _threadToken)
                 .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
                 .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
+        }
+
+        private static bool RunIndefiniteLoop(bool keepDisplayOn = true)
+        {
+            bool success;
+            if (keepDisplayOn)
+            {
+                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+            }
+            else
+            {
+                success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
+            }
+
+            try
+            {
+                if (success)
+                {
+                    _log.Info("Initiated indefinite keep awake in background thread.");
+                    while (true)
+                    {
+                        if (_threadToken.IsCancellationRequested)
+                        {
+                            _threadToken.ThrowIfCancellationRequested();
+                        }
+                    }
+                }
+                else
+                {
+                    _log.Info("Could not successfully set up indefinite keep awake.");
+                    return success;
+                }
+            }
+            catch (OperationCanceledException ex)
+            {
+                // Task was clearly cancelled.
+                _log.Info($"Background thread termination. Message: {ex.Message}");
+                return success;
+            }
         }
 
         private static bool RunTimedLoop(long seconds, bool keepDisplayOn = true)

@@ -186,38 +186,29 @@ namespace Espresso.Shell
                 }
             }
 
+            var exitSignal = new ManualResetEvent(false);
             if (pid != 0)
             {
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
+                    exitSignal.Set();
                     Environment.Exit(0);
                 });
             }
 
-            new ManualResetEvent(false).WaitOne();
+            exitSignal.WaitOne();
         }
 
         private static void SetupIndefiniteKeepAwake(bool displayOn)
         {
             // Indefinite keep awake.
-            bool success = APIHelper.SetIndefiniteKeepAwake(displayOn);
-            if (success)
-            {
-                _log.Info($"Currently in indefinite keep awake. Display always on: {displayOn}");
-            }
-            else
-            {
-                var errorMessage = "Could not set up the state to be indefinite keep awake.";
-                _log.Info(errorMessage);
-                _log.Debug(errorMessage);
-            }
+            APIHelper.SetIndefiniteKeepAwake(LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
         }
 
         private static void HandleEspressoConfigChange(FileSystemEventArgs fileEvent)
         {
             _log.Info("Detected a settings file change. Updating configuration...");
             _log.Info("Resetting keep-awake to normal state due to settings change.");
-            ResetNormalPowerState();
             ProcessSettings();
         }
 
@@ -277,34 +268,19 @@ namespace Espresso.Shell
         {
             _log.Info($"Timed keep-awake. Expected runtime: {time} seconds with display on setting set to {displayOn}.");
 
-            APIHelper.SetTimedKeepAwake(time, LogTimedKeepAwakeCompletion, LogUnexpectedOrCancelledKeepAwakeCompletion, displayOn);
+            APIHelper.SetTimedKeepAwake(time, LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
         }
 
-        private static void LogUnexpectedOrCancelledKeepAwakeCompletion()
+        private static void LogUnexpectedOrCancelledKeepAwakeThreadCompletion()
         {
             var errorMessage = "The keep-awake thread was terminated early.";
             _log.Info(errorMessage);
             _log.Debug(errorMessage);
         }
 
-        private static void LogTimedKeepAwakeCompletion(bool result)
+        private static void LogCompletedKeepAwakeThread(bool result)
         {
-            _log.Info($"Completed timed keep-awake successfully: {result}");
-        }
-
-        private static void ResetNormalPowerState()
-        {
-            bool success = APIHelper.SetNormalKeepAwake();
-            if (success)
-            {
-                _log.Info("Returned to normal keep-awake state.");
-            }
-            else
-            {
-                var errorMessage = "Could not return to normal keep-awake state.";
-                _log.Info(errorMessage);
-                _log.Debug(errorMessage);
-            }
+            _log.Info($"Exited keep-awake thread successfully: {result}");
         }
     }
 }
