@@ -116,7 +116,7 @@ namespace FancyZonesEditor
             MagneticSnap snapX = new MagneticSnap(GridData.PrefixSum(Model.ColumnPercents).GetRange(1, Model.ColumnPercents.Count - 1), actualSize.Width);
             MagneticSnap snapY = new MagneticSnap(GridData.PrefixSum(Model.RowPercents).GetRange(1, Model.RowPercents.Count - 1), actualSize.Height);
 
-            for (int zoneIndex = 0; zoneIndex < _data.Zones.Count(); zoneIndex++)
+            for (int zoneIndex = 0; zoneIndex < _data.Zones.Count; zoneIndex++)
             {
                 // this is needed for the lambda
                 int zoneIndexCopy = zoneIndex;
@@ -379,7 +379,7 @@ namespace FancyZonesEditor
 
             var selectedIndices = new List<int>();
 
-            for (int zoneIndex = 0; zoneIndex < _data.Zones.Count(); zoneIndex++)
+            for (int zoneIndex = 0; zoneIndex < _data.Zones.Count; zoneIndex++)
             {
                 var zoneData = _data.Zones[zoneIndex];
 
@@ -418,7 +418,7 @@ namespace FancyZonesEditor
 
             var selectedIndices = new List<int>();
 
-            for (int zoneIndex = 0; zoneIndex < _data.Zones.Count(); zoneIndex++)
+            for (int zoneIndex = 0; zoneIndex < _data.Zones.Count; zoneIndex++)
             {
                 if ((Preview.Children[zoneIndex] as GridZone).IsSelected)
                 {

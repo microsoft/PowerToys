@@ -174,9 +174,12 @@ namespace FancyZonesEditor
         public static void ShowExceptionReportMessageBox(string reportData)
         {
             var fileStream = File.OpenWrite(ErrorReportLogFile);
-            var sw = new StreamWriter(fileStream);
-            sw.Write(reportData);
-            sw.Flush();
+            using (var sw = new StreamWriter(fileStream))
+            {
+                sw.Write(reportData);
+                sw.Flush();
+            }
+
             fileStream.Close();
 
             ShowReportMessageBox(fileStream.Name);
@@ -185,8 +188,11 @@ namespace FancyZonesEditor
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
             var fileStream = File.OpenWrite(CrashReportLogFile);
-            var sw = new StreamWriter(fileStream);
-            sw.Write(FormatException((Exception)args.ExceptionObject));
+            using (var sw = new StreamWriter(fileStream))
+            {
+                sw.Write(FormatException((Exception)args.ExceptionObject));
+            }
+
             fileStream.Close();
 
             ShowReportMessageBox(fileStream.Name);
