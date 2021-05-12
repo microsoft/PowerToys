@@ -4,6 +4,7 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
+#include <common/interop/shared_constants.h>
 
 #include "trace.h"
 
@@ -84,17 +85,23 @@ void OverlayWindow::TerminateProcess()
     {
         if (WaitForSingleObject(m_hProcess, 0) != WAIT_OBJECT_0)
         {
-            ::TerminateProcess(m_hProcess, 0);
-            m_hProcess = nullptr;
+            if (!::TerminateProcess(m_hProcess, 0))
+            {
+                Logger::warn(L"Failed to terminate the process");
+            }
+            else
+            {
+                CloseHandle(m_hProcess);
+                m_hProcess = nullptr;
+                Logger::trace("Terminated the process successfully");
+            }
         }
         else
         {
-            Logger::warn("SG process was already terminated");
+            CloseHandle(m_hProcess);
+            m_hProcess = nullptr;
+            Logger::trace("SG process was already terminated");
         }
-    }
-    else
-    {
-        Logger::warn("Process handle is not initialized");
     }
 }
 
@@ -105,10 +112,7 @@ void OverlayWindow::enable()
     if (!_enabled)
     {
         Trace::EnableShortcutGuide(true);
-        if (StartProcess())
-        {
-            _enabled = true;
-        }
+        _enabled = true;
     }
     else
     {
@@ -118,7 +122,7 @@ void OverlayWindow::enable()
 
 void OverlayWindow::disable(bool trace_event)
 {
-    Logger::info("Shortcut Guide is disabling");
+    Logger::info("OverlayWindow::disable");
     if (_enabled)
     {
         _enabled = false;
@@ -149,4 +153,47 @@ void OverlayWindow::destroy()
 {
     this->disable(false);
     delete this;
+}
+
+bool OverlayWindow::IsProcessActive()
+{
+    return m_hProcess && WaitForSingleObject(m_hProcess, 0) != WAIT_OBJECT_0;
+}
+
+size_t OverlayWindow::get_hotkeys(Hotkey* buffer, size_t buffer_size)
+{
+    if (buffer_size < 1)
+    {
+        return 1;
+    }
+
+    buffer[0].win = true;
+    buffer[0].alt = false;
+    buffer[0].shift = true;
+    buffer[0].ctrl = false;
+    buffer[0].key = VK_OEM_2;
+    return 1;
+}
+
+bool OverlayWindow::on_hotkey(size_t hotkeyId)
+{
+    if (!_enabled)
+    {
+        return false;
+    }
+
+    if (hotkeyId == 0)
+    {
+        Logger::trace("On hotkey");
+        if (IsProcessActive())
+        {
+            TerminateProcess();
+            return true;
+        }
+
+        StartProcess();
+        return true;
+    }
+
+    return false;
 }

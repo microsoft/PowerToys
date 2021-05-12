@@ -12,10 +12,9 @@ struct KeyEvent
 class TargetState
 {
 public:
-    TargetState(int ms_delay);
+    TargetState() = default;
     void was_hidden();
     void exit();
-    void set_delay(int ms_delay);
 
     void toggle_force_shown();
     bool active() const;

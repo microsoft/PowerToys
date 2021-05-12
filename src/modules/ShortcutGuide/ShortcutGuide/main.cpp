@@ -54,16 +54,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         });
     }
 
-    instance = new OverlayWindow();
-    instance->enable();
-
+    auto window = OverlayWindow();
     run_message_loop();
-    instance->disable();
-
-    if (instance)
-    {
-        delete instance;
-    }
 
     return 0;
 }
