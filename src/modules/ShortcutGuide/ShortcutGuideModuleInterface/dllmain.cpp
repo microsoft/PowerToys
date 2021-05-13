@@ -10,6 +10,7 @@
 #include "trace.h"
 #include "../interface/powertoy_module_interface.h"
 #include "Generated Files/resource.h"
+#include <common/SettingsAPI/settings_objects.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -28,6 +29,15 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
+namespace
+{
+    const wchar_t JSON_KEY_WIN[] = L"win";
+    const wchar_t JSON_KEY_ALT[] = L"alt";
+    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
+    const wchar_t JSON_KEY_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY_CODE[] = L"code";
+}
+
 class ShortcutGuideModule : public PowertoyModuleIface
 {
 public:
@@ -40,6 +50,8 @@ public:
         std::filesystem::path oldLogPath(PTSettingsHelper::get_module_save_folder_location(app_key));
         oldLogPath.append("ShortcutGuideLogs");
         LoggerHelpers::delete_old_log_folder(oldLogPath);
+
+        InitSettings();
     }
 
     virtual const wchar_t* get_name() override
@@ -59,6 +71,18 @@ public:
 
     virtual void set_config(const wchar_t* config) override
     {
+        try
+        {
+            // Parse the input JSON string.
+            PowerToysSettings::PowerToyValues values =
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
+
+            ParseHotkey(values);
+        }
+        catch (std::exception ex)
+        {
+            Logger::error("Failed to parse settings. {}", ex.what());
+        }
     }
 
     virtual void enable() override
@@ -99,11 +123,7 @@ public:
             return 1;
         }
 
-        buffer[0].win = true;
-        buffer[0].alt = false;
-        buffer[0].shift = true;
-        buffer[0].ctrl = false;
-        buffer[0].key = VK_OEM_2;
+        buffer[0] = m_hotkey;
         return 1;
     }
 
@@ -140,6 +160,9 @@ private:
     std::wstring app_key;
     bool _enabled = false;
     HANDLE m_hProcess = nullptr;
+    
+    // Hotkey to invoke the module
+    Hotkey m_hotkey = { .key = 0 };
 
     void disable(bool trace_event)
     {
@@ -217,6 +240,60 @@ private:
     bool IsProcessActive()
     {
         return m_hProcess && WaitForSingleObject(m_hProcess, 0) != WAIT_OBJECT_0;
+    }
+
+    void InitSettings()
+    {
+        try
+        {
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(app_key);
+
+            ParseHotkey(settings);
+        }
+        catch (std::exception ex)
+        {
+            Logger::error("Failed to init settings. {}", ex.what());
+        }
+        catch(...)
+        {
+            Logger::error("Failed to init settings");
+        }
+    }
+
+    void ParseHotkey(PowerToysSettings::PowerToyValues& settings)
+    {
+        auto settingsObject = settings.get_raw_json();
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"open_shortcutguide");
+                m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize Shortcut Guide start shortcut");
+            }
+        }
+        else
+        {
+            Logger::info("Shortcut Guide settings are empty");
+        }
+
+        if (!m_hotkey.key)
+        {
+            Logger::info("Shortcut Guide is going to use default shortcut");
+            m_hotkey.win = true;
+            m_hotkey.alt = false;
+            m_hotkey.shift = true;
+            m_hotkey.ctrl = false;
+            m_hotkey.key = VK_OEM_2;
+        }
     }
 };
 
