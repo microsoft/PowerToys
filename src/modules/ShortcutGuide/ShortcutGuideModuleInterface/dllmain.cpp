@@ -154,7 +154,7 @@ private:
 
     void disable(bool trace_event)
     {
-        Logger::info("OverlayWindow::disable");
+        Logger::info("ShortcutGuideModule::disable()");
         if (_enabled)
         {
             _enabled = false;
