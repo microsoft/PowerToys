@@ -15,7 +15,7 @@
 const std::wstring instanceMutexName = L"Local\\PowerToys_ShortcutGuide_InstanceMutex";
 
 // set current path to the executable path
-bool setCurrentPath() 
+bool SetCurrentPath() 
 {
     TCHAR buffer[MAX_PATH] = { 0 };
     if (!GetModuleFileName(NULL, buffer, MAX_PATH))
@@ -48,7 +48,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     InitUnhandledExceptionHandler_x64();
     Logger::trace("Starting Shortcut Guide with pid={}", GetCurrentProcessId());
 
-    if (!setCurrentPath())
+    if (!SetCurrentPath())
     {
         return false;
     }
