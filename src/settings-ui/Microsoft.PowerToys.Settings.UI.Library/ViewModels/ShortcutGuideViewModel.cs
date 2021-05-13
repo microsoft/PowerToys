@@ -102,6 +102,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public HotkeySettings OpenShortcutGuide
+        {
+            get
+            {
+                return Settings.Properties.OpenShortcutGuide;
+            }
+
+            set
+            {
+                if (Settings.Properties.OpenShortcutGuide != value)
+                {
+                    Settings.Properties.OpenShortcutGuide = value;
+                    OnPropertyChanged(nameof(OpenShortcutGuide));
+                }
+            }
+        }
+
         public int ThemeIndex
         {
             get
@@ -184,6 +201,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
+
+            // todo: send config to the runner
             SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
     }
