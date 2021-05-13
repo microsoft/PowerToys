@@ -32,9 +32,9 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
         {
             switch ((bool)value)
             {
-                case false:
-                    return EspressoMode.INDEFINITE;
                 case true:
+                    return EspressoMode.INDEFINITE;
+                case false:
                     return EspressoMode.TIMED;
             }
 

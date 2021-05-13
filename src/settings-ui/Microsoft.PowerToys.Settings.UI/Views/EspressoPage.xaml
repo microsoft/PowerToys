@@ -8,7 +8,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:c="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:Custom="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:Color="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels" xmlns:Interactivity="using:Microsoft.Xaml.Interactivity" xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:Color="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels" xmlns:Interactivity="using:Microsoft.Xaml.Interactivity" xmlns:Core="using:Microsoft.Xaml.Interactions.Core" xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" 
@@ -121,7 +121,7 @@
                             LargeChange="5"/>
                     <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Minutes"
                             Value="{Binding Minutes, Mode=TwoWay}"
-                            Minimum="1"
+                            Minimum="0"
                             SpinButtonPlacementMode="Compact"
                             Margin="8,0,0,0"
                             HorizontalAlignment="Left"
