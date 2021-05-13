@@ -134,7 +134,7 @@ namespace Espresso.Shell.Core
 
             var displayOnMenuItem = new ToolStripMenuItem
             {
-                Text = "Keep display on",
+                Text = "Keep screen on",
             };
             if (keepDisplayOn)
             {
