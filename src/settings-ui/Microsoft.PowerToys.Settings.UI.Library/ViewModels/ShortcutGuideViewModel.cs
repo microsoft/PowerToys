@@ -202,8 +202,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             OnPropertyChanged(propertyName);
 
-            // todo: send config to the runner
-            SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+            SndShortcutGuideSettings outsettings = new SndShortcutGuideSettings(Settings);
+            SndModuleSettings<SndShortcutGuideSettings> ipcMessage = new SndModuleSettings<SndShortcutGuideSettings>(outsettings);
+            var settingsString = ipcMessage.ToJsonString();
+            SendConfigMSG(settingsString);
+            SettingsUtils.SaveSettings(settingsString, ModuleName);
         }
     }
 }
