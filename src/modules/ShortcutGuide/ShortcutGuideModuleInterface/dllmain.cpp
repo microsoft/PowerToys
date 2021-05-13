@@ -29,15 +29,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
-namespace
-{
-    const wchar_t JSON_KEY_WIN[] = L"win";
-    const wchar_t JSON_KEY_ALT[] = L"alt";
-    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
-    const wchar_t JSON_KEY_SHIFT[] = L"shift";
-    const wchar_t JSON_KEY_CODE[] = L"code";
-}
-
 class ShortcutGuideModule : public PowertoyModuleIface
 {
 public:
@@ -152,10 +143,6 @@ public:
     }
 
 private:
-    const int alternative_switch_hotkey_id = 0x2;
-    const UINT alternative_switch_modifier_mask = MOD_WIN | MOD_SHIFT;
-    const UINT alternative_switch_vk_code = VK_OEM_2;
-
     std::wstring app_name;
     //contains the non localized key of the powertoy
     std::wstring app_key;
@@ -163,7 +150,7 @@ private:
     HANDLE m_hProcess = nullptr;
     
     // Hotkey to invoke the module
-    Hotkey m_hotkey = { .key = 0 };
+    Hotkey m_hotkey;
 
     void disable(bool trace_event)
     {
@@ -270,11 +257,12 @@ private:
             try
             {
                 auto jsonHotkeyObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"open_shortcutguide");
-                m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-                m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-                m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-                m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-                m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonHotkeyObject);
+                m_hotkey.win = hotkey.win_pressed();
+                m_hotkey.ctrl = hotkey.ctrl_pressed();
+                m_hotkey.shift = hotkey.shift_pressed();
+                m_hotkey.alt = hotkey.alt_pressed();
+                m_hotkey.key = hotkey.get_code();
             }
             catch (...)
             {
