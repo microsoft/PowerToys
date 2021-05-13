@@ -14,6 +14,33 @@
 
 const std::wstring instanceMutexName = L"Local\\PowerToys_ShortcutGuide_InstanceMutex";
 
+// set current path to the executable path
+bool SetCurrentPath() 
+{
+    TCHAR buffer[MAX_PATH] = { 0 };
+    if (!GetModuleFileName(NULL, buffer, MAX_PATH))
+    {
+        Logger::error(L"Failed to get module path. {}", get_last_error_or_default(GetLastError()));
+        return false;
+    }
+
+    if (!PathRemoveFileSpec(buffer))
+    {
+        Logger::error(L"Failed to remove file from module path. {}", get_last_error_or_default(GetLastError()));
+        return false;
+    }
+
+    std::error_code err;
+    std::filesystem::current_path(buffer, err);
+    if (err.value())
+    {
+        Logger::error("Failed to set current path. {}", err.message());
+        return false;
+    }
+
+    return true;
+}
+
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR lpCmdLine, _In_ int nCmdShow)
 {
     winrt::init_apartment();
@@ -21,6 +48,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     InitUnhandledExceptionHandler_x64();
     Logger::trace("Starting Shortcut Guide with pid={}", GetCurrentProcessId());
 
+    if (!SetCurrentPath())
+    {
+        return false;
+    }
+    
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {
