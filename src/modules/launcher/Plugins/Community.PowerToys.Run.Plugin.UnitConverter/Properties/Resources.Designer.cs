@@ -61,6 +61,15 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy (Enter).
+        /// </summary>
+        public static string context_menu_copy {
+            get {
+                return ResourceManager.GetString("context_menu_copy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy failed.
         /// </summary>
         public static string copy_failed {

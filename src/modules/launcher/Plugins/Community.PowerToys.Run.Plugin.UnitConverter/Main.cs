@@ -4,13 +4,14 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+using System.Windows.Input;
 using ManagedCommon;
 using UnitsNet;
 using Wox.Plugin;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
-    public class Main : IPlugin, IPluginI18n, IDisposable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, IDisposable
     {
         public string Name => Properties.Resources.plugin_name;
 
@@ -78,24 +79,27 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             foreach (QuantityType quantityType in _included)
             {
                 double convertedValue = UnitHandler.ConvertInput(split, quantityType, _currentCulture);
+
                 if (!double.IsNaN(convertedValue))
                 {
-                    AddToResult(final_list, Math.Round(convertedValue, _roundingFractionalDigits), split[3], quantityType);
+                    UnitConversionResult result = new UnitConversionResult(Math.Round(convertedValue, _roundingFractionalDigits), split[3], quantityType);
+                    AddToResult(final_list, result);
                 }
             }
 
             return final_list;
         }
 
-        private void AddToResult(List<Result> currentList, double converted_value, string unit_name, QuantityType quantity_type)
+        private void AddToResult(List<Result> currentList, UnitConversionResult result)
         {
             // answer found, add result to list
             currentList.Add(new Result
             {
-                Title = string.Format("{0} {1}", converted_value, unit_name),
+                ContextData = result,
+                Title = string.Format("{0} {1}", result.ConvertedValue, result.UnitName),
                 IcoPath = _icon_path,
                 Score = 300,
-                SubTitle = string.Format(Properties.Resources.copy_to_clipboard, quantity_type),
+                SubTitle = string.Format(Properties.Resources.copy_to_clipboard, result.QuantityType),
                 Action = c =>
                 {
                     var ret = false;
@@ -103,7 +107,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(converted_value.ToString());
+                            Clipboard.SetText(result.ConvertedValue.ToString());
                             ret = true;
                         }
                         catch (ExternalException)
@@ -117,6 +121,52 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     return ret;
                 },
             });
+        }
+
+        private ContextMenuResult CreateContextMenuEntry(UnitConversionResult result)
+        {
+            return new ContextMenuResult
+            {
+                PluginName = Name,
+                Title = Properties.Resources.context_menu_copy,
+                Glyph = "\xE8C8",
+                FontFamily = "Segoe MDL2 Assets",
+                AcceleratorKey = Key.Enter,
+                Action = _ =>
+                {
+                    bool ret = false;
+                    var thread = new Thread(() =>
+                    {
+                        try
+                        {
+                            Clipboard.SetText(result.ConvertedValue.ToString());
+                            ret = true;
+                        }
+                        catch (ExternalException)
+                        {
+                            MessageBox.Show(Properties.Resources.copy_failed);
+                        }
+                    });
+                    thread.SetApartmentState(ApartmentState.STA);
+                    thread.Start();
+                    thread.Join();
+                    return ret;
+                },
+            };
+        }
+
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
+        {
+            if (!(selectedResult?.ContextData is UnitConversionResult))
+            {
+                return new List<ContextMenuResult>();
+            }
+
+            List<ContextMenuResult> contextResults = new List<ContextMenuResult>();
+            UnitConversionResult result = selectedResult.ContextData as UnitConversionResult;
+            contextResults.Add(CreateContextMenuEntry(result));
+
+            return contextResults;
         }
 
         public string GetTranslatedPluginTitle()

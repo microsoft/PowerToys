@@ -15,7 +15,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// <summary>
         /// Separates input like: "1ft in cm" to "1 ft in cm"
         /// </summary>
-        /// <param name="split"></param>
         public static void InputSpaceInserter(ref string[] split)
         {
             if (split.Length != 3)
@@ -37,8 +36,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// <summary>
         /// Replaces a split input array with shorthand feet/inch notation (1', 1'2" etc) to 'x foot in cm'.
         /// </summary>
-        /// <param name="split"></param>
-        /// <param name="culture"></param>
         public static void ShorthandFeetInchHandler(ref string[] split, CultureInfo culture)
         {
             if (!split[0].Contains('\'') && !split[0].Contains('\"'))
@@ -100,7 +97,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// <summary>
         /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' becomes '10 °c in DegreeFahrenheit'.
         /// </summary>
-        /// <param name="split"></param>
         public static void DegreePrefixer(ref string[] split)
         {
             switch (split[1].ToLower())
