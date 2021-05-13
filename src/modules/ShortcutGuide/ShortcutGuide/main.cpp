@@ -26,7 +26,7 @@ bool setCurrentPath()
 
     if (!PathRemoveFileSpec(buffer))
     {
-        Logger::error(L"Failed to fail file from module path. {}", get_last_error_or_default(GetLastError()));
+        Logger::error(L"Failed to remove file from module path. {}", get_last_error_or_default(GetLastError()));
         return false;
     }
 
@@ -34,7 +34,7 @@ bool setCurrentPath()
     std::filesystem::current_path(buffer, err);
     if (err.value())
     {
-        Logger::error("Failed to fail file from module path. {}", err.message());
+        Logger::error("Failed to set current path. {}", err.message());
         return false;
     }
 
