@@ -10,12 +10,15 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
-      <Item ItemId=";Cant_Drag_Elevated" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Cant_Drag_Elevated" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[We've detected an application running with administrator privileges. This blocks some functionality in PowerToys. Visit our wiki page to learn more.]]></Val>
+          <Val><![CDATA[We've detected an application running with administrator privileges. This will prevent certain interactions with these applications.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[偵測到以系統管理員權限執行的應用程式。這會導致 PowerToys 中的某些功能無法執行。若要深入了解，請瀏覽我們的 Wiki 頁面。]]></Val>
+            <Val><![CDATA[我們偵測到執行系統管理員權限的應用程式。這會禁止這些應用程式的特定互動。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[We've detected an application running with administrator privileges. This blocks some functionality in PowerToys. Visit our wiki page to learn more.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

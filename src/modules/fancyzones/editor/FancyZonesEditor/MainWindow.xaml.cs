@@ -60,14 +60,24 @@ namespace FancyZonesEditor
         {
             if (e.Key == Key.Escape)
             {
-                if (_openedDialog != null)
-                {
-                    _openedDialog.Hide();
-                }
-                else
-                {
-                    OnClosing(sender, null);
-                }
+                CloseDialog(sender);
+            }
+        }
+
+        private void LayoutItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            CloseDialog(sender);
+        }
+
+        private void CloseDialog(object sender)
+        {
+            if (_openedDialog != null)
+            {
+                _openedDialog.Hide();
+            }
+            else
+            {
+                OnClosing(sender, null);
             }
         }
 
@@ -102,13 +112,6 @@ namespace FancyZonesEditor
         private void LayoutItem_MouseEnter(object sender, MouseEventArgs e)
         {
             // Select(((Grid)sender).DataContext as LayoutModel);
-        }
-
-        private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
-        {
-            LayoutModel selectedLayoutModel = ((Grid)sender).DataContext as LayoutModel;
-            Select(selectedLayoutModel);
-            Apply();
         }
 
         private void LayoutItem_Focused(object sender, RoutedEventArgs e)
@@ -261,6 +264,8 @@ namespace FancyZonesEditor
 
         private void EditZones_Click(object sender, RoutedEventArgs e)
         {
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            Select((LayoutModel)dataContext);
             EditLayoutDialog.Hide();
             var mainEditor = App.Overlay;
             if (!(mainEditor.CurrentDataContext is LayoutModel model))
@@ -332,19 +337,6 @@ namespace FancyZonesEditor
             InvalidateVisual();
         }
 
-        private void MonitorItem_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Return || e.Key == Key.Space)
-            {
-                monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
-            }
-        }
-
-        private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
-        }
-
         // EditLayout: Cancel changes
         private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
@@ -380,12 +372,12 @@ namespace FancyZonesEditor
 
         private async void DeleteLayout(FrameworkElement element)
         {
-            var dialog = new ModernWpf.Controls.ContentDialog()
+            var dialog = new ContentDialog()
             {
-                Title = FancyZonesEditor.Properties.Resources.Are_You_Sure,
-                Content = FancyZonesEditor.Properties.Resources.Are_You_Sure_Description,
-                PrimaryButtonText = FancyZonesEditor.Properties.Resources.Delete,
-                SecondaryButtonText = FancyZonesEditor.Properties.Resources.Cancel,
+                Title = Properties.Resources.Are_You_Sure,
+                Content = Properties.Resources.Are_You_Sure_Description,
+                PrimaryButtonText = Properties.Resources.Delete,
+                SecondaryButtonText = Properties.Resources.Cancel,
             };
 
             var result = await dialog.ShowAsync();
@@ -428,6 +420,30 @@ namespace FancyZonesEditor
             if (e.Key == Key.Enter)
             {
                 e.Handled = true;
+            }
+        }
+
+        private void Layout_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            Select(e.ClickedItem as LayoutModel);
+            Apply();
+        }
+
+        private void Monitor_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            monitorViewModel.SelectCommand.Execute(e.ClickedItem as MonitorInfoModel);
+        }
+
+        private void ComboBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                ComboBox selectedComboBox = sender as ComboBox;
+                if (!selectedComboBox.IsDropDownOpen)
+                {
+                    selectedComboBox.IsDropDownOpen = true;
+                }
             }
         }
     }

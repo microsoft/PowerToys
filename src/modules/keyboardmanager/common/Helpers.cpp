@@ -2,45 +2,13 @@
 #include "Helpers.h"
 #include <sstream>
 
-#include <common/interop/keyboard_layout.h>
 #include <common/interop/shared_constants.h>
 #include <common/utils/process_path.h>
-#include <common/utils/resources.h>
 
-#include <shlwapi.h>
-#include "keyboardmanager/dll/Generated Files/resource.h"
-#include <common/interop/keyboard_layout.h>
 #include "KeyboardManagerConstants.h"
 
-using namespace winrt::Windows::Foundation;
-
-namespace KeyboardManagerHelper
+namespace Helpers
 {
-    // Function to split a wstring based on a delimiter and return a vector of split strings
-    std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter)
-    {
-        std::wstringstream ss(input);
-        std::wstring item;
-        std::vector<std::wstring> splittedStrings;
-        while (std::getline(ss, item, delimiter))
-        {
-            splittedStrings.push_back(item);
-        }
-
-        return splittedStrings;
-    }
-
-    // Function to return the next sibling element for an element under a stack panel
-    IInspectable getSiblingElement(IInspectable const& element)
-    {
-        FrameworkElement frameworkElement = element.as<FrameworkElement>();
-        StackPanel parentElement = frameworkElement.Parent().as<StackPanel>();
-        uint32_t index;
-
-        parentElement.Children().IndexOf(frameworkElement, index);
-        return parentElement.Children().GetAt(index + 1);
-    }
-
     // Function to check if the key is a modifier key
     bool IsModifierKey(DWORD key)
     {
@@ -97,93 +65,6 @@ namespace KeyboardManagerHelper
             return true;
         default:
             return false;
-        }
-    }
-
-    Collections::IVector<IInspectable> ToBoxValue(const std::vector<std::pair<DWORD, std::wstring>>& list)
-    {
-        Collections::IVector<IInspectable> boxList = single_threaded_vector<IInspectable>();
-        for (auto& val : list)
-        {
-            auto comboBox = ComboBoxItem();
-            comboBox.DataContext(winrt::box_value(std::to_wstring(val.first)));
-            comboBox.Content(winrt::box_value(val.second));
-            boxList.Append(winrt::box_value(comboBox));
-        }
-
-        return boxList;
-    }
-
-    // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
-    ErrorType DoKeysOverlap(DWORD first, DWORD second)
-    {
-        // If the keys are same
-        if (first == second)
-        {
-            return ErrorType::SameKeyPreviouslyMapped;
-        }
-        else if ((GetKeyType(first) == GetKeyType(second)) && GetKeyType(first) != KeyType::Action)
-        {
-            // If the keys are of the same modifier type and overlapping, i.e. one is L/R and other is common
-            if (((first == VK_LWIN && second == VK_RWIN) || (first == VK_RWIN && second == VK_LWIN)) || ((first == VK_LCONTROL && second == VK_RCONTROL) || (first == VK_RCONTROL && second == VK_LCONTROL)) || ((first == VK_LMENU && second == VK_RMENU) || (first == VK_RMENU && second == VK_LMENU)) || ((first == VK_LSHIFT && second == VK_RSHIFT) || (first == VK_RSHIFT && second == VK_LSHIFT)))
-            {
-                return ErrorType::NoError;
-            }
-            else
-            {
-                return ErrorType::ConflictingModifierKey;
-            }
-        }
-        // If no overlap
-        else
-        {
-            return ErrorType::NoError;
-        }
-    }
-
-    // Function to return the error message
-    winrt::hstring GetErrorMessage(ErrorType errorType)
-    {
-        switch (errorType)
-        {
-        case ErrorType::NoError:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_REMAPSUCCESSFUL).c_str();
-        case ErrorType::SameKeyPreviouslyMapped:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAMEKEYPREVIOUSLYMAPPED).c_str();
-        case ErrorType::MapToSameKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAPPEDTOSAMEKEY).c_str();
-        case ErrorType::ConflictingModifierKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CONFLICTINGMODIFIERKEY).c_str();
-        case ErrorType::SameShortcutPreviouslyMapped:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAMESHORTCUTPREVIOUSLYMAPPED).c_str();
-        case ErrorType::MapToSameShortcut:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAPTOSAMESHORTCUT).c_str();
-        case ErrorType::ConflictingModifierShortcut:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CONFLICTINGMODIFIERSHORTCUT).c_str();
-        case ErrorType::WinL:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_WINL).c_str();
-        case ErrorType::CtrlAltDel:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CTRLALTDEL).c_str();
-        case ErrorType::RemapUnsuccessful:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_REMAPUNSUCCESSFUL).c_str();
-        case ErrorType::SaveFailed:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAVEFAILED).c_str();
-        case ErrorType::ShortcutStartWithModifier:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTSTARTWITHMODIFIER).c_str();
-        case ErrorType::ShortcutCannotHaveRepeatedModifier:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTNOREPEATEDMODIFIER).c_str();
-        case ErrorType::ShortcutAtleast2Keys:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTATLEAST2KEYS).c_str();
-        case ErrorType::ShortcutOneActionKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTONEACTIONKEY).c_str();
-        case ErrorType::ShortcutNotMoreThanOneActionKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTMAXONEACTIONKEY).c_str();
-        case ErrorType::ShortcutMaxShortcutSizeOneActionKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAXSHORTCUTSIZE).c_str();
-        case ErrorType::ShortcutDisableAsActionKey:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_DISABLEASACTIONKEY).c_str();
-        default:
-            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_DEFAULT).c_str();
         }
     }
 
@@ -282,22 +163,22 @@ namespace KeyboardManagerHelper
             // If shortcutToCompare is non-empty, then the key event is sent only if both shortcut's don't have the same modifier key. If keyToBeReleased is non-NULL, then the key event is sent if either the shortcuts don't have the same modifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
             if (shortcutToBeSent.GetWinKey(winKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetWinKey(winKeyInvoked) != shortcutToCompare.GetWinKey(winKeyInvoked)) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckWinKey(keyToBeReleased)))
             {
-                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetWinKey(winKeyInvoked), 0, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetWinKey(winKeyInvoked), 0, extraInfoFlag);
                 index++;
             }
             if (shortcutToBeSent.GetCtrlKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetCtrlKey() != shortcutToCompare.GetCtrlKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckCtrlKey(keyToBeReleased)))
             {
-                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetCtrlKey(), 0, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetCtrlKey(), 0, extraInfoFlag);
                 index++;
             }
             if (shortcutToBeSent.GetAltKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetAltKey() != shortcutToCompare.GetAltKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckAltKey(keyToBeReleased)))
             {
-                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetAltKey(), 0, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetAltKey(), 0, extraInfoFlag);
                 index++;
             }
             if (shortcutToBeSent.GetShiftKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetShiftKey() != shortcutToCompare.GetShiftKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckShiftKey(keyToBeReleased)))
             {
-                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetShiftKey(), 0, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetShiftKey(), 0, extraInfoFlag);
                 index++;
             }
         }
@@ -308,22 +189,22 @@ namespace KeyboardManagerHelper
             // If shortcutToCompare is non-empty, then the key event is sent only if both shortcut's don't have the same modifier key. If keyToBeReleased is non-NULL, then the key event is sent if either the shortcuts don't have the same modifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
             if (shortcutToBeSent.GetShiftKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetShiftKey() != shortcutToCompare.GetShiftKey() || shortcutToBeSent.CheckShiftKey(keyToBeReleased)))
             {
-                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetShiftKey(), KEYEVENTF_KEYUP, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetShiftKey(), KEYEVENTF_KEYUP, extraInfoFlag);
                 index++;
             }
             if (shortcutToBeSent.GetAltKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetAltKey() != shortcutToCompare.GetAltKey() || shortcutToBeSent.CheckAltKey(keyToBeReleased)))
             {
-                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetAltKey(), KEYEVENTF_KEYUP, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetAltKey(), KEYEVENTF_KEYUP, extraInfoFlag);
                 index++;
             }
             if (shortcutToBeSent.GetCtrlKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetCtrlKey() != shortcutToCompare.GetCtrlKey() || shortcutToBeSent.CheckCtrlKey(keyToBeReleased)))
             {
-                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetCtrlKey(), KEYEVENTF_KEYUP, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetCtrlKey(), KEYEVENTF_KEYUP, extraInfoFlag);
                 index++;
             }
             if (shortcutToBeSent.GetWinKey(winKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetWinKey(winKeyInvoked) != shortcutToCompare.GetWinKey(winKeyInvoked) || shortcutToBeSent.CheckWinKey(keyToBeReleased)))
             {
-                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetWinKey(winKeyInvoked), KEYEVENTF_KEYUP, extraInfoFlag);
+                Helpers::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetWinKey(winKeyInvoked), KEYEVENTF_KEYUP, extraInfoFlag);
                 index++;
             }
         }
@@ -348,27 +229,5 @@ namespace KeyboardManagerHelper
         std::sort(shortcutVector.begin(), shortcutVector.end(), [](Shortcut first, Shortcut second) {
             return first.Size() > second.Size();
         });
-    }
-
-    // Function to check if a modifier has been repeated in the previous drop downs
-    bool CheckRepeatedModifier(const std::vector<int32_t>& currentKeys, int selectedKeyCode)
-    {
-        // Count the number of keys that are equal to 'selectedKeyCode'
-        int numberOfSameType = 0;
-        for (int i = 0; i < currentKeys.size(); i++)
-        {
-            numberOfSameType += KeyboardManagerHelper::GetKeyType(selectedKeyCode) == KeyboardManagerHelper::GetKeyType(currentKeys[i]);
-        }
-
-        // If we have at least two keys equal to 'selectedKeyCode' than modifier was repeated
-        return numberOfSameType > 1;
-    }
-
-    winrt::Windows::Foundation::IInspectable GetWrapped(const winrt::Windows::Foundation::IInspectable& element, double width)
-    {
-        StackPanel sp = StackPanel();
-        sp.Width(width);
-        sp.Children().Append(element.as<FrameworkElement>());
-        return sp;
     }
 }

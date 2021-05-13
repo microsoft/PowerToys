@@ -11,6 +11,8 @@
              Focusable="False">
 
     <Border x:Name="WindowBorder"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
             BorderBrush="{DynamicResource WindowBorderBrush}"
             Margin="12"
             BorderThickness="1"

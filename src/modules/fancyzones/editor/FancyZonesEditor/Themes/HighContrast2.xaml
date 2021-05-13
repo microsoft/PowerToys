@@ -25,5 +25,6 @@
     <SolidColorBrush x:Key="LayoutPreviewActualScaleZoneBackgroundBrush" Color="#E5202020" />
     <SolidColorBrush x:Key="LayoutPreviewSmallScaleZoneBackgroundBrush" Color="#FF202020" />
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#E5202020" />
+    <SolidColorBrush x:Key="CanvasZoneBorderBrush" Color="#CCFFFFFF" />
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#E5202020" />
 </ResourceDictionary>

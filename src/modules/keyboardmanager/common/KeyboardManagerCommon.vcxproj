@@ -45,39 +45,38 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\common\interop\keyboard_layout.cpp" />
     <ClCompile Include="Helpers.cpp" />
-    <ClCompile Include="KeyboardManagerState.cpp" />
-    <ClCompile Include="KeyDelay.cpp" />
+    <ClCompile Include="KeyboardEventHandlers.cpp" />
+    <ClCompile Include="MappingConfiguration.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="RemapShortcut.cpp" />
     <ClCompile Include="Shortcut.cpp" />
-    <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="KeyboardEventHandlers.h" />
+    <ClInclude Include="MappingConfiguration.h" />
     <ClInclude Include="ModifierKey.h" />
     <ClInclude Include="InputInterface.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="KeyboardManagerConstants.h" />
-    <ClInclude Include="KeyboardManagerState.h" />
-    <ClInclude Include="KeyDelay.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemapShortcut.h" />
     <ClInclude Include="Shortcut.h" />
-    <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\COMUtils\COMUtils.vcxproj">
       <Project>{7319089e-46d6-4400-bc65-e39bdf1416ee}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
-      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
+    <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
+      <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>

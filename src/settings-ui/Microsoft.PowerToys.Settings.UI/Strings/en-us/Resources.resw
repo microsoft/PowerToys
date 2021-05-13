@@ -789,7 +789,7 @@
     <value>New update available</value>
   </data>
   <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
-    <value>PowerToys is up-to-date.</value>
+    <value>PowerToys is up to date.</value>
   </data>
   <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Text" xml:space="preserve">
     <value>Icon Preview</value>
@@ -1049,13 +1049,13 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>release notes</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
-    <value>{Win} + {Ctrl} + {C} to open Color Picker.</value>
+    <value>{Win} + {Shift} + {C} to open Color Picker.</value>
   </data>
   <data name="Oobe_ColorPicker_TipsAndTricks.Text" xml:space="preserve">
     <value>To select a color with more precision, {scroll the mouse wheel} to zoom in.</value>
   </data>
   <data name="Oobe_FancyZones_HowToUse.Text" xml:space="preserve">
-    <value>{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {`} to open the FancyZones editor.</value>
+    <value>{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {Shift} + {`} to open the FancyZones editor.</value>
   </data>
   <data name="Oobe_FancyZones_TipsAndTricks.Text" xml:space="preserve">
     <value>Snap a window to multiple zones by holding the {Ctrl} key (while also holding {Shift}) when dragging a window.</value>

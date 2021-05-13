@@ -42,16 +42,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Input.h" />
-    <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Generated Files\resource.h" />
+    <ClInclude Include="trace.h" />
     <None Include="resource.base.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="Input.cpp" />
-    <ClCompile Include="KeyboardEventHandlers.cpp" />
+    <ClCompile Include="trace.cpp" />
     <None Include="KeyboardManager.base.rc" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
@@ -67,15 +65,9 @@
     <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">
       <Project>{8affa899-0b73-49ec-8c50-0fadda57b2fc}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ui\KeyboardManagerUI.vcxproj">
-      <Project>{eaf23649-ef6e-478b-980e-81fad96cca2a}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files\KeyboardManager.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Keyboard.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
