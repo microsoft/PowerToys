@@ -71,6 +71,7 @@ public:
 
     virtual void set_config(const wchar_t* config) override
     {
+        Logger::trace("set_config()");
         try
         {
             // Parse the input JSON string.
@@ -277,7 +278,7 @@ private:
             }
             catch (...)
             {
-                Logger::error("Failed to initialize Shortcut Guide start shortcut");
+                Logger::warn("Failed to initialize Shortcut Guide start shortcut");
             }
         }
         else

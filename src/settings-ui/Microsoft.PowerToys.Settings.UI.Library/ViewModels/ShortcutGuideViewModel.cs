@@ -114,7 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (Settings.Properties.OpenShortcutGuide != value)
                 {
                     Settings.Properties.OpenShortcutGuide = value;
-                    OnPropertyChanged(nameof(OpenShortcutGuide));
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -204,9 +204,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             SndShortcutGuideSettings outsettings = new SndShortcutGuideSettings(Settings);
             SndModuleSettings<SndShortcutGuideSettings> ipcMessage = new SndModuleSettings<SndShortcutGuideSettings>(outsettings);
-            var settingsString = ipcMessage.ToJsonString();
-            SendConfigMSG(settingsString);
-            SettingsUtils.SaveSettings(settingsString, ModuleName);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
     }
 }
