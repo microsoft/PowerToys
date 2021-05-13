@@ -57,7 +57,11 @@
             <ToggleSwitch x:Uid="ShortcutGuide_Enable"
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
 
-            <CustomControls:HotkeySettingsControl x:Uid="ShortcutGide_OpenShortcutGuide"
+            <TextBlock x:Uid="Shortcuts"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
+            <CustomControls:HotkeySettingsControl x:Uid="ShortcutGuide_OpenShortcutGuide"
                                                   HorizontalAlignment="Left"
                                                   MinWidth="240"
                                                   Margin="{StaticResource SmallTopMargin}"
