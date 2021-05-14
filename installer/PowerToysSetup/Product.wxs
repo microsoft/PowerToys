@@ -6,13 +6,14 @@
   <?define ImageResizerProjectName="ImageResizer"?>
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
-  <?define ShortcutGuideProjectName="ShortcutGuide"?>
   <?define ColorPickerProjectName="ColorPicker"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
-
-	<Product Id="*"
+  <?define ShortcutGuideExecutable=$(var.BinX64Dir)\modules\ShortcutGuide\ShortcutGuide?>
+  <?define ShortcutGuideModuleInterface=$(var.BinX64Dir)\modules\ShortcutGuide\ShortcutGuideModuleInterface?>
+  
+    <Product Id="*"
        Name="PowerToys (Preview)"
        Language="1033"
        Version="$(var.Version)"
@@ -205,11 +206,16 @@
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
-	      <Directory Id="ToolsFolder" Name="Tools"/>
+          <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
-            <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
+            <Directory Id="ShortcutGuideInstallFolder" Name="ShortcutGuide">
+              <Directory Id="ShortcutGuideExecutableInstallFolder" Name="ShortcutGuide">
+                    <Directory Id="ShortcutGuideSvgsInstallFolder" Name="svgs"/>
+                </Directory>
+                <Directory Id="ShortcutGuideModuleInterfaceInstallFolder" Name="ShortcutGuideModuleInterface"/>
+                </Directory>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)">
@@ -355,21 +361,21 @@
       </Component>
     </DirectoryRef>
     
-    <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">
-      <Component Id="PowerToysSvgs" Guid="7C4D4EED-9338-423D-992C-DCE02F3E2D35" Win64="yes">
-        <File Source="$(var.BinX64Dir)svgs\0.svg" />
-        <File Source="$(var.BinX64Dir)svgs\1.svg" />
-        <File Source="$(var.BinX64Dir)svgs\2.svg" />
-        <File Source="$(var.BinX64Dir)svgs\3.svg" />
-        <File Source="$(var.BinX64Dir)svgs\4.svg" />
-        <File Source="$(var.BinX64Dir)svgs\5.svg" />
-        <File Source="$(var.BinX64Dir)svgs\6.svg" />
-        <File Source="$(var.BinX64Dir)svgs\7.svg" />
-        <File Source="$(var.BinX64Dir)svgs\8.svg" />
-        <File Source="$(var.BinX64Dir)svgs\9.svg" />
-        <File Source="$(var.BinX64Dir)svgs\no_active_window.svg" />
-        <File Source="$(var.BinX64Dir)svgs\overlay.svg" />
-        <File Source="$(var.BinX64Dir)svgs\overlay_portrait.svg" />
+    <DirectoryRef Id="ShortcutGuideSvgsInstallFolder" FileSource="$(var.ShortcutGuideExecutable)\svgs\">
+      <Component Id="ShortcutGuideSvgs" Guid="7C4D4EED-9338-423D-992C-DCE02F3E2D35" Win64="yes">
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\0.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\1.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\2.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\3.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\4.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\5.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\6.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\7.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\8.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\9.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\no_active_window.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\overlay.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\overlay_portrait.svg" />
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
@@ -582,9 +588,15 @@
       </Component>
     </DirectoryRef>
 
-    <DirectoryRef Id="ShortcutGuideInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\">
-      <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\$(var.ShortcutGuideProjectName).dll" KeyPath="yes" />
+    <DirectoryRef Id="ShortcutGuideModuleInterfaceInstallFolder" FileSource="$(var.ShortcutGuideModuleInterface)">
+      <Component Id="Module_ShortcutGuideModuleInterface" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
+        <File Source="$(var.ShortcutGuideModuleInterface)\ShortcutGuideModuleInterface.dll" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ShortcutGuideExecutableInstallFolder" FileSource="$(var.ShortcutGuideExecutable)">
+      <Component Id="Module_ShortcutGuideExecutable" Guid="DA6E5710-F1DF-44EB-A316-300FA39544E9" Win64="yes">
+        <File Source="$(var.ShortcutGuideExecutable)\PowerToys.ShortcutGuide.exe" KeyPath="yes" />
       </Component>
     </DirectoryRef>
 
@@ -786,8 +798,9 @@
       <ComponentRef Id="Notice_md" />
       <ComponentRef Id="powertoysinterop_dll" />
       <ComponentRef Id="vcredist_dlls" />
-      <ComponentRef Id="PowerToysSvgs" />
-      <ComponentRef Id="Module_ShortcutGuide" />
+      <ComponentRef Id="ShortcutGuideSvgs" />
+      <ComponentRef Id="Module_ShortcutGuideModuleInterface" />
+      <ComponentRef Id="Module_ShortcutGuideExecutable" />
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
