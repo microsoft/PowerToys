@@ -96,7 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Icon = "\uEC32",
                 Image = "ms-appx:///Assets/Modules/Espresso.png",
                 FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsEspresso.png",
-                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/FancyZones.gif",
+                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/Espresso.png",
                 Description = loader.GetString("Oobe_Espresso_Description"),
                 Link = "https://aka.ms/PowerToysOverview_Espresso",
             });

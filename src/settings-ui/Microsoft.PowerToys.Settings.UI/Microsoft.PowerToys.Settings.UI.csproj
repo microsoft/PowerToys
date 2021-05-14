@@ -217,10 +217,12 @@
     <Content Include="Assets\FluentIcons\FluentIconsVideoConferenceMute.png" />
     <Content Include="Assets\Logo.scale-200.png" />
     <Content Include="Assets\Modules\ColorPicker.png" />
+    <Content Include="Assets\Modules\Espresso.png" />
     <Content Include="Assets\Modules\FancyZones.png" />
     <Content Include="Assets\Modules\ImageResizer.png" />
     <Content Include="Assets\Modules\KBM.png" />
     <Content Include="Assets\Modules\OOBE\ColorPicker.gif" />
+    <Content Include="Assets\Modules\OOBE\Espresso.png" />
     <Content Include="Assets\Modules\OOBE\FancyZones.gif" />
     <Content Include="Assets\Modules\OOBE\FileExplorer.png" />
     <Content Include="Assets\Modules\OOBE\ImageResizer.gif" />

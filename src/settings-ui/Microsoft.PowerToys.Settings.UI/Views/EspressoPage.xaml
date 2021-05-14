@@ -159,7 +159,7 @@
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
                 <HyperlinkButton x:Uid="Espresso_ImageHyperlinkToDocs">
-                    <Image x:Uid="Espresso_Image" Source="ms-appx:///Assets/Modules/ColorPicker.png" />
+                    <Image x:Uid="Espresso_Image" Source="ms-appx:///Assets/Modules/Espresso.png" />
                 </HyperlinkButton>
             </Border>
             <StackPanel x:Name="LinksPanel"
