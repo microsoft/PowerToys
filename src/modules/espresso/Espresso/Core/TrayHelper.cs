@@ -4,6 +4,7 @@
 
 using System;
 using System.Drawing;
+using System.IO;
 using System.Text.Json;
 using System.Windows.Forms;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -67,8 +68,17 @@ namespace Espresso.Shell.Core
         {
             return () =>
             {
-                // Just changing the display mode.
-                var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                EspressoSettings currentSettings;
+
+                try
+                {
+                    currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                }
+                catch (FileNotFoundException)
+                {
+                    currentSettings = new EspressoSettings();
+                }
+
                 currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
 
                 ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
@@ -79,8 +89,17 @@ namespace Espresso.Shell.Core
         {
             return (hours, minutes) =>
             {
-                // Set timed keep awake.
-                var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                EspressoSettings currentSettings;
+
+                try
+                {
+                    currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                }
+                catch (FileNotFoundException)
+                {
+                    currentSettings = new EspressoSettings();
+                }
+
                 currentSettings.Properties.Mode = EspressoMode.TIMED;
                 currentSettings.Properties.Hours = hours;
                 currentSettings.Properties.Minutes = minutes;
@@ -93,8 +112,17 @@ namespace Espresso.Shell.Core
         {
             return () =>
             {
-                // Set indefinite keep awake.
-                var currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                EspressoSettings currentSettings;
+
+                try
+                {
+                    currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                }
+                catch (FileNotFoundException)
+                {
+                    currentSettings = new EspressoSettings();
+                }
+
                 currentSettings.Properties.Mode = EspressoMode.INDEFINITE;
 
                 ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
@@ -212,10 +240,9 @@ namespace Espresso.Shell.Core
 
             operationContextMenu.DropDownItems.Add(indefiniteMenuItem);
             operationContextMenu.DropDownItems.Add(timedMenuItem);
-            operationContextMenu.DropDownItems.Add(new ToolStripSeparator());
-            operationContextMenu.DropDownItems.Add(displayOnMenuItem);
 
             contextMenuStrip.Items.Add(operationContextMenu);
+            contextMenuStrip.Items.Add(displayOnMenuItem);
             contextMenuStrip.Items.Add(new ToolStripSeparator());
             contextMenuStrip.Items.Add(exitContextMenu);
 

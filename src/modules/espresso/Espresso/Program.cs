@@ -157,17 +157,26 @@ namespace Espresso.Shell
                     {
                         Path = Path.GetDirectoryName(settingsPath),
                         EnableRaisingEvents = true,
-                        NotifyFilter = NotifyFilters.LastWrite,
+                        NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
                         Filter = Path.GetFileName(settingsPath),
                     };
 
-                    Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                    var changedObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
                             h => _watcher.Changed += h,
-                            h => _watcher.Changed -= h)
+                            h => _watcher.Changed -= h);
+
+                    var createdObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                            cre => _watcher.Created += cre,
+                            cre => _watcher.Created -= cre);
+
+                    var mergedObservable = Observable.Merge(changedObservable, createdObservable);
+
+                    mergedObservable.Throttle(TimeSpan.FromMilliseconds(5))
                         .SubscribeOn(TaskPoolScheduler.Default)
                         .Select(e => e.EventArgs)
-                        .Throttle(TimeSpan.FromMilliseconds(25))
                         .Subscribe(HandleEspressoConfigChange);
+
+                    TrayHelper.SetTray(AppName, new EspressoSettings());
 
                     // Initially the file might not be updated, so we need to start processing
                     // settings right away.
