@@ -36,9 +36,6 @@
     <ClInclude Include="d2d_window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="keyboard_state.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="native_event_waiter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -87,9 +84,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="d2d_window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="keyboard_state.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="native_event_waiter.cpp">

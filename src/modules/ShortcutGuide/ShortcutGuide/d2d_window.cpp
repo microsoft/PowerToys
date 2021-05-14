@@ -199,6 +199,8 @@ LRESULT __stdcall D2DWindow::d2d_window_proc(HWND window, UINT message, WPARAM w
             PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
             return 0;
         }
+
+        return DefWindowProc(window, message, wparam, lparam);
     }
     case WM_NCCREATE:
     {
