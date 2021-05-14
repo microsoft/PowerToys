@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -43,7 +44,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
+        private IFileSystemWatcher _fileWatcher;
+
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             DownloadAndInstallEventHandler = new ButtonClickCommand(DownloadAndInstallClick);
@@ -104,6 +107,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _newAvailableVersion = UpdatingSettingsConfig.NewVersion;
             _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
+
+            if (dispatcherAction != null)
+            {
+                _fileWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, dispatcherAction);
+            }
         }
 
         private bool _packaged;
@@ -405,6 +413,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 return _updatingState;
             }
+
+            private set
+            {
+                if (value != _updatingState)
+                {
+                    _updatingState = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
         public string PowerToysNewAvailableVersion
@@ -413,6 +430,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 return _newAvailableVersion;
             }
+
+            private set
+            {
+                if (value != _newAvailableVersion)
+                {
+                    _newAvailableVersion = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
         public string PowerToysNewAvailableVersionLink
@@ -420,6 +446,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get
             {
                 return _newAvailableVersionLink;
+            }
+
+            private set
+            {
+                if (value != _newAvailableVersionLink)
+                {
+                    _newAvailableVersionLink = value;
+                    NotifyPropertyChanged();
+                }
             }
         }
 
@@ -476,6 +511,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendRestartAsAdminConfigMSG(customaction.ToString());
+        }
+
+        public void RefreshUpdatingState()
+        {
+            UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
+
+            PowerToysUpdatingState = UpdatingSettingsConfig.State;
+            PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
+            PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+            UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
         }
     }
 }

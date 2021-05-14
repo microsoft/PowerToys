@@ -10,6 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -38,6 +39,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
             var settingsUtils = new SettingsUtils();
 
+            Action stateUpdatingAction = async () =>
+            {
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, ViewModel.RefreshUpdatingState);
+            };
+
             ViewModel = new GeneralViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 loader.GetString("GeneralSettings_RunningAsAdminText"),
@@ -47,7 +53,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 UpdateUIThemeMethod,
                 ShellPage.SendDefaultIPCMessage,
                 ShellPage.SendRestartAdminIPCMessage,
-                ShellPage.SendCheckForUpdatesIPCMessage);
+                ShellPage.SendCheckForUpdatesIPCMessage,
+                string.Empty,
+                stateUpdatingAction);
 
             ShellPage.ShellHandler.IPCResponseHandleList.Add((JsonObject json) =>
             {
