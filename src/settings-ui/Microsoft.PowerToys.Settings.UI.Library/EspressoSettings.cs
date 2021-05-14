@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class EspressoSettings : BasePTModuleSettings, ISettingsConfig
     {
         public const string ModuleName = "Espresso";
-        public const string ModuleVersion = "1.0.0";
+        public const string ModuleVersion = "0.0.1";
 
         public EspressoSettings()
         {
