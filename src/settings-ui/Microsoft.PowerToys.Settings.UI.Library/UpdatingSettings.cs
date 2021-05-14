@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -44,6 +44,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get
             {
+                if (ReleasePageLink == null)
+                {
+                    return string.Empty;
+                }
+
                 try
                 {
                     string version = ReleasePageLink.Substring(ReleasePageLink.LastIndexOf('/') + 1);
