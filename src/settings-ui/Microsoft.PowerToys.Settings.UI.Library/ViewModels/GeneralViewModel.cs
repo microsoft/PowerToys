@@ -405,6 +405,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 return _updatingState;
             }
+
+            private set
+            {
+                if (value != _updatingState)
+                {
+                    _updatingState = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
         public string PowerToysNewAvailableVersion
@@ -413,6 +422,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 return _newAvailableVersion;
             }
+
+            private set
+            {
+                if (value != _newAvailableVersion)
+                {
+                    _newAvailableVersion = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
         public string PowerToysNewAvailableVersionLink
@@ -420,6 +438,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get
             {
                 return _newAvailableVersionLink;
+            }
+
+            private set
+            {
+                if (value != _newAvailableVersionLink)
+                {
+                    _newAvailableVersionLink = value;
+                    NotifyPropertyChanged();
+                }
             }
         }
 
@@ -476,6 +503,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendRestartAsAdminConfigMSG(customaction.ToString());
+        }
+
+        public void RefreshUpdatingState()
+        {
+            UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
+
+            PowerToysUpdatingState = UpdatingSettingsConfig.State;
+            PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
+            PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+            UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
         }
     }
 }
