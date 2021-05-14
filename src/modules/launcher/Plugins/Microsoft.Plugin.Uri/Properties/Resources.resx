@@ -121,7 +121,7 @@
     <value>Failed to open default browser</value>
   </data>
   <data name="Microsoft_plugin_uri_default_browser" xml:space="preserve">
-    <value>Open Default Browser</value>
+    <value>Open default browser</value>
   </data>
   <data name="Microsoft_plugin_uri_open_failed" xml:space="preserve">
     <value>Failed to open URL</value>
