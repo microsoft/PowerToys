@@ -41,39 +41,3 @@ void Trace::HideGuide(const __int64 duration_ms, std::vector<int>& key_pressed) 
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
-
-void Trace::EnableShortcutGuide(const bool enabled) noexcept
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "ShortcutGuide_EnableGuide",
-        TraceLoggingBoolean(enabled, "Enabled"),
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-
-void Trace::SettingsChanged(const int overlay_opacity, const std::wstring& theme) noexcept
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "ShortcutGuide_SettingsChanged",
-        TraceLoggingInt32(overlay_opacity, "OverlayOpacity"),
-        TraceLoggingWideString(theme.c_str(), "Theme"),
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-
-// Log if an error occurs in Shortcut Guide
-void Trace::Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "ShortcutGuide_Error",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(methodName.c_str(), "MethodName"),
-        TraceLoggingValue(errorCode, "ErrorCode"),
-        TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));
-}

@@ -83,7 +83,6 @@ public:
 
         if (!_enabled)
         {
-            Trace::EnableShortcutGuide(true);
             _enabled = true;
         }
         else
@@ -94,7 +93,16 @@ public:
 
     virtual void disable() override
     {
-        this->disable(true);
+        Logger::info("ShortcutGuideModule::disable()");
+        if (_enabled)
+        {
+            _enabled = false;
+            TerminateProcess();
+        }
+        else
+        {
+            Logger::warn("Shortcut Guide is already disabled");
+        }
     }
 
     virtual bool is_enabled() override
@@ -104,7 +112,7 @@ public:
 
     virtual void destroy() override
     {
-        this->disable(false);
+        this->disable();
         delete this;
     }
 
@@ -151,25 +159,6 @@ private:
     
     // Hotkey to invoke the module
     Hotkey m_hotkey;
-
-    void disable(bool trace_event)
-    {
-        Logger::info("ShortcutGuideModule::disable()");
-        if (_enabled)
-        {
-            _enabled = false;
-            if (trace_event)
-            {
-                Trace::EnableShortcutGuide(false);
-            }
-
-            TerminateProcess();
-        }
-        else
-        {
-            Logger::warn("Shortcut Guide is already disabled");
-        }
-    }
 
     bool StartProcess()
     {

@@ -5,5 +5,5 @@ class Trace
 public:
     static void RegisterProvider() noexcept;
     static void UnregisterProvider() noexcept;
-    static void EnableShortcutGuide(const bool enabled) noexcept;
+    static void SettingsChanged(const int overlay_opacity, const std::wstring& theme) noexcept;
 };

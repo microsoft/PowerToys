@@ -18,12 +18,13 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::EnableShortcutGuide(const bool enabled) noexcept
+void Trace::SettingsChanged(const int overlay_opacity, const std::wstring& theme) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "ShortcutGuide_EnableGuide",
-        TraceLoggingBoolean(enabled, "Enabled"),
+        "ShortcutGuide_SettingsChanged",
+        TraceLoggingInt32(overlay_opacity, "OverlayOpacity"),
+        TraceLoggingWideString(theme.c_str(), "Theme"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
