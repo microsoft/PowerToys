@@ -185,7 +185,7 @@
                         Margin="{StaticResource SmallTopMargin}"
                         Style="{StaticResource AccentButtonStyle}"
                         Foreground="White"
-                        Command="{Binding DownloadAndInstallEventHandler}"
+                        Command="{Binding UpdateNowButtonEventHandler}"
                         IsEnabled="{Binding AutoUpdatesEnabled}"/>
             </StackPanel>
 
@@ -214,7 +214,7 @@
                         Margin="{StaticResource SmallTopMargin}"
                         Style="{StaticResource AccentButtonStyle}"
                         Foreground="White"
-                        Command="{Binding InstallEventHandler}"
+                        Command="{Binding UpdateNowButtonEventHandler}"
                         IsEnabled="{Binding AutoUpdatesEnabled}"/>
             </StackPanel>
 
@@ -238,7 +238,7 @@
                         Margin="{StaticResource SmallTopMargin}"
                         Style="{StaticResource AccentButtonStyle}"
                         Foreground="White"
-                        Command="{Binding DownloadAndInstallEventHandler}"
+                        Command="{Binding UpdateNowButtonEventHandler}"
                         IsEnabled="{Binding AutoUpdatesEnabled}"/>
             </StackPanel>
 
