@@ -32,7 +32,7 @@ namespace FancyZonesEditor
         public event MouseButtonEventHandler MergeComplete;
 
         private readonly Rectangle _splitter;
-        private bool _switchOrientation = false;
+        private bool _switchOrientation;
         private Point _lastPos = new Point(-1, -1);
         private int _snappedPositionX;
         private int _snappedPositionY;
