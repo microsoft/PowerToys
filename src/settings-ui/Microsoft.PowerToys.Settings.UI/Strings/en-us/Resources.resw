@@ -1191,4 +1191,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
   </data>
+  <data name="ShortcutGuide_OpenShortcutGuide.Header" xml:space="preserve">
+    <value>Open Shortcut Guide</value>
+  </data>
 </root>
