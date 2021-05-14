@@ -102,6 +102,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public HotkeySettings OpenShortcutGuide
+        {
+            get
+            {
+                return Settings.Properties.OpenShortcutGuide;
+            }
+
+            set
+            {
+                if (Settings.Properties.OpenShortcutGuide != value)
+                {
+                    Settings.Properties.OpenShortcutGuide = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public int ThemeIndex
         {
             get
@@ -184,6 +201,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
+
+            SndShortcutGuideSettings outsettings = new SndShortcutGuideSettings(Settings);
+            SndModuleSettings<SndShortcutGuideSettings> ipcMessage = new SndModuleSettings<SndShortcutGuideSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
             SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
     }
