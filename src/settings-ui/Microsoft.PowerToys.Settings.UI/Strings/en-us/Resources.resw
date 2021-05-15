@@ -1217,12 +1217,12 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <comment>Module name, do not loc</comment>
   </data>
   <data name="Oobe_Espresso_Description" xml:space="preserve">
-    <value>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</value>
+    <value>Espresso is a Windows tool designed to keep a computer awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that the computer does not go to sleep or turn off its screens.</value>
   </data>
   <data name="Oobe_Espresso_HowToUse.Text" xml:space="preserve">
-    <value>Open PowerToys Settings and {turn on Espresso}</value>
+    <value>Open PowerToys Settings and enable Espresso</value>
   </data>
   <data name="Oobe_Espresso_TipsAndTricks.Text" xml:space="preserve">
-    <value>You can always change modes quickly by clicking the {Espresso icon in the system tray}</value>
+    <value>You can always change modes quickly by right-clicking the Espresso icon in the system tray.</value>
   </data>
 </root>
