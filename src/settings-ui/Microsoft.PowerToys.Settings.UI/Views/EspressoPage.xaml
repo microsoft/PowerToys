@@ -60,19 +60,14 @@
                     HorizontalAlignment="Left"
                     Margin="0,0,48,0"
                     MaxWidth="{StaticResource MaxContentWidth}">
-            <ToggleSwitch x:Uid="Espresso_EnableEspresso" IsOn="{Binding IsEnabled, Mode=TwoWay}" />
-            <!--IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"/>-->
-
-            <!--<TextBlock x:Uid="Shortcuts"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>-->
+            <ToggleSwitch x:Uid="Espresso_EnableEspresso" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
 
             <TextBlock x:Uid="Espresso_Behavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <CheckBox x:Uid="Espresso_EnableDisplayKeepAwake"
-                      IsEnabled="{Binding IsEnabled}"
-                      IsChecked="{Binding KeepDisplayOn, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.IsEnabled}"
+                      IsChecked="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}"
                       Margin="{StaticResource XSmallTopMargin}" />
             
             <TextBlock x:Uid="Espresso_Mode"
@@ -84,8 +79,8 @@
                         Margin="0,-4,0,0">
                 <RadioButton x:Uid="Espresso_IndefiniteKeepAwake"
                              Margin="{StaticResource SmallTopMargin}"
-                             IsEnabled="{Binding IsEnabled}"
-                             IsChecked="{Binding Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}}">
+                             IsEnabled="{x:Bind ViewModel.IsEnabled}"
+                             IsChecked="{x:Bind ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=IndefiniteRadio}">
                     <RadioButton.Content>
                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Espresso_IndefiniteKeepAwakeContent"/>
@@ -97,8 +92,8 @@
                 </RadioButton>
                 <RadioButton x:Uid="Espresso_TemporaryKeepAwake"
                              Margin="{StaticResource SmallTopMargin}"
-                             IsEnabled="{Binding IsEnabled}"
-                             IsChecked="{Binding Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToReverseBoolConverter}}">
+                             IsEnabled="{x:Bind ViewModel.IsEnabled}"
+                             IsChecked="{x:Bind ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToReverseBoolConverter}, ConverterParameter=TemporaryRadio}">
                     <RadioButton.Content>
                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Espresso_TemporaryKeepAwakeContent"/>
@@ -111,22 +106,22 @@
 
                 <StackPanel Margin="28,8,0,0" Orientation="Horizontal">
                     <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Hours"
-                            Value="{Binding Hours, Mode=TwoWay}"
+                            Value="{x:Bind ViewModel.Hours, Mode=TwoWay}"
                             Minimum="0"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             MinWidth="90"
-                            IsEnabled="{Binding Mode, Converter={StaticResource EspressoModeToReverseBoolConverter}}"
+                            IsEnabled="{x:Bind ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToReverseBoolConverter}, ConverterParameter=TimedHours}"
                             SmallChange="1" 
                             LargeChange="5"/>
                     <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Minutes"
-                            Value="{Binding Minutes, Mode=TwoWay}"
+                            Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}"
                             Minimum="0"
                             SpinButtonPlacementMode="Compact"
                             Margin="8,0,0,0"
                             HorizontalAlignment="Left"
                             MinWidth="90"
-                            IsEnabled="{Binding Mode, Converter={StaticResource EspressoModeToReverseBoolConverter}}"
+                            IsEnabled="{x:Bind ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToReverseBoolConverter}, ConverterParameter=TimedMinutes}"
                             SmallChange="1" 
                             LargeChange="5"/>
                 </StackPanel>
