@@ -28,15 +28,17 @@ namespace Espresso.Shell.Core
     public class APIHelper
     {
         private const string BuildRegistryLocation = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
-        public const int StdOutputHandle = -11;
-        public const int StdInputHandle = -10;
-        public const int StdErrorHandle = -12;
-        public const uint GenericWrite = 0x40000000;
-        public const uint GenericRead = 0x80000000;
+        private const int StdOutputHandle = -11;
+        private const int StdInputHandle = -10;
+        private const int StdErrorHandle = -12;
+        private const uint GenericWrite = 0x40000000;
+        private const uint GenericRead = 0x80000000;
 
         private static readonly Logger _log;
         private static CancellationTokenSource _tokenSource;
         private static CancellationToken _threadToken;
+
+        private static Task? _runnerThread;
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
@@ -46,10 +48,13 @@ namespace Espresso.Shell.Core
         private static extern bool AllocConsole();
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
+        private static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
+
+        [DllImport("kernel32.dll")]
+        private static extern uint GetCurrentThreadId();
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr CreateFile(
+        private static extern IntPtr CreateFile(
             [MarshalAs(UnmanagedType.LPTStr)] string filename,
             [MarshalAs(UnmanagedType.U4)] uint access,
             [MarshalAs(UnmanagedType.U4)] FileShare share,
@@ -94,27 +99,55 @@ namespace Espresso.Shell.Core
             }
         }
 
-        public static void SetIndefiniteKeepAwake(Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
+        public static void SetIndefiniteKeepAwake(Action<bool> callback, Action failureCallback, bool keepDisplayOn = false)
         {
+            _tokenSource.Cancel();
+
+            try
+            {
+                if (_runnerThread != null && !_runnerThread.IsCanceled)
+                {
+                    _runnerThread.Wait(_threadToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _log.Info("Confirmed background thread cancellation when setting indefinite keep awake.");
+            }
+
             _tokenSource = new CancellationTokenSource();
             _threadToken = _tokenSource.Token;
 
-            Task.Run(() => RunIndefiniteLoop(keepDisplayOn), _threadToken)
+            _runnerThread = Task.Run(() => RunIndefiniteLoop(keepDisplayOn), _threadToken)
                 .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
                 .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
         }
 
         public static void SetTimedKeepAwake(uint seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
         {
+            _tokenSource.Cancel();
+
+            try
+            {
+                if (_runnerThread != null && !_runnerThread.IsCanceled)
+                {
+                    _runnerThread.Wait(_threadToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _log.Info("Confirmed background thread cancellation when setting indefinite keep awake.");
+            }
+
             _tokenSource = new CancellationTokenSource();
             _threadToken = _tokenSource.Token;
 
-            Task.Run(() => RunTimedLoop(seconds, keepDisplayOn), _threadToken)
+            _runnerThread = Task.Run(() => RunTimedLoop(seconds, keepDisplayOn), _threadToken)
                 .ContinueWith((result) => callback(result.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
                 .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
         }
 
-        private static bool RunIndefiniteLoop(bool keepDisplayOn = true)
+        private static bool RunIndefiniteLoop(bool keepDisplayOn = false)
         {
             bool success;
             if (keepDisplayOn)
@@ -130,7 +163,7 @@ namespace Espresso.Shell.Core
             {
                 if (success)
                 {
-                    _log.Info("Initiated indefinite keep awake in background thread.");
+                    _log.Info($"Initiated indefinite keep awake in background thread: {GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
                     while (true)
                     {
                         if (_threadToken.IsCancellationRequested)
@@ -148,7 +181,7 @@ namespace Espresso.Shell.Core
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                _log.Info($"Background thread termination. Message: {ex.Message}");
+                _log.Info($"Background thread termination: {GetCurrentThreadId()}. Message: {ex.Message}");
                 return success;
             }
         }
@@ -164,54 +197,36 @@ namespace Espresso.Shell.Core
                 if (keepDisplayOn)
                 {
                     success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-                    if (success)
-                    {
-                        _log.Info("Timed keep-awake with display on.");
-                        var startTime = DateTime.UtcNow;
-                        while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(Math.Abs(seconds)))
-                        {
-                            if (_threadToken.IsCancellationRequested)
-                            {
-                                _threadToken.ThrowIfCancellationRequested();
-                            }
-                        }
-
-                        return success;
-                    }
-                    else
-                    {
-                        _log.Info("Could not set up timed keep-awake with display on.");
-                        return success;
-                    }
                 }
                 else
                 {
                     success = SetAwakeState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_CONTINUOUS);
-                    if (success)
-                    {
-                        _log.Info("Timed keep-awake with display off.");
-                        var startTime = DateTime.UtcNow;
-                        while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(Math.Abs(seconds)))
-                        {
-                            if (_threadToken.IsCancellationRequested)
-                            {
-                                _threadToken.ThrowIfCancellationRequested();
-                            }
-                        }
+                }
 
-                        return success;
-                    }
-                    else
+                if (success)
+                {
+                    _log.Info($"Initiated temporary keep awake in background thread: {GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
+                    var startTime = DateTime.UtcNow;
+                    while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(Math.Abs(seconds)))
                     {
-                        _log.Info("Could not set up timed keep-awake with display off.");
-                        return success;
+                        if (_threadToken.IsCancellationRequested)
+                        {
+                            _threadToken.ThrowIfCancellationRequested();
+                        }
                     }
+
+                    return success;
+                }
+                else
+                {
+                    _log.Info("Could not set up timed keep-awake with display on.");
+                    return success;
                 }
             }
             catch (OperationCanceledException ex)
             {
                 // Task was clearly cancelled.
-                _log.Info($"Background thread termination. Message: {ex.Message}");
+                _log.Info($"Background thread termination: {GetCurrentThreadId()}. Message: {ex.Message}");
                 return success;
             }
         }
@@ -231,13 +246,13 @@ namespace Espresso.Shell.Core
                 }
                 else
                 {
-                    _log.Debug("Registry key acquisition for OS failed.");
+                    _log.Info("Registry key acquisition for OS failed.");
                     return string.Empty;
                 }
             }
             catch (Exception ex)
             {
-                _log.Debug($"Could not get registry key for the build number. Error: {ex.Message}");
+                _log.Info($"Could not get registry key for the build number. Error: {ex.Message}");
                 return string.Empty;
             }
         }

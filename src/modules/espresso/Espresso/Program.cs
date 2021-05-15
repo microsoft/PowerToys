@@ -171,7 +171,7 @@ namespace Espresso.Shell
 
                     var mergedObservable = Observable.Merge(changedObservable, createdObservable);
 
-                    mergedObservable.Throttle(TimeSpan.FromMilliseconds(5))
+                    mergedObservable.Throttle(TimeSpan.FromMilliseconds(25))
                         .SubscribeOn(TaskPoolScheduler.Default)
                         .Select(e => e.EventArgs)
                         .Subscribe(HandleEspressoConfigChange);
@@ -275,7 +275,7 @@ namespace Espresso.Shell
             }
             catch (Exception ex)
             {
-                var errorMessage = $"There was a problem reading the configuration file. Error: {ex.Message}";
+                var errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
                 _log.Info(errorMessage);
                 _log.Debug(errorMessage);
             }

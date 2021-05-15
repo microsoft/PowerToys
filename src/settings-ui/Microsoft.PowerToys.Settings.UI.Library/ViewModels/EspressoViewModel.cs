@@ -90,6 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OnPropertyChanged(nameof(KeepDisplayOn));
 
                     Settings.Properties.KeepDisplayOn = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
