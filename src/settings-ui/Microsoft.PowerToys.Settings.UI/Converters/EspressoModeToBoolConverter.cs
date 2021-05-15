@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (targetType != typeof(bool))
+            if (targetType != typeof(bool?))
             {
                 throw new InvalidOperationException("The target type needs to be a boolean.");
             }
@@ -32,9 +32,9 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
         {
             switch ((bool)value)
             {
-                case false:
-                    return EspressoMode.INDEFINITE;
                 case true:
+                    return EspressoMode.INDEFINITE;
+                case false:
                     return EspressoMode.TIMED;
             }
 
