@@ -143,7 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool espresso = true;
+        private bool espresso;
 
         [JsonPropertyName("Espresso")]
         public bool Espresso
