@@ -135,5 +135,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 #endif
             }
         }
+
+        // Returns the file path to the settings file, that is exposed from the local ISettingsPath instance.
+        public string GetSettingsFilePath(string powertoy = "", string fileName = "settings.json")
+        {
+            return _settingsPath.GetSettingsPath(powertoy, fileName);
+        }
     }
 }
