@@ -7,25 +7,12 @@
 #include <common/utils/logger_helper.h>
 #include <common/interop/shared_constants.h>
 
-#include "trace.h"
 #include "../interface/powertoy_module_interface.h"
 #include "Generated Files/resource.h"
 #include <common/SettingsAPI/settings_objects.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-    switch (ul_reason_for_call)
-    {
-    case DLL_PROCESS_ATTACH:
-        Trace::RegisterProvider();
-        break;
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-        break;
-    case DLL_PROCESS_DETACH:
-        Trace::UnregisterProvider();
-        break;
-    }
     return TRUE;
 }
 
@@ -150,6 +137,15 @@ public:
         return false;
     }
 
+    virtual void send_settings_telemetry() override
+    {
+        Logger::trace("Send settings telemetry");
+        if (!StartProcess(L"telemetry"))
+        {
+            Logger::error("Failed to create a process to send settings telemetry");
+        }
+    }
+
 private:
     std::wstring app_name;
     //contains the non localized key of the powertoy
@@ -160,11 +156,16 @@ private:
     // Hotkey to invoke the module
     Hotkey m_hotkey;
 
-    bool StartProcess()
+    bool StartProcess(std::wstring args = L"")
     {
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
+        if (!args.empty())
+        {
+            executable_args.append(L" ");
+            executable_args.append(args);
+        }
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };

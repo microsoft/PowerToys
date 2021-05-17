@@ -41,3 +41,17 @@ void Trace::HideGuide(const __int64 duration_ms, std::vector<int>& key_pressed) 
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
+
+void Trace::SendSettings(ShortcutGuideSettings settings) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "ShortcutGuide_Settings",
+        TraceLoggingWideString(settings.hotkey.c_str(), "Hotkey"),
+        TraceLoggingInt32(settings.overlayOpacity, "OverlayOpacity"),
+        TraceLoggingWideString(settings.theme.c_str(), "Theme"),
+        TraceLoggingWideString(settings.disabledApps.c_str(), "DisabledApps"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}

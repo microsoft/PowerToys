@@ -52,7 +52,17 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     {
         return false;
     }
-    
+
+    Trace::RegisterProvider();
+    if (std::wstring(lpCmdLine).find(L' ') != std::wstring::npos)
+    {
+        Logger::trace("Sending settings telemetry");
+        auto settings = OverlayWindow::GetSettings();
+        Trace::SendSettings(settings);
+        Trace::UnregisterProvider();
+        return 0;
+    }
+
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {
@@ -62,10 +72,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
         Logger::warn(L"Shortcut Guide instance is already running");
+        Trace::UnregisterProvider();
         return 0;
     }
-
-    Trace::RegisterProvider();
 
     std::wstring pid = std::wstring(lpCmdLine);
     if (!pid.empty())
@@ -91,11 +100,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     if (window.IsDisabled())
     {
         Logger::trace("SG is disabled for the current foreground app. Exiting SG");
+        Trace::UnregisterProvider();
         return 0;
     }
 
     window.ShowWindow();
     run_message_loop();
-
+    Trace::UnregisterProvider();
     return 0;
 }

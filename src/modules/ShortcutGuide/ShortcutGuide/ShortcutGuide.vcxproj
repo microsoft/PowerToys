@@ -69,6 +69,7 @@
     <ClInclude Include="overlay_window.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.base.h" />
+    <ClInclude Include="ShortcutGuideSettings.h" />
     <ClInclude Include="ShortcutGuideConstants.h" />
     <ClInclude Include="shortcut_guide.h" />
     <ClInclude Include="start_visible.h" />
