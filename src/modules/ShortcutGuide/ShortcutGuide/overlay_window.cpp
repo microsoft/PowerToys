@@ -489,6 +489,7 @@ void D2DOverlayWindow::on_show()
 
 void D2DOverlayWindow::on_hide()
 {
+    Logger::trace("D2DOverlayWindow::on_hide()");
     tasklist_cv_mutex.lock();
     tasklist_update = false;
     tasklist_cv_mutex.unlock();

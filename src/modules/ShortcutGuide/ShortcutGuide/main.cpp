@@ -6,6 +6,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/UnhandledExceptionHandler_x64.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/EventWaiter.h>
 
 #include "shortcut_guide.h"
 #include "target_state.h"
@@ -94,6 +95,20 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
             PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
         });
     }
+
+    auto mainThreadId = GetCurrentThreadId();
+    EventWaiter exitEventWaiter(CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, [mainThreadId](int err) {
+        if (err != ERROR_SUCCESS)
+        {
+            Logger::error(L"Failed to wait for {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(err));
+        }
+        else
+        {
+            Logger::trace(L"{} event was signaled", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT);
+        }
+
+        PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+    });
 
     auto hwnd = GetForegroundWindow();
     auto window = OverlayWindow(hwnd);

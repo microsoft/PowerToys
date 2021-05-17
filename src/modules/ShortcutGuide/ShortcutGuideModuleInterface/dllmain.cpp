@@ -29,6 +29,12 @@ public:
         oldLogPath.append("ShortcutGuideLogs");
         LoggerHelpers::delete_old_log_folder(oldLogPath);
 
+        exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT);
+        if (!exitEvent)
+        {
+            Logger::warn(L"Failed to create {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(GetLastError()));
+        }
+
         InitSettings();
     }
 
@@ -100,6 +106,11 @@ public:
     virtual void destroy() override
     {
         this->disable();
+        if (exitEvent)
+        {
+            CloseHandle(exitEvent);
+        }
+
         delete this;
     }
 
@@ -130,6 +141,12 @@ public:
                 return true;
             }
 
+            if (m_hProcess)
+            {
+                CloseHandle(m_hProcess);
+                m_hProcess = nullptr;
+            }
+
             StartProcess();
             return true;
         }
@@ -155,9 +172,15 @@ private:
     
     // Hotkey to invoke the module
     Hotkey m_hotkey;
+    HANDLE exitEvent;
 
     bool StartProcess(std::wstring args = L"")
     {
+        if (exitEvent)
+        {
+            ResetEvent(exitEvent);
+        }
+
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
@@ -195,15 +218,13 @@ private:
         {
             if (WaitForSingleObject(m_hProcess, 0) != WAIT_OBJECT_0)
             {
-                if (!::TerminateProcess(m_hProcess, 0))
+                if (exitEvent && SetEvent(exitEvent))
                 {
-                    Logger::warn(L"Failed to terminate the process");
+                    Logger::trace(L"Signaled {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT);
                 }
                 else
                 {
-                    CloseHandle(m_hProcess);
-                    m_hProcess = nullptr;
-                    Logger::trace("Terminated the process successfully");
+                    Logger::warn(L"Failed to signal {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT);
                 }
             }
             else

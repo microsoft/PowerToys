@@ -22,6 +22,8 @@ namespace CommonSharedConstants
     // Path to the event used to show Color Picker
     const wchar_t SHOW_COLOR_PICKER_SHARED_EVENT[] = L"Local\\ShowColorPickerEvent-8c46be2a-3e05-4186-b56b-4ae986ef2525";
 
+    const wchar_t SHORTCUT_GUIDE_EXIT_EVENT[] = L"Local\\ShortcutGuide-ExitEvent-35697cdd-a3d2-47d6-a246-34efcc73eac0";
+
     // Max DWORD for key code to disable keys.
     const int VK_DISABLED = 0x100;
 }
