@@ -373,115 +373,6 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
     }
 }
 
-void D2DOverlayWindow::animate(int vk_code)
-{
-    animate(vk_code, 0);
-}
-void D2DOverlayWindow::animate(int vk_code, int offset)
-{
-    if (!initialized || !use_overlay)
-    {
-        return;
-    }
-    bool done = false;
-    for (auto& animation : key_animations)
-    {
-        if (animation.vk_code == vk_code)
-        {
-            animation.animation.reset(0.1, 0, 1);
-            done = true;
-        }
-    }
-    if (done)
-    {
-        return;
-    }
-    AnimateKeys animation;
-    std::wstring id;
-    animation.vk_code = vk_code;
-    winrt::com_ptr<ID2D1SvgElement> button_letter, parent;
-    if (vk_code >= 0x41 && vk_code <= 0x5A)
-    {
-        id.push_back('A' + (vk_code - 0x41));
-    }
-    else
-    {
-        switch (vk_code)
-        {
-        case VK_SNAPSHOT:
-        case VK_PRINT:
-            id = L"PrnScr";
-            break;
-        case VK_CONTROL:
-        case VK_LCONTROL:
-        case VK_RCONTROL:
-            id = L"Ctrl";
-            break;
-        case VK_UP:
-            id = L"KeyUp";
-            break;
-        case VK_LEFT:
-            id = L"KeyLeft";
-            break;
-        case VK_DOWN:
-            id = L"KeyDown";
-            break;
-        case VK_RIGHT:
-            id = L"KeyRight";
-            break;
-        case VK_OEM_PLUS:
-        case VK_ADD:
-            id = L"KeyPlus";
-            break;
-        case VK_OEM_MINUS:
-        case VK_SUBTRACT:
-            id = L"KeyMinus";
-            break;
-        case VK_TAB:
-            id = L"Tab";
-            break;
-        case VK_RETURN:
-            id = L"Enter";
-            break;
-        default:
-            return;
-        }
-    }
-
-    if (offset > 0)
-    {
-        id += L"_" + std::to_wstring(offset);
-    }
-    button_letter = use_overlay->find_element(id);
-    if (!button_letter)
-    {
-        return;
-    }
-    button_letter->GetParent(parent.put());
-    if (!parent)
-    {
-        return;
-    }
-    parent->GetPreviousChild(button_letter.get(), animation.button.put());
-    if (!animation.button || !animation.button->IsAttributeSpecified(L"fill"))
-    {
-        animation.button = nullptr;
-        parent->GetNextChild(button_letter.get(), animation.button.put());
-    }
-    if (!animation.button || !animation.button->IsAttributeSpecified(L"fill"))
-    {
-        return;
-    }
-    winrt::com_ptr<ID2D1SvgPaint> paint;
-    animation.button->GetAttributeValue(L"fill", paint.put());
-    paint->GetColor(&animation.original);
-    animate(vk_code, offset + 1);
-    std::unique_lock lock(mutex);
-    animation.animation.reset(0.1, 0, 1);
-    key_animations.push_back(animation);
-    key_pressed.push_back(vk_code);
-}
-
 void D2DOverlayWindow::on_show()
 {
     // show override does everything
@@ -502,10 +393,10 @@ void D2DOverlayWindow::on_hide()
     // Trace the event only if the overlay window was visible.
     if (shown_start_time.time_since_epoch().count() > 0)
     {
-        Trace::HideGuide(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count(), key_pressed);
+        Logger::trace("key_pressed.size()={}", key_pressed.size());
+        Trace::HideGuide(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count());
         shown_start_time = {};
     }
-    key_pressed.clear();
 }
 
 D2DOverlayWindow::~D2DOverlayWindow()

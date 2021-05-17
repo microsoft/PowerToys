@@ -154,11 +154,6 @@ void OverlayWindow::on_held()
     winkey_popup->show(windowInfo.hwnd, windowInfo.snappable);
 }
 
-void OverlayWindow::on_held_press(DWORD vkCode)
-{
-    winkey_popup->animate(vkCode);
-}
-
 void OverlayWindow::quick_hide()
 {
     winkey_popup->quick_hide();

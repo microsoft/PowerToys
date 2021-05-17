@@ -23,7 +23,6 @@ public:
     bool IsDisabled();
 
     void on_held();
-    void on_held_press(DWORD vkCode);
     void quick_hide();
     void was_hidden();
 
