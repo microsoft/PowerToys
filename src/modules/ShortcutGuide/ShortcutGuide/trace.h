@@ -1,12 +1,11 @@
 #pragma once
+#include "ShortcutGuideSettings.h"
 
 class Trace
 {
 public:
     static void RegisterProvider() noexcept;
     static void UnregisterProvider() noexcept;
-    static void HideGuide(const __int64 duration_ms, std::vector<int>& key_pressed) noexcept;
-    static void EnableShortcutGuide(const bool enabled) noexcept;
-    static void SettingsChanged(const int overlay_opacity, const std::wstring& theme) noexcept;
-    static void Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept;
+    static void SendGuideSession(const __int64 duration_ms) noexcept;
+    static void SendSettings(ShortcutGuideSettings settings) noexcept;
 };

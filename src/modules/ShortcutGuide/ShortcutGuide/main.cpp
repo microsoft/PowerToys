@@ -6,6 +6,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/UnhandledExceptionHandler_x64.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/EventWaiter.h>
 
 #include "shortcut_guide.h"
 #include "target_state.h"
@@ -52,7 +53,17 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     {
         return false;
     }
-    
+
+    Trace::RegisterProvider();
+    if (std::wstring(lpCmdLine).find(L' ') != std::wstring::npos)
+    {
+        Logger::trace("Sending settings telemetry");
+        auto settings = OverlayWindow::GetSettings();
+        Trace::SendSettings(settings);
+        Trace::UnregisterProvider();
+        return 0;
+    }
+
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {
@@ -62,10 +73,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
         Logger::warn(L"Shortcut Guide instance is already running");
+        Trace::UnregisterProvider();
         return 0;
     }
-
-    Trace::RegisterProvider();
 
     std::wstring pid = std::wstring(lpCmdLine);
     if (!pid.empty())
@@ -86,16 +96,31 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         });
     }
 
+    auto mainThreadId = GetCurrentThreadId();
+    EventWaiter exitEventWaiter(CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, [mainThreadId](int err) {
+        if (err != ERROR_SUCCESS)
+        {
+            Logger::error(L"Failed to wait for {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(err));
+        }
+        else
+        {
+            Logger::trace(L"{} event was signaled", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT);
+        }
+
+        PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+    });
+
     auto hwnd = GetForegroundWindow();
     auto window = OverlayWindow(hwnd);
     if (window.IsDisabled())
     {
         Logger::trace("SG is disabled for the current foreground app. Exiting SG");
+        Trace::UnregisterProvider();
         return 0;
     }
 
     window.ShowWindow();
     run_message_loop();
-
+    Trace::UnregisterProvider();
     return 0;
 }
