@@ -71,11 +71,16 @@ namespace Espresso.Shell.Core
 
         public static void AllocateConsole()
         {
+            _log.Debug("Bootstrapping the console allocation routine.");
             AllocConsole();
+            _log.Debug($"Console allocation result: {Marshal.GetLastWin32Error()}");
 
             var outputFilePointer = CreateFile("CONOUT$", GenericRead | GenericWrite, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
+            _log.Debug($"CONOUT creation result: {Marshal.GetLastWin32Error()}");
 
             SetStdHandle(StdOutputHandle, outputFilePointer);
+            _log.Debug($"SetStdHandle result: {Marshal.GetLastWin32Error()}");
+
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
         }
 
