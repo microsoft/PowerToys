@@ -394,7 +394,7 @@ void D2DOverlayWindow::on_hide()
     if (shown_start_time.time_since_epoch().count() > 0)
     {
         Logger::trace("key_pressed.size()={}", key_pressed.size());
-        Trace::HideGuide(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count());
+        Trace::SendGuideSession(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count());
         shown_start_time = {};
     }
 }
