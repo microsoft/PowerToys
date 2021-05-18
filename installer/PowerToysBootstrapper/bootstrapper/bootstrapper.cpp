@@ -355,6 +355,7 @@ int Bootstrapper(HINSTANCE hInstance)
     {
         spdlog::error("Couldn't install the existing MSI package ({})", GetLastError());
         ShowMessageBoxError(IDS_UNINSTALL_PREVIOUS_VERSION_ERROR);
+        return 1;
     }
 
     const bool installDotnet = !skipDotnetInstall;
