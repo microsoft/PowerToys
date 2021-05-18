@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include <functional>
+
 #include "notifications.h"
 #include "utils/com_object_factory.h"
 #include "utils/window.h"

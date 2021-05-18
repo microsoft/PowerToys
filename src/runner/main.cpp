@@ -32,6 +32,7 @@
 #include <Psapi.h>
 #include <RestartManager.h>
 #include "centralized_kb_hook.h"
+#include "CentralizedHotkeys.h"
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -192,7 +193,12 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
         }
 
         settings_telemetry::init();
-        result = run_message_loop();
+        auto onHotkey = [](WORD modifiersMask, WORD vkCode) {
+            Logger::trace(L"On {} hotkey", CentralizedHotkeys::ToWstring({ modifiersMask, vkCode }));
+            CentralizedHotkeys::PopulateHotkey({ modifiersMask, vkCode });
+        };
+
+        result = run_message_loop(false, {}, onHotkey);
     }
     catch (std::runtime_error& err)
     {
