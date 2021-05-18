@@ -503,7 +503,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private void UpdateNowClick()
         {
             _isDownloadButtonClicked = UpdatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload;
-            IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+            IsNewVersionDownloading = _isDownloadButtonClicked && string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
 
             Process.Start(new ProcessStartInfo("powertoys://update_now") { UseShellExecute = true });
