@@ -235,11 +235,7 @@
                     </HyperlinkButton>
                 </StackPanel>
 
-                <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" Margin="0,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
-                    <TextBlock x:Name="General_ReadMore_CannotDownload" x:Uid="General_ReadMore" />
-                </HyperlinkButton>
-
-                <Button x:Uid="General_DownloadAndInstall"
+                <Button x:Uid="General_TryAgainToDownloadAndInstall"
                         Margin="{StaticResource SmallTopMargin}"
                         Style="{StaticResource AccentButtonStyle}"
                         Foreground="White"
