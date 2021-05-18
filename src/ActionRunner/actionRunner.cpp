@@ -195,13 +195,21 @@ bool InstallNewVersionStage2(std::wstring installer_path, std::wstring_view inst
         sei.lpParameters = parameters.c_str();
 
         success = ShellExecuteExW(&sei) == TRUE;
-        
+
         // Wait for the install completion
         if (success)
         {
             WaitForSingleObject(sei.hProcess, INFINITE);
+            DWORD exitCode = 0;
+            GetExitCodeProcess(sei.hProcess, &exitCode);
+            success = exitCode == 0;
             CloseHandle(sei.hProcess);
         }
+    }
+
+    if (!success)
+    {
+        return false;
     }
 
     std::error_code _;
@@ -212,11 +220,6 @@ bool InstallNewVersionStage2(std::wstring installer_path, std::wstring_view inst
         state.githubUpdateLastCheckedDate.emplace(timeutil::now());
         state.state = UpdateState::upToDate;
     });
-
-    if (!success)
-    {
-        return false;
-    }
 
     if (launch_powertoys)
     {
