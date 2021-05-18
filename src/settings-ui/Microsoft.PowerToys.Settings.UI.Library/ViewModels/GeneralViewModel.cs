@@ -536,7 +536,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
-            IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+            IsNewVersionDownloading = UpdatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload && string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
         }
     }
