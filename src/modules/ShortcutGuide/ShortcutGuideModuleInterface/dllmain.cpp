@@ -125,6 +125,11 @@ public:
     virtual void OnHotkeyEx() override
     {
         Logger::trace("OnHotkeyEx()");
+        if (!_enabled)
+        {
+            return;
+        }
+
         if (IsProcessActive())
         {
             TerminateProcess();
