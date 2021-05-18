@@ -146,14 +146,14 @@ namespace Espresso.Shell
 
             if (usePtConfig)
             {
-#pragma warning disable CS8604 // Possible null reference argument.
-                TrayHelper.InitializeTray(AppName, new Icon(Application.GetResourceStream(new Uri("/Images/Espresso.ico", UriKind.Relative)).Stream));
-#pragma warning restore CS8604 // Possible null reference argument.
-
                 // Configuration file is used, therefore we disregard any other command-line parameter
                 // and instead watch for changes in the file.
                 try
                 {
+#pragma warning disable CS8604 // Possible null reference argument.
+                    TrayHelper.InitializeTray(AppName, new Icon(Application.GetResourceStream(new Uri("/Images/Espresso.ico", UriKind.Relative)).Stream));
+#pragma warning restore CS8604 // Possible null reference argument.
+
                     var settingsPath = _settingsUtils.GetSettingsFilePath(AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");
 
