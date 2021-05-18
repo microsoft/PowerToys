@@ -31,5 +31,6 @@
     <SolidColorBrush x:Key="LayoutPreviewSmallScaleZoneBackgroundBrush" Color="#FFDCDCDC" />
     
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#C5F8F8F8" />
+    <SolidColorBrush x:Key="CanvasZoneBorderBrush" Color="#CC000000" />
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#C5F8F8F8" />
 </ResourceDictionary>

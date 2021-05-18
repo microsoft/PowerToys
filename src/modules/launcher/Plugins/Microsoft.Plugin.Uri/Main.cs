@@ -39,6 +39,8 @@ namespace Microsoft.Plugin.Uri
 
         public string BrowserIconPath { get; set; }
 
+        public string BrowserPath { get; set; }
+
         public string DefaultIconPath { get; set; }
 
         public PluginInitContext Context { get; protected set; }
@@ -55,6 +57,32 @@ namespace Microsoft.Plugin.Uri
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
+
+            if (IsActivationKeyword(query)
+                && IsDefaultBrowserSet())
+            {
+                results.Add(new Result
+                {
+                    Title = Properties.Resources.Microsoft_plugin_uri_default_browser,
+                    SubTitle = BrowserPath,
+                    IcoPath = _uriSettings.ShowBrowserIcon
+                          ? BrowserIconPath
+                          : DefaultIconPath,
+                    Action = action =>
+                    {
+                        if (!Helper.OpenInShell(BrowserPath))
+                        {
+                            var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
+                            var message = $"{Properties.Resources.Microsoft_plugin_default_browser_open_failed}: ";
+                            Context.API.ShowMsg(title, message);
+                            return false;
+                        }
+
+                        return true;
+                    },
+                });
+                return results;
+            }
 
             if (!string.IsNullOrEmpty(query?.Search)
                 && _uriParser.TryParse(query.Search, out var uriResult)
@@ -85,6 +113,17 @@ namespace Microsoft.Plugin.Uri
             }
 
             return results;
+        }
+
+        private static bool IsActivationKeyword(Query query)
+        {
+            return !string.IsNullOrEmpty(query?.ActionKeyword)
+                            && query?.ActionKeyword == query?.RawQuery;
+        }
+
+        private bool IsDefaultBrowserSet()
+        {
+            return !string.IsNullOrEmpty(BrowserPath);
         }
 
         public void Init(PluginInitContext context)
@@ -155,6 +194,7 @@ namespace Microsoft.Plugin.Uri
                     BrowserIconPath = indexOfComma > 0
                         ? programLocation.Substring(0, indexOfComma)
                         : programLocation;
+                    BrowserPath = BrowserIconPath;
                 }
             }
             catch (Exception e)

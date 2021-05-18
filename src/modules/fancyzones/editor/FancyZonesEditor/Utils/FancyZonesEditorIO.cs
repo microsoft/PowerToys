@@ -707,7 +707,7 @@ namespace FancyZonesEditor.Utils
             // Serialize quick layout switch keys
             foreach (var pair in MainWindowSettingsModel.QuickKeys.SelectedKeys)
             {
-                if (pair.Value != string.Empty)
+                if (!string.IsNullOrEmpty(pair.Value))
                 {
                     try
                     {
@@ -739,10 +739,12 @@ namespace FancyZonesEditor.Utils
         private string ReadFile(string fileName)
         {
             Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open);
-            StreamReader reader = new StreamReader(inputStream);
-            string data = reader.ReadToEnd();
-            inputStream.Close();
-            return data;
+            using (StreamReader reader = new StreamReader(inputStream))
+            {
+                string data = reader.ReadToEnd();
+                inputStream.Close();
+                return data;
+            }
         }
 
         private bool SetDevices(List<DeviceWrapper> devices)

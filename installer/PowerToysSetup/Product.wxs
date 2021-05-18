@@ -215,7 +215,15 @@
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="EspressoInstallFolder" Name="$(var.EspressoProjectName)">
-              <Directory Id="EspressoInstallFolderRuntimes" Name="Runtimes" />
+              <Directory Id="EspressoInstallFolderRuntimes" Name="Runtimes">
+                <Directory Id="EspressoInstallFolderRuntimesWin" Name="Win">
+                  <Directory Id="EspressoInstallFolderRuntimesWinLib" Name="Lib">
+                    <Directory Id="EspressoInstallFolderNetcoreApp21" Name="netcoreapp2.1" />
+                    <Directory Id="EspressoInstallFolderNetcoreApp30" Name="netcoreapp3.0" />
+                    <Directory Id="EspressoInstallFolderNetStandard20" Name="netstandard2.0" />
+                  </Directory>
+                </Directory>
+              </Directory>
             </Directory>
             
 
@@ -659,14 +667,29 @@
       </Component>
     </DirectoryRef>
     
-    <!--<DirectoryRef Id="EspressoInstallFolderRuntimes" FileSource="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0">
-      <Component Id="Module_Espresso" Guid="F26F5780-5B38-43B2-BC21-8406ED6E2071" Win64="yes">
-
-        <File Id="EspressoFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\$(var.File)" />
-        <?endforeach?>
+    <DirectoryRef Id="EspressoInstallFolderNetStandard20" FileSource="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0">
+      <Component Id="Module_Espresso_runtime_netstandard20" Guid="414A31AB-91A8-4F17-9B4B-DB7B93A2BB23">
+        <File Id="EspressoFile_runtime_Microsoft.Win32.Registry.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" />
+        <File Id="EspressoFile_runtime_System.Runtime.Caching.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll" />
+        <File Id="EspressoFile_runtime_System.Security.AccessControl.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll" />
+        <File Id="EspressoFile_runtime_System.Security.Cryptography.ProtectedData.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll" />
       </Component>
-    </DirectoryRef>-->
+    </DirectoryRef>
 
+    <DirectoryRef Id="EspressoInstallFolderNetcoreApp30" FileSource="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp3.0">
+      <Component Id="Module_Espresso_runtime_netcoreapp30" Guid="1EBB21FE-083A-4AE6-9208-7DC72A421860">
+        <File Id="EspressoFile_runtime_Microsoft.Win32.SystemEvents.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll" />
+        <File Id="EspressoFile_runtime_System.Drawing.Common.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll" />
+        <File Id="EspressoFile_runtime_System.Windows.Extensions.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="EspressoInstallFolderNetcoreApp21" FileSource="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp2.1">
+      <Component Id="Module_Espresso_runtime_netcoreapp21" Guid="52ED2831-6F3F-47D3-AA1A-88C697BE9D0F">
+        <File Id="EspressoFile_runtime_System.Security.Principal.Windows.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll" />
+      </Component>
+    </DirectoryRef>
+    
     <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
@@ -846,6 +869,9 @@
       <ComponentRef Id="Module_ColorPicker" />
       <ComponentRef Id="Module_ColorPicker_Resources"/>
       <ComponentRef Id="Module_Espresso"/>
+      <ComponentRef Id="Module_Espresso_runtime_netstandard20"/>
+      <ComponentRef Id="Module_Espresso_runtime_netcoreapp30"/>
+      <ComponentRef Id="Module_Espresso_runtime_netcoreapp21"/>
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2AssetsModules" />

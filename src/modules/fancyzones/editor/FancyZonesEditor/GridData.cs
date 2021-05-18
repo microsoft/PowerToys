@@ -75,18 +75,26 @@ namespace FancyZonesEditor
 
         public struct Zone
         {
-            public int Index;
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
+            public int Index { get; set; }
+
+            public int Left { get; set; }
+
+            public int Top { get; set; }
+
+            public int Right { get; set; }
+
+            public int Bottom { get; set; }
         }
 
         public struct Resizer
         {
-            public Orientation Orientation;
-            public List<int> NegativeSideIndices; // all zones to the left/up, in order
-            public List<int> PositiveSideIndices; // all zones to the right/down, in order
+            public Orientation Orientation { get; set; }
+
+            // all zones to the left/up, in order
+            public List<int> NegativeSideIndices { get; set; }
+
+            // all zones to the right/down, in order
+            public List<int> PositiveSideIndices { get; set; }
         }
 
         private List<Zone> _zones;
