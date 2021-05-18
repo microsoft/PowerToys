@@ -103,8 +103,8 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_ESPRESSO_NAME);
         app_key = EspressoConstants::ModuleKey;
-
         std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
+        logFilePath.append(LogSettings::espressoLogPath);
         Logger::init(LogSettings::launcherLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
         Logger::info("Launcher object is constructing");
         init_settings();
