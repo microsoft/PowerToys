@@ -768,21 +768,21 @@
     <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules">
       <Component Id="SettingsV2AssetsModules" Guid="A0B961A9-77D0-4223-88A9-E3B41BD9C329" Win64="yes">
         <?foreach File in ColorPicker.png;FancyZones.png;Espresso.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png?>
-          <File Id="SettingsV2AssetsModules_$(var.File) Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
+          <File Id="SettingsV2AssetsModules_$(var.File)" Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules\OOBE">
       <Component Id="SettingsV2OOBEAssetsModules" Guid="E2360A83-6694-4B33-B5F6-641A906359EE" Win64="yes">
         <?foreach File in ColorPicker.gif;Espresso.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
-          <File Id="SettingsV2OOBEAssetsModules_$(var.File)  Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
+          <File Id="SettingsV2OOBEAssetsModules_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\FluentIcons">
       <Component Id="SettingsV2OOBEAssetsFluentIcons" Guid="6A380D5A-DA63-45B5-B68F-06D57CDD1B9C" Win64="yes">
         <?foreach File in ColorPicker.png;FancyZones.png;Espresso.png;FileExplorerPreview.png;ImageResizer.png;KeyboardManager.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ShortcutGuide.png;VideoConferenceMute.png ?>
-          <File Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)  Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
+          <File Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
