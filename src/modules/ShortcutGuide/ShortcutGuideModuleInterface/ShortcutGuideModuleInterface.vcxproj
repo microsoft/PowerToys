@@ -66,14 +66,12 @@
     <ClInclude Include="Generated Files\resource.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.base.h" />
-    <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

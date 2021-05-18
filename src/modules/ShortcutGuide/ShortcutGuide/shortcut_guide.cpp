@@ -19,8 +19,6 @@
 #include <common/utils/window.h>
 #include <Psapi.h>
 
-#include "ShortcutGuideConstants.h"
-
 // TODO: refactor singleton
 OverlayWindow* instance = nullptr;
 
@@ -99,7 +97,6 @@ OverlayWindow::OverlayWindow(HWND activeWindow)
     instance = this;
     this -> activeWindow = activeWindow;
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
-    app_key = ShortcutGuideConstants::ModuleKey;
 
     Logger::info("Overlay Window is creating");
     init_settings();
@@ -157,11 +154,6 @@ void OverlayWindow::on_held()
     winkey_popup->show(windowInfo.hwnd, windowInfo.snappable);
 }
 
-void OverlayWindow::on_held_press(DWORD vkCode)
-{
-    winkey_popup->animate(vkCode);
-}
-
 void OverlayWindow::quick_hide()
 {
     winkey_popup->quick_hide();
@@ -179,29 +171,10 @@ bool OverlayWindow::overlay_visible() const
 
 void OverlayWindow::init_settings()
 {
-    try
-    {
-        PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(app_key);
-
-        if (const auto val = settings.get_int_value(overlayOpacity.name))
-        {
-            overlayOpacity.value = *val;
-        }
-        if (auto val = settings.get_string_value(theme.name))
-        {
-            theme.value = std::move(*val);
-        }
-        if (auto val = settings.get_string_value(disabledApps.name))
-        {
-            disabledApps.value = std::move(*val);
-            update_disabled_apps();
-        }
-    }
-    catch (std::exception&)
-    {
-        // Error while loading from the settings file. Just let default values stay as they are.
-    }
+    auto s = GetSettings();
+    overlayOpacity.value = s.overlayOpacity;
+    theme.value = s.theme;
+    disabledApps.value = s.theme;
 }
 
 bool OverlayWindow::is_disabled_app(wchar_t* exePath)
@@ -260,4 +233,62 @@ void OverlayWindow::get_exe_path(HWND window, wchar_t* path)
             CloseHandle(processHandle);
         }
     }
+}
+
+ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
+{
+    ShortcutGuideSettings settings;
+    json::JsonObject properties;
+    try
+    {
+        PowerToysSettings::PowerToyValues settingsValues =
+            PowerToysSettings::PowerToyValues::load_from_settings_file(app_key);
+
+        auto settingsObject = settingsValues.get_raw_json();
+        if (!settingsObject.GetView().Size())
+        {
+            return settings;
+        }
+
+        properties = settingsObject.GetNamedObject(L"properties");
+    }
+    catch (...)
+    {
+        Logger::warn("Failed to read settings. Use default settings");
+        return settings;
+    }
+
+    try
+    {
+        settings.hotkey = PowerToysSettings::HotkeyObject::from_json(properties.GetNamedObject(OpenShortcut::name)).to_string();
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        settings.overlayOpacity = (int)properties.GetNamedObject(OverlayOpacity::name).GetNamedNumber(L"value");
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        settings.theme = (std::wstring)properties.GetNamedObject(Theme::name).GetNamedString(L"value");
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        settings.disabledApps = (std::wstring)properties.GetNamedObject(DisabledApps::name).GetNamedString(L"value");
+    }
+    catch (...)
+    {
+    }
+
+    return settings;
 }
