@@ -237,17 +237,17 @@ void OverlayWindow::get_exe_path(HWND window, wchar_t* path)
 
 ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 {
-    ShortcutGuideSettings s;
+    ShortcutGuideSettings settings;
     json::JsonObject properties;
     try
     {
-        PowerToysSettings::PowerToyValues settings =
+        PowerToysSettings::PowerToyValues settingsValues =
             PowerToysSettings::PowerToyValues::load_from_settings_file(app_key);
 
-        auto settingsObject = settings.get_raw_json();
+        auto settingsObject = settingsValues.get_raw_json();
         if (!settingsObject.GetView().Size())
         {
-            return s;
+            return settings;
         }
 
         properties = settingsObject.GetNamedObject(L"properties");
@@ -255,12 +255,12 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
     catch (...)
     {
         Logger::warn("Failed to read settings. Use default settings");
-        return s;
+        return settings;
     }
 
     try
     {
-        s.hotkey = PowerToysSettings::HotkeyObject::from_json(properties.GetNamedObject(OpenShortcut::name)).to_string();
+        settings.hotkey = PowerToysSettings::HotkeyObject::from_json(properties.GetNamedObject(OpenShortcut::name)).to_string();
     }
     catch (...)
     {
@@ -268,7 +268,7 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 
     try
     {
-        s.overlayOpacity = (int)properties.GetNamedObject(OverlayOpacity::name).GetNamedNumber(L"value");
+        settings.overlayOpacity = (int)properties.GetNamedObject(OverlayOpacity::name).GetNamedNumber(L"value");
     }
     catch (...)
     {
@@ -276,7 +276,7 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 
     try
     {
-        s.theme = (std::wstring)properties.GetNamedObject(Theme::name).GetNamedString(L"value");
+        settings.theme = (std::wstring)properties.GetNamedObject(Theme::name).GetNamedString(L"value");
     }
     catch (...)
     {
@@ -284,11 +284,11 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 
     try
     {
-        s.disabledApps = (std::wstring)properties.GetNamedObject(DisabledApps::name).GetNamedString(L"value");
+        settings.disabledApps = (std::wstring)properties.GetNamedObject(DisabledApps::name).GetNamedString(L"value");
     }
     catch (...)
     {
     }
 
-    return s;
+    return settings;
 }
