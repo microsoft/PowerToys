@@ -124,6 +124,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private string _latestAvailableVersion = string.Empty;
         private string _updateCheckedDate = string.Empty;
 
+        private bool _isNewVersionDownloading;
+        private bool _isDownloadButtonClicked;
+
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
         {
@@ -452,6 +455,31 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool IsNewVersionDownloading
+        {
+            get
+            {
+                return _isNewVersionDownloading;
+            }
+
+            set
+            {
+                if (value != _isNewVersionDownloading)
+                {
+                    _isNewVersionDownloading = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsDownloadAllowed
+        {
+            get
+            {
+                return AutoUpdatesEnabled && !IsNewVersionDownloading;
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
@@ -474,6 +502,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private void UpdateNowClick()
         {
+            _isDownloadButtonClicked = UpdatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload;
+            IsNewVersionDownloading = _isDownloadButtonClicked && string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+            NotifyPropertyChanged(nameof(IsDownloadAllowed));
+
             Process.Start(new ProcessStartInfo("powertoys://update_now") { UseShellExecute = true });
         }
 
@@ -505,6 +537,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
             PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
+
+            // reset _isDownloadButtonClicked state if the UpdatingState was changed
+            if (_isDownloadButtonClicked)
+            {
+                _isDownloadButtonClicked = UpdatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload;
+            }
+
+            IsNewVersionDownloading = _isDownloadButtonClicked && string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+            NotifyPropertyChanged(nameof(IsDownloadAllowed));
         }
     }
 }
