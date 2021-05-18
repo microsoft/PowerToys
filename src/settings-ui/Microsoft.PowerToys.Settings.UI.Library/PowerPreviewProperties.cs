@@ -63,6 +63,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enablePdfPreview = true;
+
+        [JsonPropertyName("pdf-previewer-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnablePdfPreview
+        {
+            get => enablePdfPreview;
+            set
+            {
+                if (value != enablePdfPreview)
+                {
+                    LogTelemetryEvent(value);
+                    enablePdfPreview = value;
+                }
+            }
+        }
+
         public PowerPreviewProperties()
         {
         }

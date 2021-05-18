@@ -122,6 +122,8 @@ steps:
     testAssemblyVer2: |
       **\UnitTests-SvgThumbnailProvider.dll
       **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
+      **\UnitTests-MarkdownPreviewHandler.dll
+      **\UnitTests-PdfPreviewHandler.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
       **\PreviewPaneUnitTests.dll

@@ -78,6 +78,11 @@
                           IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}"
                           IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
 
+            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF"
+                          Margin="{StaticResource SmallTopMargin}"
+                          IsOn="{Binding Mode=TwoWay, Path=PDFRenderIsEnabled}"
+                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}" />
+
             <TextBlock x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
