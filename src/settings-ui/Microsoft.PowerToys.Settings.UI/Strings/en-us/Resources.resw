@@ -1219,4 +1219,10 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_IsReadyToInstall.Text" xml:space="preserve">
     <value>is ready to install.</value>
   </data>
+  <data name="General_Downloading.Text" xml:space="preserve">
+    <value>Downloading...</value>
+  </data>
+  <data name="General_TryAgainToDownloadAndInstall.Content" xml:space="preserve">
+    <value>Try again to download and install</value>
+  </data>
 </root>

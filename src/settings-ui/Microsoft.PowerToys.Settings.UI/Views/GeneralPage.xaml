@@ -181,12 +181,17 @@
                     <TextBlock x:Name="General_ReadMore_ReadyToDownload" x:Uid="General_ReadMore" />
                 </HyperlinkButton>
 
+                <TextBlock x:Name="General_Downloading"
+                           x:Uid="General_Downloading"
+                           Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
+                           Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
                 <Button x:Uid="General_DownloadAndInstall"
                         Margin="{StaticResource SmallTopMargin}"
                         Style="{StaticResource AccentButtonStyle}"
                         Foreground="White"
                         Command="{Binding UpdateNowButtonEventHandler}"
-                        IsEnabled="{Binding AutoUpdatesEnabled}"/>
+                        IsEnabled="{Binding IsDownloadAllowed}"/>
             </StackPanel>
 
             <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToInstallToVisibilityConverter}}">
@@ -230,11 +235,7 @@
                     </HyperlinkButton>
                 </StackPanel>
 
-                <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" Margin="0,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
-                    <TextBlock x:Name="General_ReadMore_CannotDownload" x:Uid="General_ReadMore" />
-                </HyperlinkButton>
-
-                <Button x:Uid="General_DownloadAndInstall"
+                <Button x:Uid="General_TryAgainToDownloadAndInstall"
                         Margin="{StaticResource SmallTopMargin}"
                         Style="{StaticResource AccentButtonStyle}"
                         Foreground="White"
