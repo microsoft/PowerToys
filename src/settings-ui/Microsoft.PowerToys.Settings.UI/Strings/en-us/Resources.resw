@@ -1225,4 +1225,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_TryAgainToDownloadAndInstall.Content" xml:space="preserve">
     <value>Try again to download and install</value>
   </data>
+  <data name="General_CheckingForUpdates.Text" xml:space="preserve">
+    <value>Checking for updates...</value>
+  </data>
 </root>

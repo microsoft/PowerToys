@@ -147,17 +147,26 @@
                             AutomationProperties.LabeledBy="{Binding ElementName=General_VersionLastChecked}"
                             Visibility="{Binding AutoUpdatesEnabled,
                                                  Converter={StaticResource VisibleIfTrueConverter}}">
-                    <TextBlock x:Name="General_VersionLastChecked" x:Uid="General_VersionLastChecked" Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                    
+                    <TextBlock x:Name="General_VersionLastChecked" 
+                               x:Uid="General_VersionLastChecked" 
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
                     <TextBlock Text="{Binding UpdateCheckedDate, Mode=OneWay}"
-                                    Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
-                                    Margin="6,0" />
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                               Margin="6,0" />
                 </StackPanel>
+
+                <TextBlock x:Name="General_CheckingForUpdates"
+                           x:Uid="General_CheckingForUpdates"
+                           Margin="{StaticResource SmallBottomMargin}"
+                           Visibility="{Binding IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"/>
 
                 <Button x:Uid="GeneralPage_CheckForUpdates"
                     Style="{StaticResource AccentButtonStyle}"
                     Foreground="White"
                     Command="{Binding CheckForUpdatesEventHandler}"
-                    IsEnabled="{Binding AutoUpdatesEnabled}"
+                    IsEnabled="{Binding IsDownloadAllowed}"
                     />
             </StackPanel>
 
