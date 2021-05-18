@@ -50,8 +50,10 @@ namespace Espresso.Shell
 
             _log.Info("Launching Espresso...");
             _log.Info(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
-            _log.Debug($"OS: {Environment.OSVersion}");
-            _log.Debug($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
+            _log.Info($"OS: {Environment.OSVersion}");
+            _log.Info($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
+
+            _log.Info("Parsing parameters...");
 
             var configOption = new Option<bool>(
                     aliases: new[] { "--use-pt-config", "-c" },
@@ -117,12 +119,13 @@ namespace Espresso.Shell
 
             rootCommand.Handler = CommandHandler.Create<bool, bool, uint, int>(HandleCommandLineArguments);
 
+            _log.Info("Parameter setup complete. Proceeding to the rest of the app initiation...");
+
             return rootCommand.InvokeAsync(args).Result;
         }
 
         private static void ForceExit(string message, int exitCode)
         {
-            _log.Debug(message);
             _log.Info(message);
             Console.ReadKey();
             Environment.Exit(exitCode);
@@ -132,6 +135,7 @@ namespace Espresso.Shell
         {
             if (pid == 0)
             {
+                _log.Info("No PID specified. Allocating console...");
                 APIHelper.AllocateConsole();
             }
 
