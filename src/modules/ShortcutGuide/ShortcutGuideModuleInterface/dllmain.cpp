@@ -50,7 +50,9 @@ public:
 
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
-        return true;
+        HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
+        PowerToysSettings::Settings settings(hinstance, get_name());
+        return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
     virtual void set_config(const wchar_t* config) override
