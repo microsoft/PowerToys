@@ -32,7 +32,6 @@ namespace
         bool disabled = false;
     };
 
-    // std::vector<int> modifierKeys = {VK_LSHIFT, VK_RSHIFT, VK_SHIFT, VK_LCONTROL, VK_RCONTROL, VK_CONTROL, VK}; 
     ShortcutGuideWindowInfo GetShortcutGuideWindowInfo(HWND active_window)
     {
         ShortcutGuideWindowInfo result;
@@ -88,10 +87,32 @@ namespace
 
     const LPARAM eventActivateWindow = 1;
     
-    bool winPressed = false;
+    bool wasWinPressed = false;
     bool isWinPressed()
     {
         return (GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000);
+    }
+
+    // all modifiers without win key
+    std::vector<int> modifierKeys = { VK_SHIFT, VK_LSHIFT, VK_RSHIFT, VK_CONTROL, VK_LCONTROL, VK_RCONTROL, VK_MENU, VK_LMENU, VK_RMENU };
+
+    // returns false if there are other modifiers pressed or win key isn' pressed
+    bool onlyWinPressed()
+    {
+        if (!isWinPressed())
+        {
+            return false;
+        }
+
+        for (auto key : modifierKeys)
+        {
+            if (GetAsyncKeyState(key) & 0x8000)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     bool isWin(int key)
@@ -118,7 +139,7 @@ namespace
                 instance->CloseWindow(HideWindowType::ESC_PRESSED);
             }
 
-            if (winPressed && !isKeyDown(event) && isWin(event.lParam->vkCode))
+            if (wasWinPressed && !isKeyDown(event) && isWin(event.lParam->vkCode))
             {
                 Logger::trace(L"Win key was released");
                 instance->CloseWindow(HideWindowType::WIN_RELEASED);
@@ -126,10 +147,10 @@ namespace
 
             if (isKeyDown(event) && isWin(event.lParam->vkCode))
             {
-                winPressed = true;
+                wasWinPressed = true;
             }
 
-            if (isWinPressed() && isKeyDown(event) && !isWin(event.lParam->vkCode))
+            if (onlyWinPressed() && isKeyDown(event) && !isWin(event.lParam->vkCode))
             {
                 Logger::trace(L"Shortcut with win key was pressed");
                 instance->CloseWindow(HideWindowType::WIN_SHORTCUT_PRESSED);
@@ -202,7 +223,7 @@ void OverlayWindow::CloseWindow(HideWindowType type, int mainThreadId)
     {
         this->winkey_popup->SetWindowCloseType(ToWstring(type));
         Logger::trace(L"Terminating process");
-        PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
+        PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
     }
 }
 

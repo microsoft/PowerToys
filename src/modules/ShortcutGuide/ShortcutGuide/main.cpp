@@ -47,7 +47,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     winrt::init_apartment();
     LoggerHelpers::init_logger(ShortcutGuideConstants::ModuleKey, L"ShortcutGuide", LogSettings::shortcutGuideLoggerName);
     InitUnhandledExceptionHandler_x64();
-    Logger::trace("Starting Shortcut Guide with pid={}", GetCurrentProcessId());
+    Logger::trace("Starting Shortcut Guide");
 
     if (!SetCurrentPath())
     {
