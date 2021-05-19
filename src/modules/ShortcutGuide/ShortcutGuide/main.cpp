@@ -47,7 +47,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     winrt::init_apartment();
     LoggerHelpers::init_logger(ShortcutGuideConstants::ModuleKey, L"ShortcutGuide", LogSettings::shortcutGuideLoggerName);
     InitUnhandledExceptionHandler_x64();
-    Logger::trace("Starting Shortcut Guide with pid={}", GetCurrentProcessId());
+    Logger::trace("Starting Shortcut Guide");
 
     if (!SetCurrentPath())
     {
@@ -96,8 +96,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         });
     }
 
+    auto hwnd = GetForegroundWindow();
+    auto window = OverlayWindow(hwnd);
     auto mainThreadId = GetCurrentThreadId();
-    EventWaiter exitEventWaiter(CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, [mainThreadId](int err) {
+    EventWaiter exitEventWaiter(CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, [mainThreadId, &window](int err) {
         if (err != ERROR_SUCCESS)
         {
             Logger::error(L"Failed to wait for {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(err));
@@ -107,11 +109,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
             Logger::trace(L"{} event was signaled", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT);
         }
 
-        PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+        window.CloseWindow(HideWindowType::THE_SHORTCUT_PRESSED, mainThreadId);
     });
 
-    auto hwnd = GetForegroundWindow();
-    auto window = OverlayWindow(hwnd);
     if (window.IsDisabled())
     {
         Logger::trace("SG is disabled for the current foreground app. Exiting SG");

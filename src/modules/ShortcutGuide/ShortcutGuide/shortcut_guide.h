@@ -13,11 +13,20 @@ extern class OverlayWindow* instance;
 
 class TargetState;
 
+enum class HideWindowType
+{
+    ESC_PRESSED,
+    WIN_RELEASED,
+    WIN_SHORTCUT_PRESSED,
+    THE_SHORTCUT_PRESSED
+};
+
 class OverlayWindow
 {
 public:
     OverlayWindow(HWND activeWindow);
     void ShowWindow();
+    void CloseWindow(HideWindowType type, int mainThreadId = 0);
     bool IsDisabled();
 
     void on_held();
@@ -31,7 +40,6 @@ public:
     void get_exe_path(HWND window, wchar_t* exePath);
     ~OverlayWindow();
     static ShortcutGuideSettings GetSettings() noexcept;
-
 private:
     std::wstring app_name;
     //contains the non localized key of the powertoy
@@ -43,6 +51,7 @@ private:
     void init_settings();
     void update_disabled_apps();
     HWND activeWindow;
+    HHOOK keyboardHook;
 
     struct OverlayOpacity
     {

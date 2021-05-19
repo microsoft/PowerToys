@@ -55,8 +55,13 @@ public:
     void quick_hide();
 
     HWND get_window_handle();
+    void SetWindowCloseType(std::wstring windowCloseType)
+    {
+        this->windowCloseType = windowCloseType;
+    }
 
 private:
+    std::wstring windowCloseType;
     bool show_thumbnail(const RECT& rect, double alpha);
     void hide_thumbnail();
     virtual void init() override;
@@ -68,7 +73,6 @@ private:
 
     bool running = true;
     std::vector<AnimateKeys> key_animations;
-    std::vector<int> key_pressed;
     std::vector<MonitorInfo> monitors;
     ScreenSize total_screen;
     int monitor_dx = 0, monitor_dy = 0;

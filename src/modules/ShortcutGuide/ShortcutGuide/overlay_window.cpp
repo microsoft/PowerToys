@@ -360,7 +360,6 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
     shown_start_time = std::chrono::steady_clock::now();
     lock.unlock();
     D2DWindow::show(primary_screen.left(), primary_screen.top(), primary_screen.width(), primary_screen.height());
-    key_pressed.clear();
     // Check if taskbar is auto-hidden. If so, don't display the number arrows
     APPBARDATA param = {};
     param.cbSize = sizeof(APPBARDATA);
@@ -393,8 +392,9 @@ void D2DOverlayWindow::on_hide()
     // Trace the event only if the overlay window was visible.
     if (shown_start_time.time_since_epoch().count() > 0)
     {
-        Logger::trace("key_pressed.size()={}", key_pressed.size());
-        Trace::SendGuideSession(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count());
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count();
+        Logger::trace(L"Duration: {}. Close Type: {}", duration, windowCloseType);
+        Trace::SendGuideSession(duration, windowCloseType.c_str());
         shown_start_time = {};
     }
 }
@@ -649,6 +649,11 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     // Thumbnail logic:
     auto window_state = get_window_state(active_window);
     auto thumb_window = get_window_pos(active_window);
+    if (!thumb_window.has_value())
+    {
+        thumb_window = RECT();
+    }
+
     bool miniature_shown = active_window != nullptr && thumbnail != nullptr && thumb_window && window_state != MINIMIZED;
     RECT client_rect;
     if (thumb_window && GetClientRect(active_window, &client_rect))

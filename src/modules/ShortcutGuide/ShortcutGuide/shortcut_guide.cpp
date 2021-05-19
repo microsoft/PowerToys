@@ -8,7 +8,6 @@
 #include <common/interop/shared_constants.h>
 #include <sstream>
 
-
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/logger/logger.h>
@@ -18,6 +17,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
 #include <Psapi.h>
+#include <common/hooks/LowlevelKeyboardEvent.h>
 
 // TODO: refactor singleton
 OverlayWindow* instance = nullptr;
@@ -86,11 +86,97 @@ namespace
     }
 
     const LPARAM eventActivateWindow = 1;
-}
+    
+    bool wasWinPressed = false;
+    bool isWinPressed()
+    {
+        return (GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000);
+    }
 
-constexpr int alternative_switch_hotkey_id = 0x2;
-constexpr UINT alternative_switch_modifier_mask = MOD_WIN | MOD_SHIFT;
-constexpr UINT alternative_switch_vk_code = VK_OEM_2;
+    // all modifiers without win key
+    std::vector<int> modifierKeys = { VK_SHIFT, VK_LSHIFT, VK_RSHIFT, VK_CONTROL, VK_LCONTROL, VK_RCONTROL, VK_MENU, VK_LMENU, VK_RMENU };
+
+    // returns false if there are other modifiers pressed or win key isn' pressed
+    bool onlyWinPressed()
+    {
+        if (!isWinPressed())
+        {
+            return false;
+        }
+
+        for (auto key : modifierKeys)
+        {
+            if (GetAsyncKeyState(key) & 0x8000)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool isWin(int key)
+    {
+        return key == VK_LWIN || key == VK_RWIN;
+    }
+
+    bool isKeyDown(LowlevelKeyboardEvent event)
+    {
+        return event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN;
+    }
+
+    LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+    {
+        LowlevelKeyboardEvent event;
+        if (nCode == HC_ACTION)
+        {
+            event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+            event.wParam = wParam;
+            
+            if (event.lParam->vkCode == VK_ESCAPE)
+            {
+                Logger::trace(L"ESC key was pressed");
+                instance->CloseWindow(HideWindowType::ESC_PRESSED);
+            }
+
+            if (wasWinPressed && !isKeyDown(event) && isWin(event.lParam->vkCode))
+            {
+                Logger::trace(L"Win key was released");
+                instance->CloseWindow(HideWindowType::WIN_RELEASED);
+            }
+
+            if (isKeyDown(event) && isWin(event.lParam->vkCode))
+            {
+                wasWinPressed = true;
+            }
+
+            if (onlyWinPressed() && isKeyDown(event) && !isWin(event.lParam->vkCode))
+            {
+                Logger::trace(L"Shortcut with win key was pressed");
+                instance->CloseWindow(HideWindowType::WIN_SHORTCUT_PRESSED);
+            }
+        }
+
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
+
+    std::wstring ToWstring(HideWindowType type)
+    {
+        switch (type)
+        {
+            case HideWindowType::ESC_PRESSED:
+                return L"ESC_PRESSED";
+            case HideWindowType::WIN_RELEASED:
+                return L"WIN_RELEASED";
+            case HideWindowType::WIN_SHORTCUT_PRESSED:
+                return L"WIN_SHORTCUT_PRESSED";
+            case HideWindowType::THE_SHORTCUT_PRESSED:
+                return L"THE_SHORTCUT_PRESSED";
+        }
+
+        return L"";
+    }
+}
 
 OverlayWindow::OverlayWindow(HWND activeWindow)
 {
@@ -100,6 +186,11 @@ OverlayWindow::OverlayWindow(HWND activeWindow)
 
     Logger::info("Overlay Window is creating");
     init_settings();
+    keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
+    if (!keyboardHook)
+    {
+        Logger::warn(L"Failed to create low level keyboard hook. {}", get_last_error_or_default(GetLastError()));
+    }
 }
 
 void OverlayWindow::ShowWindow()
@@ -121,6 +212,21 @@ void OverlayWindow::ShowWindow()
     target_state->toggle_force_shown();
 }
 
+void OverlayWindow::CloseWindow(HideWindowType type, int mainThreadId)
+{
+    if (mainThreadId == 0)
+    {
+        mainThreadId = GetCurrentThreadId();
+    }
+
+    if (this->winkey_popup)
+    {
+        this->winkey_popup->SetWindowCloseType(ToWstring(type));
+        Logger::trace(L"Terminating process");
+        PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+    }
+}
+
 bool OverlayWindow::IsDisabled()
 {
     WCHAR exePath[MAX_PATH] = L"";
@@ -135,12 +241,15 @@ bool OverlayWindow::IsDisabled()
 
 OverlayWindow::~OverlayWindow()
 {
-    UnregisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id);
     event_waiter.reset();
     winkey_popup->hide();
     target_state->exit();
     target_state.reset();
     winkey_popup.reset();
+    if (keyboardHook)
+    {
+        UnhookWindowsHookEx(keyboardHook);
+    }
 }
 
 void OverlayWindow::on_held()
