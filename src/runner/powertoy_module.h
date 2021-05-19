@@ -42,6 +42,8 @@ public:
 
     void update_hotkeys();
 
+    void UpdateHotkeyEx();
+
 private:
     std::unique_ptr<HMODULE, PowertoyModuleDLLDeleter> handle;
     std::unique_ptr<PowertoyModuleIface, PowertoyModuleDeleter> pt_module;

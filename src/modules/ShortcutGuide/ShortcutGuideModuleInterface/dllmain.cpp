@@ -50,7 +50,9 @@ public:
 
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
-        return true;
+        HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
+        PowerToysSettings::Settings settings(hinstance, get_name());
+        return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
     virtual void set_config(const wchar_t* config) override
@@ -114,44 +116,33 @@ public:
         delete this;
     }
 
-    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) override
+    virtual std::optional<HotkeyEx> GetHotkeyEx() override
     {
-        if (buffer_size < 1)
-        {
-            return 1;
-        }
-
-        buffer[0] = m_hotkey;
-        return 1;
+        Logger::trace("GetHotkeyEx()");
+        return m_hotkey;
     }
 
-    virtual bool on_hotkey(size_t hotkeyId) override
+    virtual void OnHotkeyEx() override
     {
+        Logger::trace("OnHotkeyEx()");
         if (!_enabled)
         {
-            return false;
+            return;
         }
 
-        if (hotkeyId == 0)
+        if (IsProcessActive())
         {
-            Logger::trace("On hotkey");
-            if (IsProcessActive())
-            {
-                TerminateProcess();
-                return true;
-            }
-
-            if (m_hProcess)
-            {
-                CloseHandle(m_hProcess);
-                m_hProcess = nullptr;
-            }
-
-            StartProcess();
-            return true;
+            TerminateProcess();
+            return;
         }
 
-        return false;
+        if (m_hProcess)
+        {
+            CloseHandle(m_hProcess);
+            m_hProcess = nullptr;
+        }
+
+        StartProcess();
     }
 
     virtual void send_settings_telemetry() override
@@ -171,7 +162,7 @@ private:
     HANDLE m_hProcess = nullptr;
     
     // Hotkey to invoke the module
-    Hotkey m_hotkey;
+    HotkeyEx m_hotkey;
     HANDLE exitEvent;
 
     bool StartProcess(std::wstring args = L"")
@@ -269,11 +260,28 @@ private:
             {
                 auto jsonHotkeyObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"open_shortcutguide");
                 auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonHotkeyObject);
-                m_hotkey.win = hotkey.win_pressed();
-                m_hotkey.ctrl = hotkey.ctrl_pressed();
-                m_hotkey.shift = hotkey.shift_pressed();
-                m_hotkey.alt = hotkey.alt_pressed();
-                m_hotkey.key = hotkey.get_code();
+                m_hotkey = HotkeyEx();
+                if (hotkey.win_pressed())
+                {
+                    m_hotkey.modifiersMask |= MOD_WIN;
+                }
+
+                if (hotkey.ctrl_pressed())
+                {
+                    m_hotkey.modifiersMask |= MOD_CONTROL;
+                }
+
+                if (hotkey.shift_pressed())
+                {
+                    m_hotkey.modifiersMask |= MOD_SHIFT;
+                }
+
+                if (hotkey.alt_pressed())
+                {
+                    m_hotkey.modifiersMask |= MOD_ALT;
+                }
+
+                m_hotkey.vkCode = hotkey.get_code();
             }
             catch (...)
             {
@@ -285,14 +293,11 @@ private:
             Logger::info("Shortcut Guide settings are empty");
         }
 
-        if (!m_hotkey.key)
+        if (!m_hotkey.modifiersMask)
         {
             Logger::info("Shortcut Guide is going to use default shortcut");
-            m_hotkey.win = true;
-            m_hotkey.alt = false;
-            m_hotkey.shift = true;
-            m_hotkey.ctrl = false;
-            m_hotkey.key = VK_OEM_2;
+            m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
+            m_hotkey.vkCode = VK_OEM_2;
         }
     }
 };

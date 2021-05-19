@@ -48,6 +48,7 @@
     <ClCompile Include="..\common\interop\two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="action_runner_utils.cpp" />
     <ClCompile Include="auto_start_helper.cpp" />
+    <ClCompile Include="CentralizedHotkeys.cpp" />
     <ClCompile Include="general_settings.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
@@ -67,6 +68,7 @@
   <ItemGroup>
     <ClInclude Include="action_runner_utils.h" />
     <ClInclude Include="auto_start_helper.h" />
+    <ClInclude Include="CentralizedHotkeys.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="centralized_kb_hook.h" />

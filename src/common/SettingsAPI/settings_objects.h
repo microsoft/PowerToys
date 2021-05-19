@@ -182,7 +182,6 @@ namespace PowerToysSettings
             return result;
         }
 
-    protected:
         static std::wstring key_from_code(UINT key_code)
         {
             auto layout = GetKeyboardLayout(0);
@@ -236,6 +235,8 @@ namespace PowerToysSettings
             }
             return L"(Key " + std::to_wstring(key_code) + L")";
         }
+
+    protected:
         HotkeyObject(json::JsonObject hotkey_json) :
             m_json(std::move(hotkey_json))
         {
