@@ -103,10 +103,12 @@ namespace Microsoft.Plugin.Program.Programs
         {
             // To Filter PWAs when the user searches for the main application
             // All Chromium based applications contain the --app-id argument
-            // Reference : https://codereview.chromium.org/399045/show
+            // Reference : https://codereview.chromium.org/399045
             // Using Ordinal IgnoreCase since this is used internally
-            bool isWebApplication = FullPath.Contains(ProxyWebApp, StringComparison.OrdinalIgnoreCase) && Arguments.Contains(AppIdArgument, StringComparison.OrdinalIgnoreCase);
-            return isWebApplication;
+            return !string.IsNullOrEmpty(FullPath) &&
+                   !string.IsNullOrEmpty(Arguments) &&
+                   FullPath.Contains(ProxyWebApp, StringComparison.OrdinalIgnoreCase) &&
+                   Arguments.Contains(AppIdArgument, StringComparison.OrdinalIgnoreCase);
         }
 
         // Condition to Filter pinned Web Applications or PWAs when searching for the main application
@@ -117,9 +119,6 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 return false;
             }
-
-            // Set the subtitle to 'Web Application'
-            AppType = ApplicationType.WebApplication;
 
             string[] subqueries = query?.Split() ?? Array.Empty<string>();
             bool nameContainsQuery = false;
@@ -465,9 +464,13 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     program.LnkResolvedPath = program.FullPath;
 
-                    // Using InvariantCulture since this is user facing
+                    // Using CurrentCulture since this is user facing
                     program.FullPath = Path.GetFullPath(target).ToLowerInvariant();
-                    program.AppType = GetAppTypeFromPath(target);
+
+                    // A .lnk could be a (Chrome) PWA, set correct AppType
+                    program.AppType = program.IsWebApplication()
+                        ? ApplicationType.WebApplication
+                        : GetAppTypeFromPath(target);
 
                     var description = ShellLinkHelper.Description;
                     if (!string.IsNullOrEmpty(description))
