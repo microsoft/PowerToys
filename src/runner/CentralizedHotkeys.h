@@ -40,4 +40,6 @@ namespace CentralizedHotkeys
     void UnregisterHotkeysForModule(std::wstring moduleName);
 
     void PopulateHotkey(Shortcut shortcut);
+
+    void RegisterWindow(HWND hwnd);
 }

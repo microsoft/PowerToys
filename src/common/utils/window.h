@@ -9,7 +9,7 @@
 #include <functional>
 
 // Initializes and runs windows message loop
-inline int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_seconds = {}, std::function<void(WORD, WORD)> onHotkey = ([](WORD modifiersMask, WORD vkCode) {}))
+inline int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_seconds = {})
 {
     MSG msg{};
     bool stop = false;
@@ -21,14 +21,6 @@ inline int run_message_loop(const bool until_idle = false, const std::optional<u
 
     while (!stop && GetMessageW(&msg, nullptr, 0, 0))
     {
-        if (msg.message == WM_HOTKEY)
-        {
-            const auto modifiersMask = LOWORD(msg.lParam);
-            const auto vkCode = HIWORD(msg.lParam);
-            onHotkey(modifiersMask, vkCode);
-            continue;
-        }
-
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
         stop = until_idle && !PeekMessageW(&msg, nullptr, 0, 0, PM_NOREMOVE);

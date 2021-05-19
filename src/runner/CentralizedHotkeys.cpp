@@ -10,6 +10,7 @@ namespace CentralizedHotkeys
 {
     std::map<Shortcut, std::vector<Action>> actions;
     std::map<Shortcut, int> ids;
+    HWND runnerWindow;
 
     std::wstring ToWstring(const Shortcut& shortcut)
     {
@@ -57,7 +58,7 @@ namespace CentralizedHotkeys
                 ids[shortcut] = nextId++;
             }
 
-            if (!RegisterHotKey(nullptr, ids[shortcut], shortcut.modifiersMask, shortcut.vkCode))
+            if (!RegisterHotKey(runnerWindow, ids[shortcut], shortcut.modifiersMask, shortcut.vkCode))
             {
                 Logger::warn(L"Failed to add {} shortcut. {}", ToWstring(shortcut), get_last_error_or_default(GetLastError()));
                 return false;
@@ -81,7 +82,7 @@ namespace CentralizedHotkeys
 
                 if (it->second.empty())
                 {
-                    if (!UnregisterHotKey(nullptr, ids[it->first]))
+                    if (!UnregisterHotKey(runnerWindow, ids[it->first]))
                     {
                         Logger::warn(L"Failed to unregister {} shortcut. {}", ToWstring(it->first), get_last_error_or_default(GetLastError()));
                     }
@@ -111,5 +112,10 @@ namespace CentralizedHotkeys
                 Logger::error(L"Failed to execute hotkey's action");
             }
         }
+    }
+
+    void RegisterWindow(HWND hwnd)
+    {
+        runnerWindow = hwnd;
     }
 }

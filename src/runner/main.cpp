@@ -193,12 +193,7 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
         }
 
         settings_telemetry::init();
-        auto onHotkey = [](WORD modifiersMask, WORD vkCode) {
-            Logger::trace(L"On {} hotkey", CentralizedHotkeys::ToWstring({ modifiersMask, vkCode }));
-            CentralizedHotkeys::PopulateHotkey({ modifiersMask, vkCode });
-        };
-
-        result = run_message_loop(false, {}, onHotkey);
+        result = run_message_loop();
     }
     catch (std::runtime_error& err)
     {
