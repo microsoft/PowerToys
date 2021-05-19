@@ -649,6 +649,11 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     // Thumbnail logic:
     auto window_state = get_window_state(active_window);
     auto thumb_window = get_window_pos(active_window);
+    if (!thumb_window.has_value())
+    {
+        thumb_window = RECT();
+    }
+
     bool miniature_shown = active_window != nullptr && thumbnail != nullptr && thumb_window && window_state != MINIMIZED;
     RECT client_rect;
     if (thumb_window && GetClientRect(active_window, &client_rect))
