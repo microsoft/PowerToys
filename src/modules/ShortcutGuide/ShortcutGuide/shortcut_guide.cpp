@@ -241,11 +241,27 @@ bool OverlayWindow::IsDisabled()
 
 OverlayWindow::~OverlayWindow()
 {
-    event_waiter.reset();
-    winkey_popup->hide();
-    target_state->exit();
-    target_state.reset();
-    winkey_popup.reset();
+    if (event_waiter)
+    {
+        event_waiter.reset();
+    }
+    
+    if (winkey_popup)
+    {
+        winkey_popup->hide();
+    }
+    
+    if (target_state)
+    {
+        target_state->exit();
+        target_state.reset();
+    }
+
+    if (winkey_popup)
+    {
+        winkey_popup.reset();
+    }
+    
     if (keyboardHook)
     {
         UnhookWindowsHookEx(keyboardHook);
@@ -280,10 +296,11 @@ bool OverlayWindow::overlay_visible() const
 
 void OverlayWindow::init_settings()
 {
-    auto s = GetSettings();
-    overlayOpacity.value = s.overlayOpacity;
-    theme.value = s.theme;
-    disabledApps.value = s.theme;
+    auto settings = GetSettings();
+    overlayOpacity.value = settings.overlayOpacity;
+    theme.value = settings.theme;
+    disabledApps.value = settings.disabledApps;
+    update_disabled_apps();
 }
 
 bool OverlayWindow::is_disabled_app(wchar_t* exePath)
@@ -295,7 +312,6 @@ bool OverlayWindow::is_disabled_app(wchar_t* exePath)
 
     auto exePathUpper = std::wstring(exePath);
     CharUpperBuffW(exePathUpper.data(), (DWORD)exePathUpper.length());
-
     for (const auto& row : disabled_apps_array)
     {
         const auto pos = exePathUpper.rfind(row);
