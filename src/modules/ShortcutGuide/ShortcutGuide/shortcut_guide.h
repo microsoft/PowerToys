@@ -8,8 +8,6 @@
 
 #include "Generated Files/resource.h"
 
-#include <common/hooks/LowlevelKeyboardEvent.h>
-
 // We support only one instance of the overlay
 extern class OverlayWindow* instance;
 
