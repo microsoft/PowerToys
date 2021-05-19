@@ -29,8 +29,6 @@ namespace Espresso.Shell.Core
     {
         private const string BuildRegistryLocation = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
         private const int StdOutputHandle = -11;
-        private const int StdInputHandle = -10;
-        private const int StdErrorHandle = -12;
         private const uint GenericWrite = 0x40000000;
         private const uint GenericRead = 0x80000000;
 
