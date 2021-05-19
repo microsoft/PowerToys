@@ -506,7 +506,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             IsNewVersionDownloading = _isDownloadButtonClicked && string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
 
-            Process.Start(new ProcessStartInfo("powertoys://update_now") { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo(Helper.GetPowerToysInstallationFolder() + "\\PowerToys.exe") { Arguments = "powertoys://update_now/" });
         }
 
         public void RequestUpdateCheckedDate()
