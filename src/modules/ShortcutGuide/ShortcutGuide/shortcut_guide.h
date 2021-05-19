@@ -43,6 +43,7 @@ private:
     void init_settings();
     void update_disabled_apps();
     HWND activeWindow;
+    HHOOK keyboardHook;
 
     struct OverlayOpacity
     {

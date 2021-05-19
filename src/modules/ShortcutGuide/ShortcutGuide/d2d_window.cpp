@@ -191,17 +191,6 @@ LRESULT __stdcall D2DWindow::d2d_window_proc(HWND window, UINT message, WPARAM w
     auto self = this_from_hwnd(window);
     switch (message)
     {
-    case WM_KEYDOWN:
-    {
-        if (wparam == VK_ESCAPE)
-        {
-            Logger::trace(L"ESC key was pressed. Terminating process. PID={}", GetCurrentProcessId());
-            PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
-            return 0;
-        }
-
-        return DefWindowProc(window, message, wparam, lparam);
-    }
     case WM_NCCREATE:
     {
         auto create_struct = reinterpret_cast<CREATESTRUCT*>(lparam);
