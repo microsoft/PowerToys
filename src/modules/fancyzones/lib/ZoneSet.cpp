@@ -257,7 +257,7 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
 
         auto distanceFromCenter = [&](auto zone) {
             RECT rect = zone->GetZoneRect();
-            POINT center = POINT{ (rect.right - rect.left) / 2, (rect.top - rect.bottom) / 2 };
+            POINT center = POINT{ (rect.right + rect.left) / 2, (rect.top + rect.bottom) / 2 };
             return (pt.x - center.x)*(pt.x - center.x) + (pt.y - center.y)*(pt.y - center.y);
         };
 
