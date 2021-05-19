@@ -75,6 +75,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         }
 
+        public static string GetPowerToysInstallationFolder()
+        {
+            var settingsPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            return Directory.GetParent(settingsPath).FullName;
+        }
+
         private static readonly interop.LayoutMapManaged LayoutMap = new interop.LayoutMapManaged();
 
         public static string GetKeyName(uint key)
