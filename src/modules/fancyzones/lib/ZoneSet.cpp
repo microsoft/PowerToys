@@ -196,8 +196,8 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
     for (const auto& [zoneId, zone] : m_zones)
     {
         const RECT& zoneRect = zone->GetZoneRect();
-        if (zoneRect.left - m_config.SensitivityRadius <= pt.x && pt.x <= zoneRect.right + m_config.SensitivityRadius &&
-            zoneRect.top - m_config.SensitivityRadius <= pt.y && pt.y <= zoneRect.bottom + m_config.SensitivityRadius)
+        if (zoneRect.left /* - m_config.SensitivityRadius */ <= pt.x && pt.x <= zoneRect.right /* + m_config.SensitivityRadius  */&&
+            zoneRect.top /* - m_config.SensitivityRadius */ <= pt.y && pt.y <= zoneRect.bottom /* + m_config.SensitivityRadius */)
         {
             capturedZones.emplace_back(zoneId);
         }
@@ -255,12 +255,30 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             return max(rect.bottom - rect.top, 0) * max(rect.right - rect.left, 0);
         };
 
+        auto getCenter = [](auto zone) {
+            RECT rect = zone->GetZoneRect();
+            return POINT{ (rect.right + rect.left) / 2, (rect.top + rect.bottom) / 2 };
+        };
+        auto pointDifference = [](POINT pt1, POINT pt2) {
+            return (pt1.x - pt2.x) * (pt1.x - pt2.x) + (pt1.y - pt2.y) * (pt1.y - pt2.y);
+        };
         auto distanceFromCenter = [&](auto zone) {
             RECT rect = zone->GetZoneRect();
             POINT center = POINT{ (rect.right + rect.left) / 2, (rect.top + rect.bottom) / 2 };
             return (pt.x - center.x)*(pt.x - center.x) + (pt.y - center.y)*(pt.y - center.y);
         };
-
+        auto sensitivity = 75;
+        auto compFunc = [&](auto zone1, auto zone2) {
+            if (pointDifference(getCenter(zone1), getCenter(zone2)) > sensitivity)
+            {
+                return distanceFromCenter(zone1) < distanceFromCenter(zone2);
+            }
+            else
+            {
+                return zoneArea(zone1) < zoneArea(zone2);
+            };
+        };
+       
         try
         {
             using Algorithm = Settings::OverlappingZonesAlgorithm;
@@ -274,7 +292,7 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             case Algorithm::Positional:
                 return ZoneSelectSubregion(capturedZones, pt);
             case Algorithm::ClosestCenter:
-                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return distanceFromCenter(zone1) < distanceFromCenter(zone2); });
+                return ZoneSelectPriority(capturedZones, compFunc);
             }
         }
         catch (std::out_of_range)
