@@ -255,6 +255,12 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             return max(rect.bottom - rect.top, 0) * max(rect.right - rect.left, 0);
         };
 
+        auto distanceFromCenter = [&](auto zone) {
+            RECT rect = zone->GetZoneRect();
+            POINT center = POINT{ (rect.right - rect.left) / 2, (rect.top - rect.bottom) / 2 };
+            return (pt.x - center.x)*(pt.x - center.x) + (pt.y - center.y)*(pt.y - center.y);
+        };
+
         try
         {
             using Algorithm = Settings::OverlappingZonesAlgorithm;
@@ -267,6 +273,8 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
                 return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zoneArea(zone1) > zoneArea(zone2); });
             case Algorithm::Positional:
                 return ZoneSelectSubregion(capturedZones, pt);
+            case Algorithm::ClosestCenter:
+                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return distanceFromCenter(zone1) < distanceFromCenter(zone2); });
             }
         }
         catch (std::out_of_range)
