@@ -18,12 +18,13 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::SendGuideSession(const __int64 duration_ms) noexcept
+void Trace::SendGuideSession(const __int64 duration_ms, const wchar_t* close_type) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
         "ShortcutGuide_GuideSession",
         TraceLoggingInt64(duration_ms, "DurationInMs"),
+        TraceLoggingWideString(close_type, "CloseType"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));

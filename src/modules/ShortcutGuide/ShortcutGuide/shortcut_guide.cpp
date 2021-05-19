@@ -8,7 +8,6 @@
 #include <common/interop/shared_constants.h>
 #include <sstream>
 
-
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/logger/logger.h>
@@ -115,14 +114,14 @@ namespace
             
             if (event.lParam->vkCode == VK_ESCAPE)
             {
-                Logger::trace(L"ESC key was pressed. Terminating process. PID={}", GetCurrentProcessId());
-                PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
+                Logger::trace(L"ESC key was pressed");
+                instance->CloseWindow(HideWindowType::ESC_PRESSED);
             }
 
             if (winPressed && !isKeyDown(event) && isWin(event.lParam->vkCode))
             {
-                Logger::trace(L"Win key was released. Terminating process. PID={}", GetCurrentProcessId());
-                PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
+                Logger::trace(L"Win key was released");
+                instance->CloseWindow(HideWindowType::WIN_RELEASED);
             }
 
             if (isKeyDown(event) && isWin(event.lParam->vkCode))
@@ -132,12 +131,29 @@ namespace
 
             if (isWinPressed() && isKeyDown(event) && !isWin(event.lParam->vkCode))
             {
-                Logger::trace(L"Shortcut with win key was pressed. Terminating process. PID={}", GetCurrentProcessId());
-                PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
+                Logger::trace(L"Shortcut with win key was pressed");
+                instance->CloseWindow(HideWindowType::WIN_SHORTCUT_PRESSED);
             }
         }
 
         return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
+
+    std::wstring ToWstring(HideWindowType type)
+    {
+        switch (type)
+        {
+            case HideWindowType::ESC_PRESSED:
+                return L"ESC_PRESSED";
+            case HideWindowType::WIN_RELEASED:
+                return L"WIN_RELEASED";
+            case HideWindowType::WIN_SHORTCUT_PRESSED:
+                return L"WIN_SHORTCUT_PRESSED";
+            case HideWindowType::THE_SHORTCUT_PRESSED:
+                return L"THE_SHORTCUT_PRESSED";
+        }
+
+        return L"";
     }
 }
 
@@ -173,6 +189,21 @@ void OverlayWindow::ShowWindow()
     }
 
     target_state->toggle_force_shown();
+}
+
+void OverlayWindow::CloseWindow(HideWindowType type, int mainThreadId)
+{
+    if (mainThreadId == 0)
+    {
+        mainThreadId = GetCurrentThreadId();
+    }
+
+    if (this->winkey_popup)
+    {
+        this->winkey_popup->SetWindowCloseType(ToWstring(type));
+        Logger::trace(L"Terminating process");
+        PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
+    }
 }
 
 bool OverlayWindow::IsDisabled()
