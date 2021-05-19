@@ -108,6 +108,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
     {
     case WM_HOTKEY:
     {
+        // We use the tray icon WndProc to avoid creating a dedicated window just for this message.
         const auto modifiersMask = LOWORD(lparam);
         const auto vkCode = HIWORD(lparam);
         Logger::trace(L"On {} hotkey", CentralizedHotkeys::ToWstring({ modifiersMask, vkCode }));
