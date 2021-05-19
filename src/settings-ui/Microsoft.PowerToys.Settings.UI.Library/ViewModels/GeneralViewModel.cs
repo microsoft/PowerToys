@@ -125,7 +125,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private string _updateCheckedDate = string.Empty;
 
         private bool _isNewVersionDownloading;
-        private bool _isDownloadButtonClicked;
 
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
@@ -492,6 +491,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         // callback function to launch the URL to check for updates.
         private void CheckForUpdatesClick()
         {
+            IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+            NotifyPropertyChanged(nameof(IsDownloadAllowed));
+
             GeneralSettingsConfig.CustomActionName = "check_for_updates";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
@@ -502,8 +504,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private void UpdateNowClick()
         {
-            _isDownloadButtonClicked = UpdatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload;
-            IsNewVersionDownloading = _isDownloadButtonClicked && string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+            IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
 
             Process.Start(new ProcessStartInfo(Helper.GetPowerToysInstallationFolder() + "\\PowerToys.exe") { Arguments = "powertoys://update_now/" });
@@ -531,20 +532,33 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public void RefreshUpdatingState()
         {
-            UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
+            var config = UpdatingSettings.LoadSettings();
+
+            if (string.IsNullOrEmpty(config.LastCheckedDate) || config.ToJsonString() == UpdatingSettingsConfig.ToJsonString())
+            {
+                return;
+            }
+
+            UpdatingSettingsConfig = config;
+
+            if (PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate)
+            {
+                IsNewVersionDownloading = UpdateCheckedDate == UpdatingSettingsConfig.LastCheckedDateLocalized;
+            }
+            else if (PowerToysUpdatingState == UpdatingSettings.UpdatingState.ReadyToDownload)
+            {
+                IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+            }
+            else if (PowerToysUpdatingState == UpdatingSettings.UpdatingState.CannotDownload || PowerToysUpdatingState == UpdatingSettings.UpdatingState.ReadyToInstall)
+            {
+                IsNewVersionDownloading = false;
+            }
 
             PowerToysUpdatingState = UpdatingSettingsConfig.State;
             PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
             PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
-            // reset _isDownloadButtonClicked state if the UpdatingState was changed
-            if (_isDownloadButtonClicked)
-            {
-                _isDownloadButtonClicked = UpdatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload;
-            }
-
-            IsNewVersionDownloading = _isDownloadButtonClicked && string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
         }
     }
