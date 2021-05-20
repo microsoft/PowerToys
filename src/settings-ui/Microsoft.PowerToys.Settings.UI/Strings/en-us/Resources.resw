@@ -477,10 +477,6 @@
   <data name="ShortcutGuide_Description.Text" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
   </data>
-  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
-    <value>Press duration before showing (ms)</value>
-    <comment>pressing a key in milliseconds</comment>
-  </data>
   <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
@@ -1097,7 +1093,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing {&lt;} searches for running processes only, {?} will search only for file, or {.} for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
   </data>
   <data name="Oobe_ShortcutGuide_HowToLaunch.Text" xml:space="preserve">
-    <value>{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!</value>
+    <value>{Shift} + {Win} + {/} to open Shortcut Guide, press it again to close or press {Esc}.</value>
   </data>
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
     <value>Tips &amp; tricks</value>
@@ -1194,5 +1190,8 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
+  </data>
+  <data name="ShortcutGuide_OpenShortcutGuide.Header" xml:space="preserve">
+    <value>Open Shortcut Guide</value>
   </data>
 </root>

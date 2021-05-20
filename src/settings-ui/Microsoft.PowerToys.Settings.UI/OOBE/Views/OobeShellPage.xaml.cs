@@ -28,13 +28,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ColorPickerSharedEventCallback = implementation;
         }
 
-        public static Func<string> ShortcutGuideSharedEventCallback { get; set; }
-
-        public static void SetShortcutGuideSharedEventCallback(Func<string> implementation)
-        {
-            ShortcutGuideSharedEventCallback = implementation;
-        }
-
         public static Action<Type> OpenMainWindowCallback { get; set; }
 
         public static void SetOpenMainWindowCallback(Action<Type> implementation)

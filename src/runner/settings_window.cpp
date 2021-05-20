@@ -40,7 +40,7 @@ json::JsonObject get_power_toys_settings()
         }
         catch (...)
         {
-            Logger::error("get_power_toys_settings: got malformed json");
+            Logger::error(L"get_power_toys_settings(): got malformed json for {} module", name);
         }
     }
     return result;
@@ -139,6 +139,7 @@ void send_json_config_to_module(const std::wstring& module_key, const std::wstri
     {
         moduleIt->second->set_config(settings.c_str());
         moduleIt->second.update_hotkeys();
+        moduleIt->second.UpdateHotkeyEx();
     }
 }
 
