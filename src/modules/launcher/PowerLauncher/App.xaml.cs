@@ -42,6 +42,7 @@ namespace PowerLauncher
         [STAThread]
         public static void Main()
         {
+            Log.Info($"Starting PowerToys Run with PID={Process.GetCurrentProcess().Id}", typeof(App));
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
                 using (var application = new App())
@@ -50,10 +51,15 @@ namespace PowerLauncher
                     application.Run();
                 }
             }
+            else
+            {
+                Log.Info("There is already running PowerToys Run instance", typeof(App));
+            }
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            Log.Info("On Startup.", GetType());
             for (int i = 0; i + 1 < e.Args.Length; i++)
             {
                 if (e.Args[i] == "-powerToysPid")
@@ -61,8 +67,10 @@ namespace PowerLauncher
                     int powerToysPid;
                     if (int.TryParse(e.Args[i + 1], out powerToysPid))
                     {
+                        Log.Info($"Runner pid={powerToysPid}", GetType());
                         RunnerHelper.WaitForPowerToysRunner(powerToysPid, () =>
                         {
+                            Log.Info($"Runner with pid={powerToysPid} exited. Exiting PowerToys Run", GetType());
                             try
                             {
                                 Dispose();

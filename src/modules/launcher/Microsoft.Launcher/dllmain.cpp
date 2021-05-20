@@ -243,7 +243,7 @@ public:
 
                 if (run_non_elevated(action_runner_path, params, pidBuffer))
                 {
-                    Logger::trace("Started PowerToys Run Process. PID {}", *pidBuffer);
+                    Logger::trace("Started PowerToys Run Process");
                     m_enabled = true;
                     const int maxRetries = 80;
                     for (int retry = 0; retry < maxRetries; ++retry)
