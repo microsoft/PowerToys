@@ -1,4 +1,4 @@
-#include "ReportRegistry.h"
+#include "RegistryUtils.h"
 #include <common/utils/winapi_error.h>
 
 using namespace std;

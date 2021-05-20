@@ -15,7 +15,7 @@
 #include <common/utils/exec.h>
 
 #include "ReportMonitorInfo.h"
-#include "ReportRegistry.h"
+#include "RegistryUtils.h"
 using namespace std;
 using namespace std::filesystem;
 using namespace winrt::Windows::Data::Json;
