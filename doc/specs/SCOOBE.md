@@ -51,17 +51,14 @@ The SCOOBE dialog builds off the currently implemented OOBE dialog originally dr
 | --- | --- | --- |
 |1. | The SCOOBE dialog should launch immediately after PowerToys is updated. | P0 |
 |2. | The SCOOBE dialog should be contained inside the existing OOBE Dialog under its own &quot;What&#39;s New&quot; page of the dialog window. See figure 5.1.1. | P0 |
-|3. | The content for the SCOOBE dialog should be stored externally from the PowerToys application. **\*** | P0 |
-|4. | When the &quot;What&#39;s New&quot; page is opened, the content displayed should by loaded dynamically from the relevant information contained in the external storage described in 3.1.1.3 above. Assumes the user&#39;s device is connected to the internet. | P0 |
-|5. | The SCOOBE dialog should display information on updates that have occurred between the previous version of PowerToys the user had installed, and the current version of PowerToys the user has updated to. **\*\*** | P0 |
-|6. | If PowerToys was installed for the first time, the SCOOBE dialog should only display information on updates that have occurred with the version of PowerToys the user has installed. | P0 |
+|3. | The content for the SCOOBE dialog should be stored externally from the PowerToys application on the PowerToys Github in distinct wiki pages on for each release. **\*** | P0 |
+|4. | When the &quot;What&#39;s New&quot; page is opened, the content displayed should be loaded from the information contained in the relevant wiki pages discussed in 3.1.1.3 above. Assumes the user&#39;s device is connected to the internet. | P0 |
+|6. | The SCOOBE dialog should display information on updates that have occurred on the version of PowerToys the user has installed/updated to. | P0 |
 |7. | If PowerToys was installed for the first time, the OOBE&#39;s &quot;Welcome to PowerToys&quot; page should display first, not the SCOOBE&#39;s &quot;What&#39;s New&quot; page. See figure 5.1.2. | P0 |
 |8. | The structure of the SCOOBE dialog page&#39;s content should follow the guidelines described in section 3.1.2. | P0 |
 |9. | After SCOOBE is initially viewed, the user should be able to re-access the SCOOBE dialog at any time by opening the OOBE window again and selecting the &quot;What&#39;s New&quot; page. | P1 |
 
-**\*** - By storing the content for SCOOBE externally from the application, the PowerToys team can update/adjust information without being constrained to PowerToys&#39; release cycles. This is critical in the event of errors or miscommunications that would otherwise be difficult, if not impossible, to correct if stored locally to the app and shipped with the version of PowerToys being released.
-
-**\*\*** - It is important to call out the nuances of potential upgrade scenarios here. If a user upgraded from v0.31 to v0.33, the updates displayed would include only what was changed in v0.33, as this scenario only adds a single release&#39;s changes. Should a user have upgraded from v0.29 -> v0.33, the updates displayed would include what was changed in both v0.31 and v0.33 as this scenario involves multiple releases&#39; changes. If the latest version of PowerToys is v0.35 (for example), but the user only updates from v0.31 to v0.33, the displayed information **should not** include information related to v0.35 updates, as those changes have not yet been added on the version of PowerToys the user has installed. Section 5.1.3 gives textual examples of what various scenarios would look like, with section 3.1.2 describing the page&#39;s content layout.
+**\*** - By storing the content for SCOOBE externally from the application, the PowerToys team can update/adjust information without being constrained to PowerToys&#39; release cycles. This is critical in the event of errors or miscommunications that would otherwise be difficult, if not impossible, to correct if stored locally to the app and shipped with the version of PowerToys being released. The content will likely 
 
 **3.1.2. Page Content**
 
@@ -73,19 +70,12 @@ The SCOOBE dialog builds off the currently implemented OOBE dialog originally dr
 |4. | The &quot;New Features &amp; Improvements&quot; section should be subdivided by the relevant utilities updated (i.e. Color Picker, FancyZones, etc.). See figure 5.1.1 and section 5.1.3 for examples. | P1 |
 |5. | The &quot;Bugfixes Highlights&quot; section should contain information related to noteworthy issues/errors that were corrected. | P0 |
 |6. | If there are relevant visuals, they should be included with the information text. See figure 5.1.1. | P1 |
-|7. | For multi-version updates (i.e. v0.29 to v0.35), combine the information from each version&#39;s updates and display them as a single &quot;New Features &amp; Improvements&quot; section and &quot;Bugfixes Highlights&quot; section. See section 5.1.3 for an example. | P0 |
 |8. | The SCOOBE dialog should be scrollable if needed to fit all the content. | P0 |
 |10. | The bottom of the SCOOBE dialog should include a link to the PowerToys releases page for a complete list of versions and their release notes ([Releases · microsoft/PowerToys (github.com)](https://github.com/microsoft/PowerToys/releases)). | P1 |
 
 **3.2. Open Discussion**
 
-- How do we localize content like keystrokes and visuals?
-
 - How do we make keystrokes/activation phrases stand out?
-
-- How do we handle displaying information for scenarios where a user is updating over multiple versions (ex. v0.29 -> v0.35) for which a change was made but later regressed/altered. For instance, a new FancyZones UX update in v0.31, that was again changed in v0.35?
-
-- Should we store SCOOBE information for all versions of PowerToys? If not, how far back should we maintain information?
 
 ## 4. Measure Requirements
 
@@ -153,33 +143,4 @@ The SCOOBE dialog builds off the currently implemented OOBE dialog originally dr
     - Shell history now saves the raw command instead of the resolved command. A command like %appdata% would now save in the Shell history as is instead of C:\Users\YourUserName\AppData\Roaming.
 - Bugfixes Highlights
   - PowerToys will start requiring Windows 10 v1903 or greater after 0.35.x release. (#9999)
-  - Fixed FancyZones placement algorithm for when the Taskbar is vertical (#9999)
-
-**v0.29 -> v0.35:**
-
-- New Features &amp; Improvements
-  - General
-    - Added a &#39;First time load&#39; experience. The hope is a quick, light way to learn about basic functionality
-  - Color Picker
-    - Esc can now be used to exit the editor
-  - FancyZones
-    - Dark mode for the editor
-    - Certain settings (e.g. number of zones, spacing settings) can now be set on individual layouts.
-    - New options to change zone activation algorithm
-    - Added hotkeys and quick swap functionality for custom layouts! Users can now assign a hotkey in the editor and use it to quickly set a desktop&#39;s zones with Ctrl + Win + Alt + NUMBER key binding, or by pressing the hotkey while dragging a window.
-  - PowerToys Run
-    - Service management plugin (Start, stop, …)
-    - Registry key plugin
-    - System action plugin (Reboot, lock, ...)
-    - Plugin Manager now is in settings. You can directly turn on / off, include items in general search, and change the action key
-    - Improved support for additional window managers by abstracting out shell process calls
-    - ~ will now act as the user home directory in Folder plugin
-    - Users can specify where to show the launcher window
-    - New plugin added to support opening previously used Visual Studio Code workspaces, remote machines (SSH or Codespaces), and containers! When enabled, use { to query for available workspaces. Please note, this plugin is off by default.
-    - Shell history now saves the raw command instead of the resolved command. A command like %appdata% would now save in the Shell history as is instead of C:\Users\YourUserName\AppData\Roaming.
-- Bugfixes Highlights
-  - Fixed OneDrive SVG Bug (#9999)
-  - SVG are scaled appropriately when view box is provided (#9999)
-  - Fix for PT Run registering the hotkey on non-supported OS versions (#9999)
-  - PowerToys will start requiring Windows 10 v1903 or greater after 0.35.x release (#9999)
   - Fixed FancyZones placement algorithm for when the Taskbar is vertical (#9999)
