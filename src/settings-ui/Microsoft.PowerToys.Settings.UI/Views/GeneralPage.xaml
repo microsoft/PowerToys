@@ -131,17 +131,18 @@
                     <TextBlock x:Name="General_Version_UpToDate" 
                                x:Uid="General_Version" 
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-                    <TextBlock Text="{Binding PowerToysVersion }" Margin="4,0,0,0"/>
+                    <TextBlock Text="{Binding PowerToysVersion }"
+                               Margin="4,0,0,0"
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal"
-                            Margin="{StaticResource SmallTopBottomMargin}"
+                            Margin="{StaticResource SmallTopMargin}"
                             AutomationProperties.LabeledBy="{Binding ElementName=General_VersionLastChecked}"
-                            Visibility="{Binding AutoUpdatesEnabled,
-                                                 Converter={StaticResource VisibleIfTrueConverter}}">
+                            Visibility="{Binding AutoUpdatesEnabled, Converter={StaticResource VisibleIfTrueConverter}}">
                     
-                    <TextBlock x:Name="General_VersionLastChecked" 
-                               x:Uid="General_VersionLastChecked" 
+                    <TextBlock x:Name="General_VersionLastChecked"
+                               x:Uid="General_VersionLastChecked"
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
                     <TextBlock Text="{Binding UpdateCheckedDate, Mode=OneWay}"
@@ -151,20 +152,22 @@
 
                 <TextBlock x:Name="General_CheckingForUpdates"
                            x:Uid="General_CheckingForUpdates"
-                           Margin="{StaticResource SmallBottomMargin}"
+                           Margin="{StaticResource SmallTopMargin}"
                            Visibility="{Binding IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"/>
 
                 <TextBlock x:Name="General_UpToDate"
                            x:Uid="General_UpToDate"
-                           Margin="{StaticResource SmallBottomMargin}"
+                           Margin="{StaticResource SmallTopMargin}"
+                           Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
                            Visibility="{Binding IsNewVersionCheckedAndUpToDate, Converter={StaticResource VisibleIfTrueConverter}}"/>
 
                 <Button x:Uid="GeneralPage_CheckForUpdates"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Foreground="White"
-                    Command="{Binding CheckForUpdatesEventHandler}"
-                    IsEnabled="{Binding IsDownloadAllowed}"
-                    />
+                        Style="{StaticResource AccentButtonStyle}"
+                        Foreground="White"
+                        Margin="{StaticResource SmallTopMargin}"
+                        Command="{Binding CheckForUpdatesEventHandler}"
+                        IsEnabled="{Binding IsDownloadAllowed}"
+                        />
             </StackPanel>
 
             <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToDownloadToVisibilityConverter}}">
@@ -174,7 +177,9 @@
                     <TextBlock x:Name="General_Version_ReadyToDownload" 
                                x:Uid="General_Version" 
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-                    <TextBlock Text="{Binding PowerToysVersion }" Margin="4,0,0,0"/>
+                    <TextBlock Text="{Binding PowerToysVersion }"
+                               Margin="4,0,0,0"
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal"
@@ -215,7 +220,9 @@
                     <TextBlock x:Name="General_Version_ReadyToInstall" 
                                x:Uid="General_Version" 
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-                    <TextBlock Text="{Binding PowerToysVersion }" Margin="4,0,0,0"/>
+                    <TextBlock Text="{Binding PowerToysVersion }"
+                               Margin="4,0,0,0"
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                 </StackPanel>
                 
                 <StackPanel Orientation="Horizontal"
@@ -250,7 +257,9 @@
                     <TextBlock x:Name="General_Version_Error" 
                                x:Uid="General_Version" 
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-                    <TextBlock Text="{Binding PowerToysVersion }" Margin="4,0,0,0"/>
+                    <TextBlock Text="{Binding PowerToysVersion }"
+                               Margin="4,0,0,0"
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal"
