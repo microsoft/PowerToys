@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Threading;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
@@ -27,12 +30,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Start_ShortcutGuide_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.ShortcutGuideSharedEventCallback != null)
+            var executablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, @"..\modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe");
+            var id = Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture);
+            var p = Process.Start(executablePath, id);
+            if (p != null)
             {
-                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeShellPage.ShortcutGuideSharedEventCallback()))
-                {
-                    eventHandle.Set();
-                }
+                p.Close();
             }
 
             ViewModel.LogRunningModuleEvent();

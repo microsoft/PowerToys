@@ -6,7 +6,6 @@
 #include <common/utils/resources.h>
 #include <common/utils/window.h>
 
-#include "keyboard_state.h"
 #include "shortcut_guide.h"
 #include "trace.h"
 #include "Generated Files/resource.h"
@@ -268,8 +267,8 @@ D2D1_RECT_F D2DOverlaySVG::get_snap_right() const
     return result;
 }
 
-D2DOverlayWindow::D2DOverlayWindow(std::optional<std::function<std::remove_pointer_t<WNDPROC>>> pre_wnd_proc) :
-    total_screen({}), animation(0.3), D2DWindow(std::move(pre_wnd_proc))
+D2DOverlayWindow::D2DOverlayWindow() :
+    total_screen({}), animation(0.3), D2DWindow()
 {
     tasklist_thread = std::thread([&] {
         while (running)
@@ -361,7 +360,6 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
     shown_start_time = std::chrono::steady_clock::now();
     lock.unlock();
     D2DWindow::show(primary_screen.left(), primary_screen.top(), primary_screen.width(), primary_screen.height());
-    key_pressed.clear();
     // Check if taskbar is auto-hidden. If so, don't display the number arrows
     APPBARDATA param = {};
     param.cbSize = sizeof(APPBARDATA);
@@ -374,115 +372,6 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
     }
 }
 
-void D2DOverlayWindow::animate(int vk_code)
-{
-    animate(vk_code, 0);
-}
-void D2DOverlayWindow::animate(int vk_code, int offset)
-{
-    if (!initialized || !use_overlay)
-    {
-        return;
-    }
-    bool done = false;
-    for (auto& animation : key_animations)
-    {
-        if (animation.vk_code == vk_code)
-        {
-            animation.animation.reset(0.1, 0, 1);
-            done = true;
-        }
-    }
-    if (done)
-    {
-        return;
-    }
-    AnimateKeys animation;
-    std::wstring id;
-    animation.vk_code = vk_code;
-    winrt::com_ptr<ID2D1SvgElement> button_letter, parent;
-    if (vk_code >= 0x41 && vk_code <= 0x5A)
-    {
-        id.push_back('A' + (vk_code - 0x41));
-    }
-    else
-    {
-        switch (vk_code)
-        {
-        case VK_SNAPSHOT:
-        case VK_PRINT:
-            id = L"PrnScr";
-            break;
-        case VK_CONTROL:
-        case VK_LCONTROL:
-        case VK_RCONTROL:
-            id = L"Ctrl";
-            break;
-        case VK_UP:
-            id = L"KeyUp";
-            break;
-        case VK_LEFT:
-            id = L"KeyLeft";
-            break;
-        case VK_DOWN:
-            id = L"KeyDown";
-            break;
-        case VK_RIGHT:
-            id = L"KeyRight";
-            break;
-        case VK_OEM_PLUS:
-        case VK_ADD:
-            id = L"KeyPlus";
-            break;
-        case VK_OEM_MINUS:
-        case VK_SUBTRACT:
-            id = L"KeyMinus";
-            break;
-        case VK_TAB:
-            id = L"Tab";
-            break;
-        case VK_RETURN:
-            id = L"Enter";
-            break;
-        default:
-            return;
-        }
-    }
-
-    if (offset > 0)
-    {
-        id += L"_" + std::to_wstring(offset);
-    }
-    button_letter = use_overlay->find_element(id);
-    if (!button_letter)
-    {
-        return;
-    }
-    button_letter->GetParent(parent.put());
-    if (!parent)
-    {
-        return;
-    }
-    parent->GetPreviousChild(button_letter.get(), animation.button.put());
-    if (!animation.button || !animation.button->IsAttributeSpecified(L"fill"))
-    {
-        animation.button = nullptr;
-        parent->GetNextChild(button_letter.get(), animation.button.put());
-    }
-    if (!animation.button || !animation.button->IsAttributeSpecified(L"fill"))
-    {
-        return;
-    }
-    winrt::com_ptr<ID2D1SvgPaint> paint;
-    animation.button->GetAttributeValue(L"fill", paint.put());
-    paint->GetColor(&animation.original);
-    animate(vk_code, offset + 1);
-    std::unique_lock lock(mutex);
-    animation.animation.reset(0.1, 0, 1);
-    key_animations.push_back(animation);
-    key_pressed.push_back(vk_code);
-}
-
 void D2DOverlayWindow::on_show()
 {
     // show override does everything
@@ -490,6 +379,7 @@ void D2DOverlayWindow::on_show()
 
 void D2DOverlayWindow::on_hide()
 {
+    Logger::trace("D2DOverlayWindow::on_hide()");
     tasklist_cv_mutex.lock();
     tasklist_update = false;
     tasklist_cv_mutex.unlock();
@@ -502,10 +392,11 @@ void D2DOverlayWindow::on_hide()
     // Trace the event only if the overlay window was visible.
     if (shown_start_time.time_since_epoch().count() > 0)
     {
-        Trace::HideGuide(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count(), key_pressed);
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count();
+        Logger::trace(L"Duration: {}. Close Type: {}", duration, windowCloseType);
+        Trace::SendGuideSession(duration, windowCloseType.c_str());
         shown_start_time = {};
     }
-    key_pressed.clear();
 }
 
 D2DOverlayWindow::~D2DOverlayWindow()
@@ -758,6 +649,11 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     // Thumbnail logic:
     auto window_state = get_window_state(active_window);
     auto thumb_window = get_window_pos(active_window);
+    if (!thumb_window.has_value())
+    {
+        thumb_window = RECT();
+    }
+
     bool miniature_shown = active_window != nullptr && thumbnail != nullptr && thumb_window && window_state != MINIMIZED;
     RECT client_rect;
     if (thumb_window && GetClientRect(active_window, &client_rect))

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -29,8 +30,9 @@ namespace FancyZonesEditor
 
         private void CanvasZone_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            WidthLabel.Text = Width.ToString();
-            HeightLabel.Text = Height.ToString();
+            // using current culture as this is end user facing
+            WidthLabel.Text = Width.ToString(CultureInfo.CurrentCulture);
+            HeightLabel.Text = Height.ToString(CultureInfo.CurrentCulture);
         }
 
         private CanvasLayoutModel model;

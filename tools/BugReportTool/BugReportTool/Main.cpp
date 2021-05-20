@@ -15,7 +15,7 @@
 #include <common/utils/exec.h>
 
 #include "ReportMonitorInfo.h"
-#include "ReportRegistry.h"
+#include "RegistryUtils.h"
 using namespace std;
 using namespace std::filesystem;
 using namespace winrt::Windows::Data::Json;
@@ -33,7 +33,7 @@ vector<wstring> filesToDelete = {
     L"PowerToys Run\\Settings\\QueryHistory.json"
 };
 
-vector<wstring> getXpathArray(wstring xpath)
+vector<wstring> GetXpathArray(wstring xpath)
 {
     vector<wstring> result;
     wstring cur = L"";
@@ -57,13 +57,13 @@ vector<wstring> getXpathArray(wstring xpath)
     return result;
 }
 
-void hideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
+void HideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
 {
     if (val.ValueType() == JsonValueType::Array)
     {
         for (auto it : val.GetArray())
         {
-            hideByXPath(it, xpathArray, p);
+            HideByXPath(it, xpathArray, p);
         }
 
         return;
@@ -96,11 +96,11 @@ void hideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
             return;
         }
 
-        hideByXPath(newVal, xpathArray, p + 1);
+        HideByXPath(newVal, xpathArray, p + 1);
     }
 }
 
-void hideForFile(const path& dir, const wstring& relativePath)
+void HideForFile(const path& dir, const wstring& relativePath)
 {
     path jsonPath = dir;
     jsonPath.append(relativePath);
@@ -114,14 +114,14 @@ void hideForFile(const path& dir, const wstring& relativePath)
     JsonValue jValue = json::value(jObject.value());
     for (auto xpath : escapeInfo[relativePath])
     {
-        vector<wstring> xpathArray = getXpathArray(xpath);
-        hideByXPath(jValue, xpathArray, 0);
+        vector<wstring> xpathArray = GetXpathArray(xpath);
+        HideByXPath(jValue, xpathArray, 0);
     }
 
     json::to_file(jsonPath.wstring(), jObject.value());
 }
 
-bool deleteFolder(wstring path)
+bool DeleteFolder(wstring path)
 {
     error_code err;
     remove_all(path, err);
@@ -134,12 +134,12 @@ bool deleteFolder(wstring path)
     return true;
 }
 
-void hideUserPrivateInfo(const filesystem::path& dir)
+void HideUserPrivateInfo(const filesystem::path& dir)
 {
     // Replace data in json files
     for (auto& it : escapeInfo)
     {
-        hideForFile(dir, it.first);
+        HideForFile(dir, it.first);
     }
 
     // delete files
@@ -147,11 +147,11 @@ void hideUserPrivateInfo(const filesystem::path& dir)
     {
         auto path = dir;
         path = path.append(it);
-        deleteFolder(path);
+        DeleteFolder(path);
     }
 }
 
-void reportWindowsVersion(const filesystem::path& tmpDir)
+void ReportWindowsVersion(const filesystem::path& tmpDir)
 {
     auto versionReportPath = tmpDir;
     versionReportPath = versionReportPath.append("windows-version.txt");
@@ -187,7 +187,7 @@ void reportWindowsVersion(const filesystem::path& tmpDir)
     }
 }
 
-void reportWindowsSettings(const filesystem::path& tmpDir)
+void ReportWindowsSettings(const filesystem::path& tmpDir)
 {
     std::wstring userLanguage;
     std::wstring userLocale;
@@ -221,7 +221,7 @@ void reportWindowsSettings(const filesystem::path& tmpDir)
 
 }
 
-void reportDotNetInstallationInfo(const filesystem::path& tmpDir)
+void ReportDotNetInstallationInfo(const filesystem::path& tmpDir)
 {
     auto dotnetInfoPath = tmpDir;
     dotnetInfoPath.append("dotnet-installation-info.txt");
@@ -271,7 +271,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     // Copy to a temp folder
     auto tmpDir = temp_directory_path();
     tmpDir = tmpDir.append("PowerToys\\");
-    if (!deleteFolder(tmpDir))
+    if (!DeleteFolder(tmpDir))
     {
         printf("Failed to delete temp folder\n");
         return 1;
@@ -281,7 +281,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     {
         copy(settingsRootPath, tmpDir, copy_options::recursive);
         // Remove updates folder contents
-        deleteFolder(tmpDir / "Updates");
+        DeleteFolder(tmpDir / "Updates");
     }
     catch (...)
     {
@@ -290,22 +290,25 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     }
 
     // Hide sensitive information
-    hideUserPrivateInfo(tmpDir);
+    HideUserPrivateInfo(tmpDir);
 
     // Write windows settings to the temporary folder
-    reportWindowsSettings(tmpDir);
+    ReportWindowsSettings(tmpDir);
 
     // Write monitors info to the temporary folder
     reportMonitorInfo(tmpDir);
 
     // Write windows version info to the temporary folder
-    reportWindowsVersion(tmpDir);
+    ReportWindowsVersion(tmpDir);
 
     // Write dotnet installation info to the temporary folder
-    reportDotNetInstallationInfo(tmpDir);
+    ReportDotNetInstallationInfo(tmpDir);
 
     // Write registry to the temporary folder
-    reportRegistry(tmpDir);
+    ReportRegistry(tmpDir);
+
+    // Write compatibility tab info to the temporary folder
+    ReportCompatibilityTab(tmpDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
@@ -316,7 +319,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     try
     {
-        zipFolder(zipPath, tmpDir);
+        ZipFolder(zipPath, tmpDir);
     }
     catch (...)
     {
@@ -324,6 +327,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         return 1;
     }
 
-    deleteFolder(tmpDir);
+    DeleteFolder(tmpDir);
     return 0;
 }

@@ -17,7 +17,7 @@
 class D2DWindow
 {
 public:
-    D2DWindow(std::optional<std::function<std::remove_pointer_t<WNDPROC>>> pre_wnd_proc = std::nullopt);
+    D2DWindow();
     void show(UINT x, UINT y, UINT width, UINT height);
     void hide();
     void initialize();
@@ -62,6 +62,4 @@ protected:
     winrt::com_ptr<ID2D1Factory6> d2d_factory;
     winrt::com_ptr<ID2D1Device5> d2d_device;
     winrt::com_ptr<ID2D1DeviceContext5> d2d_dc;
-
-    std::optional<std::function<std::remove_pointer_t<WNDPROC>>> pre_wnd_proc;
 };

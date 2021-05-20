@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Text;
@@ -74,15 +75,16 @@ namespace FancyZonesEditor.Utils
             {
                 var sb = new StringBuilder();
 
+                // using CultureInfo.InvariantCulture since this is internal data
                 sb.Append("ID: ");
                 sb.AppendLine(MonitorId);
                 sb.Append("DPI: ");
-                sb.AppendLine(Dpi.ToString());
+                sb.AppendLine(Dpi.ToString(CultureInfo.InvariantCulture));
 
                 sb.Append("X: ");
-                sb.AppendLine(LeftCoordinate.ToString());
+                sb.AppendLine(LeftCoordinate.ToString(CultureInfo.InvariantCulture));
                 sb.Append("Y: ");
-                sb.AppendLine(TopCoordinate.ToString());
+                sb.AppendLine(TopCoordinate.ToString(CultureInfo.InvariantCulture));
 
                 return sb.ToString();
             }
@@ -259,14 +261,15 @@ namespace FancyZonesEditor.Utils
                 * (7) monitor left
                 * (8) monitor top
                 * ...
+                * Using CultureInfo.InvariantCulture since this is us parsing our own data
                 */
                 var argsParts = args[1].Split('/');
 
                 // Process ID
-                App.PowerToysPID = int.Parse(argsParts[(int)CmdArgs.PowerToysPID]);
+                App.PowerToysPID = int.Parse(argsParts[(int)CmdArgs.PowerToysPID], CultureInfo.InvariantCulture);
 
                 // Span zones across monitors
-                App.Overlay.SpanZonesAcrossMonitors = int.Parse(argsParts[(int)CmdArgs.SpanZones]) == 1;
+                App.Overlay.SpanZonesAcrossMonitors = int.Parse(argsParts[(int)CmdArgs.SpanZones], CultureInfo.InvariantCulture) == 1;
 
                 // Target monitor id
                 string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
@@ -281,7 +284,7 @@ namespace FancyZonesEditor.Utils
                     }
 
                     // Monitors count
-                    int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount]);
+                    int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount], CultureInfo.InvariantCulture);
                     if (count != App.Overlay.DesktopsCount && !isCustomMonitorConfigurationMode)
                     {
                         MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
@@ -298,9 +301,9 @@ namespace FancyZonesEditor.Utils
                     {
                         var nativeData = default(NativeMonitorData);
                         nativeData.MonitorId = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
-                        nativeData.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]);
-                        nativeData.LeftCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
-                        nativeData.TopCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
+                        nativeData.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
+                        nativeData.LeftCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
+                        nativeData.TopCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
 
                         nativeMonitorData.Add(nativeData);
 
@@ -325,8 +328,8 @@ namespace FancyZonesEditor.Utils
                         foreach (NativeMonitorData nativeData in nativeMonitorData)
                         {
                             var splittedId = nativeData.MonitorId.Split('_');
-                            int width = int.Parse(splittedId[1]);
-                            int height = int.Parse(splittedId[2]);
+                            int width = int.Parse(splittedId[1], CultureInfo.InvariantCulture);
+                            int height = int.Parse(splittedId[2], CultureInfo.InvariantCulture);
 
                             Rect bounds = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, width, height);
                             bool isPrimary = nativeData.LeftCoordinate == 0 && nativeData.TopCoordinate == 0;
@@ -1020,8 +1023,10 @@ namespace FancyZonesEditor.Utils
 
             sb.Append("Span zones across monitors: ");
             sb.AppendLine(App.Overlay.SpanZonesAcrossMonitors.ToString());
+
+            // using CultureInfo.InvariantCulture since this is for PowerToys team
             sb.Append("Monitors count: ");
-            sb.AppendLine(count.ToString());
+            sb.AppendLine(count.ToString(CultureInfo.InvariantCulture));
             sb.Append("Target monitor: ");
             sb.AppendLine(targetMonitorName);
 

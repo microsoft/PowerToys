@@ -1,7 +1,7 @@
-#include "zipfolder.h"
+#include "ZipFolder.h"
 #include "..\..\..\..\deps\cziplib\src\zip.h"
 
-void zipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
+void ZipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
 {
     struct zip_t* zip = zip_open(zipPath.string().c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
     if (!zip)
