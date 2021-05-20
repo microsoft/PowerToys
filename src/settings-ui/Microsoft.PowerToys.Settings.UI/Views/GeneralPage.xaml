@@ -244,12 +244,17 @@
                     </HyperlinkButton>
                 </StackPanel>
 
+                <TextBlock x:Name="General_Downloading_TryAgain"
+                           x:Uid="General_Downloading"
+                           Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
+                           Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                
                 <Button x:Uid="General_TryAgainToDownloadAndInstall"
                         Margin="{StaticResource SmallTopMargin}"
                         Style="{StaticResource AccentButtonStyle}"
                         Foreground="White"
                         Command="{Binding UpdateNowButtonEventHandler}"
-                        IsEnabled="{Binding AutoUpdatesEnabled}"/>
+                        IsEnabled="{Binding IsDownloadAllowed}"/>
             </StackPanel>
 
             <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates" 
