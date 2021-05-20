@@ -178,6 +178,7 @@ BTNFACE
 Bto
 buf
 BUFSIZE
+Bugfixes
 bugreport
 Buid
 buildcommand
@@ -409,6 +410,7 @@ Delimarsky
 delims
 dend
 DENORMAL
+Deondre
 depersist
 deprioritized
 deps
@@ -1527,6 +1529,7 @@ pri
 PRINTCLIENT
 printf
 prm
+proactively
 PROCESSKEY
 PRODUCTVERSION
 PROGDLG
