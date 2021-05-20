@@ -55,12 +55,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     _isEnabled = value;
 
                     GeneralSettingsConfig.Enabled.Espresso = value;
+                    OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
 
                     var outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool IsTimeConfigurationEnabled
+        {
+            get => _mode == EspressoMode.TIMED && _isEnabled;
         }
 
         public EspressoMode Mode
@@ -72,6 +79,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _mode = value;
                     OnPropertyChanged(nameof(Mode));
+                    OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
 
                     Settings.Properties.Mode = value;
                     NotifyPropertyChanged();
