@@ -82,7 +82,7 @@ std::optional<fs::path> ObtainInstallerPath()
     using namespace updating;
 
     auto state = UpdateState::read();
-    if (state.state == UpdateState::readyToDownload)
+    if (state.state == UpdateState::readyToDownload || state.state == UpdateState::cannotDownload)
     {
         const auto new_version_info = get_github_version_info_async(Strings).get();
         if (!new_version_info)
