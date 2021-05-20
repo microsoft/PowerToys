@@ -82,7 +82,7 @@ std::optional<fs::path> ObtainInstallerPath()
     using namespace updating;
 
     auto state = UpdateState::read();
-    if (state.state == UpdateState::readyToDownload || state.state == UpdateState::cannotDownload)
+    if (state.state == UpdateState::readyToDownload || state.state == UpdateState::errorDownloading)
     {
         const auto new_version_info = get_github_version_info_async(Strings).get();
         if (!new_version_info)
@@ -324,7 +324,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             UpdateState::store([&](UpdateState& state) {
                 state = {};
                 state.githubUpdateLastCheckedDate.emplace(timeutil::now());
-                state.state = UpdateState::cannotDownload;
+                state.state = UpdateState::errorDownloading;
             });
         }
         return failed;
@@ -338,7 +338,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             UpdateState::store([&](UpdateState& state) {
                 state = {};
                 state.githubUpdateLastCheckedDate.emplace(timeutil::now());
-                state.state = UpdateState::cannotDownload;
+                state.state = UpdateState::errorDownloading;
             });
         }
         return failed;

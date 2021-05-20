@@ -549,7 +549,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             }
-            else if (PowerToysUpdatingState == UpdatingSettings.UpdatingState.CannotDownload || PowerToysUpdatingState == UpdatingSettings.UpdatingState.ReadyToInstall)
+            else if (PowerToysUpdatingState == UpdatingSettings.UpdatingState.ErrorDownloading || PowerToysUpdatingState == UpdatingSettings.UpdatingState.ReadyToInstall)
             {
                 IsNewVersionDownloading = false;
             }

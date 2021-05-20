@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public enum UpdatingState
         {
             UpToDate = 0,
-            CannotDownload,
+            ErrorDownloading,
             ReadyToDownload,
             ReadyToInstall,
         }

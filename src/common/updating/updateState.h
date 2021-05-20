@@ -10,7 +10,7 @@ struct UpdateState
     enum State
     {
       upToDate = 0,
-      cannotDownload = 1,
+      errorDownloading = 1,
       readyToDownload = 2,
       readyToInstall = 3
     } state = upToDate;

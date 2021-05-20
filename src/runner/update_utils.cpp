@@ -91,7 +91,7 @@ void process_new_version_info(const github_version_info& version_info,
         }
         else
         {
-            state.state = UpdateState::cannotDownload;
+            state.state = UpdateState::errorDownloading;
             state.downloadedInstallerFilename = {};
             Logger::error("Couldn't download new installer");
         }
