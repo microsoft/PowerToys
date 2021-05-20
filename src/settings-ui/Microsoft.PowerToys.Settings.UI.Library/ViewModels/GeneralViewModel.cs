@@ -56,6 +56,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
+            if (UpdatingSettingsConfig == null)
+            {
+                UpdatingSettingsConfig = new UpdatingSettings();
+            }
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -534,7 +538,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             var config = UpdatingSettings.LoadSettings();
 
-            if (string.IsNullOrEmpty(config.LastCheckedDate) || config.ToJsonString() == UpdatingSettingsConfig.ToJsonString())
+            // Retry loading if failed
+            for (int i = 0; i < 3 && config == null; i++)
+            {
+                System.Threading.Thread.Sleep(100);
+                config = UpdatingSettings.LoadSettings();
+            }
+
+            if (config == null || config.ToJsonString() == UpdatingSettingsConfig.ToJsonString())
             {
                 return;
             }

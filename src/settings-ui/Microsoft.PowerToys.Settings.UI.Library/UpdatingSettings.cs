@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
             }
 
-            return new UpdatingSettings();
+            return null;
         }
 
         public string ToJsonString()
