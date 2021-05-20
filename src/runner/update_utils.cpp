@@ -66,20 +66,23 @@ void process_new_version_info(const github_version_info& version_info,
         state.state = UpdateState::upToDate;
         state.releasePageUrl = {};
         state.downloadedInstallerFilename = {};
+        Logger::trace(L"Version is up to date");
         return;
     }
-
     const auto new_version_info = std::get<new_version_download_info>(version_info);
     state.releasePageUrl = new_version_info.release_page_uri.ToString().c_str();
+    Logger::trace(L"Discovered new version {}", new_version_info.version.toWstring());
 
     const bool already_downloaded = state.state == UpdateState::readyToInstall && state.downloadedInstallerFilename == new_version_info.installer_filename;
     if (already_downloaded)
     {
+        Logger::trace(L"New version is already downloaded");
         return;
     }
 
     if (download_update)
     {
+        Logger::trace(L"Downloading installer for a new version");
         if (download_new_version(new_version_info).get())
         {
             state.state = UpdateState::readyToInstall;
@@ -98,6 +101,7 @@ void process_new_version_info(const github_version_info& version_info,
     }
     else
     {
+        Logger::trace(L"New version is ready to download, showing notification");
         state.state = UpdateState::readyToDownload;
         state.downloadedInstallerFilename = {};
         if (show_notifications)
@@ -160,6 +164,7 @@ void periodic_update_worker()
 
 void check_for_updates_settings_callback()
 {
+    Logger::trace(L"Check for updates callback invoked");
     auto state = UpdateState::read();
     try
     {
