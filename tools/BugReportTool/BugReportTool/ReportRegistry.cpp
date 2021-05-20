@@ -1,4 +1,5 @@
 #include "ReportRegistry.h"
+#include <common/utils/winapi_error.h>
 
 using namespace std;
 
@@ -38,7 +39,7 @@ namespace
         { HKEY_USERS, L"HKEY_USERS"},
     };
 
-    void queryKey(HKEY key, wofstream& stream, int indent = 1)
+    void queryKey(HKEY key, wostream& stream, int indent = 1)
     {
         TCHAR achKey[255];
         DWORD cbName;
@@ -123,6 +124,53 @@ namespace
                 }
             }
         }
+    }
+}
+
+void reportAdminFlags(const std::filesystem::path& tmpDir)
+{
+    vector<std::wstring> apps 
+    { 
+        L"PowerToys.exe", 
+        L"ColorPickerUI.exe", 
+        L"FancyZonesEditor.exe", 
+        L"PowerToys.KeyboardManagerEditor.exe", 
+        L"PowerToys.KeyboardManagerEditor.exe", 
+        L"PowerLauncher.exe",
+        L"PowerToys.ShortcutGuide.exe"
+    };
+
+    HKEY outKey;
+    auto reportPath = tmpDir;
+    reportPath.append(L"admin-flags-info.txt");
+    std::wstring appsWithAdminFlag;
+    wofstream report(reportPath);
+
+    try
+    {
+        LONG result = RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers", 0, KEY_READ, &outKey);
+        if (result == ERROR_SUCCESS)
+        {
+            wostringstream oss;
+            queryKey(outKey, oss);
+            appsWithAdminFlag =  oss.str();
+        }
+        else
+        {
+            report << "Failed to get report. " << get_last_error_or_default(GetLastError());
+            return;
+        }
+    }
+    catch (...)
+    {
+        report << "Failed to get report";
+        return;
+    }
+
+    for (auto app : apps)
+    {
+        bool isAdminFlag = appsWithAdminFlag.find(app) != std::wstring::npos;
+        report << app << ": " << isAdminFlag << endl;
     }
 }
 

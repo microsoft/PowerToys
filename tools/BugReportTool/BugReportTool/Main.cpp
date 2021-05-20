@@ -307,6 +307,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     // Write registry to the temporary folder
     reportRegistry(tmpDir);
 
+    // Write 'Is admin flag set' for executables to the temporary folder
+    reportAdminFlags(tmpDir);
+
     // Zip folder
     auto zipPath = path::path(saveZipPath);
     std::string reportFilename{"PowerToysReport_"};
