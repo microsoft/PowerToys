@@ -10,13 +10,14 @@
         <SolidColorBrush x:Key="TextControlBorderBrushFocused"
                          Color="Transparent" />
     </UserControl.Resources>
+    
     <Border x:Name="MainBorder"
-                    Margin="12,16,12,0"
-                    Width="308"
-                    Height="36"
-                    CornerRadius="2"
-                    HorizontalAlignment="Stretch"
-                    Background="{DynamicResource ColorControlBackgroundBrush}">
+            Margin="12,16,12,0"
+            Width="308"
+            Height="36"
+            CornerRadius="2"
+            HorizontalAlignment="Stretch"
+            Background="{DynamicResource ColorControlBackgroundBrush}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="64"/>
@@ -42,7 +43,7 @@
                        IsReadOnly="True"
                        VerticalAlignment="Center"
                        Padding="8"
-                       AutomationProperties.LabeledBy="{Binding FormatNameTextBlock}"
+                     AutomationProperties.LabeledBy="{Binding ElementName=FormatNameTextBlock, Path=Text}"
                      />
 
             <Button x:Name="CopyToClipboardButton"
@@ -51,18 +52,20 @@
                     Height="36"
                     Width="36"
                     Grid.Column="2"
+                    
                     AutomationProperties.HelpText="{Binding ElementName=FormatNameTextBlock, Path=Text}"
-                    AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}">
-                <Button.Content>
-                    <TextBlock FontFamily="Segoe MDL2 Assets"
-                           Text="&#xE16F;"
-                           FontSize="12" />
-                </Button.Content>
+                    AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
+                    FontSize="12"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    FontFamily="Segoe MDL2 Assets"
+                    Content="&#xE16F;">
                 <Button.Resources>
-                    <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                    <Style TargetType="Button">
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=IsMouseOver, ElementName=MainBorder}" Value="False">
-                                <Setter Property="Opacity" Value="0"/>
+                            <DataTrigger Binding="{Binding Path=IsMouseOver, ElementName=MainBorder}"
+                                         Value="False">
+                                <Setter Property="Opacity"
+                                        Value="1" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
