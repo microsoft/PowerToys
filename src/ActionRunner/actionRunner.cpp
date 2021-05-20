@@ -318,12 +318,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE1)
     {
-        return !InstallNewVersionStage1();
+        const bool failed = !InstallNewVersionStage1();
+        if (failed)
+        {
+            UpdateState::store([&](UpdateState& state) {
+                state = {};
+                state.githubUpdateLastCheckedDate.emplace(timeutil::now());
+                state.state = UpdateState::cannotDownload;
+            });
+        }
+        return failed;
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE2)
     {
         using namespace std::string_view_literals;
-        return !InstallNewVersionStage2(args[2], args[3], args[4] == std::wstring_view{ UPDATE_STAGE2_RESTART_PT });
+        const bool failed = !InstallNewVersionStage2(args[2], args[3], args[4] == std::wstring_view{ UPDATE_STAGE2_RESTART_PT });
+        if (failed)
+        {
+            UpdateState::store([&](UpdateState& state) {
+                state = {};
+                state.githubUpdateLastCheckedDate.emplace(timeutil::now());
+                state.state = UpdateState::cannotDownload;
+            });
+        }
+        return failed;
     }
 
     return 0;
