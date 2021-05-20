@@ -307,8 +307,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     // Write registry to the temporary folder
     ReportRegistry(tmpDir);
 
-    // Write 'Is admin flag set' for executables to the temporary folder
-    ReportAdminFlags(tmpDir);
+    // Write compatibility tab info to the temporary folder
+    ReportCompatibilityTab(tmpDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);

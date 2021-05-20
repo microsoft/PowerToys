@@ -1,5 +1,6 @@
 #include "RegistryUtils.h"
 #include <common/utils/winapi_error.h>
+#include <map>
 
 using namespace std;
 
@@ -38,6 +39,34 @@ namespace
         { HKEY_PERFORMANCE_TEXT, L"HKEY_PERFORMANCE_TEXT"},
         { HKEY_USERS, L"HKEY_USERS"},
     };
+
+    vector<pair<wstring, wstring>> QueryValues(HKEY key)
+    {
+        DWORD cValues;
+        DWORD retCode = RegQueryInfoKeyW(key, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &cValues, nullptr, nullptr, nullptr, nullptr);
+        TCHAR achValue[255];
+        DWORD cchValue = 255;
+        LPBYTE value;
+        vector<pair<wstring, wstring>> results;
+        // Values
+        if (cValues)
+        {
+            for (DWORD i = 0, retCode = ERROR_SUCCESS; i < cValues; i++)
+            {
+                cchValue = 255;
+                achValue[0] = '\0';
+                value = new BYTE[16383];
+                retCode = RegEnumValueW(key, i, achValue, &cchValue, NULL, NULL, value, &cchValue);
+
+                if (retCode == ERROR_SUCCESS)
+                {
+                    results.push_back({ achValue, (LPCTSTR)value });
+                }
+            }
+        }
+
+        return results;
+    }
 
     void QueryKey(HKEY key, wostream& stream, int indent = 1)
     {
@@ -127,51 +156,71 @@ namespace
     }
 }
 
-void ReportAdminFlags(const std::filesystem::path& tmpDir)
+void ReportCompatibilityTab(HKEY key, wofstream& report)
 {
-    vector<std::wstring> apps 
-    { 
-        L"PowerToys.exe", 
-        L"ColorPickerUI.exe", 
-        L"FancyZonesEditor.exe", 
-        L"PowerToys.KeyboardManagerEditor.exe", 
-        L"PowerToys.KeyboardManagerEditor.exe", 
+    vector<std::wstring> apps
+    {
+        L"PowerToys.exe",
+        L"ColorPickerUI.exe",
+        L"FancyZonesEditor.exe",
+        L"PowerToys.KeyboardManagerEditor.exe",
+        L"PowerToys.KeyboardManagerEditor.exe",
         L"PowerLauncher.exe",
         L"PowerToys.ShortcutGuide.exe"
     };
 
-    HKEY outKey;
-    auto reportPath = tmpDir;
-    reportPath.append(L"admin-flags-info.txt");
-    std::wstring appsWithAdminFlag;
-    wofstream report(reportPath);
+    map<wstring, wstring> flags;
+    for (auto app : apps)
+    {
+        flags[app] = L"";
+    }
 
     try
     {
-        LONG result = RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers", 0, KEY_READ, &outKey);
+        HKEY outKey;
+        LONG result = RegOpenKeyExW(key, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers", 0, KEY_READ, &outKey);
         if (result == ERROR_SUCCESS)
         {
-            wostringstream oss;
-            QueryKey(outKey, oss);
-            appsWithAdminFlag =  oss.str();
+            auto values = QueryValues(outKey);
+            for (auto value : values)
+            {
+                for (auto app : apps)
+                {
+                    if (value.first.find(app) != wstring::npos)
+                    {
+                        flags[app] += value.second;
+                    }
+                }
+            }
         }
         else
         {
-            report << "Failed to get report. " << get_last_error_or_default(GetLastError());
+            report << "Failed to get the report. " << get_last_error_or_default(GetLastError());
             return;
         }
     }
     catch (...)
     {
-        report << "Failed to get report";
+        report << "Failed to get the report";
         return;
     }
 
-    for (auto app : apps)
+    for (auto flag : flags)
     {
-        bool isAdminFlag = appsWithAdminFlag.find(app) != std::wstring::npos;
-        report << app << ": " << isAdminFlag << endl;
+        report << flag.first << ": " << flag.second << endl;
     }
+}
+
+void ReportCompatibilityTab(const std::filesystem::path& tmpDir)
+{
+    auto reportPath = tmpDir;
+    reportPath.append(L"compatibility-tab-info.txt");
+    wofstream report(reportPath);
+    report << "Current user report" << endl;
+    ReportCompatibilityTab(HKEY_CURRENT_USER, report);
+    report << endl << endl;
+    report << "Local machine report" << endl;
+    ReportCompatibilityTab(HKEY_LOCAL_MACHINE, report);
 }
 
 void ReportRegistry(const filesystem::path& tmpDir)

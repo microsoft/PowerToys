@@ -8,4 +8,4 @@
 #include <Windows.h>
 
 void ReportRegistry(const std::filesystem::path& tmpDir);
-void ReportAdminFlags(const std::filesystem::path& tmpDir);
+void ReportCompatibilityTab(const std::filesystem::path& tmpDir);
