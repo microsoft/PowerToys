@@ -105,15 +105,7 @@
                     AutomationProperties.Name="{x:Static p:Resources.Pick_color}"/>
         </Grid>
 
-        <controls:ColorPickerControl HorizontalAlignment="Left"
-                                     Margin="0,44,0,0"
-                                     Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}"
-                                     IsTabStop="True"
-                                     TabIndex="2"
-                                     SelectedColor="{Binding SelectedColor}"
-                                     SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
-                                     Grid.Column="1"
-                                     VerticalAlignment="Top" />
+
         <!-- Main grid -->
         <Grid Grid.Column="1"
               Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
@@ -144,7 +136,15 @@
                 </StackPanel>
             </ScrollViewer>
 
-
+            <controls:ColorPickerControl HorizontalAlignment="Left"
+                                         Margin="0,44,0,0"
+                                         Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}"
+                                         IsTabStop="True"
+                                         TabIndex="2"
+                                         SelectedColor="{Binding SelectedColor}"
+                                         SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
+                                         Grid.Column="1"
+                                         VerticalAlignment="Top" />
         </Grid>
 
         <!-- Empty history -->
