@@ -39,7 +39,7 @@ namespace
         { HKEY_USERS, L"HKEY_USERS"},
     };
 
-    void queryKey(HKEY key, wostream& stream, int indent = 1)
+    void QueryKey(HKEY key, wostream& stream, int indent = 1)
     {
         TCHAR achKey[255];
         DWORD cbName;
@@ -115,7 +115,7 @@ namespace
                 if (RegOpenKeyExW(key, child.c_str(), 0, KEY_READ, &hTestKey) == ERROR_SUCCESS)
                 {
                     stream << wstring(indent, '\t') << child << "\n";
-                    queryKey(hTestKey, stream, indent + 1);
+                    QueryKey(hTestKey, stream, indent + 1);
                     RegCloseKey(hTestKey);
                 }
                 else
@@ -127,7 +127,7 @@ namespace
     }
 }
 
-void reportAdminFlags(const std::filesystem::path& tmpDir)
+void ReportAdminFlags(const std::filesystem::path& tmpDir)
 {
     vector<std::wstring> apps 
     { 
@@ -152,7 +152,7 @@ void reportAdminFlags(const std::filesystem::path& tmpDir)
         if (result == ERROR_SUCCESS)
         {
             wostringstream oss;
-            queryKey(outKey, oss);
+            QueryKey(outKey, oss);
             appsWithAdminFlag =  oss.str();
         }
         else
@@ -174,7 +174,7 @@ void reportAdminFlags(const std::filesystem::path& tmpDir)
     }
 }
 
-void reportRegistry(const filesystem::path& tmpDir)
+void ReportRegistry(const filesystem::path& tmpDir)
 {
     auto registryReportPath = tmpDir;
     registryReportPath.append("registry-report-info.txt");
@@ -190,7 +190,7 @@ void reportRegistry(const filesystem::path& tmpDir)
             LONG result = RegOpenKeyExW(rootKey, subKey.c_str(), 0, KEY_READ, &outKey);
             if (result == ERROR_SUCCESS)
             {
-                queryKey(outKey, registryReport);
+                QueryKey(outKey, registryReport);
                 RegCloseKey(rootKey);
             }
             else

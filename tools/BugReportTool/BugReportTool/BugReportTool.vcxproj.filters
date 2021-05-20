@@ -5,7 +5,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="ZipTools\zipfolder.cpp">
+    <ClCompile Include="ZipTools\ZipFolder.cpp">
       <Filter>ZipTools</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\deps\cziplib\src\zip.c" />
@@ -18,7 +18,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ZipTools\zipfolder.h">
+    <ClInclude Include="ZipTools\ZipFolder.h">
       <Filter>ZipTools</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\common\utils\json.h" />

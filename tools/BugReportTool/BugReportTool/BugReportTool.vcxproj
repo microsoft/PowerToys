@@ -39,7 +39,7 @@
     <ClCompile Include="ReportMonitorInfo.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="RegistryUtils.cpp" />
-    <ClCompile Include="ZipTools\zipfolder.cpp" />
+    <ClCompile Include="ZipTools\ZipFolder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -55,7 +55,7 @@
     <ClInclude Include="ReportMonitorInfo.h" />
     <ClInclude Include="..\..\..\common\utils\json.h" />
     <ClInclude Include="RegistryUtils.h" />
-    <ClInclude Include="ZipTools\zipfolder.h" />
+    <ClInclude Include="ZipTools\ZipFolder.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
