@@ -125,7 +125,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
         private string _newAvailableVersionLink = string.Empty;
-        private string _latestAvailableVersion = string.Empty;
         private string _updateCheckedDate = string.Empty;
 
         private bool _isNewVersionDownloading;
@@ -385,24 +384,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (_updateCheckedDate != value)
                 {
                     _updateCheckedDate = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        // Temp string. Appears when a user clicks "Check for updates" button and shows latest version available on the Github.
-        public string LatestAvailableVersion
-        {
-            get
-            {
-                return _latestAvailableVersion;
-            }
-
-            set
-            {
-                if (_latestAvailableVersion != value)
-                {
-                    _latestAvailableVersion = value;
                     NotifyPropertyChanged();
                 }
             }

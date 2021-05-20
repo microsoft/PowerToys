@@ -57,51 +57,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 string.Empty,
                 stateUpdatingAction);
 
-            ShellPage.ShellHandler.IPCResponseHandleList.Add((JsonObject json) =>
-            {
-                try
-                {
-                    string version = json.GetNamedString("version", string.Empty);
-                    bool isLatest = json.GetNamedBoolean("isVersionLatest", false);
-
-                    if (json.ContainsKey("version"))
-                    {
-                        ViewModel.RequestUpdateCheckedDate();
-                    }
-
-                    var str = string.Empty;
-                    if (isLatest)
-                    {
-                        str = ResourceLoader.GetForCurrentView().GetString("GeneralSettings_VersionIsLatest");
-                    }
-                    else if (!string.IsNullOrEmpty(version))
-                    {
-                        str = ResourceLoader.GetForCurrentView().GetString("GeneralSettings_NewVersionIsAvailable");
-                        if (!string.IsNullOrEmpty(str))
-                        {
-                            str += ": " + version;
-                        }
-                    }
-
-                    // Using CurrentCulture since this is user-facing
-                    if (!string.IsNullOrEmpty(str))
-                    {
-                       ViewModel.LatestAvailableVersion = string.Format(CultureInfo.CurrentCulture, str);
-                    }
-
-                    string updateStateDate = json.GetNamedString("updateStateDate", string.Empty);
-                    if (!string.IsNullOrEmpty(updateStateDate) && long.TryParse(updateStateDate, out var uTCTime))
-                    {
-                        var localTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(uTCTime).ToLocalTime();
-                        ViewModel.UpdateCheckedDate = localTime.ToString(CultureInfo.CurrentCulture);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.LogError("Exception encountered when reading the version.", e);
-                }
-            });
-
             DataContext = ViewModel;
         }
 
