@@ -1221,4 +1221,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_NewVersionReadyToInstall.Text" xml:space="preserve">
     <value>A new version is ready to install:</value>
   </data>
+  <data name="General_UpToDate.Text" xml:space="preserve">
+    <value>PowerToys is up to date</value>
+  </data>
 </root>

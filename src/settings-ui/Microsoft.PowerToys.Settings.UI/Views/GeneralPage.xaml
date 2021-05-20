@@ -154,6 +154,11 @@
                            Margin="{StaticResource SmallBottomMargin}"
                            Visibility="{Binding IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"/>
 
+                <TextBlock x:Name="General_UpToDate"
+                           x:Uid="General_UpToDate"
+                           Margin="{StaticResource SmallBottomMargin}"
+                           Visibility="{Binding IsNewVersionCheckedAndUpToDate, Converter={StaticResource VisibleIfTrueConverter}}"/>
+
                 <Button x:Uid="GeneralPage_CheckForUpdates"
                     Style="{StaticResource AccentButtonStyle}"
                     Foreground="White"

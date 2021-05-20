@@ -129,6 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private string _updateCheckedDate = string.Empty;
 
         private bool _isNewVersionDownloading;
+        private bool _isNewVersionChecked;
 
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
@@ -475,6 +476,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool IsNewVersionCheckedAndUpToDate
+        {
+            get
+            {
+                return _isNewVersionChecked;
+            }
+        }
+
         public bool IsDownloadAllowed
         {
             get
@@ -567,6 +576,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
             PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
+
+            _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate;
+            NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
 
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
         }
