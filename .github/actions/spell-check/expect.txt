@@ -2231,6 +2231,7 @@ workaround
 workflow
 workspaces
 wostream
+wostringstream
 wox
 wparam
 wpf
