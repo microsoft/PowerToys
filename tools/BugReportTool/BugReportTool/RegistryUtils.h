@@ -7,4 +7,5 @@
 #include <unordered_map>
 #include <Windows.h>
 
-void reportRegistry(const std::filesystem::path& tmpDir);
+void ReportRegistry(const std::filesystem::path& tmpDir);
+void ReportCompatibilityTab(const std::filesystem::path& tmpDir);
