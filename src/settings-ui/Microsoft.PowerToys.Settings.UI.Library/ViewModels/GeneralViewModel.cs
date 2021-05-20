@@ -541,17 +541,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             UpdatingSettingsConfig = config;
 
-            if (PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate)
-            {
-                IsNewVersionDownloading = UpdateCheckedDate == UpdatingSettingsConfig.LastCheckedDateLocalized;
-            }
-            else if (PowerToysUpdatingState == UpdatingSettings.UpdatingState.ReadyToDownload)
-            {
-                IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
-            }
-            else if (PowerToysUpdatingState == UpdatingSettings.UpdatingState.ErrorDownloading || PowerToysUpdatingState == UpdatingSettings.UpdatingState.ReadyToInstall)
+            if (PowerToysUpdatingState != config.State)
             {
                 IsNewVersionDownloading = false;
+            }
+            else
+            {
+                bool dateChanged = UpdateCheckedDate == UpdatingSettingsConfig.LastCheckedDateLocalized;
+                bool fileDownloaded = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+                IsNewVersionDownloading = !(dateChanged || fileDownloaded);
             }
 
             PowerToysUpdatingState = UpdatingSettingsConfig.State;
