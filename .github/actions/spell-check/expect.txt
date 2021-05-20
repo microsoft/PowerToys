@@ -1523,6 +1523,7 @@ OLIVEGREEN
 OLogo
 Onboarding
 onebranch
+onboarding
 onedrive
 onedrivelogo
 ONITEM
@@ -1917,6 +1918,7 @@ shlwapi
 shobjidl
 SHORTCUTATLEAST
 shortcutcontrol
+shortcutguide
 SHORTCUTMAXONEACTIONKEY
 SHORTCUTNOREPEATEDMODIFIER
 SHORTCUTONEACTIONKEY
