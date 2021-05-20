@@ -107,7 +107,7 @@
 
         <controls:ColorPickerControl HorizontalAlignment="Left"
                                      Margin="0,44,0,0"
-                                     Focusable="True"
+                                     Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}"
                                      IsTabStop="True"
                                      TabIndex="2"
                                      SelectedColor="{Binding SelectedColor}"
@@ -148,7 +148,7 @@
         </Grid>
 
         <!-- Empty history -->
-        <StackPanel Grid.Column="1" Margin="12" VerticalAlignment="Center" Orientation="Vertical" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
+        <StackPanel Grid.Column="1" Margin="24, 12" VerticalAlignment="Center" Orientation="Vertical" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
             <TextBlock Text="&#xEF3C;"
                        FontFamily="Segoe MDL2 Assets"
                        FontSize="44"

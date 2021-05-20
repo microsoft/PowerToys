@@ -8,9 +8,9 @@
              xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d"
              TabIndex="3"
-             Focusable="True"
-             IsTabStop="True"
-             Width="333">
+             FocusManager.IsFocusScope="True"
+             KeyboardNavigation.TabNavigation="Once"
+             >
     <UserControl.Resources>
 
         <Style TargetType="Thumb"
@@ -230,8 +230,9 @@
         </Style>
 
     </UserControl.Resources>
-    <Grid  x:Name="PickerPanel" HorizontalAlignment="Stretch"
-              Margin="12,2,12,2">
+    <Grid x:Name="PickerPanel"
+          HorizontalAlignment="Stretch"
+          Margin="12,2,12,2">
             <Grid.Effect>
                 <DropShadowEffect BlurRadius="6"
                                   Opacity="0.32"
@@ -247,6 +248,7 @@
 
             <Button x:Name="colorVariation1Button"
                     Grid.Column="0"
+                    TabIndex="3"
                     ui:ControlHelper.CornerRadius="2,0,0,2"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
@@ -439,8 +441,8 @@
                                         x:Name="OKButton"
                                         Click="OKButton_Click"
                                         Style="{StaticResource AccentButtonStyle}"
-                                        AutomationProperties.Name="{x:Static p:Resources.OK}"
-                                        Content="{x:Static p:Resources.OK}"
+                                    AutomationProperties.Name="{x:Static p:Resources.Select}"
+                                    Content="{x:Static p:Resources.Select}"
                                         HorizontalAlignment="Stretch" />
                             </StackPanel>
                         </Grid>
