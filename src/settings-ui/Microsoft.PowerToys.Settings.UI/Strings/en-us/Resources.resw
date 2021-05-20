@@ -1198,7 +1198,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Open Shortcut Guide</value>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Text" xml:space="preserve">
-    <value>An error occurred trying to update</value>
+    <value>An error occurred trying to update to</value>
   </data>
   <data name="General_InstallNow.Content" xml:space="preserve">
     <value>Install now</value>
