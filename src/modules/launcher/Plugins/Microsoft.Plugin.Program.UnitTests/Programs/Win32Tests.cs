@@ -50,6 +50,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Name = "Microsoft Azure Command Prompt - v2.9",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
+            Arguments = @"/E:ON /V:ON /K ""C:\Program Files\Microsoft SDKs\Azure\.NET SDK\v2.9\\bin\setenv.cmd""",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\microsoft azure\\microsoft azure sdk for .net\\v2.9\\microsoft azure command prompt - v2.9.lnk",
             AppType = Win32Program.ApplicationType.Win32Application,
         };
@@ -59,6 +60,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Name = "x64 Native Tools Command Prompt for VS 2019",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
+            Arguments = @"/k ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat""",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\visual studio 2019\\visual studio tools\\vc\\x64 native tools command prompt for vs 2019.lnk",
             AppType = Win32Program.ApplicationType.Win32Application,
         };

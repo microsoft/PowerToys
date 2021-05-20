@@ -466,6 +466,8 @@ namespace Microsoft.Plugin.Program.Programs
 
                     // Using CurrentCulture since this is user facing
                     program.FullPath = Path.GetFullPath(target).ToLowerInvariant();
+                    program.Arguments = ShellLinkHelper.Arguments;
+                    program.HasArguments = !string.IsNullOrEmpty(program.Arguments);
 
                     // A .lnk could be a (Chrome) PWA, set correct AppType
                     program.AppType = program.IsWebApplication()
@@ -578,7 +580,7 @@ namespace Microsoft.Plugin.Program.Programs
                 throw new ArgumentNullException(nameof(path));
             }
 
-            Win32Program app = null;
+            Win32Program app;
             switch (GetAppTypeFromPath(path))
             {
                 case ApplicationType.Win32Application:
@@ -685,27 +687,6 @@ namespace Microsoft.Plugin.Program.Programs
                 : string.Empty;
         }
 
-        private static ParallelQuery<Win32Program> UnregisteredPrograms(List<ProgramSource> sources, IList<string> suffixes)
-        {
-            var listToAdd = new List<string>();
-            sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
-                .SelectMany(s => ProgramPaths(s.Location, suffixes))
-                .ToList()
-                .Where(t1 => Main.Settings.DisabledProgramSources.All(x => t1 != x.UniqueIdentifier))
-                .ToList()
-                .ForEach(x => listToAdd.Add(x));
-
-            var paths = listToAdd.Distinct().ToArray();
-
-            var programs1 = paths.AsParallel().Where(p => ExecutableApplicationExtensions.Contains(Extension(p))).Select(ExeProgram);
-            var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
-            var programs3 = from p in paths.AsParallel()
-                            let e = Extension(p)
-                            where e != ShortcutExtension && !ExecutableApplicationExtensions.Contains(e)
-                            select CreateWin32Program(p);
-            return programs1.Concat(programs2).Where(p => p.Valid).Concat(programs3).Where(p => p.Valid);
-        }
-
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
         private static IEnumerable<string> PathEnvironmentProgramPaths(IList<string> suffixes)
         {
@@ -731,21 +712,15 @@ namespace Microsoft.Plugin.Program.Programs
                         .ToList();
         }
 
-        private static IEnumerable<string> IndexPath(IList<string> suffixes, List<string> indexLocation)
+        private static List<string> IndexPath(IList<string> suffixes, List<string> indexLocations)
         {
             var disabledProgramsList = Main.Settings.DisabledProgramSources;
 
-            var toFilter = new List<string>();
-            foreach (string location in indexLocation)
-            {
-                toFilter.AddRange(ProgramPaths(location, suffixes));
-            }
-
-            return toFilter
-                        .Where(t1 => disabledProgramsList.All(x => x.UniqueIdentifier != t1))
-                        .Select(t1 => t1)
-                        .Distinct()
-                        .ToList();
+            return indexLocations
+                .SelectMany(indexLocation => ProgramPaths(indexLocation, suffixes))
+                .Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath))
+                .Distinct()
+                .ToList();
         }
 
         private static IEnumerable<string> StartMenuProgramPaths(IList<string> suffixes)
@@ -839,17 +814,6 @@ namespace Microsoft.Plugin.Program.Programs
                 ? Environment.ExpandEnvironmentVariables(path)
                 : null;
 
-        // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
-        public override int GetHashCode()
-        {
-            return RemoveDuplicatesComparer.Default.GetHashCode(this);
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is Win32Program win && RemoveDuplicatesComparer.Default.Equals(this, win);
-        }
-
         private class RemoveDuplicatesComparer : IEqualityComparer<Win32Program>
         {
             public static readonly RemoveDuplicatesComparer Default = new RemoveDuplicatesComparer();
@@ -861,24 +825,16 @@ namespace Microsoft.Plugin.Program.Programs
                     return false;
                 }
 
-                if (!string.IsNullOrEmpty(app1.FullPath) && !string.IsNullOrEmpty(app2.FullPath)
-                    && !string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name))
-                {
-                    return string.Equals(app1.FullPath, app2.FullPath, StringComparison.OrdinalIgnoreCase)
-                           && string.Equals(app1.Name, app2.Name, StringComparison.OrdinalIgnoreCase);
-                }
-
-                return false;
+                return (app1.FullPath.ToUpperInvariant(), app1.HasArguments ? app1.Arguments.ToUpperInvariant() : null)
+                    .Equals((app2.FullPath.ToUpperInvariant(), app2.HasArguments ? app2.Arguments.ToUpperInvariant() : null));
             }
 
             public int GetHashCode(Win32Program obj)
-                => (obj.Name.ToUpperInvariant(), obj.FullPath.ToUpperInvariant()).GetHashCode();
+                => (obj.FullPath.ToUpperInvariant(), obj.HasArguments ? obj.Arguments.ToUpperInvariant() : null).GetHashCode();
         }
 
         public static Win32Program[] DeduplicatePrograms(IEnumerable<Win32Program> programs)
-        {
-            return new HashSet<Win32Program>(programs, RemoveDuplicatesComparer.Default).ToArray();
-        }
+            => new HashSet<Win32Program>(programs, RemoveDuplicatesComparer.Default).ToArray();
 
         private static Win32Program GetProgramFromPath(string path)
         {
@@ -923,7 +879,7 @@ namespace Microsoft.Plugin.Program.Programs
                     (settings.EnablePathEnvironmentVariableSource, () => PathEnvironmentProgramPaths(settings.ProgramSuffixes)),
                 };
 
-                // Get all paths and deduplicate them
+                // Get all paths and deduplicate them (UnionWith will enumerate everything)
                 paths.UnionWith(sources.AsParallel().SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>()));
 
                 var programs = paths.AsParallel().Select(GetProgramFromPath).Where(program => program?.Valid == true);
