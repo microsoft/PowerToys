@@ -128,7 +128,7 @@
                 <StackPanel Orientation="Horizontal"
                             Margin="{StaticResource SmallTopMargin}"
                             AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                    <TextBlock x:Name="General_Version" 
+                    <TextBlock x:Name="General_Version_UpToDate" 
                                x:Uid="General_Version" 
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                     <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" 
@@ -171,11 +171,24 @@
             </StackPanel>
 
             <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToDownloadToVisibilityConverter}}">
-                <StackPanel Orientation="Horizontal" 
-                        Margin="{StaticResource SmallTopMargin}"
-                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                    <TextBlock x:Name="General_VersionAvailable_ReadyToDownload" 
-                               x:Uid="General_VersionAvailable" 
+                <StackPanel Orientation="Horizontal"
+                            Margin="{StaticResource SmallTopMargin}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
+                    <TextBlock x:Name="General_Version_ReadyToDownload" 
+                               x:Uid="General_Version" 
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                    
+                    <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" 
+                                     Margin="4,-6,0,0"
+                                     IsEnabled="{Binding AutoUpdatesEnabled}">
+                        <TextBlock Text="{Binding PowerToysVersion }" />
+                    </HyperlinkButton>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
+                    <TextBlock x:Name="General_NewVersion_ReadyToDownload" 
+                               x:Uid="General_NewVersion" 
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                     <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
                         <TextBlock Text="{Binding PowerToysNewAvailableVersion }" />
@@ -184,11 +197,13 @@
                                x:Uid="General_IsAvailable" 
                                Margin="4,0,0,0" 
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-                </StackPanel>
 
-                <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" Margin="0,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
-                    <TextBlock x:Name="General_ReadMore_ReadyToDownload" x:Uid="General_ReadMore" />
-                </HyperlinkButton>
+                    <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" 
+                                     Margin="4,-6,0,0" 
+                                     IsEnabled="{Binding AutoUpdatesEnabled}">
+                        <TextBlock x:Name="General_ReadMore_ReadyToDownload" x:Uid="General_ReadMore" />
+                    </HyperlinkButton>
+                </StackPanel>
 
                 <TextBlock x:Name="General_Downloading"
                            x:Uid="General_Downloading"
@@ -208,21 +223,23 @@
                             Margin="{StaticResource SmallTopMargin}"
                             AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
                     <TextBlock x:Name="General_CurrentVersion_ReadyToInstall" 
-                               x:Uid="General_VersionAvailable" 
+                               x:Uid="General_NewVersion" 
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                     <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
                         <TextBlock Text="{Binding PowerToysNewAvailableVersion }" />
                     </HyperlinkButton>
 
-                    <TextBlock x:Name="General_NewVersion_ReadyToInstall" 
+                    <TextBlock x:Name="General_IsReadyToInstall" 
                                x:Uid="General_IsReadyToInstall" 
                                Margin="4,0,0,0" 
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-                </StackPanel>
 
-                <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" Margin="0,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
-                    <TextBlock x:Name="General_ReadMore_ReadyToInstall" x:Uid="General_ReadMore" />
-                </HyperlinkButton>
+                    <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" 
+                                     Margin="4,-6,0,0" 
+                                     IsEnabled="{Binding AutoUpdatesEnabled}">
+                        <TextBlock x:Name="General_ReadMore_ReadyToInstall" x:Uid="General_ReadMore" />
+                    </HyperlinkButton>
+                </StackPanel>
 
                 <Button x:Uid="General_InstallNow"
                         Margin="{StaticResource SmallTopMargin}"
@@ -233,9 +250,22 @@
             </StackPanel>
 
             <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateCannotDownloadToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal"
+                            Margin="{StaticResource SmallTopMargin}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
+                    <TextBlock x:Name="General_Version_Error" 
+                               x:Uid="General_Version" 
+                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+                    <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" 
+                                     Margin="4,-6,0,0"
+                                     IsEnabled="{Binding AutoUpdatesEnabled}">
+                        <TextBlock Text="{Binding PowerToysVersion }" />
+                    </HyperlinkButton>
+                </StackPanel>
+
                 <StackPanel Orientation="Horizontal" 
-                        Margin="{StaticResource SmallTopMargin}"
-                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
+                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
                     <TextBlock x:Name="General_FailedToDownloadTheNewVersion" 
                                x:Uid="General_FailedToDownloadTheNewVersion"
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>

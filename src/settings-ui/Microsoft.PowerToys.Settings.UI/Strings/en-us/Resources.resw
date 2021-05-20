@@ -709,10 +709,10 @@
     <value>Updates</value>
   </data>
   <data name="General_Version.Text" xml:space="preserve">
-    <value>Version:</value>
+    <value>Installed version:</value>
   </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
-    <value>Last successfully checked: </value>
+    <value>Last checked: </value>
   </data>
   <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>
@@ -1209,8 +1209,8 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_IsAvailable.Text" xml:space="preserve">
     <value>is available.</value>
   </data>
-  <data name="General_VersionAvailable.Text" xml:space="preserve">
-    <value>Version</value>
+  <data name="General_NewVersion.Text" xml:space="preserve">
+    <value>A new version</value>
   </data>
   <data name="General_IsReadyToInstall.Text" xml:space="preserve">
     <value>is ready to install.</value>
