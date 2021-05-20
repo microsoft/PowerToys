@@ -356,7 +356,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.Exception($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
+                ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                 return new Win32Program() { Valid = false, Enabled = false };
             }
@@ -438,7 +438,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    ProgramLogger.Exception($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
+                    ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                     return new Win32Program() { Valid = false, Enabled = false };
                 }
@@ -519,13 +519,13 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.Exception($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
+                ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                 return new Win32Program() { Valid = false, Enabled = false };
             }
             catch (FileNotFoundException e)
             {
-                ProgramLogger.Exception($"|Unable to locate exe file at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
+                ProgramLogger.Warn($"|Unable to locate exe file at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                 return new Win32Program() { Valid = false, Enabled = false };
             }
@@ -636,13 +636,13 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                         catch (DirectoryNotFoundException e)
                         {
-                            ProgramLogger.Exception("|The directory trying to load the program from does not exist", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                            ProgramLogger.Warn("|The directory trying to load the program from does not exist", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
                         }
                     }
                 }
                 catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    ProgramLogger.Exception($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                    ProgramLogger.Warn($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
                 }
                 catch (Exception e)
                 {
@@ -664,7 +664,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    ProgramLogger.Exception($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                    ProgramLogger.Warn($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
                 }
                 catch (Exception e)
                 {
@@ -803,7 +803,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.Exception($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
+                ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                 return string.Empty;
             }
