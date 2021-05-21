@@ -34,4 +34,8 @@
         <Setter Property="FontSize" Value="16" />
         <Setter Property="Margin" Value="0,16,0,0" />
     </Style>
+
+    <Style x:Key="SemiBoldBody" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
 </ResourceDictionary>
