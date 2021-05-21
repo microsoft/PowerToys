@@ -6,6 +6,8 @@
 #include <sddl.h>
 
 #include <string>
+#include <common/logger/logger.h>
+#include <common/utils/winapi_error.h>
 
 // Returns true if the current process is running with elevated privileges
 inline bool is_process_elevated(const bool use_cached_value = true)
@@ -91,6 +93,7 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     HWND hwnd = GetShellWindow();
     if (!hwnd)
     {
+        Logger::error(L"GetShellWindow() failed. {}", get_last_error_or_default(GetLastError()));
         return false;
     }
     DWORD pid;
@@ -99,6 +102,7 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     winrt::handle process{ OpenProcess(PROCESS_CREATE_PROCESS, FALSE, pid) };
     if (!process)
     {
+        Logger::error(L"OpenProcess() failed. {}", get_last_error_or_default(GetLastError()));
         return false;
     }
 
@@ -107,21 +111,28 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
     auto pproc_buffer = std::make_unique<char[]>(size);
     auto pptal = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(pproc_buffer.get());
+    if (!pptal)
+    {
+        Logger::error(L"pptal failed to initialize. {}", get_last_error_or_default(GetLastError()));
+        return false;
+    }
 
     if (!InitializeProcThreadAttributeList(pptal, 1, 0, &size))
     {
+        Logger::error(L"InitializeProcThreadAttributeList() failed. {}", get_last_error_or_default(GetLastError()));
         return false;
     }
 
     HANDLE process_handle = process.get();
-    if (!pptal || !UpdateProcThreadAttribute(pptal,
-                                             0,
-                                             PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
-                                             &process_handle,
-                                             sizeof(process_handle),
-                                             nullptr,
-                                             nullptr))
+    if (!UpdateProcThreadAttribute(pptal,
+                                   0,
+                                   PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
+                                   &process_handle,
+                                   sizeof(process_handle),
+                                   nullptr,
+                                   nullptr))
     {
+        Logger::error(L"UpdateProcThreadAttribute() failed. {}", get_last_error_or_default(GetLastError()));
         return false;
     }
 
@@ -155,6 +166,10 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
         {
             CloseHandle(pi.hThread);
         }
+    }
+    else
+    {
+        Logger::error(L"CreateProcessW() failed. {}", get_last_error_or_default(GetLastError()));
     }
 
     return succeeded;
