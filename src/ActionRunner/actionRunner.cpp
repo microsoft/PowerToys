@@ -322,7 +322,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         if (failed)
         {
             UpdateState::store([&](UpdateState& state) {
-                state = {};
+                state.downloadedInstallerFilename = {};
                 state.githubUpdateLastCheckedDate.emplace(timeutil::now());
                 state.state = UpdateState::errorDownloading;
             });
@@ -336,7 +336,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         if (failed)
         {
             UpdateState::store([&](UpdateState& state) {
-                state = {};
+                state.downloadedInstallerFilename = {};
                 state.githubUpdateLastCheckedDate.emplace(timeutil::now());
                 state.state = UpdateState::errorDownloading;
             });
