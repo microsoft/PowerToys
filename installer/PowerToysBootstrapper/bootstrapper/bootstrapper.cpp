@@ -207,12 +207,8 @@ int Bootstrapper(HINSTANCE hInstance)
     {
     }
 
-    spdlog::level::level_enum severity = spdlog::level::off;
-    if (logLevel == "debug")
-    {
-        severity = spdlog::level::debug;
-    }
-    else if (logLevel == "error")
+    spdlog::level::level_enum severity = spdlog::level::debug;
+    if (logLevel == "error")
     {
         severity = spdlog::level::err;
     }
@@ -359,6 +355,7 @@ int Bootstrapper(HINSTANCE hInstance)
     {
         spdlog::error("Couldn't install the existing MSI package ({})", GetLastError());
         ShowMessageBoxError(IDS_UNINSTALL_PREVIOUS_VERSION_ERROR);
+        return 1;
     }
 
     const bool installDotnet = !skipDotnetInstall;

@@ -1,9 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -16,9 +18,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private UpdatingSettings UpdatingSettingsConfig { get; set; }
+
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
+
+        public ButtonClickCommand UpdateNowButtonEventHandler { get; set; }
 
         public Func<string, int> UpdateUIThemeCallBack { get; }
 
@@ -34,10 +40,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
+        private IFileSystemWatcher _fileWatcher;
+
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
+            UpdateNowButtonEventHandler = new ButtonClickCommand(UpdateNowClick);
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
             if (settingsRepository == null)
@@ -46,6 +55,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
+            UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
+            if (UpdatingSettingsConfig == null)
+            {
+                UpdatingSettingsConfig = new UpdatingSettings();
+            }
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -86,6 +100,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             RunningAsAdminDefaultText = runAsAdminText;
 
             _isAdmin = isAdmin;
+
+            _updatingState = UpdatingSettingsConfig.State;
+            _newAvailableVersion = UpdatingSettingsConfig.NewVersion;
+            _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+            _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
+
+            if (dispatcherAction != null)
+            {
+                _fileWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, dispatcherAction);
+            }
         }
 
         private bool _packaged;
@@ -98,8 +122,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _isSystemThemeRadioButtonChecked;
         private bool _autoDownloadUpdates;
 
-        private string _latestAvailableVersion = string.Empty;
+        private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
+        private string _newAvailableVersion = string.Empty;
+        private string _newAvailableVersionLink = string.Empty;
         private string _updateCheckedDate = string.Empty;
+
+        private bool _isNewVersionDownloading;
+        private bool _isNewVersionChecked;
 
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
@@ -360,21 +389,87 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        // Temp string. Appears when a user clicks "Check for updates" button and shows latest version available on the Github.
-        public string LatestAvailableVersion
+        public UpdatingSettings.UpdatingState PowerToysUpdatingState
         {
             get
             {
-                return _latestAvailableVersion;
+                return _updatingState;
+            }
+
+            private set
+            {
+                if (value != _updatingState)
+                {
+                    _updatingState = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string PowerToysNewAvailableVersion
+        {
+            get
+            {
+                return _newAvailableVersion;
+            }
+
+            private set
+            {
+                if (value != _newAvailableVersion)
+                {
+                    _newAvailableVersion = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string PowerToysNewAvailableVersionLink
+        {
+            get
+            {
+                return _newAvailableVersionLink;
+            }
+
+            private set
+            {
+                if (value != _newAvailableVersionLink)
+                {
+                    _newAvailableVersionLink = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsNewVersionDownloading
+        {
+            get
+            {
+                return _isNewVersionDownloading;
             }
 
             set
             {
-                if (_latestAvailableVersion != value)
+                if (value != _isNewVersionDownloading)
                 {
-                    _latestAvailableVersion = value;
+                    _isNewVersionDownloading = value;
                     NotifyPropertyChanged();
                 }
+            }
+        }
+
+        public bool IsNewVersionCheckedAndUpToDate
+        {
+            get
+            {
+                return _isNewVersionChecked;
+            }
+        }
+
+        public bool IsDownloadAllowed
+        {
+            get
+            {
+                return AutoUpdatesEnabled && !IsNewVersionDownloading;
             }
         }
 
@@ -390,12 +485,29 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         // callback function to launch the URL to check for updates.
         private void CheckForUpdatesClick()
         {
+            IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+            NotifyPropertyChanged(nameof(IsDownloadAllowed));
+
+            if (_isNewVersionChecked)
+            {
+                _isNewVersionChecked = !IsNewVersionDownloading;
+                NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
+            }
+
             GeneralSettingsConfig.CustomActionName = "check_for_updates";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendCheckForUpdatesConfigMSG(customaction.ToString());
+        }
+
+        private void UpdateNowClick()
+        {
+            IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+            NotifyPropertyChanged(nameof(IsDownloadAllowed));
+
+            Process.Start(new ProcessStartInfo(Helper.GetPowerToysInstallationFolder() + "\\PowerToys.exe") { Arguments = "powertoys://update_now/" });
         }
 
         public void RequestUpdateCheckedDate()
@@ -416,6 +528,46 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendRestartAsAdminConfigMSG(customaction.ToString());
+        }
+
+        public void RefreshUpdatingState()
+        {
+            var config = UpdatingSettings.LoadSettings();
+
+            // Retry loading if failed
+            for (int i = 0; i < 3 && config == null; i++)
+            {
+                System.Threading.Thread.Sleep(100);
+                config = UpdatingSettings.LoadSettings();
+            }
+
+            if (config == null || config.ToJsonString() == UpdatingSettingsConfig.ToJsonString())
+            {
+                return;
+            }
+
+            UpdatingSettingsConfig = config;
+
+            if (PowerToysUpdatingState != config.State)
+            {
+                IsNewVersionDownloading = false;
+            }
+            else
+            {
+                bool dateChanged = UpdateCheckedDate == UpdatingSettingsConfig.LastCheckedDateLocalized;
+                bool fileDownloaded = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+                IsNewVersionDownloading = !(dateChanged || fileDownloaded);
+            }
+
+            PowerToysUpdatingState = UpdatingSettingsConfig.State;
+            PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
+            PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+            UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
+
+            _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate && !IsNewVersionDownloading;
+            NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
+
+            NotifyPropertyChanged(nameof(IsDownloadAllowed));
         }
     }
 }

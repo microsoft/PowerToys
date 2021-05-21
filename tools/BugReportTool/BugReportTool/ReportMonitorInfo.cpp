@@ -7,7 +7,7 @@ using namespace std;
 
 namespace
 {
-    int buildMonitorInfoReport(std::wostream& os)
+    int BuildMonitorInfoReport(std::wostream& os)
     {
         struct capture
         {
@@ -45,6 +45,7 @@ namespace
             }
             return TRUE;
         };
+
         capture c;
         c.os = &os;
         if (EnumDisplayMonitors(nullptr, nullptr, callback, (LPARAM)&c))
@@ -60,7 +61,7 @@ namespace
     }
 }
 
-void reportMonitorInfo(const filesystem::path& tmpDir)
+void ReportMonitorInfo(const filesystem::path& tmpDir)
 {
     auto monitorReportPath = tmpDir;
     monitorReportPath.append("monitor-report-info.txt");
@@ -69,7 +70,7 @@ void reportMonitorInfo(const filesystem::path& tmpDir)
     {
         wofstream monitorReport(monitorReportPath);
         monitorReport << "GetSystemMetrics = " << GetSystemMetrics(SM_CMONITORS) << '\n';
-        buildMonitorInfoReport(monitorReport);
+        BuildMonitorInfoReport(monitorReport);
     }
     catch (std::exception& ex)
     {

@@ -142,7 +142,7 @@ void HideUserPrivateInfo(const filesystem::path& dir)
         HideForFile(dir, it.first);
     }
 
-    // delete files
+    // Delete files
     for (auto it : filesToDelete)
     {
         auto path = dir;
@@ -243,6 +243,26 @@ void ReportDotNetInstallationInfo(const filesystem::path& tmpDir)
     }
 }
 
+void ReportBootstrapperLog(const filesystem::path& targetDir)
+{
+  for (const auto entry : filesystem::directory_iterator{temp_directory_path()})
+  {
+      if (!entry.is_regular_file() || !entry.path().has_filename())
+      {
+          continue;
+      }
+
+      const std::wstring filename = entry.path().filename().native();
+      if (!filename.starts_with(L"powertoys-bootstrapper-") || !filename.ends_with(L".log"))
+      {
+          continue;
+      }
+      
+      std::error_code _;
+      copy(entry.path(), targetDir, _);
+  }
+}
+
 int wmain(int argc, wchar_t* argv[], wchar_t*)
 {
     // Get path to save zip
@@ -280,6 +300,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     try
     {
         copy(settingsRootPath, tmpDir, copy_options::recursive);
+        
         // Remove updates folder contents
         DeleteFolder(tmpDir / "Updates");
     }
@@ -296,7 +317,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     ReportWindowsSettings(tmpDir);
 
     // Write monitors info to the temporary folder
-    reportMonitorInfo(tmpDir);
+    ReportMonitorInfo(tmpDir);
 
     // Write windows version info to the temporary folder
     ReportWindowsVersion(tmpDir);
@@ -309,6 +330,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Write compatibility tab info to the temporary folder
     ReportCompatibilityTab(tmpDir);
+
+    ReportBootstrapperLog(tmpDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);

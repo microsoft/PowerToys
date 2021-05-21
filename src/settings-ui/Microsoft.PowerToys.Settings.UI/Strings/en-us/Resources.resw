@@ -400,6 +400,9 @@
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
   </data>
+  <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
+    <value>Update now</value>
+  </data>
   <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
     <value>Privacy statement</value>
   </data>
@@ -706,10 +709,10 @@
     <value>Updates</value>
   </data>
   <data name="General_Version.Text" xml:space="preserve">
-    <value>Version:</value>
+    <value>Installed version:</value>
   </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
-    <value>Last successfully checked: </value>
+    <value>Last checked: </value>
   </data>
   <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>
@@ -1193,5 +1196,35 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="ShortcutGuide_OpenShortcutGuide.Header" xml:space="preserve">
     <value>Open Shortcut Guide</value>
+  </data>
+  <data name="General_FailedToDownloadTheNewVersion.Text" xml:space="preserve">
+    <value>An error occurred trying to update to</value>
+  </data>
+  <data name="General_InstallNow.Content" xml:space="preserve">
+    <value>Install now</value>
+  </data>
+  <data name="General_ReadMore.Text" xml:space="preserve">
+    <value>Read more</value>
+  </data>
+  <data name="General_NewVersionAvailable.Text" xml:space="preserve">
+    <value>A new version is available: </value>
+  </data>
+  <data name="General_Downloading.Text" xml:space="preserve">
+    <value>Downloading...</value>
+  </data>
+  <data name="General_TryAgainToDownloadAndInstall.Content" xml:space="preserve">
+    <value>Try again to download and install</value>
+  </data>
+  <data name="General_CheckingForUpdates.Text" xml:space="preserve">
+    <value>Checking for updates...</value>
+  </data>
+  <data name="General_NewVersionReadyToInstall.Text" xml:space="preserve">
+    <value>A new version is ready to install:</value>
+  </data>
+  <data name="General_UpToDate.Text" xml:space="preserve">
+    <value>PowerToys is up to date</value>
+  </data>
+  <data name="General_DownloadAndInstall.Content" xml:space="preserve">
+    <value>Download and install</value>
   </data>
 </root>

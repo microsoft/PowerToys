@@ -1,4 +1,4 @@
 #pragma once
 #include <fstream>
 
-void reportMonitorInfo(const std::filesystem::path& tmpDir);
+void ReportMonitorInfo(const std::filesystem::path& tmpDir);
