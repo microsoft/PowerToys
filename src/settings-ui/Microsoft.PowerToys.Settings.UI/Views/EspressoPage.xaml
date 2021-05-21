@@ -5,8 +5,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:c="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
-    xmlns:lib="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     d:DesignHeight="300"
@@ -136,9 +134,6 @@
                             LargeChange="5"/>
                 </StackPanel>
             </StackPanel>
-
-       
-            <!--Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"-->
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 
