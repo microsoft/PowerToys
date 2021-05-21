@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using interop;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
 // modified to allow single instance restart
@@ -45,11 +46,6 @@ namespace PowerLauncher.Helper
         private const string ChannelNameSuffix = "SingeInstanceIPCChannel";
 
         /// <summary>
-        /// Prefix to the names of mutexes which ensures they are unique in a Windows session.
-        /// </summary>
-        private const string LocalMutexPrefix = @"Local\";
-
-        /// <summary>
         /// Gets or sets application mutex.
         /// </summary>
         internal static Mutex SingleInstanceMutex { get; set; }
@@ -59,15 +55,15 @@ namespace PowerLauncher.Helper
         /// If not, activates the first instance.
         /// </summary>
         /// <returns>True if this is the first instance of the application.</returns>
-        internal static bool InitializeAsFirstInstance(string uniqueName)
+        internal static bool InitializeAsFirstInstance()
         {
+            string mutexName = @"Local\PowerToys_Run_InstanceMutex";
+
             // Build unique application Id and the IPC channel name.
-            string applicationIdentifier = uniqueName + Environment.UserName;
+            string applicationIdentifier = mutexName + Environment.UserName;
 
             string channelName = string.Concat(applicationIdentifier, Delimiter, ChannelNameSuffix);
 
-            // Create mutex based on unique application Id to check if this is the first instance of the application.
-            string mutexName = string.Concat(LocalMutexPrefix, uniqueName);
             SingleInstanceMutex = new Mutex(true, mutexName, out bool firstInstance);
             if (firstInstance)
             {

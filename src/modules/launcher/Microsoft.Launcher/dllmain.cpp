@@ -82,6 +82,27 @@ private:
 
     HANDLE send_telemetry_event;
 
+    // Handle a case when a user started standalone PowerToys Run or for some reason the process is leaked
+    void TerminateRunningInstance()
+    {
+        auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::RUN_EXIT_EVENT);
+        if (!exitEvent)
+        {
+            Logger::warn(L"Failed to create exitEvent. {}", get_last_error_or_default(GetLastError()));
+        }
+        else
+        {
+            Logger::trace(L"Signaled exitEvent");
+            if (!SetEvent(exitEvent))
+            {
+                Logger::warn(L"Failed to signal exitEvent. {}", get_last_error_or_default(GetLastError()));
+            }
+
+            ResetEvent(exitEvent);
+            CloseHandle(exitEvent);
+        }
+    }
+
 public:
     // Constructor
     Microsoft_Launcher()
@@ -181,12 +202,12 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        Logger::info("Launcher is enabling");
+        Logger::info("Microsoft_Launcher::enable()");
         ResetEvent(m_hEvent);
         ResetEvent(send_telemetry_event);
 
         unsigned long powertoys_pid = GetCurrentProcessId();
-
+        TerminateRunningInstance();
         if (!is_process_elevated(false))
         {
             Logger::trace("Starting PowerToys Run from not elevated process");

@@ -144,6 +144,10 @@ public
             return gcnew String(CommonSharedConstants::RUN_SEND_SETTINGS_TELEMETRY_EVENT);
         }
 
+        static String ^ RunExitEvent() {
+            return gcnew String(CommonSharedConstants::RUN_EXIT_EVENT);
+        }
+
         static String ^ ColorPickerSendSettingsTelemetryEvent() {
             return gcnew String(CommonSharedConstants::COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT);
         }
