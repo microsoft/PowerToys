@@ -48,7 +48,7 @@ namespace Microsoft.Plugin.Program.Programs
             string path;
             try
             {
-                path = package.InstalledLocation.Path;
+                path = package.InstalledPath;
             }
             catch (Exception e) when (e is ArgumentException || e is FileNotFoundException || e is DirectoryNotFoundException)
             {
