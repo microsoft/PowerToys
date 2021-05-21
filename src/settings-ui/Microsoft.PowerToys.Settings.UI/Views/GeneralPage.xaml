@@ -267,7 +267,7 @@
                             AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
                     <TextBlock x:Name="General_FailedToDownloadTheNewVersion" 
                                x:Uid="General_FailedToDownloadTheNewVersion"
-                               Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                               Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
                     <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
                         <TextBlock Text="{Binding PowerToysNewAvailableVersion }" />
                     </HyperlinkButton>
