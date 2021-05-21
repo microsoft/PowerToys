@@ -69,7 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             get => _mode == EspressoMode.TIMED && _isEnabled;
         }
-        
+
         public EspressoMode Mode
         {
             get => _mode;
