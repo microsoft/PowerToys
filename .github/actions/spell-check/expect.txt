@@ -113,6 +113,7 @@ atlstr
 attr
 Attribs
 aumid
+Aut
 AUTHN
 AUTOAPPEND
 autocomplete
@@ -2235,6 +2236,7 @@ workaround
 workflow
 workspaces
 wostream
+wostringstream
 wox
 wparam
 wpf

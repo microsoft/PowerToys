@@ -48,6 +48,7 @@
     <ClCompile Include="..\common\interop\two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="action_runner_utils.cpp" />
     <ClCompile Include="auto_start_helper.cpp" />
+    <ClCompile Include="CentralizedHotkeys.cpp" />
     <ClCompile Include="general_settings.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
@@ -62,17 +63,16 @@
     <ClCompile Include="tray_icon.cpp" />
     <ClCompile Include="unhandled_exception_handler.cpp" />
     <ClCompile Include="update_utils.cpp" />
-    <ClCompile Include="update_state.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="action_runner_utils.h" />
     <ClInclude Include="auto_start_helper.h" />
+    <ClInclude Include="CentralizedHotkeys.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="centralized_kb_hook.h" />
     <ClInclude Include="settings_telemetry.h" />
     <ClInclude Include="update_utils.h" />
-    <ClInclude Include="update_state.h" />
     <ClInclude Include="powertoy_module.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="restart_elevated.h" />
@@ -86,71 +86,6 @@
     <ResourceCompile Include="Generated Files/runner.rc" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="svgs\0.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\1.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\2.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\3.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\4.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\5.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\6.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\7.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\8.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\9.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\no_active_window.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\overlay.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="svgs\overlay_portrait.svg">
-      <DeploymentContent>true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\icon.ico">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>

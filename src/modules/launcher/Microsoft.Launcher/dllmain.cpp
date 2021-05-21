@@ -225,7 +225,7 @@ public:
             params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
             params += L"--centralized-kb-hook ";
 
-            action_runner_path += L"\\action_runner.exe";
+            action_runner_path += L"\\PowerToys.ActionRunner.exe";
             // Set up the shared file from which to retrieve the PID of PowerLauncher
             HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
             if (!hMapFile)

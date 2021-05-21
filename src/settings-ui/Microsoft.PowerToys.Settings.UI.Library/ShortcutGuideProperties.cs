@@ -14,7 +14,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PressTime = new IntProperty(900);
             Theme = new StringProperty("system");
             DisabledApps = new StringProperty();
+            OpenShortcutGuide = new HotkeySettings(true, false, false, true, 0xBF);
         }
+
+        [JsonPropertyName("open_shortcutguide")]
+        public HotkeySettings OpenShortcutGuide { get; set; }
 
         [JsonPropertyName("overlay_opacity")]
         public IntProperty OverlayOpacity { get; set; }

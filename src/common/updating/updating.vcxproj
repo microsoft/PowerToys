@@ -40,6 +40,7 @@
     <ClInclude Include="installer.h" />
     <ClInclude Include="notifications.h" />
     <ClInclude Include="updating.h" />
+    <ClInclude Include="updateState.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="winstore.h" />
   </ItemGroup>
@@ -49,6 +50,7 @@
     <ClCompile Include="installer.cpp" />
     <ClCompile Include="notifications.cpp" />
     <ClCompile Include="updating.cpp" />
+    <ClCompile Include="updateState.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>

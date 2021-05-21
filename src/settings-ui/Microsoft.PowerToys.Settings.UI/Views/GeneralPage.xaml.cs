@@ -10,6 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -38,6 +39,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
             var settingsUtils = new SettingsUtils();
 
+            Action stateUpdatingAction = async () =>
+            {
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, ViewModel.RefreshUpdatingState);
+            };
+
             ViewModel = new GeneralViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 loader.GetString("GeneralSettings_RunningAsAdminText"),
@@ -47,52 +53,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 UpdateUIThemeMethod,
                 ShellPage.SendDefaultIPCMessage,
                 ShellPage.SendRestartAdminIPCMessage,
-                ShellPage.SendCheckForUpdatesIPCMessage);
-
-            ShellPage.ShellHandler.IPCResponseHandleList.Add((JsonObject json) =>
-            {
-                try
-                {
-                    string version = json.GetNamedString("version", string.Empty);
-                    bool isLatest = json.GetNamedBoolean("isVersionLatest", false);
-
-                    if (json.ContainsKey("version"))
-                    {
-                        ViewModel.RequestUpdateCheckedDate();
-                    }
-
-                    var str = string.Empty;
-                    if (isLatest)
-                    {
-                        str = ResourceLoader.GetForCurrentView().GetString("GeneralSettings_VersionIsLatest");
-                    }
-                    else if (!string.IsNullOrEmpty(version))
-                    {
-                        str = ResourceLoader.GetForCurrentView().GetString("GeneralSettings_NewVersionIsAvailable");
-                        if (!string.IsNullOrEmpty(str))
-                        {
-                            str += ": " + version;
-                        }
-                    }
-
-                    // Using CurrentCulture since this is user-facing
-                    if (!string.IsNullOrEmpty(str))
-                    {
-                       ViewModel.LatestAvailableVersion = string.Format(CultureInfo.CurrentCulture, str);
-                    }
-
-                    string updateStateDate = json.GetNamedString("updateStateDate", string.Empty);
-                    if (!string.IsNullOrEmpty(updateStateDate) && long.TryParse(updateStateDate, out var uTCTime))
-                    {
-                        var localTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(uTCTime).ToLocalTime();
-                        ViewModel.UpdateCheckedDate = localTime.ToString(CultureInfo.CurrentCulture);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.LogError("Exception encountered when reading the version.", e);
-                }
-            });
+                ShellPage.SendCheckForUpdatesIPCMessage,
+                string.Empty,
+                stateUpdatingAction);
 
             DataContext = ViewModel;
         }
