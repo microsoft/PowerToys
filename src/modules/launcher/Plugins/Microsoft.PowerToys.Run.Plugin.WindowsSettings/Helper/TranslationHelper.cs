@@ -74,7 +74,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                         }
 
                         var translatedAltName = Resources.ResourceManager.GetString(altName);
-
                         if (string.IsNullOrEmpty(translatedAltName))
                         {
                             Log.Warn($"Resource string for [{altName}] not found", typeof(Main));

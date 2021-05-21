@@ -15,23 +15,27 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
     internal static class UnsupportedSettingsHelper
     {
         /// <summary>
-        /// Remove all <see cref="WindowsSetting"/> of the given list that are not present on the current used Windows version.
+        /// Remove all <see cref="WindowsSetting"/> of the given list that are not present on the current used Windows build.
         /// </summary>
         /// <param name="settingsList">The list with <see cref="WindowsSetting"/> to filter.</param>
         /// <returns>A new list with <see cref="WindowsSetting"/> that only contain present Windows settings for this OS.</returns>
-        internal static IEnumerable<WindowsSetting> FilterByVersion(in IEnumerable<WindowsSetting>? settingsList)
+        internal static IEnumerable<WindowsSetting> FilterByBuild(in IEnumerable<WindowsSetting>? settingsList)
         {
             if (settingsList is null)
             {
                 return Enumerable.Empty<WindowsSetting>();
             }
 
-            var currentWindowsVersion = GetCurrentWindowsVersion();
+            var currentWindowsBuild = GetCurrentWindowsRegistryValue("CurrentBuild");
+            if (currentWindowsBuild == uint.MinValue)
+            {
+                currentWindowsBuild = GetCurrentWindowsRegistryValue("CurrentBuildNumber");
+            }
 
-            // remove deprecated settings and settings that are for a higher Windows versions
+            // remove deprecated settings and settings that are for a higher Windows builds
             var filteredSettingsList = settingsList.Where(found
-                => (found.DeprecatedInVersion == null || currentWindowsVersion < found.DeprecatedInVersion)
-                && (found.IntroducedInVersion == null || currentWindowsVersion >= found.IntroducedInVersion));
+                => (found.DeprecatedInBuild == null || currentWindowsBuild < found.DeprecatedInBuild)
+                && (found.IntroducedInBuild == null || currentWindowsBuild >= found.IntroducedInBuild));
 
             // sort settings list
             filteredSettingsList = filteredSettingsList.OrderBy(found => found.Name);
@@ -40,30 +44,34 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         }
 
         /// <summary>
-        /// Return the current version of the Windows OS (e.g. 2004)
+        /// Return a registry value of the current Windows OS
         /// </summary>
-        /// <returns>The current version of the Windows OS.</returns>
-        private static ushort GetCurrentWindowsVersion()
+        /// <param name="registryValueName">The name of the registry value that contains the build number.</param>
+        /// <returns>a registry value.</returns>
+        private static uint GetCurrentWindowsRegistryValue(string registryValueName)
         {
-            object releaseId;
+            object registryValueData;
 
             try
             {
-                releaseId = Win32.Registry.GetValue(
+                registryValueData = Win32.Registry.GetValue(
                     "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows NT\\CurrentVersion",
-                    "ReleaseId",
+                    registryValueName,
                     null);
             }
             catch (Exception exception)
             {
-                Log.Exception("Can't get registry value", exception, typeof(UnsupportedSettingsHelper));
+                Log.Exception(
+                    $"Can't get registry value for '{registryValueName}'",
+                    exception,
+                    typeof(UnsupportedSettingsHelper));
 
                 // fall-back
                 return ushort.MinValue;
             }
 
-            return ushort.TryParse(releaseId as string, out var currentWindowsVersion)
-                ? currentWindowsVersion
+            return ushort.TryParse(registryValueData as string, out var buildNumber)
+                ? buildNumber
                 : ushort.MinValue;
         }
     }

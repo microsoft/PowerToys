@@ -54,13 +54,13 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         public string? Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum need Windows version for this setting.
+        /// Gets or sets the minimum need Windows build for this setting.
         /// </summary>
-        public ushort? IntroducedInVersion { get; set; }
+        public uint? IntroducedInBuild { get; set; }
 
         /// <summary>
-        /// Gets or sets the Windows version since this settings is not longer present.
+        /// Gets or sets the Windows build since this settings is not longer present.
         /// </summary>
-        public ushort? DeprecatedInVersion { get; set; }
+        public uint? DeprecatedInBuild { get; set; }
     }
 }

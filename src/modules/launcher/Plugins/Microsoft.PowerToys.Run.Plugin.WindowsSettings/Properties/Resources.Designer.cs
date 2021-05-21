@@ -2185,11 +2185,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Deprecated in Windows 10, version 1809 and later..
+        ///   Looks up a localized string similar to Deprecated in Windows 10, version 1809 (build 17763) and later..
         /// </summary>
-        internal static string NoteDeprecated1809 {
+        internal static string NoteDeprecated17763 {
             get {
-                return ResourceManager.GetString("NoteDeprecated1809", resourceCulture);
+                return ResourceManager.GetString("NoteDeprecated17763", resourceCulture);
             }
         }
         
@@ -2284,11 +2284,20 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Added in Windows 10, version 1903..
+        ///   Looks up a localized string similar to Added in Windows 10, version 1903 (build 18362)..
         /// </summary>
-        internal static string NoteSince1903 {
+        internal static string NoteSince18362 {
             get {
-                return ResourceManager.GetString("NoteSince1903", resourceCulture);
+                return ResourceManager.GetString("NoteSince18362", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Added in Windows 10, version 2004 (build 19041)..
+        /// </summary>
+        internal static string NoteSince19041 {
+            get {
+                return ResourceManager.GetString("NoteSince19041", resourceCulture);
             }
         }
         
