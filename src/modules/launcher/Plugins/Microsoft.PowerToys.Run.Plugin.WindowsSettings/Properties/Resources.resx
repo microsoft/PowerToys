@@ -1695,12 +1695,12 @@
     <value>Windows Update</value>
     <comment>Area UpdateAndSecurity</comment>
   </data>
-  <data name="WindowsUpdateActions" xml:space="preserve">
-    <value>Windows Update - Actions</value>
-    <comment>Area UpdateAndSecurity</comment>
-  </data>
   <data name="WindowsUpdateAdvancedOptions" xml:space="preserve">
     <value>Windows Update - Advanced options</value>
+    <comment>Area UpdateAndSecurity</comment>
+  </data>
+  <data name="WindowsUpdateCheckForUpdates" xml:space="preserve">
+    <value>Windows Update - Check for updates</value>
     <comment>Area UpdateAndSecurity</comment>
   </data>
   <data name="WindowsUpdateRestartOptions" xml:space="preserve">

@@ -3850,20 +3850,20 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Update - Actions.
-        /// </summary>
-        internal static string WindowsUpdateActions {
-            get {
-                return ResourceManager.GetString("WindowsUpdateActions", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Windows Update - Advanced options.
         /// </summary>
         internal static string WindowsUpdateAdvancedOptions {
             get {
                 return ResourceManager.GetString("WindowsUpdateAdvancedOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Update - Check for updates.
+        /// </summary>
+        internal static string WindowsUpdateCheckForUpdates {
+            get {
+                return ResourceManager.GetString("WindowsUpdateCheckForUpdates", resourceCulture);
             }
         }
         

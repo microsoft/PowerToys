@@ -262,7 +262,7 @@
     "Area": "EaseOfAccess",
     "Type": "SettingsApp",
     "AltNames": [ "TouchFeedback" ],
-    "Command": "ms-settings:easeofaccess-cursorandpointersize"
+    "Command": "ms-settings:easeofaccess-MousePointer"
   },
   {
     "Name": "Display",
@@ -1208,7 +1208,7 @@
     "Command": "ms-settings:windowsupdate"
   },
   {
-    "Name": "WindowsUpdateActions",
+    "Name": "WindowsUpdateCheckForUpdates",
     "Area": "UpdateAndSecurity",
     "Type": "SettingsApp",
     "Command": "ms-settings:windowsupdate-action"
