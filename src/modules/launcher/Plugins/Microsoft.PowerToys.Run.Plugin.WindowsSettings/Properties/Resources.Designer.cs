@@ -3877,6 +3877,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Windows Update - View optional updates.
+        /// </summary>
+        internal static string WindowsUpdateViewOptionalUpdates {
+            get {
+                return ResourceManager.GetString("WindowsUpdateViewOptionalUpdates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows Update - View update history.
         /// </summary>
         internal static string WindowsUpdateViewUpdateHistory {
