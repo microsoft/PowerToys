@@ -488,6 +488,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
 
+            if (_isNewVersionChecked)
+            {
+                _isNewVersionChecked = !IsNewVersionDownloading;
+                NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
+            }
+
             GeneralSettingsConfig.CustomActionName = "check_for_updates";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
@@ -558,7 +564,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
             UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
 
-            _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate;
+            _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate && !IsNewVersionDownloading;
             NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
 
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
