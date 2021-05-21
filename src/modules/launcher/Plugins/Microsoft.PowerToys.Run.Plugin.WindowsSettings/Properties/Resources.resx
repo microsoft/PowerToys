@@ -1000,8 +1000,8 @@
   <data name="NoteBattery" xml:space="preserve">
     <value>Only available on devices that have a battery, such as a tablet.</value>
   </data>
-  <data name="NoteDeprecated1809" xml:space="preserve">
-    <value>Deprecated in Windows 10, version 1809 and later.</value>
+  <data name="NoteDeprecated17763" xml:space="preserve">
+    <value>Deprecated in Windows 10, version 1809 (build 17763) and later.</value>
   </data>
   <data name="NoteDialPaired" xml:space="preserve">
     <value>Only available if Dial is paired.</value>
@@ -1033,8 +1033,11 @@
   <data name="NoteMobileProvisioning" xml:space="preserve">
     <value>Only available on mobile and if the enterprise has deployed a provisioning package.</value>
   </data>
-  <data name="NoteSince1903" xml:space="preserve">
-    <value>Added in Windows 10, version 1903.</value>
+  <data name="NoteSince18362" xml:space="preserve">
+    <value>Added in Windows 10, version 1903 (build 18362).</value>
+  </data>
+  <data name="NoteSince19041" xml:space="preserve">
+    <value>Added in Windows 10, version 2004 (build 19041).</value>
   </data>
   <data name="NoteThirdParty" xml:space="preserve">
     <value>Only available if "settings apps" are installed, for example, by a 3rd party.</value>

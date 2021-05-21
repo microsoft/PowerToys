@@ -181,8 +181,8 @@
     "Name": "DefaultCamera",
     "Area": "Devices",
     "Type": "SettingsApp",
-    "DeprecatedInVersion": 1809,
-    "Note": "NoteDeprecated1809",
+    "DeprecatedInBuild": 17763,
+    "Note": "NoteDeprecated17763",
     "Command": "ms-settings:camera"
   },
   {
@@ -281,7 +281,8 @@
     "Name": "Fonts",
     "Area": "EaseOfAccess",
     "Type": "SettingsApp",
-    "DeprecatedInVersion": 1809,
+    "DeprecatedInBuild": 17763,
+    "Note": "NoteDeprecated17763",
     "Command": "ms-settings:fonts"
   },
   {
@@ -321,8 +322,8 @@
     "Name": "OtherOptions",
     "Area": "EaseOfAccess",
     "Type": "SettingsApp",
-    "DeprecatedInVersion": 1809,
-    "Note": "NoteDeprecated1809",
+    "DeprecatedInBuild": 17763,
+    "Note": "NoteDeprecated17763",
     "Command": "ms-settings:easeofaccess-otheroptions"
   },
   {
@@ -374,8 +375,8 @@
     "Name": "TruePlay",
     "Area": "Gaming",
     "Type": "SettingsApp",
-    "DeprecatedInVersion": 1809,
-    "Note": "NoteDeprecated1809",
+    "DeprecatedInBuild": 17763,
+    "Note": "NoteDeprecated17763",
     "Command": "ms-settings:gaming-trueplay"
   },
   {
@@ -559,8 +560,8 @@
     "Name": "Glance",
     "Area": "Personalization",
     "Type": "SettingsApp",
-    "DeprecatedInVersion": 1809,
-    "Note": "NoteDeprecated1809",
+    "DeprecatedInBuild": 17763,
+    "Note": "NoteDeprecated17763",
     "Command": "ms-settings:personalization-glance"
   },
   {
@@ -574,8 +575,8 @@
     "Name": "NavigationBar",
     "Area": "Personalization",
     "Type": "SettingsApp",
-    "DeprecatedInVersion": 1809,
-    "Note": "NoteDeprecated1809",
+    "DeprecatedInBuild": 17763,
+    "Note": "NoteDeprecated17763",
     "Command": "ms-settings:personalization-navbar"
   },
   {
@@ -620,8 +621,8 @@
     "Name": "AccessoryApps",
     "Area": "Privacy",
     "Type": "SettingsApp",
-    "DeprecatedInVersion": 1809,
-    "Note": "NoteDeprecated1809",
+    "DeprecatedInBuild": 17763,
+    "Note": "NoteDeprecated17763",
     "Command": "ms-settings:privacy-accessoryapps"
   },
   {
@@ -640,8 +641,8 @@
     "Name": "AdvertisingId",
     "Area": "Privacy",
     "Type": "SettingsApp",
-    "DeprecatedInVersion": 1809,
-    "Note": "NoteDeprecated1809",
+    "DeprecatedInBuild": 17763,
+    "Note": "NoteDeprecated17763",
     "Command": "ms-settings:privacy-advertisingid"
   },
   {
@@ -858,8 +859,8 @@
     "Name": "AppVolumeAndDevicePreferences",
     "Area": "System",
     "Type": "SettingsApp",
-    "IntroducedInVersion": 1903,
-    "Note": "NoteSince1903",
+    "IntroducedInBuild": 18362,
+    "Note": "NoteSince18362",
     "Command": "ms-settings:apps-volume"
   },
   {
@@ -1015,8 +1016,8 @@
     "Name": "Phone",
     "Area": "System",
     "Type": "SettingsApp",
-    "DeprecatedInVersion": 1809,
-    "Note": "NoteDeprecated1809",
+    "DeprecatedInBuild": 17763,
+    "Note": "NoteDeprecated17763",
     "Command": "ms-settings:phone"
   },
   {
@@ -1235,7 +1236,8 @@
     "Name": "WindowsUpdateViewOptionalUpdates",
     "Area": "UpdateAndSecurity",
     "Type": "SettingsApp",
-    "IntroducedInVersion": 2004,
+    "IntroducedInBuild": 19041,
+    "Note": "NoteSince19041",
     "Command": "ms-settings:windowsupdate-optionalupdates"
   },
   {
