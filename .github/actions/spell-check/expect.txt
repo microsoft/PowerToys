@@ -1706,6 +1706,7 @@ serizalization
 serverside
 SETCONTEXT
 setcursor
+setenv
 SETFOCUS
 SETFOREGROUND
 SETICON
