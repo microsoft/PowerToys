@@ -2,7 +2,7 @@
   {
     "Name": "AccessWorkOrSchool",
     "Area": "Accounts",
-    "Type":  "SettingsApp",
+    "Type": "SettingsApp",
     "AltNames": [ "Workplace" ],
     "Command": "ms-settings:workplace"
   },
@@ -1230,6 +1230,13 @@
     "Area": "UpdateAndSecurity",
     "Type": "SettingsApp",
     "Command": "ms-settings:windowsupdate-history"
+  },
+  {
+    "Name": "WindowsUpdateViewOptionalUpdates",
+    "Area": "UpdateAndSecurity",
+    "Type": "SettingsApp",
+    "IntroducedInVersion": 2004,
+    "Command": "ms-settings:windowsupdate-optionalupdates"
   },
   {
     "Name": "WorkplaceProvisioning",

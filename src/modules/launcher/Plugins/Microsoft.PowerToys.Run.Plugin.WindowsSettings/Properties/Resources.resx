@@ -1707,6 +1707,10 @@
     <value>Windows Update - Restart options</value>
     <comment>Area UpdateAndSecurity</comment>
   </data>
+  <data name="WindowsUpdateViewOptionalUpdates" xml:space="preserve">
+    <value>Windows Update - View optional updates</value>
+    <comment>Area UpdateAndSecurity</comment>
+  </data>
   <data name="WindowsUpdateViewUpdateHistory" xml:space="preserve">
     <value>Windows Update - View update history</value>
     <comment>Area UpdateAndSecurity</comment>
