@@ -5,12 +5,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="ZipTools\zipfolder.cpp">
+    <ClCompile Include="ZipTools\ZipFolder.cpp">
       <Filter>ZipTools</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\deps\cziplib\src\zip.c" />
     <ClCompile Include="ReportMonitorInfo.cpp" />
-    <ClCompile Include="ReportRegistry.cpp" />
+    <ClCompile Include="RegistryUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ZipTools">
@@ -18,13 +18,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ZipTools\zipfolder.h">
+    <ClInclude Include="ZipTools\ZipFolder.h">
       <Filter>ZipTools</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\common\utils\json.h" />
     <ClInclude Include="..\..\..\deps\cziplib\src\miniz.h" />
     <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
     <ClInclude Include="ReportMonitorInfo.h" />
-    <ClInclude Include="ReportRegistry.h" />
+    <ClInclude Include="RegistryUtils.h" />
   </ItemGroup>
 </Project>

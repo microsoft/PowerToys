@@ -2,12 +2,11 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShortcutGuidePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
@@ -58,20 +57,21 @@
             <ToggleSwitch x:Uid="ShortcutGuide_Enable"
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
 
+            <TextBlock x:Uid="Shortcuts"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
+            <CustomControls:HotkeySettingsControl x:Uid="ShortcutGuide_OpenShortcutGuide"
+                                                  HorizontalAlignment="Left"
+                                                  MinWidth="240"
+                                                  Margin="{StaticResource SmallTopMargin}"
+                                                  HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}"
+                                                  Keys="Win, Ctrl, Alt, Shift"
+                                                  Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
-            <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
-                            Minimum="100"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}"
-                            MinWidth="240"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" 
-                            SmallChange="50" 
-                            LargeChange="100"/>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource MediumTopMargin}" Spacing="12">
                 <Slider x:Uid="ShortcutGuide_OverlayOpacity"

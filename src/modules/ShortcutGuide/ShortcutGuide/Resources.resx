@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Setting_Description_Press_Time" xml:space="preserve">
-    <value>How long to press the Windows key before showing the Shortcut Guide (ms)</value>
-  </data>
   <data name="Setting_Description_Overlay_Opacity" xml:space="preserve">
     <value>Opacity of the Shortcut Guide's overlay background (%)</value>
   </data>

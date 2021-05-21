@@ -112,6 +112,7 @@ atlstr
 attr
 Attribs
 aumid
+Aut
 AUTHN
 AUTOAPPEND
 autocomplete
@@ -664,6 +665,7 @@ hangeul
 hanja
 hanselman
 hardcoded
+Hardlines
 HARDWAREINPUT
 hashcode
 hbitmap
@@ -1781,6 +1783,7 @@ sln
 SMALLICON
 SMTO
 snd
+softline
 somil
 Soref
 SORTDOWN
@@ -2192,6 +2195,7 @@ workaround
 workflow
 workspaces
 wostream
+wostringstream
 wox
 wparam
 wpf

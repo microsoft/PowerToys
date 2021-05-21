@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -82,8 +83,9 @@ namespace FancyZonesEditor
 
         private void GridZone_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            WidthLabel.Text = Math.Round(ActualWidth).ToString();
-            HeightLabel.Text = Math.Round(ActualHeight).ToString();
+            // using current culture as this is end user facing
+            WidthLabel.Text = Math.Round(ActualWidth).ToString(CultureInfo.CurrentCulture);
+            HeightLabel.Text = Math.Round(ActualHeight).ToString(CultureInfo.CurrentCulture);
         }
 
         public void UpdateShiftState(bool shiftState)
