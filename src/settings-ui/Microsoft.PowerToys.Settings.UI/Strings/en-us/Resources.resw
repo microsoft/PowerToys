@@ -997,6 +997,43 @@
   <data name="Run_PluginUseDescription.Text" xml:space="preserve">
     <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options.</value>
   </data>
+  <data name="Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
+    <value>Position &amp; appearance</value>
+  </data>
+  <data name="Run_PositionHeader.Text" xml:space="preserve">
+    <value>Show PowerToys Run on</value>
+    <comment>as in Show PowerToys Run on primary monitor</comment>
+  </data>
+  <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
+    <value>Monitor with mouse cursor</value>
+  </data>
+  <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
+    <value>Monitor with focused window</value>
+  </data>
+  <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
+    <value>Primary monitor</value>
+  </data>
+  <data name="Run_PluginsLoading.Text" xml:space="preserve">
+    <value>Plugins are loading...</value>
+  </data>
+  <data name="ColorPicker_ButtonDown.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color down</value>
+  </data>
+  <data name="ColorPicker_ButtonUp.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color up</value>
+  </data>
+  <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
+    <value>Flash zones when switching layout</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch.Content" xml:space="preserve">
+    <value>Enable quick layout switch</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
+    <value>Quick layout switch</value>
+  </data>
+  <data name="ShortcutGuide_OpenShortcutGuide.Header" xml:space="preserve">
+    <value>Open Shortcut Guide</value>
+  </data>
   <data name="Oobe_GetStarted.Text" xml:space="preserve">
     <value>Let's get started!</value>
   </data>
