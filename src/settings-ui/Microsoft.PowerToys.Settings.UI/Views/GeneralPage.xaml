@@ -185,12 +185,13 @@
                 <StackPanel Orientation="Horizontal"
                             Margin="{StaticResource SmallTopMargin}"
                             AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                    <TextBlock x:Name="General_NewVersionAvailable" 
-                               x:Uid="General_NewVersionAvailable" 
+                    <TextBlock x:Name="General_NewVersionAvailable"
+                               x:Uid="General_NewVersionAvailable"
+                               FontWeight="SemiBold"
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                     
                     <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
-                        <TextBlock Text="{Binding PowerToysNewAvailableVersion }" />
+                        <TextBlock Text="{Binding PowerToysNewAvailableVersion }" Style="{StaticResource SemiBoldBody}"/>
                     </HyperlinkButton>
                     
                     <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" 
@@ -228,11 +229,12 @@
                 <StackPanel Orientation="Horizontal"
                             Margin="{StaticResource SmallTopMargin}"
                             AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                    <TextBlock x:Name="General_NewVersionReadyToInstall" 
-                               x:Uid="General_NewVersionReadyToInstall" 
+                    <TextBlock x:Name="General_NewVersionReadyToInstall"
+                               x:Uid="General_NewVersionReadyToInstall"
+                               Style="{StaticResource SemiBoldBody}"
                                Foreground="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                     <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
-                        <TextBlock Text="{Binding PowerToysNewAvailableVersion }" />
+                        <TextBlock Text="{Binding PowerToysNewAvailableVersion }" Style="{StaticResource SemiBoldBody}"/>
                     </HyperlinkButton>
 
                     <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" 
