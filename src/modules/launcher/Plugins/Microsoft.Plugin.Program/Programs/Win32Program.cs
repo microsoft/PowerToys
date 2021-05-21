@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public bool Enabled { get; set; }
 
-        public bool HasArguments { get; set; }
+        public bool HasArguments => !string.IsNullOrEmpty(Arguments);
 
         public string Arguments { get; set; } = string.Empty;
 
@@ -467,7 +467,6 @@ namespace Microsoft.Plugin.Program.Programs
                     // Using CurrentCulture since this is user facing
                     program.FullPath = Path.GetFullPath(target).ToLowerInvariant();
                     program.Arguments = ShellLinkHelper.Arguments;
-                    program.HasArguments = !string.IsNullOrEmpty(program.Arguments);
 
                     // A .lnk could be a (Chrome) PWA, set correct AppType
                     program.AppType = program.IsWebApplication()
@@ -813,6 +812,27 @@ namespace Microsoft.Plugin.Program.Programs
             path != null
                 ? Environment.ExpandEnvironmentVariables(path)
                 : null;
+
+        // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
+        public override int GetHashCode()
+            => Win32ProgramEqualityComparer.Default.GetHashCode(this);
+
+        public override bool Equals(object obj)
+            => obj is Win32Program win && Win32ProgramEqualityComparer.Default.Equals(this, win);
+
+        private class Win32ProgramEqualityComparer : IEqualityComparer<Win32Program>
+        {
+            public static readonly Win32ProgramEqualityComparer Default = new Win32ProgramEqualityComparer();
+
+            public bool Equals(Win32Program app1, Win32Program app2)
+                => app1 != null
+                   && app2 != null
+                   && (app1.Name?.ToUpperInvariant(), app1.ExecutableName?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
+                    .Equals((app2.Name?.ToUpperInvariant(), app2.ExecutableName?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
+
+            public int GetHashCode(Win32Program obj)
+                => (obj.Name?.ToUpperInvariant(), obj.ExecutableName?.ToUpperInvariant(), obj.FullPath?.ToUpperInvariant()).GetHashCode();
+        }
 
         private class RemoveDuplicatesComparer : IEqualityComparer<Win32Program>
         {
