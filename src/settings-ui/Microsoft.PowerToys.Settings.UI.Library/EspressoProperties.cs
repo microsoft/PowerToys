@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public EspressoProperties()
         {
             KeepDisplayOn = false;
-            Mode = EspressoMode.INDEFINITE;
+            Mode = EspressoMode.PASSIVE;
             Hours = 0;
             Minutes = 0;
         }
