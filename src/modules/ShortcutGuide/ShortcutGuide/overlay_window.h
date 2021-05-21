@@ -47,18 +47,21 @@ struct AnimateKeys
 class D2DOverlayWindow : public D2DWindow
 {
 public:
-    D2DOverlayWindow(std::optional<std::function<std::remove_pointer_t<WNDPROC>>> pre_wnd_proc = std::nullopt);
+    D2DOverlayWindow();
     void show(HWND active_window, bool snappable);
-    void animate(int vk_code);
     ~D2DOverlayWindow();
     void apply_overlay_opacity(float opacity);
     void set_theme(const std::wstring& theme);
     void quick_hide();
 
     HWND get_window_handle();
+    void SetWindowCloseType(std::wstring windowCloseType)
+    {
+        this->windowCloseType = windowCloseType;
+    }
 
 private:
-    void animate(int vk_code, int offset);
+    std::wstring windowCloseType;
     bool show_thumbnail(const RECT& rect, double alpha);
     void hide_thumbnail();
     virtual void init() override;
@@ -70,7 +73,6 @@ private:
 
     bool running = true;
     std::vector<AnimateKeys> key_animations;
-    std::vector<int> key_pressed;
     std::vector<MonitorInfo> monitors;
     ScreenSize total_screen;
     int monitor_dx = 0, monitor_dy = 0;

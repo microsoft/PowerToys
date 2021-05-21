@@ -47,6 +47,12 @@ public:
 
         std::strong_ordering operator<=>(const Hotkey&) const = default;
     };
+    
+    struct HotkeyEx
+    {
+        WORD modifiersMask = 0;
+        WORD vkCode = 0;
+    };
 
     /* Returns the localized name of the PowerToy*/
     virtual const wchar_t* get_name() = 0;
@@ -77,6 +83,15 @@ public:
      * This method is called even when the module is disabled.
      */
     virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) { return 0; }
+
+    virtual std::optional<HotkeyEx> GetHotkeyEx()
+    {
+        return std::nullopt;
+    }
+
+    virtual void OnHotkeyEx()
+    {
+    }
 
     /* Called when one of the registered hotkeys is pressed. Should return true
      * if the key press is to be swallowed.

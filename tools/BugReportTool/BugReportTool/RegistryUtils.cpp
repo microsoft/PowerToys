@@ -1,4 +1,6 @@
-#include "ReportRegistry.h"
+#include "RegistryUtils.h"
+#include <common/utils/winapi_error.h>
+#include <map>
 
 using namespace std;
 
@@ -38,7 +40,35 @@ namespace
         { HKEY_USERS, L"HKEY_USERS"},
     };
 
-    void queryKey(HKEY key, wofstream& stream, int indent = 1)
+    vector<pair<wstring, wstring>> QueryValues(HKEY key)
+    {
+        DWORD cValues;
+        DWORD retCode = RegQueryInfoKeyW(key, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &cValues, nullptr, nullptr, nullptr, nullptr);
+        TCHAR achValue[255];
+        DWORD cchValue = 255;
+        LPBYTE value;
+        vector<pair<wstring, wstring>> results;
+        // Values
+        if (cValues)
+        {
+            for (DWORD i = 0, retCode = ERROR_SUCCESS; i < cValues; i++)
+            {
+                cchValue = 255;
+                achValue[0] = '\0';
+                value = new BYTE[16383];
+                retCode = RegEnumValueW(key, i, achValue, &cchValue, NULL, NULL, value, &cchValue);
+
+                if (retCode == ERROR_SUCCESS)
+                {
+                    results.push_back({ achValue, (LPCTSTR)value });
+                }
+            }
+        }
+
+        return results;
+    }
+
+    void QueryKey(HKEY key, wostream& stream, int indent = 1)
     {
         TCHAR achKey[255];
         DWORD cbName;
@@ -114,7 +144,7 @@ namespace
                 if (RegOpenKeyExW(key, child.c_str(), 0, KEY_READ, &hTestKey) == ERROR_SUCCESS)
                 {
                     stream << wstring(indent, '\t') << child << "\n";
-                    queryKey(hTestKey, stream, indent + 1);
+                    QueryKey(hTestKey, stream, indent + 1);
                     RegCloseKey(hTestKey);
                 }
                 else
@@ -126,7 +156,74 @@ namespace
     }
 }
 
-void reportRegistry(const filesystem::path& tmpDir)
+void ReportCompatibilityTab(HKEY key, wofstream& report)
+{
+    vector<std::wstring> apps
+    {
+        L"PowerToys.exe",
+        L"ColorPickerUI.exe",
+        L"FancyZonesEditor.exe",
+        L"PowerToys.KeyboardManagerEditor.exe",
+        L"PowerToys.KeyboardManagerEditor.exe",
+        L"PowerLauncher.exe",
+        L"PowerToys.ShortcutGuide.exe"
+    };
+
+    map<wstring, wstring> flags;
+    for (auto app : apps)
+    {
+        flags[app] = L"";
+    }
+
+    try
+    {
+        HKEY outKey;
+        LONG result = RegOpenKeyExW(key, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers", 0, KEY_READ, &outKey);
+        if (result == ERROR_SUCCESS)
+        {
+            auto values = QueryValues(outKey);
+            for (auto value : values)
+            {
+                for (auto app : apps)
+                {
+                    if (value.first.find(app) != wstring::npos)
+                    {
+                        flags[app] += value.second;
+                    }
+                }
+            }
+        }
+        else
+        {
+            report << "Failed to get the report. " << get_last_error_or_default(GetLastError());
+            return;
+        }
+    }
+    catch (...)
+    {
+        report << "Failed to get the report";
+        return;
+    }
+
+    for (auto flag : flags)
+    {
+        report << flag.first << ": " << flag.second << endl;
+    }
+}
+
+void ReportCompatibilityTab(const std::filesystem::path& tmpDir)
+{
+    auto reportPath = tmpDir;
+    reportPath.append(L"compatibility-tab-info.txt");
+    wofstream report(reportPath);
+    report << "Current user report" << endl;
+    ReportCompatibilityTab(HKEY_CURRENT_USER, report);
+    report << endl << endl;
+    report << "Local machine report" << endl;
+    ReportCompatibilityTab(HKEY_LOCAL_MACHINE, report);
+}
+
+void ReportRegistry(const filesystem::path& tmpDir)
 {
     auto registryReportPath = tmpDir;
     registryReportPath.append("registry-report-info.txt");
@@ -142,7 +239,7 @@ void reportRegistry(const filesystem::path& tmpDir)
             LONG result = RegOpenKeyExW(rootKey, subKey.c_str(), 0, KEY_READ, &outKey);
             if (result == ERROR_SUCCESS)
             {
-                queryKey(outKey, registryReport);
+                QueryKey(outKey, registryReport);
                 RegCloseKey(rootKey);
             }
             else
