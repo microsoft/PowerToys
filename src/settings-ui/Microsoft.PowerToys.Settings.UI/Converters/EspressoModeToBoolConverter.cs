@@ -17,28 +17,25 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
                 throw new InvalidOperationException("The target type needs to be a boolean.");
             }
 
-            switch ((EspressoMode)value)
+            if (parameter == null)
             {
-                case EspressoMode.INDEFINITE:
-                    return true;
-                case EspressoMode.TIMED:
-                    return false;
+                throw new NullReferenceException("Parameter cannot be null for the Espresso mode to bool converter.");
             }
 
-            return false;
+            var expectedMode = (EspressoMode)Enum.Parse(typeof(EspressoMode), parameter.ToString());
+            var currentMode = (EspressoMode)value;
+
+            return currentMode.Equals(expectedMode);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            switch ((bool)value)
+            if (parameter == null)
             {
-                case true:
-                    return EspressoMode.INDEFINITE;
-                case false:
-                    return EspressoMode.TIMED;
+                throw new NullReferenceException("Parameter cannot be null for the Espresso mode to bool converter.");
             }
 
-            return EspressoMode.INDEFINITE;
+            return (EspressoMode)Enum.Parse(typeof(EspressoMode), parameter.ToString());
         }
     }
 }

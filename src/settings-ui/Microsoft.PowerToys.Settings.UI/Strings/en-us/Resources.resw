@@ -1178,11 +1178,17 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Espresso_EnableEspresso.Header" xml:space="preserve">
     <value>Enable Espresso</value>
   </data>
+  <data name="Espresso_NoKeepAwakeContent.Text" xml:space="preserve">
+    <value>Off (Passive)</value>
+  </data>
   <data name="Espresso_IndefiniteKeepAwakeContent.Text" xml:space="preserve">
     <value>Keep awake indefinitely</value>
   </data>
   <data name="Espresso_TemporaryKeepAwakeContent.Text" xml:space="preserve">
     <value>Keep awake temporarily</value>
+  </data>
+  <data name="Espresso_NoKeepAwakeDescription.Text" xml:space="preserve">
+    <value>Computer operates operates according to its current power plan.</value>
   </data>
   <data name="Espresso_IndefiniteKeepAwakeDescription.Text" xml:space="preserve">
     <value>Keeps the computer awake until the setting is disabled.</value>

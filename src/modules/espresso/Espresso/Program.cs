@@ -243,6 +243,12 @@ namespace Espresso.Shell
                 {
                     switch (settings.Properties.Mode)
                     {
+                        case EspressoMode.PASSIVE:
+                            {
+                                SetupNoKeepAwake();
+                                break;
+                            }
+
                         case EspressoMode.INDEFINITE:
                             {
                                 // Indefinite keep awake.
@@ -283,6 +289,13 @@ namespace Espresso.Shell
                 _log.Info(errorMessage);
                 _log.Debug(errorMessage);
             }
+        }
+
+        private static void SetupNoKeepAwake()
+        {
+            _log.Info($"Operating in passive mode (computer's standard power plan). No custom keep awake settings enabled.");
+
+            APIHelper.SetNoKeepAwake();
         }
 
         private static void SetupTimedKeepAwake(uint time, bool displayOn)

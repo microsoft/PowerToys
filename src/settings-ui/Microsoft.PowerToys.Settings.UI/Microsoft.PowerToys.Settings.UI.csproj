@@ -106,11 +106,11 @@
       <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\EspressoModeToBoolConverter.cs" />
-    <Compile Include="Converters\EspressoModeToReverseBoolConverter.cs" />
     <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Helpers\EspressoModeHelper.cs" />
     <Compile Include="Helpers\NativeKeyboardHelper.cs" />
     <Compile Include="Helpers\NativeMethods.cs" />
     <Compile Include="Helpers\NavHelper.cs" />
