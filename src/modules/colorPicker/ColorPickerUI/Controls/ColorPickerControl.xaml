@@ -7,66 +7,283 @@
              xmlns:p="clr-namespace:ColorPicker.Properties"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d"
-             Height="350"
-             Width="333">
-    <StackPanel x:Name="PickerPanel"
-                Orientation="Vertical"
-                Background="{x:Null}" >
-        <!--Top panel-->
-        <Grid HorizontalAlignment="Stretch" Margin="12,0,12,0">
+             TabIndex="3"
+             FocusManager.IsFocusScope="True"
+             KeyboardNavigation.TabNavigation="Once"
+             >
+    <UserControl.Resources>
+
+        <Style TargetType="Thumb"
+               x:Key="SliderThumbStyle">
+            <Setter Property="BorderThickness"
+                    Value="4" />
+            <Setter Property="Background"
+                    Value="{DynamicResource SliderThumbBackground}" />
+            <Setter Property="IsTabStop"
+                    Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border Background="Transparent"
+                                BorderBrush="{DynamicResource PrimaryForegroundBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{DynamicResource SliderThumbCornerRadius}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ControlTemplate x:Key="SliderHorizontal"
+                         TargetType="Slider">
+            <Grid Margin="{TemplateBinding Padding}"
+                  SnapsToDevicePixels="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+
+                <Grid x:Name="SliderContainer"
+                      Grid.Row="1"
+                      Background="Transparent"
+                      ui:FocusVisualHelper.IsTemplateFocusTarget="True">
+                    <Border Background="{TemplateBinding Background}"
+                            Margin="1,0,1,0"
+                            CornerRadius="6"
+                            VerticalAlignment="Center"
+                            Height="12">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6"
+                                              Opacity="0.32"
+                                              ShadowDepth="2" />
+                        </Border.Effect>
+                    </Border>
+                    <Grid x:Name="HorizontalTemplate"
+                          MinHeight="{DynamicResource SliderHorizontalHeight}">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+
+
+                        <Rectangle x:Name="HorizontalTrackRect"
+                                   Fill="Transparent"
+                                   Height="{DynamicResource SliderTrackThemeHeight}"
+                                   Grid.Row="1"
+                                   Grid.ColumnSpan="3" />
+                        <Rectangle x:Name="HorizontalDecreaseRect"
+                                   Width="{Binding ActualWidth, ElementName=HorizontalDecrease}"
+                                   Fill="Transparent"
+                                   Grid.Row="1" />
+                        <TickBar x:Name="TopTickBar"
+                                 Placement="Top"
+                                 Visibility="Collapsed"
+                                 Fill="{DynamicResource SliderTickBarFill}"
+                                 Height="{DynamicResource SliderOutsideTickBarThemeHeight}"
+                                 VerticalAlignment="Bottom"
+                                 Margin="0,0,0,4"
+                                 Grid.ColumnSpan="3" />
+                        <TickBar x:Name="BottomTickBar"
+                                 Placement="Bottom"
+                                 Visibility="Collapsed"
+                                 Fill="{DynamicResource SliderTickBarFill}"
+                                 Height="{DynamicResource SliderOutsideTickBarThemeHeight}"
+                                 VerticalAlignment="Top"
+                                 Margin="0,4,0,0"
+                                 Grid.Row="2"
+                                 Grid.ColumnSpan="3" />
+                        <Track x:Name="PART_Track"
+                               Grid.Row="0"
+                               Grid.RowSpan="3"
+                               Grid.Column="0"
+                               Grid.ColumnSpan="3">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton x:Name="HorizontalDecrease"
+                                              Command="{x:Static Slider.DecreaseLarge}"
+                                              Style="{StaticResource RepeatButtonTransparent}" />
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.IncreaseLarge}"
+                                              Style="{StaticResource RepeatButtonTransparent}" />
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb x:Name="HorizontalThumb"
+                                       Style="{StaticResource SliderThumbStyle}"
+                                       DataContext="{TemplateBinding Value}"
+                                       Height="20"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,0,0"
+                                       Width="20"
+                                       ui:FocusVisualHelper.FocusVisualMargin="-14,-6,-14,-6">
+                                    <Thumb.Resources>
+                                        <Style TargetType="ToolTip"
+                                               BasedOn="{StaticResource SliderAutoToolTipStyle}" />
+                                    </Thumb.Resources>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </Grid>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="TickPlacement"
+                         Value="TopLeft">
+                    <Setter TargetName="TopTickBar"
+                            Property="Visibility"
+                            Value="Visible" />
+                </Trigger>
+                <Trigger Property="TickPlacement"
+                         Value="BottomRight">
+                    <Setter TargetName="BottomTickBar"
+                            Property="Visibility"
+                            Value="Visible" />
+                </Trigger>
+                <Trigger Property="TickPlacement"
+                         Value="Both">
+                    <Setter TargetName="TopTickBar"
+                            Property="Visibility"
+                            Value="Visible" />
+                    <Setter TargetName="BottomTickBar"
+                            Property="Visibility"
+                            Value="Visible" />
+                </Trigger>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+
+                    <Setter TargetName="HorizontalThumb"
+                            Property="Opacity"
+                            Value="0.8" />
+
+                </Trigger>
+                <Trigger SourceName="HorizontalThumb"
+                         Property="IsDragging"
+                         Value="True">
+
+                    <Setter TargetName="HorizontalThumb"
+                            Property="Opacity"
+                            Value="0.6" />
+
+                </Trigger>
+                <Trigger Property="IsEnabled"
+                         Value="False">
+
+                    <Setter TargetName="HorizontalDecreaseRect"
+                            Property="Fill"
+                            Value="{DynamicResource SliderTrackValueFillDisabled}" />
+                    <Setter TargetName="HorizontalTrackRect"
+                            Property="Fill"
+                            Value="{DynamicResource SliderTrackFillDisabled}" />
+                    <Setter TargetName="HorizontalThumb"
+                            Property="Background"
+                            Value="{DynamicResource SliderThumbBackgroundDisabled}" />
+                    <Setter TargetName="TopTickBar"
+                            Property="Fill"
+                            Value="{DynamicResource SliderTickBarFillDisabled}" />
+                    <Setter TargetName="BottomTickBar"
+                            Property="Fill"
+                            Value="{DynamicResource SliderTickBarFillDisabled}" />
+                    <Setter TargetName="SliderContainer"
+                            Property="Background"
+                            Value="{DynamicResource SliderContainerBackgroundDisabled}" />
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+
+        <Style x:Key="CustomSLiderStyle"
+               TargetType="Slider">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Stylus.IsPressAndHoldEnabled"
+                    Value="false" />
+            <Setter Property="Background"
+                    Value="{DynamicResource SliderTrackFill}" />
+            <Setter Property="BorderThickness"
+                    Value="{DynamicResource SliderBorderThemeThickness}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource SliderTrackValueFill}" />
+            <Setter Property="FontFamily"
+                    Value="{DynamicResource ContentControlThemeFontFamily}" />
+            <Setter Property="FontSize"
+                    Value="{DynamicResource ControlContentThemeFontSize}" />
+            <!--<Setter Property="ManipulationMode" Value="None" />-->
+            <Setter Property="FocusVisualStyle"
+                    Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
+            <Setter Property="ui:FocusVisualHelper.UseSystemFocusVisuals"
+                    Value="{DynamicResource UseSystemFocusVisuals}" />
+            <Setter Property="ui:FocusVisualHelper.FocusVisualMargin"
+                    Value="-7,0,-7,0" />
+            <Setter Property="ui:ControlHelper.CornerRadius"
+                    Value="{DynamicResource ControlCornerRadius}" />
+            <Setter Property="Template"
+                    Value="{StaticResource SliderHorizontal}" />
+            <Style.Triggers>
+                <Trigger Property="Orientation"
+                         Value="Vertical">
+                    <Setter Property="Template"
+                            Value="{StaticResource SliderVertical}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+    </UserControl.Resources>
+    <Grid x:Name="PickerPanel"
+          HorizontalAlignment="Stretch"
+          Margin="12,2,12,2">
             <Grid.Effect>
-                <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                <DropShadowEffect BlurRadius="6"
+                                  Opacity="0.32"
+                                  ShadowDepth="2" />
             </Grid.Effect>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="36"/>
-                <ColumnDefinition Width="36"/>
-                <ColumnDefinition Width="165"/>
-                <ColumnDefinition Width="36"/>
-                <ColumnDefinition Width="36"/>
+                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="165" />
+                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="36" />
             </Grid.ColumnDefinitions>
 
             <Button x:Name="colorVariation1Button"
                     Grid.Column="0"
-                    TabIndex="4"
+                    TabIndex="3"
                     ui:ControlHelper.CornerRadius="2,0,0,2"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
                     AutomationProperties.Name="Color shade 1"
                     Style="{DynamicResource ColorShadeButtonStyle}"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}"/>
+                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
             <Button x:Name="colorVariation2Button"
                     Grid.Column="1"
                     ui:ControlHelper.CornerRadius="0"
-                    TabIndex="5"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
                     AutomationProperties.Name="Color shade 2"
                     Style="{DynamicResource ColorShadeButtonStyle}"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}"/>
+                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
             <Button x:Name="colorVariation3Button"
                     Grid.Column="3"
-                    TabIndex="7"
                     ui:ControlHelper.CornerRadius="0"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
                     AutomationProperties.Name="Color shade 3"
                     Style="{DynamicResource ColorShadeButtonStyle}"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}"/>
+                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
             <Button x:Name="colorVariation4Button"
                     Grid.Column="4"
-                    TabIndex="8"
                     ui:ControlHelper.CornerRadius="0,2,2,0"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
                     AutomationProperties.Name="Color shade 5"
                     Style="{DynamicResource ColorShadeButtonStyle}"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}"/>
+                    ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
+
             <Button x:Name="CurrentColorButton"
                     HorizontalAlignment="Left"
                     Grid.Column="0"
-                    TabIndex="6"
                     Grid.ColumnSpan="5"
-                    Opacity="1"
                     ui:ControlHelper.CornerRadius="0"
                     Background="Red"
                     Width="165"
@@ -77,221 +294,161 @@
                     ToolTipService.ToolTip="{x:Static p:Resources.Selected_color_tooltip}"
                     Click="CurrentColorButton_Click"
                     Style="{DynamicResource ColorShadeButtonStyle}">
+                <ui:FlyoutService.Flyout>
+                    <ui:Flyout x:Name="DetailsFlyout"
+                               Placement="Bottom"
+                               Closed="DetailsFlyout_Closed">
+                        <Grid Margin="0,4,0,12"
+                              KeyboardNavigation.TabNavigation="Contained"
+                              x:Name="detailsGrid">
+                            <StackPanel x:Name="detailsStackPanel">
+
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="H"
+                                               Width="38"
+                                               FontWeight="SemiBold"
+                                               TextAlignment="Center"
+                                               VerticalAlignment="Center" />
+
+                                    <Slider x:Name="HueGradientSlider"
+                                            Width="214"
+                                            IsMoveToPointEnabled="True"
+                                            AutomationProperties.Name="{x:Static p:Resources.Hue_slider}"
+                                            Style="{StaticResource CustomSLiderStyle}"
+                                            ValueChanged="HueGradientSlider_ValueChanged"
+                                            VerticalAlignment="Center"
+                                            Grid.Column="1"
+                                            Minimum="0"
+                                            Maximum="289" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="S"
+                                               Grid.Row="1"
+                                               Width="38"
+                                               TextAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+
+                                    <Slider x:Name="SaturationGradientSlider"
+                                            AutomationProperties.Name="{x:Static p:Resources.Saturation_slider}"
+                                            Style="{StaticResource CustomSLiderStyle}"
+                                            ValueChanged="SaturationGradientSlider_ValueChanged"
+                                            Grid.Column="1"
+                                            Width="214"
+                                            IsMoveToPointEnabled="True"
+                                            Grid.Row="1"
+                                            Minimum="0"
+                                            Maximum="289">
+                                        <Slider.Background>
+                                            <LinearGradientBrush EndPoint="1,0.5"
+                                                                 StartPoint="0, 0.5">
+                                                <GradientStop x:Name="SaturationStartColor"
+                                                              Color="Black" />
+                                                <GradientStop x:Name="SaturationStopColor"
+                                                              Color="Red"
+                                                              Offset="1" />
+                                            </LinearGradientBrush>
+                                        </Slider.Background>
+                                    </Slider>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="V"
+                                               Grid.Row="2"
+                                               Width="38"
+                                               TextAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+
+                                    <Slider x:Name="ValueGradientSlider"
+                                            AutomationProperties.Name="{x:Static p:Resources.Value_slider}"
+                                            Style="{StaticResource CustomSLiderStyle}"
+                                            ValueChanged="ValueGradientSlider_ValueChanged"
+                                            Grid.Column="1"
+                                            IsMoveToPointEnabled="True"
+                                            Grid.Row="2"
+                                            Width="214"
+                                            Minimum="0"
+                                            Maximum="289">
+                                        <Slider.Background>
+                                            <LinearGradientBrush EndPoint="1,0.5"
+                                                                 StartPoint="0, 0.5">
+                                                <GradientStop x:Name="ValueStartColor"
+                                                              Color="Black" />
+                                                <GradientStop x:Name="ValueStopColor"
+                                                              Color="Red"
+                                                              Offset="1" />
+                                            </LinearGradientBrush>
+                                        </Slider.Background>
+                                    </Slider>
+                                </StackPanel>
+
+
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,16,0,0">
+                                    <TextBlock Text="RGB"
+                                               Width="38"
+                                               FontWeight="SemiBold"
+                                               TextAlignment="Center"
+                                               VerticalAlignment="Center" />
+
+                                    <ui:NumberBox x:Name="RNumberBox"
+                                                  Height="32"
+                                                  Width="72"
+                                                  ui:ControlHelper.CornerRadius="2,0,0,2"
+                                                  AutomationProperties.Name="{x:Static p:Resources.Red_value}"
+                                                  ValueChanged="RGBNumberBox_ValueChanged"
+                                                  Minimum="0"
+                                                  Maximum="255" />
+
+                                    <ui:NumberBox x:Name="GNumberBox"
+                                                  Height="32"
+                                                  Margin="-1,0,0,0"
+                                                  Width="72"
+                                                  ui:ControlHelper.CornerRadius="0"
+                                                  AutomationProperties.Name="{x:Static p:Resources.Green_value}"
+                                                  ValueChanged="RGBNumberBox_ValueChanged"
+                                                  Minimum="0"
+                                                  Maximum="255" />
+
+                                    <ui:NumberBox x:Name="BNumberBox"
+                                                  Height="32"
+                                                  Width="72"
+                                                  Margin="-1,0,0,0"
+                                                  ui:ControlHelper.CornerRadius="0,2,2,0"
+                                                  AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
+                                                  ValueChanged="RGBNumberBox_ValueChanged"
+                                                  Minimum="0"
+                                                  Maximum="255" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,16,0,0">
+                                    <TextBlock Text="HEX"
+                                               Width="38"
+                                               TextAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+                                    <TextBox x:Name="HexCode"
+                                             Height="32"
+                                             Width="214"
+                                             AutomationProperties.Name="{x:Static p:Resources.Hex_value}"
+                                             GotKeyboardFocus="HexCode_GotKeyboardFocus"
+                                             TextChanged="HexCode_TextChanged"
+                                             TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <Button Margin="0,32,0,0"
+                                        x:Name="OKButton"
+                                        Click="OKButton_Click"
+                                        Style="{StaticResource AccentButtonStyle}"
+                                    AutomationProperties.Name="{x:Static p:Resources.Select}"
+                                    Content="{x:Static p:Resources.Select}"
+                                        HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                        </Grid>
+                    </ui:Flyout>
+                </ui:FlyoutService.Flyout>
             </Button>
         </Grid>
-
-        <!--Details panel-->
-        <Grid Margin="0,4,0,12"
-              Height="0"
-              Visibility="Collapsed"
-              x:Name="detailsGrid">
-            <Border Background="{DynamicResource PrimaryBackgroundBrush}"/>
-            <StackPanel x:Name="detailsStackPanel" 
-                        Opacity="0">
-
-                <Grid Margin="12,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="36"/>
-                        <RowDefinition Height="36"/>
-                        <RowDefinition Height="36"/>
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Text="H"
-                               FontWeight="SemiBold"
-                               Margin="0,10,0,0"
-                               VerticalAlignment="Center"/>
-
-                    <Border Grid.Column="1" 
-                      Margin="0,12,12,0"  
-                      x:Name="HueGradientGrid"
-                      HorizontalAlignment="Left"
-                      VerticalAlignment="Center"
-                      Height="24"
-                      AutomationProperties.Name="{x:Static p:Resources.Hue_slider}"
-                      Width="289"
-                      CornerRadius="2"
-                      MouseLeftButtonDown="HueGradientGrid_MouseLeftButtonDown"
-                      MouseMove="HueGradientGrid_MouseMove">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
-                        </Border.Effect>
-                        <Border VerticalAlignment="Stretch"
-                            Width="6"
-                            x:Name="hueGradientPointer"
-                            Margin="154,0,0,0"
-                            Background="#88FFFFFF"
-                            BorderBrush="Black"
-                            CornerRadius="2"
-                            BorderThickness="1"
-                            HorizontalAlignment="Left"/>
-                    </Border>
-
-                    <TextBlock Text="S"
-                               Grid.Row="1"
-                               Margin="0,10,0,0"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
-
-                    <Border HorizontalAlignment="Left"
-                      Grid.Column="1"
-                      Grid.Row="1"
-                      Margin="0,12,12,0"
-                      VerticalAlignment="Center"
-                      Height="24"
-                      AutomationProperties.Name="{x:Static p:Resources.Saturation_slider}"
-                      x:Name="SaturationGradientGrid"
-                      Width="289"
-                      CornerRadius="2"
-                      MouseLeftButtonDown="SaturationGradientGrid_MouseLeftButtonDown"
-                      MouseMove="SaturationGradientGrid_MouseMove">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
-                        </Border.Effect>
-                        <Border.Background>
-                            <LinearGradientBrush EndPoint="1,0.5" StartPoint="0, 0.5">
-                                <GradientStop x:Name="SaturationStartColor" Color="Black"/>
-                                <GradientStop x:Name="SaturationStopColor" Color="Red" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                        <Border HorizontalAlignment="Left"
-                            x:Name="saturationGradientPointer"
-                            BorderBrush="Black"
-                            BorderThickness="1"
-                            Margin="154,0,0,0"
-                            CornerRadius="2"
-                            Width="6"
-                            VerticalAlignment="Stretch"
-                            Background="#88FFFFFF"/>
-                    </Border>
-
-                    <TextBlock Text="V"
-                               Grid.Row="2"
-                               Margin="0,10,0,0"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
-
-                    <Border HorizontalAlignment="Left"
-                      Grid.Column="1"
-                      Grid.Row="2"
-                      Margin="0,12,12,0"
-                      Height="24"
-                      VerticalAlignment="Center"
-                      CornerRadius="2"
-                      x:Name="ValueGradientGrid"
-                      Width="289"
-                      AutomationProperties.Name="{x:Static p:Resources.Value_slider}"
-                      MouseLeftButtonDown="ValueGradientGrid_MouseLeftButtonDown"
-                      MouseMove="ValueGradientGrid_MouseMove">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
-                        </Border.Effect>
-                        <Border.Background>
-                            <LinearGradientBrush EndPoint="1,0.5" StartPoint="0, 0.5">
-                                <GradientStop x:Name="ValueStartColor" Color="Red"/>
-                                <GradientStop x:Name="ValueStopColor" Color="White" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                        <Border HorizontalAlignment="Left"
-                            x:Name="valueGradientPointer"
-                            BorderBrush="Black"
-                            BorderThickness="1"
-                            Margin="154,0,0,0"
-                            Width="6"
-                            CornerRadius="2"
-                            VerticalAlignment="Stretch"
-                            Background="#88FFFFFF"/>
-                    </Border>
-                </Grid>
-
-                <Grid HorizontalAlignment="Stretch"
-                      Margin="12,16,12,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="20" />
-                        <ColumnDefinition Width="86" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="36" />
-                        <RowDefinition Height="36" />
-                        <RowDefinition Height="36" />
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Text="R"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center" />
-                    <ui:NumberBox x:Name="RNumberBox"
-                                  Grid.Column="1"
-                                  Height="32"
-                                  AutomationProperties.Name="{x:Static p:Resources.Red_value}"
-                                  ValueChanged="RGBNumberBox_ValueChanged"
-                                  Minimum="0"
-                                  Maximum="255" />
-
-                    <TextBlock Text="G"
-                               FontWeight="SemiBold"
-                               Grid.Row="1"
-                               VerticalAlignment="Center" />
-
-                    <ui:NumberBox x:Name="GNumberBox"
-                                  Height="32"
-                                  Grid.Row="1"
-                                  Grid.Column="1"
-                                  AutomationProperties.Name="{x:Static p:Resources.Green_value}"
-                                  ValueChanged="RGBNumberBox_ValueChanged"
-                                  Minimum="0"
-                                  Maximum="255" />
-
-                    <TextBlock Text="B"
-                               FontWeight="SemiBold"
-                               Grid.Row="2"
-                               VerticalAlignment="Center" />
-
-                    <ui:NumberBox x:Name="BNumberBox"
-                                  Height="32"
-                                  Grid.Column="1"
-                                  Grid.Row="2"
-                                  AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
-                                  ValueChanged="RGBNumberBox_ValueChanged"
-                                  Minimum="0"
-                                  Maximum="255" />
-
-                    <TextBlock Text="HEX"
-                               Grid.Column="2"
-                               HorizontalAlignment="Right"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center" />
-                    <TextBox x:Name="HexCode"
-                             HorizontalAlignment="Stretch"
-                             Margin="8,0,0,0"
-                             Height="32"
-                             Grid.Column="3"
-                             AutomationProperties.Name="{x:Static p:Resources.Hex_value}"
-                             GotKeyboardFocus="HexCode_GotKeyboardFocus"
-                             TextChanged="HexCode_TextChanged"
-                             TextWrapping="Wrap" />
-                </Grid>
-                <WrapPanel HorizontalAlignment="Right"
-                           Margin="0,0,0,0"
-                           VerticalAlignment="Top">
-                    <Button x:Name="CancelButton"
-                            Click="CancelButton_Click"
-                            AutomationProperties.Name="{x:Static p:Resources.Cancel}"
-                            Content="{x:Static p:Resources.Cancel}"
-                            Width="80"/>
-                    <Button Margin="12,0,12,0"
-                            x:Name="OKButton"
-                            Click="OKButton_Click"
-                            Style="{StaticResource AccentButtonStyle}"
-                            AutomationProperties.Name="{x:Static p:Resources.OK}"
-                            Content="{x:Static p:Resources.OK}"
-                            Width="80"/>
-                </WrapPanel>
-            </StackPanel>
-        </Grid>
-    </StackPanel>
 </UserControl>
