@@ -1,14 +1,11 @@
 ﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.EspressoPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:c="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:Custom="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:Color="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels" xmlns:Interactivity="using:Microsoft.Xaml.Interactivity" xmlns:Core="using:Microsoft.Xaml.Interactions.Core" xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" 
@@ -17,9 +14,8 @@
 
     <Page.Resources>
         <c:EspressoModeToBoolConverter x:Key="EspressoModeToBoolConverter" />
-        <c:EspressoModeToReverseBoolConverter x:Key="EspressoModeToReverseBoolConverter" />
     </Page.Resources>
-    
+
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -36,8 +32,6 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.Width" Value="Auto" />
-                        <Setter Target="ColorPickerView.(Grid.Row)" Value="1" />
-                        <Setter Target="ColorPickerView.Margin" Value="0" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage" />
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage" />
                         <Setter Target="AboutImage.Margin" Value="0,12,12,0" />
@@ -78,10 +72,23 @@
 
             <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
                         Margin="0,-4,0,0">
+                <RadioButton x:Uid="Espresso_NoKeepAwake"
+                             Margin="{StaticResource SmallTopMargin}"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=0}">
+                    <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="Espresso_NoKeepAwakeContent"/>
+                        <LineBreak/>
+                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                             x:Uid="Espresso_NoKeepAwakeDescription"/>
+                        </TextBlock>
+                    </RadioButton.Content>
+                </RadioButton>
                 <RadioButton x:Uid="Espresso_IndefiniteKeepAwake"
                              Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                             IsChecked="{x:Bind ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=IndefiniteRadio}">
+                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=1}">
                     <RadioButton.Content>
                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Espresso_IndefiniteKeepAwakeContent"/>
@@ -94,7 +101,7 @@
                 <RadioButton x:Uid="Espresso_TemporaryKeepAwake"
                              Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                             IsChecked="{x:Bind ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToReverseBoolConverter}, ConverterParameter=TemporaryRadio}">
+                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=2}">
                     <RadioButton.Content>
                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Espresso_TemporaryKeepAwakeContent"/>
@@ -127,9 +134,6 @@
                             LargeChange="5"/>
                 </StackPanel>
             </StackPanel>
-
-       
-            <!--Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"-->
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 

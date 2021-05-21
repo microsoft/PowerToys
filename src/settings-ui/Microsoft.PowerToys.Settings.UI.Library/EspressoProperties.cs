@@ -31,7 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
     public enum EspressoMode
     {
-        INDEFINITE = 0,
-        TIMED = 1,
+        PASSIVE = 0,
+        INDEFINITE = 1,
+        TIMED = 2,
     }
 }

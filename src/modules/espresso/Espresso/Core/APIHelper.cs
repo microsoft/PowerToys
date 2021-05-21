@@ -126,6 +126,23 @@ namespace Espresso.Shell.Core
                 .ContinueWith((result) => failureCallback, TaskContinuationOptions.NotOnRanToCompletion);
         }
 
+        public static void SetNoKeepAwake()
+        {
+            _tokenSource.Cancel();
+
+            try
+            {
+                if (_runnerThread != null && !_runnerThread.IsCanceled)
+                {
+                    _runnerThread.Wait(_threadToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _log.Info("Confirmed background thread cancellation when setting passive keep awake.");
+            }
+        }
+
         public static void SetTimedKeepAwake(uint seconds, Action<bool> callback, Action failureCallback, bool keepDisplayOn = true)
         {
             _tokenSource.Cancel();

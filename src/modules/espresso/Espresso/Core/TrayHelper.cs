@@ -50,6 +50,7 @@ namespace Espresso.Shell.Core
                 text,
                 settings.Properties.KeepDisplayOn,
                 settings.Properties.Mode,
+                PassiveKeepAwakeCallback(text),
                 IndefiniteKeepAwakeCallback(text),
                 TimedKeepAwakeCallback(text),
                 KeepDisplayOnCallback(text),
@@ -108,6 +109,27 @@ namespace Espresso.Shell.Core
             };
         }
 
+        private static Action PassiveKeepAwakeCallback(string moduleName)
+        {
+            return () =>
+            {
+                EspressoSettings currentSettings;
+
+                try
+                {
+                    currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                }
+                catch (FileNotFoundException)
+                {
+                    currentSettings = new EspressoSettings();
+                }
+
+                currentSettings.Properties.Mode = EspressoMode.PASSIVE;
+
+                ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+            };
+        }
+
         private static Action IndefiniteKeepAwakeCallback(string moduleName)
         {
             return () =>
@@ -129,7 +151,7 @@ namespace Espresso.Shell.Core
             };
         }
 
-        public static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, Action indefiniteKeepAwakeCallback, Action<uint, uint> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
+        public static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, Action passiveKeepAwakeCallback, Action indefiniteKeepAwakeCallback, Action<uint, uint> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
         {
             var contextMenuStrip = new ContextMenuStrip();
 
@@ -137,6 +159,27 @@ namespace Espresso.Shell.Core
             var operationContextMenu = new ToolStripMenuItem
             {
                 Text = "Mode",
+            };
+
+            // No keep-awake menu item.
+            var passiveMenuItem = new ToolStripMenuItem
+            {
+                Text = "Off (Passive)",
+            };
+
+            if (mode == EspressoMode.PASSIVE)
+            {
+                passiveMenuItem.Checked = true;
+            }
+            else
+            {
+                passiveMenuItem.Checked = false;
+            }
+
+            passiveMenuItem.Click += (e, s) =>
+            {
+                // User opted to set the mode to indefinite, so we need to write new settings.
+                passiveKeepAwakeCallback();
             };
 
             // Indefinite keep-awake menu item.
@@ -238,6 +281,7 @@ namespace Espresso.Shell.Core
             timedMenuItem.DropDownItems.Add(oneHourMenuItem);
             timedMenuItem.DropDownItems.Add(twoHoursMenuItem);
 
+            operationContextMenu.DropDownItems.Add(passiveMenuItem);
             operationContextMenu.DropDownItems.Add(indefiniteMenuItem);
             operationContextMenu.DropDownItems.Add(timedMenuItem);
 
