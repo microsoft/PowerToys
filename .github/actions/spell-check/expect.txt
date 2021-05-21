@@ -847,6 +847,7 @@ IMAGEHLP
 imageresizer
 IMAGERESIZEREXT
 imageresizersettings
+imagingdevices
 IMain
 IMarkdown
 ime
@@ -1767,6 +1768,7 @@ shlwapi
 shobjidl
 SHORTCUTATLEAST
 shortcutcontrol
+shortcutguide
 Shortcutguide
 SHORTCUTMAXONEACTIONKEY
 SHORTCUTNOREPEATEDMODIFIER
