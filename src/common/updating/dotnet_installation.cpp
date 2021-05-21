@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 
 namespace updating
 {
-    constexpr size_t REQUIRED_MINIMAL_PATCH = 14;
+    constexpr size_t REQUIRED_MINIMAL_PATCH = 15;
 
     bool dotnet_is_installed()
     {
@@ -46,7 +46,7 @@ namespace updating
 
     std::optional<fs::path> download_dotnet()
     {
-        const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/88437980-f813-4a01-865c-f992ad4909bb/9a936984781f6ce3526ffc946267e0ea/windowsdesktop-runtime-3.1.14-win-x64.exe";
+        const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/d30352fe-d4f3-4203-91b9-01a3b66a802e/bb416e6573fa278fec92113abefc58b3/windowsdesktop-runtime-3.1.15-win-x64.exe";
         const wchar_t DOTNET_DESKTOP_FILENAME[] = L"windowsdesktop-runtime.exe";
 
         auto dotnet_download_path = fs::temp_directory_path() / DOTNET_DESKTOP_FILENAME;
