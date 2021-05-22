@@ -196,8 +196,8 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
     for (const auto& [zoneId, zone] : m_zones)
     {
         const RECT& zoneRect = zone->GetZoneRect();
-        if (zoneRect.left /* - m_config.SensitivityRadius */ <= pt.x && pt.x <= zoneRect.right /* + m_config.SensitivityRadius  */&&
-            zoneRect.top /* - m_config.SensitivityRadius */ <= pt.y && pt.y <= zoneRect.bottom /* + m_config.SensitivityRadius */)
+        if (zoneRect.left - m_config.SensitivityRadius <= pt.x && pt.x <= zoneRect.right &&
+            zoneRect.top <= pt.y && pt.y <= zoneRect.bottom)
         {
             capturedZones.emplace_back(zoneId);
         }
@@ -263,12 +263,11 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             return (pt1.x - pt2.x) * (pt1.x - pt2.x) + (pt1.y - pt2.y) * (pt1.y - pt2.y);
         };
         auto distanceFromCenter = [&](auto zone) {
-            RECT rect = zone->GetZoneRect();
-            POINT center = POINT{ (rect.right + rect.left) / 2, (rect.top + rect.bottom) / 2 };
-            return (pt.x - center.x)*(pt.x - center.x) + (pt.y - center.y)*(pt.y - center.y);
+            POINT center = getCenter(zone);
+            return pointDifference(center, pt);
         };
         auto sensitivity = 75;
-        auto compFunc = [&](auto zone1, auto zone2) {
+        auto closerToCenter = [&](auto zone1, auto zone2) {
             if (pointDifference(getCenter(zone1), getCenter(zone2)) > sensitivity)
             {
                 return distanceFromCenter(zone1) < distanceFromCenter(zone2);
@@ -292,7 +291,7 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             case Algorithm::Positional:
                 return ZoneSelectSubregion(capturedZones, pt);
             case Algorithm::ClosestCenter:
-                return ZoneSelectPriority(capturedZones, compFunc);
+                return ZoneSelectPriority(capturedZones, closerToCenter);
             }
         }
         catch (std::out_of_range)
