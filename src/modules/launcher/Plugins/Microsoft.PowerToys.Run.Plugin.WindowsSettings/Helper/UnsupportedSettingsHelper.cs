@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 var usedValueName = currentBuild != uint.MinValue ? _keyNameBuild : _keyNameBuildNumber;
                 var warningMessage =
                     $"Detecting the Windows version in registry({_keyPath}) leads to an inconclusive"
-                    + $" result({_keyNameBuild}={currentBuild}, {_keyNameBuildNumber}={currentBuildNumber})!"
+                    + $" result ({_keyNameBuild}={currentBuild}, {_keyNameBuildNumber}={currentBuildNumber})!"
                     + $" For resolving the conflict we use the value of '{usedValueName}'.";
 
                 Log.Warn(warningMessage, typeof(UnsupportedSettingsHelper));
