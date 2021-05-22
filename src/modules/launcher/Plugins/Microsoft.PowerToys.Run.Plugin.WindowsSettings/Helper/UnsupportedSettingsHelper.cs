@@ -26,29 +26,36 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 return Enumerable.Empty<WindowsSetting>();
             }
 
-            var currentWindowsBuild = GetCurrentWindowsRegistryValue("CurrentBuild");
-            if (currentWindowsBuild == uint.MinValue)
+            var currentBuild = GetCurrentWindowsRegistryValue("CurrentBuild");
+            var currentBuildNumber = GetCurrentWindowsRegistryValue("CurrentBuildNumber");
+
+            if (currentBuild != currentBuildNumber)
             {
-                currentWindowsBuild = GetCurrentWindowsRegistryValue("CurrentBuildNumber");
+                Log.Warn(
+                    $"Registry value 'CurrentBuild'={currentBuild} differ from Registry value 'CurrentBuildNumber'={currentBuildNumber}",
+                    typeof(UnsupportedSettingsHelper));
             }
 
-            // remove deprecated settings and settings that are for a higher Windows builds
+            var currentWindowsBuild = currentBuild != uint.MinValue
+                ? currentBuild
+                : currentBuildNumber;
+
             var filteredSettingsList = settingsList.Where(found
                 => (found.DeprecatedInBuild == null || currentWindowsBuild < found.DeprecatedInBuild)
                 && (found.IntroducedInBuild == null || currentWindowsBuild >= found.IntroducedInBuild));
 
-            // sort settings list
             filteredSettingsList = filteredSettingsList.OrderBy(found => found.Name);
 
             return filteredSettingsList;
         }
 
         /// <summary>
-        /// Return a registry value of the current Windows OS
+        /// Return a numeric value from the registry key
+        /// "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion"
         /// </summary>
-        /// <param name="registryValueName">The name of the registry value that contains the build number.</param>
-        /// <returns>a registry value.</returns>
-        private static uint GetCurrentWindowsRegistryValue(string registryValueName)
+        /// <param name="registryValueName">The name of the registry value.</param>
+        /// <returns>A registry value or <see cref="uint.MinValue"/> on error.</returns>
+        private static uint GetCurrentWindowsRegistryValue(in string registryValueName)
         {
             object registryValueData;
 
@@ -66,13 +73,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     exception,
                     typeof(UnsupportedSettingsHelper));
 
-                // fall-back
-                return ushort.MinValue;
+                return uint.MinValue;
             }
 
-            return ushort.TryParse(registryValueData as string, out var buildNumber)
+            return uint.TryParse(registryValueData as string, out var buildNumber)
                 ? buildNumber
-                : ushort.MinValue;
+                : uint.MinValue;
         }
     }
 }
