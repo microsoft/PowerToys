@@ -7,12 +7,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ManagedCommon;
+using Microsoft.PowerToys.Run.Plugin.TimeZone.Helper;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone
 {
-    public class Main : IPlugin, IPluginI18n, IDisposable
+    public class Main : IPlugin, IContextMenu, IPluginI18n, IDisposable
     {
         /// <summary>
         /// The name of this assembly
@@ -70,35 +71,18 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
                 return new List<Result>(0);
             }
 
-            var timeZones = TimeZoneInfo.GetSystemTimeZones();
-            var results = new List<Result>(timeZones.Count);
-            var utcNow = DateTime.UtcNow;
+            var results = ResultHelper.GetResults(query, _defaultIconPath).ToList();
+            return results;
+        }
 
-            foreach (var timeZone in timeZones)
-            {
-                if (!timeZone.DaylightName.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase)
-                && !timeZone.DaylightName.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    continue;
-                }
-
-                var title = timeZone.SupportsDaylightSavingTime && timeZone.IsDaylightSavingTime(utcNow)
-                    ? timeZone.DaylightName
-                    : timeZone.StandardName;
-
-                var timeInTimeZone = TimeZoneInfo.ConvertTime(utcNow, timeZone);
-
-                var result = new Result
-                {
-                    Title = title,
-                    SubTitle = $"Time: {timeInTimeZone:HH:mm:ss}",
-                    ToolTipData = new ToolTipData(title, $"Offset: {timeZone.BaseUtcOffset}"),
-                };
-
-                results.Add(result);
-            }
-
-            return results.OrderBy(result => result.Title).ToList();
+        /// <summary>
+        /// Return a list context menu entries for a given <see cref="Result"/> (shown at the right side of the result)
+        /// </summary>
+        /// <param name="selectedResult">The <see cref="Result"/> for the list with context menu entries</param>
+        /// <returns>A list context menu entries</returns>
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
+        {
+            return ContextMenuHelper.GetContextMenu(selectedResult, _assemblyName);
         }
 
         /// <summary>

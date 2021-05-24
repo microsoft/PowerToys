@@ -61,6 +61,51 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy time.
+        /// </summary>
+        internal static string CopyTime {
+            get {
+                return ResourceManager.GetString("CopyTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current time.
+        /// </summary>
+        internal static string CurrentTime {
+            get {
+                return ResourceManager.GetString("CurrentTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Daylight name.
+        /// </summary>
+        internal static string DaylightName {
+            get {
+                return ResourceManager.GetString("DaylightName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display name.
+        /// </summary>
+        internal static string DisplayName {
+            get {
+                return ResourceManager.GetString("DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Offset.
+        /// </summary>
+        internal static string Offset {
+            get {
+                return ResourceManager.GetString("Offset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Gets the the current time of a time zone.
         /// </summary>
         internal static string PluginDescription {
@@ -75,6 +120,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string PluginTitle {
             get {
                 return ResourceManager.GetString("PluginTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Standard name.
+        /// </summary>
+        internal static string StandardName {
+            get {
+                return ResourceManager.GetString("StandardName", resourceCulture);
             }
         }
     }

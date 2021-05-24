@@ -117,10 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CopyTime" xml:space="preserve">
+    <value>Copy time</value>
+  </data>
+  <data name="CurrentTime" xml:space="preserve">
+    <value>Current time</value>
+  </data>
+  <data name="DaylightName" xml:space="preserve">
+    <value>Daylight name</value>
+  </data>
+  <data name="DisplayName" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="Offset" xml:space="preserve">
+    <value>Offset</value>
+  </data>
   <data name="PluginDescription" xml:space="preserve">
     <value>Gets the the current time of a time zone</value>
   </data>
   <data name="PluginTitle" xml:space="preserve">
     <value>Time zone</value>
+  </data>
+  <data name="StandardName" xml:space="preserve">
+    <value>Standard name</value>
   </data>
 </root>
