@@ -115,8 +115,8 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                 }
 
                 // Search for Area only by key char
-                if (found.Area.Contains(query.Search.Replace("$", string.Empty), StringComparison.CurrentCultureIgnoreCase)
-                && query.Search.EndsWith("$"))
+                if (found.Area.Contains(query.Search.Replace(":", string.Empty), StringComparison.CurrentCultureIgnoreCase)
+                && query.Search.EndsWith(":"))
                 {
                     return true;
                 }
