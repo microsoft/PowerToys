@@ -1779,12 +1779,12 @@
       </Item>
       <Item ItemId=";Oobe_ColorPicker_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {Ctrl} + {C} to open Color Picker.]]></Val>
+          <Val><![CDATA[{Win} + {Shift} + {C} to open Color Picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{Win} + {Ctrl} + {C} 可開啟顏色選擇器。]]></Val>
+            <Val><![CDATA[{Win} + {Shift} + {C} 可開啟色彩選擇器。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Win + Shift + C to open Color Picker.]]></Val>
+            <Val><![CDATA[{Win} + {Ctrl} + {C} to open Color Picker.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2187,12 +2187,12 @@
       </Item>
       <Item ItemId=";Oobe_ShortcutGuide_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
+          <Val><![CDATA[{Shift} + {Win} + {/} to open Shortcut Guide, press it again to close or press {Esc}.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{Win} + {?} 可開啟快捷鍵指南，重複按下按鍵或按下 {Esc} 即可關閉。按住 {Win} 鍵一秒鐘也能啟動這份指南!]]></Val>
+            <Val><![CDATA[以 {Shift} + {Win} + {/} 開啟快捷鍵指南，請再次按下以關閉或按 {Esc}。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Win + ? to open Shortcut Guide, press it again to close or press Esc. You can also launch it by holding the Win key for one second!]]></Val>
+            <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2977,20 +2977,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ShortcutGuide_OpenShortcutGuide.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open Shortcut Guide]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[開啟快捷鍵指南]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ShortcutGuide_OverlayOpacity.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Opacity of background]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[背景的不透明度]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ShortcutGuide_PressTime.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Press duration before showing (ms)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[顯示之前須按住按鍵的時間長度 (毫秒)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

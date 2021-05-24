@@ -1694,7 +1694,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Made with ]D83D;]DC97; by Microsoft and the PowerToys community.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[S ]D83D;]DC97; vytvořily Microsoft a komunita PowerToys.]]></Val>
+            <Val><![CDATA[S ]D83D;]DC97; vytvořil Microsoft a komunita PowerToys.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1779,12 +1779,12 @@
       </Item>
       <Item ItemId=";Oobe_ColorPicker_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {Ctrl} + {C} to open Color Picker.]]></Val>
+          <Val><![CDATA[{Win} + {Shift} + {C} to open Color Picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Klávesami {Win} + {Ctrl} + {C} otevřete výběr barev.]]></Val>
+            <Val><![CDATA[Výběr barvy můžete otevřít kombinací kláves Win + Shift + C.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Win + Shift + C to open Color Picker.]]></Val>
+            <Val><![CDATA[{Win} + {Ctrl} + {C} to open Color Picker.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2187,12 +2187,12 @@
       </Item>
       <Item ItemId=";Oobe_ShortcutGuide_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
+          <Val><![CDATA[{Shift} + {Win} + {/} to open Shortcut Guide, press it again to close or press {Esc}.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kombinací {Win} + {?} otevřete Průvodce klávesovými zkratkami. Když ji stisknete znovu (nebo použijete klávesu {Esc}), průvodce ukončíte. Spustit se dá i tak, že na jednu sekundu podržíte klávesu {Win}.]]></Val>
+            <Val><![CDATA[Stisknutím kláves Shift + Windows + / otevřete Průvodce klávesovými zkratkami, opětovným stisknutím těchto kláves ho zavřete nebo stiskněte klávesu Esc.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Win + ? to open Shortcut Guide, press it again to close or press Esc. You can also launch it by holding the Win key for one second!]]></Val>
+            <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2977,20 +2977,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ShortcutGuide_OpenShortcutGuide.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open Shortcut Guide]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Otevřít Průvodce klávesovými zkratkami]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ShortcutGuide_OverlayOpacity.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Opacity of background]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Neprůhlednost pozadí]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ShortcutGuide_PressTime.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Press duration before showing (ms)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Doba trvání stisknutí před zobrazením (ms)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

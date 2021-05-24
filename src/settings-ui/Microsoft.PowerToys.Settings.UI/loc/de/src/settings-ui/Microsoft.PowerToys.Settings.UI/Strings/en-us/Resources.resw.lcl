@@ -1779,12 +1779,12 @@
       </Item>
       <Item ItemId=";Oobe_ColorPicker_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {Ctrl} + {C} to open Color Picker.]]></Val>
+          <Val><![CDATA[{Win} + {Shift} + {C} to open Color Picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Drücken Sie WINDOWS+STRG+C, um den Farbwähler zu öffnen.]]></Val>
+            <Val><![CDATA[Drücken Sie {Win} + {Shift} + {C}, um den Farbwähler zu öffnen.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Win + Shift + C to open Color Picker.]]></Val>
+            <Val><![CDATA[{Win} + {Ctrl} + {C} to open Color Picker.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2187,12 +2187,12 @@
       </Item>
       <Item ItemId=";Oobe_ShortcutGuide_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
+          <Val><![CDATA[{Shift} + {Win} + {/} to open Shortcut Guide, press it again to close or press {Esc}.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Verwenden Sie WINDOWS+? zum Öffnen der Tastenkombinationsübersicht. Um sie wieder zu schließen, drücken Sie dieselbe Tastenkombination erneut, oder drücken Sie ESC. Sie können die Übersicht auch starten, indem Sie die WINDOWS-TASTE für eine Sekunde gedrückt halten.]]></Val>
+            <Val><![CDATA[Drücken Sie {Shift}+{Win}+{/}, um die Tastenkombinationsübersicht zu öffnen. Um sie zu schließen, drücken Sie diese Tasten erneut, oder drücken Sie {Esc}.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Win + ? to open Shortcut Guide, press it again to close or press Esc. You can also launch it by holding the Win key for one second!]]></Val>
+            <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2977,20 +2977,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ShortcutGuide_OpenShortcutGuide.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open Shortcut Guide]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tastenkombinationsübersicht öffnen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ShortcutGuide_OverlayOpacity.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Opacity of background]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Deckkraft des Hintergrunds]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ShortcutGuide_PressTime.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Press duration before showing (ms)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Tastenbetätigungsdauer bis zur Anzeige (ms)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
