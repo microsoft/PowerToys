@@ -19,7 +19,8 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class CanvasZone : UserControl
     {
-        private readonly int moveAmount = 10;
+        private readonly int defaultMoveAmount = 10;
+        private readonly int smallMoveAmount = 1;
 
         public CanvasZone()
         {
@@ -220,15 +221,37 @@ namespace FancyZonesEditor
             }
         }
 
+        private class SnappyHelperNonMagnetic : SnappyHelperBase
+        {
+            public SnappyHelperNonMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisOrigin, int screenAxisSize)
+                : base(zones, zoneIndex, isX, mode, screenAxisOrigin, screenAxisSize)
+            {
+            }
+
+            public override void Move(int delta)
+            {
+                var pos = Position + delta;
+                Position = Math.Max(Math.Min(MaxValue, pos), MinValue);
+            }
+        }
+
         private SnappyHelperBase snappyX;
         private SnappyHelperBase snappyY;
 
-        private SnappyHelperBase NewDefaultSnappyHelper(bool isX, ResizeMode mode)
+        private SnappyHelperBase NewMagneticSnapper(bool isX, ResizeMode mode)
         {
             Rect workingArea = App.Overlay.WorkArea;
             int screenAxisOrigin = (int)(isX ? workingArea.Left : workingArea.Top);
             int screenAxisSize = (int)(isX ? workingArea.Width : workingArea.Height);
             return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisOrigin, screenAxisSize);
+        }
+
+        private SnappyHelperBase NewNonMagneticSnapper(bool isX, ResizeMode mode)
+        {
+            Rect workingArea = App.Overlay.WorkArea;
+            int screenAxisOrigin = (int)(isX ? workingArea.Left : workingArea.Top);
+            int screenAxisSize = (int)(isX ? workingArea.Width : workingArea.Height);
+            return new SnappyHelperNonMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisOrigin, screenAxisSize);
         }
 
         private void UpdateFromSnappyHelpers()
@@ -310,8 +333,8 @@ namespace FancyZonesEditor
         // Corner dragging
         private void Caption_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BothEdges);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BothEdges);
+            snappyX = NewMagneticSnapper(true, ResizeMode.BothEdges);
+            snappyY = NewMagneticSnapper(false, ResizeMode.BothEdges);
         }
 
         public CanvasLayoutModel Model { get => model; set => model = value; }
@@ -320,50 +343,50 @@ namespace FancyZonesEditor
 
         private void NWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge);
+            snappyX = NewMagneticSnapper(true, ResizeMode.BottomEdge);
+            snappyY = NewMagneticSnapper(false, ResizeMode.BottomEdge);
         }
 
         private void NEResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge);
+            snappyX = NewMagneticSnapper(true, ResizeMode.TopEdge);
+            snappyY = NewMagneticSnapper(false, ResizeMode.BottomEdge);
         }
 
         private void SWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge);
+            snappyX = NewMagneticSnapper(true, ResizeMode.BottomEdge);
+            snappyY = NewMagneticSnapper(false, ResizeMode.TopEdge);
         }
 
         private void SEResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge);
+            snappyX = NewMagneticSnapper(true, ResizeMode.TopEdge);
+            snappyY = NewMagneticSnapper(false, ResizeMode.TopEdge);
         }
 
         // Edge dragging
         private void NResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             snappyX = null;
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge);
+            snappyY = NewMagneticSnapper(false, ResizeMode.BottomEdge);
         }
 
         private void SResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             snappyX = null;
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge);
+            snappyY = NewMagneticSnapper(false, ResizeMode.TopEdge);
         }
 
         private void WResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge);
+            snappyX = NewMagneticSnapper(true, ResizeMode.BottomEdge);
             snappyY = null;
         }
 
         private void EResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge);
+            snappyX = NewMagneticSnapper(true, ResizeMode.TopEdge);
             snappyY = null;
         }
 
@@ -380,84 +403,95 @@ namespace FancyZonesEditor
 
         private void Border_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key != Key.Tab)
+            if (e.Key == Key.Tab)
             {
-                e.Handled = true;
-                if (e.Key == Key.Delete)
+                return;
+            }
+
+            e.Handled = true;
+
+            if (e.Key == Key.Delete)
+            {
+                RemoveZone();
+                return;
+            }
+
+            var moveValue = IsCtrlKeyDown() ? smallMoveAmount : defaultMoveAmount;
+            if (IsShiftKeyDown())
+            {
+                moveValue = Math.Max(1, moveValue / 2);
+            }
+
+            if (e.Key == Key.Right)
+            {
+                if (IsShiftKeyDown())
                 {
-                    RemoveZone();
+                    // Make the zone larger (width)
+                    MoveZoneX(moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneX(-moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                 }
-                else if (e.Key == Key.Right)
+                else
                 {
-                    if (IsShiftKeyDown())
-                    {
-                        // Make the zone larger (height)
-                        MoveZoneX(moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneX(-moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
-                    }
-                    else
-                    {
-                        // Move zone right
-                        MoveZoneX(moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
-                    }
+                    // Move zone right
+                    MoveZoneX(moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
                 }
-                else if (e.Key == Key.Left)
+            }
+            else if (e.Key == Key.Left)
+            {
+                if (IsShiftKeyDown())
                 {
-                    if (IsShiftKeyDown())
-                    {
-                        // Make the zone smaller (height)
-                        MoveZoneX(-moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneX(moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
-                    }
-                    else
-                    {
-                        // Move zone left
-                        MoveZoneX(-moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
-                    }
+                    // Make the zone smaller (width)
+                    MoveZoneX(-moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneX(moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                 }
-                else if (e.Key == Key.Up)
+                else
                 {
-                    if (IsShiftKeyDown())
-                    {
-                        // Make the zone larger (height)
-                        MoveZoneY(moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneY(-moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
-                    }
-                    else
-                    {
-                        // Move zone up
-                        MoveZoneY(-moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
-                    }
+                    // Move zone left
+                    MoveZoneX(-moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
                 }
-                else if (e.Key == Key.Down)
+            }
+            else if (e.Key == Key.Up)
+            {
+                if (IsShiftKeyDown())
                 {
-                    if (IsShiftKeyDown())
-                    {
-                        // Make the zone smaller (height)
-                        MoveZoneY(-moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneY(moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
-                    }
-                    else
-                    {
-                        // Move zone down
-                        MoveZoneY(moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
-                    }
+                    // Make the zone larger (height)
+                    MoveZoneY(moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneY(-moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                }
+                else
+                {
+                    // Move zone up
+                    MoveZoneY(-moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                }
+            }
+            else if (e.Key == Key.Down)
+            {
+                if (IsShiftKeyDown())
+                {
+                    // Make the zone smaller (height)
+                    MoveZoneY(-moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneY(moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                }
+                else
+                {
+                    // Move zone down
+                    MoveZoneY(moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
                 }
             }
         }
 
         private void MoveZoneX(int value, ResizeMode top, ResizeMode bottom)
         {
-            snappyX = NewDefaultSnappyHelper(true, top);
-            snappyY = NewDefaultSnappyHelper(false, bottom);
+            snappyX = NewNonMagneticSnapper(true, top);
+            snappyY = NewNonMagneticSnapper(false, bottom);
             snappyX.Move(value);
             UpdateFromSnappyHelpers();
         }
 
         private void MoveZoneY(int value, ResizeMode top, ResizeMode bottom)
         {
-            snappyX = NewDefaultSnappyHelper(true, bottom);
-            snappyY = NewDefaultSnappyHelper(false, top);
+            snappyX = NewNonMagneticSnapper(true, bottom);
+            snappyY = NewNonMagneticSnapper(false, top);
             snappyY.Move(value);
             UpdateFromSnappyHelpers();
         }
@@ -465,6 +499,18 @@ namespace FancyZonesEditor
         private bool IsShiftKeyDown()
         {
             if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool IsCtrlKeyDown()
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
             {
                 return true;
             }
