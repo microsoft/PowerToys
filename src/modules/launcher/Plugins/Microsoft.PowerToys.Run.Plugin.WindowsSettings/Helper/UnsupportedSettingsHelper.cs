@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
     /// </summary>
     internal static class UnsupportedSettingsHelper
     {
-        private const string _keyPath = "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows NT\\CurrentVersion";
+        private const string _keyPath = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
         private const string _keyNameBuild = "CurrentBuild";
         private const string _keyNameBuildNumber = "CurrentBuildNumber";
 
