@@ -451,10 +451,6 @@
     <value>Colors</value>
     <comment>Area Personalization</comment>
   </data>
-  <data name="ColorsPersonalization" xml:space="preserve">
-    <value>Colors personalization</value>
-    <comment>Area Personalization</comment>
-  </data>
   <data name="Command" xml:space="preserve">
     <value>Command</value>
     <comment>The command to direct start a setting</comment>
@@ -1674,10 +1670,6 @@
     <value>Windows Insider Program</value>
     <comment>Area UpdateAndSecurity</comment>
   </data>
-  <data name="WindowsInsiderProgramOptin" xml:space="preserve">
-    <value>Windows Insider Program - Optin</value>
-    <comment>Area UpdateAndSecurity</comment>
-  </data>
   <data name="WindowsMobilityCenter" xml:space="preserve">
     <value>Windows Mobility Center</value>
     <comment>Area Control Panel (legacy settings)</comment>
@@ -1689,10 +1681,6 @@
   <data name="WindowsSecurity" xml:space="preserve">
     <value>Windows Security</value>
     <comment>Area UpdateAndSecurity</comment>
-  </data>
-  <data name="WindowsSidebarProperties" xml:space="preserve">
-    <value>Windows Sidebar Properties</value>
-    <comment>Area Control Panel (legacy settings)</comment>
   </data>
   <data name="WindowsUpdate" xml:space="preserve">
     <value>Windows Update</value>

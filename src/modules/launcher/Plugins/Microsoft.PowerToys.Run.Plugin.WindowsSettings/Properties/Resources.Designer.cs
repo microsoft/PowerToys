@@ -889,15 +889,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Colors personalization.
-        /// </summary>
-        internal static string ColorsPersonalization {
-            get {
-                return ResourceManager.GetString("ColorsPersonalization", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Command.
         /// </summary>
         internal static string Command {
@@ -3805,15 +3796,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Insider Program - Optin.
-        /// </summary>
-        internal static string WindowsInsiderProgramOptin {
-            get {
-                return ResourceManager.GetString("WindowsInsiderProgramOptin", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Windows Mobility Center.
         /// </summary>
         internal static string WindowsMobilityCenter {
@@ -3837,15 +3819,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string WindowsSecurity {
             get {
                 return ResourceManager.GetString("WindowsSecurity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Windows Sidebar Properties.
-        /// </summary>
-        internal static string WindowsSidebarProperties {
-            get {
-                return ResourceManager.GetString("WindowsSidebarProperties", resourceCulture);
             }
         }
         
