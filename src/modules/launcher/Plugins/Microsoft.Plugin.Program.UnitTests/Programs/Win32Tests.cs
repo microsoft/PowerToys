@@ -264,10 +264,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             };
 
             // Act
-            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
+            List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Length);
+            Assert.AreEqual(1, apps.Count);
         }
 
         [Test]
@@ -281,10 +281,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             };
 
             // Act
-            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
+            List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Length);
+            Assert.AreEqual(1, apps.Count);
         }
 
         [Test]
@@ -297,10 +297,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             };
 
             // Act
-            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
+            List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Length);
+            Assert.AreEqual(1, apps.Count);
         }
 
         [Test]
@@ -314,10 +314,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             };
 
             // Act
-            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
+            List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Length);
+            Assert.AreEqual(1, apps.Count);
             Assert.IsTrue(!string.IsNullOrEmpty(apps[0].LnkResolvedPath));
         }
 
@@ -333,10 +333,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             };
 
             // Act
-            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
+            List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(3, apps.Length);
+            Assert.AreEqual(3, apps.Count);
         }
 
         [Test]

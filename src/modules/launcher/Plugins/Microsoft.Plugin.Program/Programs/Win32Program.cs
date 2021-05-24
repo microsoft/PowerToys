@@ -27,6 +27,8 @@ namespace Microsoft.Plugin.Program.Programs
     [Serializable]
     public class Win32Program : IProgram
     {
+        public static readonly Win32Program InvalidProgram = new Win32Program { Valid = false, Enabled = false };
+
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IFile File = FileSystem.File;
@@ -301,7 +303,7 @@ namespace Microsoft.Plugin.Program.Programs
                     {
                         try
                         {
-                            Wox.Infrastructure.Helper.OpenInConsole(ParentDirectory);
+                            Helper.OpenInConsole(ParentDirectory);
                             return true;
                         }
                         catch (Exception e)
@@ -358,13 +360,13 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
-                return new Win32Program() { Valid = false, Enabled = false };
+                return InvalidProgram;
             }
             catch (Exception e)
             {
                 ProgramLogger.Exception($"|An unexpected error occurred in the calling method CreateWin32Program at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
-                return new Win32Program() { Valid = false, Enabled = false };
+                return InvalidProgram;
             }
         }
 
@@ -372,6 +374,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         // This function filters Internet Shortcut programs
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any error in InternetShortcutProgram should not prevent other programs from loading.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "User facing path needs to be shown in lowercase.")]
         private static Win32Program InternetShortcutProgram(string path)
         {
             try
@@ -394,8 +397,8 @@ namespace Microsoft.Plugin.Program.Programs
 
                         if (!Uri.TryCreate(urlPath, UriKind.RelativeOrAbsolute, out Uri _))
                         {
-                            ProgramLogger.Exception($"url could not be parsed", null, MethodBase.GetCurrentMethod().DeclaringType, urlPath);
-                            return new Win32Program() { Valid = false, Enabled = false };
+                            ProgramLogger.Warn("url could not be parsed", null, MethodBase.GetCurrentMethod().DeclaringType, urlPath);
+                            return InvalidProgram;
                         }
 
                         // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
@@ -418,7 +421,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 if (!validApp)
                 {
-                    return new Win32Program() { Valid = false, Enabled = false };
+                    return InvalidProgram;
                 }
 
                 try
@@ -428,7 +431,7 @@ namespace Microsoft.Plugin.Program.Programs
                         Name = Path.GetFileNameWithoutExtension(path),
                         ExecutableName = Path.GetFileName(path),
                         IcoPath = iconPath,
-                        FullPath = urlPath.ToLower(CultureInfo.CurrentCulture),
+                        FullPath = urlPath.ToLowerInvariant(),
                         UniqueIdentifier = path,
                         ParentDirectory = Directory.GetParent(path).FullName,
                         Valid = true,
@@ -440,14 +443,14 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
-                    return new Win32Program() { Valid = false, Enabled = false };
+                    return InvalidProgram;
                 }
             }
             catch (Exception e)
             {
                 ProgramLogger.Exception($"|An unexpected error occurred in the calling method InternetShortcutProgram at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
-                return new Win32Program() { Valid = false, Enabled = false };
+                return InvalidProgram;
             }
         }
 
@@ -466,6 +469,9 @@ namespace Microsoft.Plugin.Program.Programs
 
                     // Using CurrentCulture since this is user facing
                     program.FullPath = Path.GetFullPath(target).ToLowerInvariant();
+
+                    // Allow searching by executable name (E.g. WINWORD.exe for word)
+                    program.ExecutableName = Path.GetFileName(target);
                     program.Arguments = ShellLinkHelper.Arguments;
 
                     // A .lnk could be a (Chrome) PWA, set correct AppType
@@ -497,7 +503,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 ProgramLogger.Exception($"|An unexpected error occurred in the calling method LnkProgram at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
-                return new Win32Program() { Valid = false, Enabled = false };
+                return InvalidProgram;
             }
         }
 
@@ -508,7 +514,6 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var program = CreateWin32Program(path);
                 var info = FileVersionInfoWrapper.GetVersionInfo(path);
-
                 if (!string.IsNullOrEmpty(info?.FileDescription))
                 {
                     program.Description = info.FileDescription;
@@ -520,19 +525,19 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
-                return new Win32Program() { Valid = false, Enabled = false };
+                return InvalidProgram;
             }
             catch (FileNotFoundException e)
             {
                 ProgramLogger.Warn($"|Unable to locate exe file at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
-                return new Win32Program() { Valid = false, Enabled = false };
+                return InvalidProgram;
             }
             catch (Exception e)
             {
                 ProgramLogger.Exception($"|An unexpected error occurred in the calling method ExeProgram at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
-                return new Win32Program() { Valid = false, Enabled = false };
+                return InvalidProgram;
             }
         }
 
@@ -686,6 +691,11 @@ namespace Microsoft.Plugin.Program.Programs
                 : string.Empty;
         }
 
+        private static IEnumerable<string> CustomProgramPaths(IEnumerable<ProgramSource> sources, IList<string> suffixes)
+            => sources?.Where(programSource => Directory.Exists(programSource.Location) && programSource.Enabled)
+                .SelectMany(programSource => ProgramPaths(programSource.Location, suffixes))
+                .ToList() ?? Enumerable.Empty<string>();
+
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
         private static IEnumerable<string> PathEnvironmentProgramPaths(IList<string> suffixes)
         {
@@ -706,21 +716,13 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            return toFilterAllPaths
-                        .Distinct()
-                        .ToList();
+            return toFilterAllPaths;
         }
 
         private static List<string> IndexPath(IList<string> suffixes, List<string> indexLocations)
-        {
-            var disabledProgramsList = Main.Settings.DisabledProgramSources;
-
-            return indexLocations
+             => indexLocations
                 .SelectMany(indexLocation => ProgramPaths(indexLocation, suffixes))
-                .Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath))
-                .Distinct()
                 .ToList();
-        }
 
         private static IEnumerable<string> StartMenuProgramPaths(IList<string> suffixes)
         {
@@ -741,16 +743,16 @@ namespace Microsoft.Plugin.Program.Programs
             return IndexPath(suffixes, indexLocation);
         }
 
-        private static IEnumerable<string> AppPathsProgramPaths(IList<string> suffixes)
+        private static IEnumerable<string> RegisteryAppProgramPaths(IList<string> suffixes)
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
             const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
-            var programs = new List<string>();
+            var paths = new List<string>();
             using (var root = Registry.LocalMachine.OpenSubKey(appPaths))
             {
                 if (root != null)
                 {
-                    programs.AddRange(GetProgramsFromRegistry(root));
+                    paths.AddRange(GetPathsFromRegistry(root));
                 }
             }
 
@@ -758,25 +760,22 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 if (root != null)
                 {
-                    programs.AddRange(GetProgramsFromRegistry(root));
+                    paths.AddRange(GetPathsFromRegistry(root));
                 }
             }
 
-            return programs
-                .Where(path => suffixes.Any(suf => path.EndsWith(suf, StringComparison.InvariantCultureIgnoreCase)))
+            return paths
+                .Where(path => suffixes.Any(suffix => path.EndsWith(suffix, StringComparison.InvariantCultureIgnoreCase)))
                 .Select(ExpandEnvironmentVariables)
                 .ToList();
         }
 
-        private static IEnumerable<string> GetProgramsFromRegistry(RegistryKey root)
-        {
-            return root
+        private static IEnumerable<string> GetPathsFromRegistry(RegistryKey root)
+            => root
                 .GetSubKeyNames()
-                .Select(x => GetProgramPathFromRegistrySubKeys(root, x))
-                .Distinct();
-        }
+                .Select(x => GetPathFromRegisterySubkey(root, x));
 
-        private static string GetProgramPathFromRegistrySubKeys(RegistryKey root, string subkey)
+        private static string GetPathFromRegisterySubkey(RegistryKey root, string subkey)
         {
             var path = string.Empty;
             try
@@ -818,43 +817,31 @@ namespace Microsoft.Plugin.Program.Programs
             => Win32ProgramEqualityComparer.Default.GetHashCode(this);
 
         public override bool Equals(object obj)
-            => obj is Win32Program win && Win32ProgramEqualityComparer.Default.Equals(this, win);
+            => obj is Win32Program win32Program && Win32ProgramEqualityComparer.Default.Equals(this, win32Program);
 
         private class Win32ProgramEqualityComparer : IEqualityComparer<Win32Program>
         {
             public static readonly Win32ProgramEqualityComparer Default = new Win32ProgramEqualityComparer();
 
             public bool Equals(Win32Program app1, Win32Program app2)
-                => app1 != null
-                   && app2 != null
-                   && (app1.Name?.ToUpperInvariant(), app1.ExecutableName?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
-                    .Equals((app2.Name?.ToUpperInvariant(), app2.ExecutableName?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
-
-            public int GetHashCode(Win32Program obj)
-                => (obj.Name?.ToUpperInvariant(), obj.ExecutableName?.ToUpperInvariant(), obj.FullPath?.ToUpperInvariant()).GetHashCode();
-        }
-
-        private class RemoveDuplicatesComparer : IEqualityComparer<Win32Program>
-        {
-            public static readonly RemoveDuplicatesComparer Default = new RemoveDuplicatesComparer();
-
-            public bool Equals(Win32Program app1, Win32Program app2)
             {
-                if (app1 == null || app2 == null)
+                if (app1 == null && app2 == null)
                 {
-                    return false;
+                    return true;
                 }
 
-                return (app1.FullPath.ToUpperInvariant(), app1.HasArguments ? app1.Arguments.ToUpperInvariant() : null)
-                    .Equals((app2.FullPath.ToUpperInvariant(), app2.HasArguments ? app2.Arguments.ToUpperInvariant() : null));
+                return app1 != null
+                       && app2 != null
+                       && (app1.Name?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
+                       .Equals((app2.Name?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
             }
 
             public int GetHashCode(Win32Program obj)
-                => (obj.FullPath.ToUpperInvariant(), obj.HasArguments ? obj.Arguments.ToUpperInvariant() : null).GetHashCode();
+                => (obj.Name?.ToUpperInvariant(), obj.FullPath?.ToUpperInvariant()).GetHashCode();
         }
 
-        public static Win32Program[] DeduplicatePrograms(IEnumerable<Win32Program> programs)
-            => new HashSet<Win32Program>(programs, RemoveDuplicatesComparer.Default).ToArray();
+        public static List<Win32Program> DeduplicatePrograms(IEnumerable<Win32Program> programs)
+            => new HashSet<Win32Program>(programs, Win32ProgramEqualityComparer.Default).ToList();
 
         private static Win32Program GetProgramFromPath(string path)
         {
@@ -877,8 +864,15 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
+        private static Win32Program GetRunCommandProgramFromPath(string path)
+        {
+            var program = GetProgramFromPath(path);
+            program.AppType = ApplicationType.RunCommand;
+            return program;
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Keeping the process alive but logging the exception")]
-        public static Win32Program[] All(ProgramPluginSettings settings)
+        public static IList<Win32Program> All(ProgramPluginSettings settings)
         {
             if (settings == null)
             {
@@ -887,23 +881,45 @@ namespace Microsoft.Plugin.Program.Programs
 
             try
             {
+                // Set an initial size to an expected size to prevent multiple hashSet resizes
+                const int defaultHashsetSize = 1000;
+
                 // Multiple paths could have the same programPaths and we don't want to resolve / lookup them multiple times
-                var paths = new HashSet<string>();
+                var paths = new HashSet<string>(defaultHashsetSize);
+                var runCommandPaths = new HashSet<string>(defaultHashsetSize);
 
                 // Parallelize multiple sources, and priority based on paths which most likely contain .lnks which are formatted
                 var sources = new (bool IsEnabled, Func<IEnumerable<string>> GetPaths)[]
                 {
+                    (true, () => CustomProgramPaths(settings.ProgramSources, settings.ProgramSuffixes)),
                     (settings.EnableStartMenuSource, () => StartMenuProgramPaths(settings.ProgramSuffixes)),
                     (settings.EnableDesktopSource, () => DesktopProgramPaths(settings.ProgramSuffixes)),
-                    (settings.EnableRegistrySource, () => AppPathsProgramPaths(settings.ProgramSuffixes)),
+                    (settings.EnableRegistrySource, () => RegisteryAppProgramPaths(settings.ProgramSuffixes)),
+                };
+
+                // Run commands are always set as AppType "RunCommand"
+                var runCommandSources = new (bool IsEnabled, Func<IEnumerable<string>> GetPaths)[]
+                {
                     (settings.EnablePathEnvironmentVariableSource, () => PathEnvironmentProgramPaths(settings.ProgramSuffixes)),
                 };
 
-                // Get all paths and deduplicate them (UnionWith will enumerate everything)
-                paths.UnionWith(sources.AsParallel().SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>()));
+                var disabledProgramsList = settings.DisabledProgramSources;
 
-                var programs = paths.AsParallel().Select(GetProgramFromPath).Where(program => program?.Valid == true);
-                return DeduplicatePrograms(programs);
+                // Get all paths but exclude all normal .Executables
+                paths.UnionWith(sources
+                    .AsParallel()
+                    .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>())
+                    .Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath))
+                    .Where(path => !ExecutableApplicationExtensions.Contains(Extension(path))));
+                runCommandPaths.UnionWith(runCommandSources
+                    .AsParallel()
+                    .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>())
+                    .Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath)));
+
+                var programs = paths.AsParallel().Select(source => GetProgramFromPath(source));
+                var runCommandPrograms = runCommandPaths.AsParallel().Select(source => GetRunCommandProgramFromPath(source));
+
+                return DeduplicatePrograms(programs.Concat(runCommandPrograms).Where(program => program?.Valid == true));
             }
             catch (Exception e)
             {

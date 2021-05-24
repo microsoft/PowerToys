@@ -23,9 +23,17 @@ namespace Microsoft.Plugin.Program.Logger
         [MethodImpl(MethodImplOptions.Synchronized)]
         internal static void Warn(string message, Exception ex, Type fullClassName, string loadingProgramPath, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            var calledMethod = ex.TargetSite != null ? ex.TargetSite.ToString() : ex.StackTrace;
+            string calledMethod = "Not available";
 
-            calledMethod = string.IsNullOrEmpty(calledMethod) ? "Not available" : calledMethod;
+            if (ex != null)
+            {
+                string exceptionCalledMethod = ex.TargetSite != null ? ex.TargetSite.ToString() : ex.StackTrace;
+                if (!string.IsNullOrEmpty(exceptionCalledMethod))
+                {
+                    calledMethod = exceptionCalledMethod;
+                }
+            }
+
             var msg = $"\n\t\tProgram path: {loadingProgramPath}"
                       + $"\n\t\tException thrown in called method: {calledMethod}"
                       + $"\n\t\tPossible interpretation of the error: {message}";
