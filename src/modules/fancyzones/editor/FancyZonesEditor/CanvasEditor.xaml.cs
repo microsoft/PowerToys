@@ -25,6 +25,15 @@ namespace FancyZonesEditor
             Loaded += OnLoaded;
         }
 
+        public void FocusZone()
+        {
+            if (Preview.Children.Count > 0)
+            {
+                var canvas = Preview.Children[0] as CanvasZone;
+                canvas.FocusZone();
+            }
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             CanvasLayoutModel model = (CanvasLayoutModel)DataContext;

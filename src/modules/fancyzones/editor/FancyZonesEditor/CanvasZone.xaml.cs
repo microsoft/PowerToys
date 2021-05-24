@@ -341,6 +341,11 @@ namespace FancyZonesEditor
 
         public int ZoneIndex { get => zoneIndex; set => zoneIndex = value; }
 
+        public void FocusZone()
+        {
+            Keyboard.Focus(RootBorder);
+        }
+
         private void NWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             snappyX = NewMagneticSnapper(true, ResizeMode.BottomEdge);

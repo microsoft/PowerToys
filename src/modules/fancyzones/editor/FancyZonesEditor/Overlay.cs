@@ -267,6 +267,14 @@ namespace FancyZonesEditor
             OpenMainWindow();
         }
 
+        public void FocusEditor()
+        {
+            if (_editor != null && _editor is CanvasEditor canvasEditor)
+            {
+                canvasEditor.FocusZone();
+            }
+        }
+
         public void CloseLayoutWindow()
         {
             for (int i = 0; i < DesktopsCount; i++)
