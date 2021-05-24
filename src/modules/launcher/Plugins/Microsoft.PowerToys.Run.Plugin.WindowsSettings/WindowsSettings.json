@@ -544,12 +544,6 @@
     "Command": "ms-settings:personalization-start-places"
   },
   {
-    "Name": "ColorsPersonalization",
-    "Area": "Personalization",
-    "Type": "SettingsApp",
-    "Command": "ms-settings:personalization-colors"
-  },
-  {
     "Name": "Colors",
     "Area": "Personalization",
     "Type": "SettingsApp",
@@ -1197,12 +1191,6 @@
     "Command": "ms-settings:windowsinsider"
   },
   {
-    "Name": "WindowsInsiderProgramOptin",
-    "Area": "UpdateAndSecurity",
-    "Type": "SettingsApp",
-    "Command": "ms-settings:windowsinsider-optin"
-  },
-  {
     "Name": "WindowsUpdate",
     "Area": "UpdateAndSecurity",
     "Type": "SettingsApp",
@@ -1670,12 +1658,6 @@
     "Area": "NetworkAndInternet",
     "Type": "ControlPanel",
     "Command": "control /name Microsoft.MobilityCenter"
-  },
-  {
-    "Name": "WindowsSidebarProperties",
-    "Area": "AppearanceAndPersonalization",
-    "Type": "ControlPanel",
-    "Command": "control /name Microsoft.WindowsSidebarProperties"
   },
   {
     "Name": "DisplayProperties",
