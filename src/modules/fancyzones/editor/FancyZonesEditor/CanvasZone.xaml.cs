@@ -19,7 +19,8 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class CanvasZone : UserControl
     {
-        private readonly int moveAmount = 10;
+        private readonly int defaultMoveAmount = 10;
+        private readonly int smallMoveAmount = 1;
 
         public CanvasZone()
         {
@@ -408,36 +409,45 @@ namespace FancyZonesEditor
             }
 
             e.Handled = true;
+
             if (e.Key == Key.Delete)
             {
                 RemoveZone();
+                return;
             }
-            else if (e.Key == Key.Right)
+
+            var moveValue = IsCtrlKeyDown() ? smallMoveAmount : defaultMoveAmount;
+            if (IsShiftKeyDown())
+            {
+                moveValue = Math.Max(1, moveValue / 2);
+            }
+
+            if (e.Key == Key.Right)
             {
                 if (IsShiftKeyDown())
                 {
-                    // Make the zone larger (height)
-                    MoveZoneX(moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                    MoveZoneX(-moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                    // Make the zone larger (width)
+                    MoveZoneX(moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneX(-moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                 }
                 else
                 {
                     // Move zone right
-                    MoveZoneX(moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                    MoveZoneX(moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
                 }
             }
             else if (e.Key == Key.Left)
             {
                 if (IsShiftKeyDown())
                 {
-                    // Make the zone smaller (height)
-                    MoveZoneX(-moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                    MoveZoneX(moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                    // Make the zone smaller (width)
+                    MoveZoneX(-moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneX(moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                 }
                 else
                 {
                     // Move zone left
-                    MoveZoneX(-moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                    MoveZoneX(-moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
                 }
             }
             else if (e.Key == Key.Up)
@@ -445,13 +455,13 @@ namespace FancyZonesEditor
                 if (IsShiftKeyDown())
                 {
                     // Make the zone larger (height)
-                    MoveZoneY(moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                    MoveZoneY(-moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                    MoveZoneY(moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneY(-moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                 }
                 else
                 {
                     // Move zone up
-                    MoveZoneY(-moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                    MoveZoneY(-moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
                 }
             }
             else if (e.Key == Key.Down)
@@ -459,13 +469,13 @@ namespace FancyZonesEditor
                 if (IsShiftKeyDown())
                 {
                     // Make the zone smaller (height)
-                    MoveZoneY(-moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                    MoveZoneY(moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                    MoveZoneY(-moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneY(moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                 }
                 else
                 {
                     // Move zone down
-                    MoveZoneY(moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                    MoveZoneY(moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
                 }
             }
         }
@@ -489,6 +499,18 @@ namespace FancyZonesEditor
         private bool IsShiftKeyDown()
         {
             if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool IsCtrlKeyDown()
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
             {
                 return true;
             }
