@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -220,6 +220,20 @@ namespace FancyZonesEditor
             }
         }
 
+        private class SnappyHelperNonMagnetic : SnappyHelperBase
+        {
+            public SnappyHelperNonMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisOrigin, int screenAxisSize)
+                : base(zones, zoneIndex, isX, mode, screenAxisOrigin, screenAxisSize)
+            {
+            }
+
+            public override void Move(int delta)
+            {
+                var pos = Position + delta;
+                Position = Math.Max(Math.Min(MaxValue, pos), MinValue);
+            }
+        }
+
         private SnappyHelperBase snappyX;
         private SnappyHelperBase snappyY;
 
@@ -229,6 +243,14 @@ namespace FancyZonesEditor
             int screenAxisOrigin = (int)(isX ? workingArea.Left : workingArea.Top);
             int screenAxisSize = (int)(isX ? workingArea.Width : workingArea.Height);
             return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisOrigin, screenAxisSize);
+        }
+
+        private SnappyHelperBase NewNonMagneticSnapper(bool isX, ResizeMode mode)
+        {
+            Rect workingArea = App.Overlay.WorkArea;
+            int screenAxisOrigin = (int)(isX ? workingArea.Left : workingArea.Top);
+            int screenAxisSize = (int)(isX ? workingArea.Width : workingArea.Height);
+            return new SnappyHelperNonMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisOrigin, screenAxisSize);
         }
 
         private void UpdateFromSnappyHelpers()
@@ -380,84 +402,86 @@ namespace FancyZonesEditor
 
         private void Border_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key != Key.Tab)
+            if (e.Key == Key.Tab)
             {
-                e.Handled = true;
-                if (e.Key == Key.Delete)
+                return;
+            }
+
+            e.Handled = true;
+            if (e.Key == Key.Delete)
+            {
+                RemoveZone();
+            }
+            else if (e.Key == Key.Right)
+            {
+                if (IsShiftKeyDown())
                 {
-                    RemoveZone();
+                    // Make the zone larger (height)
+                    MoveZoneX(moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneX(-moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                 }
-                else if (e.Key == Key.Right)
+                else
                 {
-                    if (IsShiftKeyDown())
-                    {
-                        // Make the zone larger (height)
-                        MoveZoneX(moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneX(-moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
-                    }
-                    else
-                    {
-                        // Move zone right
-                        MoveZoneX(moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
-                    }
+                    // Move zone right
+                    MoveZoneX(moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
                 }
-                else if (e.Key == Key.Left)
+            }
+            else if (e.Key == Key.Left)
+            {
+                if (IsShiftKeyDown())
                 {
-                    if (IsShiftKeyDown())
-                    {
-                        // Make the zone smaller (height)
-                        MoveZoneX(-moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneX(moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
-                    }
-                    else
-                    {
-                        // Move zone left
-                        MoveZoneX(-moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
-                    }
+                    // Make the zone smaller (height)
+                    MoveZoneX(-moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneX(moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
                 }
-                else if (e.Key == Key.Up)
+                else
                 {
-                    if (IsShiftKeyDown())
-                    {
-                        // Make the zone larger (height)
-                        MoveZoneY(moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneY(-moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
-                    }
-                    else
-                    {
-                        // Move zone up
-                        MoveZoneY(-moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
-                    }
+                    // Move zone left
+                    MoveZoneX(-moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
                 }
-                else if (e.Key == Key.Down)
+            }
+            else if (e.Key == Key.Up)
+            {
+                if (IsShiftKeyDown())
                 {
-                    if (IsShiftKeyDown())
-                    {
-                        // Make the zone smaller (height)
-                        MoveZoneY(-moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
-                        MoveZoneY(moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
-                    }
-                    else
-                    {
-                        // Move zone down
-                        MoveZoneY(moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
-                    }
+                    // Make the zone larger (height)
+                    MoveZoneY(moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneY(-moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                }
+                else
+                {
+                    // Move zone up
+                    MoveZoneY(-moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                }
+            }
+            else if (e.Key == Key.Down)
+            {
+                if (IsShiftKeyDown())
+                {
+                    // Make the zone smaller (height)
+                    MoveZoneY(-moveAmount / 2, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneY(moveAmount / 2, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                }
+                else
+                {
+                    // Move zone down
+                    MoveZoneY(moveAmount, ResizeMode.BothEdges, ResizeMode.BothEdges);
                 }
             }
         }
 
         private void MoveZoneX(int value, ResizeMode top, ResizeMode bottom)
         {
-            snappyX = NewDefaultSnappyHelper(true, top);
-            snappyY = NewDefaultSnappyHelper(false, bottom);
+            snappyX = NewNonMagneticSnapper(true, top);
+            snappyY = NewNonMagneticSnapper(false, bottom);
             snappyX.Move(value);
             UpdateFromSnappyHelpers();
         }
 
         private void MoveZoneY(int value, ResizeMode top, ResizeMode bottom)
         {
-            snappyX = NewDefaultSnappyHelper(true, bottom);
-            snappyY = NewDefaultSnappyHelper(false, top);
+            snappyX = NewNonMagneticSnapper(true, bottom);
+            snappyY = NewNonMagneticSnapper(false, top);
             snappyY.Move(value);
             UpdateFromSnappyHelpers();
         }
