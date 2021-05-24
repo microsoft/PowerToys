@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <returns>A list with <see cref="Result"/>s.</returns>
         internal static IEnumerable<Result> GetResults(Query query, string iconPath)
         {
-            var searchFor = GetSerchString(query);
+            var searchFor = GetSearchString(query);
             var timeZoneInfos = TimeZoneInfo.GetSystemTimeZones();
             var results = new Collection<Result>();
             var utcNow = DateTime.UtcNow;
@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// </summary>
         /// <param name="query">The <see cref="Query"/> that contain the string to search.</param>
         /// <returns>A string for a search.</returns>
-        private static string GetSerchString(Query query)
+        private static string GetSearchString(Query query)
         {
             var secondChar = query.Search.ElementAtOrDefault(1);
 
