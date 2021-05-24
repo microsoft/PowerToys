@@ -1210,7 +1210,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>About Espresso</value>
   </data>
   <data name="Espresso_Description.Text" xml:space="preserve">
-    <value>A convenient way to keep your computer awake on-demand.</value>
+    <value>A convenient way to keep your PC awake on-demand.</value>
   </data>
   <data name="Espresso_EnableEspresso.Header" xml:space="preserve">
     <value>Enable Espresso</value>
@@ -1260,12 +1260,12 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <comment>Module name, do not loc</comment>
   </data>
   <data name="Oobe_Espresso_Description" xml:space="preserve">
-    <value>Espresso is a Windows tool designed to keep a computer awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that the computer does not go to sleep or turn off its screens.</value>
+    <value>Espresso is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
   </data>
   <data name="Oobe_Espresso_HowToUse.Text" xml:space="preserve">
-    <value>Open PowerToys Settings and enable Espresso</value>
+    <value>Open {PowerToys Settings} and enable Espresso</value>
   </data>
   <data name="Oobe_Espresso_TipsAndTricks.Text" xml:space="preserve">
-    <value>You can always change modes quickly by right-clicking the Espresso icon in the system tray.</value>
+    <value>You can always change modes quickly by {right-clicking the Espresso icon} in the system tray.</value>
   </data>
 </root>
