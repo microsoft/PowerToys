@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Microsoft.PowerToys.Run.Plugin.WindowsSettings;
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -141,6 +140,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         private static void SetScores(IEnumerable<Result> resultList, string query)
         {
             var lowScore = 1_000;
+            var mediumScore = 5_000;
             var highScore = 10_000;
 
             foreach (var result in resultList)
@@ -156,9 +156,16 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     continue;
                 }
 
+                // If query starts with second or next word of name, set score.
+                if (windowsSetting.Name.Contains($" {query}", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    result.Score = mediumScore--;
+                    continue;
+                }
+
                 if (windowsSetting.Area.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
                 {
-                    result.Score = highScore--;
+                    result.Score = lowScore--;
                     continue;
                 }
 
@@ -170,7 +177,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
                 if (windowsSetting.AltNames.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
                 {
-                    result.Score = highScore--;
+                    result.Score = mediumScore--;
                     continue;
                 }
 
