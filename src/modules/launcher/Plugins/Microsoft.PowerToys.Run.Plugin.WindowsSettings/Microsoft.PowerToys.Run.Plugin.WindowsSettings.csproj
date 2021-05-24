@@ -72,7 +72,7 @@
   
   <ItemGroup>
     <EmbeddedResource Include="WindowsSettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 
