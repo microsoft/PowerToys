@@ -114,6 +114,13 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                     return true;
                 }
 
+                // Search for Area only by key char
+                if (found.Area.Contains(query.Search.Replace("$", string.Empty), StringComparison.CurrentCultureIgnoreCase)
+                && query.Search.EndsWith("$"))
+                {
+                    return true;
+                }
+
                 if (found.Area.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return true;
