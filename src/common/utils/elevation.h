@@ -5,6 +5,9 @@
 #include <shellapi.h>
 #include <sddl.h>
 
+#include <winrt/base.h>
+#include <winrt/Windows.Foundation.Collections.h>
+
 #include <string>
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
