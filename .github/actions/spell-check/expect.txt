@@ -541,6 +541,7 @@ EUQ
 evenodd
 eventlog
 everytime
+evt
 EWXFORCE
 EWXFORCEIFHUNG
 EWXLOGOFF
@@ -1785,6 +1786,7 @@ sln
 SMALLICON
 SMTO
 snd
+snwprintf
 softline
 somil
 Soref
@@ -1944,6 +1946,7 @@ THISCOMPONENT
 thre
 tif
 TILEDWINDOW
+timediff
 TIMERID
 timeunion
 timeutil
@@ -2127,6 +2130,7 @@ webpack
 webpage
 website
 wekyb
+Wevtapi
 Whichdoes
 whitespaces
 WIC
@@ -2156,6 +2160,7 @@ windowwalker
 winerror
 WINEVENT
 winexe
+winevt
 winforms
 winfx
 winget

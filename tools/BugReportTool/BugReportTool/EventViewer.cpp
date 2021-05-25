@@ -14,7 +14,7 @@ namespace
     // Batch size for number of events queried at once
     constexpr int BATCH_SIZE = 50;
 
-    class EventViwerReporter
+    class EventViewerReporter
     {
     private:
         // Report last 30 days
@@ -113,7 +113,7 @@ namespace
         }
 
     public:
-        EventViwerReporter(const std::filesystem::path& tmpDir, std::wstring processName)
+        EventViewerReporter(const std::filesystem::path& tmpDir, std::wstring processName)
         {
             auto query = GetQuery(processName);
             auto reportPath = tmpDir;
@@ -128,7 +128,7 @@ namespace
             }
         }
 
-        ~EventViwerReporter()
+        ~EventViewerReporter()
         {
             if (hResults)
             {
@@ -158,6 +158,6 @@ void EventViewer::ReportEventViewerInfo(const std::filesystem::path& tmpDir)
 {
     for (auto& process : processes)
     {
-        EventViwerReporter(tmpDir, process).Report();
+        EventViewerReporter(tmpDir, process).Report();
     }
 }
