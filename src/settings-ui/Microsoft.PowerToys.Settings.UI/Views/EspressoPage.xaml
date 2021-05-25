@@ -1,0 +1,188 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.EspressoPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:c="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400" 
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
+
+    <Page.Resources>
+        <c:EspressoModeToBoolConverter x:Key="EspressoModeToBoolConverter" />
+    </Page.Resources>
+
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage" />
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage" />
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0" />
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical"
+                    x:Name="EspressoView"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,48,0"
+                    MaxWidth="{StaticResource MaxContentWidth}">
+            <ToggleSwitch x:Uid="Espresso_EnableEspresso" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+
+            <TextBlock x:Uid="Espresso_Behavior_GroupSettings"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <CheckBox x:Uid="Espresso_EnableDisplayKeepAwake"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                      IsChecked="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}"
+                      Margin="{StaticResource XSmallTopMargin}" />
+            
+            <TextBlock x:Uid="Espresso_Mode"
+                       Margin="{StaticResource SmallTopMargin}"
+                       x:Name="ModeTitleLabel"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
+                        Margin="0,-8,0,0">
+                <RadioButton x:Uid="Espresso_NoKeepAwake"
+                             Margin="{StaticResource SmallTopMargin}"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=0}">
+                    <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="Espresso_NoKeepAwakeContent"/>
+                        <LineBreak/>
+                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                             x:Uid="Espresso_NoKeepAwakeDescription"/>
+                        </TextBlock>
+                    </RadioButton.Content>
+                </RadioButton>
+                <RadioButton x:Uid="Espresso_IndefiniteKeepAwake"
+                             Margin="{StaticResource SmallTopMargin}"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=1}">
+                    <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="Espresso_IndefiniteKeepAwakeContent"/>
+                        <LineBreak/>
+                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                             x:Uid="Espresso_IndefiniteKeepAwakeDescription"/>
+                        </TextBlock>
+                    </RadioButton.Content>
+                </RadioButton>
+                <RadioButton x:Uid="Espresso_TemporaryKeepAwake"
+                             Margin="{StaticResource SmallTopMargin}"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=2}">
+                    <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="Espresso_TemporaryKeepAwakeContent"/>
+                        <LineBreak/>
+                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                             x:Uid="Espresso_TemporaryKeepAwakeDescription"/>
+                        </TextBlock>
+                    </RadioButton.Content>
+                </RadioButton>
+
+                <StackPanel Margin="28,8,0,0" Orientation="Horizontal">
+                    <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Hours"
+                            Value="{x:Bind ViewModel.Hours, Mode=TwoWay}"
+                            Minimum="0"
+                            SpinButtonPlacementMode="Compact"
+                            HorizontalAlignment="Left"
+                            MinWidth="90"
+                            IsEnabled="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}"
+                            SmallChange="1" 
+                            LargeChange="5"/>
+                    <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Minutes"
+                            Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}"
+                            Minimum="0"
+                            SpinButtonPlacementMode="Compact"
+                            Margin="8,0,0,0"
+                            HorizontalAlignment="Left"
+                            IsEnabled="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}"
+                            MinWidth="90"
+                            SmallChange="1" 
+                            LargeChange="5"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <RelativePanel x:Name="SidePanel" 
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_Espresso"
+                           x:Name="AboutTitle"
+                           Grid.ColumnSpan="2"
+                           Style="{StaticResource SettingsGroupTitleStyle}"
+                           Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="Espresso_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
+
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <HyperlinkButton x:Uid="Espresso_ImageHyperlinkToDocs">
+                    <Image x:Uid="Espresso_Image" Source="ms-appx:///Assets/Modules/Espresso.png" />
+                </HyperlinkButton>
+            </Border>
+            <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton x:Uid="Espresso_ImageHyperlinkToDocs">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
+
+                <TextBlock 
+                x:Uid="AttributionTitle"
+                Style="{StaticResource SettingsGroupTitleStyle}" />
+
+                <HyperlinkButton Margin="0,-3,0,0"
+                                 x:Uid="Espresso_ModuleAttributionHyperlink">
+                    <TextBlock x:Uid="Espresso_ModuleAttributionLabel"
+                               TextWrapping="Wrap" />
+                </HyperlinkButton>
+            </StackPanel>
+        </RelativePanel>
+    </Grid>
+</Page>

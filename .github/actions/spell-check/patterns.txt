@@ -31,6 +31,8 @@ TestCase\("[^"]+"
 
 # Windows paths
 \\native
+\\netcoreapp
+\\netstandard
 \\notifications
 \\recyclebin
 \\reinstall
@@ -41,6 +43,7 @@ TestCase\("[^"]+"
 \\restore
 \\result
 \\runner
+\\runtimes
 \\Telemetry
 \\telemetry
 \\testapp

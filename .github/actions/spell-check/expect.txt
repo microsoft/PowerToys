@@ -59,7 +59,6 @@ APeriod
 api
 APIENTRY
 APIIs
-apos
 APPBARDATA
 appcontainer
 appdata
@@ -87,6 +86,7 @@ args
 argv
 Arial
 arik
+Arity
 arjunbalgovind
 ARPINSTALLLOCATION
 ARPPRODUCTICON
@@ -124,13 +124,13 @@ Autorun
 AUTOSIZECOLUMNS
 autoupdate
 AValid
+AWAYMODE
 azurecr
 azurewebsites
 backend
 backtracer
 bak
 bbwe
-bc
 bcc
 bck
 Bcl
@@ -140,7 +140,6 @@ betsegaw
 BGR
 bgra
 BGSOUNDS
-bh
 bhid
 Bicubic
 bigbar
@@ -217,7 +216,6 @@ CHECKCANCELED
 CHILDACTIVATE
 CHILDWINDOW
 chrdavis
-Chris's
 chrono
 Chrzan
 CHT
@@ -226,7 +224,6 @@ cinttypes
 cla
 clangformat
 CLASSDC
-classmethod
 classname
 CLASSNOTAVAILABLE
 clickable
@@ -237,7 +234,7 @@ clientside
 CLIPCHILDREN
 CLIPSIBLINGS
 clrcall
-cls
+Cls
 CLSCTX
 clsid
 CMDARG
@@ -251,7 +248,6 @@ CMINVOKECOMMANDINFOEX
 CMock
 CMONITORS
 cmyk
-cn
 cnt
 coclass
 codebase
@@ -285,6 +281,7 @@ config
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 Connectquickaction
+CONOUT
 Consolas
 constexpr
 contentdialog
@@ -355,7 +352,6 @@ CUSTOMACTIONTEST
 cvd
 cwchar
 cwd
-cx
 cxfksword
 CXSMICON
 CXVIRTUALSCREEN
@@ -363,7 +359,6 @@ cxx
 cxxopts
 CYMK
 CYSMICON
-cz
 cziplib
 Dac
 dacl
@@ -428,7 +423,6 @@ devblogs
 devdocs
 devenum
 DEVMON
-df
 DFactory
 diffing
 difftime
@@ -481,7 +475,6 @@ dutil
 DVASPECT
 DVASPECTINFO
 DVTARGETDEVICE
-dw
 DWindow
 DWINRT
 DWLP
@@ -500,7 +493,6 @@ dworigin
 dwrite
 dxgi
 Easeof
-EB
 ecef
 ecount
 EDB
@@ -540,12 +532,12 @@ errorlevel
 ERRORMESSAGE
 ERRORTITLE
 esize
+espressoversion
 estdir
 etcore
 etl
 etw
 EUQ
-ev
 evenodd
 eventlog
 everytime
@@ -586,7 +578,6 @@ FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 Farbraum
 FARPROC
-fd
 feimage
 ffcd
 FFDDDDDD
@@ -614,7 +605,7 @@ Fle
 fluentui
 flyout
 fmtlib
-fody
+Fody
 FOF
 FOFX
 FOLDERID
@@ -634,7 +625,6 @@ fullscreen
 func
 fwlink
 fwrite
-fx
 fxcop
 gabime
 GAC
@@ -652,12 +642,10 @@ GETDPISCALEDSIZE
 GETEMPTYMARKUP
 GETICON
 getline
-getmembers
 GETMINMAXINFO
 GETSTATE
 GETTEXT
 GETTEXTLENGTH
-gh
 github
 githubusercontent
 gitignore
@@ -684,7 +672,6 @@ hbitmap
 hbmp
 hbr
 HBRUSH
-hc
 hcblack
 hcwhite
 hdc
@@ -698,7 +685,6 @@ HDS
 HEB
 helptext
 HGLOBAL
-hh
 hhk
 HHmmss
 HHOOK
@@ -710,7 +696,6 @@ hinst
 hinstance
 hitinfo
 HIWORD
-hk
 HKCC
 HKCR
 HKCU
@@ -755,7 +740,6 @@ Htmdid
 html
 htt
 http
-hu
 hwb
 HWINEVENTHOOK
 hwnd
@@ -908,7 +892,6 @@ iobjectwithsitesetsite
 IOle
 iolewindowcontextsensitivehelp
 iostream
-ip
 IPackage
 IPath
 ipc
@@ -945,7 +928,6 @@ isfinite
 IShell
 ISingle
 ISmart
-ismethod
 isocpp
 IStorage
 IStream
@@ -982,7 +964,6 @@ jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
 jobject
-jp
 jpe
 jpeg
 jpg
@@ -1017,17 +998,16 @@ keystokes
 Keystool
 Keytool
 keyup
-Kf
 KILLFOCUS
 Knownfolders
 Kybd
 LAlt
-lambson
+Lambson
 lamotile
 langword
 Lastdevice
 LASTEXITCODE
-laute
+Laute
 laviusmotileng
 LAYOUTRTL
 LBUTTON
@@ -1071,7 +1051,6 @@ lmcons
 LMEM
 LMENU
 lnk
-loadingbar
 LOCALAPPDATA
 LOCALDISPLAY
 localhost
@@ -1080,6 +1059,8 @@ localport
 localtime
 LOCATIONCHANGE
 Lockyour
+logconsole
+logfile
 LOGFONT
 LOGMSG
 logon
@@ -1178,7 +1159,6 @@ Mensching
 menuitem
 MENUITEMINFO
 MENUITEMINFOW
-messagebox
 messageboxes
 METACHARSET
 metadata
@@ -1194,6 +1174,7 @@ mimetype
 Minimizeallwindows
 MINIMIZEBOX
 miniz
+minlevel
 MINMAXINFO
 Miracast
 MJPG
@@ -1306,7 +1287,7 @@ niels
 nielslaute
 NIF
 NLD
-NLog
+nlog
 NLSTEXT
 NMLVEMPTYMARKUP
 NOACTIVATE
@@ -1370,7 +1351,6 @@ NUMPAD
 nunit
 Nvidia
 NWSE
-NX
 Objbase
 OBJID
 objidl
@@ -1413,6 +1393,7 @@ otating
 OUTOFCONTEXT
 OUTOFMEMORY
 Outptr
+outputtype
 outro
 outsettings
 OVERLAPPEDWINDOW
@@ -1432,7 +1413,6 @@ PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
 pathcch
-pb
 pbc
 Pbgra
 pcb
@@ -1476,7 +1456,6 @@ plugin
 pluginsmodel
 plvdi
 PMSIHANDLE
-Pn
 png
 pnm
 pnmdr
@@ -1562,15 +1541,11 @@ ptstr
 pubxml
 Pui
 pushd
-pv
 PVOID
-pw
 pwa
 pwcs
 PWSTR
 pwtd
-px
-QI
 qianlifeng
 qit
 QITAB
@@ -1672,7 +1647,7 @@ roadmap
 Roboto
 roslyn
 royvou
-rpc
+Rpc
 RRF
 rshift
 Rsp
@@ -1682,7 +1657,6 @@ RTB
 rtf
 Rtl
 RTLREADING
-ru
 ruleset
 RUNACTIVEXCTLS
 runas
@@ -1693,12 +1667,10 @@ runsettings
 runtimeclass
 runtimeconfig
 runtimes
-rv
 RUS
 rvalue
 rvm
 rwin
-rx
 ryanbodrug
 saahmedm
 sacl
@@ -1823,6 +1795,7 @@ spdlog
 spdo
 spdth
 spec'ing
+specialfolder
 spesi
 splitwstring
 sppd
@@ -1927,8 +1900,7 @@ syslog
 SYSMENU
 systemd
 SYSTEMTIME
-sz
-tadele
+Tadele
 Tahoma
 talynone
 TApp
@@ -1950,7 +1922,6 @@ tbody
 tchar
 tcscpy
 TCustom
-td
 TDevice
 Templated
 templatenamespace
@@ -1987,6 +1958,7 @@ toggleswitch
 toolbar
 Toolchain
 toolset
+toolstrip
 tooltip
 toolwindow
 TOPDOWNDIB
@@ -2003,8 +1975,6 @@ trl
 trunc
 TStr
 tsx
-tt
-tw
 TYMED
 typedef
 TYPEKEY
@@ -2013,7 +1983,6 @@ typename
 typeof
 typeparam
 TYPESHORTCUT
-Tz
 UAC
 UAL
 uap
@@ -2027,7 +1996,6 @@ uintptr
 UIPI
 UIs
 UITo
-ul
 ULARGE
 ULLONG
 ulong
@@ -2086,7 +2054,6 @@ utf
 utils
 uuid
 uuidof
-uv
 uwp
 UWPUI
 uxtheme
@@ -2108,7 +2075,6 @@ verrsrc
 VERSIONINFO
 Versioning
 VFT
-vh
 vid
 VIDEOINFOHEADER
 viewbox
@@ -2118,10 +2084,8 @@ visiblecolorformats
 Visibletrue
 visualbrush
 visualstudio
-vk
 VKey
 VKTAB
-vm
 vmax
 vmin
 VOS
@@ -2137,8 +2101,6 @@ VSTHRD
 VSTT
 VTABLE
 Vtbl
-vw
-Vx
 watsonportal
 wav
 WBounds
@@ -2193,6 +2155,8 @@ windowsx
 windowwalker
 winerror
 WINEVENT
+winexe
+winforms
 winfx
 winget
 Winhook
@@ -2256,7 +2220,6 @@ WTSAT
 Wwan
 www
 wxs
-xa
 xamarin
 xaml
 XAttribute
@@ -2281,11 +2244,11 @@ XOffset
 xpath
 XResource
 xsd
+xsi
 XSmall
 XStr
 XToolset
 xunit
-XY
 Yaml
 YDiff
 YESNO
@@ -2296,13 +2259,9 @@ YOffset
 YStr
 YUY
 YUYV
-yy
-Zc
 ZEROINIT
-zh
 ZIndex
 zipfolder
-zm
 zonable
 ZONECOLOR
 ZONEHIGHLIGHTCOLOR

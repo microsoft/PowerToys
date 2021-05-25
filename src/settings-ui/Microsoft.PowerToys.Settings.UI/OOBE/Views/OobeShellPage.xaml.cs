@@ -81,6 +81,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Description = loader.GetString("Oobe_ColorPicker_Description"),
                 Link = "https://aka.ms/PowerToysOverview_ColorPicker",
             });
+            Modules.Insert((int)PowerToysModulesEnum.Espresso, new OobePowerToysModule()
+            {
+                ModuleName = loader.GetString("Oobe_Espresso"),
+                Tag = "Espresso",
+                IsNew = false,
+                Icon = "\uEC32",
+                Image = "ms-appx:///Assets/Modules/Espresso.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsEspresso.png",
+                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/Espresso.png",
+                Description = loader.GetString("Oobe_Espresso_Description"),
+                Link = "https://aka.ms/PowerToysOverview_Espresso",
+            });
             Modules.Insert((int)PowerToysModulesEnum.FancyZones, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_FancyZones"),
@@ -204,6 +216,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
                 case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
+                case "Espresso": NavigationFrame.Navigate(typeof(OobeEspresso)); break;
                 case "FancyZones": NavigationFrame.Navigate(typeof(OobeFancyZones)); break;
                 case "Run": NavigationFrame.Navigate(typeof(OobeRun)); break;
                 case "ImageResizer": NavigationFrame.Navigate(typeof(OobeImageResizer)); break;

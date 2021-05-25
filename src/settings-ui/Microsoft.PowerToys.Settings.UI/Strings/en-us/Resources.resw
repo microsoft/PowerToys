@@ -121,6 +121,10 @@
     <value>General</value>
     <comment>Navigation view item name for General</comment>
   </data>
+  <data name="Shell_Espresso.Content" xml:space="preserve">
+    <value>Espresso</value>
+    <comment>Product name: Navigation view item name for Espresso</comment>
+  </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
     <comment>Product name: Navigation view item name for PowerToys Run</comment>
@@ -479,6 +483,10 @@
   </data>
   <data name="ShortcutGuide_Description.Text" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
+  </data>
+  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
+    <value>Press duration before showing (ms)</value>
+    <comment>pressing a key in milliseconds</comment>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
@@ -904,6 +912,10 @@
     <value>https://aka.ms/PowerToysOverview_ColorPicker</value>
     <comment>URL. Do not loc</comment>
   </data>
+  <data name="Espresso_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_Espresso</value>
+    <comment>URL. Do not loc</comment>
+  </data>
   <data name="FancyZones_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
     <value>https://aka.ms/PowerToysOverview_FancyZones</value>
     <comment>URL. Do not loc</comment>
@@ -987,6 +999,43 @@
   </data>
   <data name="Run_PluginUseDescription.Text" xml:space="preserve">
     <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options.</value>
+  </data>
+  <data name="Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
+    <value>Position &amp; appearance</value>
+  </data>
+  <data name="Run_PositionHeader.Text" xml:space="preserve">
+    <value>Show PowerToys Run on</value>
+    <comment>as in Show PowerToys Run on primary monitor</comment>
+  </data>
+  <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
+    <value>Monitor with mouse cursor</value>
+  </data>
+  <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
+    <value>Monitor with focused window</value>
+  </data>
+  <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
+    <value>Primary monitor</value>
+  </data>
+  <data name="Run_PluginsLoading.Text" xml:space="preserve">
+    <value>Plugins are loading...</value>
+  </data>
+  <data name="ColorPicker_ButtonDown.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color down</value>
+  </data>
+  <data name="ColorPicker_ButtonUp.AutomationProperties.Name" xml:space="preserve">
+    <value>Move the color up</value>
+  </data>
+  <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
+    <value>Flash zones when switching layout</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch.Content" xml:space="preserve">
+    <value>Enable quick layout switch</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
+    <value>Quick layout switch</value>
+  </data>
+  <data name="ShortcutGuide_OpenShortcutGuide.Header" xml:space="preserve">
+    <value>Open Shortcut Guide</value>
   </data>
   <data name="Oobe_GetStarted.Text" xml:space="preserve">
     <value>Let's get started!</value>
@@ -1096,7 +1145,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing {&lt;} searches for running processes only, {?} will search only for file, or {.} for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.</value>
   </data>
   <data name="Oobe_ShortcutGuide_HowToLaunch.Text" xml:space="preserve">
-    <value>{Shift} + {Win} + {/} to open Shortcut Guide, press it again to close or press {Esc}.</value>
+    <value>{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!</value>
   </data>
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
     <value>Tips &amp; tricks</value>
@@ -1160,42 +1209,67 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
   </data>
-  <data name="Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
-    <value>Position &amp; appearance</value>
+  <data name="About_Espresso.Text" xml:space="preserve">
+    <value>About Espresso</value>
   </data>
-  <data name="Run_PositionHeader.Text" xml:space="preserve">
-    <value>Show PowerToys Run on</value>
-    <comment>as in Show PowerToys Run on primary monitor</comment>
+  <data name="Espresso_Description.Text" xml:space="preserve">
+    <value>A convenient way to keep your PC awake on-demand.</value>
   </data>
-  <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
-    <value>Monitor with mouse cursor</value>
+  <data name="Espresso_EnableEspresso.Header" xml:space="preserve">
+    <value>Enable Espresso</value>
   </data>
-  <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
-    <value>Monitor with focused window</value>
+  <data name="Espresso_NoKeepAwakeContent.Text" xml:space="preserve">
+    <value>Off (Passive)</value>
   </data>
-  <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
-    <value>Primary monitor</value>
+  <data name="Espresso_IndefiniteKeepAwakeContent.Text" xml:space="preserve">
+    <value>Keep awake indefinitely</value>
   </data>
-  <data name="Run_PluginsLoading.Text" xml:space="preserve">
-    <value>Plugins are loading...</value>
+  <data name="Espresso_TemporaryKeepAwakeContent.Text" xml:space="preserve">
+    <value>Keep awake temporarily</value>
   </data>
-  <data name="ColorPicker_ButtonDown.AutomationProperties.Name" xml:space="preserve">
-    <value>Move the color down</value>
+  <data name="Espresso_NoKeepAwakeDescription.Text" xml:space="preserve">
+    <value>Your PC operates according to its current power plan</value>
   </data>
-  <data name="ColorPicker_ButtonUp.AutomationProperties.Name" xml:space="preserve">
-    <value>Move the color up</value>
+  <data name="Espresso_IndefiniteKeepAwakeDescription.Text" xml:space="preserve">
+    <value>Keeps your PC awake until the setting is disabled</value>
   </data>
-  <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
-    <value>Flash zones when switching layout</value>
+  <data name="Espresso_TemporaryKeepAwakeDescription.Text" xml:space="preserve">
+    <value>Keeps your PC awake until the set time elapses</value>
   </data>
-  <data name="FancyZones_QuickLayoutSwitch.Content" xml:space="preserve">
-    <value>Enable quick layout switch</value>
+  <data name="Espresso_EnableDisplayKeepAwake.Content" xml:space="preserve">
+    <value>Keep screen on</value>
   </data>
-  <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
-    <value>Quick layout switch</value>
+  <data name="Espresso_Mode.Text" xml:space="preserve">
+    <value>Mode</value>
   </data>
-  <data name="ShortcutGuide_OpenShortcutGuide.Header" xml:space="preserve">
-    <value>Open Shortcut Guide</value>
+  <data name="Espresso_Behavior_GroupSettings.Text" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="Espresso_TemporaryKeepAwake_Hours.Header" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="Espresso_TemporaryKeepAwake_Minutes.Header" xml:space="preserve">
+    <value>Minutes</value>
+  </data>
+  <data name="Espresso_ModuleAttributionLabel.Text" xml:space="preserve">
+    <value>Den Delimarsky's Espresso</value>
+  </data>
+  <data name="Espresso_ModuleAttributionHyperlink.NavigateUri" xml:space="preserve">
+    <value>https://espresso.den.dev</value>
+    <comment>URL. Do not loc</comment>
+  </data>
+  <data name="Oobe_Espresso" xml:space="preserve">
+    <value>Espresso</value>
+    <comment>Module name, do not loc</comment>
+  </data>
+  <data name="Oobe_Espresso_Description" xml:space="preserve">
+    <value>Espresso is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
+  </data>
+  <data name="Oobe_Espresso_HowToUse.Text" xml:space="preserve">
+    <value>Open {PowerToys Settings} and enable Espresso</value>
+  </data>
+  <data name="Oobe_Espresso_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can always change modes quickly by {right-clicking the Espresso icon} in the system tray.</value>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Text" xml:space="preserve">
     <value>An error occurred trying to update to</value>
