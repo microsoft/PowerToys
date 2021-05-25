@@ -86,7 +86,9 @@ namespace
 
             report << std::endl << formattedXml << std::endl;
             if (pRenderedContent)
+            {
                 free(pRenderedContent);
+            }
         }
 
         // Enumerate all the events in the result set. 
