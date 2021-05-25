@@ -67,7 +67,9 @@ namespace
                 {
                     report << std::endl << L"EvtRender failed with " << get_last_error_or_default(GetLastError()) << std::endl << std::endl;
                     if (pRenderedContent)
+                    {
                         free(pRenderedContent);
+                    }
                     return;
                 }
             }
