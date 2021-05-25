@@ -345,6 +345,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuideModuleInterfac
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuide", "src\modules\ShortcutGuide\ShortcutGuide\ShortcutGuide.vcxproj", "{2EDB3EB4-FA92-4BFF-B2D8-566584837231}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.Update", "src\Update\PowerToys.Update.vcxproj", "{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.WindowsSettings", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Microsoft.PowerToys.Run.Plugin.WindowsSettings.csproj", "{5043CECE-E6A7-4867-9CBE-02D27D83747A}"
 EndProject
 Global
@@ -703,6 +705,10 @@ Global
 		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|x64.Build.0 = Debug|x64
 		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.ActiveCfg = Release|x64
 		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.Build.0 = Release|x64
+		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Debug|x64.ActiveCfg = Debug|x64
+		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Debug|x64.Build.0 = Debug|x64
+		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Release|x64.ActiveCfg = Release|x64
+		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Release|x64.Build.0 = Release|x64
 		{5043CECE-E6A7-4867-9CBE-02D27D83747A}.Debug|x64.ActiveCfg = Debug|x64
 		{5043CECE-E6A7-4867-9CBE-02D27D83747A}.Debug|x64.Build.0 = Debug|x64
 		{5043CECE-E6A7-4867-9CBE-02D27D83747A}.Release|x64.ActiveCfg = Release|x64
