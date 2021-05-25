@@ -16,7 +16,6 @@
 
 #include <filesystem>
 
-
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
@@ -34,24 +33,18 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
-
-
 // The PowerToy name that will be shown in the settings.
 const static wchar_t* MODULE_NAME = L"Espresso";
+
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"<no description>";
-
-// These are the properties shown in the Settings page.
-struct ModuleSettings
-{
-
-} g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
 class Espresso : public PowertoyModuleIface
 {
     std::wstring app_name;
-    //contains the non localized key of the powertoy
+
+    // Contains the non localized key of the powertoy
     std::wstring app_key;
 
 private:
@@ -64,9 +57,6 @@ private:
 
     // Handle to event used to invoke Espresso
     HANDLE m_hInvokeEvent;
-
-    // Load initial settings from the persisted values.
-    void init_settings();
 
     bool is_process_running()
     {
@@ -107,7 +97,6 @@ public:
         logFilePath.append(LogSettings::espressoLogPath);
         Logger::init(LogSettings::launcherLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
         Logger::info("Launcher object is constructing");
-        init_settings();
     };
 
     // Destroy the powertoy and free memory
@@ -138,23 +127,6 @@ public:
     virtual const wchar_t* get_key() override
     {
         return app_key.c_str();
-    }
-
-    // Signal from the Settings editor to call a custom action.
-    // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* action) override
-    {
-        static UINT custom_action_num_calls = 0;
-        try
-        {
-            // Parse the action values, including name.
-            PowerToysSettings::CustomActionObject action_object =
-                PowerToysSettings::CustomActionObject::from_json_string(action);
-        }
-        catch (std::exception&)
-        {
-            // Improper JSON.
-        }
     }
 
     // Called by the runner to pass the updated settings values as a serialized JSON.
@@ -202,23 +174,6 @@ public:
         return m_enabled;
     }
 };
-
-// Load the settings file.
-void Espresso::init_settings()
-{
-    try
-    {
-        // Load and parse the settings file for this PowerToy.
-        PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
-    }
-    catch (std::exception ex)
-    {
-        Logger::warn(L"An exception occurred while loading the settings file");
-        // Error while loading from the settings file. Let default values stay as they are.
-    }
-}
-
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
