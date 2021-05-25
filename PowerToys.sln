@@ -100,7 +100,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerExt", "src\modu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageResizerUITest", "src\modules\imageresizer\tests\ImageResizerUITest.csproj", "{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ActionRunner", "src\ActionRunner\ActionRunner.vcxproj", "{D29DDD63-E2CF-4657-9FD5-2AEDE4257E5D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.ActionRunner", "src\ActionRunner\ActionRunner.vcxproj", "{D29DDD63-E2CF-4657-9FD5-2AEDE4257E5D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{17DA04DF-E393-4397-9CF0-84DABE11032E} = {17DA04DF-E393-4397-9CF0-84DABE11032E}
 	EndProjectSection
@@ -326,6 +326,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuideModuleInterface", "src\modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.vcxproj", "{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuide", "src\modules\ShortcutGuide\ShortcutGuide\ShortcutGuide.vcxproj", "{2EDB3EB4-FA92-4BFF-B2D8-566584837231}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.Update", "src\Update\PowerToys.Update.vcxproj", "{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -667,6 +669,10 @@ Global
 		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|x64.Build.0 = Debug|x64
 		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.ActiveCfg = Release|x64
 		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.Build.0 = Release|x64
+		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Debug|x64.ActiveCfg = Debug|x64
+		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Debug|x64.Build.0 = Debug|x64
+		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Release|x64.ActiveCfg = Release|x64
+		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
