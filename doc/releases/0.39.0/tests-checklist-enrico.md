@@ -37,10 +37,10 @@
  - run PT as a user
  - open an elevated app (i.e. Task Manager)
  - shift-drag the elevated app window
- - [ ] verify that a notification appears
+ - [x] verify that a notification appears
  - restart PT as admin
  - shift-drag the elevated app window
- - [ ] verify the notification doesn't appear
+ - [x] verify the notification doesn't appear
 
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
