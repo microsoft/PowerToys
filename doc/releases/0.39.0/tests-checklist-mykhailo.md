@@ -53,23 +53,23 @@
 
 
 ## FancyZones
-- [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases. 
-- [ ] Change zone colors and opacity.
-- [ ] Exclude some apps, verify that they're not applicable to a zone.
-- [ ] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
-- [ ] Launch PT in administrator mode, assign a window with administrator privileges.
-- [ ] Create virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
-- [ ] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
-- [ ] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
+- [x] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases. 
+- [x] Change zone colors and opacity.
+- [x] Exclude some apps, verify that they're not applicable to a zone.
+- [x] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
+- [x] Launch PT in administrator mode, assign a window with administrator privileges.
+- [x] Create virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
+- [x] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
+- [x] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
 * Switch between layouts with quick keys.
-    - [ ] Switch with `Win` + `Ctrl` + `Alt` + `key`
-    - [ ] Switch with just a key while dragging a window.
+    - [x] Switch with `Win` + `Ctrl` + `Alt` + `key`
+    - [x] Switch with just a key while dragging a window.
 * Change screen resolution or scaling. 
-    - [ ] Assign grid layout, verify that the assigned layout fits the screen. 
+    - [x] Assign grid layout, verify that the assigned layout fits the screen. 
       NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
-    - [ ] Edit grid layout, verify that split, merge and resize zones works as expected.
-- [ ] Disable FZ
-- [ ] Reenable FZ, verify that everything is in the same state as it was before disabling.
+    - [x] Edit grid layout, verify that split, merge and resize zones works as expected.
+- [x] Disable FZ
+- [x] Reenable FZ, verify that everything is in the same state as it was before disabling.
 
 ## File Explorer Add-ons
  * Running as user:
