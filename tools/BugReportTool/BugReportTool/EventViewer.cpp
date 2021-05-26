@@ -11,7 +11,17 @@
 
 namespace
 {
-    std::vector<std::wstring> processes = { L"PowerToys.exe", L"PowerLauncher.exe" };
+    std::vector<std::wstring> processes = 
+    {
+        L"PowerToys.exe",
+        L"ColorPickerUI.exe",
+        L"PowerToys.Espresso.exe"
+        L"FancyZonesEditor.exe",
+        L"PowerToys.KeyboardManagerEngine.exe",
+        L"PowerToys.KeyboardManagerEditor.exe",
+        L"PowerLauncher.exe",
+        L"PowerToys.ShortcutGuide.exe"
+    };
 
     // Batch size for number of events queried at once
     constexpr int BATCH_SIZE = 50;
@@ -20,7 +30,7 @@ namespace
     {
     private:
         // Report last 30 days
-        const long long PERIOD = 30 * 24 * 3600ll * 1000;
+        const long long PERIOD = 10 * 24 * 3600ll * 1000;
 
         const std::wstring QUERY = L"<QueryList>" \
             L"  <Query Id='0'>" \
