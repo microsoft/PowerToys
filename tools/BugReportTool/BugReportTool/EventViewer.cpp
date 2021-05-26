@@ -7,6 +7,8 @@
 #include <fstream>
 #include <common/utils/winapi_error.h>
 
+#include "XmlDocumentEx.h"
+
 namespace
 {
     std::vector<std::wstring> processes = { L"PowerToys.exe", L"PowerLauncher.exe" };
@@ -60,19 +62,29 @@ namespace
                         EvtRender(NULL, hEvent, EvtRenderEventXml, dwBufferSize, pRenderedContent, &dwBufferUsed, &dwPropertyCount);
                     }
                 }
-
+                
                 if (ERROR_SUCCESS != (status = GetLastError()))
                 {
-                    report << L"--------------------------------------------------------------------------------------------" << std::endl;
-                    report << L"EvtRender failed with " << get_last_error_or_default(GetLastError()) << std::endl << std::endl;
+                    report << std::endl << L"EvtRender failed with " << get_last_error_or_default(GetLastError()) << std::endl << std::endl;
                     if (pRenderedContent)
                         free(pRenderedContent);
                     return;
                 }
             }
 
-            report << L"--------------------------------------------------------------------------------------------" << std::endl;
-            report << pRenderedContent << std::endl << std::endl;
+            XmlDocumentEx doc;
+            doc.LoadXml(pRenderedContent);
+            std::wstring formattedXml = L"";
+            try
+            {
+                formattedXml = doc.GetFormatedXml();
+            }
+            catch (...)
+            {
+                formattedXml = pRenderedContent;
+            }
+
+            report << std::endl << formattedXml << std::endl;
             if (pRenderedContent)
                 free(pRenderedContent);
         }
@@ -117,7 +129,7 @@ namespace
         {
             auto query = GetQuery(processName);
             auto reportPath = tmpDir;
-            reportPath.append(L"EventViewer-" + processName + L".txt");
+            reportPath.append(L"EventViewer-" + processName + L".xml");
             report = std::wofstream(reportPath);
 
             hResults = EvtQuery(NULL, NULL, GetQuery(processName).c_str(), EvtQueryChannelPath);
