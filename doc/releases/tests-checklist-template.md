@@ -19,7 +19,7 @@
 ## General Settings
 
 **Admin mode:**
- - [ ] restart PT and verify it now runs as user
+ - [ ] restart PT and verify it runs as user
  * restart as admin and set "Always run as admin"
  - [ ] restart PT and verify it still runs as admin
  * if it's not on, turn on "Run at startup"
