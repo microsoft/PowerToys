@@ -11,6 +11,8 @@
     <ClCompile Include="..\..\..\deps\cziplib\src\zip.c" />
     <ClCompile Include="ReportMonitorInfo.cpp" />
     <ClCompile Include="RegistryUtils.cpp" />
+    <ClCompile Include="EventViewer.cpp" />
+    <ClCompile Include="XmlDocumentEx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ZipTools">
@@ -26,5 +28,7 @@
     <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
     <ClInclude Include="ReportMonitorInfo.h" />
     <ClInclude Include="RegistryUtils.h" />
+    <ClInclude Include="EventViewer.h" />
+    <ClInclude Include="XmlDocumentEx.h" />
   </ItemGroup>
 </Project>

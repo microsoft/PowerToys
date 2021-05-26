@@ -16,6 +16,8 @@
 
 #include "ReportMonitorInfo.h"
 #include "RegistryUtils.h"
+#include "EventViewer.h"
+
 using namespace std;
 using namespace std::filesystem;
 using namespace winrt::Windows::Data::Json;
@@ -330,6 +332,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Write compatibility tab info to the temporary folder
     ReportCompatibilityTab(tmpDir);
+
+    // Write event viewer logs info to the temporary folder
+    EventViewer::ReportEventViewerInfo(tmpDir);
 
     ReportBootstrapperLog(tmpDir);
 

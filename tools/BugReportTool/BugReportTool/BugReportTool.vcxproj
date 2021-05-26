@@ -30,15 +30,18 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>Wevtapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\deps\cziplib\src\zip.c">
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
     </ClCompile>
+    <ClCompile Include="EventViewer.cpp" />
     <ClCompile Include="ReportMonitorInfo.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="RegistryUtils.cpp" />
+    <ClCompile Include="XmlDocumentEx.cpp" />
     <ClCompile Include="ZipTools\ZipFolder.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -52,9 +55,11 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\deps\cziplib\src\miniz.h" />
     <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
+    <ClInclude Include="EventViewer.h" />
     <ClInclude Include="ReportMonitorInfo.h" />
     <ClInclude Include="..\..\..\common\utils\json.h" />
     <ClInclude Include="RegistryUtils.h" />
+    <ClInclude Include="XmlDocumentEx.h" />
     <ClInclude Include="ZipTools\ZipFolder.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
