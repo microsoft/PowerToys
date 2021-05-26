@@ -3,6 +3,8 @@
 #include <signal.h>
 #include <sstream>
 #include <stdio.h>
+
+#include "winapi_error.h"
 #include "../logger/logger.h"
 
 static IMAGEHLP_SYMBOL64* pSymbol = (IMAGEHLP_SYMBOL64*)malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(TCHAR));
