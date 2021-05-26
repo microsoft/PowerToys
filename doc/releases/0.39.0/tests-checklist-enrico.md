@@ -23,9 +23,9 @@
  - [x] restart as admin and set "Always run as admin"
  - [x] restart PT and verify it runs as admin
  * if it's not on, turn on "Run at startup"
- - [ ] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
+ - [x] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
  * turn Always run as admin" off
- - [ ] reboot the machine and verify it now runs as user
+ - [x] reboot the machine and verify it now runs as user
 
 **Modules on/off:**
  - [ ] turn off all the modules and verify all module are off
