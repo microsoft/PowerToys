@@ -39,17 +39,17 @@
 
 ## FancyZones Editor
 
-- [ ] Open editor from the settings
-- [ ] Open editor with a shortcut
-- [ ] Create a new layout (grid and canvas)
-- [ ] Duplicate a template and a custom layout
-- [ ] Delete layout
-- [ ] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
-- [ ] Edit canvas layout: zones size and position, create or delete zones. 
-- [ ] Edit grid layout: split, merge, resize zones.
-- [ ] Check `Save and apply` and `Cancel` buttons behavior after editing.
-- [ ] Assign a layout to each monitor.
-- [ ] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
+- [X] Open editor from the settings
+- [X] Open editor with a shortcut
+- [X] Create a new layout (grid and canvas)
+- [X] Duplicate a template and a custom layout
+- [X] Delete layout
+- [X] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
+- [X] Edit canvas layout: zones size and position, create or delete zones. 
+- [X] Edit grid layout: split, merge, resize zones.
+- [X] Check `Save and apply` and `Cancel` buttons behavior after editing.
+- [X] Assign a layout to each monitor.
+- [X] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
 
 
 ## FancyZones
