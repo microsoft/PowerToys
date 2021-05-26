@@ -23,19 +23,19 @@
  - [X] reboot the machine and verify it now runs as user
 
 **Modules on/off:**
- - [ ] turn off all the modules and verify all module are off
- - [ ] restart PT and verify that all module are still off in the settings page and they are actually inactive
- - [ ] turn on all the module, all module are now working
- - [ ] restart PT and verify that all module are still on in the settings page and they are actually working
+ - [X] turn off all the modules and verify all module are off
+ - [X] restart PT and verify that all module are still off in the settings page and they are actually inactive
+ - [X] turn on all the module, all module are now working
+ - [X] restart PT and verify that all module are still on in the settings page and they are actually working
 
 **Elevated app notification:**
  - run PT as a user
  - open an elevated app (i.e. Task Manager)
  - shift-drag the elevated app window
- - [ ] verify that a notification appears
+ - [X] verify that a notification appears
  - restart PT as admin
  - shift-drag the elevated app window
- - [ ] verify the notification doesn't appear
+ - [X] verify the notification doesn't appear
 
 ## FancyZones Editor
 
