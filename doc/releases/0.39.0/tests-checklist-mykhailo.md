@@ -99,7 +99,7 @@ UI Validation:
 Remapping Validation:
 
 For all the remapping below, try pressing and releasing the remapped key/shortcut and pressing and holding it. Try different behaviors like releasing the modifier key before the action key and vice versa.
-  - [ ] Test key to key remapping
+  - [X] Test key to key remapping
     - A->B
     - Ctrl->A
     - A->Ctrl
@@ -107,19 +107,19 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
     - B->Win (make sure Start menu doesn't appear accidentally)
     - A->Disable
     - Win->Disable
-  - [ ] Test key to shortcut remapping
+  - [X] Test key to shortcut remapping
     - A->Ctrl+V
     - B->Win+A
-  - [ ] Test shortcut to shortcut remapping
+  - [X] Test shortcut to shortcut remapping
     - Ctrl+A->Ctrl+V
     - Win+A->Ctrl+V
     - Ctrl+V->Win+A
     - Win+A->Win+F
-  - [ ] Test shortcut to key remapping
+  - [X] Test shortcut to key remapping
     - Ctrl+A->B
     - Ctrl+A->Win
     - Win+A->B
   * Test app-specific remaps
-    - [ ] Similar remaps to above with Edge, VSCode (entered as code) and cmd. For cmd try admin and non-admin (requires PT to run as admin)
-    - [ ] Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
-  - [ ] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
+    - [X] Similar remaps to above with Edge, VSCode (entered as code) and cmd. For cmd try admin and non-admin (requires PT to run as admin)
+    - [X] Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
+  - [X] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
