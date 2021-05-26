@@ -2,8 +2,8 @@
 ## Functional tests
 
  Regressions:  
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
+ - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
+ - [x] https://github.com/microsoft/PowerToys/issues/1524
 
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
@@ -105,19 +105,16 @@
   
 ## Shortcut Guide
  * Run PowerToys as user:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
    * Restore the `Win + Shift + /` hotkey
-   - [ ] Open the guide and close it pressing `Esc`
-   - [ ] Open the guide and close it pressing and releasing the `Win` key
-   * In the Settings change the duration from 900ms to 200ms
-   - [ ] Verify the guide open quicker
-   * Restore the 900ms duration
+   - [x] Open the guide and close it pressing `Esc`
+   - [x] Open the guide and close it pressing and releasing the `Win` key
  * Run PowerToys as admin:
-   - [ ] Open an elevated app and keep it on foreground
-   - [ ] Verify `Win + Shift + /` opens the guide
+   - [x] Open an elevated app and keep it on foreground
+   - [x] Verify `Win + Shift + /` opens the guide
  * Run PowerToys as user
-    - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
+    - [x] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
 ### OOBE
  * Quit PowerToys
