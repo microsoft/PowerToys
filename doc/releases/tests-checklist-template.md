@@ -19,7 +19,6 @@
 ## General Settings
 
 **Admin mode:**
- - [ ] restart as admin and verify FZ can snap an elevated window
  - [ ] restart PT and verify it now runs as user
  * restart as admin and set "Always run as admin"
  - [ ] restart PT and verify it still runs as admin
