@@ -57,7 +57,14 @@ namespace PowerLauncher
 
         public void ReadSettingsOnChange()
         {
-            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", ReadSettings);
+            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher(
+                PowerLauncherSettings.ModuleName,
+                "settings.json",
+                () =>
+                {
+                    Log.Info("Settings were changed. Read settings.", GetType());
+                    ReadSettings();
+                });
         }
 
         public void ReadSettings()
@@ -73,6 +80,10 @@ namespace PowerLauncher
                     CreateSettingsIfNotExists();
 
                     var overloadSettings = _settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                    if (overloadSettings != null)
+                    {
+                        Log.Info($"Successfully read new settings. retryCount={retryCount}", GetType());
+                    }
 
                     if (overloadSettings.Plugins == null || overloadSettings.Plugins.Count() != PluginManager.AllPlugins.Count)
                     {
