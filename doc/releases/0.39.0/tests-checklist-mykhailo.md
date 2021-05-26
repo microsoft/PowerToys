@@ -13,14 +13,14 @@
 ## General Settings
 
 **Admin mode:**
- - [ ] restart as admin and verify FZ can snap an elevated window
- - [ ] restart PT and verify it now runs as user
+ - [X] restart as admin and verify FZ can snap an elevated window
+ - [X] restart PT and verify it now runs as user
  * restart as admin and set "Always run as admin"
- - [ ] restart PT and verify it still runs as admin
+ - [X] restart PT and verify it still runs as admin
  * if it's not on, turn on "Run at startup"
- - [ ] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
+ - [X] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
  * turn Always run as admin" off
- - [ ] reboot the machine and verify it now runs as user
+ - [X] reboot the machine and verify it now runs as user
 
 **Modules on/off:**
  - [ ] turn off all the modules and verify all module are off
