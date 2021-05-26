@@ -21,7 +21,7 @@
 **Admin mode:**
  - [ ] restart PT and verify it runs as user
  - [ ] restart as admin and set "Always run as admin"
- - [ ] restart PT and verify it still runs as admin
+ - [ ] restart PT and verify it  runs as admin
  * if it's not on, turn on "Run at startup"
  - [ ] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
  * turn Always run as admin" off
