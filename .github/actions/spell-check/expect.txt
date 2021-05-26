@@ -955,6 +955,7 @@ IVector
 IView
 IVirtual
 IWeb
+IXml
 ixx
 IZone
 IZoom
