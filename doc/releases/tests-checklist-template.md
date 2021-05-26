@@ -80,9 +80,8 @@
 * Change screen resolution or scaling. 
     - [ ] Assign grid layout, verify that the assigned layout fits the screen. 
       NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
-    - [ ] Edit grid layout, verify that split, merge and resize zones works as expected.
 - [ ] Disable FZ
-- [ ] Reenable FZ, verify that everything is in the same state as it was before disabling.
+- [ ] Re-enable FZ, verify that everything is in the same state as it was before disabling.
 
 ## File Explorer Add-ons
  * Running as user:
