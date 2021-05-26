@@ -105,17 +105,19 @@
   
 ## Shortcut Guide
  * Run PowerToys as user:
-   - [ ] Verify holding the `Win` key opens the guide
-   - [ ] Verify `Win + ?` opens the guide
+   - [ ] Verify `Win + Shift + /` opens the guide
+   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   * Restore the `Win + Shift + /` hotkey
+   - [ ] Open the guide and close it pressing `Esc`
+   - [ ] Open the guide and close it pressing and releasing the `Win` key
    * In the Settings change the duration from 900ms to 200ms
-   - [ ] Verify the guide open after quicker when holding the `Win` key
+   - [ ] Verify the guide open quicker
    * Restore the 900ms duration
  * Run PowerToys as admin:
    - [ ] Open an elevated app and keep it on foreground
-   - [ ] Verify holding the `Win` key opens the guide
-   - [ ] Verify `Win + ?` opens the guide
+   - [ ] Verify `Win + Shift + /` opens the guide
  * Run PowerToys as user
-    - [ ] Verify the first four shortcuts work
+    - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
 ### OOBE
  * Quit PowerToys
