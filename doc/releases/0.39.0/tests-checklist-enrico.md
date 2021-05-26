@@ -8,7 +8,7 @@
     * create a virtual desktop and apply the custom grid layout
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
  * install the new version (it will uninstall the old version and install the new version)
- - [ ] verify the settings are preserved and FancyZones configuration is still the same
+ - [x] verify the settings are preserved and FancyZones configuration is still the same
 
 ## Functional tests
 
@@ -96,17 +96,12 @@
   
 ## Shortcut Guide
  * Run PowerToys as user:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
    * Restore the `Win + Shift + /` hotkey
-   - [ ] Open the guide and close it pressing `Esc`
-   - [ ] Open the guide and close it pressing and releasing the `Win` key
-   * In the Settings change the duration from 900ms to 200ms
-   - [ ] Verify the guide open quicker
-   * Restore the 900ms duration
- * Run PowerToys as admin:
-   - [ ] Open an elevated app and keep it on foreground
-   - [ ] Verify `Win + Shift + /` opens the guide
- * Run PowerToys as user
-    - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
+   - [x] Open the guide and close it pressing `Esc`
+   - [x] Open the guide and close it pressing and releasing the `Win` key
+   * With PowerToys running as a user, open an elevated app and keep it on foreground
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
