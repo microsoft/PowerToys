@@ -471,7 +471,7 @@ namespace Microsoft.Plugin.Program.Programs
                     program.FullPath = Path.GetFullPath(target).ToLowerInvariant();
 
                     // Allow searching by executable name (E.g. WINWORD.exe for word)
-                    program.ExecutableName = Path.GetFileName(target);
+                    program.ExecutableName = Path.GetFileName(program.FullPath);
                     program.Arguments = ShellLinkHelper.Arguments;
 
                     // A .lnk could be a (Chrome) PWA, set correct AppType
