@@ -25,13 +25,13 @@ namespace
 
 SHELLEXECUTEINFOW LaunchPowerToysUpdate(const wchar_t* cmdline)
 {
-    std::wstring action_runner_path;
-    action_runner_path = get_module_folderpath();
+    std::wstring powertoysUpdaterPath;
+    powertoysUpdaterPath = get_module_folderpath();
 
-    action_runner_path += L"\\PowerToys.Update.exe";
+    powertoysUpdaterPath += L"\\PowerToys.Update.exe";
     SHELLEXECUTEINFOW sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS };
-    sei.lpFile = action_runner_path.c_str();
+    sei.lpFile = powertoysUpdaterPath.c_str();
     sei.nShow = SW_SHOWNORMAL;
     sei.lpParameters = cmdline;
     ShellExecuteExW(&sei);
@@ -40,7 +40,7 @@ SHELLEXECUTEINFOW LaunchPowerToysUpdate(const wchar_t* cmdline)
 
 using namespace updating;
 
-bool CouldBeCostlyConnection()
+bool IsMeteredConnection()
 {
     using namespace winrt::Windows::Networking::Connectivity;
     ConnectionProfile internetConnectionProfile = NetworkInformation::GetInternetConnectionProfile();
@@ -121,7 +121,7 @@ void PeriodicUpdateWorker()
 
         std::this_thread::sleep_for(std::chrono::minutes{ sleep_minutes_till_next_update });
 
-        const bool download_update = !CouldBeCostlyConnection() && get_general_settings().downloadUpdatesAutomatically;
+        const bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
         bool version_info_obtained = false;
         try
         {
@@ -154,7 +154,7 @@ void PeriodicUpdateWorker()
     }
 }
 
-void CheckForUpdatesSettingsCallback()
+void CheckForUpdatesCallback()
 {
     Logger::trace(L"Check for updates callback invoked");
     auto state = UpdateState::read();
@@ -167,7 +167,7 @@ void CheckForUpdatesSettingsCallback()
             new_version_info = version_up_to_date{};
             Logger::error(L"Couldn't obtain version info from github: {}", new_version_info.error());
         }
-        const bool download_update = !CouldBeCostlyConnection() && get_general_settings().downloadUpdatesAutomatically;
+        const bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
         ProcessNewVersionInfo(*new_version_info, state, download_update, false);
         UpdateState::store([&](UpdateState& v) {
             v = std::move(state);
@@ -175,6 +175,6 @@ void CheckForUpdatesSettingsCallback()
     }
     catch (...)
     {
-        Logger::error("CheckForUpdatesSettingsCallback: error while processing version info");
+        Logger::error("CheckForUpdatesCallback: error while processing version info");
     }
 }
