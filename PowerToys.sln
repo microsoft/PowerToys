@@ -41,7 +41,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fancyzones", "fancyzones", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZonesLib", "src\modules\fancyzones\lib\FancyZonesLib.vcxproj", "{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests-FancyZones", "src\modules\fancyzones\tests\UnitTests\UnitTests.vcxproj", "{9C6A7905-72D4-4BF5-B256-ABFDAEF68AE9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests-FancyZones", "src\modules\fancyzones\FancyZonesTests\UnitTests\UnitTests.vcxproj", "{9C6A7905-72D4-4BF5-B256-ABFDAEF68AE9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99} = {F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}
 	EndProjectSection
