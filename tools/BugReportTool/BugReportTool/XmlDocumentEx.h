@@ -1,5 +1,7 @@
 #pragma once
 #include <winrt/Windows.Data.Xml.Dom.h>
+#include <string>
+#include <sstream>
 
 class XmlDocumentEx : public winrt::Windows::Data::Xml::Dom::XmlDocument
 {
