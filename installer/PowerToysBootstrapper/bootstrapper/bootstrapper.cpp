@@ -4,7 +4,6 @@
 #include "RcResource.h"
 #include <common/updating/dotnet_installation.h>
 #include <common/updating/installer.h>
-#include <common/updating/notifications.h>
 #include <common/version/version.h>
 #include <common/utils/appMutex.h>
 #include <common/utils/elevation.h>
@@ -14,11 +13,8 @@
 #include <common/utils/winapi_error.h>
 #include <common/SettingsAPI/settings_helpers.h>
 
-#include <runner/action_runner_utils.h>
-
 #include "progressbar_window.h"
 
-auto Strings = create_notifications_strings();
 static bool g_Silent = false;
 
 #define STR_HELPER(x) #x
@@ -351,7 +347,7 @@ int Bootstrapper(HINSTANCE hInstance)
         spdlog::debug("Existing MSI package path not found");
     }
 
-    if (!package_path.empty() && !updating::uninstall_msi_version(package_path, Strings))
+    if (!package_path.empty() && !updating::uninstall_msi_version(package_path))
     {
         spdlog::error("Couldn't install the existing MSI package ({})", GetLastError());
         ShowMessageBoxError(IDS_UNINSTALL_PREVIOUS_VERSION_ERROR);

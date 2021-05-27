@@ -2,6 +2,7 @@
 
 #include "installer.h"
 #include <common/version/version.h>
+// TODO: remove; do not depend on toasts
 #include <common/notifications/notifications.h>
 #include <common/utils/os-detect.h>
 #include "utils/winapi_error.h"
@@ -66,25 +67,10 @@ namespace updating
         return selection == IDYES;
     }
 
-    bool uninstall_msi_version(const std::wstring& package_path, const notifications::strings& strings)
+    bool uninstall_msi_version(const std::wstring& package_path)
     {
         const auto uninstall_result = MsiInstallProductW(package_path.c_str(), L"REMOVE=ALL");
-        if (ERROR_SUCCESS == uninstall_result)
-        {
-            return true;
-        }
-        else if (auto system_message = get_last_error_message(uninstall_result); system_message.has_value())
-        {
-            try
-            {
-                ::notifications::show_toast(*system_message, TOAST_TITLE);
-            }
-            catch (...)
-            {
-                MessageBoxW(nullptr, strings.UNINSTALLATION_UNKNOWN_ERROR.c_str(), strings.NOTIFICATION_TITLE.c_str(), MB_OK | MB_ICONERROR);
-            }
-        }
-        return false;
+        return ERROR_SUCCESS == uninstall_result;
     }
 
     std::optional<std::wstring> get_msi_package_installed_path()

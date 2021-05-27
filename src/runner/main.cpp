@@ -24,8 +24,8 @@
 #include <common/utils/resources.h>
 #include <common/winstore/winstore.h>
 
-#include "update_utils.h"
-#include "action_runner_utils.h"
+#include "UpdateUtils.h"
+#include "ActionRunnerUtils.h"
 
 #include <winrt/Windows.System.h>
 
@@ -125,24 +125,15 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
         debug_verify_launcher_assets();
 
         std::thread{ [] {
-            periodic_update_worker();
+            PeriodicUpdateWorker();
         } }.detach();
 
-        if (winstore::running_as_packaged())
-        {
-            std::thread{ [] {
-                start_msi_uninstallation_sequence();
-            } }.detach();
-        }
-        else
-        {
-            std::thread{ [] {
-                if (updating::uninstall_previous_msix_version_async().get())
-                {
-                    notifications::show_toast(GET_RESOURCE_STRING(IDS_OLDER_MSIX_UNINSTALLED).c_str(), L"PowerToys");
-                }
-            } }.detach();
-        }
+        std::thread{ [] {
+            if (updating::uninstall_previous_msix_version_async().get())
+            {
+                notifications::show_toast(GET_RESOURCE_STRING(IDS_OLDER_MSIX_UNINSTALLED).c_str(), L"PowerToys");
+            }
+        } }.detach();
 
         notifications::register_background_toast_handler();
 
@@ -262,7 +253,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     else if (param.starts_with(update_now))
     {
         std::wstring args{ cmdArg::UPDATE_NOW_LAUNCH_STAGE1 };
-        launch_action_runner(args.c_str());
+        LaunchPowerToysUpdate(args.c_str());
         return toast_notification_handler_result::exit_success;
     }
     else if (param == couldnt_toggle_powerpreview_modules_disable)
@@ -278,6 +269,12 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     {
         return toast_notification_handler_result::exit_error;
     }
+}
+
+// TODO: dummy function to be removed to avoid conflicts with https://github.com/microsoft/PowerToys/pull/11450
+bool start_msi_uninstallation_sequence()
+{
+    return true;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
