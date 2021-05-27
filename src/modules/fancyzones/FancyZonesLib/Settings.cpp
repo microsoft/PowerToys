@@ -2,8 +2,8 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/resources.h>
 
-#include "lib/Settings.h"
-#include "lib/FancyZones.h"
+#include "FancyZonesLib/Settings.h"
+#include "FancyZonesLib/FancyZones.h"
 #include "trace.h"
 
 // Non-Localizable strings

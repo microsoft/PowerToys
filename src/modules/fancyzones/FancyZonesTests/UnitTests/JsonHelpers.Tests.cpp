@@ -3,10 +3,10 @@
 #include <fstream>
 #include <utility>
 
-#include <lib/FancyZonesData.h>
-#include <lib/FancyZonesDataTypes.h>
-#include <lib/JsonHelpers.h>
-#include <lib/util.h>
+#include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesDataTypes.h>
+#include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/util.h>
 
 #include "util.h"
 

@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "lib\Zone.h"
-#include "lib\Settings.h"
+#include "FancyZonesLib\Zone.h"
+#include "FancyZonesLib\Settings.h"
 
 #include "Util.h"
 

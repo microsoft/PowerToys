@@ -6,14 +6,14 @@
 #include <common/utils/window.h>
 
 #include "FancyZones.h"
-#include "lib/Settings.h"
-#include "lib/ZoneWindow.h"
-#include "lib/FancyZonesData.h"
-#include "lib/ZoneSet.h"
-#include "lib/FileWatcher.h"
-#include "lib/WindowMoveHandler.h"
-#include "lib/FancyZonesWinHookEventIDs.h"
-#include "lib/util.h"
+#include "FancyZonesLib/Settings.h"
+#include "FancyZonesLib/ZoneWindow.h"
+#include "FancyZonesLib/FancyZonesData.h"
+#include "FancyZonesLib/ZoneSet.h"
+#include "FancyZonesLib/FileWatcher.h"
+#include "FancyZonesLib/WindowMoveHandler.h"
+#include "FancyZonesLib/FancyZonesWinHookEventIDs.h"
+#include "FancyZonesLib/util.h"
 #include "on_thread_executor.h"
 #include "trace.h"
 #include "VirtualDesktopUtils.h"
@@ -21,7 +21,7 @@
 #include "util.h"
 #include "CallTracer.h"
 
-#include <lib/SecondaryMouseButtonsHook.h>
+#include <FancyZonesLib/SecondaryMouseButtonsHook.h>
 
 enum class DisplayChangeType
 {
