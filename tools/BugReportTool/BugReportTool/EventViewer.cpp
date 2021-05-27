@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <winevt.h>
 #include <fstream>
+#include <string>
 #include <common/utils/winapi_error.h>
 
 #include "XmlDocumentEx.h"
