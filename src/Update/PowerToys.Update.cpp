@@ -31,7 +31,7 @@
 #include <Msi.h>
 
 #include "../runner/tray_icon.h"
-#include "../runner/action_runner_utils.h"
+#include "../runner/UpdateUtils.h"
 
 auto Strings = create_notifications_strings();
 
