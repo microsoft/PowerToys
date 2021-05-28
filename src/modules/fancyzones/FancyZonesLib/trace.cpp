@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "trace.h"
-#include "lib/ZoneSet.h"
-#include "lib/Settings.h"
-#include "lib/FancyZonesData.h"
-#include "lib/FancyZonesDataTypes.h"
+#include "FancyZonesLib/ZoneSet.h"
+#include "FancyZonesLib/Settings.h"
+#include "FancyZonesLib/FancyZonesData.h"
+#include "FancyZonesLib/FancyZonesDataTypes.h"
 
 // Telemetry strings should not be localized.
 #define LoggingProviderKey "Microsoft.PowerToys"

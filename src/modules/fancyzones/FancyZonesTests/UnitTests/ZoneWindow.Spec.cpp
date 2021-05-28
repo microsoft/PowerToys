@@ -2,13 +2,13 @@
 
 #include <filesystem>
 
-#include <lib/util.h>
-#include <lib/ZoneSet.h>
-#include <lib/ZoneWindow.h>
-#include <lib/FancyZones.h>
-#include <lib/FancyZonesData.h>
-#include <lib/FancyZonesDataTypes.h>
-#include <lib/JsonHelpers.h>
+#include <FancyZonesLib/util.h>
+#include <FancyZonesLib/ZoneSet.h>
+#include <FancyZonesLib/ZoneWindow.h>
+#include <FancyZonesLib/FancyZones.h>
+#include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesDataTypes.h>
+#include <FancyZonesLib/JsonHelpers.h>
 #include "Util.h"
 
 #include <common/utils/process_path.h>

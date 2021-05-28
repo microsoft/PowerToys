@@ -2,8 +2,8 @@
 #include <filesystem>
 #include <fstream>
 
-#include <lib/Settings.h>
-#include <lib/FancyZones.h>
+#include <FancyZonesLib/Settings.h>
+#include <FancyZonesLib/FancyZones.h>
 #include <common/SettingsAPI/settings_helpers.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

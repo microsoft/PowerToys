@@ -1,6 +1,6 @@
 #pragma once
 #include "FancyZones.h"
-#include "lib/ZoneSet.h"
+#include "FancyZonesLib/ZoneSet.h"
 
 /**
  * Class representing single work area, which is defined by monitor and virtual desktop.
