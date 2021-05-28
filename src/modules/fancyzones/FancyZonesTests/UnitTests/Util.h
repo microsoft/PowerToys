@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lib/FancyZonesDataTypes.h"
+#include "FancyZonesLib/FancyZonesDataTypes.h"
 
 namespace CustomAssert
 {
