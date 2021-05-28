@@ -7,20 +7,66 @@
 #include "UpdateUtils.h"
 
 #include <common/logger/logger.h>
+#include <common/notifications/notifications.h>
 #include <common/updating/installer.h>
-#include <common/updating/http_client.h>
 #include <common/updating/updating.h>
 #include <common/updating/updateState.h>
+#include <common/utils/HttpClient.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/timeutil.h>
-
-auto Strings = create_notifications_strings();
+#include <common/version/version.h>
 
 namespace
 {
     constexpr int64_t UPDATE_CHECK_INTERVAL_MINUTES = 60 * 24;
     constexpr int64_t UPDATE_CHECK_AFTER_FAILED_INTERVAL_MINUTES = 60 * 2;
+}
+using namespace notifications;
+using namespace updating;
+
+std::wstring CurrentVersionToNextVersion(const new_version_download_info& info)
+{
+    auto result = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
+    result += L" -> ";
+    result += info.version.toWstring();
+    return result;
+}
+
+void ShowNewVersionAvailable(const new_version_download_info& info)
+{
+    remove_toasts_by_tag(UPDATING_PROCESS_TOAST_TAG);
+
+    toast_params toast_params{ UPDATING_PROCESS_TOAST_TAG, false };
+    std::wstring contents = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE);
+    contents += L'\n';
+    contents += CurrentVersionToNextVersion(info);
+
+    show_toast_with_activations(std::move(contents),
+                                GET_RESOURCE_STRING(IDS_TOAST_TITLE),
+                                {},
+                                { link_button{ GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_NOW),
+                                               L"powertoys://update_now/" },
+                                  link_button{ GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_MORE_INFO),
+                                               L"powertoys://open_settings/" } },
+                                std::move(toast_params));
+}
+
+void ShowOpenSettingsForUpdate()
+{
+    remove_toasts_by_tag(UPDATING_PROCESS_TOAST_TAG);
+
+    toast_params toast_params{ UPDATING_PROCESS_TOAST_TAG, false };
+
+    std::vector<action_t> actions = {
+        link_button{ GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_MORE_INFO),
+                     L"powertoys://open_settings/" },
+    };
+    show_toast_with_activations(GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE),
+                                GET_RESOURCE_STRING(IDS_TOAST_TITLE),
+                                {},
+                                std::move(actions),
+                                std::move(toast_params));
 }
 
 SHELLEXECUTEINFOW LaunchPowerToysUpdate(const wchar_t* cmdline)
@@ -48,9 +94,9 @@ bool IsMeteredConnection()
 }
 
 void ProcessNewVersionInfo(const github_version_info& version_info,
-                              UpdateState& state,
-                              const bool download_update,
-                              const bool show_notifications)
+                           UpdateState& state,
+                           const bool download_update,
+                           const bool show_notifications)
 {
     state.githubUpdateLastCheckedDate.emplace(timeutil::now());
     if (std::holds_alternative<version_up_to_date>(version_info))
@@ -81,7 +127,7 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
             state.downloadedInstallerFilename = new_version_info.installer_filename;
             if (show_notifications)
             {
-                notifications::show_new_version_available(new_version_info, Strings);
+                ShowNewVersionAvailable(new_version_info);
             }
         }
         else
@@ -98,7 +144,7 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         state.downloadedInstallerFilename = {};
         if (show_notifications)
         {
-            notifications::show_open_settings_for_update(Strings);
+            ShowOpenSettingsForUpdate();
         }
     }
 }
@@ -125,7 +171,7 @@ void PeriodicUpdateWorker()
         bool version_info_obtained = false;
         try
         {
-            const auto new_version_info = get_github_version_info_async(Strings).get();
+            const auto new_version_info = get_github_version_info_async().get();
             if (new_version_info.has_value())
             {
                 version_info_obtained = true;
@@ -160,7 +206,7 @@ void CheckForUpdatesCallback()
     auto state = UpdateState::read();
     try
     {
-        auto new_version_info = get_github_version_info_async(Strings).get();
+        auto new_version_info = get_github_version_info_async().get();
         if (!new_version_info)
         {
             // If we couldn't get a new version from github for some reason, assume we're up to date, but also log error

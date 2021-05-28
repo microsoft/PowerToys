@@ -84,7 +84,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
-                    CheckForUpdatesSettingsCallback();
+                    CheckForUpdatesCallback();
                 }
                 else if (action == L"request_update_state_date")
                 {

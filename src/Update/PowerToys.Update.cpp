@@ -14,10 +14,9 @@
 #include <common/updating/updating.h>
 #include <common/updating/updateState.h>
 #include <common/updating/installer.h>
-#include <common/updating/http_client.h>
-#include <common/updating/dotnet_installation.h>
 
 #include <common/utils/elevation.h>
+#include <common/utils/HttpClient.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/timeutil.h>
@@ -32,8 +31,6 @@
 
 #include "../runner/tray_icon.h"
 #include "../runner/UpdateUtils.h"
-
-auto Strings = create_notifications_strings();
 
 using namespace cmdArg;
 
@@ -59,7 +56,7 @@ std::optional<fs::path> ObtainInstallerPath()
     auto state = UpdateState::read();
     if (state.state == UpdateState::readyToDownload || state.state == UpdateState::errorDownloading)
     {
-        const auto new_version_info = get_github_version_info_async(Strings).get();
+        const auto new_version_info = get_github_version_info_async().get();
         if (!new_version_info)
         {
             Logger::error(L"Couldn't obtain github version info: {}", new_version_info.error());
