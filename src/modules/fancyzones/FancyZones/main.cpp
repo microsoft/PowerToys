@@ -1,11 +1,11 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler_x64.h>
 
 #include <FancyZonesLib/trace.h>
 
-// Non-locaizable
+// Non-localizable
 const std::wstring moduleName = L"FancyZones";
 const std::wstring internalPath = L"";
 
