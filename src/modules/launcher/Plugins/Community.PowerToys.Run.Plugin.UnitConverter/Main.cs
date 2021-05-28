@@ -64,7 +64,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             InputInterpreter.ShorthandFeetInchHandler(ref split, _currentCulture);
             InputInterpreter.InputSpaceInserter(ref split);
 
-            if (split.Length < 4 || split.Length > 4)
+            if (split.Length != 4)
             {
                 // deny any other queries than:
                 // 10 ft in cm

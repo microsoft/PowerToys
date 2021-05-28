@@ -7,9 +7,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public static class InputInterpreter
     {
+        private static readonly string _pattern = @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)";
+
         public static string[] RegexSplitter(string[] split)
         {
-            return Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)");
+            return Regex.Split(split[0], _pattern);
         }
 
         /// <summary>
@@ -22,7 +24,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return;
             }
 
-            string[] parseInputWithoutSpace = Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)");
+            string[] parseInputWithoutSpace = Regex.Split(split[0], _pattern);
 
             if (parseInputWithoutSpace.Length > 1)
             {

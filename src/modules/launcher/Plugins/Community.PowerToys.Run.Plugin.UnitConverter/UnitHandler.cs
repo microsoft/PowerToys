@@ -84,7 +84,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     return (Abbreviated.Neither, unit_info);
                 }
             }
-            else if ((first_unit_is_abbreviated && !second_unit_is_abbreviated) || (!first_unit_is_abbreviated && second_unit_is_abbreviated))
+            else if (first_unit_is_abbreviated != second_unit_is_abbreviated)
             {
                 // c
                 if (first_unit_is_abbreviated)
