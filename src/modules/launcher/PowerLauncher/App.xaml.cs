@@ -170,9 +170,23 @@ namespace PowerLauncher
 
         private void RegisterExitEvents()
         {
-            AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose();
-            Current.Exit += (s, e) => Dispose();
-            Current.SessionEnding += (s, e) => Dispose();
+            AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+            {
+                Log.Info("AppDomain.CurrentDomain.ProcessExit", GetType());
+                Dispose();
+            };
+
+            Current.Exit += (s, e) =>
+            {
+                Log.Info("Application.Current.Exit", GetType());
+                Dispose();
+            };
+
+            Current.SessionEnding += (s, e) =>
+            {
+                Log.Info("Application.Current.SessionEnding", GetType());
+                Dispose();
+            };
         }
 
         /// <summary>
