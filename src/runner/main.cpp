@@ -45,8 +45,6 @@
 #include <common/utils/window.h>
 #include <common/version/version.h>
 
-extern updating::notifications::strings Strings;
-
 namespace
 {
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";

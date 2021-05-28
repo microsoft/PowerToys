@@ -8,7 +8,6 @@
 #include <winrt/Windows.Foundation.h>
 #include <expected.hpp>
 
-#include "notifications.h"
 #include <common/version/helper.h>
 
 namespace updating
@@ -28,7 +27,7 @@ namespace updating
 
     std::future<std::optional<std::filesystem::path>> download_new_version(const new_version_download_info& new_version);
     std::filesystem::path get_pending_updates_path();
-    std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const notifications::strings& strings, const bool prerelease = false);
+    std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease = false);
 
     // non-localized
     constexpr inline std::wstring_view INSTALLER_FILENAME_PATTERN = L"powertoyssetup";
