@@ -3,7 +3,7 @@
 #include <common/updating/updating.h>
 
 void PeriodicUpdateWorker();
-void CheckForUpdatesSettingsCallback();
+void CheckForUpdatesCallback();
 
 namespace cmdArg
 {

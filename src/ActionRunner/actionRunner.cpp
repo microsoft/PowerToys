@@ -24,7 +24,7 @@
 #include <winrt/Windows.Storage.h>
 
 #include "../runner/tray_icon.h"
-#include "../runner/action_runner_utils.h"
+#include "../runner/ActionRunnerUtils.h"
 
 using namespace cmdArg;
 
