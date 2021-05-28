@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h fancyzones.base.rc fancyzones.rc" />
+  </Target>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{48804216-2A0E-4168-A6D8-9CD068D14227}</ProjectGuid>
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>fancyzones</RootNamespace>
-    <ProjectName>FancyZonesModuleInterface</ProjectName>
+    <RootNamespace>lib</RootNamespace>
+    <ProjectName>FancyZonesLib</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -31,43 +32,77 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>FANCYZONES_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\;..\..\..\common\inc;..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <Link>
-      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;shlwapi.lib;uxtheme.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CallTracer.h" />
+    <ClInclude Include="FancyZones.h" />
+    <ClInclude Include="FancyZonesDataTypes.h" />
+    <ClInclude Include="FancyZonesWinHookEventIDs.h" />
+    <ClInclude Include="FileWatcher.h" />
+    <ClInclude Include="GenericKeyHook.h" />
+    <ClInclude Include="FancyZonesData.h" />
+    <ClInclude Include="JsonHelpers.h" />
+    <ClInclude Include="KeyState.h" />
+    <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="targetver.h" />
+    <ClInclude Include="Generated Files/resource.h" />
+    <None Include="resource.base.h" />
+    <ClInclude Include="SecondaryMouseButtonsHook.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="trace.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="VirtualDesktopUtils.h" />
+    <ClInclude Include="WindowMoveHandler.h" />
+    <ClInclude Include="Zone.h" />
+    <ClInclude Include="ZoneSet.h" />
+    <ClInclude Include="ZoneWindow.h" />
+    <ClInclude Include="ZoneWindowDrawing.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="CallTracer.cpp" />
+    <ClCompile Include="FancyZones.cpp" />
+    <ClCompile Include="FancyZonesDataTypes.cpp" />
+    <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
+    <ClCompile Include="FancyZonesData.cpp" />
+    <ClCompile Include="FileWatcher.cpp" />
+    <ClCompile Include="JsonHelpers.cpp" />
+    <ClCompile Include="MonitorWorkAreaHandler.cpp" />
+    <ClCompile Include="OnThreadExecutor.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SecondaryMouseButtonsHook.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="trace.cpp" />
+    <ClCompile Include="util.cpp" />
+    <ClCompile Include="VirtualDesktopUtils.cpp" />
+    <ClCompile Include="WindowMoveHandler.cpp" />
+    <ClCompile Include="Zone.cpp" />
+    <ClCompile Include="ZoneSet.cpp" />
+    <ClCompile Include="ZoneWindow.cpp" />
+    <ClCompile Include="ZoneWindowDrawing.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
-      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
+    <None Include="fancyzones.base.rc" />
+    <ProjectReference Include="..\..\..\common\notifications\notifications.vcxproj">
+      <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
     </ProjectReference>
+    <ResourceCompile Include="Generated Files/fancyzones.rc" />
+    <None Include="packages.config" />
+    <None Include="Resources.resx" />
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\FancyZonesLib\FancyZonesLib.vcxproj">
-      <Project>{f9c68edf-ac74-4b77-9af1-005d9c9f6a99}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\FancyZonesLib\Generated Files\fancyzones.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>

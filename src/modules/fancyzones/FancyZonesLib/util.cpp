@@ -11,7 +11,7 @@
 #include <complex>
 #include <wil/Resource.h>
 
-#include <fancyzones/lib/FancyZonesDataTypes.h>
+#include <fancyzones/FancyZonesLib/FancyZonesDataTypes.h>
 
 // Non-Localizable strings
 namespace NonLocalizable

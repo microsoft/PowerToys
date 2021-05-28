@@ -2,9 +2,9 @@
 
 #include <filesystem>
 
-#include <lib/FancyZones.h>
-#include <lib/FancyZonesData.h>
-#include <lib/Settings.h>
+#include <FancyZonesLib/FancyZones.h>
+#include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/Settings.h>
 
 #include "util.h"
 

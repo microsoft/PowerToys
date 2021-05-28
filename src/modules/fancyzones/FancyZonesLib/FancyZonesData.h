@@ -11,7 +11,7 @@
 #include <optional>
 #include <vector>
 #include <winnt.h>
-#include <lib/JsonHelpers.h>
+#include <FancyZonesLib/JsonHelpers.h>
 
 namespace FancyZonesDataTypes
 {

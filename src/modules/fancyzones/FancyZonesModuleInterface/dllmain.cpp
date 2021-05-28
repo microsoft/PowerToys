@@ -4,15 +4,15 @@
 #include <common/debug_control.h>
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include <interface/powertoy_module_interface.h>
-#include <lib/ZoneSet.h>
+#include <FancyZonesLib/ZoneSet.h>
 
-#include <lib/Generated Files/resource.h>
-#include <lib/trace.h>
-#include <lib/Settings.h>
-#include <lib/FancyZones.h>
-#include <lib/FancyZonesData.h>
-#include <lib/FancyZonesWinHookEventIDs.h>
-#include <lib/FancyZonesData.cpp>
+#include <FancyZonesLib/Generated Files/resource.h>
+#include <FancyZonesLib/trace.h>
+#include <FancyZonesLib/Settings.h>
+#include <FancyZonesLib/FancyZones.h>
+#include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
+#include <FancyZonesLib/FancyZonesData.cpp>
 #include <common/logger/logger.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>

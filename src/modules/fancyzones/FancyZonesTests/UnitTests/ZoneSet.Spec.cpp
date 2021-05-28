@@ -1,15 +1,14 @@
 #include "pch.h"
-#include "lib\FancyZonesData.h"
-#include "lib\FancyZonesDataTypes.h"
-#include "lib\JsonHelpers.h"
-#include "lib\VirtualDesktopUtils.h"
-#include "lib\ZoneSet.h"
+#include "FancyZonesLib\FancyZonesData.h"
+#include "FancyZonesLib\FancyZonesDataTypes.h"
+#include "FancyZonesLib\JsonHelpers.h"
+#include "FancyZonesLib\VirtualDesktopUtils.h"
+#include "FancyZonesLib\ZoneSet.h"
 
 #include <filesystem>
 
 #include "Util.h"
 #include <common/SettingsAPI/settings_helpers.h>
-#include <modules\fancyzones\lib\JsonHelpers.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace FancyZonesDataTypes;

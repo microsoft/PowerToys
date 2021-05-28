@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Util.h"
-#include "lib\util.h"
+#include "FancyZonesLib\util.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
