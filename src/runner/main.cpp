@@ -131,7 +131,7 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
         // Load Powertoys DLLs
 
         const std::array<std::wstring_view, 9> knownModules = {
-            L"modules/FancyZones/fancyzones.dll",
+            L"modules/FancyZones/FancyZonesModuleInterface.dll",
             L"modules/FileExplorerPreview/powerpreview.dll",
             L"modules/ImageResizer/ImageResizerExt.dll",
             L"modules/KeyboardManager/KeyboardManager.dll",

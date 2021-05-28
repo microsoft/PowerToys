@@ -7,7 +7,7 @@
 #include "CallTracer.h"
 
 #include <common/utils/json.h>
-#include <fancyzones/lib/util.h>
+#include <fancyzones/FancyZonesLib/util.h>
 
 #include <shlwapi.h>
 #include <filesystem>

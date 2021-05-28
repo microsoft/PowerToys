@@ -7,7 +7,7 @@
 
 #define FILE_DESCRIPTION "PowerToys FancyZones"
 #define INTERNAL_NAME "fancyzones"
-#define ORIGINAL_FILENAME "fancyzones.dll"
+#define ORIGINAL_FILENAME "FancyZonesModuleInterface.dll"
 
 // Non-localizable
 //////////////////////////////

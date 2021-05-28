@@ -62,7 +62,7 @@
     <ProjectReference Include="..\..\..\..\common\Display\Display.vcxproj">
       <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\lib\FancyZonesLib.vcxproj">
+    <ProjectReference Include="..\..\FancyZonesLib\FancyZonesLib.vcxproj">
       <Project>{f9c68edf-ac74-4b77-9af1-005d9c9f6a99}</Project>
     </ProjectReference>
   </ItemGroup>
