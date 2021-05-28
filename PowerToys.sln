@@ -332,7 +332,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuide", "src\module
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZonesModuleInterface", "src\modules\fancyzones\FancyZonesModuleInterface\FancyZonesModuleInterface.vcxproj", "{48804216-2A0E-4168-A6D8-9CD068D14227}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZonesEngine", "src\modules\fancyzones\FancyZonesEngine\FancyZonesEngine.vcxproj", "{390AE700-B55F-4202-91EA-A822EB75B9BD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZones", "src\modules\fancyzones\FancyZones\FancyZones.vcxproj", "{390AE700-B55F-4202-91EA-A822EB75B9BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
