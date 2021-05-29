@@ -4,10 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Mono.Collections.Generic;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 {
@@ -16,6 +20,22 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
     /// </summary>
     internal static class ResultHelper
     {
+        private static IEnumerable<TimeZoneInfoExtended> _allTimeZones = Enumerable.Empty<TimeZoneInfoExtended>();
+
+        internal static void CollectAllTimeZones()
+        {
+            // TODO: remove after JSON
+            var timeZoneInfos = TimeZoneInfo.GetSystemTimeZones();
+            var allTimeZones = new List<TimeZoneInfoExtended>();
+            foreach (var timeZone in timeZoneInfos)
+            {
+                var extendedTiemZone = new TimeZoneInfoExtended(timeZone);
+                allTimeZones.Add(extendedTiemZone);
+            }
+
+            _allTimeZones = allTimeZones;
+        }
+
         /// <summary>
         /// Return a list of <see cref="Result"/>s based on the given <see cref="Query"/>.
         /// </summary>
@@ -23,16 +43,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <returns>A list with <see cref="Result"/>s.</returns>
         internal static IEnumerable<Result> GetResults(Query query, string iconPath)
         {
-            var searchFor = GetSearchString(query);
-            var timeZoneInfos = TimeZoneInfo.GetSystemTimeZones();
             var results = new Collection<Result>();
             var utcNow = DateTime.UtcNow;
 
-            foreach (var timeZoneInfo in timeZoneInfos)
+            foreach (var timeZone in _allTimeZones)
             {
-                if (TimeZoneInfoMatchQuery(timeZoneInfo, searchFor))
+                if (TimeZoneInfoMatchQuery(timeZone, query))
                 {
-                    var result = GetResult(timeZoneInfo, utcNow, iconPath);
+                    var result = GetResult(timeZone, utcNow, iconPath);
                     results.Add(result);
                 }
             }
@@ -42,59 +60,37 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         }
 
         /// <summary>
-        /// Return the string to search, based on the given <see cref="Query"/>.
+        /// Check if the given <see cref="TimeZoneInfoExtended"/> contains a value that match the given <see cref="Query"/> .
         /// </summary>
-        /// <param name="query">The <see cref="Query"/> that contain the string to search.</param>
-        /// <returns>A string for a search.</returns>
-        private static string GetSearchString(Query query)
-        {
-            var secondChar = query.Search.ElementAtOrDefault(1);
-
-            if (secondChar == '0')
-            {
-                return query.Search;
-            }
-
-            if (!char.IsDigit(secondChar))
-            {
-                return query.Search;
-            }
-
-            // Allow the user to direct search for "+9", instead of "+09".
-            var searchFor = query.Search;
-
-            if (query.Search.StartsWith('+'))
-            {
-                searchFor = "+0" + query.Search.Substring(1);
-            }
-
-            if (query.Search.StartsWith('-'))
-            {
-                searchFor = "-0" + query.Search.Substring(1);
-            }
-
-            return searchFor;
-        }
-
-        /// <summary>
-        /// Check if the given <see cref="TimeZoneInfo"/> contains a value that match the given <see cref="string"/> .
-        /// </summary>
-        /// <param name="timeZoneInfo">The <see cref="TimeZoneInfo"/> to check.</param>
-        /// <param name="searchFor">The <see cref="string"/> that should match.</param>
+        /// <param name="timeZone">The <see cref="TimeZoneInfoExtended"/> to check.</param>
+        /// <param name="query">The <see cref="Query"/> that should match.</param>
         /// <returns><see langword="true"/> if it's match, otherwise <see langword="false"/>.</returns>
-        private static bool TimeZoneInfoMatchQuery(TimeZoneInfo timeZoneInfo, string searchFor)
+        private static bool TimeZoneInfoMatchQuery(TimeZoneInfoExtended timeZone, Query query)
         {
-            if (timeZoneInfo.DisplayName.Contains(searchFor, StringComparison.InvariantCultureIgnoreCase))
+            if (timeZone.Offset.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase))
             {
                 return true;
             }
 
-            if (timeZoneInfo.StandardName.Contains(searchFor, StringComparison.InvariantCultureIgnoreCase))
+            if (timeZone.StandardName.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
             {
                 return true;
             }
 
-            if (timeZoneInfo.DaylightName.Contains(searchFor, StringComparison.InvariantCultureIgnoreCase))
+            if (timeZone.StandardShortcut != null
+            && timeZone.StandardShortcut.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            if (timeZone.DaylightName != null
+            && timeZone.DaylightName.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            if (timeZone.DaylightShortcut != null
+            && timeZone.DaylightShortcut.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase))
             {
                 return true;
             }
@@ -103,24 +99,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         }
 
         /// <summary>
-        /// Return a <see cref="Result"/> based on the given <see cref="TimeZoneInfo"/>.
+        /// Return a <see cref="Result"/> based on the given <see cref="TimeZoneInfoExtended"/>.
         /// </summary>
-        /// <param name="timeZoneInfo">The <see cref="TimeZoneInfo"/> that contain the information for the <see cref="Result"/>.</param>
+        /// <param name="timeZone">The <see cref="TimeZoneInfoExtended"/> that contain the information for the <see cref="Result"/>.</param>
         /// <param name="utcNow">The current time in UTC for the <see cref="Result"/>.</param>
         /// <returns>A <see cref="Result"/>.</returns>
-        private static Result GetResult(TimeZoneInfo timeZoneInfo, DateTime utcNow, string iconPath)
+        private static Result GetResult(TimeZoneInfoExtended timeZone, DateTime utcNow, string iconPath)
         {
-            var title = GetTitle(timeZoneInfo, utcNow);
-            var timeInTimeZone = TimeZoneInfo.ConvertTime(utcNow, timeZoneInfo);
+            var title = GetTitle(timeZone, utcNow);
+            var timeInTimeZone = timeZone.ConvertTime(utcNow);
 
-            var toolTip = $"{Resources.StandardName}: {timeZoneInfo.StandardName}"
-                + $"{Environment.NewLine}{Resources.DaylightName}: {timeZoneInfo.DaylightName}"
-                + $"{Environment.NewLine}{Resources.DisplayName}: {timeZoneInfo.DisplayName}"
-                + $"{Environment.NewLine}{Resources.Offset}: {timeZoneInfo.BaseUtcOffset}";
+            var toolTip = $"{Resources.StandardName}: {timeZone.StandardName}"
+                + $"{Environment.NewLine}{Resources.DaylightName}: {timeZone.DaylightName}"
+                + $"{Environment.NewLine}{Resources.DisplayName}: {timeZone.DisplayName}"
+                + $"{Environment.NewLine}{Resources.Offset}: {timeZone.Offset}";
 
             var result = new Result
             {
-                ContextData = timeZoneInfo,
+                ContextData = timeZone,
                 IcoPath = iconPath,
                 SubTitle = $"{Resources.CurrentTime}: {timeInTimeZone:HH:mm:ss}",
                 Title = title,
@@ -133,22 +129,47 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <summary>
         /// Return the title for a <see cref="Result"/> and <see cref="ToolTipData"/>
         /// </summary>
-        /// <param name="timeZoneInfo">The <see cref="TimeZoneInfo"/> for the title.</param>
+        /// <param name="timeZone">The <see cref="TimeZoneInfoExtended"/> for the title.</param>
         /// <param name="utcNow">The current time in UTC, only need for time zones that support daylight time.</param>
         /// <returns>A title for a <see cref="Result"/> or <see cref="ToolTipData"/>.</returns>
-        private static string GetTitle(TimeZoneInfo timeZoneInfo, DateTime utcNow)
+        private static string GetTitle(TimeZoneInfoExtended timeZone, DateTime utcNow)
         {
-            if (!timeZoneInfo.SupportsDaylightSavingTime)
+            if (string.IsNullOrEmpty(timeZone.DaylightName))
             {
-                return timeZoneInfo.StandardName;
+                return timeZone.StandardName;
             }
 
-            if (!timeZoneInfo.IsDaylightSavingTime(utcNow))
+            if (!timeZone.IsDaylightSavingTime(utcNow))
             {
-                return timeZoneInfo.StandardName;
+                return timeZone.StandardName;
             }
 
-            return timeZoneInfo.DaylightName;
+            return timeZone.DaylightName;
+        }
+
+        // TODO: Remove after JSON is used
+        internal static void SaveJson()
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            };
+
+            try
+            {
+                using var fileStream = File.Create("D:\\timezones.json");
+                using var streamWriter = new StreamWriter(fileStream);
+
+                var json = JsonSerializer.Serialize(_allTimeZones, options);
+                streamWriter.WriteLine(json);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception exception)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Log.Exception("uh", exception, typeof(Main));
+            }
         }
     }
 }

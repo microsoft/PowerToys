@@ -46,12 +46,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         {
             _assemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? GetTranslatedPluginTitle();
             _defaultIconPath = "Images/reg.light.png";
+            ResultHelper.CollectAllTimeZones();
         }
 
-        /// <summary>
-        /// Initialize the plugin with the given <see cref="PluginInitContext"/>
-        /// </summary>
-        /// <param name="context">The <see cref="PluginInitContext"/> for this plugin</param>
+/// <summary>
+/// Initialize the plugin with the given <see cref="PluginInitContext"/>
+/// </summary>
+/// <param name="context">The <see cref="PluginInitContext"/> for this plugin</param>
         public void Init(PluginInitContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
