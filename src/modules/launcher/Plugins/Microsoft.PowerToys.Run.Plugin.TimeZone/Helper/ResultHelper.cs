@@ -29,8 +29,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             var allTimeZones = new List<TimeZoneInfoExtended>();
             foreach (var timeZone in timeZoneInfos)
             {
-                var extendedTiemZone = new TimeZoneInfoExtended(timeZone);
-                allTimeZones.Add(extendedTiemZone);
+                var extendedTimeZone = new TimeZoneInfoExtended(timeZone);
+                allTimeZones.Add(extendedTimeZone);
             }
 
             _allTimeZones = allTimeZones;
@@ -158,7 +158,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             try
             {
-                using var fileStream = File.Create("D:\\timezones.json");
+                using var fileStream = File.Create("D:\\TimeZones.json");
                 using var streamWriter = new StreamWriter(fileStream);
 
                 var json = JsonSerializer.Serialize(_allTimeZones, options);

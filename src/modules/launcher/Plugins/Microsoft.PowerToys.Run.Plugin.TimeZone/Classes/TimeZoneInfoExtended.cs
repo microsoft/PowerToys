@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
 {
     /// <summary>
     /// A extended version of <see cref="TimeZoneInfo"/>
-    /// with additional fields to easier find a timezone.
+    /// with additional fields to easier find a time zone.
     /// </summary>
     internal sealed class TimeZoneInfoExtended
     {
