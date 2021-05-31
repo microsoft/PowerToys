@@ -30,7 +30,6 @@ FancyZonesApp::~FancyZonesApp()
     {
         m_app->Destroy();
         m_app = nullptr;
-        m_settings->ResetCallback();
 
         if (s_llKeyboardHook)
         {

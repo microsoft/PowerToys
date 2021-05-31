@@ -340,6 +340,8 @@ FancyZones::Destroy() noexcept
     {
         SetEvent(m_terminateVirtualDesktopTrackerEvent.get());
     }
+
+    m_settings->ResetCallback();
 }
 
 // IFancyZonesCallback
