@@ -67,7 +67,7 @@ namespace Microsoft.Plugin.Indexer
         // To save the configurations of plugins
         public void Save()
         {
-            _storage.Save();
+            _storage?.Save();
         }
 
         // This function uses the Windows indexer and returns the list of results obtained
