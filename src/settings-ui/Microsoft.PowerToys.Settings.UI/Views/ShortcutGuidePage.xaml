@@ -101,7 +101,6 @@
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
             <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
-                               Margin="{StaticResource XXSmallTopMargin}"
                                AutomationProperties.LabeledBy="{Binding ElementName=ShortcutGuide_Theme}">
                 <RadioButton x:Uid="Radio_Theme_Dark" />
                 <RadioButton x:Uid="Radio_Theme_Light" />

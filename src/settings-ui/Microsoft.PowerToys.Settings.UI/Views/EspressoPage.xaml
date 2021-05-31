@@ -70,10 +70,8 @@
                        x:Name="ModeTitleLabel"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
 
-            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
-                        Margin="0,-8,0,0">
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}">
                 <RadioButton x:Uid="Espresso_NoKeepAwake"
-                             Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                              IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=0}">
                     <RadioButton.Content>

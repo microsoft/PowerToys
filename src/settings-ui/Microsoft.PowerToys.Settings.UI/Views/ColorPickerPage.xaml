@@ -73,10 +73,9 @@
                        Margin="{StaticResource MediumTopMargin}"
                        x:Name="ColorPicker_ActivationAction" 
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ColorPicker_ActivationAction}" Margin="0,-4,0,0">
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ColorPicker_ActivationAction}">
                 <RadioButton
                          IsChecked="{Binding ActivationOpensColorPickerAndEditor, Mode=TwoWay}"
-                         Margin="{StaticResource SmallTopMargin}" 
                          IsEnabled="{Binding IsEnabled}"
                          GroupName="ColorPickerActivationAction">
                     <RadioButton.Content>
