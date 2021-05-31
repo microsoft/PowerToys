@@ -23,7 +23,6 @@ private:
 
     void DisableModule() noexcept;
 
-    void InitLogger(const std::wstring& appKey);
     void InitHooks();
 
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
