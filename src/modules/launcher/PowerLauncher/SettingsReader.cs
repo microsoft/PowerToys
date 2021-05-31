@@ -193,6 +193,12 @@ namespace PowerLauncher
             return results.Values.ToList();
         }
 
+        private static string GetIcon(PluginMetadata metadata, string iconPath)
+        {
+            var pluginDirectory = Path.GetFileName(metadata.PluginDirectory);
+            return Path.Combine(pluginDirectory, iconPath);
+        }
+
         private static IEnumerable<PowerLauncherPluginSettings> GetDefaultPluginsSettings()
         {
             return PluginManager.AllPlugins.Select(x => new PowerLauncherPluginSettings()
@@ -204,8 +210,8 @@ namespace PowerLauncher
                 Disabled = x.Metadata.Disabled,
                 IsGlobal = x.Metadata.IsGlobal,
                 ActionKeyword = x.Metadata.ActionKeyword,
-                IconPathDark = x.Metadata.IcoPathDark,
-                IconPathLight = x.Metadata.IcoPathLight,
+                IconPathDark = GetIcon(x.Metadata, x.Metadata.IcoPathDark),
+                IconPathLight = GetIcon(x.Metadata, x.Metadata.IcoPathLight),
                 AdditionalOptions = x.Plugin is ISettingProvider ? (x.Plugin as ISettingProvider).AdditionalOptions : new List<PluginAdditionalOption>(),
             });
         }
