@@ -111,7 +111,7 @@ void FancyZonesApp::InitHooks()
 
 void FancyZonesApp::DisableModule() noexcept
 {
-    // TODO
+    PostQuitMessage(0);
 }
 
 void FancyZonesApp::HandleWinHookEvent(WinHookEvent* data) noexcept
