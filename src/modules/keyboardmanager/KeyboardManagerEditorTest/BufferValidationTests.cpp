@@ -54,8 +54,8 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add 2 empty rows
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, NULL }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, NULL }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0, (DWORD)0 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0, (DWORD)0 }), std::wstring()));
 
             // Validate and update the element when -1 i.e. null selection is made on an empty row.
             ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, -1 };
@@ -75,7 +75,7 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add an empty row
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, NULL }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0, (DWORD)0 }), std::wstring()));
 
             // Validate and update the element when selecting B on an empty row
             ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, 0x42 };
@@ -93,7 +93,7 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add a row with A as the target
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, 0x41 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0, (DWORD)0x41 }), std::wstring()));
 
             // Validate and update the element when selecting B on a row
             ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, 0x42 };
@@ -111,7 +111,7 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add a row with Ctrl+A as the target
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) }), std::wstring()));
 
             // Validate and update the element when selecting B on a row
             ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, 0x42 };
@@ -129,7 +129,7 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add a row with A as the target
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, 0x41 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0, (DWORD)0x41 }), std::wstring()));
 
             // Validate and update the element when selecting A on a row
             ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, 0x41 };
@@ -147,8 +147,8 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add a row from A->B and a row with C as target
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, 0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, 0x43 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0, (DWORD)0x43 }), std::wstring()));
 
             // Validate and update the element when selecting A on second row
             ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, 0x41 };
@@ -166,8 +166,8 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add a row from A->B and a row with Ctrl+A as target
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, 0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) }), std::wstring()));
 
             // Validate and update the element when selecting A on second row
             ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, 0x41 };
@@ -185,8 +185,8 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add a row from Ctrl->B and a row with C as target
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ VK_CONTROL, 0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, 0x43 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)VK_CONTROL, (DWORD)0x42 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0, (DWORD)0x43 }), std::wstring()));
 
             // Validate and update the element when selecting LCtrl on second row
             ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, VK_LCONTROL };
@@ -204,8 +204,8 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add a row from Ctrl->B and a row with Ctrl+A as target
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ VK_CONTROL, 0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)VK_CONTROL, (DWORD)0x42 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0, Shortcut(std::vector<int32_t>{ VK_CONTROL, 0x41 }) }), std::wstring()));
 
             // Validate and update the element when selecting LCtrl on second row
             ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, VK_LCONTROL };
@@ -226,9 +226,9 @@ namespace RemappingUITests
             // Case 2: Validate the element when making null-selection (-1 index) on second column of empty shortcut to shortcut row
             testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ -1 }, std::wstring(), false, std::make_pair(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring()) });
             // Case 3: Validate the element when making null-selection (-1 index) on first column of empty shortcut to key row
-            testCases.push_back({ 0, 0, 0, std::vector<int32_t>{ -1 }, std::wstring(), false, std::make_pair(RemapBufferItem{ Shortcut(), NULL }, std::wstring()) });
+            testCases.push_back({ 0, 0, 0, std::vector<int32_t>{ -1 }, std::wstring(), false, std::make_pair(RemapBufferItem{ Shortcut(), (DWORD)0 }, std::wstring()) });
             // Case 4: Validate the element when making null-selection (-1 index) on second column of empty shortcut to key row
-            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ -1 }, std::wstring(), true, std::make_pair(RemapBufferItem{ Shortcut(), NULL }, std::wstring()) });
+            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ -1 }, std::wstring(), true, std::make_pair(RemapBufferItem{ Shortcut(), (DWORD)0 }, std::wstring()) });
             // Case 5: Validate the element when making null-selection (-1 index) on first dropdown of first column of valid shortcut to shortcut row
             testCases.push_back({ 0, 0, 0, std::vector<int32_t>({ -1, 0x43 }), std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x41 } }, std::wstring()) });
             // Case 6: Validate the element when making null-selection (-1 index) on first dropdown of second column of valid shortcut to shortcut row
@@ -283,7 +283,7 @@ namespace RemappingUITests
             // Case 2: Validate the element when selecting A (0x41) on first dropdown of second column of empty shortcut to shortcut row
             testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ 0x41 }, std::wstring(), false, std::make_pair(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring()) });
             // Case 3: Validate the element when selecting A (0x41) on first dropdown of first column of empty shortcut to key row
-            testCases.push_back({ 0, 0, 0, std::vector<int32_t>{ 0x41 }, std::wstring(), false, std::make_pair(RemapBufferItem{ Shortcut(), NULL }, std::wstring()) });
+            testCases.push_back({ 0, 0, 0, std::vector<int32_t>{ 0x41 }, std::wstring(), false, std::make_pair(RemapBufferItem{ Shortcut(), (DWORD)0 }, std::wstring()) });
             // Case 4: Validate the element when selecting A (0x41) on first dropdown of first column of valid shortcut to shortcut row
             testCases.push_back({ 0, 0, 0, std::vector<int32_t>{ 0x41, 0x43 }, std::wstring(), false, std::make_pair(RemapBufferItem{ std::vector<int32_t>{ VK_CONTROL, 0x43 }, std::vector<int32_t>{ VK_CONTROL, 0x41 } }, std::wstring()) });
 
@@ -308,7 +308,7 @@ namespace RemappingUITests
             // Case 1: Validate the element when selecting A (0x41) on first dropdown of second column of empty shortcut to shortcut row
             testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring()) });
             // Case 2: Validate the element when selecting A (0x41) on first dropdown of second column of empty shortcut to key row
-            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ Shortcut(), NULL }, std::wstring()) });
+            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ Shortcut(), (DWORD)0 }, std::wstring()) });
 
             RunTestCases(testCases, [this](const ValidateShortcutBufferElementArgs& testCase) {
                 // Arrange
@@ -472,7 +472,7 @@ namespace RemappingUITests
             // Case 6: Validate the element when selecting Shift (VK_SHIFT) on first dropdown of second column of 1 dropdown hybrid shortcut to shortcut row
             testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ VK_SHIFT }, std::wstring(), true, std::make_pair(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring()) });
             // Case 7: Validate the element when selecting Shift (VK_SHIFT) on first dropdown of second column of 1 dropdown hybrid shortcut to key row with an action key selected
-            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ VK_SHIFT }, std::wstring(), true, std::make_pair(RemapBufferItem{ Shortcut(), 0x44 }, std::wstring()) });
+            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ VK_SHIFT }, std::wstring(), true, std::make_pair(RemapBufferItem{ Shortcut(), (DWORD)0x44 }, std::wstring()) });
 
             RunTestCases(testCases, [this](const ValidateShortcutBufferElementArgs& testCase) {
                 // Arrange
@@ -963,21 +963,21 @@ namespace RemappingUITests
         {
             std::vector<ValidateShortcutBufferElementArgs> testCases;
             // Case 1: Validate the element when selecting A (0x41) on first dropdown of empty hybrid second column
-            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ 0x41, -1, -1 }, std::wstring(), true, std::make_pair(RemapBufferItem{ 0x41, NULL }, std::wstring()) });
+            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ 0x41, -1, -1 }, std::wstring(), true, std::make_pair(RemapBufferItem{ (DWORD)0x41, (DWORD)0 }, std::wstring()) });
             // Case 2: Validate the element when selecting A (0x41) on second dropdown of empty hybrid second column
-            testCases.push_back({ 0, 1, 1, std::vector<int32_t>{ -1, 0x41, -1 }, std::wstring(), true, std::make_pair(RemapBufferItem{ 0x41, NULL }, std::wstring()) });
+            testCases.push_back({ 0, 1, 1, std::vector<int32_t>{ -1, 0x41, -1 }, std::wstring(), true, std::make_pair(RemapBufferItem{ (DWORD)0x41, (DWORD)0 }, std::wstring()) });
             // Case 3: Validate the element when selecting A (0x41) on third dropdown of empty hybrid second column
-            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ -1, -1, 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ 0x41, NULL }, std::wstring()) });
+            testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ -1, -1, 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ (DWORD)0x41, (DWORD)0 }, std::wstring()) });
             // Case 4: Validate the element when selecting A (0x41) on first dropdown of hybrid second column with key
-            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ 0x41, 0x43 }, std::wstring()) });
+            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ (DWORD)0x41, (DWORD)0x43 }, std::wstring()) });
             // Case 5: Validate the element when selecting Null (-1) on first dropdown of hybrid second column with shortcut
-            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ -1, 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ 0x41, std::vector<int32_t>{ VK_CONTROL, 0x41 } }, std::wstring()) });
+            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ -1, 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ (DWORD)0x41, std::vector<int32_t>{ VK_CONTROL, 0x41 } }, std::wstring()) });
             // Case 6: Validate the element when selecting None (0) on first dropdown of hybrid second column with shortcut
-            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ 0, 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ 0x41, std::vector<int32_t>{ VK_CONTROL, 0x41 } }, std::wstring()) });
+            testCases.push_back({ 0, 1, 0, std::vector<int32_t>{ 0, 0x41 }, std::wstring(), true, std::make_pair(RemapBufferItem{ (DWORD)0x41, std::vector<int32_t>{ VK_CONTROL, 0x41 } }, std::wstring()) });
             // Case 7: Validate the element when selecting Null (-1) on second dropdown of hybrid second column with shortcut
-            testCases.push_back({ 0, 1, 1, std::vector<int32_t>{ -1, VK_CONTROL }, std::wstring(), true, std::make_pair(RemapBufferItem{ VK_CONTROL, std::vector<int32_t>{ VK_CONTROL, 0x41 } }, std::wstring()) });
+            testCases.push_back({ 0, 1, 1, std::vector<int32_t>{ -1, VK_CONTROL }, std::wstring(), true, std::make_pair(RemapBufferItem{ (DWORD)VK_CONTROL, std::vector<int32_t>{ VK_CONTROL, 0x41 } }, std::wstring()) });
             // Case 8: Validate the element when selecting None (0) on second dropdown of hybrid second column with shortcut
-            testCases.push_back({ 0, 1, 1, std::vector<int32_t>{ 0, VK_CONTROL }, std::wstring(), true, std::make_pair(RemapBufferItem{ VK_CONTROL, std::vector<int32_t>{ VK_CONTROL, 0x41 } }, std::wstring()) });
+            testCases.push_back({ 0, 1, 1, std::vector<int32_t>{ 0, VK_CONTROL }, std::wstring(), true, std::make_pair(RemapBufferItem{ (DWORD)VK_CONTROL, std::vector<int32_t>{ VK_CONTROL, 0x41 } }, std::wstring()) });
 
             RunTestCases(testCases, [this](const ValidateShortcutBufferElementArgs& testCase) {
                 // Arrange

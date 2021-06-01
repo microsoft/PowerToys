@@ -187,7 +187,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddAppSpecificShortcut(testApp1, src, 0x56);
+            testState.AddAppSpecificShortcut(testApp1, src, (DWORD)0x56);
 
             // Set the testApp as the foreground process
             mockedInputHandler.SetForegroundProcess(testApp1);
@@ -215,7 +215,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddAppSpecificShortcut(testApp1, src, 0x56);
+            testState.AddAppSpecificShortcut(testApp1, src, (DWORD)0x56);
 
             // Set the testApp as the foreground process
             mockedInputHandler.SetForegroundProcess(testApp2);
@@ -243,7 +243,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddAppSpecificShortcut(testApp1, src, 0x56);
+            testState.AddAppSpecificShortcut(testApp1, src, (DWORD)0x56);
 
             // Set the testApp as the foreground process
             mockedInputHandler.SetForegroundProcess(testApp1);
@@ -281,7 +281,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddAppSpecificShortcut(testApp1, src, 0x56);
+            testState.AddAppSpecificShortcut(testApp1, src, (DWORD)0x56);
 
             // Set the testApp as the foreground process
             mockedInputHandler.SetForegroundProcess(testApp1);

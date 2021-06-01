@@ -8,7 +8,7 @@ namespace CommonSharedConstants
     const uintptr_t KEYBOARDMANAGER_INJECTED_FLAG = 0x1;
 
     // Fake key code to represent VK_WIN.
-    inline const int VK_WIN_BOTH = 0x104;
+    inline const DWORD VK_WIN_BOTH = 0x104;
 
     const wchar_t APPDATA_PATH[] = L"Microsoft\\PowerToys";
 
@@ -27,5 +27,5 @@ namespace CommonSharedConstants
     const wchar_t SHORTCUT_GUIDE_EXIT_EVENT[] = L"Local\\ShortcutGuide-ExitEvent-35697cdd-a3d2-47d6-a246-34efcc73eac0";
 
     // Max DWORD for key code to disable keys.
-    const int VK_DISABLED = 0x100;
+    const DWORD VK_DISABLED = 0x100;
 }
