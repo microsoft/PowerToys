@@ -43,9 +43,4 @@ namespace updating
         }
         co_return false;
     }
-
-    bool is_1809_or_older()
-    {
-        return !Is19H1OrHigher();
-    }
 }
