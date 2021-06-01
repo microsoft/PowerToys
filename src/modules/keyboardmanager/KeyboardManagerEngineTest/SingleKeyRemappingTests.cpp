@@ -32,7 +32,7 @@ namespace RemappingLogicTests
         TEST_METHOD (RemappedKey_ShouldSetTargetKeyState_OnKeyEvent)
         {
             // Remap A to B
-            testState.AddSingleKeyRemap(0x41, 0x42);
+            testState.AddSingleKeyRemap(0x41, (DWORD)0x42);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -119,7 +119,7 @@ namespace RemappingLogicTests
             });
 
             // Remap Caps Lock to Ctrl
-            testState.AddSingleKeyRemap(VK_CAPITAL, VK_CONTROL);
+            testState.AddSingleKeyRemap(VK_CAPITAL, (DWORD)VK_CONTROL);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};
@@ -145,7 +145,7 @@ namespace RemappingLogicTests
             });
 
             // Remap Ctrl to Caps Lock
-            testState.AddSingleKeyRemap(VK_CONTROL, VK_CAPITAL);
+            testState.AddSingleKeyRemap(VK_CONTROL, (DWORD)VK_CAPITAL);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};

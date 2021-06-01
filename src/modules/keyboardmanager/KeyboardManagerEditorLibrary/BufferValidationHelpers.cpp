@@ -56,17 +56,17 @@ namespace BufferValidationHelpers
             // If there is no error, set the buffer
             if (errorType == ShortcutErrorType::NoError)
             {
-                remapBuffer[rowIndex].first[colIndex] = selectedKeyCode;
+                remapBuffer[rowIndex].first[colIndex] = (DWORD)selectedKeyCode;
             }
             else
             {
-                remapBuffer[rowIndex].first[colIndex] = NULL;
+                remapBuffer[rowIndex].first[colIndex] = (DWORD)0;
             }
         }
         else
         {
             // Reset to null if the key is not found
-            remapBuffer[rowIndex].first[colIndex] = NULL;
+            remapBuffer[rowIndex].first[colIndex] = (DWORD)0;
         }
 
         return errorType;
@@ -214,7 +214,7 @@ namespace BufferValidationHelpers
             KeyShortcutUnion tempShortcut;
             if (isHybridControl && KeyDropDownControl::GetNumberOfSelectedKeys(selectedCodes) == 1)
             {
-                tempShortcut = *std::find_if(selectedCodes.begin(), selectedCodes.end(), [](int32_t a) { return a != -1 && a != 0; });
+                tempShortcut = (DWORD)*std::find_if(selectedCodes.begin(), selectedCodes.end(), [](int32_t a) { return a != -1 && a != 0; });
             }
             else
             {
