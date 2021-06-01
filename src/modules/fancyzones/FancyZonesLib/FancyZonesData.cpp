@@ -7,7 +7,7 @@
 #include "CallTracer.h"
 
 #include <common/utils/json.h>
-#include <fancyzones/FancyZonesLib/util.h>
+#include <FancyZonesLib/util.h>
 
 #include <shlwapi.h>
 #include <filesystem>
@@ -22,7 +22,6 @@
 // Non-localizable strings
 namespace NonLocalizable
 {
-    const wchar_t FancyZonesStr[] = L"FancyZones";
     const wchar_t NullStr[] = L"null";
 
     const wchar_t FancyZonesDataFile[] = L"zones-settings.json";

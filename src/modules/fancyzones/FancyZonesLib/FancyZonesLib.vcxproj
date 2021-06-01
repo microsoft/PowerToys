@@ -87,6 +87,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fancyzones.base.rc" />
+    <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
+      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\common\notifications\notifications.vcxproj">
       <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
     </ProjectReference>
