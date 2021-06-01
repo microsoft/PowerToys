@@ -1,23 +1,17 @@
 #include "pch.h"
 
-#include <common/SettingsAPI/settings_objects.h>
-#include <common/debug_control.h>
-#include <common/hooks/LowlevelKeyboardEvent.h>
 #include <interface/powertoy_module_interface.h>
-#include <FancyZonesLib/ZoneSet.h>
 
-#include <FancyZonesLib/Generated Files/resource.h>
-#include <FancyZonesLib/trace.h>
-#include <FancyZonesLib/Settings.h>
-#include <FancyZonesLib/FancyZones.h>
-#include <FancyZonesLib/FancyZonesData.h>
-#include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
-#include <FancyZonesLib/FancyZonesData.cpp>
 #include <common/logger/logger.h>
-#include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
-#include <common/utils/window.h>
+
+#include <FancyZonesLib/Generated Files/resource.h>
+#include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/trace.h>
+#include <FancyZonesLib/Settings.h>
+
+#include <shellapi.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -79,57 +73,7 @@ public:
     {
         Logger::info("FancyZones enabling");
 
-        if (!m_app)
-        {
-            InitializeWinhookEventIds();
-            Trace::FancyZones::EnableFancyZones(true);
-            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings, std::bind(&FancyZonesModuleInterface::disable, this));
-#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
-            const bool hook_disabled = IsDebuggerPresent();
-#else
-            const bool hook_disabled = false;
-#endif
-            if (!hook_disabled)
-            {
-                s_llKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
-                if (!s_llKeyboardHook)
-                {
-                    DWORD errorCode = GetLastError();
-                    show_last_error_message(L"SetWindowsHookEx", errorCode, GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str());
-                    auto errorMessage = get_last_error_message(errorCode);
-                    Trace::FancyZones::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"enable.SetWindowsHookEx");
-                }
-            }
-
-            std::array<DWORD, 6> events_to_subscribe = {
-                EVENT_SYSTEM_MOVESIZESTART,
-                EVENT_SYSTEM_MOVESIZEEND,
-                EVENT_OBJECT_NAMECHANGE,
-                EVENT_OBJECT_UNCLOAKED,
-                EVENT_OBJECT_SHOW,
-                EVENT_OBJECT_CREATE
-            };
-            for (const auto event : events_to_subscribe)
-            {
-                auto hook = SetWinEventHook(event, event, nullptr, WinHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
-                if (hook)
-                {
-                    m_staticWinEventHooks.emplace_back(hook);
-                }
-                else
-                {
-                    MessageBoxW(NULL,
-                                GET_RESOURCE_STRING(IDS_WINDOW_EVENT_LISTENER_ERROR).c_str(),
-                                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-                                MB_OK | MB_ICONERROR);
-                }
-            }
-
-            if (m_app)
-            {
-                m_app->Run();
-            }
-        }
+        Enable();
     }
 
     // Disable the powertoy
@@ -143,7 +87,7 @@ public:
     // Returns if the powertoy is enabled
     virtual bool is_enabled() override
     {
-        return m_app != nullptr;
+        return m_enabled;
     }
 
     // Destroy the powertoy and free memory
@@ -157,178 +101,67 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         app_key = NonLocalizable::FancyZonesStr;
-        const auto appFolder = PTSettingsHelper::get_module_save_folder_location(app_key);
-        const std::filesystem::path logFolder = LoggerHelpers::get_log_folder_path(appFolder);
-        
-        std::filesystem::path logFilePath(logFolder);
-        logFilePath.append(LogSettings::fancyZonesLogPath);
-        Logger::init(LogSettings::fancyZonesLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
-        
-        std::filesystem::path oldLogFolder(appFolder);
-        oldLogFolder.append(LogSettings::fancyZonesOldLogPath);
-        LoggerHelpers::delete_old_log_folder(oldLogFolder);
-
-        LoggerHelpers::delete_other_versions_log_folders(appFolder, logFolder);
-
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModuleInterface::get_name(), FancyZonesModuleInterface::get_key());
-        FancyZonesDataInstance().LoadFancyZonesData();
-        s_instance = this;
-
-        // TODO: consider removing this call since the registry hasn't been used since 0.15
-        DeleteFancyZonesRegistryData();
     }
 
 private:
-    void Disable(bool const traceEvent)
+    void Enable()
     {
-        if (m_app)
+        m_enabled = true;
+
+        // Log telemetry
+        Trace::FancyZones::EnableFancyZones(true);
+
+        unsigned long powertoys_pid = GetCurrentProcessId();
+        std::wstring executable_args = L"";
+        executable_args.append(std::to_wstring(powertoys_pid));
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"modules\\FancyZones\\PowerToys.FancyZones.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei) == false)
         {
-            if (traceEvent)
+            Logger::error(L"Failed to start FancyZones");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
             {
-                Trace::FancyZones::EnableFancyZones(false);
-            }
-            m_app->Destroy();
-            m_app = nullptr;
-            m_settings->ResetCallback();
-
-            if (s_llKeyboardHook)
-            {
-                if (UnhookWindowsHookEx(s_llKeyboardHook))
-                {
-                    s_llKeyboardHook = nullptr;
-                }
-            }
-
-            m_staticWinEventHooks.erase(std::remove_if(begin(m_staticWinEventHooks),
-                                                       end(m_staticWinEventHooks),
-                                                       [](const HWINEVENTHOOK hook) {
-                                                           return UnhookWinEvent(hook);
-                                                       }),
-                                        end(m_staticWinEventHooks));
-            if (m_objectLocationWinEventHook)
-            {
-                if (UnhookWinEvent(m_objectLocationWinEventHook))
-                {
-                    m_objectLocationWinEventHook = nullptr;
-                }
+                Logger::error(message.value());
             }
         }
+        else
+        {
+            m_hProcess = sei.hProcess;
+        }
     }
+    
+    void Disable(bool const traceEvent)
+    {
+        m_enabled = false;
+        // Log telemetry
 
-    intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;
-    void HandleWinHookEvent(WinHookEvent* data) noexcept;
-
-    winrt::com_ptr<IFancyZones> m_app;
-    winrt::com_ptr<IFancyZonesSettings> m_settings;
+        if (traceEvent)
+        {
+            Trace::FancyZones::EnableFancyZones(false);
+        }
+        
+        if (m_hProcess)
+        {
+            TerminateProcess(m_hProcess, 0);
+            m_hProcess = nullptr;
+        }        
+    }
+    
     std::wstring app_name;
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    static inline FancyZonesModuleInterface* s_instance = nullptr;
-    static inline HHOOK s_llKeyboardHook = nullptr;
+    bool m_enabled = false;
+    HANDLE m_hProcess = nullptr;
 
-    std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
-    HWINEVENTHOOK m_objectLocationWinEventHook = nullptr;
-
-    static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
-    {
-        LowlevelKeyboardEvent event;
-        if (nCode == HC_ACTION && wParam == WM_KEYDOWN)
-        {
-            event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-            event.wParam = wParam;
-            if (s_instance)
-            {
-                if (s_instance->HandleKeyboardHookEvent(&event) == 1)
-                {
-                    return 1;
-                }
-            }
-        }
-        return CallNextHookEx(NULL, nCode, wParam, lParam);
-    }
-
-    static void CALLBACK WinHookProc(HWINEVENTHOOK winEventHook,
-                                     DWORD event,
-                                     HWND window,
-                                     LONG object,
-                                     LONG child,
-                                     DWORD eventThread,
-                                     DWORD eventTime)
-    {
-        WinHookEvent data{ event, window, object, child, eventThread, eventTime };
-        if (s_instance)
-        {
-            s_instance->HandleWinHookEvent(&data);
-        }
-    }
+    winrt::com_ptr<IFancyZonesSettings> m_settings;
 };
-
-intptr_t FancyZonesModuleInterface::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
-{
-    return m_app.as<IFancyZonesCallback>()->OnKeyDown(data->lParam);
-}
-
-void FancyZonesModuleInterface::HandleWinHookEvent(WinHookEvent* data) noexcept
-{
-    auto fzCallback = m_app.as<IFancyZonesCallback>();
-    switch (data->event)
-    {
-    case EVENT_SYSTEM_MOVESIZESTART:
-    {
-        fzCallback->HandleWinHookEvent(data);
-        if (!m_objectLocationWinEventHook)
-        {
-            m_objectLocationWinEventHook = SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE,
-                                                           EVENT_OBJECT_LOCATIONCHANGE,
-                                                           nullptr,
-                                                           WinHookProc,
-                                                           0,
-                                                           0,
-                                                           WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
-        }
-    }
-    break;
-
-    case EVENT_SYSTEM_MOVESIZEEND:
-    {
-        if (UnhookWinEvent(m_objectLocationWinEventHook))
-        {
-            m_objectLocationWinEventHook = nullptr;
-        }
-        fzCallback->HandleWinHookEvent(data);
-    }
-    break;
-
-    case EVENT_OBJECT_LOCATIONCHANGE:
-    {
-        fzCallback->HandleWinHookEvent(data);
-    }
-    break;
-
-    case EVENT_OBJECT_NAMECHANGE:
-    {
-        // The accessibility name of the desktop window changes whenever the user
-        // switches virtual desktops.
-        if (data->hwnd == GetDesktopWindow())
-        {
-            m_app.as<IFancyZonesCallback>()->VirtualDesktopChanged();
-        }
-    }
-    break;
-
-    case EVENT_OBJECT_UNCLOAKED:
-    case EVENT_OBJECT_SHOW:
-    case EVENT_OBJECT_CREATE:
-    {
-        fzCallback->HandleWinHookEvent(data);
-    }
-    break;
-
-    default:
-        break;
-    }
-}
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

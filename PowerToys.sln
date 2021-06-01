@@ -342,6 +342,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuide", "src\module
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZonesModuleInterface", "src\modules\fancyzones\FancyZonesModuleInterface\FancyZonesModuleInterface.vcxproj", "{48804216-2A0E-4168-A6D8-9CD068D14227}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZones", "src\modules\fancyzones\FancyZones\FancyZones.vcxproj", "{390AE700-B55F-4202-91EA-A822EB75B9BD}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.Update", "src\Update\PowerToys.Update.vcxproj", "{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.WindowsSettings", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Microsoft.PowerToys.Run.Plugin.WindowsSettings.csproj", "{5043CECE-E6A7-4867-9CBE-02D27D83747A}"
@@ -698,6 +700,10 @@ Global
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Debug|x64.Build.0 = Debug|x64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Release|x64.ActiveCfg = Release|x64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Release|x64.Build.0 = Release|x64
+		{390AE700-B55F-4202-91EA-A822EB75B9BD}.Debug|x64.ActiveCfg = Debug|x64
+		{390AE700-B55F-4202-91EA-A822EB75B9BD}.Debug|x64.Build.0 = Debug|x64
+		{390AE700-B55F-4202-91EA-A822EB75B9BD}.Release|x64.ActiveCfg = Release|x64
+		{390AE700-B55F-4202-91EA-A822EB75B9BD}.Release|x64.Build.0 = Release|x64
 		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Debug|x64.ActiveCfg = Debug|x64
 		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Debug|x64.Build.0 = Debug|x64
 		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Release|x64.ActiveCfg = Release|x64
@@ -811,6 +817,7 @@ Global
 		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81} = {106CBECA-0701-4FC3-838C-9DF816A19AE2}
 		{2EDB3EB4-FA92-4BFF-B2D8-566584837231} = {106CBECA-0701-4FC3-838C-9DF816A19AE2}
 		{48804216-2A0E-4168-A6D8-9CD068D14227} = {D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}
+		{390AE700-B55F-4202-91EA-A822EB75B9BD} = {D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}
 		{5043CECE-E6A7-4867-9CBE-02D27D83747A} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
