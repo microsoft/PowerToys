@@ -7,6 +7,7 @@
 #include <common/utils/appMutex.h>
 #include <common/utils/elevation.h>
 #include <common/utils/MsiUtils.h>
+#include <common/utils/os-detect.h>
 #include <common/utils/processApi.h>
 #include <common/utils/resources.h>
 #include <common/utils/window.h>
@@ -271,7 +272,7 @@ int Bootstrapper(HINSTANCE hInstance)
     const VersionHelper myVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
 
     // Do not support installing on Windows < 1903
-    //if (updating::is_1809_or_older())
+    if (!Is19H1OrHigher())
     {
         ShowMessageBoxError(IDS_OLD_WINDOWS_ERROR);
         spdlog::error("PowerToys {} requires at least Windows 1903 to run.", myVersion.toString());
