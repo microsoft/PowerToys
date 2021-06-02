@@ -150,7 +150,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
 
                     return u.Apps;
-                }).ToList();
+                });
 
                 var updatedListWithoutDisabledApps = applications
                                                         .Where(t1 => Main.Settings.DisabledProgramSources.All(x => x.UniqueIdentifier != t1.UniqueIdentifier))
