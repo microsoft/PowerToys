@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -832,12 +832,12 @@ namespace Microsoft.Plugin.Program.Programs
 
                 return app1 != null
                        && app2 != null
-                       && (app1.Name?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
-                       .Equals((app2.Name?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
+                       && (app1.Name?.ToUpperInvariant(), app1.ExecutableName?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
+                       .Equals((app2.Name?.ToUpperInvariant(), app2.ExecutableName?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
             }
 
             public int GetHashCode(Win32Program obj)
-                => (obj.Name?.ToUpperInvariant(), obj.FullPath?.ToUpperInvariant()).GetHashCode();
+                => (obj.Name?.ToUpperInvariant(), obj.ExecutableName?.ToUpperInvariant(), obj.FullPath?.ToUpperInvariant()).GetHashCode();
         }
 
         public static List<Win32Program> DeduplicatePrograms(IEnumerable<Win32Program> programs)
