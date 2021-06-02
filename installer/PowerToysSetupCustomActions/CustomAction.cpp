@@ -613,10 +613,9 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 5> processesToTerminate = {
+    std::array<std::wstring_view, 4> processesToTerminate = {
         L"PowerLauncher.exe",
         L"PowerToys.Settings.exe",
-        L"PowerToys.FancyZones.exe",
         L"Microsoft.PowerToys.Settings.UI.exe",
         L"PowerToys.exe"
     };
