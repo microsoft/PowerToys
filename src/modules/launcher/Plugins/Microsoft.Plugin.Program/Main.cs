@@ -53,20 +53,6 @@ namespace Microsoft.Plugin.Program
 
             // Initialize the Win32ProgramRepository with the settings object
             _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper.FileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32Program>>("Win32"), Settings, _win32ProgramRepositoryHelper.PathsToWatch);
-
-            var a = Task.Run(() =>
-            {
-                Stopwatch.Normal("Microsoft.Plugin.Program.Main - Win32Program index cost", _win32ProgramRepository.IndexPrograms);
-            });
-
-            var b = Task.Run(() =>
-            {
-                Stopwatch.Normal("Microsoft.Plugin.Program.Main - Package index cost", _packageRepository.IndexPrograms);
-            });
-
-            Task.WaitAll(a, b);
-
-            Settings.LastIndexTime = DateTime.Today;
         }
 
         public void Save()
@@ -118,6 +104,20 @@ namespace Microsoft.Plugin.Program
             _context.API.ThemeChanged += OnThemeChanged;
 
             UpdateUWPIconPath(_context.API.GetCurrentTheme());
+
+            var a = Task.Run(() =>
+            {
+                Stopwatch.Normal("Microsoft.Plugin.Program.Main - Win32Program index cost", _win32ProgramRepository.IndexPrograms);
+            });
+
+            var b = Task.Run(() =>
+            {
+                Stopwatch.Normal("Microsoft.Plugin.Program.Main - Package index cost", _packageRepository.IndexPrograms);
+            });
+
+            Task.WaitAll(a, b);
+
+            Settings.LastIndexTime = DateTime.Today;
         }
 
         public void OnThemeChanged(Theme currentTheme, Theme newTheme)
