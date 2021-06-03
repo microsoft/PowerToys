@@ -8,7 +8,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
     public class UnitHandlerTests
     {
         [Test]
-        public void HandleTempreture()
+        public void HandleTemperature()
         {
             var convertModel = new ConvertModel(1, "DegreeCelsius", "DegreeFahrenheit");
             double result = UnitHandler.ConvertInput(convertModel, UnitsNet.QuantityType.Temperature);
