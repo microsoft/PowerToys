@@ -70,11 +70,6 @@ inline wil::unique_mutex_nothrow create_msi_mutex()
     return createAppMutex(POWERTOYS_MSI_MUTEX_NAME);
 }
 
-inline wil::unique_mutex_nothrow create_msix_mutex()
-{
-    return createAppMutex(POWERTOYS_MSIX_MUTEX_NAME);
-}
-
 void open_menu_from_another_instance()
 {
     const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
@@ -330,69 +325,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     logFilePath.append(LogSettings::runnerLogPath);
     Logger::init(LogSettings::runnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
-    wil::unique_mutex_nothrow msi_mutex;
-    wil::unique_mutex_nothrow msix_mutex;
-
-    if (winstore::running_as_packaged())
+    // Check if another instance is already running.
+    wil::unique_mutex_nothrow msi_mutex = create_msi_mutex();
+    if (!msi_mutex)
     {
-        msix_mutex = create_msix_mutex();
-        if (!msix_mutex)
-        {
-            // The MSIX version is already running.
-            open_menu_from_another_instance();
-            return 0;
-        }
-
-        // Check if the MSI version is running, if not, hold the
-        // mutex to prevent the old MSI versions to start.
-        msi_mutex = create_msi_mutex();
-        if (!msi_mutex)
-        {
-            // The MSI version is running, warn the user and offer to uninstall it.
-            const bool declined_uninstall = !start_msi_uninstallation_sequence();
-            if (declined_uninstall)
-            {
-                // Check again if the MSI version is still running.
-                msi_mutex = create_msi_mutex();
-                if (!msi_mutex)
-                {
-                    open_menu_from_another_instance();
-                    return 0;
-                }
-            }
-        }
-        else
-        {
-            // Older MSI versions are not aware of the MSIX mutex, therefore
-            // hold the MSI mutex to prevent an old instance to start.
-        }
-    }
-    else
-    {
-        // Check if another instance of the MSI version is already running.
-        msi_mutex = create_msi_mutex();
-        if (!msi_mutex)
-        {
-            // The MSI version is already running.
-            open_menu_from_another_instance();
-            return 0;
-        }
-
-        // Check if an instance of the MSIX version is already running.
-        // Note: this check should always be negative since the MSIX version
-        // is holding both mutexes.
-        msix_mutex = create_msix_mutex();
-        if (!msix_mutex)
-        {
-            // The MSIX version is already running.
-            open_menu_from_another_instance();
-            return 0;
-        }
-        else
-        {
-            // The MSIX version isn't running, release the mutex.
-            msix_mutex.reset(nullptr);
-        }
+        open_menu_from_another_instance();
+        return 0;
     }
 
     bool openOobe = false;
@@ -446,11 +384,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (msi_mutex)
     {
         msi_mutex.reset(nullptr);
-    }
-
-    if (msix_mutex)
-    {
-        msix_mutex.reset(nullptr);
     }
 
     if (is_restart_scheduled())
