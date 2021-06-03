@@ -79,12 +79,12 @@ namespace VirtualDesktopUtils
         }
 
         // CurrentVirtualDesktop fallback to canonical regkey
-        HKEY fallbackHKey;
+        wil::unique_hkey fallbackHKey{};
         if (RegOpenKeyExW(HKEY_CURRENT_USER, NonLocalizable::RegKeyVirtualDesktops, 0, KEY_ALL_ACCESS, &fallbackHKey) == ERROR_SUCCESS)
         {
             GUID value{};
             DWORD size = sizeof(GUID);
-            if (RegQueryValueExW(fallbackHKey, NonLocalizable::RegCurrentVirtualDesktop, 0, nullptr, reinterpret_cast<BYTE*>(&value), &size) == ERROR_SUCCESS)
+            if (RegQueryValueExW(fallbackHKey.get(), NonLocalizable::RegCurrentVirtualDesktop, 0, nullptr, reinterpret_cast<BYTE*>(&value), &size) == ERROR_SUCCESS)
             {
                 *desktopId = value;
                 return true;
