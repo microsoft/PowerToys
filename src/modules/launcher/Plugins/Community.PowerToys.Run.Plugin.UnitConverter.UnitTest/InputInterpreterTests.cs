@@ -1,5 +1,6 @@
 using System.Globalization;
 using NUnit.Framework;
+using Wox.Plugin;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
 {
@@ -43,6 +44,24 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         {
             InputInterpreter.DegreePrefixer(ref input);
             Assert.AreEqual(expectedResult, input);
+        }
+
+        [TestCase("a f in c")]
+        [TestCase("12 f in")]
+        public void ParseInvalidQueries(string queryString)
+        {
+            Query query = new Query(queryString);
+            var result = InputInterpreter.Parse(query);
+            Assert.AreEqual(null, result);
+        }
+
+        [TestCase("12 f in c", 12)]
+        [TestCase("10m to cm", 10)]
+        public void ParseValidQueries(string queryString, double result)
+        {
+            Query query = new Query(queryString);
+            var convertModel = InputInterpreter.Parse(query);
+            Assert.AreEqual(result, convertModel.Value);
         }
     }
 }

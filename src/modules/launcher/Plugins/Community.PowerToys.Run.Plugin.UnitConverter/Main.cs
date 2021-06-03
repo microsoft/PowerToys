@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
@@ -20,25 +21,6 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         private PluginInitContext _context;
         private static string _icon_path;
         private bool _disposed;
-        private static readonly QuantityType[] _included = new QuantityType[]
-        {
-            QuantityType.Acceleration,
-            QuantityType.Angle,
-            QuantityType.Area,
-            QuantityType.Duration,
-            QuantityType.Energy,
-            QuantityType.Information,
-            QuantityType.Length,
-            QuantityType.Mass,
-            QuantityType.Power,
-            QuantityType.Pressure,
-            QuantityType.Speed,
-            QuantityType.Temperature,
-            QuantityType.Volume,
-        };
-
-        private readonly CultureInfo _currentCulture = CultureInfo.CurrentCulture;
-        private readonly int _roundingFractionalDigits = 4;
 
         public void Init(PluginInitContext context)
         {
@@ -59,41 +41,22 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            string[] split = query.Search.Split(' ');
-
-            InputInterpreter.ShorthandFeetInchHandler(ref split, _currentCulture);
-            InputInterpreter.InputSpaceInserter(ref split);
-
-            if (split.Length != 4)
+            // Parse
+            ConvertModel convertModel = InputInterpreter.Parse(query);
+            if (convertModel == null)
             {
-                // deny any other queries than:
-                // 10 ft in cm
-                // 10 ft to cm
                 return new List<Result>();
             }
 
-            InputInterpreter.DegreePrefixer(ref split);
-
-            List<Result> final_list = new List<Result>();
-
-            foreach (QuantityType quantityType in _included)
-            {
-                double convertedValue = UnitHandler.ConvertInput(split, quantityType, _currentCulture);
-
-                if (!double.IsNaN(convertedValue))
-                {
-                    UnitConversionResult result = new UnitConversionResult(Math.Round(convertedValue, _roundingFractionalDigits), split[3], quantityType);
-                    AddToResult(final_list, result);
-                }
-            }
-
-            return final_list;
+            // Convert
+            return UnitHandler.Convert(convertModel)
+                .Select(x => GetResult(x))
+                .ToList();
         }
 
-        private void AddToResult(List<Result> currentList, UnitConversionResult result)
+        private Result GetResult(UnitConversionResult result)
         {
-            // answer found, add result to list
-            currentList.Add(new Result
+            return new Result
             {
                 ContextData = result,
                 Title = string.Format("{0} {1}", result.ConvertedValue, result.UnitName),
@@ -120,7 +83,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     thread.Join();
                     return ret;
                 },
-            });
+            };
         }
 
         private ContextMenuResult CreateContextMenuEntry(UnitConversionResult result)

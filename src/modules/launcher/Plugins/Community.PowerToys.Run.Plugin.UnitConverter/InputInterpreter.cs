@@ -1,15 +1,20 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnitsNet;
+using Wox.Plugin;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
     public static class InputInterpreter
     {
+        private static string pattern = @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)";
+
         public static string[] RegexSplitter(string[] split)
         {
-            return Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)");
+            return Regex.Split(split[0], pattern);
         }
 
         /// <summary>
@@ -22,7 +27,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return;
             }
 
-            string[] parseInputWithoutSpace = Regex.Split(split[0], @"(?<=\d)(?![,.])(?=\D)|(?<=\D)(?<![,.])(?=\d)");
+            string[] parseInputWithoutSpace = Regex.Split(split[0], pattern);
 
             if (parseInputWithoutSpace.Length > 1)
             {
@@ -142,6 +147,35 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 default:
                     break;
             }
+        }
+
+        public static ConvertModel Parse(Query query)
+        {
+            string[] split = query.Search.Split(' ');
+
+            InputInterpreter.ShorthandFeetInchHandler(ref split, CultureInfo.CurrentCulture);
+            InputInterpreter.InputSpaceInserter(ref split);
+
+            if (split.Length != 4)
+            {
+                // deny any other queries than:
+                // 10 ft in cm
+                // 10 ft to cm
+                return null;
+            }
+
+            InputInterpreter.DegreePrefixer(ref split);
+            if (!double.TryParse(split[0], out double value))
+            {
+                return null;
+            }
+
+            return new ConvertModel()
+            {
+                Value = value,
+                FromUnit = split[1],
+                ToUnit = split[3],
+            };
         }
     }
 }
