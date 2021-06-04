@@ -15,7 +15,7 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EspressoConstants.h">
+    <ClInclude Include="AwakeConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="trace.h">

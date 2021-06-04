@@ -4,7 +4,7 @@
 #include <common/interop/shared_constants.h>
 #include "trace.h"
 #include "resource.h"
-#include "EspressoConstants.h"
+#include "AwakeConstants.h"
 #include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_helpers.h>
 
@@ -34,13 +34,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"Espresso";
+const static wchar_t* MODULE_NAME = L"Awake";
 
 // Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"<no description>";
+const static wchar_t* MODULE_DESC = L"A module that keeps your computer awake on-demand.";
 
 // Implement the PowerToy Module Interface and all the required methods.
-class Espresso : public PowertoyModuleIface
+class Awake : public PowertoyModuleIface
 {
     std::wstring app_name;
 
@@ -55,7 +55,7 @@ private:
 
     HANDLE send_telemetry_event;
 
-    // Handle to event used to invoke Espresso
+    // Handle to event used to invoke PowerToys Awake
     HANDLE m_hInvokeEvent;
 
     bool is_process_running()
@@ -65,21 +65,21 @@ private:
 
     void launch_process()
     {
-        Logger::trace(L"Launching Espresso process");
+        Logger::trace(L"Launching PowerToys Awake process");
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"--use-pt-config --pid " + std::to_wstring(powertoys_pid);
-        Logger::trace(L"Espresso launching with parameters: " + executable_args);
+        Logger::trace(L"PowerToys Awake launching with parameters: " + executable_args);
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\Espresso\\PowerToys.Espresso.exe";
+        sei.lpFile = L"modules\\Awake\\PowerToys.Awake.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
         if (!ShellExecuteExW(&sei))
         {
             DWORD error = GetLastError();
-            std::wstring message = L"Espresso failed to start with error = ";
+            std::wstring message = L"PowerToys Awake failed to start with error = ";
             message += std::to_wstring(error);
             Logger::error(message);
         }
@@ -89,12 +89,12 @@ private:
 
 public:
     // Constructor
-    Espresso()
+    Awake()
     {
-        app_name = GET_RESOURCE_STRING(IDS_ESPRESSO_NAME);
-        app_key = EspressoConstants::ModuleKey;
+        app_name = GET_RESOURCE_STRING(IDS_AWAKE_NAME);
+        app_key = AwakeConstants::ModuleKey;
         std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
-        logFilePath.append(LogSettings::espressoLogPath);
+        logFilePath.append(LogSettings::awakeLogPath);
         Logger::init(LogSettings::launcherLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
         Logger::info("Launcher object is constructing");
     };
@@ -177,5 +177,5 @@ public:
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new Espresso();
+    return new Awake();
 }

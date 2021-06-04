@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Win32;
 using NLog;
 
-namespace Espresso.Shell.Core
+namespace Awake.Core
 {
     [Flags]
     public enum EXECUTION_STATE : uint

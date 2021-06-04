@@ -1,8 +1,8 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by Espresso.rc
+// Used by Awake.rc
 //
-#define IDS_ESPRESSO_NAME               101
+#define IDS_AWAKE_NAME               101
 
 // Next default values for new objects
 // 

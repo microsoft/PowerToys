@@ -14,7 +14,7 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Windows;
-using Espresso.Shell.Core;
+using Awake.Core;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using NLog;
@@ -22,12 +22,12 @@ using NLog;
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
 
-namespace Espresso.Shell
+namespace Awake
 {
     internal class Program
     {
         private static Mutex? _mutex = null;
-        private const string AppName = "Espresso";
+        private const string AppName = "Awake";
         private static FileSystemWatcher? _watcher = null;
         private static SettingsUtils? _settingsUtils = null;
 
@@ -48,7 +48,7 @@ namespace Espresso.Shell
             _log = LogManager.GetCurrentClassLogger();
             _settingsUtils = new SettingsUtils();
 
-            _log.Info("Launching Espresso...");
+            _log.Info("Launching PowerToys Awake...");
             _log.Info(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
             _log.Info($"OS: {Environment.OSVersion}");
             _log.Info($"OS Build: {APIHelper.GetOperatingSystemBuild()}");
@@ -58,7 +58,7 @@ namespace Espresso.Shell
             var configOption = new Option<bool>(
                     aliases: new[] { "--use-pt-config", "-c" },
                     getDefaultValue: () => false,
-                    description: "Specifies whether Espresso will be using the PowerToys configuration file for managing the state.")
+                    description: "Specifies whether PowerToys Awake will be using the PowerToys configuration file for managing the state.")
             {
                 Argument = new Argument<bool>(() => false)
                 {
@@ -97,7 +97,7 @@ namespace Espresso.Shell
             var pidOption = new Option<int>(
                     aliases: new[] { "--pid", "-p" },
                     getDefaultValue: () => 0,
-                    description: "Bind the execution of Espresso to another process.")
+                    description: "Bind the execution of PowerToys Awake to another process.")
             {
                 Argument = new Argument<int>(() => 0)
                 {
@@ -151,7 +151,7 @@ namespace Espresso.Shell
                 try
                 {
 #pragma warning disable CS8604 // Possible null reference argument.
-                    TrayHelper.InitializeTray(AppName, new Icon(Application.GetResourceStream(new Uri("/Images/Espresso.ico", UriKind.Relative)).Stream));
+                    TrayHelper.InitializeTray(AppName, new Icon(Application.GetResourceStream(new Uri("/Images/Awake.ico", UriKind.Relative)).Stream));
 #pragma warning restore CS8604 // Possible null reference argument.
 
                     var settingsPath = _settingsUtils.GetSettingsFilePath(AppName);
@@ -178,9 +178,9 @@ namespace Espresso.Shell
                     mergedObservable.Throttle(TimeSpan.FromMilliseconds(25))
                         .SubscribeOn(TaskPoolScheduler.Default)
                         .Select(e => e.EventArgs)
-                        .Subscribe(HandleEspressoConfigChange);
+                        .Subscribe(HandleAwakeConfigChange);
 
-                    TrayHelper.SetTray(AppName, new EspressoSettings());
+                    TrayHelper.SetTray(AppName, new AwakeSettings());
 
                     // Initially the file might not be updated, so we need to start processing
                     // settings right away.
@@ -195,9 +195,9 @@ namespace Espresso.Shell
             }
             else
             {
-                var mode = timeLimit <= 0 ? EspressoMode.INDEFINITE : EspressoMode.TIMED;
+                var mode = timeLimit <= 0 ? AwakeMode.INDEFINITE : AwakeMode.TIMED;
 
-                if (mode == EspressoMode.INDEFINITE)
+                if (mode == AwakeMode.INDEFINITE)
                 {
                     SetupIndefiniteKeepAwake(displayOn);
                 }
@@ -226,7 +226,7 @@ namespace Espresso.Shell
             APIHelper.SetIndefiniteKeepAwake(LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
         }
 
-        private static void HandleEspressoConfigChange(FileSystemEventArgs fileEvent)
+        private static void HandleAwakeConfigChange(FileSystemEventArgs fileEvent)
         {
             _log.Info("Detected a settings file change. Updating configuration...");
             _log.Info("Resetting keep-awake to normal state due to settings change.");
@@ -237,26 +237,26 @@ namespace Espresso.Shell
         {
             try
             {
-                EspressoSettings settings = _settingsUtils.GetSettings<EspressoSettings>(AppName);
+                AwakeSettings settings = _settingsUtils.GetSettings<AwakeSettings>(AppName);
 
                 if (settings != null)
                 {
                     switch (settings.Properties.Mode)
                     {
-                        case EspressoMode.PASSIVE:
+                        case AwakeMode.PASSIVE:
                             {
                                 SetupNoKeepAwake();
                                 break;
                             }
 
-                        case EspressoMode.INDEFINITE:
+                        case AwakeMode.INDEFINITE:
                             {
                                 // Indefinite keep awake.
                                 SetupIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
                                 break;
                             }
 
-                        case EspressoMode.TIMED:
+                        case AwakeMode.TIMED:
                             {
                                 // Timed keep-awake.
                                 uint computedTime = (settings.Properties.Hours * 60 * 60) + (settings.Properties.Minutes * 60);

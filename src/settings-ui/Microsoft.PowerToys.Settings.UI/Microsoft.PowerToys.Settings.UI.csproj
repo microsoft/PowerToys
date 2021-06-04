@@ -105,7 +105,7 @@
     <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
       <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\EspressoModeToBoolConverter.cs" />
+    <Compile Include="Converters\AwakeModeToBoolConverter.cs" />
     <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
     <Compile Include="Converters\UpdatingStateCannotDownloadToVisibilityConverter.cs" />
     <Compile Include="Converters\UpdatingStateReadyToDownloadToVisibilityConverter.cs" />
@@ -126,8 +126,8 @@
     <Compile Include="OOBE\Enums\PowerToysModulesEnum.cs" />
     <Compile Include="OOBE\ViewModel\OobeShellViewModel.cs" />
     <Compile Include="OOBE\ViewModel\OobePowerToysModule.cs" />
-    <Compile Include="OOBE\Views\OobeEspresso.xaml.cs">
-      <DependentUpon>OobeEspresso.xaml</DependentUpon>
+    <Compile Include="OOBE\Views\OobeAwake.xaml.cs">
+      <DependentUpon>OobeAwake.xaml</DependentUpon>
     </Compile>
     <Compile Include="OOBE\Views\OobeColorPicker.xaml.cs">
       <DependentUpon>OobeColorPicker.xaml</DependentUpon>
@@ -166,8 +166,8 @@
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
-    <Compile Include="Views\EspressoPage.xaml.cs">
-      <DependentUpon>EspressoPage.xaml</DependentUpon>
+    <Compile Include="Views\AwakePage.xaml.cs">
+      <DependentUpon>AwakePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ColorPickerPage.xaml.cs">
       <DependentUpon>ColorPickerPage.xaml</DependentUpon>
@@ -208,7 +208,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\FluentIcons\FluentIconsColorPicker.png" />
-    <Content Include="Assets\FluentIcons\FluentIconsEspresso.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsAwake.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFancyZones.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFileExplorerPreview.png" />
     <Content Include="Assets\FluentIcons\FluentIconsImageResizer.png" />
@@ -220,12 +220,12 @@
     <Content Include="Assets\FluentIcons\FluentIconsVideoConferenceMute.png" />
     <Content Include="Assets\Logo.scale-200.png" />
     <Content Include="Assets\Modules\ColorPicker.png" />
-    <Content Include="Assets\Modules\Espresso.png" />
+    <Content Include="Assets\Modules\Awake.png" />
     <Content Include="Assets\Modules\FancyZones.png" />
     <Content Include="Assets\Modules\ImageResizer.png" />
     <Content Include="Assets\Modules\KBM.png" />
     <Content Include="Assets\Modules\OOBE\ColorPicker.gif" />
-    <Content Include="Assets\Modules\OOBE\Espresso.png" />
+    <Content Include="Assets\Modules\OOBE\Awake.png" />
     <Content Include="Assets\Modules\OOBE\FancyZones.gif" />
     <Content Include="Assets\Modules\OOBE\FileExplorer.png" />
     <Content Include="Assets\Modules\OOBE\ImageResizer.gif" />
@@ -308,7 +308,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="OOBE\Views\OobeEspresso.xaml">
+    <Page Include="OOBE\Views\OobeAwake.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -384,7 +384,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\EspressoPage.xaml">
+    <Page Include="Views\AwakePage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

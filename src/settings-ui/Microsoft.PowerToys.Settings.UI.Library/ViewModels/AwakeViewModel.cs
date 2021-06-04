@@ -9,15 +9,15 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
-    public class EspressoViewModel : Observable
+    public class AwakeViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private EspressoSettings Settings { get; set; }
+        private AwakeSettings Settings { get; set; }
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public EspressoViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<EspressoSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public AwakeViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AwakeSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             if (settingsRepository == null)
@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             Settings = moduleSettingsRepository.SettingsConfig;
 
-            _isEnabled = GeneralSettingsConfig.Enabled.Espresso;
+            _isEnabled = GeneralSettingsConfig.Enabled.Awake;
             _keepDisplayOn = Settings.Properties.KeepDisplayOn;
             _mode = Settings.Properties.Mode;
             _hours = Settings.Properties.Hours;
@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _isEnabled = value;
 
-                    GeneralSettingsConfig.Enabled.Espresso = value;
+                    GeneralSettingsConfig.Enabled.Awake = value;
                     OnPropertyChanged(nameof(IsEnabled));
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
 
@@ -67,10 +67,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public bool IsTimeConfigurationEnabled
         {
-            get => _mode == EspressoMode.TIMED && _isEnabled;
+            get => _mode == AwakeMode.TIMED && _isEnabled;
         }
 
-        public EspressoMode Mode
+        public AwakeMode Mode
         {
             get => _mode;
             set
@@ -140,8 +140,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             OnPropertyChanged(propertyName);
             if (SendConfigMSG != null)
             {
-                SndEspressoSettings outsettings = new SndEspressoSettings(Settings);
-                SndModuleSettings<SndEspressoSettings> ipcMessage = new SndModuleSettings<SndEspressoSettings>(outsettings);
+                SndAwakeSettings outsettings = new SndAwakeSettings(Settings);
+                SndModuleSettings<SndAwakeSettings> ipcMessage = new SndModuleSettings<SndAwakeSettings>(outsettings);
 
                 var targetMessage = ipcMessage.ToJsonString();
                 SendConfigMSG(targetMessage);
@@ -152,6 +152,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private uint _hours;
         private uint _minutes;
         private bool _keepDisplayOn;
-        private EspressoMode _mode;
+        private AwakeMode _mode;
     }
 }

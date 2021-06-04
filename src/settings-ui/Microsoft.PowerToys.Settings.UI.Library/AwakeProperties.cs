@@ -6,30 +6,30 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class EspressoProperties
+    public class AwakeProperties
     {
-        public EspressoProperties()
+        public AwakeProperties()
         {
             KeepDisplayOn = false;
-            Mode = EspressoMode.PASSIVE;
+            Mode = AwakeMode.PASSIVE;
             Hours = 0;
             Minutes = 0;
         }
 
-        [JsonPropertyName("espresso_keep_display_on")]
+        [JsonPropertyName("awake_keep_display_on")]
         public bool KeepDisplayOn { get; set; }
 
-        [JsonPropertyName("espresso_mode")]
-        public EspressoMode Mode { get; set; }
+        [JsonPropertyName("awake_mode")]
+        public AwakeMode Mode { get; set; }
 
-        [JsonPropertyName("espresso_hours")]
+        [JsonPropertyName("awake_hours")]
         public uint Hours { get; set; }
 
-        [JsonPropertyName("espresso_minutes")]
+        [JsonPropertyName("awake_minutes")]
         public uint Minutes { get; set; }
     }
 
-    public enum EspressoMode
+    public enum AwakeMode
     {
         PASSIVE = 0,
         INDEFINITE = 1,

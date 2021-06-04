@@ -15,8 +15,8 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{5e7360a8-d048-4ed3-8f09-0bfd64c5529a}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Espresso</RootNamespace>
-    <ProjectName>EspressoModuleInterface</ProjectName>
+    <RootNamespace>Awake</RootNamespace>
+    <ProjectName>AwakeModuleInterface</ProjectName>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -36,7 +36,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\Espresso\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\Awake\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -48,7 +48,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="EspressoConstants.h" />
+    <ClInclude Include="AwakeConstants.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="trace.h" />
