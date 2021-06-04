@@ -8,7 +8,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>lib</RootNamespace>
+    <RootNamespace>FancyZonesLib</RootNamespace>
     <ProjectName>FancyZonesLib</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

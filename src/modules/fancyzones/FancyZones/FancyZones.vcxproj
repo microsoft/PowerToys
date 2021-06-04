@@ -160,6 +160,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="..\FancyZonesLib\Generated Files\fancyzones.rc" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
