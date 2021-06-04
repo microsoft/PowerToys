@@ -72,7 +72,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="EspressoModuleInterface.rc" />
+    <ResourceCompile Include="AwakeModuleInterface.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
