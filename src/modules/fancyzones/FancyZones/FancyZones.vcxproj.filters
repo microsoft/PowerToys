@@ -36,4 +36,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\FancyZonesLib\Generated Files\fancyzones.rc" />
+  </ItemGroup>
 </Project>
