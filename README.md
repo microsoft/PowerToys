@@ -74,6 +74,10 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
+### 0.39 - May 2021 Update
+
+The PowerToys team is delaying our 0.39 release. We learned a lot but items took longer than expected. We have more we want done before the next release. This longer time will allow us to get in more amazing pull requests by you, the community, to add / improve functionality
+
 ### 0.37 - April 2021 Update
 
 Our goals for [v0.37 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F19) Video Conference Mute work so we can bring it into the stable branch, general bug fixes, moving Keyboard manager out, and removing the legacy settings app.
@@ -136,13 +140,13 @@ We'd like to directly mention (in alphabetical order) for their continued commun
 
 [@Aaron-Junker](https://github.com/Aaron-Junker), [@addrum](https://github.com/addrum), [@davidegiacometti ](https://github.com/davidegiacometti), [@DoctorNefario](https://github.com/DoctorNefario), [@htcfreek](https://github.com/htcfreek), [@Jay-o-Way](https://github.com/Jay-o-Way), [@niels9001](https://github.com/niels9001), and [@ricardosantos9521](https://github.com/ricardosantos9521)
 
-#### What is being planned for v0.39 - May 2021
+#### What is being planned for v0.39 / 0.41
 
-For [v0.39][github-next-release-work], we are planning to work on:
+For [v0.39 / 0.41][github-next-release-work], we are planning to work on:
 
 - Stability and bug fixes
-- Improving VCM
-- Moving Shortcutguide out of the main exe
+- Moving FancyZones & Shortcutguide out of the main exe
+- Installer improvements
 
 ## PowerToys Community
 
@@ -167,5 +171,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://docs.microsoft.com/windows/powertoys/
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F20
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F21
 [github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.36.0

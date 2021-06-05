@@ -554,6 +554,7 @@ EXCLUDEFILES
 EXCLUDEFOLDERS
 EXCLUDESUBFOLDERS
 exe
+Executables
 executionpolicy
 exename
 exif
@@ -669,6 +670,7 @@ hardcoded
 Hardlines
 HARDWAREINPUT
 hashcode
+Hashset
 hbitmap
 hbmp
 hbr
@@ -1595,6 +1597,7 @@ REGCLS
 regedit
 regex
 REGISTERCLASSFAILED
+Registery
 registrypath
 regkey
 reimplementing
@@ -1706,6 +1709,7 @@ serizalization
 serverside
 SETCONTEXT
 setcursor
+setenv
 SETFOCUS
 SETFOREGROUND
 SETICON
@@ -1742,8 +1746,8 @@ shlwapi
 shobjidl
 SHORTCUTATLEAST
 shortcutcontrol
-shortcutguide
 Shortcutguide
+shortcutguide
 SHORTCUTMAXONEACTIONKEY
 SHORTCUTNOREPEATEDMODIFIER
 SHORTCUTONEACTIONKEY
@@ -2160,8 +2164,8 @@ windowsx
 windowwalker
 winerror
 WINEVENT
-winexe
 winevt
+winexe
 winforms
 winfx
 winget
