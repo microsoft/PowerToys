@@ -1,0 +1,13 @@
+{
+  "ID": "BADD1B06EF0A4B61AD95395F24241D69",
+  "ActionKeyword": "&",
+  "IsGlobal": false,
+  "Name": "TimeZone",
+  "Author": "TobiasSekan",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://aka.ms/powertoys",
+  "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.TimeZone.dll",
+  "IcoPathDark": "Images\\reg.dark.png",
+  "IcoPathLight": "Images\\reg.light.png"
+}
