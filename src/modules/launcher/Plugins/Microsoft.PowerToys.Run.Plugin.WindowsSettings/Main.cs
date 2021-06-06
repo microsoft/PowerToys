@@ -94,7 +94,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         /// <param name="query">The query to filter the list.</param>
         /// <returns>A filtered list, can be empty when nothing was found.</returns>
         public List<Result> Query(Query query)
-        {
+         {
             if (_settingsList is null)
             {
                 return new List<Result>(0);
@@ -126,16 +126,14 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                     return true;
                 }
 
-                if (found.AltNames is null)
+                if (!(found.AltNames is null))
                 {
-                    return false;
-                }
-
-                foreach (var altName in found.AltNames)
-                {
-                    if (altName.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
+                    foreach (var altName in found.AltNames)
                     {
-                        return true;
+                        if (altName.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            return true;
+                        }
                     }
                 }
 
