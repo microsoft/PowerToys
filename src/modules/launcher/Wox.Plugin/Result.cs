@@ -20,7 +20,6 @@ namespace Wox.Plugin
         private ToolTipData _toolTipData;
         private string _pluginDirectory;
         private string _icoPath;
-        private IList<int> _titleHighlightData;
 
         public string Title
         {
@@ -103,7 +102,7 @@ namespace Wox.Plugin
 
         public Result(IList<int> titleHighlightData = null, IList<int> subTitleHighlightData = null)
         {
-            _titleHighlightData = titleHighlightData;
+            TitleHighlightData = titleHighlightData;
             SubTitleHighlightData = subTitleHighlightData;
         }
 
@@ -112,7 +111,7 @@ namespace Wox.Plugin
         /// </summary>
         public IList<int> GetTitleHighlightData()
         {
-            return _titleHighlightData;
+            return TitleHighlightData;
         }
 
         /// <summary>
@@ -120,8 +119,15 @@ namespace Wox.Plugin
         /// </summary>
         public void SetTitleHighlightData(IList<int> value)
         {
-            _titleHighlightData = value;
+            TitleHighlightData = value;
         }
+
+        /// <summary>
+        /// Gets a list of indexes for the characters to be highlighted in Title
+        /// </summary>
+        #pragma warning disable CA1721 // Property names should not match get methods
+        public IList<int> TitleHighlightData { get; private set; }
+        #pragma warning restore CA1721 // Property names should not match get methods
 
         /// <summary>
         /// Gets a list of indexes for the characters to be highlighted in SubTitle
@@ -162,6 +168,7 @@ namespace Wox.Plugin
                            string.Equals(r?.SubTitle, SubTitle, StringComparison.Ordinal) &&
                            string.Equals(r?.IcoPath, IcoPath, StringComparison.Ordinal) &&
                            GetTitleHighlightData() == r.GetTitleHighlightData() &&
+                           TitleHighlightData == r.TitleHighlightData &&
                            SubTitleHighlightData == r.SubTitleHighlightData;
 
             return equality;
