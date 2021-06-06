@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(_context.API.GetCurrentTheme());
 
-            _settingsList = ResourceHelper.ReadAllPossibleSettings();
+            _settingsList = JsonSettingsListHelper.ReadAllPossibleSettings();
             _settingsList = UnsupportedSettingsHelper.FilterByBuild(_settingsList);
 
             TranslationHelper.TranslateAllSettings(_settingsList);
