@@ -14,9 +14,9 @@ using Wox.Plugin.Logger;
 namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 {
     /// <summary>
-    /// Helper class to easier work with embedded resources
+    /// Helper class to easier work with the JSON file that contains all Windows settings
     /// </summary>
-    internal static class ResourceHelper
+    internal static class JsonSettingsListHelper
     {
         /// <summary>
         /// The name of the file that contains all settings for the query
