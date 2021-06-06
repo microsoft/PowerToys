@@ -217,6 +217,10 @@
     <value>Apps and Features</value>
     <comment>Area Apps</comment>
   </data>
+  <data name="AppSetingsApp" xml:space="preserve">
+    <value>System settings</value>
+    <comment>Type of the setting is a "Modern Windows settings". We use the same term as used in start menu search at the moment. </comment>
+  </data>
   <data name="AppsForWebsites" xml:space="preserve">
     <value>Apps for websites</value>
     <comment>Area Apps</comment>
@@ -1371,10 +1375,6 @@
   <data name="SessionCleanup" xml:space="preserve">
     <value>Session cleanup</value>
     <comment>Area SurfaceHub</comment>
-  </data>
-  <data name="SettingsApp" xml:space="preserve">
-    <value>System settings</value>
-    <comment>Type of the setting is a "Modern Windows settings". We use the same term as used in start menu search at the moment. </comment>
   </data>
   <data name="SettingsHomePage" xml:space="preserve">
     <value>Settings home page</value>
