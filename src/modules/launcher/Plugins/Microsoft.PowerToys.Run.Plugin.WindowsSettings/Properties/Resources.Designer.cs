@@ -297,9 +297,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to System settings.
         /// </summary>
-        internal static string AppSetingsApp {
+        internal static string AppSettingsApp {
             get {
-                return ResourceManager.GetString("AppSetingsApp", resourceCulture);
+                return ResourceManager.GetString("AppSettingsApp", resourceCulture);
             }
         }
         
