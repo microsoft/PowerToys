@@ -217,7 +217,7 @@
     <value>Apps and Features</value>
     <comment>Area Apps</comment>
   </data>
-  <data name="AppSetingsApp" xml:space="preserve">
+  <data name="AppSettingsApp" xml:space="preserve">
     <value>System settings</value>
     <comment>Type of the setting is a "Modern Windows settings". We use the same term as used in start menu search at the moment. </comment>
   </data>
