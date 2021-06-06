@@ -295,6 +295,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to System settings.
+        /// </summary>
+        internal static string AppSetingsApp {
+            get {
+                return ResourceManager.GetString("AppSetingsApp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Apps for websites.
         /// </summary>
         internal static string AppsForWebsites {
@@ -3090,15 +3099,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string SessionCleanup {
             get {
                 return ResourceManager.GetString("SessionCleanup", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to System settings.
-        /// </summary>
-        internal static string SettingsApp {
-            get {
-                return ResourceManager.GetString("SettingsApp", resourceCulture);
             }
         }
         
