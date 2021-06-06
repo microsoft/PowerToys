@@ -7,10 +7,12 @@
     xmlns:p="clr-namespace:PowerLauncher.Properties"
     xmlns:local="clr-namespace:PowerLauncher"
     xmlns:ui="http://schemas.modernwpf.com/2019"
-    mc:Ignorable="d" 
+             xmlns:converters="clr-namespace:PowerLauncher.Converters"
+             mc:Ignorable="d" 
     d:DesignHeight="300"
     d:DesignWidth="720">
     <UserControl.Resources>
+        <converters:EmptyStringToVisibilityConverter x:Key="emptyStringToVisibilityConverter" />
         <Style x:Key="QueryTextBoxStyle" TargetType="{x:Type TextBox}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -24,12 +26,12 @@
             <Setter Property="ui:TextContextMenu.UsingTextContextMenu" Value="True" />
             <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst"/>
             <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
-            <Setter Property="Padding" Value="12,0,0,0" />
+            <Setter Property="Padding" Value="0,0,0,0" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
                         <Grid>
-                            <TextBlock Margin="14, 0, 0, 0"
+                            <TextBlock Margin="0, 0, 0, 0"
                                        Text="{TemplateBinding Tag}">
                                 <TextBlock.Style>
                                     <Style TargetType="{x:Type TextBlock}">
@@ -43,7 +45,7 @@
                                 </TextBlock.Style>
                             </TextBlock>
                             <Border x:Name="border"
-                                    Background="{TemplateBinding Background}"
+                                    Background="Transparent"
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     SnapsToDevicePixels="True">
@@ -88,50 +90,105 @@
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
-    <Grid 
-        Height="68"
-        VerticalAlignment="Top">
-        <!--Background="{ThemeResource BackdropAcrylicBrush}"-->
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="72"/>
-        </Grid.ColumnDefinitions>
 
-        <!--
+
+    <Grid>
+
+
+        <StackPanel Orientation="Vertical">
+            <Grid Height="72"
+                  Margin="1 "
+                  Background="{DynamicResource PrimaryBackgroundBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="72" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <!--
             for adding on placeholder, look at the style with 90 votes
             https://stackoverflow.com/questions/11873378/adding-placeholder-text-to-textbox
         -->
-        <local:CustomSearchBox
-            AutomationProperties.Name="{x:Static p:Resources.Query}"
-            x:Name="QueryTextBox"
-            x:FieldModifier="public"
-            Canvas.ZIndex="0"
-            Margin="10, 0, 0, 0"
-            VerticalAlignment="Center"
-            FontSize="24"
-            Style="{StaticResource QueryTextBoxStyle}"
-            Tag="{x:Static p:Resources.startTyping}"
-            />
-        <TextBlock
-            x:Name="AutoCompleteTextBlock"
-            x:FieldModifier="public"
-            Opacity="0.6"            
-            Canvas.ZIndex="-1" 
-            Margin="24, 0, 14, 0"
-            VerticalAlignment="Center"
-            FontSize="24"
-            Foreground="{DynamicResource TextControlPlaceholderForeground}"
-            Background="{DynamicResource SystemChromeLow}"
-         />
-        <TextBlock
-            AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
-            Grid.Column="1"
-            Text="&#xE721;"
-            FontFamily="Segoe MDL2 Assets"
-            FontSize="26" 
-            HorizontalAlignment="Center" 
-            VerticalAlignment="Center"
-            Foreground="{DynamicResource TextControlPlaceholderForeground}" 
-            SnapsToDevicePixels="True"/>
+                <TextBlock AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
+                           Text="&#xE721;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="26"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextControlPlaceholderForeground}"
+                           SnapsToDevicePixels="True" />
+
+
+                <TextBlock x:Name="AutoCompleteTextBlock"
+                           x:FieldModifier="public"
+                           Opacity="0.6"
+                           Grid.Column="1"
+                           Canvas.ZIndex="-1"
+                           Margin="1, 0, 14, 0"
+                           VerticalAlignment="Center"
+                           FontSize="24"
+                           Foreground="{DynamicResource TextControlPlaceholderForeground}"
+                           Background="Transparent" />
+                <local:CustomSearchBox AutomationProperties.Name="{x:Static p:Resources.Query}"
+                                       x:Name="QueryTextBox"
+                                       x:FieldModifier="public"
+                                       Canvas.ZIndex="0"
+                                       Margin="0, 0, 0, 0"
+                                       Grid.Column="1"
+                                       VerticalAlignment="Center"
+                                       FontSize="24"
+                                       Style="{StaticResource QueryTextBoxStyle}"
+                                       Tag="{x:Static p:Resources.startTyping}" />
+
+            </Grid>
+            <Rectangle Height="1"
+                       Opacity="0.4"
+                       Margin="1,0,1,0"
+                       Fill="{DynamicResource SecondaryTextForeground}" />
+            <ui:ListView x:Name="CheatSheetControl"
+                         Visibility="{Binding ElementName=QueryTextBox, Path=Text, Converter={StaticResource emptyStringToVisibilityConverter}}"
+                         Margin="0,16,0,12"
+                         MinWidth="0"
+                         Padding="0"
+                         Grid.ColumnSpan="2">
+                <ui:ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Background="{DynamicResource PrimaryBackgroundBrush}"
+                                    Width="32"
+                                    Margin="8,8,0,8"
+                                    Height="32"
+                                    HorizontalAlignment="Left"
+                                    Padding="4"
+                                    CornerRadius="4">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="2"
+                                                      Opacity="0.32"
+                                                      ShadowDepth="1" />
+                                </Border.Effect>
+                                <TextBlock Grid.RowSpan="2"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="15"
+                                           Margin="0,-2,0,0"
+                                           Foreground="{DynamicResource PrimaryTextForeground}"
+                                           Text="{Binding Metadata.ActionKeyword}" />
+                            </Border>
+                            <TextBlock Grid.Column="1"
+                                       Grid.Row="1"
+                                       VerticalAlignment="Center"
+                                       Margin="22,0,0,0"
+                                       FontSize="12"
+                                       Text="{Binding Plugin.Description}"
+                                       Foreground="{DynamicResource SecondaryTextForeground}" />
+                        </Grid>
+                    </DataTemplate>
+                </ui:ListView.ItemTemplate>
+            </ui:ListView>
+
+        </StackPanel>
     </Grid>
 </UserControl>

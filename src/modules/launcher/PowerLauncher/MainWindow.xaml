@@ -47,18 +47,19 @@
     </Window.Resources>
     <Grid Width="720"
           MouseDown="OnMouseDown">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    
         <Grid 
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
             Margin="24,24,24,24">
-            <Rectangle
-                Fill="{DynamicResource SystemChromeLow}"
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Rectangle Fill="{DynamicResource SystemChromeLow}"
                 RadiusX="4"
                 RadiusY="4"
+                       Grid.RowSpan="2"
                 Stroke="{DynamicResource DialogBorderBrush}"
                 StrokeThickness="1">
                 <Rectangle.Effect>
@@ -74,37 +75,18 @@
                 <!--<Border.RenderTransform>
                     <TranslateTransform />
                 </Border.RenderTransform>-->
-        </Grid>
-        <Grid 
-            x:Name="ListBoxBorder"
-            Grid.Row="1"
-            Margin="24,-8,24,24"
-            Visibility="{Binding Results.Visibility}">
-            <!--<Border.RenderTransform>
-                <TranslateTransform />
-            </Border.RenderTransform>-->
-            <Rectangle
-                RadiusX="4"
-                RadiusY="4"
-                Fill="{DynamicResource SystemChromeLow}"
-                Stroke="{DynamicResource DialogBorderBrush}"
-                StrokeThickness="1">
-                <Rectangle.Effect>
-                    <DropShadowEffect BlurRadius="32" Opacity="0.28" ShadowDepth="1" />
-                </Rectangle.Effect>
-            </Rectangle>
-            <local:ResultList x:Name="ListBox" 
-                PreviewMouseDown="ListBox_PreviewMouseDown" >
+            <local:ResultList x:Name="ListBox"
+                              Grid.Row="1"
+                              Margin="1"
+                              Visibility="{Binding Results.Visibility}"
+                              PreviewMouseDown="ListBox_PreviewMouseDown">
                 <!--<local:ResultList.RenderTransform>
                     <TranslateTransform />
                 </local:ResultList.RenderTransform>-->
             </local:ResultList>
-            <Rectangle
-                RadiusX="4"
-                RadiusY="4"
-                Stroke="{DynamicResource DialogBorderBrush}"
-                StrokeThickness="1" />
         </Grid>
+
+      
     </Grid> 
     <Window.InputBindings>
         <KeyBinding Key="Escape"

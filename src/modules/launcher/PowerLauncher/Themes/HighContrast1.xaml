@@ -14,6 +14,8 @@
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
     <Color x:Key="SystemBaseMediumLowColor">#ffff00</Color>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF3a3a3a" />
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF333333" />
     <SolidColorBrush x:Key="SystemChromeLow" Color="Black" options:Freeze="True" />
     <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF008000" />
     <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>

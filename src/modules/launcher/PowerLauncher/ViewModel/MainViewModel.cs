@@ -381,7 +381,7 @@ namespace PowerLauncher.ViewModel
                 }
                 else
                 {
-                    Results.Visibility = Visibility.Hidden;
+                    Results.Visibility = Visibility.Collapsed;
                     _queryTextBeforeLeaveResults = QueryText;
 
                     // Because of Fody's optimization
@@ -652,7 +652,7 @@ namespace PowerLauncher.ViewModel
                 _updateSource?.Cancel();
                 _currentQuery = _emptyQuery;
                 Results.SelectedItem = null;
-                Results.Visibility = Visibility.Hidden;
+                Results.Visibility = Visibility.Collapsed;
                 Task.Run(() =>
                 {
                     lock (_addResultsLock)

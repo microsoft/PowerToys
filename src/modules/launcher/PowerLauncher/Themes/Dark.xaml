@@ -15,6 +15,8 @@
     <system:Boolean x:Key="Theme.IsHighContrast">False</system:Boolean>
 
     <Color x:Key="SystemBaseMediumLowColor">#FF818181</Color>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF3a3a3a" />
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF333333" />
     <SolidColorBrush x:Key="SystemChromeLow" Color="#FF171717" options:Freeze="True" />
     <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF818181" />
     <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
