@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                 if (titleMatch.Score > 0)
                 {
                     c.Score = titleMatch.Score;
-                    c.SetTitleHighlightData(titleMatch.MatchData);
+                    c.TitleHighlightData = titleMatch.MatchData;
                     results.Add(c);
                 }
             }
