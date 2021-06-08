@@ -122,6 +122,7 @@ build:
             - 'modules\launcher\Microsoft.Launcher.dll'
             - 'modules\launcher\Plugins\Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.dll'
             - 'modules\launcher\Plugins\Calculator\ManagedTelemetry.dll'
+            - 'modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter\Community.PowerToys.Run.Plugin.UnitConverter.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\ManagedTelemetry.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.dll'
