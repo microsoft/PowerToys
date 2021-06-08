@@ -113,8 +113,6 @@ build:
             - 'modules\launcher\Microsoft.PowerToys.Common.UI.dll'
             - 'modules\launcher\Microsoft.Launcher.dll'
             - 'modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter\Community.PowerToys.Run.Plugin.UnitConverter.dll'
-            - 'modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter\Wox.Infrastructure.dll'
-            - 'modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.dll'
             - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Wox.Plugin.dll'

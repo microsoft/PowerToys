@@ -1099,7 +1099,7 @@
 
       <!-- UnitConverter Plugin -->
       <Component Id="UnitConverterComponent" Directory="UnitConverterPluginFolder" Guid="D4F429E3-C619-49D6-9416-88A757D18E02">
-        <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.UnitConverter.deps.json;Community.PowerToys.Run.Plugin.UnitConverter.dll;ManagedTelemetry.dll?>
+        <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.UnitConverter.deps.json;Community.PowerToys.Run.Plugin.UnitConverter.dll?>
         <File Id="UnitConverter_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\$(var.File)" />
         <?endforeach?>
       </Component>
