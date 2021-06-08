@@ -984,9 +984,6 @@
                 <Component Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder">
                     <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
                 </Component>
-                <Component Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)UnitConverterPluginFolder">
-                    <File Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\$(var.Language)\Community.PowerToys.Run.Plugin.UnitConverter.resources.dll" />
-                </Component>
                 <Component Id="Launcher_Uri_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
                     <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
                 </Component>
