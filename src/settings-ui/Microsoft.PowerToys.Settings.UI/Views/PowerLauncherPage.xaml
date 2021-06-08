@@ -157,6 +157,8 @@
                        Margin="{StaticResource SmallTopMargin}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
 
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Position}">
+       
             <RadioButton x:Uid="Run_Radio_Position_Primary_Monitor"
                          GroupName="Run_Position"
                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsPrimaryMonitorPositionRadioButtonChecked}"
@@ -171,6 +173,8 @@
                          GroupName="Run_Position"
                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsFocusPositionRadioButtonChecked}"
                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+
+            </StackPanel>
 
             <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
             The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
