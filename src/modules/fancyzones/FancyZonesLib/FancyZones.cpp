@@ -784,7 +784,8 @@ void FancyZones::SettingsChanged() noexcept
 
     // Needed if we toggled spanZonesAcrossMonitors
     m_workAreaHandler.Clear();
-    OnDisplayChange(DisplayChangeType::Initialization, writeLock);
+
+    PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
 }
 
 // IZoneWindowHost
