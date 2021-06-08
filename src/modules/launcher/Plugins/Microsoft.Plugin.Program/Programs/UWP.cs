@@ -76,7 +76,7 @@ namespace Microsoft.Plugin.Program.Programs
                     a.AppListEntry != "none";
 
                     return valid;
-                }).ToArray();
+                }).ToList();
 
                 if (Marshal.ReleaseComObject(stream) > 0)
                 {

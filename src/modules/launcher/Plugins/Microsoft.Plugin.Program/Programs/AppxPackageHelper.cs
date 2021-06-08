@@ -14,9 +14,8 @@ namespace Microsoft.Plugin.Program.Programs
         private static readonly IAppxFactory AppxFactory = (IAppxFactory)new AppxFactory();
 
         // This function returns a list of attributes of applications
-        public static List<IAppxManifestApplication> GetAppsFromManifest(IStream stream)
+        public static IEnumerable<IAppxManifestApplication> GetAppsFromManifest(IStream stream)
         {
-            List<IAppxManifestApplication> apps = new List<IAppxManifestApplication>();
             var reader = AppxFactory.CreateManifestReader(stream);
             var manifestApps = reader.GetApplications();
 
@@ -27,13 +26,11 @@ namespace Microsoft.Plugin.Program.Programs
                 _ = CheckHRAndReturnOrThrow(hr, appListEntry);
                 if (appListEntry != "none")
                 {
-                    apps.Add(manifestApp);
+                    yield return manifestApp;
                 }
 
                 manifestApps.MoveNext();
             }
-
-            return apps;
         }
 
         public static T CheckHRAndReturnOrThrow<T>(Hresult hr, T result)
