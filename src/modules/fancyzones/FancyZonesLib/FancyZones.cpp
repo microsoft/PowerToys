@@ -77,8 +77,11 @@ public:
         m_windowMoveHandler(settings, [this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         }),
-        m_fileWatcher(FancyZonesDataInstance().GetZonesSettingsFileName(), [this]() {
+        m_zonesSettingsFileWatcher(FancyZonesDataInstance().GetZonesSettingsFileName(), [this]() {
             PostMessageW(m_window, WM_PRIV_FILE_UPDATE, NULL, NULL);
+        }),
+        m_settingsFileWatcher(FancyZonesDataInstance().GetSettingsFileName(), [this]() {
+            m_settings->ReloadSettings();
         })
     {
         m_settings->SetCallback(this);
@@ -248,7 +251,9 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
-    FileWatcher m_fileWatcher;
+
+    FileWatcher m_zonesSettingsFileWatcher;
+    FileWatcher m_settingsFileWatcher;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.

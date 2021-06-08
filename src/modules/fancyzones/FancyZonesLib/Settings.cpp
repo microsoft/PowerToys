@@ -60,7 +60,7 @@ public:
     IFACEMETHODIMP_(bool)
     GetConfig(_Out_ PWSTR buffer, _Out_ int* buffer_sizeg) noexcept;
     IFACEMETHODIMP_(void)
-    SetConfig(PCWSTR config) noexcept;
+    ReloadSettings() noexcept;
     IFACEMETHODIMP_(void)
     CallCustomAction(PCWSTR action) noexcept;
     IFACEMETHODIMP_(const Settings*)
@@ -72,8 +72,8 @@ private:
 
     IFancyZonesCallback* m_callback{};
     const HINSTANCE m_hinstance;
-    PCWSTR m_moduleName{};
-    PCWSTR m_moduleKey{};
+    std::wstring m_moduleName{};
+    std::wstring m_moduleKey{};
 
     Settings m_settings;
 
@@ -139,10 +139,9 @@ FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ int* buffer_size) noexce
 }
 
 IFACEMETHODIMP_(void)
-FancyZonesSettings::SetConfig(PCWSTR serializedPowerToysSettingsJson) noexcept
+FancyZonesSettings::ReloadSettings() noexcept
 {
-    LoadSettings(serializedPowerToysSettingsJson, false /*fromFile*/);
-    SaveSettings();
+    LoadSettings(m_moduleKey.c_str(), true /*fromFile*/);
     if (m_callback)
     {
         m_callback->SettingsChanged();
