@@ -1,6 +1,7 @@
 {
   "ID": "5043CECEE6A748679CBE02D27D83747A",
   "ActionKeyword": "$",
+  "IsGlobal": false,
   "Name": "Windows Settings",
   "Author": "TobiasSekan",
   "Version": "1.0.0",
