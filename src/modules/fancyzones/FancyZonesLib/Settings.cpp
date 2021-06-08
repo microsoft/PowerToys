@@ -60,6 +60,8 @@ public:
     IFACEMETHODIMP_(bool)
     GetConfig(_Out_ PWSTR buffer, _Out_ int* buffer_sizeg) noexcept;
     IFACEMETHODIMP_(void)
+    SetConfig(PCWSTR config) noexcept;
+    IFACEMETHODIMP_(void)
     ReloadSettings() noexcept;
     IFACEMETHODIMP_(void)
     CallCustomAction(PCWSTR action) noexcept;
@@ -136,6 +138,18 @@ FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ int* buffer_size) noexce
     settings.add_multiline_string(NonLocalizable::ExcludedAppsID, IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, m_settings.excludedApps);
 
     return settings.serialize_to_buffer(buffer, buffer_size);
+}
+
+IFACEMETHODIMP_(void)
+FancyZonesSettings::SetConfig(PCWSTR serializedPowerToysSettingsJson) noexcept
+{
+    LoadSettings(serializedPowerToysSettingsJson, false /*fromFile*/);
+    SaveSettings();
+    if (m_callback)
+    {
+        m_callback->SettingsChanged();
+    }
+    Trace::SettingsChanged(m_settings);
 }
 
 IFACEMETHODIMP_(void)
