@@ -845,6 +845,7 @@ IMoniker
 IMonitor
 IMouse
 impl
+IMulti
 INDEXTOSTATEIMAGEMASK
 indierawk
 Infobar
