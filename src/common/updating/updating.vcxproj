@@ -39,7 +39,6 @@
     <ClInclude Include="updating.h" />
     <ClInclude Include="updateState.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="winstore.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="installer.cpp" />

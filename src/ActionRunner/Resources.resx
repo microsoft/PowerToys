@@ -64,28 +64,7 @@
   <data name="DOTNET_CORE_DOWNLOAD_FAILURE_TITLE" xml:space="preserve">
     <value>PowerToys installation error</value>
   </data>
-  <data name="GITHUB_NEW_VERSION_AVAILABLE" xml:space="preserve">
-    <value>An update to PowerToys is available.</value>
-  </data>
-  <data name="GITHUB_NEW_VERSION_UPDATE_NOW" xml:space="preserve">
-    <value>Update now</value>
-  </data>
-  <data name="UNINSTALLATION_UNKNOWN_ERROR" xml:space="preserve">
-    <value>Error: please uninstall the previous version of PowerToys manually.</value>
-  </data>
   <data name="GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT" xml:space="preserve">
     <value>An update to PowerToys is available. Visit our GitHub page to update.</value>
-  </data>
-  <data name="GITHUB_NEW_VERSION_MORE_INFO" xml:space="preserve">
-    <value>More info...</value>
-  </data>
-  <data name="TOAST_TITLE" xml:space="preserve">
-    <value>PowerToys Update</value>
-  </data>
-  <data name="OFFER_UNINSTALL_MSI" xml:space="preserve">
-    <value>We've detected a previous installation of PowerToys. Would you like to remove it?</value>
-  </data>
-  <data name="OFFER_UNINSTALL_MSI_TITLE" xml:space="preserve">
-    <value>PowerToys: uninstall previous version?</value>
   </data>
 </root>
