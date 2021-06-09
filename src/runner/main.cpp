@@ -22,7 +22,6 @@
 #include <common/utils/elevation.h>
 #include <common/utils/processApi.h>
 #include <common/utils/resources.h>
-#include <common/winstore/winstore.h>
 
 #include "UpdateUtils.h"
 #include "ActionRunnerUtils.h"
@@ -127,8 +126,6 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
                 notifications::show_toast(GET_RESOURCE_STRING(IDS_OLDER_MSIX_UNINSTALLED).c_str(), L"PowerToys");
             }
         } }.detach();
-
-        notifications::register_background_toast_handler();
 
         chdir_current_executable();
         // Load Powertoys DLLs
@@ -263,12 +260,6 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     {
         return toast_notification_handler_result::exit_error;
     }
-}
-
-// TODO: dummy function to be removed to avoid conflicts with https://github.com/microsoft/PowerToys/pull/11450
-bool start_msi_uninstallation_sequence()
-{
-    return true;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
