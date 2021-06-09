@@ -333,6 +333,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AwakeModuleInterface", "src\modules\awake\AwakeModuleInterface\AwakeModuleInterface.vcxproj", "{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Awake", "src\modules\awake\Awake\Awake.csproj", "{D940E07F-532C-4FF3-883F-790DA014F19A}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter\Community.PowerToys.Run.Plugin.UnitConverter.csproj", "{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter.UnitTest", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.csproj", "{3E424AD2-19E5-4AE6-B833-F53963EB5FC1}"
