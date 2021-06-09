@@ -74,6 +74,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             UpdateIconPath(Context.API.GetCurrentTheme());
         }
 
+        // Todo : Update with theme based IconPath
         private void UpdateIconPath(Theme theme)
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
