@@ -54,7 +54,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="ModernWpfUI" Version="0.9.3" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />

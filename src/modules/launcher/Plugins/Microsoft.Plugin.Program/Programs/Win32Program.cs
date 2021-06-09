@@ -234,7 +234,7 @@ namespace Microsoft.Plugin.Program.Programs
                 },
             };
 
-            result.SetTitleHighlightData(StringMatcher.FuzzySearch(query, Name).MatchData);
+            result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
             // Using CurrentCulture since this is user facing
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
