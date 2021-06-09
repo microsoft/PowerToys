@@ -1,9 +1,9 @@
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
@@ -54,7 +54,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                         try
                         {
-                            VSCodeStorageFile vscodeStorageFile = JsonConvert.DeserializeObject<VSCodeStorageFile>(fileContent);
+                            VSCodeStorageFile vscodeStorageFile = JsonSerializer.Deserialize<VSCodeStorageFile>(fileContent);
 
                             if (vscodeStorageFile != null)
                             {
