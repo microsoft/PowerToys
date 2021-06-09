@@ -360,9 +360,9 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (_logoKeyFromVersion.TryGetValue(Package.Version, out var key))
             {
-                var hr = app.GetStringValue(key, out var logoUri);
-                _ = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, logoUri);
-                return logoUri;
+                var hr = app.GetStringValue(key, out var logoUriFromApp);
+                _ = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, logoUriFromApp);
+                return logoUriFromApp;
             }
             else
             {
