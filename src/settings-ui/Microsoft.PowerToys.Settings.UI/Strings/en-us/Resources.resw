@@ -121,9 +121,9 @@
     <value>General</value>
     <comment>Navigation view item name for General</comment>
   </data>
-  <data name="Shell_Espresso.Content" xml:space="preserve">
-    <value>Espresso</value>
-    <comment>Product name: Navigation view item name for Espresso</comment>
+  <data name="Shell_Awake.Content" xml:space="preserve">
+    <value>Awake</value>
+    <comment>Product name: Navigation view item name for Awake</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
@@ -912,8 +912,8 @@
     <value>https://aka.ms/PowerToysOverview_ColorPicker</value>
     <comment>URL. Do not loc</comment>
   </data>
-  <data name="Espresso_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
-    <value>https://aka.ms/PowerToysOverview_Espresso</value>
+  <data name="Awake_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_Awake</value>
     <comment>URL. Do not loc</comment>
   </data>
   <data name="FancyZones_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
@@ -1209,67 +1209,67 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
   </data>
-  <data name="About_Espresso.Text" xml:space="preserve">
-    <value>About Espresso</value>
+  <data name="About_Awake.Text" xml:space="preserve">
+    <value>About Awake</value>
   </data>
-  <data name="Espresso_Description.Text" xml:space="preserve">
+  <data name="Awake_Description.Text" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>
   </data>
-  <data name="Espresso_EnableEspresso.Header" xml:space="preserve">
-    <value>Enable Espresso</value>
+  <data name="Awake_EnableAwake.Header" xml:space="preserve">
+    <value>Enable Awake</value>
   </data>
-  <data name="Espresso_NoKeepAwakeContent.Text" xml:space="preserve">
+  <data name="Awake_NoKeepAwakeContent.Text" xml:space="preserve">
     <value>Off (Passive)</value>
   </data>
-  <data name="Espresso_IndefiniteKeepAwakeContent.Text" xml:space="preserve">
+  <data name="Awake_IndefiniteKeepAwakeContent.Text" xml:space="preserve">
     <value>Keep awake indefinitely</value>
   </data>
-  <data name="Espresso_TemporaryKeepAwakeContent.Text" xml:space="preserve">
+  <data name="Awake_TemporaryKeepAwakeContent.Text" xml:space="preserve">
     <value>Keep awake temporarily</value>
   </data>
-  <data name="Espresso_NoKeepAwakeDescription.Text" xml:space="preserve">
+  <data name="Awake_NoKeepAwakeDescription.Text" xml:space="preserve">
     <value>Your PC operates according to its current power plan</value>
   </data>
-  <data name="Espresso_IndefiniteKeepAwakeDescription.Text" xml:space="preserve">
+  <data name="Awake_IndefiniteKeepAwakeDescription.Text" xml:space="preserve">
     <value>Keeps your PC awake until the setting is disabled</value>
   </data>
-  <data name="Espresso_TemporaryKeepAwakeDescription.Text" xml:space="preserve">
+  <data name="Awake_TemporaryKeepAwakeDescription.Text" xml:space="preserve">
     <value>Keeps your PC awake until the set time elapses</value>
   </data>
-  <data name="Espresso_EnableDisplayKeepAwake.Content" xml:space="preserve">
+  <data name="Awake_EnableDisplayKeepAwake.Content" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
-  <data name="Espresso_Mode.Text" xml:space="preserve">
+  <data name="Awake_Mode.Text" xml:space="preserve">
     <value>Mode</value>
   </data>
-  <data name="Espresso_Behavior_GroupSettings.Text" xml:space="preserve">
+  <data name="Awake_Behavior_GroupSettings.Text" xml:space="preserve">
     <value>Behavior</value>
   </data>
-  <data name="Espresso_TemporaryKeepAwake_Hours.Header" xml:space="preserve">
+  <data name="Awake_TemporaryKeepAwake_Hours.Header" xml:space="preserve">
     <value>Hours</value>
   </data>
-  <data name="Espresso_TemporaryKeepAwake_Minutes.Header" xml:space="preserve">
+  <data name="Awake_TemporaryKeepAwake_Minutes.Header" xml:space="preserve">
     <value>Minutes</value>
   </data>
-  <data name="Espresso_ModuleAttributionLabel.Text" xml:space="preserve">
-    <value>Den Delimarsky's Espresso</value>
+  <data name="Awake_ModuleAttributionLabel.Text" xml:space="preserve">
+    <value>Den Delimarsky's Awake</value>
   </data>
-  <data name="Espresso_ModuleAttributionHyperlink.NavigateUri" xml:space="preserve">
-    <value>https://espresso.den.dev</value>
+  <data name="Awake_ModuleAttributionHyperlink.NavigateUri" xml:space="preserve">
+    <value>https://Awake.den.dev</value>
     <comment>URL. Do not loc</comment>
   </data>
-  <data name="Oobe_Espresso" xml:space="preserve">
-    <value>Espresso</value>
+  <data name="Oobe_Awake" xml:space="preserve">
+    <value>Awake</value>
     <comment>Module name, do not loc</comment>
   </data>
-  <data name="Oobe_Espresso_Description" xml:space="preserve">
-    <value>Espresso is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
+  <data name="Oobe_Awake_Description" xml:space="preserve">
+    <value>Awake is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
   </data>
-  <data name="Oobe_Espresso_HowToUse.Text" xml:space="preserve">
-    <value>Open {PowerToys Settings} and enable Espresso</value>
+  <data name="Oobe_Awake_HowToUse.Text" xml:space="preserve">
+    <value>Open {PowerToys Settings} and enable Awake</value>
   </data>
-  <data name="Oobe_Espresso_TipsAndTricks.Text" xml:space="preserve">
-    <value>You can always change modes quickly by {right-clicking the Espresso icon} in the system tray.</value>
+  <data name="Oobe_Awake_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can always change modes quickly by {right-clicking the Awake icon} in the system tray.</value>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Text" xml:space="preserve">
     <value>An error occurred trying to update to</value>

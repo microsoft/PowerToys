@@ -142,6 +142,7 @@ autoplay
 Autorun
 AUTOSIZECOLUMNS
 autoupdate
+awakeversion
 AValid
 AWAYMODE
 azurecr
@@ -628,7 +629,6 @@ errorlevel
 ERRORMESSAGE
 ERRORTITLE
 esize
-espressoversion
 estdir
 etcore
 etl

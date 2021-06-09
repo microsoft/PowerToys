@@ -16,7 +16,7 @@ namespace
     {
         L"PowerToys.exe",
         L"ColorPickerUI.exe",
-        L"PowerToys.Espresso.exe"
+        L"PowerToys.Awake.exe"
         L"FancyZonesEditor.exe",
         L"PowerToys.KeyboardManagerEngine.exe",
         L"PowerToys.KeyboardManagerEditor.exe",

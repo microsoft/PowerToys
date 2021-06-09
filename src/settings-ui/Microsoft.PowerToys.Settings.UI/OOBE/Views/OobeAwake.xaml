@@ -1,4 +1,4 @@
-﻿<Page x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeEspresso"
+﻿<Page x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeAwake"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
@@ -42,13 +42,13 @@
                            AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}" />
 
-                <controls:ShortcutTextControl x:Uid="Oobe_Espresso_HowToUse" />
+                <controls:ShortcutTextControl x:Uid="Oobe_Awake_HowToUse" />
               
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            AutomationProperties.HeadingLevel="Level3"
                            Style="{StaticResource OobeSubtitleStyle}"/>
 
-                <controls:ShortcutTextControl x:Uid="Oobe_Espresso_TipsAndTricks" />
+                <controls:ShortcutTextControl x:Uid="Oobe_Awake_TipsAndTricks" />
 
                 <StackPanel Orientation="Horizontal"
                             Spacing="4"

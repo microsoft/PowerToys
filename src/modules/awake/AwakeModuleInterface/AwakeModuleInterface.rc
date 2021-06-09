@@ -52,7 +52,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_ESPRESSO_NAME       "Espresso"
+    IDS_AWAKE_NAME       "Awake"
 END
 
 #endif    // English (United States) resources

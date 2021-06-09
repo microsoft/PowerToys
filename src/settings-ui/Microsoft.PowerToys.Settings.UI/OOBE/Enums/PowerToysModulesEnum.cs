@@ -8,7 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
     {
         Overview = 0,
         ColorPicker,
-        Espresso,
+        Awake,
         FancyZones,
         FileExplorer,
         ImageResizer,

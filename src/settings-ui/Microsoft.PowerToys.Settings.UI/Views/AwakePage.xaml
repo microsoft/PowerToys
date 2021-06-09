@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="Microsoft.PowerToys.Settings.UI.Views.EspressoPage"
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.AwakePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -13,7 +13,7 @@
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
-        <c:EspressoModeToBoolConverter x:Key="EspressoModeToBoolConverter" />
+        <c:AwakeModeToBoolConverter x:Key="AwakeModeToBoolConverter" />
     </Page.Resources>
 
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
@@ -50,68 +50,70 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical"
-                    x:Name="EspressoView"
+                    x:Name="AwakeView"
                     HorizontalAlignment="Left"
                     Margin="0,0,48,0"
                     MaxWidth="{StaticResource MaxContentWidth}">
-            <ToggleSwitch x:Uid="Espresso_EnableEspresso" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+            <ToggleSwitch x:Uid="Awake_EnableAwake" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
 
-            <TextBlock x:Uid="Espresso_Behavior_GroupSettings"
+            <TextBlock x:Uid="Awake_Behavior_GroupSettings"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <CheckBox x:Uid="Espresso_EnableDisplayKeepAwake"
+            <CheckBox x:Uid="Awake_EnableDisplayKeepAwake"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       IsChecked="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}"
                       Margin="{StaticResource XSmallTopMargin}" />
             
-            <TextBlock x:Uid="Espresso_Mode"
+            <TextBlock x:Uid="Awake_Mode"
                        Margin="{StaticResource SmallTopMargin}"
                        x:Name="ModeTitleLabel"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
 
-            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}">
-                <RadioButton x:Uid="Espresso_NoKeepAwake"
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
+                        Margin="0,-8,0,0">
+                <RadioButton x:Uid="Awake_NoKeepAwake"
+                             Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=0}">
+                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}, ConverterParameter=0}">
                     <RadioButton.Content>
                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
-                        <Run x:Uid="Espresso_NoKeepAwakeContent"/>
+                        <Run x:Uid="Awake_NoKeepAwakeContent"/>
                         <LineBreak/>
                         <Run Foreground="{ThemeResource SystemBaseMediumColor}"
-                             x:Uid="Espresso_NoKeepAwakeDescription"/>
+                             x:Uid="Awake_NoKeepAwakeDescription"/>
                         </TextBlock>
                     </RadioButton.Content>
                 </RadioButton>
-                <RadioButton x:Uid="Espresso_IndefiniteKeepAwake"
+                <RadioButton x:Uid="Awake_IndefiniteKeepAwake"
                              Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=1}">
+                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}, ConverterParameter=1}">
                     <RadioButton.Content>
                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
-                        <Run x:Uid="Espresso_IndefiniteKeepAwakeContent"/>
+                        <Run x:Uid="Awake_IndefiniteKeepAwakeContent"/>
                         <LineBreak/>
                         <Run Foreground="{ThemeResource SystemBaseMediumColor}"
-                             x:Uid="Espresso_IndefiniteKeepAwakeDescription"/>
+                             x:Uid="Awake_IndefiniteKeepAwakeDescription"/>
                         </TextBlock>
                     </RadioButton.Content>
                 </RadioButton>
-                <RadioButton x:Uid="Espresso_TemporaryKeepAwake"
+                <RadioButton x:Uid="Awake_TemporaryKeepAwake"
                              Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource EspressoModeToBoolConverter}, ConverterParameter=2}">
+                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}, ConverterParameter=2}">
                     <RadioButton.Content>
                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
-                        <Run x:Uid="Espresso_TemporaryKeepAwakeContent"/>
+                        <Run x:Uid="Awake_TemporaryKeepAwakeContent"/>
                         <LineBreak/>
                         <Run Foreground="{ThemeResource SystemBaseMediumColor}"
-                             x:Uid="Espresso_TemporaryKeepAwakeDescription"/>
+                             x:Uid="Awake_TemporaryKeepAwakeDescription"/>
                         </TextBlock>
                     </RadioButton.Content>
                 </RadioButton>
 
                 <StackPanel Margin="28,8,0,0" Orientation="Horizontal">
-                    <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Hours"
+                    <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
                             Value="{x:Bind ViewModel.Hours, Mode=TwoWay}"
                             Minimum="0"
                             SpinButtonPlacementMode="Compact"
@@ -120,7 +122,7 @@
                             IsEnabled="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}"
                             SmallChange="1" 
                             LargeChange="5"/>
-                    <muxc:NumberBox x:Uid="Espresso_TemporaryKeepAwake_Minutes"
+                    <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
                             Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}"
                             Minimum="0"
                             SpinButtonPlacementMode="Compact"
@@ -139,12 +141,12 @@
                     Width="{StaticResource SidePanelWidth}"
                     Grid.Column="1">
             <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="About_Espresso"
+                <TextBlock x:Uid="About_Awake"
                            x:Name="AboutTitle"
                            Grid.ColumnSpan="2"
                            Style="{StaticResource SettingsGroupTitleStyle}"
                            Margin="{StaticResource XSmallBottomMargin}"/>
-                <TextBlock x:Uid="Espresso_Description"
+                <TextBlock x:Uid="Awake_Description"
                            TextWrapping="Wrap"
                            Grid.Row="1" />
             </StackPanel>
@@ -156,15 +158,15 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="Espresso_ImageHyperlinkToDocs">
-                    <Image x:Uid="Espresso_Image" Source="ms-appx:///Assets/Modules/Espresso.png" />
+                <HyperlinkButton x:Uid="Awake_ImageHyperlinkToDocs">
+                    <Image x:Uid="Awake_Image" Source="ms-appx:///Assets/Modules/Awake.png" />
                 </HyperlinkButton>
             </Border>
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton x:Uid="Espresso_ImageHyperlinkToDocs">
+                <HyperlinkButton x:Uid="Awake_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
@@ -176,8 +178,8 @@
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
                 <HyperlinkButton Margin="0,-3,0,0"
-                                 x:Uid="Espresso_ModuleAttributionHyperlink">
-                    <TextBlock x:Uid="Espresso_ModuleAttributionLabel"
+                                 x:Uid="Awake_ModuleAttributionHyperlink">
+                    <TextBlock x:Uid="Awake_ModuleAttributionLabel"
                                TextWrapping="Wrap" />
                 </HyperlinkButton>
             </StackPanel>

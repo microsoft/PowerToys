@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\Espresso</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\Awake</OutputPath>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -11,9 +11,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <!--Per documentation: https://docs.microsoft.com/dotnet/core/compatibility/windows-forms/5.0/automatically-infer-winexe-output-type#outputtype-set-to-winexe-for-wpf-and-winforms-apps -->
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
-    <AssemblyName>PowerToys.Espresso</AssemblyName>
+    <AssemblyName>PowerToys.Awake</AssemblyName>
     <Version>$(Version).0</Version>
-    <ApplicationIcon>Images\Espresso.ico</ApplicationIcon>
+    <ApplicationIcon>Images\Awake.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -78,6 +78,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\Espresso.ico" />
+    <Resource Include="Images\Awake.ico" />
   </ItemGroup>
 </Project>

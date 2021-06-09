@@ -8,14 +8,14 @@ using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class EspressoPage : Page
+    public sealed partial class AwakePage : Page
     {
-        private EspressoViewModel ViewModel { get; set; }
+        private AwakeViewModel ViewModel { get; set; }
 
-        public EspressoPage()
+        public AwakePage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new EspressoViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<EspressoSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new AwakeViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<AwakeSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
         }

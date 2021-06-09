@@ -8,7 +8,7 @@ using Windows.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class EspressoModeToBoolConverter : IValueConverter
+    public sealed class AwakeModeToBoolConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
@@ -19,11 +19,11 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 
             if (parameter == null)
             {
-                throw new NullReferenceException("Parameter cannot be null for the Espresso mode to bool converter.");
+                throw new NullReferenceException("Parameter cannot be null for the PowerToys Awake mode to bool converter.");
             }
 
-            var expectedMode = (EspressoMode)Enum.Parse(typeof(EspressoMode), parameter.ToString());
-            var currentMode = (EspressoMode)value;
+            var expectedMode = (AwakeMode)Enum.Parse(typeof(AwakeMode), parameter.ToString());
+            var currentMode = (AwakeMode)value;
 
             return currentMode.Equals(expectedMode);
         }
@@ -32,10 +32,10 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
         {
             if (parameter == null)
             {
-                throw new NullReferenceException("Parameter cannot be null for the Espresso mode to bool converter.");
+                throw new NullReferenceException("Parameter cannot be null for the PowerToys Awake mode to bool converter.");
             }
 
-            return (EspressoMode)Enum.Parse(typeof(EspressoMode), parameter.ToString());
+            return (AwakeMode)Enum.Parse(typeof(AwakeMode), parameter.ToString());
         }
     }
 }

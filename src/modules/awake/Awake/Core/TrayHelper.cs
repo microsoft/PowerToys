@@ -12,7 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
 
-namespace Espresso.Shell.Core
+namespace Awake.Core
 {
     internal static class TrayHelper
     {
@@ -44,7 +44,7 @@ namespace Espresso.Shell.Core
             }, TrayIcon);
         }
 
-        internal static void SetTray(string text, EspressoSettings settings)
+        internal static void SetTray(string text, AwakeSettings settings)
         {
             SetTray(
                 text,
@@ -69,15 +69,15 @@ namespace Espresso.Shell.Core
         {
             return () =>
             {
-                EspressoSettings currentSettings;
+                AwakeSettings currentSettings;
 
                 try
                 {
-                    currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                    currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
                 }
                 catch (FileNotFoundException)
                 {
-                    currentSettings = new EspressoSettings();
+                    currentSettings = new AwakeSettings();
                 }
 
                 currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
@@ -90,18 +90,18 @@ namespace Espresso.Shell.Core
         {
             return (hours, minutes) =>
             {
-                EspressoSettings currentSettings;
+                AwakeSettings currentSettings;
 
                 try
                 {
-                    currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                    currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
                 }
                 catch (FileNotFoundException)
                 {
-                    currentSettings = new EspressoSettings();
+                    currentSettings = new AwakeSettings();
                 }
 
-                currentSettings.Properties.Mode = EspressoMode.TIMED;
+                currentSettings.Properties.Mode = AwakeMode.TIMED;
                 currentSettings.Properties.Hours = hours;
                 currentSettings.Properties.Minutes = minutes;
 
@@ -113,18 +113,18 @@ namespace Espresso.Shell.Core
         {
             return () =>
             {
-                EspressoSettings currentSettings;
+                AwakeSettings currentSettings;
 
                 try
                 {
-                    currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                    currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
                 }
                 catch (FileNotFoundException)
                 {
-                    currentSettings = new EspressoSettings();
+                    currentSettings = new AwakeSettings();
                 }
 
-                currentSettings.Properties.Mode = EspressoMode.PASSIVE;
+                currentSettings.Properties.Mode = AwakeMode.PASSIVE;
 
                 ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
             };
@@ -134,24 +134,24 @@ namespace Espresso.Shell.Core
         {
             return () =>
             {
-                EspressoSettings currentSettings;
+                AwakeSettings currentSettings;
 
                 try
                 {
-                    currentSettings = ModuleSettings.GetSettings<EspressoSettings>(moduleName);
+                    currentSettings = ModuleSettings.GetSettings<AwakeSettings>(moduleName);
                 }
                 catch (FileNotFoundException)
                 {
-                    currentSettings = new EspressoSettings();
+                    currentSettings = new AwakeSettings();
                 }
 
-                currentSettings.Properties.Mode = EspressoMode.INDEFINITE;
+                currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
 
                 ModuleSettings.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
             };
         }
 
-        public static void SetTray(string text, bool keepDisplayOn, EspressoMode mode, Action passiveKeepAwakeCallback, Action indefiniteKeepAwakeCallback, Action<uint, uint> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
+        public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Action passiveKeepAwakeCallback, Action indefiniteKeepAwakeCallback, Action<uint, uint> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
         {
             var contextMenuStrip = new ContextMenuStrip();
 
@@ -167,7 +167,7 @@ namespace Espresso.Shell.Core
                 Text = "Off (Passive)",
             };
 
-            if (mode == EspressoMode.PASSIVE)
+            if (mode == AwakeMode.PASSIVE)
             {
                 passiveMenuItem.Checked = true;
             }
@@ -188,7 +188,7 @@ namespace Espresso.Shell.Core
                 Text = "Keep awake indefinitely",
             };
 
-            if (mode == EspressoMode.INDEFINITE)
+            if (mode == AwakeMode.INDEFINITE)
             {
                 indefiniteMenuItem.Checked = true;
             }
@@ -227,7 +227,7 @@ namespace Espresso.Shell.Core
             {
                 Text = "Keep awake temporarily",
             };
-            if (mode == EspressoMode.TIMED)
+            if (mode == AwakeMode.TIMED)
             {
                 timedMenuItem.Checked = true;
             }

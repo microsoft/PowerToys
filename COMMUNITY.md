@@ -63,7 +63,7 @@ PowerRename is from Chris's SmartRename and icon rendering for SVGs in File Expl
 
 ### [@dend](https://github.com/dend/) - Den Delimarsky
 
-PowerToys Espresso is a tool to keep your computer awake
+PowerToys Awake is a tool to keep your computer awake.
 
 ### [@martinchrzan](https://github.com/martinchrzan/) - Martin Chrzan
 
