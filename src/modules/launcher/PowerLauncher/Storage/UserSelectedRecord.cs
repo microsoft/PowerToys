@@ -4,14 +4,12 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using Wox.Plugin;
 
 namespace PowerLauncher.Storage
 {
     public class UserSelectedRecord
     {
-        [JsonProperty]
         private readonly Dictionary<string, int> records = new Dictionary<string, int>();
 
         public void Add(Result result)
