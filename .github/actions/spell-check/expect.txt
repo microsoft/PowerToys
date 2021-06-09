@@ -49,7 +49,6 @@ AModifier
 AMPROPERTY
 AMPROPSETID
 anges
-angularsen
 ansicolor
 ANull
 AOC
@@ -1498,7 +1497,6 @@ ppv
 pragma
 prc
 precomp
-Prefixer
 Preinstalled
 preload
 PREMULTIPLIED
@@ -1747,7 +1745,6 @@ shldisp
 shlobj
 shlwapi
 shobjidl
-shortsplit
 SHORTCUTATLEAST
 shortcutcontrol
 Shortcutguide
@@ -2031,8 +2028,6 @@ uninstantiated
 Uniq
 uniquifier
 Uniquifies
-unitconvert
-unitconverter
 unittests
 unk
 unknwn
