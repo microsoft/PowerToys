@@ -13,6 +13,9 @@
 
 #include <shellapi.h>
 
+// Non-localizable
+const std::wstring fancyZonesPath = L"modules\\FancyZones\\PowerToys.FancyZones.exe";
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
@@ -118,7 +121,7 @@ private:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\FancyZones\\PowerToys.FancyZones.exe";
+        sei.lpFile = fancyZonesPath.c_str();
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei) == false)
