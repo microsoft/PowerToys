@@ -679,17 +679,18 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (File.Exists(path))
             {
-                MemoryStream memoryStream = new MemoryStream();
+                var memoryStream = new MemoryStream();
+                using (var fileStream = File.OpenRead(path))
+                {
+                    fileStream.CopyTo(memoryStream);
+                    memoryStream.Position = 0;
 
-                var fileStream = File.OpenRead(path);
-                fileStream.CopyTo(memoryStream);
-                memoryStream.Position = 0;
-
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.StreamSource = memoryStream;
-                image.EndInit();
-                return image;
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.StreamSource = memoryStream;
+                    image.EndInit();
+                    return image;
+                }
             }
             else
             {
