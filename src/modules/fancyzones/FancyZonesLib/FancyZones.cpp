@@ -1,8 +1,11 @@
 #include "pch.h"
 
 #include <common/display/dpi_aware.h>
+#include <common/interop/shared_constants.h>
 #include <common/logger/logger.h>
+#include <common/utils/EventWaiter.h>
 #include <common/utils/resources.h>
+#include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
 
 #include "FancyZones.h"
@@ -264,6 +267,8 @@ private:
     OnThreadExecutor m_dpiUnawareThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
 
+    EventWaiter m_toggleEditorEventWaiter;
+
     // If non-recoverable error occurs, trigger disabling of entire FancyZones.
     static std::function<void()> disableModuleCallback;
 
@@ -327,6 +332,14 @@ FancyZones::Run() noexcept
 
     m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
     m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] { VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
+
+    m_toggleEditorEventWaiter = EventWaiter(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT, [&](int err) {
+        if (err == ERROR_SUCCESS)
+        {
+            Logger::trace(L"{} event was signaled", CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
+            PostMessage(m_window, WM_HOTKEY, 1, 0);
+        }
+    });
 }
 
 // IFancyZones

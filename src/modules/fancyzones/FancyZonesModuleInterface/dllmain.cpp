@@ -2,6 +2,7 @@
 
 #include <interface/powertoy_module_interface.h>
 
+#include <common/interop/shared_constants.h>
 #include <common/logger/logger.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
@@ -68,7 +69,7 @@ public:
     // This can be used to spawn more complex editors.
     virtual void call_custom_action(const wchar_t* action) override
     {
-        m_settings->CallCustomAction(action);
+        SetEvent(m_toggleEditorEvent);
     }
 
     // Enable the powertoy
@@ -105,6 +106,8 @@ public:
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         app_key = NonLocalizable::FancyZonesStr;
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModuleInterface::get_name(), FancyZonesModuleInterface::get_key());
+
+        m_toggleEditorEvent = CreateDefaultEvent(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
     }
 
 private:
@@ -148,6 +151,9 @@ private:
         {
             Trace::FancyZones::EnableFancyZones(false);
         }
+
+        ResetEvent(m_toggleEditorEvent);
+        CloseHandle(m_toggleEditorEvent);
         
         if (m_hProcess)
         {
@@ -162,6 +168,9 @@ private:
 
     bool m_enabled = false;
     HANDLE m_hProcess = nullptr;
+
+    // Handle to event used to invoke FancyZones Editor
+    HANDLE m_toggleEditorEvent;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings;
 };
