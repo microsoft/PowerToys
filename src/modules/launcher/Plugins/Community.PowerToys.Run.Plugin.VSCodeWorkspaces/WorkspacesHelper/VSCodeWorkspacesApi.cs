@@ -59,9 +59,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                             if (vscodeStorageFile != null)
                             {
                                 //for previous versions of vscode
-                                if (vscodeStorageFile.openedPathsList.workspaces3 != null)
+                                if (vscodeStorageFile.OpenedPathsList.Workspace3 != null)
                                 {
-                                    foreach (var workspaceUri in vscodeStorageFile.openedPathsList.workspaces3)
+                                    foreach (var workspaceUri in vscodeStorageFile.OpenedPathsList.Workspace3)
                                     {
                                         var uri = parseVSCodeUri(workspaceUri, vscodeInstance);
                                         if (uri != null)
@@ -72,9 +72,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                                 }
 
                                 //vscode v1.55.0 or later
-                                if (vscodeStorageFile.openedPathsList.entries != null)
+                                if (vscodeStorageFile.OpenedPathsList.Entries != null)
                                 {
-                                    foreach (var workspaceUri in vscodeStorageFile.openedPathsList.entries.Select(x => x.folderUri))
+                                    foreach (var workspaceUri in vscodeStorageFile.OpenedPathsList.Entries.Select(x => x.FolderUri))
                                     {
                                         var uri = parseVSCodeUri(workspaceUri, vscodeInstance);
                                         if (uri != null)
