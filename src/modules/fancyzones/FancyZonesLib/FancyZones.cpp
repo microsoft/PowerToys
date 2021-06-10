@@ -84,7 +84,7 @@ public:
             PostMessageW(m_window, WM_PRIV_FILE_UPDATE, NULL, NULL);
         }),
         m_settingsFileWatcher(FancyZonesDataInstance().GetSettingsFileName(), [this]() {
-            m_settings->ReloadSettings();
+            PostMessageW(m_window, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
         })
     {
         m_settings->SetCallback(this);
@@ -277,6 +277,7 @@ private:
     static UINT WM_PRIV_VD_UPDATE; // Scheduled on virtual desktops update (creation/deletion)
     static UINT WM_PRIV_EDITOR; // Scheduled when the editor exits
     static UINT WM_PRIV_FILE_UPDATE; // Scheduled when the a watched file is updated
+    static UINT WM_PRIV_SETTINGS_CHANGED;
 
     static UINT WM_PRIV_SNAP_HOTKEY; // Scheduled when we receive a snap hotkey key down press
     static UINT WM_PRIV_QUICK_LAYOUT_KEY; // Scheduled when we receive a key down press to quickly apply a layout
@@ -298,6 +299,7 @@ UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d
 UINT FancyZones::WM_PRIV_FILE_UPDATE = RegisterWindowMessage(L"{632f17a9-55a7-45f1-a4db-162e39271d92}");
 UINT FancyZones::WM_PRIV_SNAP_HOTKEY = RegisterWindowMessage(L"{763c03a3-03d9-4cde-8d71-f0358b0b4b52}");
 UINT FancyZones::WM_PRIV_QUICK_LAYOUT_KEY = RegisterWindowMessage(L"{72f4fd8e-23f1-43ab-bbbc-029363df9a84}");
+UINT FancyZones::WM_PRIV_SETTINGS_CHANGED = RegisterWindowMessage(L"{15baab3d-c67b-4a15-aFF0-13610e05e947}"); 
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -793,7 +795,14 @@ void FancyZones::SettingsChanged() noexcept
 
     // Update the hotkey
     UnregisterHotKey(m_window, 1);
-    RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
+    auto modifiers = m_settings->GetSettings()->editorHotkey.get_modifiers();
+    auto code = m_settings->GetSettings()->editorHotkey.get_code();
+    auto result = RegisterHotKey(m_window, 1, modifiers, code);
+
+    if (!result)
+    {
+        Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
+    }
 
     // Needed if we toggled spanZonesAcrossMonitors
     m_workAreaHandler.Clear();
@@ -922,6 +931,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {
             ApplyQuickLayout(static_cast<int>(lparam));
+        }
+        else if (message == WM_PRIV_SETTINGS_CHANGED)
+        {
+            m_settings->ReloadSettings();
         }
         else
         {
