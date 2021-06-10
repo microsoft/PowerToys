@@ -58,7 +58,6 @@ interface __declspec(uuid("{BA4E77C4-6F44-4C5D-93D3-CBDE880495C2}")) IFancyZones
     IFACEMETHOD_(bool, GetConfig)(_Out_ PWSTR buffer, _Out_ int *buffer_size) = 0;
     IFACEMETHOD_(void, SetConfig)(PCWSTR serializedPowerToysSettings) = 0;
     IFACEMETHOD_(void, ReloadSettings)() = 0;
-    IFACEMETHOD_(void, CallCustomAction)(PCWSTR action) = 0;
     IFACEMETHOD_(const Settings*, GetSettings)() const = 0;
 };
 
