@@ -75,7 +75,7 @@ namespace Microsoft.Plugin.Program.Programs
                     path);
         }
 
-        // This is a seperate method so the reference to .InstalledPath won't be loaded in API versions which do not support this API (e.g. older then Build 19041)
+        // This is a separate method so the reference to .InstalledPath won't be loaded in API versions which do not support this API (e.g. older then Build 19041)
         private static string GetInstalledPath(Package package)
             => package.InstalledPath;
     }
