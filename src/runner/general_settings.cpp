@@ -21,7 +21,6 @@ json::JsonObject GeneralSettings::to_json()
 {
     json::JsonObject result;
 
-    result.SetNamedValue(L"packaged", json::value(isPackaged));
     result.SetNamedValue(L"startup", json::value(isStartupEnabled));
     if (!startupDisabledReason.empty())
     {
@@ -64,7 +63,6 @@ GeneralSettings get_general_settings()
 {
     const bool is_user_admin = check_user_is_admin();
     GeneralSettings settings{
-        .isPackaged = false,
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
