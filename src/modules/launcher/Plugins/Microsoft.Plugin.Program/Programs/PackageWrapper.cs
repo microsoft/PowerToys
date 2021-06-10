@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.Plugin.Program.Logger;
+using Windows.Foundation.Metadata;
 using Package = Windows.ApplicationModel.Package;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -38,6 +39,9 @@ namespace Microsoft.Plugin.Program.Programs
             InstalledLocation = installedLocation;
         }
 
+        private static readonly Lazy<bool> IsPackageDotInstallationPathAvailable = new Lazy<bool>(() =>
+            ApiInformation.IsPropertyPresent(typeof(Package).FullName, nameof(Package.InstalledPath)));
+
         public static PackageWrapper GetWrapperFromPackage(Package package)
         {
             if (package == null)
@@ -48,7 +52,9 @@ namespace Microsoft.Plugin.Program.Programs
             string path;
             try
             {
-                path = package.InstalledPath;
+                path = IsPackageDotInstallationPathAvailable.Value
+                    ? package.InstalledPath
+                    : package.InstalledLocation.Path;
             }
             catch (Exception e) when (e is ArgumentException || e is FileNotFoundException || e is DirectoryNotFoundException)
             {
