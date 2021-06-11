@@ -1,6 +1,6 @@
 # PowerToys Contributor's Guide
 
-Below is our guidance for how to report issues, propose new features, and submit contributions via Pull Requests (PRs). Our philosophy is heavily based around understanding the problem and scenarios first, this is why we follow the pattern before work has started.
+Below is our guidance for how to report issues, propose new features, and submit contributions via Pull Requests (PRs). Our philosophy is heavily based around understanding the problem and scenarios first, this is why we follow this pattern before work has started.
 
 1. There is an issue
 2. There has been a conversation
