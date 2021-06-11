@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 
+#include <common/utils/ProcessWaiter.h>
 #include <common/utils/window.h>
 #include <common/utils/UnhandledExceptionHandler_x64.h>
 
@@ -38,6 +39,25 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     {
         Logger::warn(L"FancyZones instance is already running");
         return 0;
+    }
+
+    std::wstring pid = std::wstring(lpCmdLine);
+    if (!pid.empty())
+    {
+        auto mainThreadId = GetCurrentThreadId();
+        ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
+            if (err != ERROR_SUCCESS)
+            {
+                Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
+            }
+            else
+            {
+                Logger::trace(L"PowerToys runner exited.");
+            }
+
+            Logger::trace(L"Exiting FancyZones");
+            PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+        });
     }
 
     Trace::RegisterProvider();
