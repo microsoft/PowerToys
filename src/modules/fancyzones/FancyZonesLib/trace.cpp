@@ -244,7 +244,7 @@ void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept
         TraceLoggingBoolean(shortcutUsed, QuickLayoutSwitchedWithShortcutUsed));
 }
 
-void Trace::SettingsChanged(const Settings& settings) noexcept
+void Trace::SettingsTelemetry(const Settings& settings) noexcept
 {
     const auto& editorHotkey = settings.editorHotkey;
     std::wstring hotkeyStr = L"alt:" + std::to_wstring(editorHotkey.alt_pressed())
