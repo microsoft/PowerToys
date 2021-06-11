@@ -12,7 +12,7 @@
 #define EventKeyDownKey "FancyZones_OnKeyDown"
 #define EventZoneSettingsChangedKey "FancyZones_ZoneSettingsChanged"
 #define EventEditorLaunchKey "FancyZones_EditorLaunch"
-#define EventSettingsChangedKey "FancyZones_SettingsChanged"
+#define EventSettingsKey "FancyZones_Settings"
 #define EventDesktopChangedKey "FancyZones_VirtualDesktopChanged"
 #define EventZoneWindowKeyUpKey "FancyZones_ZoneWindowKeyUp"
 #define EventMoveSizeEndKey "FancyZones_MoveSizeEnd"
@@ -256,7 +256,7 @@ void Trace::SettingsTelemetry(const Settings& settings) noexcept
 
     TraceLoggingWrite(
         g_hProvider,
-        EventSettingsChangedKey,
+        EventSettingsKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(settings.shiftDrag, ShiftDragKey),
