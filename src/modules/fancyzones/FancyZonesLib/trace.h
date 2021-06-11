@@ -20,7 +20,7 @@ public:
         static void QuickLayoutSwitched(bool shortcutUsed) noexcept;
     };
 
-    static void SettingsChanged(const Settings& settings) noexcept;
+    static void SettingsTelemetry(const Settings& settings) noexcept;
     static void VirtualDesktopChanged() noexcept;
 
     class ZoneWindow
