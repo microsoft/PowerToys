@@ -12,7 +12,7 @@ Please follow this simple rule to help us eliminate any unnecessary wasted effor
 
 > 👉 If you have a question, think you've discovered an issue, would like to propose a new feature, etc., then find/file an issue **BEFORE** starting work to fix/implement it.
 
-Before filing a new issue, search existing open and closed issues first: It is likely someone else has found the problem you're seeing, and someone may be working on or have already contributed a fix!
+When requesting new features / enhancements, understanding problem and scenario around it is extremely important. Having additional evidence, data, tweets, blog posts, research, ... anything is extremely helpful.  This information provides context to the scenario that may otherwise be lost.
 
 * Don't know whether you're reporting an issue or requesting a feature? File an issue
 * Have a question that you don't see answered in docs, videos, etc.? File an issue
@@ -20,6 +20,8 @@ Before filing a new issue, search existing open and closed issues first: It is l
 * Got a great idea for a new utility or feature? File an issue/request/idea
 * Don't understand how to do something? File an issue/Community Guidance Request
 * Found an existing issue that describes yours? Great - upvote and add additional commentary / info / repro-steps / etc.
+
+A quick search before filing an issue also could be helpful. It is likely someone else has found the problem you're seeing, and someone may be working on or have already contributed a fix!
 
 ### How to tell the PowerToys team this is an interesting thing to focus on
 
