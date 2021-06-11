@@ -20,7 +20,7 @@ using namespace FancyZonesUtils;
 namespace
 {
     constexpr int C_MULTIPLIER = 10000;
-    constexpr int OVERLAPPING_CENTRES_SENSITIVITY = 75;
+    constexpr int OVERLAPPING_CENTERS_SENSITIVITY = 75;
 
     // PriorityGrid layout is unique for zoneCount <= 11. For zoneCount > 11 PriorityGrid is same as Grid
     FancyZonesDataTypes::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
@@ -268,7 +268,7 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             return pointDifference(center, pt);
         };
         auto closerToCenter = [&](auto zone1, auto zone2) {
-            if (pointDifference(getCenter(zone1), getCenter(zone2)) > OVERLAPPING_CENTRES_SENSITIVITY)
+            if (pointDifference(getCenter(zone1), getCenter(zone2)) > OVERLAPPING_CENTERS_SENSITIVITY)
             {
                 return distanceFromCenter(zone1) < distanceFromCenter(zone2);
             }
