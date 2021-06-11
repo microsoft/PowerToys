@@ -24,6 +24,7 @@ namespace NonLocalizable
 {
     const wchar_t NullStr[] = L"null";
 
+    const wchar_t FancyZonesSettingsFile[] = L"settings.json";
     const wchar_t FancyZonesDataFile[] = L"zones-settings.json";
     const wchar_t FancyZonesAppZoneHistoryFile[] = L"app-zone-history.json";
     const wchar_t FancyZonesEditorParametersFile[] = L"editor-parameters.json";
@@ -148,6 +149,7 @@ FancyZonesData::FancyZonesData()
 {
     std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::FancyZonesStr);
 
+    settingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesSettingsFile);
     zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
     appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesAppZoneHistoryFile);
     editorParametersFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesEditorParametersFile);

@@ -65,6 +65,11 @@ public:
         return zonesSettingsFileName;
     }
 
+    inline const std::wstring& GetSettingsFileName() const
+    {
+        return settingsFileName;
+    }
+
     bool AddDevice(const std::wstring& deviceId);
     void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
     void UpdatePrimaryDesktopData(const std::wstring& desktopId);
@@ -136,6 +141,7 @@ private:
     // Maps zoneset UUID with quick access keys
     JSONHelpers::TLayoutQuickKeysMap quickKeysMap{};
 
+    std::wstring settingsFileName;
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;
     std::wstring editorParametersFileName;
