@@ -1,8 +1,11 @@
 #include "pch.h"
 
 #include <common/display/dpi_aware.h>
+#include <common/interop/shared_constants.h>
 #include <common/logger/logger.h>
+#include <common/utils/EventWaiter.h>
 #include <common/utils/resources.h>
+#include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
 
 #include "FancyZones.h"
@@ -77,8 +80,11 @@ public:
         m_windowMoveHandler(settings, [this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         }),
-        m_fileWatcher(FancyZonesDataInstance().GetZonesSettingsFileName(), [this]() {
+        m_zonesSettingsFileWatcher(FancyZonesDataInstance().GetZonesSettingsFileName(), [this]() {
             PostMessageW(m_window, WM_PRIV_FILE_UPDATE, NULL, NULL);
+        }),
+        m_settingsFileWatcher(FancyZonesDataInstance().GetSettingsFileName(), [this]() {
+            PostMessageW(m_window, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
         })
     {
         m_settings->SetCallback(this);
@@ -248,7 +254,9 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
-    FileWatcher m_fileWatcher;
+
+    FileWatcher m_zonesSettingsFileWatcher;
+    FileWatcher m_settingsFileWatcher;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.
@@ -259,6 +267,8 @@ private:
     OnThreadExecutor m_dpiUnawareThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
 
+    EventWaiter m_toggleEditorEventWaiter;
+
     // If non-recoverable error occurs, trigger disabling of entire FancyZones.
     static std::function<void()> disableModuleCallback;
 
@@ -267,6 +277,7 @@ private:
     static UINT WM_PRIV_VD_UPDATE; // Scheduled on virtual desktops update (creation/deletion)
     static UINT WM_PRIV_EDITOR; // Scheduled when the editor exits
     static UINT WM_PRIV_FILE_UPDATE; // Scheduled when the a watched file is updated
+    static UINT WM_PRIV_SETTINGS_CHANGED;
 
     static UINT WM_PRIV_SNAP_HOTKEY; // Scheduled when we receive a snap hotkey key down press
     static UINT WM_PRIV_QUICK_LAYOUT_KEY; // Scheduled when we receive a key down press to quickly apply a layout
@@ -288,6 +299,7 @@ UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d
 UINT FancyZones::WM_PRIV_FILE_UPDATE = RegisterWindowMessage(L"{632f17a9-55a7-45f1-a4db-162e39271d92}");
 UINT FancyZones::WM_PRIV_SNAP_HOTKEY = RegisterWindowMessage(L"{763c03a3-03d9-4cde-8d71-f0358b0b4b52}");
 UINT FancyZones::WM_PRIV_QUICK_LAYOUT_KEY = RegisterWindowMessage(L"{72f4fd8e-23f1-43ab-bbbc-029363df9a84}");
+UINT FancyZones::WM_PRIV_SETTINGS_CHANGED = RegisterWindowMessage(L"{15baab3d-c67b-4a15-aFF0-13610e05e947}"); 
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -322,6 +334,14 @@ FancyZones::Run() noexcept
 
     m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
     m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] { VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
+
+    m_toggleEditorEventWaiter = EventWaiter(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT, [&](int err) {
+        if (err == ERROR_SUCCESS)
+        {
+            Logger::trace(L"{} event was signaled", CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
+            PostMessage(m_window, WM_HOTKEY, 1, 0);
+        }
+    });
 }
 
 // IFancyZones
@@ -775,11 +795,19 @@ void FancyZones::SettingsChanged() noexcept
 
     // Update the hotkey
     UnregisterHotKey(m_window, 1);
-    RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
+    auto modifiers = m_settings->GetSettings()->editorHotkey.get_modifiers();
+    auto code = m_settings->GetSettings()->editorHotkey.get_code();
+    auto result = RegisterHotKey(m_window, 1, modifiers, code);
+
+    if (!result)
+    {
+        Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
+    }
 
     // Needed if we toggled spanZonesAcrossMonitors
     m_workAreaHandler.Clear();
-    OnDisplayChange(DisplayChangeType::Initialization, writeLock);
+
+    PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
 }
 
 // IZoneWindowHost
@@ -903,6 +931,10 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {
             ApplyQuickLayout(static_cast<int>(lparam));
+        }
+        else if (message == WM_PRIV_SETTINGS_CHANGED)
+        {
+            m_settings->ReloadSettings();
         }
         else
         {

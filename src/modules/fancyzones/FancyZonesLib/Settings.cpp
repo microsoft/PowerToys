@@ -62,7 +62,7 @@ public:
     IFACEMETHODIMP_(void)
     SetConfig(PCWSTR config) noexcept;
     IFACEMETHODIMP_(void)
-    CallCustomAction(PCWSTR action) noexcept;
+    ReloadSettings() noexcept;
     IFACEMETHODIMP_(const Settings*)
     GetSettings() const noexcept { return &m_settings; }
 
@@ -72,8 +72,8 @@ private:
 
     IFancyZonesCallback* m_callback{};
     const HINSTANCE m_hinstance;
-    PCWSTR m_moduleName{};
-    PCWSTR m_moduleKey{};
+    std::wstring m_moduleName{};
+    std::wstring m_moduleKey{};
 
     Settings m_settings;
 
@@ -151,29 +151,14 @@ FancyZonesSettings::SetConfig(PCWSTR serializedPowerToysSettingsJson) noexcept
 }
 
 IFACEMETHODIMP_(void)
-FancyZonesSettings::CallCustomAction(PCWSTR action) noexcept
+FancyZonesSettings::ReloadSettings() noexcept
 {
-    try
+    LoadSettings(m_moduleKey.c_str(), true /*fromFile*/);
+    if (m_callback)
     {
-        // Parse the action values, including name.
-        PowerToysSettings::CustomActionObject action_object =
-            PowerToysSettings::CustomActionObject::from_json_string(action);
-
-        if (m_callback && action_object.get_name() == NonLocalizable::ToggleEditorActionID)
-        {
-            m_callback->ToggleEditor();
-        }
+        m_callback->SettingsChanged();
     }
-    catch (...)
-    {
-        // Currently only custom action coming from main PowerToys window is request to launch editor.
-        // If new custom action is added, error message need to be modified.
-        std::wstring errorMessage = GET_RESOURCE_STRING(IDS_FANCYZONES_EDITOR_LAUNCH_ERROR) + L" " + NonLocalizable::PowerToysIssuesURL;
-        MessageBox(NULL,
-                   errorMessage.c_str(),
-                   GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-                   MB_OK);
-    }
+    Trace::SettingsChanged(m_settings);
 }
 
 void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept

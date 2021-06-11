@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -14,6 +14,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
+        private ISettingsUtils SettingsUtils { get; set; }
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private const string ModuleName = FancyZonesSettings.ModuleName;
@@ -39,8 +41,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             Positional = 2,
         }
 
-        public FancyZonesViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            if (settingsUtils == null)
+            {
+                throw new ArgumentNullException(nameof(settingsUtils));
+            }
+
+            SettingsUtils = settingsUtils;
+
             // To obtain the general settings configurations of PowerToys Settings.
             if (settingsRepository == null)
             {
@@ -635,12 +644,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
-            if (SendConfigMSG != null)
-            {
-                SndFancyZonesSettings outsettings = new SndFancyZonesSettings(Settings);
-                SndModuleSettings<SndFancyZonesSettings> ipcMessage = new SndModuleSettings<SndFancyZonesSettings>(outsettings);
-                SendConfigMSG(ipcMessage.ToJsonString());
-            }
+            SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
         }
 
         private static string ToRGBHex(string color)
