@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Principal;
 using Windows.Management.Deployment;
 using Wox.Plugin.Logger;
@@ -20,30 +21,28 @@ namespace Microsoft.Plugin.Program.Programs
             _packageManager = new PackageManager();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to catch all exception to prevent error in a program from affecting loading of program plugin.")]
         public IEnumerable<IPackage> FindPackagesForCurrentUser()
         {
-            List<PackageWrapper> packages = new List<PackageWrapper>();
             var user = WindowsIdentity.GetCurrent().User;
 
-            if (user != null)
+            return user != null
+                ? _packageManager.FindPackagesForUser(user.Value).Select(TryGetWrapperFromPackage).Where(package => package != null)
+                : Enumerable.Empty<IPackage>();
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to catch all exception to prevent error in a program from affecting loading of program plugin.")]
+        private static PackageWrapper TryGetWrapperFromPackage(Package package)
+        {
+            try
             {
-                var id = user.Value;
-                var m = _packageManager.FindPackagesForUser(id);
-                foreach (Package p in m)
-                {
-                    try
-                    {
-                        packages.Add(PackageWrapper.GetWrapperFromPackage(p));
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error(e.Message, GetType());
-                    }
-                }
+                return PackageWrapper.GetWrapperFromPackage(package);
+            }
+            catch (Exception e)
+            {
+                Log.Error(e.Message, typeof(PackageManagerWrapper));
             }
 
-            return packages;
+            return null;
         }
     }
 }
