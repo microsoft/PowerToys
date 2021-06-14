@@ -11,6 +11,8 @@ struct LogSettings
     inline const static std::wstring runnerLogPath = L"RunnerLogs\\runner-log.txt";
     inline const static std::string actionRunnerLoggerName = "action-runner";
     inline const static std::wstring actionRunnerLogPath = L"RunnerLogs\\action-runner-log.txt";
+    inline const static std::string updateLoggerName = "update";
+    inline const static std::wstring updateLogPath = L"UpdateLogs\\update-log.txt";
     inline const static std::string launcherLoggerName = "launcher";
     inline const static std::wstring launcherLogPath = L"LogsModuleInterface\\launcher-log.txt";
     inline const static std::wstring awakeLogPath = L"Logs\\awake-log.txt";

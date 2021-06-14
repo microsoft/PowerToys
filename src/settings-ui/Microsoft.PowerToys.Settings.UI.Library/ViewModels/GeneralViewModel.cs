@@ -112,7 +112,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        private bool _packaged;
         private bool _startup;
         private bool _isElevated;
         private bool _runElevated;
@@ -129,24 +128,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private bool _isNewVersionDownloading;
         private bool _isNewVersionChecked;
-
-        // Gets or sets a value indicating whether packaged.
-        public bool Packaged
-        {
-            get
-            {
-                return _packaged;
-            }
-
-            set
-            {
-                if (_packaged != value)
-                {
-                    _packaged = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
 
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup

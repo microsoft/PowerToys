@@ -13,10 +13,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class GeneralSettings : ISettingsConfig
     {
-        // Gets or sets a value indicating whether packaged.
-        [JsonPropertyName("packaged")]
-        public bool Packaged { get; set; }
-
         // Gets or sets a value indicating whether run powertoys on start-up.
         [JsonPropertyName("startup")]
         public bool Startup { get; set; }
@@ -57,7 +53,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any error from calling interop code should not prevent the program from loading.")]
         public GeneralSettings()
         {
-            Packaged = false;
             Startup = false;
             IsAdmin = false;
             IsElevated = false;

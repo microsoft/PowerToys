@@ -359,6 +359,9 @@
       <Component Id="PowerToys_ActionRunner_exe" Guid="626ABB17-16F0-4007-9A58-6998724A5E14" Win64="yes">
         <File Id="PowerToys.ActionRunner.exe" KeyPath="yes" Checksum="yes" />
       </Component>
+      <Component Id="PowerToys_Update_exe" Guid="446D0AD4-AA8F-45BA-BDAC-6C620DF77AFF" Win64="yes">
+        <File Id="PowerToys.Update.exe" KeyPath="yes" Checksum="yes" />
+      </Component>      
       <Component Id="License_rtf" Guid="3E5AE43B-CFB4-449B-A346-94CAAFF3312E" Win64="yes">
         <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="yes" />
       </Component>
@@ -869,6 +872,7 @@
       <ComponentRef Id="PowerToysStartMenuShortcut"/>
       <ComponentRef Id="BackgroundActivator_dll" />
       <ComponentRef Id="PowerToys_ActionRunner_exe" />
+      <ComponentRef Id="PowerToys_Update_exe" />
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />

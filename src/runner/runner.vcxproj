@@ -46,7 +46,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\common\interop\two_way_pipe_message_ipc.cpp" />
-    <ClCompile Include="action_runner_utils.cpp" />
     <ClCompile Include="auto_start_helper.cpp" />
     <ClCompile Include="CentralizedHotkeys.cpp" />
     <ClCompile Include="general_settings.cpp" />
@@ -62,17 +61,17 @@
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="tray_icon.cpp" />
     <ClCompile Include="unhandled_exception_handler.cpp" />
-    <ClCompile Include="update_utils.cpp" />
+    <ClCompile Include="UpdateUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="action_runner_utils.h" />
+    <ClInclude Include="ActionRunnerUtils.h" />
     <ClInclude Include="auto_start_helper.h" />
     <ClInclude Include="CentralizedHotkeys.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="centralized_kb_hook.h" />
     <ClInclude Include="settings_telemetry.h" />
-    <ClInclude Include="update_utils.h" />
+    <ClInclude Include="UpdateUtils.h" />
     <ClInclude Include="powertoy_module.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="restart_elevated.h" />
@@ -110,9 +109,6 @@
     </ProjectReference>
     <ProjectReference Include="..\common\updating\updating.vcxproj">
       <Project>{17da04df-e393-4397-9cf0-84dabe11032e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\common\WinStore\Winstore.vcxproj">
-      <Project>{c502a854-53ac-4ebb-8dc0-e4af2191e4f6}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

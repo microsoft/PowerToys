@@ -1,13 +1,11 @@
 #include "pch.h"
 
+#include <common/utils/HttpClient.h>
 #include <common/version/version.h>
 #include <common/version/helper.h>
 
-#include "http_client.h"
-#include "notifications.h"
 #include "updating.h"
 
-#include <common/notifications/notifications.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/json.h>
 
@@ -76,7 +74,7 @@ namespace updating
         throw std::runtime_error("Release object doesn't have the required asset");
     }
 
-    std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const notifications::strings& strings, const bool prerelease)
+    std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease)
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
         if (VERSION_MAJOR == 0 && VERSION_MINOR == 0)

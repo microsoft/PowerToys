@@ -27,10 +27,7 @@
     <ClCompile Include="restart_elevated.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="update_utils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="action_runner_utils.cpp">
+    <ClCompile Include="UpdateUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="centralized_kb_hook.cpp">
@@ -72,10 +69,10 @@
     <ClInclude Include="restart_elevated.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="update_utils.h">
+    <ClInclude Include="UpdateUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="action_runner_utils.h">
+    <ClInclude Include="ActionRunnerUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
