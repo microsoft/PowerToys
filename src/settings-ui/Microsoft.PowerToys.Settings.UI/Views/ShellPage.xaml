@@ -42,7 +42,7 @@
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
-                <winui:NavigationViewItem x:Uid="Shell_Espresso" helpers:NavHelper.NavigateTo="views:EspressoPage" AutomationProperties.HeadingLevel="Level1">
+                <winui:NavigationViewItem x:Uid="Shell_Awake" helpers:NavHelper.NavigateTo="views:AwakePage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEC32;"/>
                     </winui:NavigationViewItem.Icon>

@@ -143,18 +143,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool espresso;
+        private bool awake;
 
-        [JsonPropertyName("Espresso")]
-        public bool Espresso
+        [JsonPropertyName("Awake")]
+        public bool Awake
         {
-            get => espresso;
+            get => awake;
             set
             {
-                if (espresso != value)
+                if (awake != value)
                 {
                     LogTelemetryEvent(value);
-                    espresso = value;
+                    awake = value;
                 }
             }
         }

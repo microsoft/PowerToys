@@ -60,7 +60,7 @@ private:
     void init_settings();
 
     // Handle to launch and terminate the launcher
-    HANDLE m_hProcess;
+    HANDLE m_hProcess = nullptr;
 
     //contains the name of the powerToys
     std::wstring app_name;
@@ -203,6 +203,7 @@ public:
     virtual void enable()
     {
         Logger::info("Microsoft_Launcher::enable()");
+        m_enabled = true;
         ResetEvent(m_hEvent);
         ResetEvent(send_telemetry_event);
 
@@ -224,7 +225,6 @@ public:
 
             if (ShellExecuteExW(&sei))
             {
-                m_enabled = true;
                 m_hProcess = sei.hProcess;
                 Logger::trace("Started PowerToys Run. Handle {}", m_hProcess);
             }
@@ -265,7 +265,6 @@ public:
                 if (run_non_elevated(action_runner_path, params, pidBuffer))
                 {
                     Logger::trace("Started PowerToys Run Process");
-                    m_enabled = true;
                     const int maxRetries = 80;
                     for (int retry = 0; retry < maxRetries; ++retry)
                     {
@@ -281,7 +280,8 @@ public:
                 }
                 else
                 {
-                    Logger::error("Failed to start PowerToys Run");
+                    // We expect it to fail if the shell window is not available. It can happen on startup
+                    Logger::warn("Failed to start PowerToys Run");
                 }
             }
             CloseHandle(hMapFile);
@@ -332,7 +332,11 @@ public:
         // For now, hotkeyId will always be zero
         if (m_enabled)
         {
-            if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
+            if (m_hProcess == nullptr)
+            {
+                Logger::warn("PowerToys Run hasn't been started. Starting PowerToys Run");
+                enable();
+            } else if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
             {
                 Logger::warn("PowerToys Run has exited unexpectedly, restarting PowerToys Run.");
                 enable();

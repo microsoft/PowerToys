@@ -103,8 +103,6 @@ namespace Microsoft.Plugin.Program
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _context.API.ThemeChanged += OnThemeChanged;
 
-            UpdateUWPIconPath(_context.API.GetCurrentTheme());
-
             var a = Task.Run(() =>
             {
                 Stopwatch.Normal("Microsoft.Plugin.Program.Main - Win32Program index cost", _win32ProgramRepository.IndexPrograms);
@@ -113,6 +111,7 @@ namespace Microsoft.Plugin.Program
             var b = Task.Run(() =>
             {
                 Stopwatch.Normal("Microsoft.Plugin.Program.Main - Package index cost", _packageRepository.IndexPrograms);
+                UpdateUWPIconPath(_context.API.GetCurrentTheme());
             });
 
             Task.WaitAll(a, b);

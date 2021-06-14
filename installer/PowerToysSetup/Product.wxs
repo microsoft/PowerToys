@@ -8,7 +8,7 @@
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
   <?define ColorPickerProjectName="ColorPicker"?>
-  <?define EspressoProjectName="Espresso"?>
+  <?define AwakeProjectName="Awake"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
@@ -220,13 +220,13 @@
                 </Directory>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
-            <Directory Id="EspressoInstallFolder" Name="$(var.EspressoProjectName)">
-              <Directory Id="EspressoInstallFolderRuntimes" Name="Runtimes">
-                <Directory Id="EspressoInstallFolderRuntimesWin" Name="Win">
-                  <Directory Id="EspressoInstallFolderRuntimesWinLib" Name="Lib">
-                    <Directory Id="EspressoInstallFolderNetcoreApp21" Name="netcoreapp2.1" />
-                    <Directory Id="EspressoInstallFolderNetcoreApp30" Name="netcoreapp3.0" />
-                    <Directory Id="EspressoInstallFolderNetStandard20" Name="netstandard2.0" />
+            <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
+              <Directory Id="AwakeInstallFolderRuntimes" Name="Runtimes">
+                <Directory Id="AwakeInstallFolderRuntimesWin" Name="Win">
+                  <Directory Id="AwakeInstallFolderRuntimesWinLib" Name="Lib">
+                    <Directory Id="AwakeInstallFolderNetcoreApp21" Name="netcoreapp2.1" />
+                    <Directory Id="AwakeInstallFolderNetcoreApp30" Name="netcoreapp3.0" />
+                    <Directory Id="AwakeInstallFolderNetStandard20" Name="netstandard2.0" />
                   </Directory>
                 </Directory>
               </Directory>
@@ -276,6 +276,10 @@
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
+                <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
+                  <Directory Id="UnitConverterImagesFolder" Name="Images" />
+                  <Directory Id="UnitConverterLanguagesFolder" Name="Languages" />
+                </Directory>
                 <Directory Id="VSCodeWorkspacesPluginFolder" Name="VSCodeWorkspace">
                   <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
                   <Directory Id="VSCodeWorkspaceLanguagesFolder" Name="Languages" />
@@ -293,6 +297,10 @@
                 </Directory>
                 <Directory Id="SystemPluginFolder" Name="System">
                   <Directory Id="SystemImagesFolder" Name="Images" />
+                </Directory>
+                <Directory Id="WindowsSettingsPluginFolder" Name="Microsoft.PowerToys.Run.Plugin.WindowsSettings">
+                  <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
+                  <Directory Id="WindowsSettingsLanguagesFolder" Name="Languages" />
                 </Directory>
               </Directory>
             </Directory>
@@ -670,35 +678,35 @@
       </Component>
     </DirectoryRef>
     
-    <!-- Espresso -->
-    <DirectoryRef Id="EspressoInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.EspressoProjectName)">
-      <Component Id="Module_Espresso" Guid="F26F5780-5B38-43B2-BC21-8406ED6E2071" Win64="yes">
-        <?foreach File in EspressoModuleInterface.dll;ManagedCommon.dll;ManagedTelemetry.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.Win32.Registry.dll;Microsoft.Win32.SystemEvents.dll;NLog.config;NLog.dll;PowerToys.Espresso.deps.json;PowerToys.Espresso.dll;PowerToys.Espresso.exe;PowerToys.Espresso.runtimeconfig.json;PowerToysInterop.dll;System.CommandLine.dll;System.Configuration.ConfigurationManager.dll;System.Drawing.Common.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Security.AccessControl.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Permissions.dll;System.Security.Principal.Windows.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Windows.Extensions.dll?>
-        <File Id="EspressoFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\$(var.File)" />
+    <!-- Awake -->
+    <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)">
+      <Component Id="Module_Awake" Guid="F26F5780-5B38-43B2-BC21-8406ED6E2071" Win64="yes">
+        <?foreach File in AwakeModuleInterface.dll;ManagedCommon.dll;ManagedTelemetry.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.Win32.Registry.dll;Microsoft.Win32.SystemEvents.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToysInterop.dll;System.CommandLine.dll;System.Configuration.ConfigurationManager.dll;System.Drawing.Common.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Security.AccessControl.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Permissions.dll;System.Security.Principal.Windows.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Windows.Extensions.dll?>
+        <File Id="AwakeFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     
-    <DirectoryRef Id="EspressoInstallFolderNetStandard20" FileSource="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0">
-      <Component Id="Module_Espresso_runtime_netstandard20" Guid="414A31AB-91A8-4F17-9B4B-DB7B93A2BB23">
-        <File Id="EspressoFile_runtime_Microsoft.Win32.Registry.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" />
-        <File Id="EspressoFile_runtime_System.Runtime.Caching.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll" />
-        <File Id="EspressoFile_runtime_System.Security.AccessControl.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll" />
-        <File Id="EspressoFile_runtime_System.Security.Cryptography.ProtectedData.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll" />
+    <DirectoryRef Id="AwakeInstallFolderNetStandard20" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0">
+      <Component Id="Module_Awake_runtime_netstandard20" Guid="414A31AB-91A8-4F17-9B4B-DB7B93A2BB23">
+        <File Id="AwakeFile_runtime_Microsoft.Win32.Registry.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" />
+        <File Id="AwakeFile_runtime_System.Runtime.Caching.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll" />
+        <File Id="AwakeFile_runtime_System.Security.AccessControl.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll" />
+        <File Id="AwakeFile_runtime_System.Security.Cryptography.ProtectedData.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll" />
       </Component>
     </DirectoryRef>
 
-    <DirectoryRef Id="EspressoInstallFolderNetcoreApp30" FileSource="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp3.0">
-      <Component Id="Module_Espresso_runtime_netcoreapp30" Guid="1EBB21FE-083A-4AE6-9208-7DC72A421860">
-        <File Id="EspressoFile_runtime_Microsoft.Win32.SystemEvents.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll" />
-        <File Id="EspressoFile_runtime_System.Drawing.Common.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll" />
-        <File Id="EspressoFile_runtime_System.Windows.Extensions.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll" />
+    <DirectoryRef Id="AwakeInstallFolderNetcoreApp30" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0">
+      <Component Id="Module_Awake_runtime_netcoreapp30" Guid="1EBB21FE-083A-4AE6-9208-7DC72A421860">
+        <File Id="AwakeFile_runtime_Microsoft.Win32.SystemEvents.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll" />
+        <File Id="AwakeFile_runtime_System.Drawing.Common.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll" />
+        <File Id="AwakeFile_runtime_System.Windows.Extensions.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll" />
       </Component>
     </DirectoryRef>
 
-    <DirectoryRef Id="EspressoInstallFolderNetcoreApp21" FileSource="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp2.1">
-      <Component Id="Module_Espresso_runtime_netcoreapp21" Guid="52ED2831-6F3F-47D3-AA1A-88C697BE9D0F">
-        <File Id="EspressoFile_runtime_System.Security.Principal.Windows.dll" Source="$(var.BinX64Dir)modules\$(var.EspressoProjectName)\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll" />
+    <DirectoryRef Id="AwakeInstallFolderNetcoreApp21" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp2.1">
+      <Component Id="Module_Awake_runtime_netcoreapp21" Guid="52ED2831-6F3F-47D3-AA1A-88C697BE9D0F">
+        <File Id="AwakeFile_runtime_System.Security.Principal.Windows.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll" />
       </Component>
     </DirectoryRef>
     
@@ -779,21 +787,21 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules">
       <Component Id="SettingsV2AssetsModules" Guid="A0B961A9-77D0-4223-88A9-E3B41BD9C329" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;Espresso.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png?>
+        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png?>
           <File Id="SettingsV2AssetsModules_$(var.File)" Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules\OOBE">
       <Component Id="SettingsV2OOBEAssetsModules" Guid="E2360A83-6694-4B33-B5F6-641A906359EE" Win64="yes">
-        <?foreach File in ColorPicker.gif;Espresso.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
+        <?foreach File in ColorPicker.gif;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
           <File Id="SettingsV2OOBEAssetsModules_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\FluentIcons">
       <Component Id="SettingsV2OOBEAssetsFluentIcons" Guid="6A380D5A-DA63-45B5-B68F-06D57CDD1B9C" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;Espresso.png;FileExplorerPreview.png;ImageResizer.png;KeyboardManager.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ShortcutGuide.png;VideoConferenceMute.png ?>
+        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;FileExplorerPreview.png;ImageResizer.png;KeyboardManager.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ShortcutGuide.png;VideoConferenceMute.png ?>
           <File Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
         <?endforeach?>
       </Component>
@@ -881,10 +889,10 @@
       <ComponentRef Id="Module_KeyboardManager_Engine" />
       <ComponentRef Id="Module_ColorPicker" />
       <ComponentRef Id="Module_ColorPicker_Resources"/>
-      <ComponentRef Id="Module_Espresso"/>
-      <ComponentRef Id="Module_Espresso_runtime_netstandard20"/>
-      <ComponentRef Id="Module_Espresso_runtime_netcoreapp30"/>
-      <ComponentRef Id="Module_Espresso_runtime_netcoreapp21"/>
+      <ComponentRef Id="Module_Awake"/>
+      <ComponentRef Id="Module_Awake_runtime_netstandard20"/>
+      <ComponentRef Id="Module_Awake_runtime_netcoreapp30"/>
+      <ComponentRef Id="Module_Awake_runtime_netcoreapp21"/>
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2AssetsModules" />
@@ -907,7 +915,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;WindowsSettingsPluginFolder?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
@@ -998,6 +1006,9 @@
                 <Component Id="Launcher_System_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder">
                     <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
                 </Component>
+                <!--<Component Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
+                    <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
+                </Component>-->
                 <?undef IdSafeLanguage?>
             <?endforeach?>
         <?endif?>
@@ -1015,7 +1026,7 @@
 
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.Lib.dll" />
@@ -1088,6 +1099,17 @@
         <?foreach File in indexer.dark.png;indexer.light.png;Warning.light.png;Warning.dark.png?>
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
         <?endforeach?>
+      </Component>
+
+      <!-- UnitConverter Plugin -->
+      <Component Id="UnitConverterComponent" Directory="UnitConverterPluginFolder" Guid="D4F429E3-C619-49D6-9416-88A757D18E02">
+        <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.UnitConverter.deps.json;Community.PowerToys.Run.Plugin.UnitConverter.dll?>
+        <File Id="UnitConverter_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="UnitConverterImagesComponent" Directory="UnitConverterImagesFolder" Guid="16ABD217-0898-47B2-89D9-AF1ABF00F543">
+        <File Id="UnitConverterLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\unitconverter.light.png" />
+        <File Id="UnitConverterDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\unitconverter.dark.png" />
       </Component>
 
       <!-- Uri Plugin -->
@@ -1167,6 +1189,17 @@
         <File Id="SystemShutdownLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\shutdown.light.png" />
         <File Id="SystemSleepDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.dark.png" />
         <File Id="SystemSleepLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.light.png" />
+      </Component>
+
+      <!-- WindowsSettings Plugin -->
+      <Component Id="WindowsSettingsComponent" Directory="WindowsSettingsPluginFolder" Guid="ACEC2B6D-8E95-43BF-A1E4-137E95F07C96">
+        <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;ManagedTelemetry.dll?>
+          <File Id="WindowsSettings_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="WindowsSettingsImagesComponent" Directory="WindowsSettingsImagesFolder" Guid="E1CE33A7-6318-4FA6-A46B-9302A00BD6AA">
+          <File Id="WindowsSettingsDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Images\WindowsSettings.dark.png" />
+          <File Id="WindowsSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Images\WindowsSettings.light.png" />
       </Component>
 
     </ComponentGroup>

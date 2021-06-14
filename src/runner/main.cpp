@@ -153,7 +153,7 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
             L"modules/ColorPicker/ColorPicker.dll",
-            L"modules/Espresso/EspressoModuleInterface.dll",
+            L"modules/Awake/AwakeModuleInterface.dll",
         };
 
         for (const auto& moduleSubdir : knownModules)
