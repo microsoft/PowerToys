@@ -7,8 +7,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
     public enum PowerToysModulesEnum
     {
         Overview = 0,
-        ColorPicker,
         Awake,
+        ColorPicker,
         FancyZones,
         FileExplorer,
         ImageResizer,
