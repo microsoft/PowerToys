@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30320.27
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Updating", "..\..\src\common\updating\updating.vcxproj", "{17DA04DF-E393-4397-9CF0-84DABE11032E}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bootstrapper", "bootstrapper\bootstrapper.vcxproj", "{D194E3AA-F824-4CA9-9A58-034DD6B7D022}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spdlog", "..\..\src\logging\logging.vcxproj", "{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}"
@@ -13,20 +11,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Version", "..\..\src\common
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SetttingsAPI", "..\..\src\common\SettingsAPI\SetttingsAPI.vcxproj", "{6955446D-23F7-4023-9BB3-8657F904AF99}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Notifications", "..\..\src\common\notifications\notifications.vcxproj", "{1D5BE09D-78C0-4FD7-AF00-AE7C1AF7C525}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinStore", "..\..\src\common\WinStore\Winstore.vcxproj", "{C502A854-53AC-4EBB-8DC0-E4AF2191E4F6}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{17DA04DF-E393-4397-9CF0-84DABE11032E}.Debug|x64.ActiveCfg = Debug|x64
-		{17DA04DF-E393-4397-9CF0-84DABE11032E}.Debug|x64.Build.0 = Debug|x64
-		{17DA04DF-E393-4397-9CF0-84DABE11032E}.Release|x64.ActiveCfg = Release|x64
-		{17DA04DF-E393-4397-9CF0-84DABE11032E}.Release|x64.Build.0 = Release|x64
 		{D194E3AA-F824-4CA9-9A58-034DD6B7D022}.Debug|x64.ActiveCfg = Debug|x64
 		{D194E3AA-F824-4CA9-9A58-034DD6B7D022}.Debug|x64.Build.0 = Debug|x64
 		{D194E3AA-F824-4CA9-9A58-034DD6B7D022}.Release|x64.ActiveCfg = Release|x64
@@ -43,14 +33,6 @@ Global
 		{6955446D-23F7-4023-9BB3-8657F904AF99}.Debug|x64.Build.0 = Debug|x64
 		{6955446D-23F7-4023-9BB3-8657F904AF99}.Release|x64.ActiveCfg = Release|x64
 		{6955446D-23F7-4023-9BB3-8657F904AF99}.Release|x64.Build.0 = Release|x64
-		{1D5BE09D-78C0-4FD7-AF00-AE7C1AF7C525}.Debug|x64.ActiveCfg = Debug|x64
-		{1D5BE09D-78C0-4FD7-AF00-AE7C1AF7C525}.Debug|x64.Build.0 = Debug|x64
-		{1D5BE09D-78C0-4FD7-AF00-AE7C1AF7C525}.Release|x64.ActiveCfg = Release|x64
-		{1D5BE09D-78C0-4FD7-AF00-AE7C1AF7C525}.Release|x64.Build.0 = Release|x64
-		{C502A854-53AC-4EBB-8DC0-E4AF2191E4F6}.Debug|x64.ActiveCfg = Debug|x64
-		{C502A854-53AC-4EBB-8DC0-E4AF2191E4F6}.Debug|x64.Build.0 = Debug|x64
-		{C502A854-53AC-4EBB-8DC0-E4AF2191E4F6}.Release|x64.ActiveCfg = Release|x64
-		{C502A854-53AC-4EBB-8DC0-E4AF2191E4F6}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

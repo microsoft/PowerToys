@@ -2,63 +2,101 @@
 
 #include "Generated Files/resource.h"
 
-#include "action_runner_utils.h"
+#include "ActionRunnerUtils.h"
 #include "general_settings.h"
-#include "update_utils.h"
+#include "UpdateUtils.h"
 
 #include <common/logger/logger.h>
+#include <common/notifications/notifications.h>
 #include <common/updating/installer.h>
-#include <common/updating/http_client.h>
 #include <common/updating/updating.h>
 #include <common/updating/updateState.h>
+#include <common/utils/HttpClient.h>
+#include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/timeutil.h>
-
-auto Strings = create_notifications_strings();
+#include <common/version/version.h>
 
 namespace
 {
     constexpr int64_t UPDATE_CHECK_INTERVAL_MINUTES = 60 * 24;
     constexpr int64_t UPDATE_CHECK_AFTER_FAILED_INTERVAL_MINUTES = 60 * 2;
 }
+using namespace notifications;
+using namespace updating;
 
-bool start_msi_uninstallation_sequence()
+std::wstring CurrentVersionToNextVersion(const new_version_download_info& info)
 {
-    const auto package_path = updating::get_msi_package_path();
+    auto result = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
+    result += L" -> ";
+    result += info.version.toWstring();
+    return result;
+}
 
-    if (package_path.empty())
-    {
-        // No MSI version detected
-        return true;
-    }
+void ShowNewVersionAvailable(const new_version_download_info& info)
+{
+    remove_toasts_by_tag(UPDATING_PROCESS_TOAST_TAG);
 
-    if (!updating::offer_msi_uninstallation(Strings))
-    {
-        // User declined to uninstall or opted for "Don't show again"
-        return false;
-    }
-    auto sei = launch_action_runner(L"-uninstall_msi");
+    toast_params toast_params{ UPDATING_PROCESS_TOAST_TAG, false };
+    std::wstring contents = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE);
+    contents += L'\n';
+    contents += CurrentVersionToNextVersion(info);
 
-    WaitForSingleObject(sei.hProcess, INFINITE);
-    DWORD exit_code = 0;
-    GetExitCodeProcess(sei.hProcess, &exit_code);
-    CloseHandle(sei.hProcess);
-    return exit_code == 0;
+    show_toast_with_activations(std::move(contents),
+                                GET_RESOURCE_STRING(IDS_TOAST_TITLE),
+                                {},
+                                { link_button{ GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_NOW),
+                                               L"powertoys://update_now/" },
+                                  link_button{ GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_MORE_INFO),
+                                               L"powertoys://open_settings/" } },
+                                std::move(toast_params));
+}
+
+void ShowOpenSettingsForUpdate()
+{
+    remove_toasts_by_tag(UPDATING_PROCESS_TOAST_TAG);
+
+    toast_params toast_params{ UPDATING_PROCESS_TOAST_TAG, false };
+
+    std::vector<action_t> actions = {
+        link_button{ GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_MORE_INFO),
+                     L"powertoys://open_settings/" },
+    };
+    show_toast_with_activations(GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE),
+                                GET_RESOURCE_STRING(IDS_TOAST_TITLE),
+                                {},
+                                std::move(actions),
+                                std::move(toast_params));
+}
+
+SHELLEXECUTEINFOW LaunchPowerToysUpdate(const wchar_t* cmdline)
+{
+    std::wstring powertoysUpdaterPath;
+    powertoysUpdaterPath = get_module_folderpath();
+
+    powertoysUpdaterPath += L"\\PowerToys.Update.exe";
+    SHELLEXECUTEINFOW sei{ sizeof(sei) };
+    sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS };
+    sei.lpFile = powertoysUpdaterPath.c_str();
+    sei.nShow = SW_SHOWNORMAL;
+    sei.lpParameters = cmdline;
+    ShellExecuteExW(&sei);
+    return sei;
 }
 
 using namespace updating;
 
-bool could_be_costly_connection()
+bool IsMeteredConnection()
 {
     using namespace winrt::Windows::Networking::Connectivity;
     ConnectionProfile internetConnectionProfile = NetworkInformation::GetInternetConnectionProfile();
     return internetConnectionProfile && internetConnectionProfile.IsWwanConnectionProfile();
 }
 
-void process_new_version_info(const github_version_info& version_info,
-                              UpdateState& state,
-                              const bool download_update,
-                              const bool show_notifications)
+void ProcessNewVersionInfo(const github_version_info& version_info,
+                           UpdateState& state,
+                           const bool download_update,
+                           const bool show_notifications)
 {
     state.githubUpdateLastCheckedDate.emplace(timeutil::now());
     if (std::holds_alternative<version_up_to_date>(version_info))
@@ -89,7 +127,7 @@ void process_new_version_info(const github_version_info& version_info,
             state.downloadedInstallerFilename = new_version_info.installer_filename;
             if (show_notifications)
             {
-                notifications::show_new_version_available(new_version_info, Strings);
+                ShowNewVersionAvailable(new_version_info);
             }
         }
         else
@@ -106,12 +144,12 @@ void process_new_version_info(const github_version_info& version_info,
         state.downloadedInstallerFilename = {};
         if (show_notifications)
         {
-            notifications::show_open_settings_for_update(Strings);
+            ShowOpenSettingsForUpdate();
         }
     }
 }
 
-void periodic_update_worker()
+void PeriodicUpdateWorker()
 {
     for (;;)
     {
@@ -129,15 +167,15 @@ void periodic_update_worker()
 
         std::this_thread::sleep_for(std::chrono::minutes{ sleep_minutes_till_next_update });
 
-        const bool download_update = !could_be_costly_connection() && get_general_settings().downloadUpdatesAutomatically;
+        const bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
         bool version_info_obtained = false;
         try
         {
-            const auto new_version_info = get_github_version_info_async(Strings).get();
+            const auto new_version_info = get_github_version_info_async().get();
             if (new_version_info.has_value())
             {
                 version_info_obtained = true;
-                process_new_version_info(*new_version_info, state, download_update, true);
+                ProcessNewVersionInfo(*new_version_info, state, download_update, true);
             }
             else
             {
@@ -162,27 +200,27 @@ void periodic_update_worker()
     }
 }
 
-void check_for_updates_settings_callback()
+void CheckForUpdatesCallback()
 {
     Logger::trace(L"Check for updates callback invoked");
     auto state = UpdateState::read();
     try
     {
-        auto new_version_info = get_github_version_info_async(Strings).get();
+        auto new_version_info = get_github_version_info_async().get();
         if (!new_version_info)
         {
             // If we couldn't get a new version from github for some reason, assume we're up to date, but also log error
             new_version_info = version_up_to_date{};
             Logger::error(L"Couldn't obtain version info from github: {}", new_version_info.error());
         }
-        const bool download_update = !could_be_costly_connection() && get_general_settings().downloadUpdatesAutomatically;
-        process_new_version_info(*new_version_info, state, download_update, false);
+        const bool download_update = !IsMeteredConnection() && get_general_settings().downloadUpdatesAutomatically;
+        ProcessNewVersionInfo(*new_version_info, state, download_update, false);
         UpdateState::store([&](UpdateState& v) {
             v = std::move(state);
         });
     }
     catch (...)
     {
-        Logger::error("check_for_updates_settings_callback: error while processing version info");
+        Logger::error("CheckForUpdatesCallback: error while processing version info");
     }
 }

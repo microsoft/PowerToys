@@ -9,7 +9,7 @@
 #include "tray_icon.h"
 #include "general_settings.h"
 #include "restart_elevated.h"
-#include "update_utils.h"
+#include "UpdateUtils.h"
 #include "centralized_kb_hook.h"
 
 #include <common/utils/json.h>
@@ -84,7 +84,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
-                    check_for_updates_settings_callback();
+                    CheckForUpdatesCallback();
                 }
                 else if (action == L"request_update_state_date")
                 {

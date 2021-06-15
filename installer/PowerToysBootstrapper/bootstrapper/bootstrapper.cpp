@@ -2,23 +2,21 @@
 #include "Generated Files/resource.h"
 
 #include "RcResource.h"
-#include <common/updating/dotnet_installation.h>
-#include <common/updating/installer.h>
-#include <common/updating/notifications.h>
+#include <common/version/helper.h>
 #include <common/version/version.h>
 #include <common/utils/appMutex.h>
 #include <common/utils/elevation.h>
+#include <common/utils/MsiUtils.h>
+#include <common/utils/os-detect.h>
 #include <common/utils/processApi.h>
 #include <common/utils/resources.h>
 #include <common/utils/window.h>
 #include <common/utils/winapi_error.h>
 #include <common/SettingsAPI/settings_helpers.h>
 
-#include <runner/action_runner_utils.h>
-
+#include "DotnetInstallation.h"
 #include "progressbar_window.h"
 
-auto Strings = create_notifications_strings();
 static bool g_Silent = false;
 
 #define STR_HELPER(x) #x
@@ -95,7 +93,7 @@ void CleanupSettingsFromOlderVersions()
             spdlog::info("Old log settings file wasn't found");
         }
     }
-    catch(...)
+    catch (...)
     {
         spdlog::error("Failed to cleanup old log settings");
     }
@@ -106,15 +104,55 @@ void ShowMessageBoxError(const wchar_t* message)
     if (!g_Silent)
     {
         MessageBoxW(nullptr,
-            message,
-            GET_RESOURCE_STRING(IDS_BOOTSTRAPPER_PROGRESS_TITLE).c_str(),
-            MB_OK | MB_ICONERROR);
+                    message,
+                    GET_RESOURCE_STRING(IDS_BOOTSTRAPPER_PROGRESS_TITLE).c_str(),
+                    MB_OK | MB_ICONERROR);
     }
 }
 
 void ShowMessageBoxError(const UINT messageId)
 {
     ShowMessageBoxError(GET_RESOURCE_STRING(messageId).c_str());
+}
+
+bool uninstall_msi_version(const std::wstring& package_path)
+{
+    const auto uninstall_result = MsiInstallProductW(package_path.c_str(), L"REMOVE=ALL");
+    return ERROR_SUCCESS == uninstall_result;
+}
+
+std::optional<VersionHelper> get_installed_powertoys_version()
+{
+    auto installed_path = GetMsiPackageInstalledPath();
+    if (!installed_path)
+    {
+        return std::nullopt;
+    }
+    *installed_path += L"\\PowerToys.exe";
+
+    // Get the version information for the file requested
+    const DWORD fvSize = GetFileVersionInfoSizeW(installed_path->c_str(), nullptr);
+    if (!fvSize)
+    {
+        return std::nullopt;
+    }
+
+    auto pbVersionInfo = std::make_unique<BYTE[]>(fvSize);
+
+    if (!GetFileVersionInfoW(installed_path->c_str(), 0, fvSize, pbVersionInfo.get()))
+    {
+        return std::nullopt;
+    }
+
+    VS_FIXEDFILEINFO* fileInfo = nullptr;
+    UINT fileInfoLen = 0;
+    if (!VerQueryValueW(pbVersionInfo.get(), L"\\", reinterpret_cast<LPVOID*>(&fileInfo), &fileInfoLen))
+    {
+        return std::nullopt;
+    }
+    return VersionHelper{ (fileInfo->dwFileVersionMS >> 16) & 0xffff,
+                          (fileInfo->dwFileVersionMS >> 0) & 0xffff,
+                          (fileInfo->dwFileVersionLS >> 16) & 0xffff };
 }
 
 int Bootstrapper(HINSTANCE hInstance)
@@ -133,17 +171,17 @@ int Bootstrapper(HINSTANCE hInstance)
     cxxopts::Options options{ "PowerToysBootstrapper" };
 
     // clang-format off
-    options.add_options()
-        ("h,help", "Show help")
-        ("no_full_ui", "Use reduced UI for MSI")
-        ("s,silent", "Suppress all UI, notifications and does not start PowerToys")
-        ("no_start_pt", "Do not launch PowerToys after the installation is complete")
-        ("start_pt", "Always launch PowerToys after the installation is complete")
-        ("skip_dotnet_install", "Skip dotnet 3.X installation even if it's not detected")
-        ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"))
-        ("log_dir", "Log directory", cxxopts::value<std::string>()->default_value("."))
-        ("install_dir", "Installation directory", cxxopts::value<std::string>()->default_value(defaultInstallDir))
-        ("extract_msi", "Extract MSI to the working directory and exit. Use only if you must access MSI directly.");
+  options.add_options()
+    ("h,help", "Show help")
+    ("no_full_ui", "Use reduced UI for MSI")
+    ("s,silent", "Suppress all UI, notifications and does not start PowerToys")
+    ("no_start_pt", "Do not launch PowerToys after the installation is complete")
+    ("start_pt", "Always launch PowerToys after the installation is complete")
+    ("skip_dotnet_install", "Skip dotnet 3.X installation even if it's not detected")
+    ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"))
+    ("log_dir", "Log directory", cxxopts::value<std::string>()->default_value("."))
+    ("install_dir", "Installation directory", cxxopts::value<std::string>()->default_value(defaultInstallDir))
+    ("extract_msi", "Extract MSI to the working directory and exit. Use only if you must access MSI directly.");
     // clang-format on
 
     cxxopts::ParseResult cmdArgs;
@@ -234,15 +272,15 @@ int Bootstrapper(HINSTANCE hInstance)
     const VersionHelper myVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
 
     // Do not support installing on Windows < 1903
-    if (updating::is_1809_or_older())
+    if (!Is19H1OrHigher())
     {
-      ShowMessageBoxError(IDS_OLD_WINDOWS_ERROR);
-      spdlog::error("PowerToys {} requires at least Windows 1903 to run.", myVersion.toString());
-      return 1;
+        ShowMessageBoxError(IDS_OLD_WINDOWS_ERROR);
+        spdlog::error("PowerToys {} requires at least Windows 1903 to run.", myVersion.toString());
+        return 1;
     }
 
     // Check if there's a newer version installed
-    const auto installedVersion = updating::get_installed_powertoys_version();
+    const auto installedVersion = get_installed_powertoys_version();
     if (installedVersion && *installedVersion >= myVersion)
     {
         spdlog::error(L"Detected a newer version {} vs {}", (*installedVersion).toWstring(), myVersion.toWstring());
@@ -341,7 +379,7 @@ int Bootstrapper(HINSTANCE hInstance)
     });
 
     spdlog::debug("Acquiring existing MSI package path if exists");
-    const auto package_path = updating::get_msi_package_path();
+    const auto package_path = GetMsiPackagePath();
     if (!package_path.empty())
     {
         spdlog::debug(L"Existing MSI package path found: {}", package_path);
@@ -351,7 +389,7 @@ int Bootstrapper(HINSTANCE hInstance)
         spdlog::debug("Existing MSI package path not found");
     }
 
-    if (!package_path.empty() && !updating::uninstall_msi_version(package_path, Strings))
+    if (!package_path.empty() && !uninstall_msi_version(package_path))
     {
         spdlog::error("Couldn't install the existing MSI package ({})", GetLastError());
         ShowMessageBoxError(IDS_UNINSTALL_PREVIOUS_VERSION_ERROR);
@@ -401,7 +439,7 @@ int Bootstrapper(HINSTANCE hInstance)
         spdlog::error("Unknown exception during dotnet installation");
         ShowMessageBoxError(IDS_DOTNET_INSTALL_ERROR);
     }
-    
+
     // At this point, there's no reason to show progress bar window, since MSI installers have their own
     CloseProgressBarDialog();
 
@@ -419,7 +457,7 @@ int Bootstrapper(HINSTANCE hInstance)
     if ((!noStartPT && !g_Silent) || startPT)
     {
         spdlog::debug("Starting the newly installed PowerToys.exe");
-        auto newPTPath = updating::get_msi_package_installed_path();
+        auto newPTPath = GetMsiPackageInstalledPath();
         if (!newPTPath)
         {
             spdlog::error("Couldn't determine new MSI package install location ({})", GetLastError());
@@ -448,7 +486,7 @@ int WINAPI WinMain(HINSTANCE hi, HINSTANCE, LPSTR, int)
         std::string messageA{ "Unhandled std exception encountered\n" };
         messageA.append(ex.what());
 
-            spdlog::error(messageA.c_str());
+        spdlog::error(messageA.c_str());
 
         std::wstring messageW{};
         std::copy(messageA.begin(), messageA.end(), messageW.begin());

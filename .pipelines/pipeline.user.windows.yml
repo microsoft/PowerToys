@@ -65,6 +65,7 @@ build:
           to: 'Build_Output'
           include:
             - 'PowerToys.ActionRunner.exe'
+            - 'PowerToys.Update.exe'
             - 'BackgroundActivatorDLL.dll'
             - 'Notifications.dll'
             - 'os-detection.dll'

@@ -1,11 +1,10 @@
 #include "pch.h"
 
-#include "dotnet_installation.h"
-#include "http_client.h"
+#include "DotnetInstallation.h"
 
-#include "utils/exec.h"
-#include "utils/winapi_error.h"
-
+#include <common/utils/exec.h>
+#include <common/utils/HttpClient.h>
+#include <common/utils/winapi_error.h>
 namespace fs = std::filesystem;
 
 namespace updating

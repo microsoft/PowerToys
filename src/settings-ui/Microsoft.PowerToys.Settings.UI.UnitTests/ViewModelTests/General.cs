@@ -61,7 +61,6 @@ namespace ViewModelTests
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.AutoDownloadUpdates, viewModel.AutoDownloadUpdates);
-            Assert.AreEqual(originalGeneralSettings.Packaged, viewModel.Packaged);
             Assert.AreEqual(originalGeneralSettings.PowertoysVersion, viewModel.PowerToysVersion);
             Assert.AreEqual(originalGeneralSettings.RunElevated, viewModel.RunElevated);
             Assert.AreEqual(originalGeneralSettings.Startup, viewModel.Startup);

@@ -35,20 +35,13 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="dotnet_installation.h" />
-    <ClInclude Include="http_client.h" />
     <ClInclude Include="installer.h" />
-    <ClInclude Include="notifications.h" />
     <ClInclude Include="updating.h" />
     <ClInclude Include="updateState.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="winstore.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dotnet_installation.cpp" />
-    <ClCompile Include="http_client.cpp" />
     <ClCompile Include="installer.cpp" />
-    <ClCompile Include="notifications.cpp" />
     <ClCompile Include="updating.cpp" />
     <ClCompile Include="updateState.cpp" />
     <ClCompile Include="pch.cpp">
@@ -56,9 +49,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\notifications\notifications.vcxproj">
-      <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\SettingsAPI\SetttingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>

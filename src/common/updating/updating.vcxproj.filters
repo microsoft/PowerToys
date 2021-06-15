@@ -21,19 +21,13 @@
     <ClInclude Include="updating.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="http_client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dotnet_installation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="notifications.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="installer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="winstore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="updateState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,16 +38,10 @@
     <ClCompile Include="updating.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="http_client.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dotnet_installation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="notifications.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="installer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="updateState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
