@@ -169,27 +169,6 @@ public:
     void ToggleEditor() noexcept;
 
     // IZoneWindowHost
-    IFACEMETHODIMP_(COLORREF)
-    GetZoneColor() noexcept
-    {
-        return (FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor));
-    }
-    IFACEMETHODIMP_(COLORREF)
-    GetZoneBorderColor() noexcept
-    {
-        return (FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor));
-    }
-    IFACEMETHODIMP_(COLORREF)
-    GetZoneHighlightColor() noexcept
-    {
-        return (FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor));
-    }
-    IFACEMETHODIMP_(int)
-    GetZoneHighlightOpacity() noexcept
-    {
-        return m_settings->GetSettings()->zoneHighlightOpacity;
-    }
-
     IFACEMETHODIMP_(bool)
     isMakeDraggedWindowTransparentActive() noexcept
     {
@@ -868,10 +847,10 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId, r
 
             ZoneColors colors
             {
-                .primaryColor = GetZoneColor(),
-                .borderColor = GetZoneBorderColor(),
-                .highlightColor = GetZoneHighlightColor(),
-                .highlightOpacity = GetZoneHighlightOpacity()
+                .primaryColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor),
+                .borderColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor),
+                .highlightColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor),
+                .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
             };
 
             auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId, colors);
@@ -1230,10 +1209,10 @@ void FancyZones::OnSettingsChanged() noexcept
     // update zone colors
     ZoneColors colors
     {
-        .primaryColor = GetZoneColor(),
-        .borderColor = GetZoneBorderColor(),
-        .highlightColor = GetZoneHighlightColor(),
-        .highlightOpacity = GetZoneHighlightOpacity()
+        .primaryColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor),
+        .borderColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor),
+        .highlightColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor),
+        .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
     };
     m_workAreaHandler.UpdateZoneColors(colors);
 

@@ -59,26 +59,6 @@ interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343F}")) IFancyZones
 interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindowHost : public IUnknown
 {
     /**
-     * @returns Basic zone color.
-     */
-    IFACEMETHOD_(COLORREF, GetZoneColor)
-    () = 0;
-    /**
-     * @returns Zone border color.
-     */
-    IFACEMETHOD_(COLORREF, GetZoneBorderColor)
-    () = 0;
-    /**
-     * @returns Color used to highlight zone while giving zone layout hints.
-     */
-    IFACEMETHOD_(COLORREF, GetZoneHighlightColor)
-    () = 0;
-    /**
-     * @returns Integer in range [0, 100] indicating opacity of highlighted zone (while giving zone layout hints).
-     */
-    IFACEMETHOD_(int, GetZoneHighlightOpacity)
-    () = 0;
-    /**
      * @returns Boolean indicating if dragged window should be transparent.
      */
     IFACEMETHOD_(bool, isMakeDraggedWindowTransparentActive)
