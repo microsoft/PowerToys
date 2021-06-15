@@ -235,7 +235,6 @@ private:
 
     void OnSettingsChanged() noexcept;
 
-    bool ShouldProcessNewWindow(HWND window) noexcept;
     std::vector<size_t> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
@@ -350,20 +349,6 @@ FancyZones::VirtualDesktopChanged() noexcept
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
 }
 
-bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
-{
-    using namespace FancyZonesUtils;
-    // Avoid processing splash screens, already stamped (zoned) windows, or those windows
-    // that belong to excluded applications list.
-    if (IsSplashScreen(window) ||
-        (reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0) ||
-        !IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray))
-    {
-        return false;
-    }
-    return true;
-}
-
 std::vector<size_t> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
     HWND window,
     winrt::com_ptr<IZoneWindow> workArea) noexcept
@@ -442,7 +427,15 @@ void FancyZones::WindowCreated(HWND window) noexcept
 
     const bool moveToAppLastZone = m_settings->GetSettings()->appLastZone_moveWindows;
     const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
-    if ((moveToAppLastZone || openOnActiveMonitor) && ShouldProcessNewWindow(window))
+    
+    // Avoid processing splash screens, already stamped (zoned) windows, or those windows
+    // that belong to excluded applications list.
+    const bool isSplashScreen = FancyZonesUtils::IsSplashScreen(window);
+    const bool isZoned = reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0;
+    const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray);
+    const bool shouldProcessNewWindow = !isSplashScreen && !isZoned && isCandidateForLastKnownZone;
+
+    if ((moveToAppLastZone || openOnActiveMonitor) && shouldProcessNewWindow)
     {
         HMONITOR primary = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
         HMONITOR active = primary;
