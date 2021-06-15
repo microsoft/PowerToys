@@ -46,6 +46,7 @@
     <ClInclude Include="FancyZonesData.h" />
     <ClInclude Include="JsonHelpers.h" />
     <ClInclude Include="KeyState.h" />
+    <ClInclude Include="MonitorUtils.h" />
     <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Generated Files/resource.h" />
@@ -69,6 +70,7 @@
     <ClCompile Include="FancyZonesData.cpp" />
     <ClCompile Include="FileWatcher.cpp" />
     <ClCompile Include="JsonHelpers.cpp" />
+    <ClCompile Include="MonitorUtils.cpp" />
     <ClCompile Include="MonitorWorkAreaHandler.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />
     <ClCompile Include="pch.cpp">
