@@ -83,7 +83,7 @@ public:
             PostMessageW(m_window, WM_PRIV_FILE_UPDATE, NULL, NULL);
         }),
         m_settingsFileWatcher(FancyZonesDataInstance().GetSettingsFileName(), [this]() {
-            PostMessageW(m_window, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
+            PostMessageW(m_window, WM_PRIV_SETTINGS_FILE_UPDATE, NULL, NULL);
         }),
         m_virtualDesktop([this]() { 
             PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0); 
@@ -232,6 +232,8 @@ private:
     bool ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
 
     void RegisterVirtualDesktopUpdates() noexcept;
+
+    void OnSettingsChanged() noexcept;
 
     bool ShouldProcessNewWindow(HWND window) noexcept;
     std::vector<size_t> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
@@ -695,26 +697,12 @@ void FancyZones::ToggleEditor() noexcept
     waitForEditorThread.detach();
 }
 
-void FancyZones::SettingsChanged() noexcept
+// IFancyZonesCallback
+IFACEMETHODIMP_(void)
+FancyZones::SettingsChanged() noexcept
 {
     _TRACER_;
-    std::unique_lock writeLock(m_lock);
-
-    // Update the hotkey
-    UnregisterHotKey(m_window, 1);
-    auto modifiers = m_settings->GetSettings()->editorHotkey.get_modifiers();
-    auto code = m_settings->GetSettings()->editorHotkey.get_code();
-    auto result = RegisterHotKey(m_window, 1, modifiers, code);
-
-    if (!result)
-    {
-        Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
-    }
-
-    // Needed if we toggled spanZonesAcrossMonitors
-    m_workAreaHandler.Clear();
-
-    PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
+    PostMessage(m_window, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
 }
 
 // IZoneWindowHost
@@ -838,9 +826,13 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             ApplyQuickLayout(static_cast<int>(lparam));
         }
-        else if (message == WM_PRIV_SETTINGS_CHANGED)
+        else if (message == WM_PRIV_SETTINGS_FILE_UPDATE)
         {
             m_settings->ReloadSettings();
+        }
+        else if (message == WM_PRIV_SETTINGS_CHANGED)
+        {
+            OnSettingsChanged();
         }
         else
         {
@@ -1243,6 +1235,25 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
 
         FancyZonesDataInstance().RemoveDeletedDesktops(guidStrings);
     }
+}
+
+void FancyZones::OnSettingsChanged() noexcept
+{
+    // Update the hotkey
+    UnregisterHotKey(m_window, 1);
+    auto modifiers = m_settings->GetSettings()->editorHotkey.get_modifiers();
+    auto code = m_settings->GetSettings()->editorHotkey.get_code();
+    auto result = RegisterHotKey(m_window, 1, modifiers, code);
+
+    if (!result)
+    {
+        Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
+    }
+
+    // Needed if we toggled spanZonesAcrossMonitors
+    m_workAreaHandler.Clear();
+
+    PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
 }
 
 void FancyZones::OnEditorExitEvent(require_write_lock lock) noexcept
