@@ -170,12 +170,6 @@ public:
 
     // IZoneWindowHost
     IFACEMETHODIMP_(bool)
-    isMakeDraggedWindowTransparentActive() noexcept
-    {
-        return m_settings->GetSettings()->makeDraggedWindowTransparent;
-    }
-
-    IFACEMETHODIMP_(bool)
     InMoveSize() noexcept
     {
         std::shared_lock readLock(m_lock);

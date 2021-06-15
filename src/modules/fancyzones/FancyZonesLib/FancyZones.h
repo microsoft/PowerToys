@@ -59,11 +59,6 @@ interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343F}")) IFancyZones
 interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindowHost : public IUnknown
 {
     /**
-     * @returns Boolean indicating if dragged window should be transparent.
-     */
-    IFACEMETHOD_(bool, isMakeDraggedWindowTransparentActive)
-    () = 0;
-    /**
      * @returns Boolean indicating if move/size operation is currently active.
      */
     IFACEMETHOD_(bool, InMoveSize)
