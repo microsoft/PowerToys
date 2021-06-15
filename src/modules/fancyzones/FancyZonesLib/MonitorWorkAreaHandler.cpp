@@ -139,3 +139,14 @@ void MonitorWorkAreaHandler::UpdateZoneColors(ZoneColors colors)
         }
     }
 }
+
+void MonitorWorkAreaHandler::UpdateOverlappingAlgorithm(OverlappingZonesAlgorithm overlappingAlgorithm)
+{
+    for (const auto& workArea : workAreaMap)
+    {
+        for (const auto& zoneWindow : workArea.second)
+        {
+            zoneWindow.second->SetOverlappingZonesAlgorithm(overlappingAlgorithm);
+        }
+    }
+}

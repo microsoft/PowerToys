@@ -109,7 +109,7 @@ public:
     ZoneWindow(HINSTANCE hinstance);
     ~ZoneWindow();
 
-    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors);
+    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
@@ -142,13 +142,15 @@ public:
     FlashZones() noexcept;
     IFACEMETHODIMP_(void)
     SetZoneColors(ZoneColors colors) noexcept;
+    IFACEMETHODIMP_(void)
+    SetOverlappingZonesAlgorithm(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
     void InitializeZoneSets(const std::wstring& parentUniqueId) noexcept;
-    void CalculateZoneSet() noexcept;
+    void CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
     std::vector<size_t> ZonesFromPoint(POINT pt) noexcept;
@@ -167,6 +169,7 @@ private:
     size_t m_keyCycle{};
     std::unique_ptr<ZoneWindowDrawing> m_zoneWindowDrawing;
     ZoneColors m_zoneColors;
+    OverlappingZonesAlgorithm m_overlappingAlgorithm;
 };
 
 ZoneWindow::ZoneWindow(HINSTANCE hinstance)
@@ -185,10 +188,11 @@ ZoneWindow::~ZoneWindow()
     windowPool.FreeZoneWindow(m_window);
 }
 
-bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors)
+bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm)
 {
     m_host.copy_from(host);
     m_zoneColors = zoneColors;
+    m_overlappingAlgorithm = overlappingAlgorithm;
 
     Rect workAreaRect;
     m_monitor = monitor;
@@ -405,7 +409,7 @@ ZoneWindow::HideZoneWindow() noexcept
 IFACEMETHODIMP_(void)
 ZoneWindow::UpdateActiveZoneSet() noexcept
 {
-    CalculateZoneSet();
+    CalculateZoneSet(m_overlappingAlgorithm);
     if (m_window)
     {
         m_highlightZone.clear();
@@ -440,6 +444,13 @@ ZoneWindow::SetZoneColors(ZoneColors colors) noexcept
     m_zoneColors = std::move(colors);
 }
 
+IFACEMETHODIMP_(void)
+ZoneWindow::SetOverlappingZonesAlgorithm(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept
+{
+    m_overlappingAlgorithm = overlappingAlgorithm;
+}
+
+
 #pragma region private
 
 void ZoneWindow::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
@@ -450,10 +461,10 @@ void ZoneWindow::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
     {
         FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
     }
-    CalculateZoneSet();
+    CalculateZoneSet(m_overlappingAlgorithm);
 }
 
-void ZoneWindow::CalculateZoneSet() noexcept
+void ZoneWindow::CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept
 {
     const auto& fancyZonesData = FancyZonesDataInstance();
     const auto deviceInfoData = fancyZonesData.FindDeviceInfo(m_uniqueId);
@@ -480,7 +491,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
             activeZoneSet.type,
             m_monitor,
             sensitivityRadius,
-            m_host->GetOverlappingZonesAlgorithm()));
+            overlappingAlgorithm));
 
         RECT workArea;
         if (m_monitor)
@@ -593,10 +604,10 @@ LRESULT CALLBACK ZoneWindow::s_WndProc(HWND window, UINT message, WPARAM wparam,
                                   DefWindowProc(window, message, wparam, lparam);
 }
 
-winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors) noexcept
+winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept
 {
     auto self = winrt::make_self<ZoneWindow>(hinstance);
-    if (self->Init(host, hinstance, monitor, uniqueId, parentUniqueId, zoneColors))
+    if (self->Init(host, hinstance, monitor, uniqueId, parentUniqueId, zoneColors, overlappingAlgorithm))
     {
         return self;
     }

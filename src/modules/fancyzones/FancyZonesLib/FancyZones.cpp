@@ -847,7 +847,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId, r
                 .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
             };
 
-            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId, colors);
+            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId, colors, m_settings->GetSettings()->overlappingZonesAlgorithm);
             if (workArea)
             {
                 m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
@@ -1209,6 +1209,9 @@ void FancyZones::OnSettingsChanged() noexcept
         .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
     };
     m_workAreaHandler.UpdateZoneColors(colors);
+
+    // update overlapping algorithm
+    m_workAreaHandler.UpdateOverlappingAlgorithm(m_settings->GetSettings()->overlappingZonesAlgorithm);
 
     PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
 }
