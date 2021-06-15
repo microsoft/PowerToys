@@ -167,11 +167,10 @@ public:
     IFACEMETHODIMP_(bool)
     OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
     IFACEMETHODIMP_(void)
-    ToggleEditor() noexcept;
-    IFACEMETHODIMP_(void)
     SettingsChanged() noexcept;
 
     void WindowCreated(HWND window) noexcept;
+    void ToggleEditor() noexcept;
 
     // IZoneWindowHost
     IFACEMETHODIMP_(void)
@@ -523,7 +522,6 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     return false;
 }
 
-// IFancyZonesCallback
 void FancyZones::ToggleEditor() noexcept
 {
     _TRACER_;
