@@ -865,7 +865,16 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId, r
             {
                 parentId = parentArea->UniqueId();
             }
-            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId);
+
+            ZoneColors colors
+            {
+                .primaryColor = GetZoneColor(),
+                .borderColor = GetZoneBorderColor(),
+                .highlightColor = GetZoneHighlightColor(),
+                .highlightOpacity = GetZoneHighlightOpacity()
+            };
+
+            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId, colors);
             if (workArea)
             {
                 m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
@@ -1217,6 +1226,16 @@ void FancyZones::OnSettingsChanged() noexcept
 
     // Needed if we toggled spanZonesAcrossMonitors
     m_workAreaHandler.Clear();
+
+    // update zone colors
+    ZoneColors colors
+    {
+        .primaryColor = GetZoneColor(),
+        .borderColor = GetZoneBorderColor(),
+        .highlightColor = GetZoneHighlightColor(),
+        .highlightOpacity = GetZoneHighlightOpacity()
+    };
+    m_workAreaHandler.UpdateZoneColors(colors);
 
     PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
 }

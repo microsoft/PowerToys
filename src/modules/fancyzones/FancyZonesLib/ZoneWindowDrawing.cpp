@@ -279,19 +279,19 @@ void ZoneWindowDrawing::Flash()
 
 void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                                           const std::vector<size_t>& highlightZones,
-                                          winrt::com_ptr<IZoneWindowHost> host)
+                                          const ZoneColors& colors)
 {
     _TRACER_;
     std::unique_lock lock(m_mutex);
 
     m_sceneRects = {};
 
-    auto borderColor = ConvertColor(host->GetZoneBorderColor());
-    auto inactiveColor = ConvertColor(host->GetZoneColor());
-    auto highlightColor = ConvertColor(host->GetZoneHighlightColor());
+    auto borderColor = ConvertColor(colors.borderColor);
+    auto inactiveColor = ConvertColor(colors.primaryColor);
+    auto highlightColor = ConvertColor(colors.highlightColor);
 
-    inactiveColor.a = host->GetZoneHighlightOpacity() / 100.f;
-    highlightColor.a = host->GetZoneHighlightOpacity() / 100.f;
+    inactiveColor.a = colors.highlightOpacity / 100.f;
+    highlightColor.a = colors.highlightOpacity / 100.f;
 
     std::vector<bool> isHighlighted(zones.size() + 1, false);
     for (size_t x : highlightZones)

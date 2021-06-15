@@ -109,7 +109,7 @@ public:
     ZoneWindow(HINSTANCE hinstance);
     ~ZoneWindow();
 
-    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId);
+    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
@@ -140,6 +140,8 @@ public:
     ClearSelectedZones() noexcept;
     IFACEMETHODIMP_(void)
     FlashZones() noexcept;
+    IFACEMETHODIMP_(void)
+    SetZoneColors(ZoneColors colors) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -164,6 +166,7 @@ private:
     WPARAM m_keyLast{};
     size_t m_keyCycle{};
     std::unique_ptr<ZoneWindowDrawing> m_zoneWindowDrawing;
+    ZoneColors m_zoneColors;
 };
 
 ZoneWindow::ZoneWindow(HINSTANCE hinstance)
@@ -182,9 +185,10 @@ ZoneWindow::~ZoneWindow()
     windowPool.FreeZoneWindow(m_window);
 }
 
-bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId)
+bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors)
 {
     m_host.copy_from(host);
+    m_zoneColors = zoneColors;
 
     Rect workAreaRect;
     m_monitor = monitor;
@@ -265,7 +269,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 
     if (redraw)
     {
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
     }
 
     return S_OK;
@@ -381,7 +385,7 @@ ZoneWindow::ShowZoneWindow() noexcept
     if (m_window)
     {
         SetAsTopmostWindow();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
         m_zoneWindowDrawing->Show();
     }
 }
@@ -405,7 +409,7 @@ ZoneWindow::UpdateActiveZoneSet() noexcept
     if (m_window)
     {
         m_highlightZone.clear();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
     }
 }
 
@@ -415,7 +419,7 @@ ZoneWindow::ClearSelectedZones() noexcept
     if (m_highlightZone.size())
     {
         m_highlightZone.clear();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
     }
 }
 
@@ -425,9 +429,15 @@ ZoneWindow::FlashZones() noexcept
     if (m_window)
     {
         SetAsTopmostWindow();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), {}, m_host);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), {}, m_zoneColors);
         m_zoneWindowDrawing->Flash();
     }
+}
+
+IFACEMETHODIMP_(void)
+ZoneWindow::SetZoneColors(ZoneColors colors) noexcept
+{
+    m_zoneColors = std::move(colors);
 }
 
 #pragma region private
@@ -583,10 +593,10 @@ LRESULT CALLBACK ZoneWindow::s_WndProc(HWND window, UINT message, WPARAM wparam,
                                   DefWindowProc(window, message, wparam, lparam);
 }
 
-winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId) noexcept
+winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors) noexcept
 {
     auto self = winrt::make_self<ZoneWindow>(hinstance);
-    if (self->Init(host, hinstance, monitor, uniqueId, parentUniqueId))
+    if (self->Init(host, hinstance, monitor, uniqueId, parentUniqueId, zoneColors))
     {
         return self;
     }

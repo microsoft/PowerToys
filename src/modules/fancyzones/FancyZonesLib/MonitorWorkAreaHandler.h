@@ -1,6 +1,7 @@
 #pragma once
 
 interface IZoneWindow;
+struct ZoneColors;
 
 namespace std
 {
@@ -96,6 +97,11 @@ public:
      */
     void Clear();
 
+    /**
+    * Update zone colors after settings change
+    */
+    void UpdateZoneColors(ZoneColors colors);
+    
 private:
     // Work area is uniquely defined by monitor and virtual desktop id.
     std::unordered_map<GUID, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>> workAreaMap;

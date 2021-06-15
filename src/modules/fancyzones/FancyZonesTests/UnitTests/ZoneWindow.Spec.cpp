@@ -9,6 +9,7 @@
 #include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 #include <FancyZonesLib/JsonHelpers.h>
+#include <FancyZonesLib/ZoneColors.h>
 #include "Util.h"
 
 #include <common/utils/process_path.h>
@@ -77,6 +78,7 @@ namespace FancyZonesUnitTests
         HMONITOR m_monitor{};
         MONITORINFOEX m_monitorInfo{};
         GUID m_virtualDesktopGuid{};
+        ZoneColors m_zoneColors{};
 
         FancyZonesData& m_fancyZonesData = FancyZonesDataInstance();
 
@@ -105,11 +107,18 @@ namespace FancyZonesUnitTests
                 auto guid = Helpers::StringToGuid(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
                 Assert::IsTrue(guid.has_value());
                 m_virtualDesktopGuid = *guid;
+
+                m_zoneColors = ZoneColors{
+                    .primaryColor = FancyZonesUtils::HexToRGB(L"#4287f5"),
+                    .borderColor = FancyZonesUtils::HexToRGB(L"#FFFFFF"),
+                    .highlightColor = FancyZonesUtils::HexToRGB(L"#42eff5"),
+                    .highlightOpacity = 50,
+                };
             }
 
             TEST_METHOD (CreateZoneWindow)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 testZoneWindow(zoneWindow);
 
                 auto* activeZoneSet{ zoneWindow->ActiveZoneSet() };
@@ -120,7 +129,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateZoneWindowNoHinst)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), {}, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), {}, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 testZoneWindow(zoneWindow);
 
                 auto* activeZoneSet{ zoneWindow->ActiveZoneSet() };
@@ -131,7 +140,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateZoneWindowNoHinstFlashZones)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), {}, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), {}, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 testZoneWindow(zoneWindow);
 
                 auto* activeZoneSet{ zoneWindow->ActiveZoneSet() };
@@ -142,7 +151,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateZoneWindowNoMonitor)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, {}, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, {}, m_uniqueId.str(), {}, m_zoneColors);
                 testZoneWindow(zoneWindow);
             }
 
@@ -150,7 +159,7 @@ namespace FancyZonesUnitTests
             {
                 // Generate unique id without device id
                 std::wstring uniqueId = FancyZonesUtils::GenerateUniqueId(m_monitor, {}, m_virtualDesktopId);
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, uniqueId, {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, uniqueId, {}, m_zoneColors);
 
                 const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
                 const std::wstring expectedUniqueId = L"FallbackDevice_" + std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom) + L"_" + m_virtualDesktopId;
@@ -168,7 +177,7 @@ namespace FancyZonesUnitTests
             {
                 // Generate unique id without virtual desktop id
                 std::wstring uniqueId = FancyZonesUtils::GenerateUniqueId(m_monitor, m_deviceId, {});
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, uniqueId, {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, uniqueId, {}, m_zoneColors);
 
                 const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
                 Assert::IsNotNull(zoneWindow.get());
@@ -193,11 +202,11 @@ namespace FancyZonesUnitTests
                 m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
 
                 winrt::com_ptr<MockZoneWindowHost> zoneWindowHost = winrt::make_self<MockZoneWindowHost>();
-                auto parentZoneWindow = MakeZoneWindow(zoneWindowHost.get(), m_hInst, m_monitor, m_parentUniqueId.str(), {});
+                auto parentZoneWindow = MakeZoneWindow(zoneWindowHost.get(), m_hInst, m_monitor, m_parentUniqueId.str(), {}, m_zoneColors);
                 zoneWindowHost->m_zoneWindow = parentZoneWindow.get();
 
                 // newWorkArea = false - zoneWindow won't be cloned from parent
-                auto actualZoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto actualZoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 Assert::IsNotNull(actualZoneWindow->ActiveZoneSet());
 
@@ -218,6 +227,7 @@ namespace FancyZonesUnitTests
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
         MONITORINFO m_monitorInfo{};
+        ZoneColors m_zoneColors{};
 
         FancyZonesData& m_fancyZonesData = FancyZonesDataInstance();
 
@@ -233,12 +243,19 @@ namespace FancyZonesUnitTests
 
                 m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
                 m_fancyZonesData.clear_data();
+
+                m_zoneColors = ZoneColors{
+                    .primaryColor = FancyZonesUtils::HexToRGB(L"#4287f5"),
+                    .borderColor = FancyZonesUtils::HexToRGB(L"#FFFFFF"),
+                    .highlightColor = FancyZonesUtils::HexToRGB(L"#42eff5"),
+                    .highlightOpacity = 50,
+                };
             }
 
         public:
             TEST_METHOD (MoveSizeEnter)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 const auto expected = S_OK;
                 const auto actual = zoneWindow->MoveSizeEnter(Mocks::Window());
@@ -248,7 +265,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEnterTwice)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 const auto expected = S_OK;
 
@@ -260,7 +277,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdate)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 const auto expected = S_OK;
                 const auto actual = zoneWindow->MoveSizeUpdate(POINT{ 0, 0 }, true, false);
@@ -270,7 +287,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdatePointNegativeCoordinates)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 const auto expected = S_OK;
                 const auto actual = zoneWindow->MoveSizeUpdate(POINT{ -10, -10 }, true, false);
@@ -280,7 +297,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdatePointBigCoordinates)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 const auto expected = S_OK;
                 const auto actual = zoneWindow->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true, false);
@@ -290,7 +307,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEnd)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 const auto window = Mocks::Window();
                 zoneWindow->MoveSizeEnter(window);
@@ -307,7 +324,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndWindowNotAdded)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 const auto window = Mocks::Window();
                 zoneWindow->MoveSizeEnter(window);
@@ -323,7 +340,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndDifferentWindows)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 const auto window = Mocks::Window();
                 zoneWindow->MoveSizeEnter(window);
@@ -336,7 +353,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndWindowNotSet)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 const auto expected = E_INVALIDARG;
                 const auto actual = zoneWindow->MoveSizeEnd(Mocks::Window(), POINT{ 0, 0 });
@@ -346,7 +363,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndInvalidPoint)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
 
                 const auto window = Mocks::Window();
                 zoneWindow->MoveSizeEnter(window);
@@ -363,7 +380,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByIndex)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 zoneWindow->MoveWindowIntoZoneByIndex(Mocks::Window(), 0);
@@ -373,7 +390,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionAndIndex)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -388,7 +405,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionManyTimes)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -405,7 +422,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNullptrWindow)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 zoneWindow->SaveWindowProcessToZoneIndex(nullptr);
@@ -416,7 +433,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAdded)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
@@ -431,7 +448,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAddedWithFilledAppZoneHistory)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -459,7 +476,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexWindowAdded)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
@@ -489,7 +506,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (WhenWindowIsNotResizablePlacingItIntoTheZoneShouldNotResizeIt)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);

@@ -128,3 +128,14 @@ void MonitorWorkAreaHandler::Clear()
 {
     workAreaMap.clear();
 }
+
+void MonitorWorkAreaHandler::UpdateZoneColors(ZoneColors colors)
+{
+    for (const auto& workArea : workAreaMap)
+    {
+        for (const auto& zoneWindow : workArea.second)
+        {
+            zoneWindow.second->SetZoneColors(colors);
+        }
+    }
+}
