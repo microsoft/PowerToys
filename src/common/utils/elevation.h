@@ -9,6 +9,66 @@
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
 
+#include <windows.h>
+#include <shldisp.h>
+#include <shlobj.h>
+#include <exdisp.h>
+#include <atlbase.h>
+#include <stdlib.h>
+
+namespace 
+{
+    void FindDesktopFolderView(REFIID riid, void** ppv)
+    {
+        CComPtr<IShellWindows> spShellWindows;
+        spShellWindows.CoCreateInstance(CLSID_ShellWindows);
+
+        CComVariant vtLoc(CSIDL_DESKTOP);
+        CComVariant vtEmpty;
+        long lhwnd;
+        CComPtr<IDispatch> spdisp;
+        spShellWindows->FindWindowSW(
+            &vtLoc, &vtEmpty, SWC_DESKTOP, &lhwnd, SWFO_NEEDDISPATCH, &spdisp);
+
+        CComPtr<IShellBrowser> spBrowser;
+        CComQIPtr<IServiceProvider>(spdisp)->QueryService(SID_STopLevelBrowser,
+                                                          IID_PPV_ARGS(&spBrowser));
+
+        CComPtr<IShellView> spView;
+        spBrowser->QueryActiveShellView(&spView);
+
+        spView->QueryInterface(riid, ppv);
+    }
+
+    void GetDesktopAutomationObject(REFIID riid, void** ppv)
+    {
+        CComPtr<IShellView> spsv;
+        FindDesktopFolderView(IID_PPV_ARGS(&spsv));
+        CComPtr<IDispatch> spdispView;
+        spsv->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&spdispView));
+        spdispView->QueryInterface(riid, ppv);
+    }
+
+    void ShellExecuteFromExplorer(
+        PCWSTR pszFile,
+        PCWSTR pszParameters = nullptr,
+        PCWSTR pszDirectory = nullptr,
+        PCWSTR pszOperation = nullptr,
+        int nShowCmd = SW_SHOWNORMAL)
+    {
+        CComPtr<IShellFolderViewDual> spFolderView;
+        GetDesktopAutomationObject(IID_PPV_ARGS(&spFolderView));
+        CComPtr<IDispatch> spdispShell;
+        spFolderView->get_Application(&spdispShell);
+        CComQIPtr<IShellDispatch2>(spdispShell)
+            ->ShellExecute(CComBSTR(pszFile),
+                           CComVariant(pszParameters ? pszParameters : L""),
+                           CComVariant(pszDirectory ? pszDirectory : L""),
+                           CComVariant(pszOperation ? pszOperation : L""),
+                           CComVariant(nShowCmd));
+    }
+}
+
 // Returns true if the current process is running with elevated privileges
 inline bool is_process_elevated(const bool use_cached_value = true)
 {
@@ -131,6 +191,7 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
         return false;
     }
 
+    Logger::trace(L"pptal.size={}", size);
     HANDLE process_handle = process.get();
     if (!UpdateProcThreadAttribute(pptal,
                                    0,
@@ -181,6 +242,23 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     }
 
     return succeeded;
+}
+
+inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& params)
+{
+    try
+    {
+        // todo: remove CoInitialize
+        CoInitialize(nullptr);
+        ShellExecuteFromExplorer(file.c_str(), params.c_str(), nullptr, nullptr);
+    }
+    catch(...)
+    {
+        DWORD returnPid;
+        return run_non_elevated(file, params, &returnPid);
+    }
+
+    return true;
 }
 
 // Run command with the same elevation, returns true if succeeded
