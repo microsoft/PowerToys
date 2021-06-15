@@ -68,7 +68,6 @@ namespace NonLocalizable
 {
     const wchar_t ToolWindowClassName[] = L"SuperFancyZones";
     const wchar_t FZEditorExecutablePath[] = L"modules\\FancyZones\\FancyZonesEditor.exe";
-    const wchar_t SplashClassName[] = L"MsoSplash";
 }
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
@@ -230,7 +229,6 @@ private:
 
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
 
-    bool IsSplashScreen(HWND window);
     bool ShouldProcessNewWindow(HWND window) noexcept;
     std::vector<size_t> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
@@ -1312,17 +1310,6 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
         FancyZonesDataInstance().UpdatePrimaryDesktopData(active[0]);
         FancyZonesDataInstance().RemoveDeletedDesktops(active);
     }
-}
-
-bool FancyZones::IsSplashScreen(HWND window)
-{
-    wchar_t className[MAX_PATH];
-    if (GetClassName(window, className, MAX_PATH) == 0)
-    {
-        return false;
-    }
-
-    return wcscmp(NonLocalizable::SplashClassName, className) == 0;
 }
 
 void FancyZones::OnEditorExitEvent(require_write_lock lock) noexcept
