@@ -17,13 +17,13 @@
 
 namespace 
 {
-    std::wstring GetErrorString(HRESULT handle)
+    inline std::wstring GetErrorString(HRESULT handle)
     {
          _com_error err(handle);
          return err.ErrorMessage();
     }
 
-    bool FindDesktopFolderView(REFIID riid, void** ppv)
+    inline bool FindDesktopFolderView(REFIID riid, void** ppv)
     {
         CComPtr<IShellWindows> spShellWindows;
         auto result = spShellWindows.CoCreateInstance(CLSID_ShellWindows);
@@ -73,7 +73,7 @@ namespace
         return true;
     }
 
-    bool GetDesktopAutomationObject(REFIID riid, void** ppv)
+    inline bool GetDesktopAutomationObject(REFIID riid, void** ppv)
     {
         CComPtr<IShellView> spsv;
         if (!FindDesktopFolderView(IID_PPV_ARGS(&spsv)))
@@ -99,7 +99,7 @@ namespace
         return true;
     }
 
-    bool ShellExecuteFromExplorer(
+    inline bool ShellExecuteFromExplorer(
         PCWSTR pszFile,
         PCWSTR pszParameters = nullptr)
     {
