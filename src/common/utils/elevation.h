@@ -4,18 +4,16 @@
 #include <Windows.h>
 #include <shellapi.h>
 #include <sddl.h>
-
-#include <string>
-#include <common/logger/logger.h>
-#include <common/utils/winapi_error.h>
-
-#include <windows.h>
 #include <shldisp.h>
 #include <shlobj.h>
 #include <exdisp.h>
 #include <atlbase.h>
 #include <stdlib.h>
 #include <comdef.h>
+
+#include <string>
+#include <common/logger/logger.h>
+#include <common/utils/winapi_error.h>
 
 namespace 
 {
@@ -252,7 +250,6 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
         return false;
     }
 
-    Logger::trace(L"pptal.size={}", size);
     HANDLE process_handle = process.get();
     if (!UpdateProcThreadAttribute(pptal,
                                    0,
