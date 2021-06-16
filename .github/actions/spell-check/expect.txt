@@ -1397,6 +1397,7 @@ NCRBUTTONDOWN
 NCRBUTTONUP
 NDEBUG
 ndp
+NEEDDISPATCH
 Nefario
 neq
 NESW
@@ -2056,8 +2057,11 @@ surfacehub
 sut
 SVE
 svg
+SVGIO
 SVGIn
 svgpreviewhandler
+SWC
+SWFO
 Switchbetweenvirtualdesktops
 SWP
 swprintf
