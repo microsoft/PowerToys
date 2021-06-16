@@ -649,6 +649,7 @@ examplepowertoy
 EXCLUDEFILES
 EXCLUDEFOLDERS
 EXCLUDESUBFOLDERS
+exdisp
 exe
 Executables
 executionpolicy
@@ -1147,6 +1148,7 @@ Lessthan
 LEVELID
 LExit
 lhs
+lhwnd
 LIBID
 LIGHTBLUE
 LIGHTGRAY
@@ -1959,6 +1961,7 @@ Soref
 SORTDOWN
 SOURCECLIENTAREAONLY
 SOURCEHEADER
+spdisp
 spdlog
 spdo
 spdth
@@ -1975,6 +1978,7 @@ spsia
 spsrif
 spsrm
 spsrui
+spsv
 sql
 src
 SRCCOPY

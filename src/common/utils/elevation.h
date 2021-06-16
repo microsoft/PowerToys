@@ -320,7 +320,7 @@ inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& param
 
     if (failedToStart)
     {
-        Logger::warn(L"Failed to delegete process creation. Try a fallback");
+        Logger::warn(L"Failed to delegate process creation. Try a fallback");
         DWORD returnPid;
         return run_non_elevated(file, params, &returnPid);
     }
