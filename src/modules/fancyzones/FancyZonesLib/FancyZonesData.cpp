@@ -6,6 +6,7 @@
 #include "Settings.h"
 #include "CallTracer.h"
 
+#include <common/Display/dpi_aware.h>
 #include <common/utils/json.h>
 #include <FancyZonesLib/util.h>
 
@@ -631,18 +632,18 @@ void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors
 
             monitorJson.id = monitorId; /* Monitor id */
 
-            UINT dpiX = 0;
-            UINT dpiY = 0;
-            if (GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
+            UINT dpi = 0;
+            if (DPIAware::GetScreenDPIForMonitor(monitor, dpi) != S_OK)
             {
-                monitorJson.dpi = dpiX; /* DPI */
+                continue;
             }
 
-            monitorJson.top = monitorInfo.rcMonitor.top; /* Top coordinate */
+            monitorJson.dpi = dpi; /* DPI */
             monitorJson.top = monitorInfo.rcWork.top; /* Top coordinate */
             monitorJson.left = monitorInfo.rcWork.left; /* Left coordinate */
             monitorJson.width = monitorInfo.rcWork.right - monitorInfo.rcWork.left; /* Width */
             monitorJson.height = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top; /* Height */
+            
             argsJson.monitors.emplace_back(std::move(monitorJson)); /* add monitor data */
         }
     }
