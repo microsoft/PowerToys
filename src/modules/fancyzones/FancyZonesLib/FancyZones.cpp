@@ -683,8 +683,10 @@ void FancyZones::ToggleEditor() noexcept
     * Data for each monitor:
     * (5) Monitor id
     * (6) DPI
-    * (7) monitor left
-    * (8) monitor top
+    * (7) work area left
+    * (8) work area top
+    * (9) work area width
+    * (10) work area height
     * ...
     */
     std::wstring params;
@@ -736,6 +738,10 @@ void FancyZones::ToggleEditor() noexcept
 
         monitorsDataStr += std::to_wstring(monitorInfo.rcMonitor.left) + divider; /* Top coordinate */
         monitorsDataStr += std::to_wstring(monitorInfo.rcMonitor.top) + divider; /* Left coordinate */
+        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.left) + divider; /* Top coordinate */
+        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.top) + divider; /* Left coordinate */
+        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.right - monitorInfo.rcWork.left) + divider; /* Width */
+        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.bottom - monitorInfo.rcWork.top) + divider; /* Height */
     }
 
     params += std::to_wstring(allMonitors.size()) + divider; /* Monitors count */

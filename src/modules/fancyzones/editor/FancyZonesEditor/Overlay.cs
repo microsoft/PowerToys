@@ -139,7 +139,7 @@ namespace FancyZonesEditor
                     }
 
                     Monitors.Clear();
-                    Monitors.Add(new Monitor(bounds, workArea, true));
+                    Monitors.Add(new Monitor(bounds, workArea));
                 }
             }
         }
@@ -158,14 +158,6 @@ namespace FancyZonesEditor
         {
             WorkAreas = new List<Rect>();
             Monitors = new List<Monitor>();
-
-            var screens = System.Windows.Forms.Screen.AllScreens;
-            foreach (System.Windows.Forms.Screen screen in screens)
-            {
-                Rect bounds = new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
-                Rect workArea = new Rect(screen.WorkingArea.X, screen.WorkingArea.Y, screen.WorkingArea.Width, screen.WorkingArea.Height);
-                Add(bounds, workArea, screen.Primary);
-            }
         }
 
         public void Show()
@@ -352,12 +344,10 @@ namespace FancyZonesEditor
             _mainWindow.Topmost = false;
         }
 
-        private void Add(Rect bounds, Rect workArea, bool primary)
+        public void AddMonitor(Monitor monitor)
         {
-            var monitor = new Monitor(bounds, workArea, primary);
-
             bool inserted = false;
-            var workAreaRect = workArea;
+            var workAreaRect = monitor.Device.WorkAreaRect;
             for (int i = 0; i < Monitors.Count && !inserted; i++)
             {
                 var rect = Monitors[i].Device.WorkAreaRect;

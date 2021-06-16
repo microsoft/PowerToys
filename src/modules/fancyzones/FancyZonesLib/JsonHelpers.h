@@ -75,6 +75,8 @@ namespace JSONHelpers
         std::wstring id;
         int top;
         int left;
+        int width;
+        int height;
         bool isSelected = false;
 
         static json::JsonObject ToJson(const MonitorInfo& monitor);

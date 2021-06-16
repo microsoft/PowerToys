@@ -599,6 +599,8 @@ void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors
         monitorJson.id = monitorId;
         monitorJson.top = monitorRect.top;
         monitorJson.left = monitorRect.left;
+        monitorJson.width = monitorRect.right - monitorRect.left;
+        monitorJson.height = monitorRect.bottom - monitorRect.top;
         monitorJson.isSelected = true;
         monitorJson.dpi = 0; // unused
 
@@ -637,8 +639,10 @@ void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors
             }
 
             monitorJson.top = monitorInfo.rcMonitor.top; /* Top coordinate */
-            monitorJson.left = monitorInfo.rcMonitor.left; /* Left coordinate */
-
+            monitorJson.top = monitorInfo.rcWork.top; /* Top coordinate */
+            monitorJson.left = monitorInfo.rcWork.left; /* Left coordinate */
+            monitorJson.width = monitorInfo.rcWork.right - monitorInfo.rcWork.left; /* Width */
+            monitorJson.height = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top; /* Height */
             argsJson.monitors.emplace_back(std::move(monitorJson)); /* add monitor data */
         }
     }
