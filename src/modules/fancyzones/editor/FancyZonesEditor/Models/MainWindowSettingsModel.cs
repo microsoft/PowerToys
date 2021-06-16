@@ -187,6 +187,14 @@ namespace FancyZonesEditor
             return model.Type != LayoutType.Custom;
         }
 
+        public void InitModels()
+        {
+            foreach (var model in DefaultModels)
+            {
+                model.InitTemplateZones();
+            }
+        }
+
         public LayoutModel UpdateSelectedLayoutModel()
         {
             LayoutModel foundModel = null;
