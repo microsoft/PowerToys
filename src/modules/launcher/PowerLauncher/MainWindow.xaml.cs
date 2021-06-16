@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Timers;
 using System.Windows;
-using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using interop;
@@ -59,6 +58,12 @@ namespace PowerLauncher
 
             var telemetryEvent = new RunPluginsSettingsEvent(plugins);
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            WindowsInteropHelper.SetPopupStyle(this);
         }
 
         private void CheckForFirstDelete(object sender, ElapsedEventArgs e)

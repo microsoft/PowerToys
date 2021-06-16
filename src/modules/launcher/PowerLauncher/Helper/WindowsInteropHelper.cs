@@ -20,6 +20,8 @@ namespace PowerLauncher.Helper
         private const int GWL_STYLE = -16; // WPF's Message code for Title Bar's Style
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Matching COM")]
         private const int WS_SYSMENU = 0x80000; // WPF's Message code for System Menu
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Matching COM")]
+        private const int WS_POPUP = 1 << 31; // 0x80000000
         private static IntPtr _hwnd_shell;
         private static IntPtr _hwnd_desktop;
 
@@ -167,6 +169,15 @@ namespace PowerLauncher.Helper
         {
             var hwnd = new WindowInteropHelper(win).Handle;
             _ = NativeMethods.SetWindowLong(hwnd, GWL_STYLE, NativeMethods.GetWindowLong(hwnd, GWL_STYLE) & ~WS_SYSMENU);
+        }
+
+        /// <summary>
+        /// Set WS_POPUP to make FancyZones ignoring the Window
+        /// </summary>
+        public static void SetPopupStyle(Window win)
+        {
+            var hwnd = new WindowInteropHelper(win).Handle;
+            _ = NativeMethods.SetWindowLong(hwnd, GWL_STYLE, NativeMethods.GetWindowLong(hwnd, GWL_STYLE) | WS_POPUP);
         }
 
         /// <summary>

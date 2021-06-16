@@ -16,7 +16,6 @@
 // Non-Localizable strings
 namespace NonLocalizable
 {
-    const wchar_t PowerToysAppPowerLauncher[] = L"POWERLAUNCHER.EXE";
     const wchar_t PowerToysAppFZEditor[] = L"FANCYZONESEDITOR.EXE";
 }
 
@@ -41,10 +40,6 @@ namespace
         // Filter out user specified apps
         CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), (DWORD)processPath.length());
         if (find_app_name_in_path(processPath, excludedApps))
-        {
-            return false;
-        }
-        if (find_app_name_in_path(processPath, { NonLocalizable::PowerToysAppPowerLauncher }))
         {
             return false;
         }
