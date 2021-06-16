@@ -695,7 +695,10 @@ void FancyZones::ToggleEditor() noexcept
     const bool spanZonesAcrossMonitors = m_settings->GetSettings()->spanZonesAcrossMonitors;
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-    allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+
+    m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
+        allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+    } }).wait();
 
     if (spanZonesAcrossMonitors)
     {
@@ -744,7 +747,7 @@ void FancyZones::ToggleEditor() noexcept
     params += std::to_wstring(allMonitors.size()) + divider; /* Monitors count */
     params += monitorsDataStr;
 
-    FancyZonesDataInstance().SaveFancyZonesEditorParameters(spanZonesAcrossMonitors, virtualDesktopId.get(), targetMonitor); /* Write parameters to json file */
+    FancyZonesDataInstance().SaveFancyZonesEditorParameters(spanZonesAcrossMonitors, virtualDesktopId.get(), targetMonitor, allMonitors); /* Write parameters to json file */
 
     if (showDpiWarning)
     {

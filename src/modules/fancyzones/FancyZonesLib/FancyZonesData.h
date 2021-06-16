@@ -90,7 +90,7 @@ public:
     void SaveZoneSettings() const;
     void SaveAppZoneHistory() const;
 
-    void SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor) const;
+    void SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor, const std::vector<std::pair<HMONITOR, MONITORINFOEX>>& allMonitors) const;
 
 private:
 #if defined(UNIT_TESTS)

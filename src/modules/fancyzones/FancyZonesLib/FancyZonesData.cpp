@@ -585,7 +585,7 @@ void FancyZonesData::SaveAppZoneHistory() const
     JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
 }
 
-void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor) const
+void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor, const std::vector<std::pair<HMONITOR, MONITORINFOEX>>& allMonitors) const
 {
     JSONHelpers::EditorArgs argsJson; /* json arguments */
     argsJson.processId = GetCurrentProcessId(); /* Process id */
@@ -609,9 +609,6 @@ void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors
     }
     else
     {
-        std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-        allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-
         // device id map for correct device ids
         std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
 
