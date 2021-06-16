@@ -276,7 +276,7 @@
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
+                <Directory Id="UnitConverterPluginFolder" Name="Community.UnitConverter">
                   <Directory Id="UnitConverterImagesFolder" Name="Images" />
                   <Directory Id="UnitConverterLanguagesFolder" Name="Languages" />
                 </Directory>
