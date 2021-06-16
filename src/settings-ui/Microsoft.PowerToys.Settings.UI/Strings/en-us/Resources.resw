@@ -957,6 +957,9 @@
   <data name="ColorPicker_Editor.Text" xml:space="preserve">
     <value>Editor</value>
   </data>
+  <data name="FancyZones_OverlappingZonesClosestCenter.Content" xml:space="preserve">
+    <value>Activate the zone whose center is closest to the cursor</value>
+  </data>
   <data name="FancyZones_OverlappingZonesLargest.Content" xml:space="preserve">
     <value>Activate the largest zone by area</value>
   </data>
