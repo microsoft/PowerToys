@@ -113,7 +113,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             {
                 if (disposing)
                 {
-                    Context.API.ThemeChanged -= OnThemeChanged;
+                    if (Context != null && Context.API != null)
+                    {
+                        Context.API.ThemeChanged -= OnThemeChanged;
+                    }
+
                     _disposed = true;
                 }
             }
