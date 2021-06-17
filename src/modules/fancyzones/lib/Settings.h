@@ -20,7 +20,8 @@ struct Settings
         Smallest = 0,
         Largest = 1,
         Positional = 2,
-        EnumElements = 3, // number of elements in the enum, not counting this
+        ClosestCenter = 3,
+        EnumElements = 4, // number of elements in the enum, not counting this
     };
 
     // The values specified here are the defaults.
