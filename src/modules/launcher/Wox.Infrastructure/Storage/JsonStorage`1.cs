@@ -20,7 +20,16 @@ namespace Wox.Infrastructure.Storage
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IFile File = FileSystem.File;
 
-        private readonly JsonSerializerOptions _serializerOptions;
+        // use property initialization instead of DefaultValueAttribute
+        // easier and flexible for default value of object
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            IgnoreNullValues = true,
+            IncludeFields = true,
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = true,
+        };
+
         private T _data;
 
         // need a new directory name
@@ -34,16 +43,6 @@ namespace Wox.Infrastructure.Storage
         // This storage helper returns whether or not to delete the json storage items
         private const int _jsonStorage = 1;
         private StoragePowerToysVersionInfo _storageHelper;
-
-        internal JsonStorage()
-        {
-            // use property initialization instead of DefaultValueAttribute
-            // easier and flexible for default value of object
-            _serializerOptions = new JsonSerializerOptions
-            {
-                IgnoreNullValues = true,
-            };
-        }
 
         public T Load()
         {
