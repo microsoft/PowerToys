@@ -226,7 +226,11 @@ namespace Microsoft.Plugin.Uri
         {
             if (!_disposed && disposing)
             {
-                Context.API.ThemeChanged -= OnThemeChanged;
+                if (Context != null && Context.API != null)
+                {
+                    Context.API.ThemeChanged -= OnThemeChanged;
+                }
+
                 _disposed = true;
             }
         }
