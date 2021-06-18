@@ -35,6 +35,7 @@ namespace Wox.Plugin
 
         public bool Disabled { get; set; }
 
+        [JsonInclude]
         public string ExecuteFilePath { get; private set; }
 
         public string ExecuteFileName { get; set; }
