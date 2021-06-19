@@ -55,7 +55,7 @@
                     AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}">
                 <Button.Content>
                     <TextBlock FontFamily="Segoe MDL2 Assets"
-                           Text="&#xE16F;"
+                           Text="&#xE8C8;"
                            FontSize="12" />
                 </Button.Content>
                 <Button.Resources>
