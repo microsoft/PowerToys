@@ -141,7 +141,7 @@
                                          VerticalAlignment="Stretch"
                                          HorizontalAlignment="Stretch" />
                 </Grid>
-                <Button Content="&#xE104;"
+                <Button Content="&#xE70F;"
                         x:Name="EditLayoutButton"
                         FontFamily="Segoe MDL2 Assets"
                         FontSize="14"
@@ -282,7 +282,7 @@
                     Grid.Row="3">
                 <StackPanel Orientation="Horizontal"
                             Margin="8">
-                    <TextBlock Text="&#xE109;"
+                    <TextBlock Text="&#xE710;"
                                FontFamily="Segoe MDL2 Assets"
                                Foreground="White" />
                     <TextBlock Text="{x:Static props:Resources.Create_new_layout}"
@@ -366,7 +366,7 @@
                             x:Name="deleteLayoutButton"
                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
                             ToolTip="{x:Static props:Resources.Delete}"
-                            Content="&#xE107;"
+                            Content="&#xE74D;"
                             FontFamily="Segoe MDL2 Assets"
                             Foreground="#c50500"
                             Style="{StaticResource IconOnlyButtonStyle}"
@@ -437,7 +437,7 @@
                            Margin="24,12,0,24">
                         <local:LayoutPreview />
 
-                        <Button Content="&#xE104;"
+                        <Button Content="&#xE70F;"
                                 x:Name="editZoneLayoutButton"
                                 FontFamily="Segoe MDL2 Assets"
                                 FontSize="14"
@@ -596,7 +596,7 @@
                                 <ColumnDefinition Width="32" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="&#xE138;"
+                            <TextBlock Text="&#xE8A9;"
                                        FontSize="16"
                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
                                        Margin="0,4,0,0"
