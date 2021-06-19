@@ -1,16 +1,15 @@
-// Copyright (c) Brice Lambson
+﻿// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using ImageResizer.Helpers;
 using ImageResizer.Properties;
-using Newtonsoft.Json;
 
 namespace ImageResizer.Models
 {
-    [JsonObject(MemberSerialization.OptIn)]
     public class ResizeSize : Observable
     {
         private static readonly IDictionary<string, string> _tokens = new Dictionary<string, string>
@@ -41,14 +40,14 @@ namespace ImageResizer.Models
         {
         }
 
-        [JsonProperty(PropertyName = "name")]
+        [JsonPropertyName("name")]
         public virtual string Name
         {
             get => _name;
             set => Set(ref _name, ReplaceTokens(value));
         }
 
-        [JsonProperty(PropertyName = "fit")]
+        [JsonPropertyName("fit")]
         public ResizeFit Fit
         {
             get => _fit;
@@ -63,14 +62,14 @@ namespace ImageResizer.Models
             }
         }
 
-        [JsonProperty(PropertyName = "width")]
+        [JsonPropertyName("width")]
         public double Width
         {
             get => _width;
             set => Set(ref _width, value);
         }
 
-        [JsonProperty(PropertyName = "height")]
+        [JsonPropertyName("height")]
         public double Height
         {
             get => _height;
@@ -86,7 +85,7 @@ namespace ImageResizer.Models
         public bool HasAuto
             => Width == 0 || Height == 0;
 
-        [JsonProperty(PropertyName = "unit")]
+        [JsonPropertyName("unit")]
         public ResizeUnit Unit
         {
             get => _unit;
