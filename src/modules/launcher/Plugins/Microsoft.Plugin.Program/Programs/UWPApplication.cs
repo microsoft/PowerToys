@@ -114,7 +114,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             // To set the title to always be the displayname of the packaged application
             result.Title = DisplayName;
-            result.SetTitleHighlightData(StringMatcher.FuzzySearch(query, Name).MatchData);
+            result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
             // Using CurrentCulture since this is user facing
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
@@ -349,20 +349,20 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
+        private static readonly Dictionary<PackageVersion, string> _logoKeyFromVersion = new Dictionary<PackageVersion, string>
+        {
+            { PackageVersion.Windows10, "Square44x44Logo" },
+            { PackageVersion.Windows81, "Square30x30Logo" },
+            { PackageVersion.Windows8, "SmallLogo" },
+        };
+
         internal string LogoUriFromManifest(IAppxManifestApplication app)
         {
-            var logoKeyFromVersion = new Dictionary<PackageVersion, string>
-                {
-                    { PackageVersion.Windows10, "Square44x44Logo" },
-                    { PackageVersion.Windows81, "Square30x30Logo" },
-                    { PackageVersion.Windows8, "SmallLogo" },
-                };
-            if (logoKeyFromVersion.ContainsKey(Package.Version))
+            if (_logoKeyFromVersion.TryGetValue(Package.Version, out var key))
             {
-                var key = logoKeyFromVersion[Package.Version];
-                var hr = app.GetStringValue(key, out var logoUri);
-                _ = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, logoUri);
-                return logoUri;
+                var hr = app.GetStringValue(key, out var logoUriFromApp);
+                _ = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, logoUriFromApp);
+                return logoUriFromApp;
             }
             else
             {
@@ -372,8 +372,16 @@ namespace Microsoft.Plugin.Program.Programs
 
         public void UpdatePath(Theme theme)
         {
-            LogoPathFromUri(this.logoUri, theme);
+            LogoPathFromUri(logoUri, theme);
         }
+
+        // scale factors on win10: https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
+        private static readonly Dictionary<PackageVersion, List<int>> _scaleFactors = new Dictionary<PackageVersion, List<int>>
+        {
+            { PackageVersion.Windows10, new List<int> { 100, 125, 150, 200, 400 } },
+            { PackageVersion.Windows81, new List<int> { 100, 120, 140, 160, 180 } },
+            { PackageVersion.Windows8, new List<int> { 100 } },
+        };
 
         private bool SetScaleIcons(string path, string colorscheme, bool highContrast = false)
         {
@@ -383,22 +391,15 @@ namespace Microsoft.Plugin.Program.Programs
                 var end = path.Length - extension.Length;
                 var prefix = path.Substring(0, end);
                 var paths = new List<string> { };
-                var scaleFactors = new Dictionary<PackageVersion, List<int>>
-                    {
-                        // scale factors on win10: https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
-                        { PackageVersion.Windows10, new List<int> { 100, 125, 150, 200, 400 } },
-                        { PackageVersion.Windows81, new List<int> { 100, 120, 140, 160, 180 } },
-                        { PackageVersion.Windows8, new List<int> { 100 } },
-                    };
 
                 if (!highContrast)
                 {
                     paths.Add(path);
                 }
 
-                if (scaleFactors.ContainsKey(Package.Version))
+                if (_scaleFactors.ContainsKey(Package.Version))
                 {
-                    foreach (var factor in scaleFactors[Package.Version])
+                    foreach (var factor in _scaleFactors[Package.Version])
                     {
                         if (highContrast)
                         {
@@ -440,7 +441,7 @@ namespace Microsoft.Plugin.Program.Programs
                 var end = path.Length - extension.Length;
                 var prefix = path.Substring(0, end);
                 var paths = new List<string> { };
-                int appIconSize = 36;
+                const int appIconSize = 36;
                 var targetSizes = new List<int> { 16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256 }.AsParallel();
                 var pathFactorPairs = new Dictionary<string, int>();
 
@@ -564,21 +565,22 @@ namespace Microsoft.Plugin.Program.Programs
                 path = Path.Combine(Package.Location, "Assets", uri);
             }
 
-            if (theme == Theme.HighContrastBlack || theme == Theme.HighContrastOne || theme == Theme.HighContrastTwo)
+            switch (theme)
             {
-                isLogoUriSet = SetHighContrastIcon(path, ContrastBlack);
-            }
-            else if (theme == Theme.HighContrastWhite)
-            {
-                isLogoUriSet = SetHighContrastIcon(path, ContrastWhite);
-            }
-            else if (theme == Theme.Light)
-            {
-                isLogoUriSet = SetColoredIcon(path, ContrastWhite);
-            }
-            else
-            {
-                isLogoUriSet = SetColoredIcon(path, ContrastBlack);
+                case Theme.HighContrastBlack:
+                case Theme.HighContrastOne:
+                case Theme.HighContrastTwo:
+                    isLogoUriSet = SetHighContrastIcon(path, ContrastBlack);
+                    break;
+                case Theme.HighContrastWhite:
+                    isLogoUriSet = SetHighContrastIcon(path, ContrastWhite);
+                    break;
+                case Theme.Light:
+                    isLogoUriSet = SetColoredIcon(path, ContrastWhite);
+                    break;
+                default:
+                    isLogoUriSet = SetColoredIcon(path, ContrastBlack);
+                    break;
             }
 
             if (!isLogoUriSet)
@@ -677,17 +679,18 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (File.Exists(path))
             {
-                MemoryStream memoryStream = new MemoryStream();
+                var memoryStream = new MemoryStream();
+                using (var fileStream = File.OpenRead(path))
+                {
+                    fileStream.CopyTo(memoryStream);
+                    memoryStream.Position = 0;
 
-                byte[] fileBytes = File.ReadAllBytes(path);
-                memoryStream.Write(fileBytes, 0, fileBytes.Length);
-                memoryStream.Position = 0;
-
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.StreamSource = memoryStream;
-                image.EndInit();
-                return image;
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.StreamSource = memoryStream;
+                    image.EndInit();
+                    return image;
+                }
             }
             else
             {

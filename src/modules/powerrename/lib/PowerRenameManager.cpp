@@ -646,7 +646,7 @@ HRESULT CPowerRenameManager::_PerformFileOperation()
         _OnRenameCompleted();
     }
 
-    return 0;
+    return S_OK;
 }
 
 HRESULT CPowerRenameManager::_CreateFileOpWorkerThread()
@@ -676,7 +676,7 @@ HRESULT CPowerRenameManager::_CreateFileOpWorkerThread()
 
 DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
 {
-    if (SUCCEEDED(CoInitializeEx(NULL, 0)))
+    if (SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
     {
         WorkerThreadData* pwtd = reinterpret_cast<WorkerThreadData*>(pv);
         if (pwtd)

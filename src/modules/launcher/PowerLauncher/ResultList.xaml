@@ -6,13 +6,18 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:p="clr-namespace:PowerLauncher.Properties"
-    mc:Ignorable="d"
+             xmlns:helper="clr-namespace:PowerLauncher.Helper"
+             xmlns:converters="clr-namespace:PowerLauncher.Converters"
+             xmlns:viewmodel="clr-namespace:PowerLauncher.ViewModel"
+             mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="720">
 
     <UserControl.Resources>
-        <ResourceDictionary>
 
+        <ResourceDictionary>
+            <converters:HighlightTextConverter x:Key="highlightTextConverter" />
+            
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <Style x:Key="FocusVisual">
                 <Setter Property="Control.Template">
@@ -226,14 +231,21 @@
                                Margin="-6,-2,0,0"
                                HorizontalAlignment="Center"
                                Source="{Binding Image}" />
-                        <TextBlock
-                            AutomationProperties.Name="{x:Static p:Resources.Title}"
-                            x:Name="Title" Grid.Column="1"
-                            Text="{Binding Result.Title}"
-                            FontWeight="SemiBold"
-                            FontSize="20"
-                            Margin="0,0,0,-2"
-                            VerticalAlignment="Bottom"/>
+                        <TextBlock AutomationProperties.Name="{x:Static p:Resources.Title}"
+                                   x:Name="Title"
+                                   Grid.Column="1"
+                                   FontSize="20"
+                                   Margin="0,0,0,-2"
+                                   VerticalAlignment="Bottom">
+                               <viewmodel:ResultsViewModel.FormattedText>
+                                    <MultiBinding Converter="{StaticResource highlightTextConverter}">
+                                        <Binding Path="Result.Title" />
+                                        <Binding Path="Result.TitleHighlightData" />
+                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor,AncestorType={x:Type ListViewItem}}"
+                                                 Path="IsSelected" />
+                                    </MultiBinding>
+                                </viewmodel:ResultsViewModel.FormattedText>
+                        </TextBlock>
                         <TextBlock
                             AutomationProperties.Name="{x:Static p:Resources.Subtitle}"
                             x:Name="Path"

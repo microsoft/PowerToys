@@ -20,7 +20,6 @@ namespace ColorPicker.Controls
     /// </summary>
     public partial class ColorPickerControl : UserControl
     {
-        private const int GradientPointerHalfWidth = 3;
         private double _currH = 360;
         private double _currS = 1;
         private double _currV = 1;
@@ -93,7 +92,7 @@ namespace ColorPicker.Controls
                 gradientBrush.GradientStops.Add(stop);
             }
 
-            HueGradientGrid.Background = gradientBrush;
+            HueGradientSlider.Background = gradientBrush;
         }
 
         private static void SetColorVariationsForCurrentColor(DependencyObject d, (double hue, double saturation, double value) hsv)
@@ -122,9 +121,9 @@ namespace ColorPicker.Controls
 
         private void UpdateValueColorGradient(double posX)
         {
-            valueGradientPointer.Margin = new Thickness(posX - GradientPointerHalfWidth, 0, 0, 0);
+            ValueGradientSlider.Value = posX;
 
-            _currV = posX / ValueGradientGrid.Width;
+            _currV = posX / ValueGradientSlider.Maximum;
 
             UpdateHueGradient(_currS, _currV);
 
@@ -134,9 +133,9 @@ namespace ColorPicker.Controls
 
         private void UpdateSaturationColorGradient(double posX)
         {
-            saturationGradientPointer.Margin = new Thickness(posX - GradientPointerHalfWidth, 0, 0, 0);
+            SaturationGradientSlider.Value = posX;
 
-            _currS = posX / SaturationGradientGrid.Width;
+            _currS = posX / HueGradientSlider.Maximum;
 
             UpdateHueGradient(_currS, _currV);
 
@@ -146,9 +145,8 @@ namespace ColorPicker.Controls
 
         private void UpdateHueColorGradient(double posX)
         {
-            hueGradientPointer.Margin = new Thickness(posX - GradientPointerHalfWidth, 0, 0, 0);
-
-            _currH = posX / HueGradientGrid.Width * 360;
+            HueGradientSlider.Value = posX;
+            _currH = posX / HueGradientSlider.Maximum * 360;
 
             SaturationStartColor.Color = HSVColor.RGBFromHSV(_currH, 0f, _currV);
             SaturationStopColor.Color = HSVColor.RGBFromHSV(_currH, 1f, _currV);
@@ -184,7 +182,6 @@ namespace ColorPicker.Controls
         {
             if (_isCollapsed)
             {
-                detailsGrid.Visibility = Visibility.Visible;
                 _isCollapsed = false;
 
                 var opacityAppear = new DoubleAnimation(1.0, new Duration(TimeSpan.FromMilliseconds(300)));
@@ -202,8 +199,6 @@ namespace ColorPicker.Controls
                 ControlHelper.SetCornerRadius(CurrentColorButton, new CornerRadius(2));
                 CurrentColorButton.BeginAnimation(Button.WidthProperty, resizeColor);
                 CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
-                detailsStackPanel.BeginAnimation(StackPanel.OpacityProperty, opacityAppear);
-                detailsGrid.BeginAnimation(Grid.HeightProperty, resize);
                 CurrentColorButton.IsEnabled = false;
                 SessionEventHelper.Event.EditorAdjustColorOpened = true;
             }
@@ -230,9 +225,6 @@ namespace ColorPicker.Controls
                 ControlHelper.SetCornerRadius(CurrentColorButton, new CornerRadius(0));
                 CurrentColorButton.BeginAnimation(Button.WidthProperty, resizeColor);
                 CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
-                detailsStackPanel.BeginAnimation(Window.OpacityProperty, opacityAppear);
-                detailsGrid.BeginAnimation(Grid.HeightProperty, resize);
-                detailsGrid.Visibility = Visibility.Collapsed;
                 CurrentColorButton.IsEnabled = true;
             }
         }
@@ -242,9 +234,12 @@ namespace ColorPicker.Controls
             HideDetails();
             SelectedColorChangedCommand.Execute(_currentColor);
             SessionEventHelper.Event.EditorColorAdjusted = true;
+            DetailsFlyout.Hide();
         }
 
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
+#pragma warning disable CA1801 // Review unused parameters
+        private void DetailsFlyout_Closed(object sender, object e)
+#pragma warning restore CA1801 // Review unused parameters
         {
             HideDetails();
 
@@ -262,67 +257,28 @@ namespace ColorPicker.Controls
             SessionEventHelper.Event.EditorSimilarColorPicked = true;
         }
 
-        private void ValueGradientGrid_MouseMove(object sender, MouseEventArgs e)
+        private void SaturationGradientSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                var pos = GetMousePositionWithinGrid(sender as Border);
-                UpdateValueColorGradient(pos.X);
-                _ignoreGradientsChanges = true;
-                UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
-                _ignoreGradientsChanges = false;
-            }
-        }
-
-        private void ValueGradientGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var pos = GetMousePositionWithinGrid(sender as Border);
-            UpdateValueColorGradient(pos.X);
+            UpdateSaturationColorGradient((sender as Slider).Value);
             _ignoreGradientsChanges = true;
             UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
             _ignoreGradientsChanges = false;
         }
 
-        private void SaturationGradientGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void HueGradientSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            var pos = GetMousePositionWithinGrid(sender as Border);
-            UpdateSaturationColorGradient(pos.X);
+            UpdateHueColorGradient((sender as Slider).Value);
             _ignoreGradientsChanges = true;
             UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
             _ignoreGradientsChanges = false;
         }
 
-        private void SaturationGradientGrid_MouseMove(object sender, MouseEventArgs e)
+        private void ValueGradientSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                var pos = GetMousePositionWithinGrid(sender as Border);
-                UpdateSaturationColorGradient(pos.X);
-                _ignoreGradientsChanges = true;
-                UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
-                _ignoreGradientsChanges = false;
-            }
-        }
-
-        private void HueGradientGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var pos = GetMousePositionWithinGrid(sender as Border);
-            UpdateHueColorGradient(pos.X);
+            UpdateValueColorGradient((sender as Slider).Value);
             _ignoreGradientsChanges = true;
             UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
             _ignoreGradientsChanges = false;
-        }
-
-        private void HueGradientGrid_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                var pos = GetMousePositionWithinGrid(sender as Border);
-                UpdateHueColorGradient(pos.X);
-                _ignoreGradientsChanges = true;
-                UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
-                _ignoreGradientsChanges = false;
-            }
         }
 
         private static Point GetMousePositionWithinGrid(Border border)
@@ -385,9 +341,9 @@ namespace ColorPicker.Controls
             {
                 var hsv = ColorHelper.ConvertToHSVColor(color);
 
-                var huePosition = (hsv.hue / 360) * HueGradientGrid.Width;
-                var saturationPosition = hsv.saturation * SaturationGradientGrid.Width;
-                var valuePosition = hsv.value * ValueGradientGrid.Width;
+                var huePosition = (hsv.hue / 360) * HueGradientSlider.Maximum;
+                var saturationPosition = hsv.saturation * SaturationGradientSlider.Maximum;
+                var valuePosition = hsv.value * ValueGradientSlider.Maximum;
                 UpdateHueColorGradient(huePosition);
                 UpdateSaturationColorGradient(saturationPosition);
                 UpdateValueColorGradient(valuePosition);
@@ -403,7 +359,7 @@ namespace ColorPicker.Controls
 
         private void HexCode_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            (sender as TextBox).SelectAll();
+            (sender as System.Windows.Controls.TextBox).SelectAll();
         }
     }
 }

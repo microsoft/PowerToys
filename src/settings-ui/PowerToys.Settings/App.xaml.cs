@@ -24,6 +24,10 @@ namespace PowerToys.Settings
             {
                 settingsWindow = new MainWindow();
             }
+            else if (settingsWindow.WindowState == WindowState.Minimized)
+            {
+                settingsWindow.WindowState = WindowState.Normal;
+            }
 
             settingsWindow.Show();
             settingsWindow.NavigateToSection(type);

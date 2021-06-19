@@ -60,7 +60,7 @@ private:
     void init_settings();
 
     // Handle to launch and terminate the launcher
-    HANDLE m_hProcess;
+    HANDLE m_hProcess = nullptr;
 
     //contains the name of the powerToys
     std::wstring app_name;
@@ -81,6 +81,27 @@ private:
     HANDLE m_hEvent;
 
     HANDLE send_telemetry_event;
+
+    // Handle a case when a user started standalone PowerToys Run or for some reason the process is leaked
+    void TerminateRunningInstance()
+    {
+        auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::RUN_EXIT_EVENT);
+        if (!exitEvent)
+        {
+            Logger::warn(L"Failed to create exitEvent. {}", get_last_error_or_default(GetLastError()));
+        }
+        else
+        {
+            Logger::trace(L"Signaled exitEvent");
+            if (!SetEvent(exitEvent))
+            {
+                Logger::warn(L"Failed to signal exitEvent. {}", get_last_error_or_default(GetLastError()));
+            }
+
+            ResetEvent(exitEvent);
+            CloseHandle(exitEvent);
+        }
+    }
 
 public:
     // Constructor
@@ -181,12 +202,13 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        Logger::info("Launcher is enabling");
+        Logger::info("Microsoft_Launcher::enable()");
+        m_enabled = true;
         ResetEvent(m_hEvent);
         ResetEvent(send_telemetry_event);
 
         unsigned long powertoys_pid = GetCurrentProcessId();
-
+        TerminateRunningInstance();
         if (!is_process_elevated(false))
         {
             Logger::trace("Starting PowerToys Run from not elevated process");
@@ -203,7 +225,6 @@ public:
 
             if (ShellExecuteExW(&sei))
             {
-                m_enabled = true;
                 m_hProcess = sei.hProcess;
                 Logger::trace("Started PowerToys Run. Handle {}", m_hProcess);
             }
@@ -225,7 +246,7 @@ public:
             params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
             params += L"--centralized-kb-hook ";
 
-            action_runner_path += L"\\action_runner.exe";
+            action_runner_path += L"\\PowerToys.ActionRunner.exe";
             // Set up the shared file from which to retrieve the PID of PowerLauncher
             HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
             if (!hMapFile)
@@ -243,8 +264,7 @@ public:
 
                 if (run_non_elevated(action_runner_path, params, pidBuffer))
                 {
-                    Logger::trace("Started PowerToys Run Process. PID {}", *pidBuffer);
-                    m_enabled = true;
+                    Logger::trace("Started PowerToys Run Process");
                     const int maxRetries = 80;
                     for (int retry = 0; retry < maxRetries; ++retry)
                     {
@@ -260,7 +280,8 @@ public:
                 }
                 else
                 {
-                    Logger::error("Failed to start PowerToys Run");
+                    // We expect it to fail if the shell window is not available. It can happen on startup
+                    Logger::warn("Failed to start PowerToys Run");
                 }
             }
             CloseHandle(hMapFile);
@@ -311,7 +332,11 @@ public:
         // For now, hotkeyId will always be zero
         if (m_enabled)
         {
-            if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
+            if (m_hProcess == nullptr)
+            {
+                Logger::warn("PowerToys Run hasn't been started. Starting PowerToys Run");
+                enable();
+            } else if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
             {
                 Logger::warn("PowerToys Run has exited unexpectedly, restarting PowerToys Run.");
                 enable();

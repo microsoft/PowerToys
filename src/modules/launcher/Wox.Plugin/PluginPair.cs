@@ -114,6 +114,7 @@ namespace Wox.Plugin
         private void LoadPlugin()
         {
             var stopWatch = new Stopwatch();
+            stopWatch.Start();
             CreatePluginInstance();
             stopWatch.Stop();
             Metadata.InitTime += stopWatch.ElapsedMilliseconds;

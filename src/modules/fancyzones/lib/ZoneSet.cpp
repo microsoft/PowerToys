@@ -20,6 +20,7 @@ using namespace FancyZonesUtils;
 namespace
 {
     constexpr int C_MULTIPLIER = 10000;
+    constexpr int OVERLAPPING_CENTERS_SENSITIVITY = 75;
 
     // PriorityGrid layout is unique for zoneCount <= 11. For zoneCount > 11 PriorityGrid is same as Grid
     FancyZonesDataTypes::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
@@ -255,6 +256,28 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             return max(rect.bottom - rect.top, 0) * max(rect.right - rect.left, 0);
         };
 
+        auto getCenter = [](auto zone) {
+            RECT rect = zone->GetZoneRect();
+            return POINT{ (rect.right + rect.left) / 2, (rect.top + rect.bottom) / 2 };
+        };
+        auto pointDifference = [](POINT pt1, POINT pt2) {
+            return (pt1.x - pt2.x) * (pt1.x - pt2.x) + (pt1.y - pt2.y) * (pt1.y - pt2.y);
+        };
+        auto distanceFromCenter = [&](auto zone) {
+            POINT center = getCenter(zone);
+            return pointDifference(center, pt);
+        };
+        auto closerToCenter = [&](auto zone1, auto zone2) {
+            if (pointDifference(getCenter(zone1), getCenter(zone2)) > OVERLAPPING_CENTERS_SENSITIVITY)
+            {
+                return distanceFromCenter(zone1) < distanceFromCenter(zone2);
+            }
+            else
+            {
+                return zoneArea(zone1) < zoneArea(zone2);
+            };
+        };
+       
         try
         {
             using Algorithm = Settings::OverlappingZonesAlgorithm;
@@ -267,6 +290,8 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
                 return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zoneArea(zone1) > zoneArea(zone2); });
             case Algorithm::Positional:
                 return ZoneSelectSubregion(capturedZones, pt);
+            case Algorithm::ClosestCenter:
+                return ZoneSelectPriority(capturedZones, closerToCenter);
             }
         }
         catch (std::out_of_range)

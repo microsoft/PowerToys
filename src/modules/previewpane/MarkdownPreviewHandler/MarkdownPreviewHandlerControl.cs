@@ -65,9 +65,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// </summary>
         public MarkdownPreviewHandlerControl()
         {
+            // if you have a string with double space, some people view it as a new line.
+            // while this is against spec, even GH supports this. Technically looks like GH just trims whitespace
+            // https://github.com/microsoft/PowerToys/issues/10354
+            var softlineBreak = new Markdig.Extensions.Hardlines.SoftlineBreakAsHardlineExtension();
             _extension = new HTMLParsingExtension(ImagesBlockedCallBack);
+
             _pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley().UseYamlFrontMatter().UseMathematics();
             _pipelineBuilder.Extensions.Add(_extension);
+            _pipelineBuilder.Extensions.Add(softlineBreak);
         }
 
         /// <summary>

@@ -134,6 +134,7 @@
                 <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />
                 <ComboBoxItem x:Uid="FancyZones_OverlappingZonesLargest" />
                 <ComboBoxItem x:Uid="FancyZones_OverlappingZonesPositional" />
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesClosestCenter" />
             </ComboBox>
 
             <TextBlock x:Uid="FancyZones_WindowBehavior_GroupSettings"

@@ -144,16 +144,16 @@ public
             return gcnew String(CommonSharedConstants::RUN_SEND_SETTINGS_TELEMETRY_EVENT);
         }
 
+        static String ^ RunExitEvent() {
+            return gcnew String(CommonSharedConstants::RUN_EXIT_EVENT);
+        }
+
         static String ^ ColorPickerSendSettingsTelemetryEvent() {
             return gcnew String(CommonSharedConstants::COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT);
         }
 
         static String ^ ShowColorPickerSharedEvent() {
             return gcnew String(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
-        } 
-        
-        static String ^ ShowShortcutGuideSharedEvent() {
-            return gcnew String(CommonSharedConstants::SHOW_SHORTCUT_GUIDE_SHARED_EVENT);
         }
     };
 }

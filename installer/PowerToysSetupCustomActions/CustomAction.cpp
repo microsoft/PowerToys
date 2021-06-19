@@ -2,6 +2,7 @@
 
 #include <ProjectTelemetry.h>
 
+#include "../../src/common/utils/MsiUtils.h"
 #include "../../src/common/updating/installer.h"
 #include "../../src/common/version/version.h"
 
@@ -582,7 +583,7 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
 
     try
     {
-        if (auto install_path = updating::get_msi_package_installed_path())
+        if (auto install_path = GetMsiPackageInstalledPath())
         {
             MsiSetPropertyW(hInstall, L"INSTALLFOLDER", install_path->data());
         }

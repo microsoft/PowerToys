@@ -143,6 +143,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool awake;
+
+        [JsonPropertyName("Awake")]
+        public bool Awake
+        {
+            get => awake;
+            set
+            {
+                if (awake != value)
+                {
+                    LogTelemetryEvent(value);
+                    awake = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

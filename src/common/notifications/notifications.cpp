@@ -3,7 +3,6 @@
 #include "notifications.h"
 #include "utils/com_object_factory.h"
 #include "utils/window.h"
-#include "winstore/winstore.h"
 
 #include <unknwn.h>
 #include <winrt/base.h>
@@ -201,41 +200,6 @@ void notifications::override_application_id(const std::wstring_view appID)
     SetCurrentProcessExplicitAppUserModelID(APPLICATION_ID.c_str());
 }
 
-void notifications::register_background_toast_handler()
-{
-    if (!winstore::running_as_packaged())
-    {
-        // The WIX installer will have us registered via the registry
-        return;
-    }
-    try
-    {
-        // Re-request access to clean up from previous PowerToys installations
-        BackgroundExecutionManager::RemoveAccess();
-        BackgroundExecutionManager::RequestAccessAsync().get();
-
-        BackgroundTaskBuilder builder;
-        ToastNotificationActionTrigger trigger{ PACKAGED_APPLICATION_ID };
-        builder.SetTrigger(trigger);
-        builder.TaskEntryPoint(TASK_ENTRYPOINT);
-        builder.Name(TASK_NAME);
-
-        const auto tasks = BackgroundTaskRegistration::AllTasks();
-        const bool already_registered = std::any_of(begin(tasks), end(tasks), [=](const auto& task) {
-            return task.Value().Name() == TASK_NAME;
-        });
-        if (already_registered)
-        {
-            return;
-        }
-        (void)builder.Register();
-    }
-    catch (...)
-    {
-        // Couldn't register the background task, nothing we can do
-    }
-}
-
 void notifications::show_toast(std::wstring message, std::wstring title, toast_params params)
 {
     // The toast won't be actually activated in the background, since it doesn't have any buttons
@@ -402,8 +366,8 @@ void notifications::show_toast_with_activations(std::wstring message,
     NotificationData data{ map };
     notification.Data(std::move(data));
 
-    const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
-                                                            ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
+    const auto notifier =
+        ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
 
     // Set a tag-related params if it has a valid length
     if (params.tag.has_value() && params.tag->length() < 64)
@@ -431,9 +395,8 @@ void notifications::show_toast_with_activations(std::wstring message,
 
 void notifications::update_toast_progress_bar(std::wstring_view tag, progress_bar_params params)
 {
-    const auto notifier = winstore::running_as_packaged() ?
-                              ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
-                              ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
+    const auto notifier =
+        ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
 
     float progress = std::clamp(params.progress, 0.0f, 1.0f);
     winrt::Windows::Foundation::Collections::StringMap map;
@@ -468,8 +431,7 @@ void notifications::remove_toasts_by_tag(std::wstring_view tag)
 
 void notifications::remove_all_scheduled_toasts()
 {
-    const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
-                                                            ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
+    const auto notifier = ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
 
     try
     {

@@ -154,7 +154,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry
                 return;
             }
 
-            if (!(_context is null))
+            if (_context != null && _context.API != null)
             {
                 _context.API.ThemeChanged -= OnThemeChanged;
             }

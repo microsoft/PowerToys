@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -32,7 +33,7 @@ namespace FancyZonesEditor
         public event MouseButtonEventHandler MergeComplete;
 
         private readonly Rectangle _splitter;
-        private bool _switchOrientation = false;
+        private bool _switchOrientation;
         private Point _lastPos = new Point(-1, -1);
         private int _snappedPositionX;
         private int _snappedPositionY;
@@ -82,8 +83,9 @@ namespace FancyZonesEditor
 
         private void GridZone_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            WidthLabel.Text = Math.Round(ActualWidth).ToString();
-            HeightLabel.Text = Math.Round(ActualHeight).ToString();
+            // using current culture as this is end user facing
+            WidthLabel.Text = Math.Round(ActualWidth).ToString(CultureInfo.CurrentCulture);
+            HeightLabel.Text = Math.Round(ActualHeight).ToString(CultureInfo.CurrentCulture);
         }
 
         public void UpdateShiftState(bool shiftState)

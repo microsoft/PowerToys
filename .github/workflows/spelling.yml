@@ -13,12 +13,9 @@ jobs:
       uses: actions/checkout@v2.0.0
       with:
         ref: refs/pull/${{github.event.pull_request.number}}/merge
-        fetch-depth: 5
     - name: checkout
       if: "!contains(github.event_name, 'pull_request')"
       uses: actions/checkout@v2.0.0
-      with:
-        fetch-depth: 5
-    - uses: check-spelling/check-spelling@0.0.17-alpha
+    - uses: check-spelling/check-spelling@v0.0.18
       with:
         config: .github/actions/spell-check

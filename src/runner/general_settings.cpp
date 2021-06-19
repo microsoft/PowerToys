@@ -6,7 +6,6 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include "powertoy_module.h"
 #include <common/themes/windows_colors.h>
-#include <common/winstore/winstore.h>
 
 #include "trace.h"
 #include <common/utils/elevation.h>
@@ -22,7 +21,6 @@ json::JsonObject GeneralSettings::to_json()
 {
     json::JsonObject result;
 
-    result.SetNamedValue(L"packaged", json::value(isPackaged));
     result.SetNamedValue(L"startup", json::value(isStartupEnabled));
     if (!startupDisabledReason.empty())
     {
@@ -65,7 +63,6 @@ GeneralSettings get_general_settings()
 {
     const bool is_user_admin = check_user_is_admin();
     GeneralSettings settings{
-        .isPackaged = winstore::running_as_packaged(),
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
@@ -75,31 +72,7 @@ GeneralSettings get_general_settings()
         .powerToysVersion = get_product_version()
     };
 
-    if (winstore::running_as_packaged())
-    {
-        const auto task_state = winstore::get_startup_task_status_async().get();
-        switch (task_state)
-        {
-        case winstore::StartupTaskState::Disabled:
-            settings.isStartupEnabled = false;
-            break;
-        case winstore::StartupTaskState::Enabled:
-            settings.isStartupEnabled = true;
-            break;
-        case winstore::StartupTaskState::DisabledByPolicy:
-            settings.startupDisabledReason = GET_RESOURCE_STRING(IDS_STARTUP_DISABLED_BY_POLICY);
-            settings.isStartupEnabled = false;
-            break;
-        case winstore::StartupTaskState::DisabledByUser:
-            settings.startupDisabledReason = GET_RESOURCE_STRING(IDS_STARTUP_DISABLED_BY_USER);
-            settings.isStartupEnabled = false;
-            break;
-        }
-    }
-    else
-    {
-        settings.isStartupEnabled = is_auto_start_task_active_for_this_user();
-    }
+    settings.isStartupEnabled = is_auto_start_task_active_for_this_user();
 
     for (auto& [name, powertoy] : modules())
     {
@@ -118,39 +91,32 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     if (json::has(general_configs, L"startup", json::JsonValueType::Boolean))
     {
         const bool startup = general_configs.GetNamedBoolean(L"startup");
-        if (winstore::running_as_packaged())
+        if (startup)
         {
-            winstore::switch_startup_task_state_async(startup).wait();
-        }
-        else
-        {
-            if (startup)
+            if (is_process_elevated())
             {
-                if (is_process_elevated())
-                {
-                    delete_auto_start_task_for_this_user();
-                    create_auto_start_task_for_this_user(general_configs.GetNamedBoolean(L"run_elevated", false));
-                }
-                else
-                {
-                    if (!is_auto_start_task_active_for_this_user())
-                    {
-                        delete_auto_start_task_for_this_user();
-                        create_auto_start_task_for_this_user(false);
-
-                        run_as_elevated = false;
-                    }
-                    else if (!general_configs.GetNamedBoolean(L"run_elevated", false))
-                    {
-                        delete_auto_start_task_for_this_user();
-                        create_auto_start_task_for_this_user(false);
-                    }
-                }
+                delete_auto_start_task_for_this_user();
+                create_auto_start_task_for_this_user(general_configs.GetNamedBoolean(L"run_elevated", false));
             }
             else
             {
-                delete_auto_start_task_for_this_user();
+                if (!is_auto_start_task_active_for_this_user())
+                {
+                    delete_auto_start_task_for_this_user();
+                    create_auto_start_task_for_this_user(false);
+
+                    run_as_elevated = false;
+                }
+                else if (!general_configs.GetNamedBoolean(L"run_elevated", false))
+                {
+                    delete_auto_start_task_for_this_user();
+                    create_auto_start_task_for_this_user(false);
+                }
             }
+        }
+        else
+        {
+            delete_auto_start_task_for_this_user();
         }
     }
     if (json::has(general_configs, L"enabled"))

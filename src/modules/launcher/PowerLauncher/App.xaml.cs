@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using interop;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Common.UI;
@@ -29,7 +30,6 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
 
-        private const string Unique = "PowerToys_PowerToysRun_InstanceMutex";
         private static bool _disposed;
         private PowerToysRunSettings _settings;
         private MainViewModel _mainVM;
@@ -42,42 +42,41 @@ namespace PowerLauncher
         [STAThread]
         public static void Main()
         {
-            if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
+            Log.Info($"Starting PowerToys Run with PID={Process.GetCurrentProcess().Id}", typeof(App));
+            if (SingleInstance<App>.InitializeAsFirstInstance())
             {
                 using (var application = new App())
                 {
                     application.InitializeComponent();
+                    NativeEventWaiter.WaitForEventLoop(Constants.RunExitEvent(), () =>
+                    {
+                        Log.Warn("RunExitEvent was signaled. Exiting PowerToys", typeof(App));
+                        ExitPowerToys(application);
+                    });
+
+                    int powerToysPid = GetPowerToysPId();
+                    if (powerToysPid != 0)
+                    {
+                        Log.Info($"Runner pid={powerToysPid}", typeof(App));
+                        RunnerHelper.WaitForPowerToysRunner(powerToysPid, () =>
+                        {
+                            Log.Info($"Runner with pid={powerToysPid} exited. Exiting PowerToys Run", typeof(App));
+                            ExitPowerToys(application);
+                        });
+                    }
+
                     application.Run();
                 }
+            }
+            else
+            {
+                Log.Error("There is already running PowerToys Run instance. Exiting PowerToys Run", typeof(App));
             }
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            for (int i = 0; i + 1 < e.Args.Length; i++)
-            {
-                if (e.Args[i] == "-powerToysPid")
-                {
-                    int powerToysPid;
-                    if (int.TryParse(e.Args[i + 1], out powerToysPid))
-                    {
-                        RunnerHelper.WaitForPowerToysRunner(powerToysPid, () =>
-                        {
-                            try
-                            {
-                                Dispose();
-                            }
-                            finally
-                            {
-                                Environment.Exit(0);
-                            }
-                        });
-                    }
-
-                    break;
-                }
-            }
-
+            Log.Info("On Startup.", GetType());
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
             Stopwatch.Normal("App.OnStartup - Startup cost", () =>
@@ -135,11 +134,59 @@ namespace PowerLauncher
             });
         }
 
+        private static void ExitPowerToys(App app)
+        {
+            SingleInstance<App>.SingleInstanceMutex.Close();
+
+            try
+            {
+                app.Dispose();
+            }
+            finally
+            {
+                Environment.Exit(0);
+            }
+        }
+
+        private static int GetPowerToysPId()
+        {
+            var args = Environment.GetCommandLineArgs();
+            for (int i = 0; i + 1 < args.Length; i++)
+            {
+                if (args[i] == "-powerToysPid")
+                {
+                    int powerToysPid;
+                    if (int.TryParse(args[i + 1], out powerToysPid))
+                    {
+                        return powerToysPid;
+                    }
+
+                    break;
+                }
+            }
+
+            return 0;
+        }
+
         private void RegisterExitEvents()
         {
-            AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose();
-            Current.Exit += (s, e) => Dispose();
-            Current.SessionEnding += (s, e) => Dispose();
+            AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+            {
+                Log.Info("AppDomain.CurrentDomain.ProcessExit", GetType());
+                Dispose();
+            };
+
+            Current.Exit += (s, e) =>
+            {
+                Log.Info("Application.Current.Exit", GetType());
+                Dispose();
+            };
+
+            Current.SessionEnding += (s, e) =>
+            {
+                Log.Info("Application.Current.SessionEnding", GetType());
+                Dispose();
+            };
         }
 
         /// <summary>
