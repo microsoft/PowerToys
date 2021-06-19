@@ -147,6 +147,7 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
+      **\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.dll
       **\Microsoft.Plugin.Folder.UnitTests.dll
       **\Microsoft.Plugin.Program.UnitTests.dll
       **\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.dll

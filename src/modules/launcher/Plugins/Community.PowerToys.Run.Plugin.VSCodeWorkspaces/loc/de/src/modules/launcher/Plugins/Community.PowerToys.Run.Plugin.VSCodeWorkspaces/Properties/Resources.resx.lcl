@@ -22,7 +22,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opens workspaces, remote machines (SSH or Codespaces) and containers, previously opened in VS Code.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Öffnet Arbeitsbereiche, Remotecomputer (SSH oder Codespaces) und Container, die zuvor in VS Codegeöffnet wurden.]]></Val>
+            <Val><![CDATA[Öffnet Arbeitsbereiche, Remotecomputer (SSH oder Codespaces) und Container, die zuvor in VS Code geöffnet wurden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

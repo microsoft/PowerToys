@@ -18,6 +18,15 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
     [TestFixture]
     public class Win32Tests
     {
+        private static readonly Win32Program _imagingDevices = new Win32Program
+        {
+            Name = "Imaging Devices",
+            ExecutableName = "imagingdevices.exe",
+            FullPath = "c:\\program files\\windows photo viewer\\imagingdevices.exe",
+            LnkResolvedPath = null,
+            AppType = Win32Program.ApplicationType.Win32Application,
+        };
+
         private static readonly Win32Program _notepadAppdata = new Win32Program
         {
             Name = "Notepad",
@@ -41,6 +50,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Name = "Microsoft Azure Command Prompt - v2.9",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
+            Arguments = @"/E:ON /V:ON /K ""C:\Program Files\Microsoft SDKs\Azure\.NET SDK\v2.9\\bin\setenv.cmd""",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\microsoft azure\\microsoft azure sdk for .net\\v2.9\\microsoft azure command prompt - v2.9.lnk",
             AppType = Win32Program.ApplicationType.Win32Application,
         };
@@ -50,6 +60,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Name = "x64 Native Tools Command Prompt for VS 2019",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
+            Arguments = @"/k ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat""",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\visual studio 2019\\visual studio tools\\vc\\x64 native tools command prompt for vs 2019.lnk",
             AppType = Win32Program.ApplicationType.Win32Application,
         };
@@ -253,10 +264,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             };
 
             // Act
-            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
+            List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Length);
+            Assert.AreEqual(1, apps.Count);
         }
 
         [Test]
@@ -270,10 +281,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             };
 
             // Act
-            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
+            List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Length);
+            Assert.AreEqual(1, apps.Count);
         }
 
         [Test]
@@ -286,10 +297,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             };
 
             // Act
-            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
+            List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Length);
+            Assert.AreEqual(1, apps.Count);
         }
 
         [Test]
@@ -303,10 +314,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             };
 
             // Act
-            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
+            List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(1, apps.Length);
+            Assert.AreEqual(1, apps.Count);
             Assert.IsTrue(!string.IsNullOrEmpty(apps[0].LnkResolvedPath));
         }
 
@@ -322,10 +333,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             };
 
             // Act
-            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
+            List<Win32Program> apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(3, apps.Length);
+            Assert.AreEqual(3, apps.Count);
         }
 
         [Test]
@@ -430,6 +441,12 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
 
             // the query matches the name (cmd) and is therefore not filtered (case-insensitive)
             Assert.IsTrue(_cmdRunCommand.QueryEqualsNameForRunCommands(query));
+        }
+
+        [TestCase("ımaging")]
+        public void Win32ApplicationsShouldNotHaveIncorrectPathWhenExecuting(string query)
+        {
+            Assert.IsFalse(_imagingDevices.FullPath.Contains(query, StringComparison.Ordinal));
         }
 
         [Test]

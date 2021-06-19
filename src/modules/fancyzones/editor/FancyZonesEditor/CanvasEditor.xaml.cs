@@ -4,6 +4,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
 
@@ -23,6 +24,25 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             Loaded += OnLoaded;
+            KeyDown += CanvasEditor_KeyDown;
+        }
+
+        private void CanvasEditor_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            {
+                e.Handled = true;
+                App.Overlay.FocusEditorWindow();
+            }
+        }
+
+        public void FocusZone()
+        {
+            if (Preview.Children.Count > 0)
+            {
+                var canvas = Preview.Children[0] as CanvasZone;
+                canvas.FocusZone();
+            }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)

@@ -9,6 +9,7 @@ using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Programs;
 using Windows.ApplicationModel;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Storage
 {
@@ -80,6 +81,7 @@ namespace Microsoft.Plugin.Program.Storage
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
 
             var applications = support ? Programs.UWP.All() : Array.Empty<UWPApplication>();
+            Log.Info($"Indexed {applications.Length} packaged applications", GetType());
             SetList(applications);
         }
 

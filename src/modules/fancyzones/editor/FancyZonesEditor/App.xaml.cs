@@ -21,7 +21,7 @@ namespace FancyZonesEditor
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App : Application, IDisposable
     {
         // Non-localizable strings
         private const string CrashReportLogFile = "FZEditorCrashLog.txt";
@@ -66,6 +66,7 @@ namespace FancyZonesEditor
         }
 
         private static bool _debugMode;
+        private bool _isDisposed;
 
         [Conditional("DEBUG")]
         private void DebugModeCheck()
@@ -174,9 +175,12 @@ namespace FancyZonesEditor
         public static void ShowExceptionReportMessageBox(string reportData)
         {
             var fileStream = File.OpenWrite(ErrorReportLogFile);
-            var sw = new StreamWriter(fileStream);
-            sw.Write(reportData);
-            sw.Flush();
+            using (var sw = new StreamWriter(fileStream))
+            {
+                sw.Write(reportData);
+                sw.Flush();
+            }
+
             fileStream.Close();
 
             ShowReportMessageBox(fileStream.Name);
@@ -185,8 +189,11 @@ namespace FancyZonesEditor
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
             var fileStream = File.OpenWrite(CrashReportLogFile);
-            var sw = new StreamWriter(fileStream);
-            sw.Write(FormatException((Exception)args.ExceptionObject));
+            using (var sw = new StreamWriter(fileStream))
+            {
+                sw.Write(FormatException((Exception)args.ExceptionObject));
+            }
+
             fileStream.Close();
 
             ShowReportMessageBox(fileStream.Name);
@@ -283,6 +290,28 @@ namespace FancyZonesEditor
             }
 
             return sb.ToString();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    _themeManager?.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                _isDisposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

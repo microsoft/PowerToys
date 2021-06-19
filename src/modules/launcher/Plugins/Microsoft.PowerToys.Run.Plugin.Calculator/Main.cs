@@ -74,7 +74,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             UpdateIconPath(Context.API.GetCurrentTheme());
         }
 
-        // Todo : Update with theme based IconPath
         private void UpdateIconPath(Theme theme)
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
@@ -114,7 +113,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             {
                 if (disposing)
                 {
-                    Context.API.ThemeChanged -= OnThemeChanged;
+                    if (Context != null && Context.API != null)
+                    {
+                        Context.API.ThemeChanged -= OnThemeChanged;
+                    }
+
                     _disposed = true;
                 }
             }

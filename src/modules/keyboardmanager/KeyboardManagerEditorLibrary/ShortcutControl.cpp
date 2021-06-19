@@ -148,7 +148,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         // If exactly one key is selected consider it to be a key remap
         if (selectedKeyCodes.size() == 1)
         {
-            shortcutRemapBuffer[rowIndex].first[1] = selectedKeyCodes[0];
+            shortcutRemapBuffer[rowIndex].first[1] = (DWORD)selectedKeyCodes[0];
         }
         else
         {

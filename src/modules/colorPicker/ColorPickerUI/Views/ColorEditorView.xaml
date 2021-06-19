@@ -1,16 +1,15 @@
 ﻿<UserControl x:Class="ColorPicker.Views.ColorEditorView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:p="clr-namespace:ColorPicker.Properties"
              mc:Ignorable="d"
-
              xmlns:ui="http://schemas.modernwpf.com/2019"
              xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:controls="clr-namespace:ColorPicker.Controls"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-             WindowChrome.IsHitTestVisibleInChrome="True"           
+             WindowChrome.IsHitTestVisibleInChrome="True"
              x:Name="colorEditorControl">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -24,7 +23,10 @@
                          Margin="0,48,0,0"
                          Grid.Row="1"
                          Padding="0"
-                         TabIndex="3"
+                         TabIndex="2"
+                         Width="64"
+                         HorizontalAlignment="Center"
+                         ui:FocusVisualHelper.UseSystemFocusVisuals="True"
                          ItemsSource="{Binding ColorsHistory}"
                          SelectedIndex="{Binding SelectedColorIndex}"
                          ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}"
@@ -93,20 +95,28 @@
 
             <Button Width="64"
                     Height="32"
-                    TabIndex="1"
+                    TabIndex="0"
                     Content="&#xEF3C;"
                     Command="{Binding OpenColorPickerCommand}"
                     Background="Transparent"
                     FontFamily="Segoe MDL2 Assets"
+                    ui:FocusVisualHelper.FocusVisualMargin="-1"
                     ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}"
                     AutomationProperties.Name="{x:Static p:Resources.Pick_color}"/>
         </Grid>
 
+
         <!-- Main grid -->
-        <Grid Grid.Column="1" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
-            <ScrollViewer Grid.Column="1" Margin="0,90,0,0">
+        <Grid Grid.Column="1"
+              Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
+            <ScrollViewer IsTabStop="False"
+                          Margin="0,90,0,0">
                 <StackPanel>
-                    <ItemsControl ItemsSource="{Binding ColorRepresentations}">
+                    <ItemsControl IsTabStop="False"
+                                  TabIndex="4"
+                                  FocusManager.IsFocusScope="True"
+                                  KeyboardNavigation.TabNavigation="Once"   
+                                  ItemsSource="{Binding ColorRepresentations}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <controls:ColorFormatControl
@@ -126,17 +136,19 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <controls:ColorPickerControl
-            HorizontalAlignment="Left"
-            Margin="0,44,0,0"
-            SelectedColor="{Binding SelectedColor}"
-            SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
-            Grid.Column="1"
-            VerticalAlignment="Top"/>
+            <controls:ColorPickerControl HorizontalAlignment="Left"
+                                         Margin="0,44,0,0"
+                                         Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}"
+                                         IsTabStop="True"
+                                         TabIndex="2"
+                                         SelectedColor="{Binding SelectedColor}"
+                                         SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
+                                         Grid.Column="1"
+                                         VerticalAlignment="Top" />
         </Grid>
 
         <!-- Empty history -->
-        <StackPanel Grid.Column="1" Margin="12" VerticalAlignment="Center" Orientation="Vertical" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
+        <StackPanel Grid.Column="1" Margin="24, 12" VerticalAlignment="Center" Orientation="Vertical" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
             <TextBlock Text="&#xEF3C;"
                        FontFamily="Segoe MDL2 Assets"
                        FontSize="44"

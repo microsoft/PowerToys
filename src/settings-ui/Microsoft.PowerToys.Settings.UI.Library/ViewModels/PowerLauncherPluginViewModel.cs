@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -128,7 +129,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             return $"{Name}. {Description}";
         }
 
-        public string IconPath { get => isDark() ? settings.IconPathDark : settings.IconPathLight; }
+        public string IconPath
+        {
+            get
+            {
+                var path = isDark() ? settings.IconPathDark : settings.IconPathLight;
+                path = Path.Combine(Directory.GetCurrentDirectory(), @"modules\launcher\Plugins", path);
+                return path;
+            }
+        }
 
         private bool _showAdditionalInfoPanel;
 

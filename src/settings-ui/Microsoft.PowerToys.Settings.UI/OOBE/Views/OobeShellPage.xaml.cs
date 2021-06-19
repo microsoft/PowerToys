@@ -28,13 +28,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ColorPickerSharedEventCallback = implementation;
         }
 
-        public static Func<string> ShortcutGuideSharedEventCallback { get; set; }
-
-        public static void SetShortcutGuideSharedEventCallback(Func<string> implementation)
-        {
-            ShortcutGuideSharedEventCallback = implementation;
-        }
-
         public static Action<Type> OpenMainWindowCallback { get; set; }
 
         public static void SetOpenMainWindowCallback(Action<Type> implementation)
@@ -75,6 +68,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/OOBEPTHero.png",
                 DescriptionLink = "https://aka.ms/PowerToysOverview",
                 Link = "https://github.com/microsoft/PowerToys/releases/",
+            });
+            Modules.Insert((int)PowerToysModulesEnum.Awake, new OobePowerToysModule()
+            {
+                ModuleName = loader.GetString("Oobe_Awake"),
+                Tag = "Awake",
+                IsNew = false,
+                Icon = "\uEC32",
+                Image = "ms-appx:///Assets/Modules/Awake.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsAwake.png",
+                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/Awake.png",
+                Description = loader.GetString("Oobe_Awake_Description"),
+                Link = "https://aka.ms/PowerToysOverview_Awake",
             });
             Modules.Insert((int)PowerToysModulesEnum.ColorPicker, new OobePowerToysModule()
             {
@@ -210,6 +215,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             switch (selectedItem.Tag)
             {
                 case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
+                case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
                 case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
                 case "FancyZones": NavigationFrame.Navigate(typeof(OobeFancyZones)); break;
                 case "Run": NavigationFrame.Navigate(typeof(OobeRun)); break;

@@ -5,10 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:props="clr-namespace:FancyZonesEditor.Properties"
              xmlns:local="clr-namespace:FancyZonesEditor"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
+             KeyDown="Border_KeyDown"
              Background="Transparent"
              d:DesignHeight="450" d:DesignWidth="800">
-
     <UserControl.Resources>
         <Style x:Key="CanvasZoneThumbStyle" TargetType="{x:Type Thumb}">
             <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
@@ -45,12 +45,18 @@
             </Setter>
         </Style>
 
-        <Style x:Key="CloseButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
-            <Setter Property="Padding" Value="1"/>
+        <Style x:Key="CloseButtonStyle"
+               TargetType="{x:Type Button}">
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Center" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource PrimaryForegroundBrush}" />
+            <Setter Property="Padding"
+                    Value="1" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -65,19 +71,26 @@
                                               Margin="{TemplateBinding Padding}"
                                               RecognizesAccessKey="True"
                                               SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsDefaulted" Value="true">
+                            <Trigger Property="IsDefaulted"
+                                     Value="true">
                                 <Setter Property="BorderBrush"
                                         TargetName="border"
-                                        Value="{DynamicResource SystemControlBackgroundAccentBrush}"/>
+                                        Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
                             </Trigger>
-                            <Trigger Property="IsMouseOver" Value="true">
-                                <Setter Property="Opacity" TargetName="contentPresenter" Value="0.6"/>
+                            <Trigger Property="IsMouseOver"
+                                     Value="true">
+                                <Setter Property="Opacity"
+                                        TargetName="contentPresenter"
+                                        Value="0.6" />
                             </Trigger>
-                            <Trigger Property="IsPressed" Value="true">
-                                <Setter Property="Opacity" TargetName="contentPresenter" Value="0.4"/>
+                            <Trigger Property="IsPressed"
+                                     Value="true">
+                                <Setter Property="Opacity"
+                                        TargetName="contentPresenter"
+                                        Value="0.4" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -86,10 +99,29 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
-            Background="{DynamicResource CanvasZoneBackgroundBrush}"
-            CornerRadius="0"
-            BorderThickness="1">
+    <Border CornerRadius="0"
+            Focusable="True"
+            x:Name="RootBorder"
+            PreviewMouseDown="Border_PreviewMouseDown">
+        <Border.Style>
+            <Style>
+                <Setter Property="Border.Background"
+                        Value="{DynamicResource CanvasZoneBackgroundBrush}" />
+                <Setter Property="Border.BorderBrush"
+                        Value="{DynamicResource CanvasZoneBorderBrush}" />
+                <Setter Property="Border.BorderThickness"
+                        Value="1"/>
+                <Style.Triggers>
+                    <Trigger Property="Border.IsKeyboardFocused"
+                             Value="true">
+                        <Setter Property="Border.BorderThickness"
+                                Value="4" />
+                        <Setter Property="Border.BorderBrush"
+                                Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
                 <RowDefinition Height="8"/>
@@ -118,9 +150,10 @@
                     Content="ID"
                     FontWeight="SemiBold"
                     FontSize="64"
-                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                    Foreground="{Binding ElementName=RootBorder, Path=BorderBrush}" />
                 <TextBlock FontSize="16"
-                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           Foreground="{Binding ElementName=RootBorder, Path=BorderBrush}"
+                           Opacity="0.6"
                            DockPanel.Dock="Bottom"
                            FontWeight="SemiBold"
                            HorizontalAlignment="Center"
@@ -152,6 +185,8 @@
                     FontSize="16"
                     Padding="4"
                     Click="OnClose"
+                    IsTabStop="False"
+                    Focusable="False"
                     Grid.Row="2"
                     Grid.Column="2"
                     FontFamily="Segoe MDL2 Assets"

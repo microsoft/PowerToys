@@ -1126,7 +1126,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
 
             const int nInputs = 2;
             INPUT input[nInputs] = {};
@@ -1167,7 +1167,7 @@ namespace RemappingLogicTests
             src.SetKey(VK_CONTROL);
             src.SetKey(VK_SHIFT);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1214,7 +1214,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_CONTROL);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_CONTROL);
 
             const int nInputs = 2;
             INPUT input[nInputs] = {};
@@ -1253,7 +1253,7 @@ namespace RemappingLogicTests
             src.SetKey(VK_CONTROL);
             src.SetKey(VK_SHIFT);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_CONTROL);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_CONTROL);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1298,7 +1298,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1328,7 +1328,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_CONTROL);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_CONTROL);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1357,7 +1357,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, 0x41);
+            testState.AddOSLevelShortcut(src, (DWORD)0x41);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1386,7 +1386,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1416,7 +1416,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_CONTROL);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_CONTROL);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1445,7 +1445,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, 0x41);
+            testState.AddOSLevelShortcut(src, (DWORD)0x41);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1472,7 +1472,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1500,7 +1500,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
 
             const int nInputs = 4;
             INPUT input[nInputs] = {};
@@ -1533,7 +1533,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
             // Remap Shift+Ctrl+A to Ctrl+V
             src.SetKey(VK_SHIFT);
             Shortcut dest;
@@ -1568,10 +1568,10 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
             // Remap Shift+Ctrl+A to B
             src.SetKey(VK_SHIFT);
-            testState.AddOSLevelShortcut(src, 0x42);
+            testState.AddOSLevelShortcut(src, (DWORD)0x42);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1600,7 +1600,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1645,7 +1645,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1690,7 +1690,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_MENU);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_MENU);
 
             const int nInputs = 3;
             INPUT input[nInputs] = {};
@@ -1735,7 +1735,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, CommonSharedConstants::VK_WIN_BOTH);
+            testState.AddOSLevelShortcut(src, (DWORD)CommonSharedConstants::VK_WIN_BOTH);
 
             const int nInputs = 2;
             INPUT input[nInputs] = {};
@@ -1777,7 +1777,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_MENU);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, 0x44);
+            testState.AddOSLevelShortcut(src, (DWORD)0x44);
 
             // Remap Alt+V to Ctrl+X
             Shortcut src1;
@@ -1822,13 +1822,13 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_MENU);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, 0x44);
+            testState.AddOSLevelShortcut(src, (DWORD)0x44);
 
             // Remap Alt+V to X
             Shortcut src1;
             src1.SetKey(VK_MENU);
             src1.SetKey(0x56);
-            testState.AddOSLevelShortcut(src1, 0x58);
+            testState.AddOSLevelShortcut(src1, (DWORD)0x58);
 
             const int nInputs = 4;
             INPUT input[nInputs] = {};
@@ -1872,7 +1872,7 @@ namespace RemappingLogicTests
             Shortcut src1;
             src1.SetKey(VK_MENU);
             src1.SetKey(0x56);
-            testState.AddOSLevelShortcut(src1, 0x58);
+            testState.AddOSLevelShortcut(src1, (DWORD)0x58);
 
             const int nInputs = 4;
             INPUT input[nInputs] = {};
@@ -1908,7 +1908,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, 0x56);
+            testState.AddOSLevelShortcut(src, (DWORD)0x56);
 
             const int nInputs = 4;
             INPUT input[nInputs] = {};
@@ -1984,7 +1984,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
             src.SetKey(VK_CAPITAL);
-            testState.AddOSLevelShortcut(src, VK_CONTROL);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_CONTROL);
 
             const int nInputs = 2;
 
@@ -2090,7 +2090,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_CAPITAL);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_CAPITAL);
 
             const int nInputs = 3;
 
@@ -2124,7 +2124,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, VK_CAPITAL);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_CAPITAL);
 
             const int nInputs = 3;
 
@@ -2582,7 +2582,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, 0x56);
+            testState.AddOSLevelShortcut(src, (DWORD)0x56);
 
             const int nInputs = 2;
 
@@ -2609,7 +2609,7 @@ namespace RemappingLogicTests
             src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, 0x56);
+            testState.AddOSLevelShortcut(src, (DWORD)0x56);
 
             const int nInputs = 3;
 
@@ -2652,7 +2652,7 @@ namespace RemappingLogicTests
             Shortcut src;
             src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
             src.SetKey(0x41);
-            testState.AddOSLevelShortcut(src, 0x56);
+            testState.AddOSLevelShortcut(src, (DWORD)0x56);
 
             const int nInputs = 3;
 

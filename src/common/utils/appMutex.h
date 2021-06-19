@@ -11,7 +11,6 @@
 namespace
 {
     constexpr inline wchar_t POWERTOYS_MSI_MUTEX_NAME[] = L"Local\\PowerToys_Runner_MSI_InstanceMutex";
-    constexpr inline wchar_t POWERTOYS_MSIX_MUTEX_NAME[] = L"Local\\PowerToys_Runner_MSIX_InstanceMutex";
     constexpr inline wchar_t POWERTOYS_BOOTSTRAPPER_MUTEX_NAME[] = L"Local\\PowerToys_Bootstrapper_InstanceMutex";
 }
 

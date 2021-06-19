@@ -246,12 +246,12 @@
       </Item>
       <Item ItemId=";Edit_zones" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Edit zone layout]]></Val>
+          <Val><![CDATA[Edit zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Redigera zonlayout]]></Val>
+            <Val><![CDATA[Redigera zoner]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Edit zones]]></Val>
+            <Val><![CDATA[Edit zone layout]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />

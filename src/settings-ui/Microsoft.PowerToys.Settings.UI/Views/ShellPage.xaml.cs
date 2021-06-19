@@ -83,19 +83,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static int SendDefaultIPCMessage(string msg)
         {
-            DefaultSndMSGCallback(msg);
+            DefaultSndMSGCallback?.Invoke(msg);
             return 0;
         }
 
         public static int SendCheckForUpdatesIPCMessage(string msg)
         {
-            CheckForUpdatesMsgCallback(msg);
+            CheckForUpdatesMsgCallback?.Invoke(msg);
+
             return 0;
         }
 
         public static int SendRestartAdminIPCMessage(string msg)
         {
-            SndRestartAsAdminMsgCallback(msg);
+            SndRestartAsAdminMsgCallback?.Invoke(msg);
             return 0;
         }
 

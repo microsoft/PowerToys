@@ -243,6 +243,7 @@ namespace Microsoft.Plugin.Program.Storage
         public void IndexPrograms()
         {
             var applications = Programs.Win32Program.All(_settings);
+            Log.Info($"Indexed {applications.Count} win32 applications", GetType());
             SetList(applications);
         }
 

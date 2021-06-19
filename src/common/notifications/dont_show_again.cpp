@@ -57,6 +57,5 @@ namespace notifications
         }
         RegCloseKey(key);
         return timeutil::diff::in_days(timeutil::now(), last_disabled_time) < disable_interval_in_days;
-        return false;
     }
 }

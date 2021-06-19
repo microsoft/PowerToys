@@ -50,6 +50,7 @@ KeyboardManager::KeyboardManager()
         loadingSettings = false;
     };
 
+    editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
     settingsEventWaiter = EventWaiter(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
 }
 
@@ -126,8 +127,7 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     }
 
     // Suspend remapping if remap key/shortcut window is opened
-    auto h = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
-    if (h != nullptr && WaitForSingleObject(h, 0) == WAIT_OBJECT_0)
+    if (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0)
     {
         return 0;
     }
