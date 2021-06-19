@@ -160,7 +160,7 @@
 
                             <TextBlock Name="ImageResizer_Times_Symbol"
                                        x:Uid="ImageResizer_Times_Symbol"
-                                       Text="&#xE711;"
+                                       Text="&#xE947;"
                                        FontFamily="Segoe MDL2 Assets"
                                        TextAlignment="Center"
                                        VerticalAlignment="Center"
