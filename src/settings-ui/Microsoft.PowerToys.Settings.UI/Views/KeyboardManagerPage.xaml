@@ -52,7 +52,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <FontIcon Glyph="&#xE72A;"
+                <FontIcon Glyph="&#xF0AF;"
                           Grid.Column="1"
                           FontSize="14"
                           VerticalAlignment="Center" 
@@ -125,7 +125,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <FontIcon Glyph="&#xE72A;"
+                <FontIcon Glyph="&#xF0AF;"
                           Grid.Column="1"
                           FontSize="14"
                           VerticalAlignment="Center" 
@@ -161,7 +161,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <FontIcon Glyph="&#xE72A;"
+                <FontIcon Glyph="&#xF0AF;"
                           Grid.Column="3"
                           FontSize="14"
                           VerticalAlignment="Center" 
