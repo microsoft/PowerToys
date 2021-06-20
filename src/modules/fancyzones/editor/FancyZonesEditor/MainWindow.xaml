@@ -68,7 +68,7 @@
                       Click="DeleteLayout_Click"
                       Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                 <MenuItem.Icon>
-                    <ui:FontIcon Glyph="&#xE107;" />
+                    <ui:FontIcon Glyph="&#xE74D;" />
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
