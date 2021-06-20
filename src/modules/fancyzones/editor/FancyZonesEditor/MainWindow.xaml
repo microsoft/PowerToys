@@ -36,7 +36,7 @@
             <MenuItem Header="{x:Static props:Resources.Edit}"
                       Click="EditLayout_Click">
                 <MenuItem.Icon>
-                    <ui:FontIcon Glyph="&#xE104;" />
+                    <ui:FontIcon Glyph="&#xE70F;" />
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="{x:Static props:Resources.Edit_zones}"
