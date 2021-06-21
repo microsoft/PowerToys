@@ -147,7 +147,6 @@ FancyZonesSettings::SetConfig(PCWSTR serializedPowerToysSettingsJson) noexcept
     {
         m_callback->SettingsChanged();
     }
-    Trace::SettingsChanged(m_settings);
 }
 
 IFACEMETHODIMP_(void)
@@ -158,7 +157,6 @@ FancyZonesSettings::ReloadSettings() noexcept
     {
         m_callback->SettingsChanged();
     }
-    Trace::SettingsChanged(m_settings);
 }
 
 void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept

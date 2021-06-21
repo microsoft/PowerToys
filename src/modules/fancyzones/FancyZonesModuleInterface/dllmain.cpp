@@ -101,6 +101,12 @@ public:
         delete this;
     }
 
+    virtual void send_settings_telemetry() override
+    {
+        Logger::info("Send settings telemetry");
+        Trace::SettingsTelemetry(*m_settings->GetSettings());
+    }
+
     FancyZonesModuleInterface()
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
