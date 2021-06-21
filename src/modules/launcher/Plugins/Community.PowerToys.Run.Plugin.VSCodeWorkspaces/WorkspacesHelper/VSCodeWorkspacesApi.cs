@@ -67,7 +67,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                         try
                         {
-                            var options = new JsonSerializerOptions
+                            VSCodeStorageFile vscodeStorageFile = JsonSerializer.Deserialize<VSCodeStorageFile>(fileContent);
                             {
                                 PropertyNameCaseInsensitive = true,
                             };
@@ -77,9 +77,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                             if (vscodeStorageFile != null)
                             {
                                 // for previous versions of vscode
-                                if (vscodeStorageFile.OpenedPathsList.Workspaces3 != null)
+                                if (vscodeStorageFile.OpenedPathsList.Workspace3 != null)
                                 {
-                                    foreach (var workspaceUri in vscodeStorageFile.OpenedPathsList.Workspaces3)
+                                    foreach (var workspaceUri in vscodeStorageFile.OpenedPathsList.Workspace3)
                                     {
                                         var uri = ParseVSCodeUri(workspaceUri, vscodeInstance);
                                         if (uri != null)

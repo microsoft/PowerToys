@@ -6,6 +6,8 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
     public class VSCodeStorageFile
     {
+        [JsonPropertyName("openedPathsList")]
         public OpenedPathsList OpenedPathsList { get; set; }
+
     }
 }
