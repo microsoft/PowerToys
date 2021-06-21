@@ -33,6 +33,7 @@ public:
     }
 
     IFACEMETHODIMP_(RECT) GetZoneRect() const noexcept { return m_zoneRect; }
+    IFACEMETHODIMP_(long) GetZoneArea() const noexcept { return max(m_zoneRect.bottom - m_zoneRect.top, 0) * max(m_zoneRect.right - m_zoneRect.left, 0); }
     IFACEMETHODIMP_(size_t) Id() const noexcept { return m_id; }
     IFACEMETHODIMP_(RECT) ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept;
 

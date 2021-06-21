@@ -251,11 +251,6 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
 
     if (overlap)
     {
-        auto zoneArea = [](auto zone) {
-            RECT rect = zone->GetZoneRect();
-            return max(rect.bottom - rect.top, 0) * max(rect.right - rect.left, 0);
-        };
-
         auto getCenter = [](auto zone) {
             RECT rect = zone->GetZoneRect();
             return POINT{ (rect.right + rect.left) / 2, (rect.top + rect.bottom) / 2 };
@@ -285,9 +280,9 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             switch (m_config.SelectionAlgorithm)
             {
             case Algorithm::Smallest:
-                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zoneArea(zone1) < zoneArea(zone2); });
+                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zone1->GetZoneArea() < zone2->GetZoneArea(); });
             case Algorithm::Largest:
-                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zoneArea(zone1) > zoneArea(zone2); });
+                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zone1->GetZoneArea() > zone2->GetZoneArea(); });
             case Algorithm::Positional:
                 return ZoneSelectSubregion(capturedZones, pt);
             case Algorithm::ClosestCenter:
