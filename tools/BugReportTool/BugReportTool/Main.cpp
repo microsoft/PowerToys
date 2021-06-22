@@ -245,26 +245,6 @@ void ReportDotNetInstallationInfo(const filesystem::path& tmpDir)
     }
 }
 
-void ReportBootstrapperLog(const filesystem::path& targetDir)
-{
-  for (const auto entry : filesystem::directory_iterator{temp_directory_path()})
-  {
-      if (!entry.is_regular_file() || !entry.path().has_filename())
-      {
-          continue;
-      }
-
-      const std::wstring filename = entry.path().filename().native();
-      if (!filename.starts_with(L"powertoys-bootstrapper-") || !filename.ends_with(L".log"))
-      {
-          continue;
-      }
-      
-      std::error_code _;
-      copy(entry.path(), targetDir, _);
-  }
-}
-
 int wmain(int argc, wchar_t* argv[], wchar_t*)
 {
     // Get path to save zip
@@ -335,8 +315,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Write event viewer logs info to the temporary folder
     EventViewer::ReportEventViewerInfo(tmpDir);
-
-    ReportBootstrapperLog(tmpDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
