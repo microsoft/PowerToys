@@ -97,11 +97,15 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
     /**
      * @returns Unique work area identifier. Format: <device-id>_<resolution>_<virtual-desktop-id>
      */
-    IFACEMETHOD_(std::wstring, UniqueId)() = 0;
+    IFACEMETHOD_(std::wstring, UniqueId)() const = 0;
     /**
      * @returns Active zone layout for this work area.
      */
-    IFACEMETHOD_(IZoneSet*, ActiveZoneSet)() = 0;
+    IFACEMETHOD_(IZoneSet*, ActiveZoneSet)() const = 0;
+    /*
+    * @returns Zone index of the window
+    */
+    IFACEMETHOD_(std::vector<size_t>, GetWindowZoneIndexes)(HWND window) const = 0;
     IFACEMETHOD_(void, ShowZoneWindow)() = 0;
     IFACEMETHOD_(void, HideZoneWindow)() = 0;
     /**

@@ -125,11 +125,13 @@ public:
     IFACEMETHODIMP_(bool)
     ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
     IFACEMETHODIMP_(std::wstring)
-    UniqueId() noexcept { return { m_uniqueId }; }
+    UniqueId() const noexcept { return { m_uniqueId }; }
     IFACEMETHODIMP_(void)
     SaveWindowProcessToZoneIndex(HWND window) noexcept;
     IFACEMETHODIMP_(IZoneSet*)
-    ActiveZoneSet() noexcept { return m_activeZoneSet.get(); }
+    ActiveZoneSet() const noexcept { return m_activeZoneSet.get(); }
+    IFACEMETHODIMP_(std::vector<size_t>)
+    GetWindowZoneIndexes(HWND window) const noexcept;
     IFACEMETHODIMP_(void)
     ShowZoneWindow() noexcept;
     IFACEMETHODIMP_(void)
@@ -379,6 +381,20 @@ WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
             CoTaskMemFree(guidString);
         }
     }
+}
+
+IFACEMETHODIMP_(std::vector<size_t>)
+WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
+{
+    if (m_activeZoneSet)
+    {
+        wil::unique_cotaskmem_string zoneSetId;
+        if (SUCCEEDED(StringFromCLSID(m_activeZoneSet->Id(), &zoneSetId)))
+        {
+            return FancyZonesDataInstance().GetAppLastZoneIndexSet(window, m_uniqueId, zoneSetId.get());
+        }
+    }
+    return {};
 }
 
 IFACEMETHODIMP_(void)

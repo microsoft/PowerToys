@@ -187,7 +187,6 @@ private:
 
     void OnSettingsChanged() noexcept;
 
-    std::vector<size_t> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IWorkArea> workArea) noexcept;
     std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneWindow, const std::vector<size_t>& zoneIndexSet) noexcept;
@@ -302,22 +301,6 @@ FancyZones::VirtualDesktopChanged() noexcept
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
 }
 
-std::vector<size_t> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
-    HWND window,
-    winrt::com_ptr<IWorkArea> workArea) noexcept
-{
-    const auto activeZoneSet = workArea->ActiveZoneSet();
-    if (activeZoneSet)
-    {
-        wil::unique_cotaskmem_string zoneSetId;
-        if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &zoneSetId)))
-        {
-            return FancyZonesDataInstance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), zoneSetId.get());
-        }
-    }
-    return {};
-}
-
 std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> FancyZones::GetAppZoneHistoryInfo(
     HWND window,
     HMONITOR monitor,
@@ -327,7 +310,7 @@ std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> FancyZones::GetAppZone
     {
         auto workArea = workAreaMap[monitor];
         workAreaMap.erase(monitor); // monitor processed, remove entry from the map
-        return { workArea, GetZoneIndexSetFromWorkAreaHistory(window, workArea) };
+        return { workArea, workArea->GetWindowZoneIndexes(window) };
     }
     return { nullptr, {} };
 }
@@ -345,7 +328,7 @@ std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> FancyZones::GetAppZone
         // No application history on primary monitor, search on remaining monitors.
         for (const auto& [monitor, workArea] : workAreaMap)
         {
-            auto zoneIndexSet = GetZoneIndexSetFromWorkAreaHistory(window, workArea);
+            auto zoneIndexSet = workArea->GetWindowZoneIndexes(window);
             if (!zoneIndexSet.empty())
             {
                 return { workArea, zoneIndexSet };
