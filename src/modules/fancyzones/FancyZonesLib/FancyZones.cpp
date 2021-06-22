@@ -1236,7 +1236,11 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
             }
         }
 
-        FancyZonesDataInstance().UpdatePrimaryDesktopData(guidStrings[0]);
+        if (!guidStrings.empty())
+        {
+            FancyZonesDataInstance().UpdatePrimaryDesktopData(guidStrings[0]);
+        }
+
         FancyZonesDataInstance().RemoveDeletedDesktops(guidStrings);
     }
 }
