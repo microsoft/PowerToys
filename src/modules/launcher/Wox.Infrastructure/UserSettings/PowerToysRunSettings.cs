@@ -1,13 +1,12 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.Text.Json.Serialization;
 using ManagedCommon;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.UserSettings
@@ -177,7 +176,7 @@ namespace Wox.Infrastructure.UserSettings
 
         public HttpProxy Proxy { get; set; } = new HttpProxy();
 
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public LastQueryMode LastQueryMode { get; set; } = LastQueryMode.Selected;
     }
 
