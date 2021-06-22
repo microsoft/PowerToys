@@ -4,6 +4,12 @@
 #include <Windows.h>
 #include <shellapi.h>
 #include <sddl.h>
+#include <shldisp.h>
+#include <shlobj.h>
+#include <exdisp.h>
+#include <atlbase.h>
+#include <stdlib.h>
+#include <comdef.h>
 
 #include <winrt/base.h>
 #include <winrt/Windows.Foundation.Collections.h>
@@ -11,6 +17,119 @@
 #include <string>
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
+
+namespace 
+{
+    inline std::wstring GetErrorString(HRESULT handle)
+    {
+         _com_error err(handle);
+         return err.ErrorMessage();
+    }
+
+    inline bool FindDesktopFolderView(REFIID riid, void** ppv)
+    {
+        CComPtr<IShellWindows> spShellWindows;
+        auto result = spShellWindows.CoCreateInstance(CLSID_ShellWindows);
+        if (result != S_OK)
+        {
+            Logger::warn(L"Failed to create instance. {}", GetErrorString(result));
+            return false;
+        }
+
+        CComVariant vtLoc(CSIDL_DESKTOP);
+        CComVariant vtEmpty;
+        long lhwnd;
+        CComPtr<IDispatch> spdisp;
+        result = spShellWindows->FindWindowSW(
+            &vtLoc, &vtEmpty, SWC_DESKTOP, &lhwnd, SWFO_NEEDDISPATCH, &spdisp);
+
+        if (result != S_OK)
+        {
+            Logger::warn(L"Failed to find the window. {}", GetErrorString(result));
+            return false;
+        }
+
+        CComPtr<IShellBrowser> spBrowser;
+        result = CComQIPtr<IServiceProvider>(spdisp)->QueryService(SID_STopLevelBrowser,
+                                                          IID_PPV_ARGS(&spBrowser));
+        if (result != S_OK)
+        {
+            Logger::warn(L"Failed to query service. {}", GetErrorString(result));
+            return false;
+        }
+
+        CComPtr<IShellView> spView;
+        result = spBrowser->QueryActiveShellView(&spView);
+        if (result != S_OK)
+        {
+            Logger::warn(L"Failed to query active shell window. {}", GetErrorString(result));
+            return false;
+        }
+
+        result = spView->QueryInterface(riid, ppv);
+        if (result != S_OK)
+        {
+            Logger::warn(L"Failed to query interface. {}", GetErrorString(result));
+            return false;
+        }
+
+        return true;
+    }
+
+    inline bool GetDesktopAutomationObject(REFIID riid, void** ppv)
+    {
+        CComPtr<IShellView> spsv;
+        if (!FindDesktopFolderView(IID_PPV_ARGS(&spsv)))
+        {
+            return false;
+        }
+
+        CComPtr<IDispatch> spdispView;
+        auto result = spsv->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&spdispView));
+        if (result != S_OK)
+        {
+            Logger::warn(L"GetItemObject() failed. {}", GetErrorString(result));
+            return false;
+        }
+
+        result = spdispView->QueryInterface(riid, ppv);
+        if (result != S_OK)
+        {
+            Logger::warn(L"QueryInterface() failed. {}", GetErrorString(result));
+            return false;
+        }
+
+        return true;
+    }
+
+    inline bool ShellExecuteFromExplorer(
+        PCWSTR pszFile,
+        PCWSTR pszParameters = nullptr)
+    {
+        CComPtr<IShellFolderViewDual> spFolderView;
+        if (!GetDesktopAutomationObject(IID_PPV_ARGS(&spFolderView)))
+        {
+            return false;
+        }
+
+        CComPtr<IDispatch> spdispShell;
+        auto result = spFolderView->get_Application(&spdispShell);
+        if (result != S_OK)
+        {
+            Logger::warn(L"get_Application() failed. {}", GetErrorString(result));
+            return false;
+        }
+
+        CComQIPtr<IShellDispatch2>(spdispShell)
+            ->ShellExecute(CComBSTR(pszFile),
+                           CComVariant(pszParameters ? pszParameters : L""),
+                           CComVariant(L""),
+                           CComVariant(L""),
+                           CComVariant(SW_SHOWNORMAL));
+
+        return true;
+    }
+}
 
 // Returns true if the current process is running with elevated privileges
 inline bool is_process_elevated(const bool use_cached_value = true)
@@ -184,6 +303,32 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
     }
 
     return succeeded;
+}
+
+inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& params)
+{
+    bool failedToStart = false;
+    try
+    {
+        CoInitialize(nullptr);
+        if (!ShellExecuteFromExplorer(file.c_str(), params.c_str()))
+        {
+            failedToStart = true;
+        }
+    }
+    catch(...)
+    {
+        failedToStart = true;
+    }
+
+    if (failedToStart)
+    {
+        Logger::warn(L"Failed to delegate process creation. Try a fallback");
+        DWORD returnPid;
+        return run_non_elevated(file, params, &returnPid);
+    }
+
+    return true;
 }
 
 // Run command with the same elevation, returns true if succeeded
