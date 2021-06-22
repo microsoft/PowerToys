@@ -15,6 +15,10 @@ interface __declspec(uuid("{8228E934-B6EF-402A-9892-15A1441BF8B0}")) IZone : pub
      */
     IFACEMETHOD_(RECT, GetZoneRect)() const = 0;
     /**
+     * @returns Zone area calculated from zone rect
+     */
+    IFACEMETHOD_(long, GetZoneArea)() const = 0;
+    /**
      * @returns Zone identifier.
      */
     IFACEMETHOD_(size_t, Id)() const = 0;

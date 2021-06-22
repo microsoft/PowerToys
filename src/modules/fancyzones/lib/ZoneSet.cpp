@@ -161,6 +161,7 @@ private:
     bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
     bool CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing);
     std::vector<size_t> ZoneSelectSubregion(const std::vector<size_t>& capturedZones, POINT pt) const;
+    std::vector<size_t> ZoneSelectClosestCenter(const std::vector<size_t>& capturedZones, POINT pt) const;
 
     // `compare` should return true if the first argument is a better choice than the second argument.
     template<class CompareF>
@@ -251,33 +252,6 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
 
     if (overlap)
     {
-        auto zoneArea = [](auto zone) {
-            RECT rect = zone->GetZoneRect();
-            return max(rect.bottom - rect.top, 0) * max(rect.right - rect.left, 0);
-        };
-
-        auto getCenter = [](auto zone) {
-            RECT rect = zone->GetZoneRect();
-            return POINT{ (rect.right + rect.left) / 2, (rect.top + rect.bottom) / 2 };
-        };
-        auto pointDifference = [](POINT pt1, POINT pt2) {
-            return (pt1.x - pt2.x) * (pt1.x - pt2.x) + (pt1.y - pt2.y) * (pt1.y - pt2.y);
-        };
-        auto distanceFromCenter = [&](auto zone) {
-            POINT center = getCenter(zone);
-            return pointDifference(center, pt);
-        };
-        auto closerToCenter = [&](auto zone1, auto zone2) {
-            if (pointDifference(getCenter(zone1), getCenter(zone2)) > OVERLAPPING_CENTERS_SENSITIVITY)
-            {
-                return distanceFromCenter(zone1) < distanceFromCenter(zone2);
-            }
-            else
-            {
-                return zoneArea(zone1) < zoneArea(zone2);
-            };
-        };
-       
         try
         {
             using Algorithm = Settings::OverlappingZonesAlgorithm;
@@ -285,13 +259,13 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
             switch (m_config.SelectionAlgorithm)
             {
             case Algorithm::Smallest:
-                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zoneArea(zone1) < zoneArea(zone2); });
+                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zone1->GetZoneArea() < zone2->GetZoneArea(); });
             case Algorithm::Largest:
-                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zoneArea(zone1) > zoneArea(zone2); });
+                return ZoneSelectPriority(capturedZones, [&](auto zone1, auto zone2) { return zone1->GetZoneArea() > zone2->GetZoneArea(); });
             case Algorithm::Positional:
                 return ZoneSelectSubregion(capturedZones, pt);
             case Algorithm::ClosestCenter:
-                return ZoneSelectPriority(capturedZones, closerToCenter);
+                return ZoneSelectClosestCenter(capturedZones, pt);
             }
         }
         catch (std::out_of_range)
@@ -1016,6 +990,32 @@ std::vector<size_t> ZoneSet::ZoneSelectSubregion(const std::vector<size_t>& capt
     zoneIndex = std::clamp(zoneIndex, size_t(0), capturedZones.size() - 1);
 
     return { capturedZones[zoneIndex] };
+}
+
+std::vector<size_t> ZoneSet::ZoneSelectClosestCenter(const std::vector<size_t>& capturedZones, POINT pt) const
+{
+    auto getCenter = [](auto zone) {
+        RECT rect = zone->GetZoneRect();
+        return POINT{ (rect.right + rect.left) / 2, (rect.top + rect.bottom) / 2 };
+    };
+    auto pointDifference = [](POINT pt1, POINT pt2) {
+        return (pt1.x - pt2.x) * (pt1.x - pt2.x) + (pt1.y - pt2.y) * (pt1.y - pt2.y);
+    };
+    auto distanceFromCenter = [&](auto zone) {
+        POINT center = getCenter(zone);
+        return pointDifference(center, pt);
+    };
+    auto closerToCenter = [&](auto zone1, auto zone2) {
+        if (pointDifference(getCenter(zone1), getCenter(zone2)) > OVERLAPPING_CENTERS_SENSITIVITY)
+        {
+            return distanceFromCenter(zone1) < distanceFromCenter(zone2);
+        }
+        else
+        {
+            return zone1->GetZoneArea() < zone2->GetZoneArea();
+        };
+    };
+    return ZoneSelectPriority(capturedZones, closerToCenter);
 }
 
 template<class CompareF>
