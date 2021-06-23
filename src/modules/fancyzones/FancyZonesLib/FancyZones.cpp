@@ -221,7 +221,6 @@ protected:
     static LRESULT CALLBACK s_WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
 private:
-
     void UpdateZoneWindows(require_write_lock) noexcept;
     void UpdateWindowsPositions(require_write_lock) noexcept;
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
@@ -299,7 +298,7 @@ UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d
 UINT FancyZones::WM_PRIV_FILE_UPDATE = RegisterWindowMessage(L"{632f17a9-55a7-45f1-a4db-162e39271d92}");
 UINT FancyZones::WM_PRIV_SNAP_HOTKEY = RegisterWindowMessage(L"{763c03a3-03d9-4cde-8d71-f0358b0b4b52}");
 UINT FancyZones::WM_PRIV_QUICK_LAYOUT_KEY = RegisterWindowMessage(L"{72f4fd8e-23f1-43ab-bbbc-029363df9a84}");
-UINT FancyZones::WM_PRIV_SETTINGS_CHANGED = RegisterWindowMessage(L"{15baab3d-c67b-4a15-aFF0-13610e05e947}"); 
+UINT FancyZones::WM_PRIV_SETTINGS_CHANGED = RegisterWindowMessage(L"{15baab3d-c67b-4a15-aFF0-13610e05e947}");
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -554,9 +553,10 @@ FancyZones::WindowCreated(HWND window) noexcept
         bool windowZoned{ false };
         if (moveToAppLastZone)
         {
-            const bool primaryActive = (primary == active);
+            const bool primaryActive = primary == active;
             std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
-            if (!appZoneHistoryInfo.second.empty())
+            const bool windowMinimized = IsIconic(window);
+            if (!appZoneHistoryInfo.second.empty() && !windowMinimized)
             {
                 MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
                 windowZoned = true;
