@@ -514,6 +514,8 @@ namespace JSONHelpers
         result.SetNamedValue(NonLocalizable::MonitorId, json::value(monitor.id));
         result.SetNamedValue(NonLocalizable::TopCoordinate, json::value(monitor.top));
         result.SetNamedValue(NonLocalizable::LeftCoordinate, json::value(monitor.left));
+        result.SetNamedValue(L"width", json::value(monitor.width));
+        result.SetNamedValue(L"height", json::value(monitor.height));
         result.SetNamedValue(NonLocalizable::IsSelected, json::value(monitor.isSelected));
 
         return result;

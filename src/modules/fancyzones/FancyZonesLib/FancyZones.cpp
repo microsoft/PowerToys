@@ -683,8 +683,10 @@ void FancyZones::ToggleEditor() noexcept
     * Data for each monitor:
     * (5) Monitor id
     * (6) DPI
-    * (7) monitor left
-    * (8) monitor top
+    * (7) work area left
+    * (8) work area top
+    * (9) work area width
+    * (10) work area height
     * ...
     */
     std::wstring params;
@@ -693,7 +695,10 @@ void FancyZones::ToggleEditor() noexcept
     const bool spanZonesAcrossMonitors = m_settings->GetSettings()->spanZonesAcrossMonitors;
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-    allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+
+    m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
+        allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+    } }).wait();
 
     if (spanZonesAcrossMonitors)
     {
@@ -704,8 +709,9 @@ void FancyZones::ToggleEditor() noexcept
     std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
 
     bool showDpiWarning = false;
-    int prevDpiX = -1, prevDpiY = -1;
+    int prevDpi = -1;
     std::wstring monitorsDataStr;
+
     for (auto& monitorData : allMonitors)
     {
         HMONITOR monitor = monitorData.first;
@@ -718,30 +724,30 @@ void FancyZones::ToggleEditor() noexcept
         {
             params += monitorId + divider; /* Monitor id where the Editor should be opened */
         }
-
-        monitorsDataStr += std::move(monitorId) + divider; /* Monitor id */
-        UINT dpiX = 0;
-        UINT dpiY = 0;
-        if (GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
+        
+        UINT dpi = 0;
+        if (DPIAware::GetScreenDPIForMonitor(monitor, dpi) != S_OK)
         {
-            monitorsDataStr += std::to_wstring(dpiX) + divider; /* DPI */
-            if (spanZonesAcrossMonitors && prevDpiX != -1 && (prevDpiX != dpiX || prevDpiY != dpiY))
-            {
-                showDpiWarning = true;
-            }
-
-            prevDpiX = dpiX;
-            prevDpiY = dpiY;
+            continue;
+        }
+        
+        if (spanZonesAcrossMonitors && prevDpi != -1 && prevDpi != dpi)
+        {
+            showDpiWarning = true;
         }
 
-        monitorsDataStr += std::to_wstring(monitorInfo.rcMonitor.left) + divider; /* Top coordinate */
-        monitorsDataStr += std::to_wstring(monitorInfo.rcMonitor.top) + divider; /* Left coordinate */
+        monitorsDataStr += std::move(monitorId) + divider; /* Monitor id */
+        monitorsDataStr += std::to_wstring(dpi) + divider; /* DPI */
+        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.left) + divider; /* Top coordinate */
+        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.top) + divider; /* Left coordinate */
+        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.right - monitorInfo.rcWork.left) + divider; /* Width */
+        monitorsDataStr += std::to_wstring(monitorInfo.rcWork.bottom - monitorInfo.rcWork.top) + divider; /* Height */
     }
 
     params += std::to_wstring(allMonitors.size()) + divider; /* Monitors count */
     params += monitorsDataStr;
 
-    FancyZonesDataInstance().SaveFancyZonesEditorParameters(spanZonesAcrossMonitors, virtualDesktopId.get(), targetMonitor); /* Write parameters to json file */
+    FancyZonesDataInstance().SaveFancyZonesEditorParameters(spanZonesAcrossMonitors, virtualDesktopId.get(), targetMonitor, allMonitors); /* Write parameters to json file */
 
     if (showDpiWarning)
     {
