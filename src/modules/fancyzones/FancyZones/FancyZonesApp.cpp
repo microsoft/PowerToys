@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "FancyZonesApp.h"
 
+#include <common/display/dpi_aware.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
 #include <common/utils/UnhandledExceptionHandler_x64.h>
@@ -13,6 +14,8 @@
 
 FancyZonesApp::FancyZonesApp(const std::wstring& appName, const std::wstring& appKey)
 {
+    DPIAware::EnableDPIAwarenessForThisProcess();
+
     m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), appName.c_str(), appKey.c_str());
     FancyZonesDataInstance().LoadFancyZonesData();
 
