@@ -232,7 +232,7 @@ int Bootstrapper(HINSTANCE hInstance)
         installFolderProp = L"INSTALLFOLDER=" + installFolderProp;
     }
 
-    fs::path logDir = ".";
+    fs::path logDir = PTSettingsHelper::get_root_save_folder_location();
     try
     {
         fs::path logDirArgPath = logDirArg;
