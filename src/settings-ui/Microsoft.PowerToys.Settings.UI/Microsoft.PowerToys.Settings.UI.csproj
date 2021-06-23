@@ -106,7 +106,7 @@
       <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\AwakeModeToBoolConverter.cs" />
-    <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
+    <Compile Include="Converters\ModuleEnabledToOpacityConverter.cs" />
     <Compile Include="Converters\UpdatingStateCannotDownloadToVisibilityConverter.cs" />
     <Compile Include="Converters\UpdatingStateReadyToDownloadToVisibilityConverter.cs" />
     <Compile Include="Converters\UpdatingStateReadyToInstallToVisibilityConverter.cs" />

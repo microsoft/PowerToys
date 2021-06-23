@@ -59,7 +59,7 @@
 
             <TextBlock x:Uid="Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
             
             <CustomControls:HotkeySettingsControl x:Uid="ShortcutGuide_OpenShortcutGuide"
                                                   HorizontalAlignment="Left"
@@ -71,7 +71,7 @@
 
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource MediumTopMargin}" Spacing="12">
                 <Slider x:Uid="ShortcutGuide_OverlayOpacity"
@@ -89,7 +89,7 @@
                     FontSize="16"
                     FontWeight="SemiBold"
                     Margin="0,16,0,0"
-                    Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                    Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
             </StackPanel>
 
             <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
@@ -98,7 +98,7 @@
             <TextBlock Name="ShortcutGuide_Theme"
                 x:Uid="ColorModeHeader"
                 Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
             <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
                                AutomationProperties.LabeledBy="{Binding ElementName=ShortcutGuide_Theme}">
@@ -113,7 +113,7 @@
             
             <TextBlock x:Uid="ShortcutGuide_DisabledApps"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
             
             <TextBox x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"

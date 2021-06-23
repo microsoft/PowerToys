@@ -57,7 +57,7 @@
             <ToggleSwitch x:Uid="Awake_EnableAwake" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
 
             <TextBlock x:Uid="Awake_Behavior_GroupSettings"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <CheckBox x:Uid="Awake_EnableDisplayKeepAwake"
@@ -68,7 +68,7 @@
             <TextBlock x:Uid="Awake_Mode"
                        Margin="{StaticResource SmallTopMargin}"
                        x:Name="ModeTitleLabel"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
 
             <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
                         Margin="0,-8,0,0">
