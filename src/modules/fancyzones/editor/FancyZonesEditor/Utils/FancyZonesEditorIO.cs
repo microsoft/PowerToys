@@ -419,6 +419,19 @@ namespace FancyZonesEditor.Utils
                             }
                         }
                     }
+                    else
+                    {
+                        Rect workArea = default;
+
+                        foreach (NativeMonitorData nativeData in editorParams.Monitors)
+                        {
+                            Rect monitorWorkArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
+                            workArea = Rect.Union(workArea, monitorWorkArea);
+                        }
+
+                        var monitor = new Monitor(workArea, workArea);
+                        App.Overlay.AddMonitor(monitor);
+                    }
                 }
                 catch (Exception ex)
                 {
