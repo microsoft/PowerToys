@@ -133,7 +133,7 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
         // Load Powertoys DLLs
 
         std::vector<std::wstring_view> knownModules = {
-            L"modules/FancyZones/fancyzones.dll",
+            L"modules/FancyZones/FancyZonesModuleInterface.dll",
             L"modules/FileExplorerPreview/powerpreview.dll",
             L"modules/ImageResizer/ImageResizerExt.dll",
             L"modules/KeyboardManager/KeyboardManager.dll",
@@ -142,11 +142,9 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
             L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
             L"modules/ColorPicker/ColorPicker.dll",
             L"modules/Awake/AwakeModuleInterface.dll",
+            // TODO(yuyoyuppe): uncomment when VCM should be enabled
+            //L"modules/VideoConference/VideoConferenceModule.dll"
         };
-        if (Is19H1OrHigher())
-        {
-            knownModules.emplace_back(L"modules/VideoConference/VideoConferenceModule.dll");
-        }
 
         for (const auto& moduleSubdir : knownModules)
         {

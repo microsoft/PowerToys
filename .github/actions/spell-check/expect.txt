@@ -2140,8 +2140,8 @@ surfacehub
 sut
 SVE
 svg
-SVGIO
 SVGIn
+SVGIO
 svgpreviewhandler
 SWC
 SWFO
@@ -2586,6 +2586,7 @@ yml
 YOffset
 yourinfo
 YourUserName
+yuyoyuppe
 YStr
 YUY
 YUYV
