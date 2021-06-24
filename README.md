@@ -104,8 +104,9 @@ Our goals for [v0.39 release cycle](https://github.com/microsoft/PowerToys/issue
 - New zone activation behavior allows users to snap a window to the zone who's center is closest to the cursor. Thanks [@ulazy1](https://github.com/ulazy1)!
 - Added process icon for FancyZones.
 - Fixed issue with zoning minimized windows.
+- Fixed a bunch of accessibility bugs
 - Now an independent exe, detached from the runner process.
--
+
 ### PowerToys Run
 
 - Multiple crashing bugs resolved.
