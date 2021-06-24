@@ -14,10 +14,13 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity. For more info on [PowerToys overviews and guides][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://docs.microsoft.com/windows/dev-environment/overview), head over to [docs.microsoft.com][usingPowerToys-docs-link]! 
 
+|              | Current utilities: |              |
+|--------------|--------------------|--------------|
 | [Awake](https://aka.ms/PowerToysOverview_Awake) | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
 | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) |
 | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) |
 | [Video Conference Mute (Experimental)](https://aka.ms/PowerToysOverview_VideoConference) |  |  |
+
 ## Installing and running Microsoft PowerToys
 
 ### Requirements
@@ -30,7 +33,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 #### Stable version
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.41.1-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.41.2-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -74,7 +77,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.41 - June 2021 Update
 
-Our goals for [v0.41 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F21) cycle included stability updates and optimizations, general bug fixes, accessibility improvements, and supporting the integration of the new community led project, Awake, which allows Power-Users to now keep their computer awake on demand! 
+Our goals for [v0.39 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F20) and [v0.41 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F21) cycle included stability updates and optimizations, general bug fixes, accessibility improvements, and supporting the integration of the new community led project, Awake, which allows Power-Users to now keep their computer awake on demand! 
 
 #### Highlights from v0.39 / v0.41
 
@@ -101,11 +104,13 @@ Our goals for [v0.41 release cycle](https://github.com/microsoft/PowerToys/issue
 - New zone activation behavior allows users to snap a window to the zone who's center is closest to the cursor. Thanks [@ulazy1](https://github.com/ulazy1)!
 - Added process icon for FancyZones.
 - Fixed issue with zoning minimized windows.
-
+- Now an independent exe, detached from the runner process.
+-
 ### PowerToys Run
 
+- Multiple crashing bugs resolved.
 - New Unit Converter plugin! Activate in the query prompt with the default activation phrase `%%`. Ex: `%% 10 ft in m`. Thanks [@jsoref](https://github.com/jsoref) and [@ThiefZero](https://github.com/ThiefZero)!
-- New Windows Settings plugin! Search for specific Windows settings from PowerToys Run by utilizing the default activation phrase `$` followed by the desired setting. Ex: `$ Add/Remove Programs`
+- New Windows Settings plugin! Search for specific Windows settings from PowerToys Run by utilizing the default activation phrase `$` followed by the desired setting. Ex: `$ Add/Remove Programs` Thanks [@TobiasSekan](https://github.com/TobiasSekan)
 - Updated the URL plugin to enable quickly launching the default browser with  the action keyword, which defaults to `//`.
 - Added remainder/modulo support for Calculator plugin via `%` operator.
 - Faster launching from improved Win32 program indexing. Thanks [@royvou](https://github.com/royvou)!
@@ -114,16 +119,13 @@ Our goals for [v0.41 release cycle](https://github.com/microsoft/PowerToys/issue
 ### Shortcut Guide 
 
 - Now an independent exe, detached from the runner process.
-- Removed support for long `Win` press to activate Shortcut Guide. Users can now `Win + ?` to launch and new customization settings added for users to define their  own shortcut.
-
-### Developer quality of life
-- Ability to directly debug against Settings
+- Removed support for long `Win` press to activate Shortcut Guide. Users can now `Win + ?` to launch and new customization settings added for users to define their own shortcut.
 
 ## Community contributions
 
 We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
-[@Aaron-Junker](https://github.com/Aaron-Junker), [@coc0a](https://github.com/coc0a), [@dend](https://github.com/dend), [@DoctorNefario](https://github.com/DoctorNefario), [@dogancelik](https://github.com/dogancelik), [@htcfreek](https://github.com/htcfreek), [@itsme-alan](https://github.com/itsme-alan), [@Jay-o-Way](https://github.com/Jay-o-Way), [@djsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), [@nitroin](https://github.com/nitroin), [@ricardosantos9521](https://github.com/ricardosantos9521), [@ThiefZero](https://github.com/ThiefZero), and [@ulazy1](https://github.com/ulazy1)
+[@Aaron-Junker](https://github.com/Aaron-Junker), [@coc0a](https://github.com/coc0a), [@dend](https://github.com/dend), [@DoctorNefario](https://github.com/DoctorNefario), [@dogancelik](https://github.com/dogancelik), [@htcfreek](https://github.com/htcfreek), [@itsme-alan](https://github.com/itsme-alan), [@Jay-o-Way](https://github.com/Jay-o-Way), [@djsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), [@nitroin](https://github.com/nitroin), [@ricardosantos9521](https://github.com/ricardosantos9521), [@ThiefZero](https://github.com/ThiefZero), [@TobiasSekan](https://github.com/TobiasSekan), and [@ulazy1](https://github.com/ulazy1)
 
 #### What is being planned for v0.43
 
