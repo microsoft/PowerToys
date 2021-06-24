@@ -116,7 +116,7 @@
 - [ ] Resize images using dimension: Pixels
 
 - [ ] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
-- [ ] Check `Use original date modified` and verify that modified date is not changed for resized images
+- [ ] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected 
 - [ ] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
 - [ ] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
 - [ ] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
