@@ -1,8 +1,8 @@
 ## Functional tests
 
  Regressions:  
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
+ - [X] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
+ - [X] https://github.com/microsoft/PowerToys/issues/1524
 
 ## File Explorer Add-ons
  * Running as user:
