@@ -168,6 +168,8 @@ int Bootstrapper(HINSTANCE hInstance)
         defaultInstallDir += "\\PowerToys";
     }
 
+    fs::path logDir = PTSettingsHelper::get_root_save_folder_location();
+
     cxxopts::Options options{ "PowerToysBootstrapper" };
 
     // clang-format off
@@ -179,7 +181,7 @@ int Bootstrapper(HINSTANCE hInstance)
     ("start_pt", "Always launch PowerToys after the installation is complete")
     ("skip_dotnet_install", "Skip dotnet 3.X installation even if it's not detected")
     ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"))
-    ("log_dir", "Log directory", cxxopts::value<std::string>()->default_value("."))
+    ("log_dir", "Log directory", cxxopts::value<std::string>()->default_value(logDir.string()))
     ("install_dir", "Installation directory", cxxopts::value<std::string>()->default_value(defaultInstallDir))
     ("extract_msi", "Extract MSI to the working directory and exit. Use only if you must access MSI directly.");
     // clang-format on
@@ -232,7 +234,6 @@ int Bootstrapper(HINSTANCE hInstance)
         installFolderProp = L"INSTALLFOLDER=" + installFolderProp;
     }
 
-    fs::path logDir = PTSettingsHelper::get_root_save_folder_location();
     try
     {
         fs::path logDirArgPath = logDirArg;
