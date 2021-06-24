@@ -361,7 +361,38 @@ namespace FancyZonesEditor.Utils
                 }
                 else
                 {
-                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Device.Id = targetMonitorName;
+                    // Monitors count
+                    int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount], CultureInfo.InvariantCulture);
+
+                    // Parse the native monitor data
+                    List<NativeMonitorData> nativeMonitorData = new List<NativeMonitorData>();
+                    const int monitorArgsCount = 6;
+                    for (int i = 0; i < count; i++)
+                    {
+                        var nativeData = default(NativeMonitorData);
+                        nativeData.MonitorId = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
+                        nativeData.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
+                        nativeData.LeftCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
+                        nativeData.TopCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
+                        nativeData.Width = int.Parse(argsParts[(int)CmdArgs.MonitorWidth + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
+                        nativeData.Height = int.Parse(argsParts[(int)CmdArgs.MonitorHeight + (i * monitorArgsCount)], CultureInfo.InvariantCulture);
+
+                        nativeMonitorData.Add(nativeData);
+                    }
+
+                    Rect workAreaUnion = default;
+
+                    // Update monitors data
+                    foreach (NativeMonitorData nativeData in nativeMonitorData)
+                    {
+                        Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
+                        workAreaUnion = Rect.Union(workAreaUnion, workArea);
+                    }
+
+                    var monitor = new Monitor(workAreaUnion, workAreaUnion);
+                    monitor.Device.Id = targetMonitorName;
+
+                    App.Overlay.Monitors.Add(monitor);
                 }
             }
             catch (Exception)
@@ -421,15 +452,16 @@ namespace FancyZonesEditor.Utils
                     }
                     else
                     {
-                        Rect workArea = default;
-
-                        foreach (NativeMonitorData nativeData in editorParams.Monitors)
+                        if (editorParams.Monitors.Count != 1)
                         {
-                            Rect monitorWorkArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
-                            workArea = Rect.Union(workArea, monitorWorkArea);
+                            return new ParsingResult(false);
                         }
 
+                        var nativeData = editorParams.Monitors[0];
+                        Rect workArea = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, nativeData.Width, nativeData.Height);
+
                         var monitor = new Monitor(workArea, workArea);
+                        monitor.Device.Id = nativeData.MonitorId;
                         App.Overlay.AddMonitor(monitor);
                     }
                 }
