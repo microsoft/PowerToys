@@ -1,6 +1,0 @@
-coc
-djsoref
-dogancelik
-itsme
-nitroin
-ulazy
