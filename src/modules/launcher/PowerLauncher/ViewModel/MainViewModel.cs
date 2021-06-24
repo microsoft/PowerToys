@@ -74,8 +74,12 @@ namespace PowerLauncher.ViewModel
 
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
+        }
 
-            if (settings != null && settings.UsePowerToysRunnerKeyboardHook)
+        public void RegisterHotkey()
+        {
+            Log.Info("RegisterHotkey()", GetType());
+            if (_settings != null && _settings.UsePowerToysRunnerKeyboardHook)
             {
                 NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey);
                 _hotkeyHandle = 0;
