@@ -7,6 +7,7 @@ The list below is the set of utilities we're considering and the rough priority 
 * Maximize to new desktop widget - The MTND widget shows a pop-up button when a user hovers over the maximize / restore button on any window.  Clicking it creates a new desktop, sends the app to that desktop and maximizes the app on the new desktop.
 * [Process terminate tool](https://github.com/indierawk2k2/PowerToys-1/blob/master/specs/Terminate%20Spec.md)
 * [Animated gif screen recorder](https://github.com/indierawk2k2/PowerToys-1/blob/master/specs/GIF%20Maker%20Spec.md)
+* [Use Monaco to view developer files in the preview pane](https://github.com/microsoft/PowerToys/wiki/Preview-pane---Adding-previews-with-monaco)
 
 ## Backlog
 
