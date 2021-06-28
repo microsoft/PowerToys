@@ -81,7 +81,7 @@ Our goals for [v0.39 release cycle](https://github.com/microsoft/PowerToys/issue
 
 #### Highlights from v0.39 / v0.41
 
-The PowerToys team delayed our 0.39 release. We learned a lot, but items took longer than expected. We had more we wanted done before the next release, so this longer time allowed us to get in more amazing pull requests by you, the community, to add / improve functionality for 0.41.
+The PowerToys team delayed our 0.39 release. We decided that we wanted to do more for the next release of PowerToys, so this longer time allowed us to get in more amazing pull requests by you, the community, to add / improve functionality which we merged into 0.41.
 
 **General**
 
