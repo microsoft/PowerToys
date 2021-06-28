@@ -26,7 +26,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 ### Requirements
 
 - Windows 10 v1903 (build 18362) or newer.
-   - ⚠️ PowerToys minimum version of Windows 10 is v1903 starting with the 0.37 release
+   - ⚠️ PowerToys (v0.37.0 and newer) requires Windows 10 v1903 (18362) or newer.
 - Have [.NET Core 3.1.15 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.15-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
@@ -92,6 +92,7 @@ Our goals for [v0.39 release cycle](https://github.com/microsoft/PowerToys/issue
 
 - New fix to prevent the creation of duplicate colors in the selection history. Thanks [@DoctorNefario](https://github.com/DoctorNefario)!
 - Fixed OOBE hotkey description. Thanks [@coc0a](https://github.com/coc0a)!
+- Improved editor UX to better support keyboard navigation. Thanks [@niels9001](https://github.com/niels9001)!
 - Updated Color Picker GIF for OOBE. Thanks [@niels9001](https://github.com/niels9001)!
 
 ### FancyZones
@@ -107,11 +108,15 @@ Our goals for [v0.39 release cycle](https://github.com/microsoft/PowerToys/issue
 - Fixed a bunch of accessibility bugs
 - Now an independent exe, detached from the runner process.
 
+### Image Resizer
+
+- Fixed bug where specifying a width but no height generated a 1x1 px image instead of auto-adjusting the height. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
 ### PowerToys Run
 
 - Multiple crashing bugs resolved.
 - New Unit Converter plugin! Activate in the query prompt with the default activation phrase `%%`. Ex: `%% 10 ft in m`. Thanks [@jsoref](https://github.com/jsoref) and [@ThiefZero](https://github.com/ThiefZero)!
-- New Windows Settings plugin! Search for specific Windows settings from PowerToys Run by utilizing the default activation phrase `$` followed by the desired setting. Ex: `$ Add/Remove Programs` Thanks [@TobiasSekan](https://github.com/TobiasSekan)
+- New Windows Settings plugin! Search for specific Windows settings from PowerToys Run by utilizing the default activation phrase `$` followed by the desired setting. Ex: `$ Add/Remove Programs` To list all settings of an area category, type `:` after the category name. Ex: `$ Device:`. Thanks [@TobiasSekan](https://github.com/TobiasSekan) and [@htcfreek](https://github.com/htcfreek).
 - Updated the URL plugin to enable quickly launching the default browser with  the action keyword, which defaults to `//`.
 - Added remainder/modulo support for Calculator plugin via `%` operator.
 - Faster launching from improved Win32 program indexing. Thanks [@royvou](https://github.com/royvou)!
@@ -126,7 +131,7 @@ Our goals for [v0.39 release cycle](https://github.com/microsoft/PowerToys/issue
 
 We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
-[@Aaron-Junker](https://github.com/Aaron-Junker), [@coc0a](https://github.com/coc0a), [@dend](https://github.com/dend), [@DoctorNefario](https://github.com/DoctorNefario), [@dogancelik](https://github.com/dogancelik), [@htcfreek](https://github.com/htcfreek), [@itsme-alan](https://github.com/itsme-alan), [@Jay-o-Way](https://github.com/Jay-o-Way), [@djsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), [@nitroin](https://github.com/nitroin), [@ricardosantos9521](https://github.com/ricardosantos9521), [@ThiefZero](https://github.com/ThiefZero), [@TobiasSekan](https://github.com/TobiasSekan), and [@ulazy1](https://github.com/ulazy1)
+[@Aaron-Junker](https://github.com/Aaron-Junker), [@coc0a](https://github.com/coc0a), [@davidegiacometti](https://github.com/davidegiacometti), [@dend](https://github.com/dend), [@DoctorNefario](https://github.com/DoctorNefario), [@dogancelik](https://github.com/dogancelik), [@htcfreek](https://github.com/htcfreek), [@itsme-alan](https://github.com/itsme-alan), [@Jay-o-Way](https://github.com/Jay-o-Way), [@djsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), [@nitroin](https://github.com/nitroin), [@ricardosantos9521](https://github.com/ricardosantos9521), [@ThiefZero](https://github.com/ThiefZero), [@TobiasSekan](https://github.com/TobiasSekan), and [@ulazy1](https://github.com/ulazy1)
 
 #### What is being planned for v0.43
 
