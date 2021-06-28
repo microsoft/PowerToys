@@ -81,6 +81,8 @@ Our goals for [v0.39 release cycle](https://github.com/microsoft/PowerToys/issue
 
 #### Highlights from v0.39 / v0.41
 
+The PowerToys team delayed our 0.39 release. We learned a lot, but items took longer than expected. We had more we wanted done before the next release, so this longer time allowed us to get in more amazing pull requests by you, the community, to add / improve functionality for 0.41.
+
 **General**
 
 - New Awake utility added! Power-Users can now keep their computer awake on-demand without having to manage its power settings. A huge thank you to [@dend](https://github.com/dend) for driving the development of this feature. Check out complete guidance and getting started info on [Microsoft Docs](https://aka.ms/PowerToysOverview_Awake)
