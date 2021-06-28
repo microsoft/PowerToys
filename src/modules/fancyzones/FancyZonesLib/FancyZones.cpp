@@ -897,11 +897,14 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             auto hwnd = reinterpret_cast<HWND>(wparam);
             MoveSizeEnd(hwnd, ptScreen);
         }
-        else if (message == WM_PRIV_LOCATIONCHANGE && InMoveSize())
+        else if (message == WM_PRIV_LOCATIONCHANGE)
         {
-            if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
+            if (m_windowMoveHandler.InMoveSize())
             {
-                MoveSizeUpdate(monitor, ptScreen);
+                if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
+                {
+                    MoveSizeUpdate(monitor, ptScreen);
+                }
             }
         }
         else if (message == WM_PRIV_WINDOWCREATED)
