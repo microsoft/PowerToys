@@ -271,16 +271,6 @@ private:
     // If non-recoverable error occurs, trigger disabling of entire FancyZones.
     static std::function<void()> disableModuleCallback;
 
-    static UINT WM_PRIV_VD_INIT; // Scheduled when FancyZones is initialized
-    static UINT WM_PRIV_VD_SWITCH; // Scheduled when virtual desktop switch occurs
-    static UINT WM_PRIV_VD_UPDATE; // Scheduled on virtual desktops update (creation/deletion)
-    static UINT WM_PRIV_EDITOR; // Scheduled when the editor exits
-    static UINT WM_PRIV_FILE_UPDATE; // Scheduled when the a watched file is updated
-    static UINT WM_PRIV_SETTINGS_CHANGED;
-
-    static UINT WM_PRIV_SNAP_HOTKEY; // Scheduled when we receive a snap hotkey key down press
-    static UINT WM_PRIV_QUICK_LAYOUT_KEY; // Scheduled when we receive a key down press to quickly apply a layout
-
     // Did we terminate the editor or was it closed cleanly?
     enum class EditorExitKind : byte
     {
@@ -290,15 +280,6 @@ private:
 };
 
 std::function<void()> FancyZones::disableModuleCallback = {};
-
-UINT FancyZones::WM_PRIV_VD_INIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
-UINT FancyZones::WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
-UINT FancyZones::WM_PRIV_VD_UPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26-9e20-29336cf2f22e}");
-UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
-UINT FancyZones::WM_PRIV_FILE_UPDATE = RegisterWindowMessage(L"{632f17a9-55a7-45f1-a4db-162e39271d92}");
-UINT FancyZones::WM_PRIV_SNAP_HOTKEY = RegisterWindowMessage(L"{763c03a3-03d9-4cde-8d71-f0358b0b4b52}");
-UINT FancyZones::WM_PRIV_QUICK_LAYOUT_KEY = RegisterWindowMessage(L"{72f4fd8e-23f1-43ab-bbbc-029363df9a84}");
-UINT FancyZones::WM_PRIV_SETTINGS_CHANGED = RegisterWindowMessage(L"{15baab3d-c67b-4a15-aFF0-13610e05e947}");
 
 // IFancyZones
 IFACEMETHODIMP_(void)
