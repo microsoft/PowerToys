@@ -216,4 +216,6 @@ namespace FancyZonesUtils
 
     // If HWND is already dead, we assume it wasn't elevated
     bool IsProcessOfWindowElevated(HWND window);
+
+    bool IsSplashScreen(HWND window);
 }

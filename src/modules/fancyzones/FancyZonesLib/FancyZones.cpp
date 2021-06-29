@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "FancyZones.h"
 
 #include <common/display/dpi_aware.h>
 #include <common/interop/shared_constants.h>
@@ -9,14 +10,16 @@
 #include <common/utils/window.h>
 #include <common/SettingsAPI/FileWatcher.h>
 
-#include "FancyZones.h"
-#include "FancyZonesLib/Settings.h"
-#include "FancyZonesLib/ZoneWindow.h"
-#include "FancyZonesLib/FancyZonesData.h"
-#include "FancyZonesLib/ZoneSet.h"
-#include "FancyZonesLib/WindowMoveHandler.h"
-#include "FancyZonesLib/FancyZonesWinHookEventIDs.h"
-#include "FancyZonesLib/util.h"
+#include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
+#include <FancyZonesLib/FileWatcher.h>
+#include <FancyZonesLib/MonitorUtils.h>
+#include <FancyZonesLib/Settings.h>
+#include <FancyZonesLib/ZoneSet.h>
+#include <FancyZonesLib/ZoneWindow.h>
+#include <FancyZonesLib/WindowMoveHandler.h>
+#include <FancyZonesLib/util.h>
+
 #include "on_thread_executor.h"
 #include "trace.h"
 #include "VirtualDesktopUtils.h"
@@ -36,8 +39,6 @@ enum class DisplayChangeType
 
 namespace
 {
-    constexpr int CUSTOM_POSITIONING_LEFT_TOP_PADDING = 16;
-
     struct require_read_lock
     {
         template<typename T>
@@ -68,7 +69,6 @@ namespace NonLocalizable
 {
     const wchar_t ToolWindowClassName[] = L"SuperFancyZones";
     const wchar_t FZEditorExecutablePath[] = L"modules\\FancyZones\\FancyZonesEditor.exe";
-    const wchar_t SplashClassName[] = L"MsoSplash";
 }
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
@@ -230,7 +230,6 @@ private:
 
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
 
-    bool IsSplashScreen(HWND window);
     bool ShouldProcessNewWindow(HWND window) noexcept;
     std::vector<size_t> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
@@ -271,16 +270,6 @@ private:
     // If non-recoverable error occurs, trigger disabling of entire FancyZones.
     static std::function<void()> disableModuleCallback;
 
-    static UINT WM_PRIV_VD_INIT; // Scheduled when FancyZones is initialized
-    static UINT WM_PRIV_VD_SWITCH; // Scheduled when virtual desktop switch occurs
-    static UINT WM_PRIV_VD_UPDATE; // Scheduled on virtual desktops update (creation/deletion)
-    static UINT WM_PRIV_EDITOR; // Scheduled when the editor exits
-    static UINT WM_PRIV_FILE_UPDATE; // Scheduled when the a watched file is updated
-    static UINT WM_PRIV_SETTINGS_CHANGED;
-
-    static UINT WM_PRIV_SNAP_HOTKEY; // Scheduled when we receive a snap hotkey key down press
-    static UINT WM_PRIV_QUICK_LAYOUT_KEY; // Scheduled when we receive a key down press to quickly apply a layout
-
     // Did we terminate the editor or was it closed cleanly?
     enum class EditorExitKind : byte
     {
@@ -290,15 +279,6 @@ private:
 };
 
 std::function<void()> FancyZones::disableModuleCallback = {};
-
-UINT FancyZones::WM_PRIV_VD_INIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
-UINT FancyZones::WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
-UINT FancyZones::WM_PRIV_VD_UPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26-9e20-29336cf2f22e}");
-UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
-UINT FancyZones::WM_PRIV_FILE_UPDATE = RegisterWindowMessage(L"{632f17a9-55a7-45f1-a4db-162e39271d92}");
-UINT FancyZones::WM_PRIV_SNAP_HOTKEY = RegisterWindowMessage(L"{763c03a3-03d9-4cde-8d71-f0358b0b4b52}");
-UINT FancyZones::WM_PRIV_QUICK_LAYOUT_KEY = RegisterWindowMessage(L"{72f4fd8e-23f1-43ab-bbbc-029363df9a84}");
-UINT FancyZones::WM_PRIV_SETTINGS_CHANGED = RegisterWindowMessage(L"{15baab3d-c67b-4a15-aFF0-13610e05e947}");
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -458,76 +438,7 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zon
     }
 }
 
-inline int RectWidth(const RECT& rect)
-{
-    return rect.right - rect.left;
-}
-
-inline int RectHeight(const RECT& rect)
-{
-    return rect.bottom - rect.top;
-}
-
-RECT FitOnScreen(const RECT& windowRect, const RECT& originMonitorRect, const RECT& destMonitorRect)
-{
-    // New window position on active monitor. If window fits the screen, this will be final position.
-    int left = destMonitorRect.left + (windowRect.left - originMonitorRect.left);
-    int top = destMonitorRect.top + (windowRect.top - originMonitorRect.top);
-    int W = RectWidth(windowRect);
-    int H = RectHeight(windowRect);
-
-    if ((left < destMonitorRect.left) || (left + W > destMonitorRect.right))
-    {
-        // Set left window border to left border of screen (add padding). Resize window width if needed.
-        left = destMonitorRect.left + CUSTOM_POSITIONING_LEFT_TOP_PADDING;
-        W = min(W, RectWidth(destMonitorRect) - CUSTOM_POSITIONING_LEFT_TOP_PADDING);
-    }
-    if ((top < destMonitorRect.top) || (top + H > destMonitorRect.bottom))
-    {
-        // Set top window border to top border of screen (add padding). Resize window height if needed.
-        top = destMonitorRect.top + CUSTOM_POSITIONING_LEFT_TOP_PADDING;
-        H = min(H, RectHeight(destMonitorRect) - CUSTOM_POSITIONING_LEFT_TOP_PADDING);
-    }
-
-    return { .left = left,
-             .top = top,
-             .right = left + W,
-             .bottom = top + H };
-}
-
-void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
-{
-    // By default Windows opens new window on primary monitor.
-    // Try to preserve window width and height, adjust top-left corner if needed.
-    HMONITOR origin = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
-    if (origin == monitor)
-    {
-        // Certain applications by design open in last known position, regardless of FancyZones.
-        // If that position is on currently active monitor, skip custom positioning.
-        return;
-    }
-
-    WINDOWPLACEMENT placement{};
-    if (GetWindowPlacement(window, &placement))
-    {
-        MONITORINFOEX originMi;
-        originMi.cbSize = sizeof(originMi);
-        if (GetMonitorInfo(origin, &originMi))
-        {
-            MONITORINFOEX destMi;
-            destMi.cbSize = sizeof(destMi);
-            if (GetMonitorInfo(monitor, &destMi))
-            {
-                RECT newPosition = FitOnScreen(placement.rcNormalPosition, originMi.rcWork, destMi.rcWork);
-                FancyZonesUtils::SizeWindowToRect(window, newPosition);
-            }
-        }
-    }
-}
-
-// IFancyZonesCallback
-IFACEMETHODIMP_(void)
-FancyZones::WindowCreated(HWND window) noexcept
+void FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
     GUID desktopId{};
@@ -564,7 +475,7 @@ FancyZones::WindowCreated(HWND window) noexcept
         }
         if (!windowZoned && openOnActiveMonitor)
         {
-            m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { OpenWindowOnActiveMonitor(window, active); } }).wait();
+            m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { MonitorUtils::OpenWindowOnActiveMonitor(window, active); } }).wait();
         }
     }
 }
@@ -916,11 +827,14 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             auto hwnd = reinterpret_cast<HWND>(wparam);
             MoveSizeEnd(hwnd, ptScreen);
         }
-        else if (message == WM_PRIV_LOCATIONCHANGE && InMoveSize())
+        else if (message == WM_PRIV_LOCATIONCHANGE)
         {
-            if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
+            if (m_windowMoveHandler.InMoveSize())
             {
-                MoveSizeUpdate(monitor, ptScreen);
+                if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
+                {
+                    MoveSizeUpdate(monitor, ptScreen);
+                }
             }
         }
         else if (message == WM_PRIV_WINDOWCREATED)
@@ -1328,17 +1242,6 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
         FancyZonesDataInstance().UpdatePrimaryDesktopData(active[0]);
         FancyZonesDataInstance().RemoveDeletedDesktops(active);
     }
-}
-
-bool FancyZones::IsSplashScreen(HWND window)
-{
-    wchar_t className[MAX_PATH];
-    if (GetClassName(window, className, MAX_PATH) == 0)
-    {
-        return false;
-    }
-
-    return wcscmp(NonLocalizable::SplashClassName, className) == 0;
 }
 
 void FancyZones::OnEditorExitEvent(require_write_lock lock) noexcept
