@@ -290,6 +290,7 @@ CMock
 CMONITORS
 cmyk
 cnt
+coc
 coclass
 codebase
 codecvt
@@ -499,6 +500,7 @@ Displayandhidethedesktop
 DISPLAYCHANGE
 displayname
 divyan
+djsoref
 DLACTIVEXCTLS
 DLCONTROL
 dlg
@@ -514,6 +516,7 @@ DNLEN
 Dns
 docsmsft
 doctype
+dogancelik
 domainlexicon
 DONTVALIDATEPATH
 dotnet
@@ -1093,6 +1096,7 @@ ith
 IThrottled
 IThumbnail
 ITrigger
+itsme
 IUI
 IUnknown
 IUri
@@ -1479,6 +1483,7 @@ niels
 nielslaute
 NIF
 nightlight
+nitroin
 NLD
 nlog
 NLSTEXT
@@ -2281,6 +2286,7 @@ UIPI
 UIs
 UITo
 ULARGE
+ulazy
 ULLONG
 ulong
 ULONGLONG
@@ -2603,9 +2609,3 @@ ZONESETCHANGE
 Zoneszonabletester
 Zoomusingmagnifier
 zzz
-coc
-djsoref
-dogancelik
-itsme
-nitroin
-ulazy
