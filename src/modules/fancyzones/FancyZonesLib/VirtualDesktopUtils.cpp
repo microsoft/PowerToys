@@ -33,7 +33,7 @@ IVirtualDesktopManager* GetVirtualDesktopManager()
     return manager;
 }
 
-bool NewGetCurrentDesktopId(GUID* desktopId)
+std::optional<GUID> NewGetCurrentDesktopId()
 {
     wil::unique_hkey key{};
     if (RegOpenKeyExW(HKEY_CURRENT_USER, NonLocalizable::RegKeyVirtualDesktops, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
@@ -42,26 +42,25 @@ bool NewGetCurrentDesktopId(GUID* desktopId)
         DWORD size = sizeof(GUID);
         if (RegQueryValueExW(key.get(), NonLocalizable::RegCurrentVirtualDesktop, 0, nullptr, reinterpret_cast<BYTE*>(&value), &size) == ERROR_SUCCESS)
         {
-            *desktopId = value;
-            return true;
+            return value;
         }
     }
 
-    return false;
+    return std::nullopt;
 }
 
-bool GetDesktopIdFromCurrentSession(GUID* desktopId)
+std::optional<GUID> GetDesktopIdFromCurrentSession()
 {
     DWORD sessionId;
     if (!ProcessIdToSessionId(GetCurrentProcessId(), &sessionId))
     {
-        return false;
+        return std::nullopt;
     }
 
     wchar_t sessionKeyPath[256]{};
     if (FAILED(StringCchPrintfW(sessionKeyPath, ARRAYSIZE(sessionKeyPath), NonLocalizable::RegKeyVirtualDesktopsFromSession, sessionId)))
     {
-        return false;
+        return std::nullopt;
     }
 
     wil::unique_hkey key{};
@@ -71,11 +70,11 @@ bool GetDesktopIdFromCurrentSession(GUID* desktopId)
         DWORD size = sizeof(GUID);
         if (RegQueryValueExW(key.get(), NonLocalizable::RegCurrentVirtualDesktop, 0, nullptr, reinterpret_cast<BYTE*>(&value), &size) == ERROR_SUCCESS)
         {
-            *desktopId = value;
-            return true;
+            return value;
         }
     }
-    return false;
+
+    return std::nullopt;
 }
 
 bool GetZoneWindowDesktopId(IZoneWindow* zoneWindow, GUID* desktopId)
@@ -138,11 +137,10 @@ std::optional<GUID> VirtualDesktopUtils::GetWindowDesktopId(HWND topLevelWindow)
 
 std::optional<GUID> VirtualDesktopUtils::GetCurrentVirtualDesktopId() const
 {
-    GUID desktopId{};
-
     // On newer Windows builds, the current virtual desktop is persisted to
     // a totally different reg key. Look there first.
-    if (NewGetCurrentDesktopId(&desktopId))
+    std::optional<GUID> desktopId = NewGetCurrentDesktopId();
+    if (desktopId.has_value())
     {
         return desktopId;
     }
@@ -150,7 +148,8 @@ std::optional<GUID> VirtualDesktopUtils::GetCurrentVirtualDesktopId() const
     // Explorer persists current virtual desktop identifier to registry on a per session basis, but only
     // after first virtual desktop switch happens. If the user hasn't switched virtual desktops in this
     // session, value in registry will be empty.
-    if (GetDesktopIdFromCurrentSession(&desktopId))
+    desktopId = GetDesktopIdFromCurrentSession();
+    if (desktopId.has_value())
     {
         return desktopId;
     }
