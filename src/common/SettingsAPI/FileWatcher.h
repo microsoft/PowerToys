@@ -1,6 +1,13 @@
 #pragma once
 
-#include "pch.h"
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+
+#include <thread>
+#include <optional>
+#include <string>
+#include <functional>
 
 class FileWatcher
 {

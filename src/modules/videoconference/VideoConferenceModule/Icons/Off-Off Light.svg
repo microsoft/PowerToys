@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="322" height="44" viewBox="0 0 322 44">
+  <defs>
+    <clipPath id="clip-Off-Off_Light">
+      <rect width="322" height="44"/>
+    </clipPath>
+  </defs>
+  <g id="Off-Off_Light" data-name="Off-Off Light" clip-path="url(#clip-Off-Off_Light)">
+    <rect width="322" height="44" fill="#f1f1f1"/>
+    <g id="Background" fill="#f1f1f1">
+      <path d="M 321.5 43.5 L 0.5 43.5 L 0.5 0.5 L 321.5 0.5 L 321.5 43.5 Z" stroke="none"/>
+      <path d="M 1 1 L 1 43 L 321 43 L 321 1 L 1 1 M 0 0 L 322 0 L 322 44 L 0 44 L 0 0 Z" stroke="none" fill="#dbdbdb"/>
+    </g>
+    <rect id="Divider" width="1" height="24" transform="translate(161 10)" fill="#dbdbdb"/>
+    <text id="Camera_label" data-name="Camera label" transform="translate(200 13)" font-size="12" font-family="SegoeUI, Segoe UI"><tspan x="0" y="13">Camera off</tspan></text>
+    <path id="Camera_off_icon" data-name="Camera off icon" d="M12,24.9l4-2.038v8.279l-1.953-1q-.141-.072-.258-.119t-.242-.1a1.825,1.825,0,0,1-.227-.119l-.25-.159a1.726,1.726,0,0,1-.2-.159,1.556,1.556,0,0,1-.156-.167q-.07-.088-.148-.175l-.18-.2L11,27.533v-3.59H7.477l-1-1.019H12Zm3,4.593V24.508l-3,1.536v1.91ZM.148,19.716.852,19l15,15.284-.7.716-3.859-3.924H0V22.924H3.289ZM1,30.057h9.289l-6-6.113H1Z" transform="translate(171 -5)"/>
+    <path id="Mic_off_icon" data-name="Mic off icon" d="M23.943,2.531l-1.019-1V1.5a1.448,1.448,0,0,1,.119-.586A1.5,1.5,0,0,1,23.37.437,1.538,1.538,0,0,1,24.453,0h4.076a1.538,1.538,0,0,1,1.083.437,1.5,1.5,0,0,1,.326.477,1.448,1.448,0,0,1,.119.586V8.531l-1.019-1V1.5a.472.472,0,0,0-.143-.352A.529.529,0,0,0,28.528,1H24.453a.491.491,0,0,0-.358.141.509.509,0,0,0-.151.359ZM32.095,8v2.523l-1.019-.992V8ZM35,15.148l-.716.7-3-2.945a3.218,3.218,0,0,1-1.106.8A3.388,3.388,0,0,1,28.831,14H27v1h2.038v1H23.943V15h2.038V14H24.15a3.206,3.206,0,0,1-1.266-.25,3.307,3.307,0,0,1-1.035-.687,3.239,3.239,0,0,1-.7-1.016,3.16,3.16,0,0,1-.263-1.25V8h1.019v2.8a2.093,2.093,0,0,0,.175.852,2.238,2.238,0,0,0,.486.7,2.2,2.2,0,0,0,.708.469,2.493,2.493,0,0,0,.876.18h4.681a2.187,2.187,0,0,0,.947-.211,2.427,2.427,0,0,0,.78-.586l-.812-.8a1.486,1.486,0,0,1-.533.438,1.613,1.613,0,0,1-.685.164H24.453a1.538,1.538,0,0,1-1.083-.437,1.5,1.5,0,0,1-.326-.477,1.448,1.448,0,0,1-.119-.586V4.711L19,.852l.716-.7ZM28.528,11a.5.5,0,0,0,.287-.086.526.526,0,0,0,.191-.234L23.943,5.711V10.5a.472.472,0,0,0,.143.352.529.529,0,0,0,.366.148Z" transform="translate(-9 14)"/>
+    <text id="Mic_label" data-name="Mic label" transform="translate(38 13)" font-size="12" font-family="SegoeUI, Segoe UI"><tspan x="0" y="13">Microphone off</tspan></text>
+  </g>
+</svg>

@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <Shlobj.h> 
 #include <Shlobj_core.h> 
@@ -90,6 +91,15 @@ std::string GetMediaSubTypeString(const GUID& guid)
     }
 }
 
+std::string asString(RECT r)
+{
+  std::ostringstream s;
+  if (r.left == r.right && r.bottom == r.right && r.top == r.right && r.right == 0)
+      return "[ZEROES]";
+  s << '(' << r.left << ", " << r.top << ") - (" << r.right << ", " << r.bottom << ")";
+  return s.str();
+}
+
 void LogMediaTypes(wil::com_ptr_nothrow<IPin>& pin)
 {
     wil::com_ptr_nothrow<IEnumMediaTypes> mediaTypeEnum;
@@ -113,7 +123,9 @@ void LogMediaTypes(wil::com_ptr_nothrow<IPin>& pin)
         }
         const auto formatAvgFPS = 10000000LL / format->AvgTimePerFrame;
         log() << GetMediaSubTypeString(mt->subtype) << '\t' << format->bmiHeader.biWidth << "x"
-              << format->bmiHeader.biHeight << " - " << formatAvgFPS << "fps\n";
+              << format->bmiHeader.biHeight << " - " << formatAvgFPS << "fps src rect: " << asString(format->rcSource) 
+              << " dst rect: " << asString(format->rcSource) 
+              << " flipped: " << std::boolalpha << (format->bmiHeader.biHeight < 0) << '\n';
     }
     log() << '\n';
 }
