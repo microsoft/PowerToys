@@ -33,6 +33,23 @@ IVirtualDesktopManager* GetVirtualDesktopManager()
     return manager;
 }
 
+bool NewGetCurrentDesktopId(GUID* desktopId)
+{
+    wil::unique_hkey key{};
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, NonLocalizable::RegKeyVirtualDesktops, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+    {
+        GUID value{};
+        DWORD size = sizeof(GUID);
+        if (RegQueryValueExW(key.get(), NonLocalizable::RegCurrentVirtualDesktop, 0, nullptr, reinterpret_cast<BYTE*>(&value), &size) == ERROR_SUCCESS)
+        {
+            *desktopId = value;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool GetDesktopIdFromCurrentSession(GUID* desktopId)
 {
     DWORD sessionId;
@@ -122,6 +139,13 @@ std::optional<GUID> VirtualDesktopUtils::GetWindowDesktopId(HWND topLevelWindow)
 std::optional<GUID> VirtualDesktopUtils::GetCurrentVirtualDesktopId() const
 {
     GUID desktopId{};
+
+    // On newer Windows builds, the current virtual desktop is persisted to
+    // a totally different reg key. Look there first.
+    if (NewGetCurrentDesktopId(&desktopId))
+    {
+        return desktopId;
+    }
 
     // Explorer persists current virtual desktop identifier to registry on a per session basis, but only
     // after first virtual desktop switch happens. If the user hasn't switched virtual desktops in this
