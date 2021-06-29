@@ -3,11 +3,11 @@
 #include "ZoneWindow.h"
 #include "on_thread_executor.h"
 
-class VirtualDesktopUtils
+class VirtualDesktop
 {
 public:
-    VirtualDesktopUtils(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback);
-    ~VirtualDesktopUtils() = default;
+    VirtualDesktop(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback);
+    ~VirtualDesktop() = default;
 
     void Init();
     void UnInit();

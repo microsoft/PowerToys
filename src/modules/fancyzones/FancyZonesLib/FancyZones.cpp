@@ -21,7 +21,7 @@
 
 #include "on_thread_executor.h"
 #include "trace.h"
-#include "VirtualDesktopUtils.h"
+#include "VirtualDesktop.h"
 #include "MonitorWorkAreaHandler.h"
 #include "util.h"
 #include "CallTracer.h"
@@ -85,7 +85,7 @@ public:
         m_settingsFileWatcher(FancyZonesDataInstance().GetSettingsFileName(), [this]() {
             PostMessageW(m_window, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
         }),
-        m_virtualDesktopUtils([this]() { 
+        m_virtualDesktop([this]() { 
             PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0); 
         },
         [this]() { 
@@ -255,7 +255,7 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
-    VirtualDesktopUtils m_virtualDesktopUtils;
+    VirtualDesktop m_virtualDesktop;
 
     FileWatcher m_zonesSettingsFileWatcher;
     FileWatcher m_settingsFileWatcher;
@@ -305,7 +305,7 @@ FancyZones::Run() noexcept
 
     RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
 
-    m_virtualDesktopUtils.Init();
+    m_virtualDesktop.Init();
 
     m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [] {
                           SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
@@ -335,7 +335,7 @@ FancyZones::Destroy() noexcept
         m_window = nullptr;
     }
 
-    m_virtualDesktopUtils.UnInit();
+    m_virtualDesktop.UnInit();
     m_settings->ResetCallback();
 }
 
@@ -430,7 +430,7 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zon
 void FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
-    auto desktopId = m_virtualDesktopUtils.GetWindowDesktopId(window);
+    auto desktopId = m_virtualDesktop.GetWindowDesktopId(window);
     if (desktopId.has_value() && *desktopId != m_currentDesktopId)
     {
         // Switch between virtual desktops results with posting same windows messages that also indicate
@@ -859,7 +859,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType, require_write_loc
         changeType == DisplayChangeType::Initialization)
     {
         m_previousDesktopId = m_currentDesktopId;
-        auto currentVirtualDesktopId = m_virtualDesktopUtils.GetCurrentVirtualDesktopId();
+        auto currentVirtualDesktopId = m_virtualDesktop.GetCurrentVirtualDesktopId();
         if (currentVirtualDesktopId.has_value())
         {
             m_currentDesktopId = *currentVirtualDesktopId;
@@ -870,7 +870,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType, require_write_loc
         }
         if (changeType == DisplayChangeType::Initialization)
         {
-            auto guids = m_virtualDesktopUtils.GetVirtualDesktopIds();
+            auto guids = m_virtualDesktop.GetVirtualDesktopIds();
             if (guids.has_value())
             {
                 std::vector<std::wstring> guidStrings{};
@@ -1005,7 +1005,7 @@ void FancyZones::UpdateWindowsPositions(require_write_lock) noexcept
             }
 
             auto strongThis = reinterpret_cast<FancyZones*>(data);
-            auto desktopId = strongThis->m_virtualDesktopUtils.GetWindowDesktopId(window);
+            auto desktopId = strongThis->m_virtualDesktop.GetWindowDesktopId(window);
             if (desktopId.has_value())
             {
                 auto zoneWindow = strongThis->m_workAreaHandler.GetWorkArea(window, *desktopId);
@@ -1238,7 +1238,7 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
 {
     _TRACER_;
 
-    auto guids = m_virtualDesktopUtils.GetVirtualDesktopIds();
+    auto guids = m_virtualDesktop.GetVirtualDesktopIds();
     std::vector<std::wstring> guidStrings{};
     if (guids.has_value())
     {

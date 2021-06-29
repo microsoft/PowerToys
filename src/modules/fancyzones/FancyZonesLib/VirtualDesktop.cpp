@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "VirtualDesktopUtils.h"
+#include "VirtualDesktop.h"
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -101,14 +101,14 @@ HKEY GetVirtualDesktopsRegKey()
     return virtualDesktopsKey.get();
 }
 
-VirtualDesktopUtils::VirtualDesktopUtils(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback) :
+VirtualDesktop::VirtualDesktop(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback) :
     m_vdInitCallback(vdInitCallback),
     m_vdUpdatedCallback(vdUpdatedCallback),
     m_vdManager(GetVirtualDesktopManager())
 {
 }
 
-void VirtualDesktopUtils::Init()
+void VirtualDesktop::Init()
 {
     m_vdInitCallback();
 
@@ -116,7 +116,7 @@ void VirtualDesktopUtils::Init()
     m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] { HandleVirtualDesktopUpdates(); } });
 }
 
-void VirtualDesktopUtils::UnInit()
+void VirtualDesktop::UnInit()
 {
     if (m_terminateVirtualDesktopTrackerEvent)
     {
@@ -124,7 +124,7 @@ void VirtualDesktopUtils::UnInit()
     }
 }
 
-std::optional<GUID> VirtualDesktopUtils::GetWindowDesktopId(HWND topLevelWindow) const
+std::optional<GUID> VirtualDesktop::GetWindowDesktopId(HWND topLevelWindow) const
 {
     GUID desktopId{};
     if (m_vdManager && SUCCEEDED(m_vdManager->GetWindowDesktopId(topLevelWindow, &desktopId)))
@@ -135,7 +135,7 @@ std::optional<GUID> VirtualDesktopUtils::GetWindowDesktopId(HWND topLevelWindow)
     return std::nullopt;
 }
 
-std::optional<GUID> VirtualDesktopUtils::GetCurrentVirtualDesktopId() const
+std::optional<GUID> VirtualDesktop::GetCurrentVirtualDesktopId() const
 {
     // On newer Windows builds, the current virtual desktop is persisted to
     // a totally different reg key. Look there first.
@@ -170,7 +170,7 @@ std::optional<GUID> VirtualDesktopUtils::GetCurrentVirtualDesktopId() const
     return std::nullopt;
 }
 
-std::optional<std::vector<GUID>> VirtualDesktopUtils::GetVirtualDesktopIds(HKEY hKey) const
+std::optional<std::vector<GUID>> VirtualDesktop::GetVirtualDesktopIds(HKEY hKey) const
 {
     if (!hKey)
     {
@@ -203,12 +203,12 @@ std::optional<std::vector<GUID>> VirtualDesktopUtils::GetVirtualDesktopIds(HKEY 
     return temp;
 }
 
-std::optional<std::vector<GUID>> VirtualDesktopUtils::GetVirtualDesktopIds() const
+std::optional<std::vector<GUID>> VirtualDesktop::GetVirtualDesktopIds() const
 {
     return GetVirtualDesktopIds(GetVirtualDesktopsRegKey());
 }
 
-void VirtualDesktopUtils::HandleVirtualDesktopUpdates()
+void VirtualDesktop::HandleVirtualDesktopUpdates()
 {
     HKEY virtualDesktopsRegKey = GetVirtualDesktopsRegKey();
     if (!virtualDesktopsRegKey)

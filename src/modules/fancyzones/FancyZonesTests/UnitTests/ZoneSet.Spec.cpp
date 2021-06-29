@@ -2,7 +2,7 @@
 #include "FancyZonesLib\FancyZonesData.h"
 #include "FancyZonesLib\FancyZonesDataTypes.h"
 #include "FancyZonesLib\JsonHelpers.h"
-#include "FancyZonesLib\VirtualDesktopUtils.h"
+#include "FancyZonesLib\VirtualDesktop.h"
 #include "FancyZonesLib\ZoneSet.h"
 
 #include <filesystem>
