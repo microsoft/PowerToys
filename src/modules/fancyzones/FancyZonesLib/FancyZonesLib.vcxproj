@@ -54,7 +54,7 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
-    <ClInclude Include="VirtualDesktopUtils.h" />
+    <ClInclude Include="VirtualDesktop.h" />
     <ClInclude Include="WindowMoveHandler.h" />
     <ClInclude Include="Zone.h" />
     <ClInclude Include="ZoneSet.h" />
@@ -78,7 +78,7 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="util.cpp" />
-    <ClCompile Include="VirtualDesktopUtils.cpp" />
+    <ClCompile Include="VirtualDesktop.cpp" />
     <ClCompile Include="WindowMoveHandler.cpp" />
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="ZoneSet.cpp" />

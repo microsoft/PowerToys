@@ -43,11 +43,12 @@ public:
      * Get work area on which specified window is located.
      *
      * @param[in]  window Window handle.
-     *
+     * @param[in]  desktopId GUID current desktop id
+     * 
      * @returns    Object representing single work area, interface to all actions available on work area
      *             (e.g. moving windows through zone layout specified for that work area).
      */
-    winrt::com_ptr<IZoneWindow> GetWorkArea(HWND window);
+    winrt::com_ptr<IZoneWindow> GetWorkArea(HWND window, const GUID& desktopId);
 
     /**
      * Get map of all work areas on single virtual desktop. Key in the map is monitor handle, while value

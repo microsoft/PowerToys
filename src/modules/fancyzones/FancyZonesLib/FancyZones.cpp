@@ -22,7 +22,7 @@
 
 #include "on_thread_executor.h"
 #include "trace.h"
-#include "VirtualDesktopUtils.h"
+#include "VirtualDesktop.h"
 #include "MonitorWorkAreaHandler.h"
 #include "util.h"
 #include "CallTracer.h"
@@ -85,6 +85,12 @@ public:
         }),
         m_settingsFileWatcher(FancyZonesDataInstance().GetSettingsFileName(), [this]() {
             PostMessageW(m_window, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
+        }),
+        m_virtualDesktop([this]() { 
+            PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0); 
+        },
+        [this]() { 
+            PostMessage(m_window, WM_PRIV_VD_UPDATE, 0, 0); 
         })
     {
         m_settings->SetCallback(this);
@@ -159,8 +165,6 @@ public:
 
     IFACEMETHODIMP_(void)
     VirtualDesktopChanged() noexcept;
-    IFACEMETHODIMP_(void)
-    VirtualDesktopInitialize() noexcept;
     IFACEMETHODIMP_(bool)
     OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
     IFACEMETHODIMP_(void)
@@ -228,7 +232,7 @@ private:
     bool OnSnapHotkey(DWORD vkCode) noexcept;
     bool ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
 
-    void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
+    void RegisterVirtualDesktopUpdates() noexcept;
 
     bool ShouldProcessNewWindow(HWND window) noexcept;
     std::vector<size_t> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
@@ -252,6 +256,7 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
+    VirtualDesktop m_virtualDesktop;
 
     FileWatcher m_zonesSettingsFileWatcher;
     FileWatcher m_settingsFileWatcher;
@@ -260,10 +265,8 @@ private:
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.
     GUID m_currentDesktopId{}; // UUID of the current virtual desktop.
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
-    wil::unique_handle m_terminateVirtualDesktopTrackerEvent;
 
     OnThreadExecutor m_dpiUnawareThread;
-    OnThreadExecutor m_virtualDesktopTrackerThread;
 
     EventWaiter m_toggleEditorEventWaiter;
 
@@ -303,16 +306,13 @@ FancyZones::Run() noexcept
 
     RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
 
-    VirtualDesktopInitialize();
+    m_virtualDesktop.Init();
 
     m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [] {
                           SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
                           SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
                       } })
         .wait();
-
-    m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
-    m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] { VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
 
     m_toggleEditorEventWaiter = EventWaiter(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT, [&](int err) {
         if (err == ERROR_SUCCESS)
@@ -335,11 +335,8 @@ FancyZones::Destroy() noexcept
         DestroyWindow(m_window);
         m_window = nullptr;
     }
-    if (m_terminateVirtualDesktopTrackerEvent)
-    {
-        SetEvent(m_terminateVirtualDesktopTrackerEvent.get());
-    }
 
+    m_virtualDesktop.UnInit();
     m_settings->ResetCallback();
 }
 
@@ -350,13 +347,6 @@ FancyZones::VirtualDesktopChanged() noexcept
     // VirtualDesktopChanged is called from a reentrant WinHookProc function, therefore we must postpone the actual logic
     // until we're in FancyZones::WndProc, which is not reentrant.
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
-}
-
-// IFancyZonesCallback
-IFACEMETHODIMP_(void)
-FancyZones::VirtualDesktopInitialize() noexcept
-{
-    PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0);
 }
 
 bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
@@ -441,13 +431,14 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zon
 void FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
-    GUID desktopId{};
-    if (VirtualDesktopUtils::GetWindowDesktopId(window, &desktopId) && desktopId != m_currentDesktopId)
+    auto desktopId = m_virtualDesktop.GetWindowDesktopId(window);
+    if (desktopId.has_value() && *desktopId != m_currentDesktopId)
     {
         // Switch between virtual desktops results with posting same windows messages that also indicate
         // creation of new window. We need to check if window being processed is on currently active desktop.
         return;
     }
+
     const bool moveToAppLastZone = m_settings->GetSettings()->appLastZone_moveWindows;
     const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
     if ((moveToAppLastZone || openOnActiveMonitor) && ShouldProcessNewWindow(window))
@@ -794,11 +785,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_VD_UPDATE)
         {
-            std::vector<GUID> ids{};
-            if (VirtualDesktopUtils::GetVirtualDesktopIds(ids))
-            {
-                RegisterVirtualDesktopUpdates(ids);
-            }
+            RegisterVirtualDesktopUpdates();
         }
         else if (message == WM_PRIV_EDITOR)
         {
@@ -873,23 +860,19 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType, require_write_loc
         changeType == DisplayChangeType::Initialization)
     {
         m_previousDesktopId = m_currentDesktopId;
-        GUID currentVirtualDesktopId{};
-        if (VirtualDesktopUtils::GetCurrentVirtualDesktopId(&currentVirtualDesktopId))
+        auto currentVirtualDesktopId = m_virtualDesktop.GetCurrentVirtualDesktopId();
+        if (currentVirtualDesktopId.has_value())
         {
-            m_currentDesktopId = currentVirtualDesktopId;
+            m_currentDesktopId = *currentVirtualDesktopId;
             if (m_previousDesktopId != GUID_NULL && m_currentDesktopId != m_previousDesktopId)
             {
                 Trace::VirtualDesktopChanged();
             }
         }
+
         if (changeType == DisplayChangeType::Initialization)
         {
-            std::vector<std::wstring> ids{};
-            if (VirtualDesktopUtils::GetVirtualDesktopIds(ids) && !ids.empty())
-            {
-                FancyZonesDataInstance().UpdatePrimaryDesktopData(ids[0]);
-                FancyZonesDataInstance().RemoveDeletedDesktops(ids);
-            }
+            RegisterVirtualDesktopUpdates();
         }
     }
 
@@ -1006,11 +989,16 @@ void FancyZones::UpdateWindowsPositions(require_write_lock) noexcept
             }
 
             auto strongThis = reinterpret_cast<FancyZones*>(data);
-            auto zoneWindow = strongThis->m_workAreaHandler.GetWorkArea(window);
-            if (zoneWindow)
+            auto desktopId = strongThis->m_virtualDesktop.GetWindowDesktopId(window);
+            if (desktopId.has_value())
             {
-                strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, indexSet, zoneWindow);
+                auto zoneWindow = strongThis->m_workAreaHandler.GetWorkArea(window, *desktopId);
+                if (zoneWindow)
+                {
+                    strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, indexSet, zoneWindow);
+                }
             }
+            
         }
         return TRUE;
     };
@@ -1230,17 +1218,31 @@ bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle
     }
 }
 
-void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
+void FancyZones::RegisterVirtualDesktopUpdates() noexcept
 {
     _TRACER_;
-    std::unique_lock writeLock(m_lock);
 
-    m_workAreaHandler.RegisterUpdates(ids);
-    std::vector<std::wstring> active{};
-    if (VirtualDesktopUtils::GetVirtualDesktopIds(active) && !active.empty())
+    auto guids = m_virtualDesktop.GetVirtualDesktopIds();
+    std::vector<std::wstring> guidStrings{};
+    if (guids.has_value())
     {
-        FancyZonesDataInstance().UpdatePrimaryDesktopData(active[0]);
-        FancyZonesDataInstance().RemoveDeletedDesktops(active);
+        m_workAreaHandler.RegisterUpdates(*guids);
+
+        for (auto& guid : *guids)
+        {
+            auto guidString = FancyZonesUtils::GuidToString(guid);
+            if (guidString.has_value())
+            {
+                guidStrings.push_back(*guidString);
+            }
+        }
+
+        if (!guidStrings.empty())
+        {
+            FancyZonesDataInstance().UpdatePrimaryDesktopData(guidStrings[0]);
+        }
+
+        FancyZonesDataInstance().RemoveDeletedDesktops(guidStrings);
     }
 }
 
