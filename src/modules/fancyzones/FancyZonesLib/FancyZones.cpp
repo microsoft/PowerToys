@@ -868,27 +868,10 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType, require_write_loc
                 Trace::VirtualDesktopChanged();
             }
         }
+
         if (changeType == DisplayChangeType::Initialization)
         {
-            auto guids = m_virtualDesktop.GetVirtualDesktopIds();
-            if (guids.has_value())
-            {
-                std::vector<std::wstring> guidStrings{};
-                for (auto& guid : *guids)
-                {
-                    auto guidString = FancyZonesUtils::GuidToString(guid);
-                    if (guidString.has_value())
-                    {
-                        guidStrings.push_back(*guidString);
-                    }
-                }
-
-                if (!guidStrings.empty())
-                {
-                    FancyZonesDataInstance().UpdatePrimaryDesktopData(guidStrings[0]);
-                    FancyZonesDataInstance().RemoveDeletedDesktops(guidStrings);
-                }
-            }
+            RegisterVirtualDesktopUpdates();
         }
     }
 
