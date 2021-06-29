@@ -18,6 +18,7 @@ namespace NonLocalizable
 {
     const wchar_t PowerToysAppPowerLauncher[] = L"POWERLAUNCHER.EXE";
     const wchar_t PowerToysAppFZEditor[] = L"FANCYZONESEDITOR.EXE";
+    const wchar_t SplashClassName[] = L"MsoSplash";
 }
 
 bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what)
@@ -860,6 +861,17 @@ namespace FancyZonesUtils
             }
         }
         return false;
+    }
+
+    bool IsSplashScreen(HWND window)
+    {
+        wchar_t className[MAX_PATH];
+        if (GetClassName(window, className, MAX_PATH) == 0)
+        {
+            return false;
+        }
+
+        return wcscmp(NonLocalizable::SplashClassName, className) == 0;
     }
 
 }
