@@ -605,6 +605,17 @@ namespace FancyZonesUtils
         return SUCCEEDED(CLSIDFromString(str.c_str(), &id));
     }
 
+    std::optional<std::wstring> GuidToString(const GUID& guid) noexcept
+    {
+        wil::unique_cotaskmem_string guidString;
+        if (SUCCEEDED(StringFromCLSID(guid, &guidString)))
+        {
+            return guidString.get();
+        }
+
+        return std::nullopt;
+    }
+
     bool IsValidDeviceId(const std::wstring& str)
     {
         std::wstring monitorName;
