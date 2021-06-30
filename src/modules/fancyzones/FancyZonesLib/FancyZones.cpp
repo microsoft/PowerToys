@@ -83,7 +83,7 @@ public:
             PostMessageW(m_window, WM_PRIV_FILE_UPDATE, NULL, NULL);
         }),
         m_settingsFileWatcher(FancyZonesDataInstance().GetSettingsFileName(), [this]() {
-            PostMessageW(m_window, WM_PRIV_SETTINGS_FILE_UPDATE, NULL, NULL);
+            PostMessageW(m_window, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
         }),
         m_virtualDesktop([this]() { 
             PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0); 
@@ -804,12 +804,9 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             ApplyQuickLayout(static_cast<int>(lparam));
         }
-        else if (message == WM_PRIV_SETTINGS_FILE_UPDATE)
-        {
-            m_settings->ReloadSettings();
-        }
         else if (message == WM_PRIV_SETTINGS_CHANGED)
         {
+            m_settings->ReloadSettings();
             OnSettingsChanged();
         }
         else
