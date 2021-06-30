@@ -27,7 +27,7 @@ namespace Awake
     internal class Program
     {
         private static Mutex? _mutex = null;
-        private const string AppName = "Awake";
+        private const string AppName = "PowerToys Awake";
         private static FileSystemWatcher? _watcher = null;
         private static SettingsUtils? _settingsUtils = null;
 
@@ -127,7 +127,6 @@ namespace Awake
         private static void ForceExit(string message, int exitCode)
         {
             _log.Info(message);
-            Console.ReadKey();
             Environment.Exit(exitCode);
         }
 
