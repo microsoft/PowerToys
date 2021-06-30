@@ -126,4 +126,4 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
     IFACEMETHOD_(void, SetOverlappingZonesAlgorithm)(OverlappingZonesAlgorithm overlappingAlgorithm) = 0;
 };
 
-winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
+winrt::com_ptr<IZoneWindow> MakeZoneWindow(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;

@@ -70,7 +70,7 @@ namespace NonLocalizable
     const wchar_t FZEditorExecutablePath[] = L"modules\\FancyZones\\FancyZonesEditor.exe";
 }
 
-struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
+struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>
 {
 public:
     FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings, std::function<void()> disableModuleCallback) noexcept :
@@ -167,20 +167,6 @@ public:
 
     void WindowCreated(HWND window) noexcept;
     void ToggleEditor() noexcept;
-
-    // IZoneWindowHost
-    IFACEMETHODIMP_(bool)
-    InMoveSize() noexcept
-    {
-        std::shared_lock readLock(m_lock);
-        return m_windowMoveHandler.InMoveSize();
-    }
-
-    IFACEMETHODIMP_(OverlappingZonesAlgorithm)
-    GetOverlappingZonesAlgorithm() noexcept
-    {
-        return m_settings->GetSettings()->overlappingZonesAlgorithm;
-    }
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType, require_write_lock) noexcept;
@@ -847,7 +833,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId, r
                 .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
             };
 
-            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId, colors, m_settings->GetSettings()->overlappingZonesAlgorithm);
+            auto workArea = MakeZoneWindow(m_hinstance, monitor, uniqueId, parentId, colors, m_settings->GetSettings()->overlappingZonesAlgorithm);
             if (workArea)
             {
                 m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);

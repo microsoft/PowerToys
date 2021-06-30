@@ -18,54 +18,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests
 {
-    struct MockZoneWindowHost : public winrt::implements<MockZoneWindowHost, IZoneWindowHost>
-    {
-        IFACEMETHODIMP_(void)
-        MoveWindowsOnActiveZoneSetChange() noexcept {};
-        IFACEMETHODIMP_(COLORREF)
-        GetZoneColor() noexcept
-        {
-            return RGB(0xFF, 0xFF, 0xFF);
-        }
-        IFACEMETHODIMP_(COLORREF)
-        GetZoneBorderColor() noexcept
-        {
-            return RGB(0xFF, 0xFF, 0xFF);
-        }
-        IFACEMETHODIMP_(COLORREF)
-        GetZoneHighlightColor() noexcept
-        {
-            return RGB(0xFF, 0xFF, 0xFF);
-        }
-        IFACEMETHODIMP_(IZoneWindow*)
-        GetParentZoneWindow(HMONITOR monitor) noexcept
-        {
-            return m_zoneWindow;
-        }
-        IFACEMETHODIMP_(int)
-        GetZoneHighlightOpacity() noexcept
-        {
-            return 100;
-        }
-        IFACEMETHODIMP_(bool)
-        isMakeDraggedWindowTransparentActive() noexcept
-        {
-            return true;
-        }
-        IFACEMETHODIMP_(bool)
-        InMoveSize() noexcept
-        {
-            return false;
-        }
-        IFACEMETHODIMP_(OverlappingZonesAlgorithm)
-        GetOverlappingZonesAlgorithm() noexcept
-        {
-            return OverlappingZonesAlgorithm::Smallest;
-        }
-
-        IZoneWindow* m_zoneWindow;
-    };
-
     const std::wstring m_deviceId = L"\\\\?\\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
     const std::wstring m_virtualDesktopId = L"MyVirtualDesktopId";
 
@@ -119,7 +71,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateZoneWindow)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 testZoneWindow(zoneWindow);
 
                 auto* activeZoneSet{ zoneWindow->ActiveZoneSet() };
@@ -130,7 +82,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateZoneWindowNoHinst)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), {}, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow({}, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 testZoneWindow(zoneWindow);
 
                 auto* activeZoneSet{ zoneWindow->ActiveZoneSet() };
@@ -141,7 +93,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateZoneWindowNoHinstFlashZones)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), {}, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow({}, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 testZoneWindow(zoneWindow);
 
                 auto* activeZoneSet{ zoneWindow->ActiveZoneSet() };
@@ -152,7 +104,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CreateZoneWindowNoMonitor)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, {}, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, {}, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 testZoneWindow(zoneWindow);
             }
 
@@ -160,7 +112,7 @@ namespace FancyZonesUnitTests
             {
                 // Generate unique id without device id
                 std::wstring uniqueId = FancyZonesUtils::GenerateUniqueId(m_monitor, {}, m_virtualDesktopId);
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
                 const std::wstring expectedUniqueId = L"FallbackDevice_" + std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom) + L"_" + m_virtualDesktopId;
@@ -178,7 +130,7 @@ namespace FancyZonesUnitTests
             {
                 // Generate unique id without virtual desktop id
                 std::wstring uniqueId = FancyZonesUtils::GenerateUniqueId(m_monitor, m_deviceId, {});
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
                 Assert::IsNotNull(zoneWindow.get());
@@ -202,12 +154,10 @@ namespace FancyZonesUnitTests
                 const auto parentDeviceInfo = DeviceInfoData{ parentZoneSet, true, spacing, zoneCount };
                 m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
 
-                winrt::com_ptr<MockZoneWindowHost> zoneWindowHost = winrt::make_self<MockZoneWindowHost>();
-                auto parentZoneWindow = MakeZoneWindow(zoneWindowHost.get(), m_hInst, m_monitor, m_parentUniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
-                zoneWindowHost->m_zoneWindow = parentZoneWindow.get();
-
+                auto parentZoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_parentUniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                
                 // newWorkArea = false - zoneWindow won't be cloned from parent
-                auto actualZoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto actualZoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 Assert::IsNotNull(actualZoneWindow->ActiveZoneSet());
 
@@ -257,7 +207,7 @@ namespace FancyZonesUnitTests
         public:
             TEST_METHOD (MoveSizeEnter)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const auto expected = S_OK;
                 const auto actual = zoneWindow->MoveSizeEnter(Mocks::Window());
@@ -267,7 +217,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEnterTwice)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const auto expected = S_OK;
 
@@ -279,7 +229,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdate)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const auto expected = S_OK;
                 const auto actual = zoneWindow->MoveSizeUpdate(POINT{ 0, 0 }, true, false);
@@ -289,7 +239,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdatePointNegativeCoordinates)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const auto expected = S_OK;
                 const auto actual = zoneWindow->MoveSizeUpdate(POINT{ -10, -10 }, true, false);
@@ -299,7 +249,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeUpdatePointBigCoordinates)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const auto expected = S_OK;
                 const auto actual = zoneWindow->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true, false);
@@ -309,7 +259,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEnd)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const auto window = Mocks::Window();
                 zoneWindow->MoveSizeEnter(window);
@@ -326,7 +276,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndWindowNotAdded)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const auto window = Mocks::Window();
                 zoneWindow->MoveSizeEnter(window);
@@ -342,7 +292,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndDifferentWindows)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const auto window = Mocks::Window();
                 zoneWindow->MoveSizeEnter(window);
@@ -355,7 +305,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndWindowNotSet)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const auto expected = E_INVALIDARG;
                 const auto actual = zoneWindow->MoveSizeEnd(Mocks::Window(), POINT{ 0, 0 });
@@ -365,7 +315,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveSizeEndInvalidPoint)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
 
                 const auto window = Mocks::Window();
                 zoneWindow->MoveSizeEnter(window);
@@ -382,7 +332,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByIndex)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 zoneWindow->MoveWindowIntoZoneByIndex(Mocks::Window(), 0);
@@ -392,7 +342,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionAndIndex)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -407,7 +357,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionManyTimes)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -424,7 +374,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNullptrWindow)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 zoneWindow->SaveWindowProcessToZoneIndex(nullptr);
@@ -435,7 +385,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAdded)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
@@ -450,7 +400,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAddedWithFilledAppZoneHistory)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
@@ -478,7 +428,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveWindowProcessToZoneIndexWindowAdded)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
@@ -508,7 +458,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (WhenWindowIsNotResizablePlacingItIntoTheZoneShouldNotResizeIt)
             {
-                auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
+                auto zoneWindow = MakeZoneWindow(m_hInst, m_monitor, m_uniqueId.str(), {}, m_zoneColors, m_overlappingAlgorithm);
                 Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
