@@ -59,11 +59,6 @@ interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343F}")) IFancyZones
 interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindowHost : public IUnknown
 {
     /**
-     * Assign window to appropriate zone inside new zone layout.
-     */
-    IFACEMETHOD_(void, MoveWindowsOnActiveZoneSetChange)
-    () = 0;
-    /**
      * @returns Basic zone color.
      */
     IFACEMETHOD_(COLORREF, GetZoneColor)

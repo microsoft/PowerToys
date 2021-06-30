@@ -169,8 +169,6 @@ public:
     void ToggleEditor() noexcept;
 
     // IZoneWindowHost
-    IFACEMETHODIMP_(void)
-    MoveWindowsOnActiveZoneSetChange() noexcept;
     IFACEMETHODIMP_(COLORREF)
     GetZoneColor() noexcept
     {
@@ -683,16 +681,6 @@ void FancyZones::ToggleEditor() noexcept
     waitForEditorThread.detach();
 }
 
-// IZoneWindowHost
-IFACEMETHODIMP_(void)
-FancyZones::MoveWindowsOnActiveZoneSetChange() noexcept
-{
-    if (m_settings->GetSettings()->zoneSetChange_moveWindows)
-    {
-        std::unique_lock writeLock(m_lock);
-        UpdateWindowsPositions(writeLock);
-    }
-}
 
 LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
