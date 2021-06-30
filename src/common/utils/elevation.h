@@ -307,25 +307,17 @@ inline bool run_non_elevated(const std::wstring& file, const std::wstring& param
 
 inline bool RunNonElevatedEx(const std::wstring& file, const std::wstring& params)
 {
-    bool failedToStart = false;
     try
     {
         CoInitialize(nullptr);
         if (!ShellExecuteFromExplorer(file.c_str(), params.c_str()))
         {
-            failedToStart = true;
+            return false;
         }
     }
     catch(...)
     {
-        failedToStart = true;
-    }
-
-    if (failedToStart)
-    {
-        Logger::warn(L"Failed to delegate process creation. Try a fallback");
-        DWORD returnPid;
-        return run_non_elevated(file, params, &returnPid);
+        return false;
     }
 
     return true;
