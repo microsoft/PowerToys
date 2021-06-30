@@ -184,13 +184,10 @@ namespace Awake.Core
                 if (success)
                 {
                     _log.Info($"Initiated indefinite keep awake in background thread: {GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
-                    while (true)
-                    {
-                        if (_threadToken.IsCancellationRequested)
-                        {
-                            _threadToken.ThrowIfCancellationRequested();
-                        }
-                    }
+
+                    WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
+
+                    return success;
                 }
                 else
                 {
