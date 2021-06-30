@@ -28,6 +28,7 @@ namespace Awake
     {
         private static Mutex? _mutex = null;
         private const string AppName = "Awake";
+        private const string FullAppName = "PowerToys " + AppName;
         private static FileSystemWatcher? _watcher = null;
         private static SettingsUtils? _settingsUtils = null;
 
@@ -127,7 +128,6 @@ namespace Awake
         private static void ForceExit(string message, int exitCode)
         {
             _log.Info(message);
-            Console.ReadKey();
             Environment.Exit(exitCode);
         }
 
@@ -180,7 +180,7 @@ namespace Awake
                         .Select(e => e.EventArgs)
                         .Subscribe(HandleAwakeConfigChange);
 
-                    TrayHelper.SetTray(AppName, new AwakeSettings());
+                    TrayHelper.SetTray(FullAppName, new AwakeSettings());
 
                     // Initially the file might not be updated, so we need to start processing
                     // settings right away.
