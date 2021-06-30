@@ -93,8 +93,6 @@ public:
             PostMessage(m_window, WM_PRIV_VD_UPDATE, 0, 0); 
         })
     {
-        m_settings->SetCallback(this);
-
         this->disableModuleCallback = std::move(disableModuleCallback);
     }
 
@@ -167,12 +165,9 @@ public:
     VirtualDesktopChanged() noexcept;
     IFACEMETHODIMP_(bool)
     OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
-    IFACEMETHODIMP_(void)
-    ToggleEditor() noexcept;
-    IFACEMETHODIMP_(void)
-    SettingsChanged() noexcept;
 
     void WindowCreated(HWND window) noexcept;
+    void ToggleEditor() noexcept;
 
     // IZoneWindowHost
     IFACEMETHODIMP_(void)
@@ -234,7 +229,8 @@ private:
 
     void RegisterVirtualDesktopUpdates() noexcept;
 
-    bool ShouldProcessNewWindow(HWND window) noexcept;
+    void OnSettingsChanged() noexcept;
+
     std::vector<size_t> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
@@ -337,7 +333,6 @@ FancyZones::Destroy() noexcept
     }
 
     m_virtualDesktop.UnInit();
-    m_settings->ResetCallback();
 }
 
 // IFancyZonesCallback
@@ -347,20 +342,6 @@ FancyZones::VirtualDesktopChanged() noexcept
     // VirtualDesktopChanged is called from a reentrant WinHookProc function, therefore we must postpone the actual logic
     // until we're in FancyZones::WndProc, which is not reentrant.
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
-}
-
-bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
-{
-    using namespace FancyZonesUtils;
-    // Avoid processing splash screens, already stamped (zoned) windows, or those windows
-    // that belong to excluded applications list.
-    if (IsSplashScreen(window) ||
-        (reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0) ||
-        !IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray))
-    {
-        return false;
-    }
-    return true;
 }
 
 std::vector<size_t> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
@@ -441,7 +422,15 @@ void FancyZones::WindowCreated(HWND window) noexcept
 
     const bool moveToAppLastZone = m_settings->GetSettings()->appLastZone_moveWindows;
     const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
-    if ((moveToAppLastZone || openOnActiveMonitor) && ShouldProcessNewWindow(window))
+    
+    // Avoid processing splash screens, already stamped (zoned) windows, or those windows
+    // that belong to excluded applications list.
+    const bool isSplashScreen = FancyZonesUtils::IsSplashScreen(window);
+    const bool isZoned = reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0;
+    const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray);
+    const bool shouldProcessNewWindow = !isSplashScreen && !isZoned && isCandidateForLastKnownZone;
+
+    if ((moveToAppLastZone || openOnActiveMonitor) && shouldProcessNewWindow)
     {
         HMONITOR primary = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
         HMONITOR active = primary;
@@ -529,7 +518,6 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     return false;
 }
 
-// IFancyZonesCallback
 void FancyZones::ToggleEditor() noexcept
 {
     _TRACER_;
@@ -696,28 +684,6 @@ void FancyZones::ToggleEditor() noexcept
     waitForEditorThread.detach();
 }
 
-void FancyZones::SettingsChanged() noexcept
-{
-    _TRACER_;
-    std::unique_lock writeLock(m_lock);
-
-    // Update the hotkey
-    UnregisterHotKey(m_window, 1);
-    auto modifiers = m_settings->GetSettings()->editorHotkey.get_modifiers();
-    auto code = m_settings->GetSettings()->editorHotkey.get_code();
-    auto result = RegisterHotKey(m_window, 1, modifiers, code);
-
-    if (!result)
-    {
-        Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
-    }
-
-    // Needed if we toggled spanZonesAcrossMonitors
-    m_workAreaHandler.Clear();
-
-    PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
-}
-
 // IZoneWindowHost
 IFACEMETHODIMP_(void)
 FancyZones::MoveWindowsOnActiveZoneSetChange() noexcept
@@ -841,7 +807,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_SETTINGS_CHANGED)
         {
-            m_settings->ReloadSettings();
+            OnSettingsChanged();
         }
         else
         {
@@ -1244,6 +1210,28 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
 
         FancyZonesDataInstance().RemoveDeletedDesktops(guidStrings);
     }
+}
+
+void FancyZones::OnSettingsChanged() noexcept
+{
+    _TRACER_;
+    m_settings->ReloadSettings();
+
+    // Update the hotkey
+    UnregisterHotKey(m_window, 1);
+    auto modifiers = m_settings->GetSettings()->editorHotkey.get_modifiers();
+    auto code = m_settings->GetSettings()->editorHotkey.get_code();
+    auto result = RegisterHotKey(m_window, 1, modifiers, code);
+
+    if (!result)
+    {
+        Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
+    }
+
+    // Needed if we toggled spanZonesAcrossMonitors
+    m_workAreaHandler.Clear();
+
+    PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
 }
 
 void FancyZones::OnEditorExitEvent(require_write_lock lock) noexcept
