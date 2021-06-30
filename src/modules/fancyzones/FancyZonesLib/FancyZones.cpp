@@ -92,8 +92,6 @@ public:
             PostMessage(m_window, WM_PRIV_VD_UPDATE, 0, 0); 
         })
     {
-        m_settings->SetCallback(this);
-
         this->disableModuleCallback = std::move(disableModuleCallback);
     }
 
@@ -166,8 +164,6 @@ public:
     VirtualDesktopChanged() noexcept;
     IFACEMETHODIMP_(bool)
     OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
-    IFACEMETHODIMP_(void)
-    SettingsChanged() noexcept;
 
     void WindowCreated(HWND window) noexcept;
     void ToggleEditor() noexcept;
@@ -336,7 +332,6 @@ FancyZones::Destroy() noexcept
     }
 
     m_virtualDesktop.UnInit();
-    m_settings->ResetCallback();
 }
 
 // IFancyZonesCallback
@@ -686,14 +681,6 @@ void FancyZones::ToggleEditor() noexcept
     });
 
     waitForEditorThread.detach();
-}
-
-// IFancyZonesCallback
-IFACEMETHODIMP_(void)
-FancyZones::SettingsChanged() noexcept
-{
-    _TRACER_;
-    PostMessage(m_window, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
 }
 
 // IZoneWindowHost
