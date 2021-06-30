@@ -51,16 +51,6 @@ interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343F}")) IFancyZones
      */
     IFACEMETHOD_(bool, OnKeyDown)
     (PKBDLLHOOKSTRUCT info) = 0;
-    /**
-     * Toggle FancyZones editor application.
-     */
-    IFACEMETHOD_(void, ToggleEditor)
-    () = 0;
-    /**
-     * Callback triggered when user changes FancyZones settings.
-     */
-    IFACEMETHOD_(void, SettingsChanged)
-    () = 0;
 };
 
 /**
