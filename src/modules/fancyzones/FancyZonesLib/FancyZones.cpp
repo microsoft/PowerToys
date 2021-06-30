@@ -806,7 +806,6 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_SETTINGS_CHANGED)
         {
-            m_settings->ReloadSettings();
             OnSettingsChanged();
         }
         else
@@ -1214,6 +1213,9 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
 
 void FancyZones::OnSettingsChanged() noexcept
 {
+    _TRACER_;
+    m_settings->ReloadSettings();
+
     // Update the hotkey
     UnregisterHotKey(m_window, 1);
     auto modifiers = m_settings->GetSettings()->editorHotkey.get_modifiers();
