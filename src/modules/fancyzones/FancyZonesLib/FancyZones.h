@@ -66,7 +66,7 @@ interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindow
     /**
      * @returns Enumeration value indicating the algorithm used to choose one of multiple overlapped zones to highlight.
      */
-    IFACEMETHOD_(Settings::OverlappingZonesAlgorithm, GetOverlappingZonesAlgorithm)
+    IFACEMETHOD_(OverlappingZonesAlgorithm, GetOverlappingZonesAlgorithm)
     () = 0;
 };
 

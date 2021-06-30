@@ -176,7 +176,7 @@ public:
         return m_windowMoveHandler.InMoveSize();
     }
 
-    IFACEMETHODIMP_(Settings::OverlappingZonesAlgorithm)
+    IFACEMETHODIMP_(OverlappingZonesAlgorithm)
     GetOverlappingZonesAlgorithm() noexcept
     {
         return m_settings->GetSettings()->overlappingZonesAlgorithm;
