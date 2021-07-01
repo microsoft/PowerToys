@@ -98,6 +98,13 @@ public:
     virtual void destroy() override
     {
         Disable(false);
+
+        if (m_toggleEditorEvent)
+        {
+            CloseHandle(m_toggleEditorEvent);
+            m_toggleEditorEvent = nullptr;
+        }
+
         delete this;
     }
 
@@ -170,8 +177,6 @@ private:
         if (m_toggleEditorEvent)
         {
             ResetEvent(m_toggleEditorEvent);
-            CloseHandle(m_toggleEditorEvent);
-            m_toggleEditorEvent = nullptr;
         }
         
         if (m_hProcess)
