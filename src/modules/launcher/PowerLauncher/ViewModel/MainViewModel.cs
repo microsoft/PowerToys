@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
@@ -51,7 +50,7 @@ namespace PowerLauncher.ViewModel
         private bool _saved;
         private ushort _hotkeyHandle;
 
-        internal HotkeyManager HotkeyManager { get; set; }
+        internal HotkeyManager HotkeyManager { get; private set; }
 
         public MainViewModel(PowerToysRunSettings settings)
         {
@@ -306,10 +305,6 @@ namespace PowerLauncher.ViewModel
             });
         }
 
-        public Brush MainWindowBackground { get; set; }
-
-        public Brush MainWindowBorderBrush { get; set; }
-
         private ResultsViewModel _results;
 
         public ResultsViewModel Results
@@ -402,26 +397,11 @@ namespace PowerLauncher.ViewModel
                 {
                     Results.Visibility = Visibility.Hidden;
                     _queryTextBeforeLeaveResults = QueryText;
-
-                    // Because of Fody's optimization
-                    // setter won't be called when property value is not changed.
-                    // so we need manually call Query()
-                    // http://stackoverflow.com/posts/25895769/revisions
-                    if (string.IsNullOrEmpty(QueryText))
-                    {
-                        Query();
-                    }
-                    else
-                    {
-                        QueryText = string.Empty;
-                    }
                 }
 
                 _selectedResults.Visibility = Visibility.Visible;
             }
         }
-
-        public Visibility ProgressBarVisibility { get; set; }
 
         private Visibility _visibility;
 
@@ -451,37 +431,37 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        public ICommand IgnoreCommand { get; set; }
+        public ICommand IgnoreCommand { get; private set; }
 
-        public ICommand EscCommand { get; set; }
+        public ICommand EscCommand { get; private set; }
 
-        public ICommand SelectNextItemCommand { get; set; }
+        public ICommand SelectNextItemCommand { get; private set; }
 
-        public ICommand SelectPrevItemCommand { get; set; }
+        public ICommand SelectPrevItemCommand { get; private set; }
 
-        public ICommand SelectNextContextMenuItemCommand { get; set; }
+        public ICommand SelectNextContextMenuItemCommand { get; private set; }
 
-        public ICommand SelectPreviousContextMenuItemCommand { get; set; }
+        public ICommand SelectPreviousContextMenuItemCommand { get; private set; }
 
-        public ICommand SelectNextTabItemCommand { get; set; }
+        public ICommand SelectNextTabItemCommand { get; private set; }
 
-        public ICommand SelectPrevTabItemCommand { get; set; }
+        public ICommand SelectPrevTabItemCommand { get; private set; }
 
-        public ICommand SelectNextPageCommand { get; set; }
+        public ICommand SelectNextPageCommand { get; private set; }
 
-        public ICommand SelectPrevPageCommand { get; set; }
+        public ICommand SelectPrevPageCommand { get; private set; }
 
-        public ICommand SelectFirstResultCommand { get; set; }
+        public ICommand SelectFirstResultCommand { get; private set; }
 
-        public ICommand LoadContextMenuCommand { get; set; }
+        public ICommand LoadContextMenuCommand { get; private set; }
 
-        public ICommand LoadHistoryCommand { get; set; }
+        public ICommand LoadHistoryCommand { get; private set; }
 
-        public ICommand OpenResultWithKeyboardCommand { get; set; }
+        public ICommand OpenResultWithKeyboardCommand { get; private set; }
 
-        public ICommand OpenResultWithMouseCommand { get; set; }
+        public ICommand OpenResultWithMouseCommand { get; private set; }
 
-        public ICommand ClearQueryCommand { get; set; }
+        public ICommand ClearQueryCommand { get; private set; }
 
         public void Query()
         {

@@ -24,17 +24,17 @@ namespace PowerLauncher.ViewModel
 
         public ObservableCollection<ContextMenuItemViewModel> ContextMenuItems { get; } = new ObservableCollection<ContextMenuItemViewModel>();
 
-        public ICommand ActivateContextButtonsHoverCommand { get; set; }
+        public ICommand ActivateContextButtonsHoverCommand { get; }
 
-        public ICommand ActivateContextButtonsSelectionCommand { get; set; }
+        public ICommand ActivateContextButtonsSelectionCommand { get; }
 
-        public ICommand DeactivateContextButtonsHoverCommand { get; set; }
+        public ICommand DeactivateContextButtonsHoverCommand { get; }
 
-        public ICommand DeactivateContextButtonsSelectionCommand { get; set; }
+        public ICommand DeactivateContextButtonsSelectionCommand { get; }
 
-        public bool IsSelected { get; set; }
+        public bool IsSelected { get; private set; }
 
-        public bool IsHovered { get; set; }
+        public bool IsHovered { get; private set; }
 
         private bool _areContextButtonsActive;
 
@@ -156,15 +156,14 @@ namespace PowerLauncher.ViewModel
             ContextMenuItems.Clear();
             foreach (var r in results)
             {
-                ContextMenuItems.Add(new ContextMenuItemViewModel()
-                {
-                    PluginName = r.PluginName,
-                    Title = r.Title,
-                    Glyph = r.Glyph,
-                    FontFamily = r.FontFamily,
-                    AcceleratorKey = r.AcceleratorKey,
-                    AcceleratorModifiers = r.AcceleratorModifiers,
-                    Command = new RelayCommand(_ =>
+                ContextMenuItems.Add(new ContextMenuItemViewModel(
+                    r.PluginName,
+                    r.Title,
+                    r.Glyph,
+                    r.FontFamily,
+                    r.AcceleratorKey,
+                    r.AcceleratorModifiers,
+                    new RelayCommand(_ =>
                     {
                         bool hideWindow =
                             r.Action != null &&
@@ -179,8 +178,7 @@ namespace PowerLauncher.ViewModel
                             // TODO - Do we hide the window
                             // MainWindowVisibility = Visibility.Collapsed;
                         }
-                    }),
-                });
+                    })));
             }
         }
 
