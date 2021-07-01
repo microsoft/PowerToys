@@ -1,7 +1,6 @@
 #pragma once
 
 #include <common/hooks/WinHookEvent.h>
-#include "Settings.h"
 
 #include <functional>
 
