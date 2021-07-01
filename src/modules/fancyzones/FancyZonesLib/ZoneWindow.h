@@ -119,7 +119,7 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
     /*
     * Set zone colors
     */
-    IFACEMETHOD_(void, SetZoneColors)(ZoneColors colors) = 0;
+    IFACEMETHOD_(void, SetZoneColors)(const ZoneColors& colors) = 0;
     /*
     * Set overlapping algorithm
     */

@@ -101,7 +101,7 @@ public:
     /**
     * Update zone colors after settings changed
     */
-    void UpdateZoneColors(ZoneColors colors);
+    void UpdateZoneColors(const ZoneColors& colors);
 
     /**
     * Update overlapping algorithm after settings changed

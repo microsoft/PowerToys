@@ -141,7 +141,7 @@ public:
     IFACEMETHODIMP_(void)
     FlashZones() noexcept;
     IFACEMETHODIMP_(void)
-    SetZoneColors(ZoneColors colors) noexcept;
+    SetZoneColors(const ZoneColors& colors) noexcept;
     IFACEMETHODIMP_(void)
     SetOverlappingZonesAlgorithm(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
 
@@ -437,9 +437,9 @@ ZoneWindow::FlashZones() noexcept
 }
 
 IFACEMETHODIMP_(void)
-ZoneWindow::SetZoneColors(ZoneColors colors) noexcept
+ZoneWindow::SetZoneColors(const ZoneColors& colors) noexcept
 {
-    m_zoneColors = std::move(colors);
+    m_zoneColors = colors;
 }
 
 IFACEMETHODIMP_(void)
