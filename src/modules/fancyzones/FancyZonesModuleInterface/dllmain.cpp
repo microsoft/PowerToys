@@ -98,6 +98,13 @@ public:
     virtual void destroy() override
     {
         Disable(false);
+
+        if (m_toggleEditorEvent)
+        {
+            CloseHandle(m_toggleEditorEvent);
+            m_toggleEditorEvent = nullptr;
+        }
+
         delete this;
     }
 
@@ -114,6 +121,15 @@ public:
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModuleInterface::get_name(), FancyZonesModuleInterface::get_key());
 
         m_toggleEditorEvent = CreateDefaultEvent(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
+        if (!m_toggleEditorEvent)
+        {
+            Logger::error(L"Failed to create toggle editor event");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
     }
 
 private:
@@ -158,8 +174,10 @@ private:
             Trace::FancyZones::EnableFancyZones(false);
         }
 
-        ResetEvent(m_toggleEditorEvent);
-        CloseHandle(m_toggleEditorEvent);
+        if (m_toggleEditorEvent)
+        {
+            ResetEvent(m_toggleEditorEvent);
+        }
         
         if (m_hProcess)
         {
