@@ -243,7 +243,18 @@ public:
             }
             else
             {
-                Logger::error(L"Failed to start the process");
+                Logger::warn(L"RunNonElevatedEx() failed. Trying fallback");
+                std::wstring action_runner_path = get_module_folderpath() + L"\\PowerToys.ActionRunner.exe";
+                std::wstring newParams = L"-run-non-elevated -target modules\\launcher\\PowerLauncher.exe " + params;
+                if (run_non_elevated(action_runner_path, newParams, nullptr))
+                {
+                    processStarted = true;
+                    Logger::trace("Started PowerToys Run Process");
+                }
+                else
+                {
+                    Logger::warn("Failed to start PowerToys Run");
+                }
             }
         }
     }
