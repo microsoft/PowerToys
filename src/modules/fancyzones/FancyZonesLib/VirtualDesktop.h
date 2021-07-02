@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ZoneWindow.h"
+#include "WorkArea.h"
 #include "on_thread_executor.h"
 
 class VirtualDesktop
