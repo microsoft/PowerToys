@@ -70,7 +70,7 @@ namespace NonLocalizable
     const wchar_t FZEditorExecutablePath[] = L"modules\\FancyZones\\FancyZonesEditor.exe";
 }
 
-struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
+struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>
 {
 public:
     FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings, std::function<void()> disableModuleCallback) noexcept :
@@ -168,49 +168,6 @@ public:
     void WindowCreated(HWND window) noexcept;
     void ToggleEditor() noexcept;
 
-    // IZoneWindowHost
-    IFACEMETHODIMP_(void)
-    MoveWindowsOnActiveZoneSetChange() noexcept;
-    IFACEMETHODIMP_(COLORREF)
-    GetZoneColor() noexcept
-    {
-        return (FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor));
-    }
-    IFACEMETHODIMP_(COLORREF)
-    GetZoneBorderColor() noexcept
-    {
-        return (FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor));
-    }
-    IFACEMETHODIMP_(COLORREF)
-    GetZoneHighlightColor() noexcept
-    {
-        return (FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor));
-    }
-    IFACEMETHODIMP_(int)
-    GetZoneHighlightOpacity() noexcept
-    {
-        return m_settings->GetSettings()->zoneHighlightOpacity;
-    }
-
-    IFACEMETHODIMP_(bool)
-    isMakeDraggedWindowTransparentActive() noexcept
-    {
-        return m_settings->GetSettings()->makeDraggedWindowTransparent;
-    }
-
-    IFACEMETHODIMP_(bool)
-    InMoveSize() noexcept
-    {
-        std::shared_lock readLock(m_lock);
-        return m_windowMoveHandler.InMoveSize();
-    }
-
-    IFACEMETHODIMP_(Settings::OverlappingZonesAlgorithm)
-    GetOverlappingZonesAlgorithm() noexcept
-    {
-        return m_settings->GetSettings()->overlappingZonesAlgorithm;
-    }
-
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType, require_write_lock) noexcept;
     void AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId, require_write_lock) noexcept;
@@ -244,6 +201,8 @@ private:
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
+
+    ZoneColors GetZoneColors() const noexcept;
 
     const HINSTANCE m_hinstance{};
 
@@ -683,16 +642,6 @@ void FancyZones::ToggleEditor() noexcept
     waitForEditorThread.detach();
 }
 
-// IZoneWindowHost
-IFACEMETHODIMP_(void)
-FancyZones::MoveWindowsOnActiveZoneSetChange() noexcept
-{
-    if (m_settings->GetSettings()->zoneSetChange_moveWindows)
-    {
-        std::unique_lock writeLock(m_lock);
-        UpdateWindowsPositions(writeLock);
-    }
-}
 
 LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
@@ -877,7 +826,8 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId, r
             {
                 parentId = parentArea->UniqueId();
             }
-            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId);
+
+            auto workArea = MakeZoneWindow(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), m_settings->GetSettings()->overlappingZonesAlgorithm);
             if (workArea)
             {
                 m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
@@ -1230,6 +1180,12 @@ void FancyZones::OnSettingsChanged() noexcept
     // Needed if we toggled spanZonesAcrossMonitors
     m_workAreaHandler.Clear();
 
+    // update zone colors
+    m_workAreaHandler.UpdateZoneColors(GetZoneColors());
+
+    // update overlapping algorithm
+    m_workAreaHandler.UpdateOverlappingAlgorithm(m_settings->GetSettings()->overlappingZonesAlgorithm);
+
     PostMessageW(m_window, WM_PRIV_VD_INIT, NULL, NULL);
 }
 
@@ -1357,6 +1313,16 @@ HMONITOR FancyZones::WorkAreaKeyFromWindow(HWND window) noexcept
     {
         return MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     }
+}
+
+ZoneColors FancyZones::GetZoneColors() const noexcept
+{
+    return ZoneColors {
+        .primaryColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor),
+        .borderColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor),
+        .highlightColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor),
+        .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
+    };
 }
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance,

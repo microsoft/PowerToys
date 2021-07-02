@@ -1,6 +1,7 @@
 #pragma once
 #include "FancyZones.h"
 #include "FancyZonesLib/ZoneSet.h"
+#include "FancyZonesLib/ZoneColors.h"
 
 /**
  * Class representing single work area, which is defined by monitor and virtual desktop.
@@ -115,7 +116,14 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * Display the layout on the screen and then hide it.
      */
     IFACEMETHOD_(void, FlashZones)() = 0;
+    /*
+    * Set zone colors
+    */
+    IFACEMETHOD_(void, SetZoneColors)(const ZoneColors& colors) = 0;
+    /*
+    * Set overlapping algorithm
+    */
+    IFACEMETHOD_(void, SetOverlappingZonesAlgorithm)(OverlappingZonesAlgorithm overlappingAlgorithm) = 0;
 };
 
-winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor,
-    const std::wstring& uniqueId, const std::wstring& parentUniqueId) noexcept;
+winrt::com_ptr<IZoneWindow> MakeZoneWindow(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;

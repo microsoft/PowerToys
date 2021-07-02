@@ -254,7 +254,7 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
     {
         try
         {
-            using Algorithm = Settings::OverlappingZonesAlgorithm;
+            using Algorithm = OverlappingZonesAlgorithm;
 
             switch (m_config.SelectionAlgorithm)
             {

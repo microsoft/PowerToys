@@ -213,9 +213,9 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
         if (auto val = values.get_int_value(NonLocalizable::OverlappingZonesAlgorithmID))
         {
             // Avoid undefined behavior
-            if (*val >= 0 || *val < (int)Settings::OverlappingZonesAlgorithm::EnumElements)
+            if (*val >= 0 || *val < (int)OverlappingZonesAlgorithm::EnumElements)
             {
-                m_settings.overlappingZonesAlgorithm = (Settings::OverlappingZonesAlgorithm)*val;
+                m_settings.overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)*val;
             }
         }
     }

@@ -58,6 +58,7 @@
     <ClInclude Include="VirtualDesktop.h" />
     <ClInclude Include="WindowMoveHandler.h" />
     <ClInclude Include="Zone.h" />
+    <ClInclude Include="ZoneColors.h" />
     <ClInclude Include="ZoneSet.h" />
     <ClInclude Include="ZoneWindow.h" />
     <ClInclude Include="ZoneWindowDrawing.h" />
