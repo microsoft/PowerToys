@@ -11,6 +11,7 @@
 #include <colorPicker/ColorPicker/ColorPickerConstants.h>
 #include <common/interop/shared_constants.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/winapi_error.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule,
                       DWORD ul_reason_for_call,
@@ -126,10 +127,7 @@ private:
         }
         else
         {
-            DWORD error = GetLastError();
-            std::wstring message = L"ColorPicker failed to start with error = ";
-            message += std::to_wstring(error);
-            Logger::error(message);
+            Logger::error( L"ColorPicker failed to start. {}", get_last_error_or_default(GetLastError()));
         }
 
         m_hProcess = sei.hProcess;
@@ -175,6 +173,7 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        Logger::trace("ColorPicker::destroy()");
         delete this;
     }
 
