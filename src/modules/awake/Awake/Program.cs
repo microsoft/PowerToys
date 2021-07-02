@@ -180,7 +180,7 @@ namespace Awake
                         .Select(e => e.EventArgs)
                         .Subscribe(HandleAwakeConfigChange);
 
-                    TrayHelper.SetTray(FullAppName, new AwakeSettings());
+                    TrayHelper.SetTray(FullAppName, new AwakeSettings(), AppName);
 
                     // Initially the file might not be updated, so we need to start processing
                     // settings right away.
@@ -274,7 +274,7 @@ namespace Awake
                             }
                     }
 
-                    TrayHelper.SetTray(FullAppName, settings);
+                    TrayHelper.SetTray(FullAppName, settings, AppName);
                 }
                 else
                 {

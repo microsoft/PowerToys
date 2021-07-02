@@ -44,16 +44,16 @@ namespace Awake.Core
             }, TrayIcon);
         }
 
-        internal static void SetTray(string text, AwakeSettings settings)
+        internal static void SetTray(string text, AwakeSettings settings, string moduleName)
         {
             SetTray(
                 text,
                 settings.Properties.KeepDisplayOn,
                 settings.Properties.Mode,
-                PassiveKeepAwakeCallback(text),
-                IndefiniteKeepAwakeCallback(text),
-                TimedKeepAwakeCallback(text),
-                KeepDisplayOnCallback(text),
+                PassiveKeepAwakeCallback(moduleName),
+                IndefiniteKeepAwakeCallback(moduleName),
+                TimedKeepAwakeCallback(moduleName),
+                KeepDisplayOnCallback(moduleName),
                 ExitCallback());
         }
 
