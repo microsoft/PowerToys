@@ -60,13 +60,13 @@
                        TextWrapping="Wrap"/>
 
             <TextBlock x:Uid="FileExplorerPreview_AffectsAllUsers"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
                        Margin="{StaticResource SmallBottomMargin}"
                        TextWrapping="Wrap"/>
 
             <TextBlock x:Uid="FileExplorerPreview_PreviewPane_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
                           Margin="{StaticResource SmallTopMargin}"
@@ -80,10 +80,10 @@
 
             <TextBlock x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <TextBlock x:Uid="FileExplorerPreview_RebootRequired"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
                        Margin="{StaticResource SmallTopBottomMargin}"
                        TextWrapping="Wrap"/>
 

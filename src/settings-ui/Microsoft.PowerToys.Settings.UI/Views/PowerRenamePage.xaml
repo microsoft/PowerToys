@@ -56,7 +56,7 @@
 
             <TextBlock x:Uid="PowerRename_ShellIntegration"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
                           Margin="{StaticResource SmallTopMargin}" 
@@ -72,7 +72,7 @@
 
             <TextBlock x:Uid="PowerRename_AutoCompleteHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CheckBox x:Uid="PowerRename_Toggle_AutoComplete"
                           Margin="{StaticResource SmallTopMargin}" 
@@ -97,7 +97,7 @@
 
             <TextBlock x:Uid="PowerRename_BehaviorHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CheckBox x:Uid="PowerRename_Toggle_UseBoostLib"
                       Margin="{StaticResource SmallTopMargin}"

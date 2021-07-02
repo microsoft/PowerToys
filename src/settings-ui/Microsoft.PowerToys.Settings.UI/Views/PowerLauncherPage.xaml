@@ -61,7 +61,7 @@
 
             <TextBlock x:Uid="Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CustomControls:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
                                                   HorizontalAlignment="Left"
@@ -111,7 +111,7 @@
 
             <TextBlock x:Uid="PowerLauncher_SearchResults"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
                       MinWidth="320"
@@ -150,12 +150,12 @@
 
             <TextBlock x:Uid="Run_PositionAppearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
 
             <TextBlock x:Uid="Run_PositionHeader"
                        x:Name="RadioButtons_Name_Position"
                        Margin="{StaticResource SmallTopMargin}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
 
             <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Position}">
        
@@ -182,7 +182,7 @@
             <TextBlock x:Uid="ColorModeHeader"
                        x:Name="RadioButtons_Name_Theme" 
                        Margin="{StaticResource SmallTopMargin}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
             <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Theme}">
                 <RadioButton x:Uid="Radio_Theme_Dark"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
@@ -203,11 +203,11 @@
 
             <TextBlock x:Uid="PowerLauncher_Plugins"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <TextBlock x:Uid="Run_PluginUseDescription"
                        Margin="{StaticResource SmallTopMargin}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
                        TextWrapping="Wrap"/>
             
             <TextBlock x:Uid="Run_AllPluginsDisabled"

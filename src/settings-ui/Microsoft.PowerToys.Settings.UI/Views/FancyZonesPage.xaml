@@ -65,7 +65,7 @@
 
             <TextBlock x:Uid="FancyZones_Editor_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <Button Margin="{StaticResource SmallTopMargin}"
                     Style="{StaticResource AccentButtonStyle}"
@@ -101,7 +101,7 @@
 
             <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}"
@@ -139,7 +139,7 @@
 
             <TextBlock x:Uid="FancyZones_WindowBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CheckBox x:Uid="FancyZones_OverrideSnapHotkeysCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}"
@@ -192,7 +192,7 @@
 
             <TextBlock x:Uid="FancyZones_QuickLayoutSwitch_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CheckBox x:Uid="FancyZones_QuickLayoutSwitch"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}"
@@ -206,7 +206,7 @@
 
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}"
@@ -229,14 +229,14 @@
                        FontWeight="SemiBold"
                        FontSize="16"
                        Margin="0,16,0,0"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             </StackPanel>
 
             <TextBlock Name="FancyZones_ZoneHighlightColor"
                 x:Uid="FancyZones_ZoneHighlightColor"
                 Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
@@ -270,7 +270,7 @@
             <TextBlock Name="FancyZones_InActiveColor"
                 x:Uid="FancyZones_InActiveColor"
                 Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
@@ -299,7 +299,7 @@
             <TextBlock Name="FancyZones_BorderColor"
                 x:Uid="FancyZones_BorderColor"
                 Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
@@ -329,7 +329,7 @@
 
             <TextBlock x:Uid="FancyZones_ExcludeApps"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"
