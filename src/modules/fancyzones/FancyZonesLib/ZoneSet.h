@@ -159,7 +159,7 @@ struct ZoneSetConfig
         FancyZonesDataTypes::ZoneSetLayoutType layoutType,
         HMONITOR monitor,
         int sensitivityRadius,
-        Settings::OverlappingZonesAlgorithm selectionAlgorithm = {}) noexcept :
+        OverlappingZonesAlgorithm selectionAlgorithm = {}) noexcept :
             Id(id),
             LayoutType(layoutType),
             Monitor(monitor),
@@ -172,7 +172,7 @@ struct ZoneSetConfig
     FancyZonesDataTypes::ZoneSetLayoutType LayoutType{};
     HMONITOR Monitor{};
     int SensitivityRadius;
-    Settings::OverlappingZonesAlgorithm SelectionAlgorithm = Settings::OverlappingZonesAlgorithm::Smallest;
+    OverlappingZonesAlgorithm SelectionAlgorithm = OverlappingZonesAlgorithm::Smallest;
 };
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept;

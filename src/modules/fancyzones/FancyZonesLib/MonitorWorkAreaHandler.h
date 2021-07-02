@@ -1,6 +1,8 @@
 #pragma once
 
 interface IZoneWindow;
+struct ZoneColors;
+enum struct OverlappingZonesAlgorithm;
 
 namespace std
 {
@@ -96,6 +98,16 @@ public:
      */
     void Clear();
 
+    /**
+    * Update zone colors after settings changed
+    */
+    void UpdateZoneColors(const ZoneColors& colors);
+
+    /**
+    * Update overlapping algorithm after settings changed
+    */
+    void UpdateOverlappingAlgorithm(OverlappingZonesAlgorithm overlappingAlgorithm);
+    
 private:
     // Work area is uniquely defined by monitor and virtual desktop id.
     std::unordered_map<GUID, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>> workAreaMap;
