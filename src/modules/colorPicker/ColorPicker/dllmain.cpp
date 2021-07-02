@@ -10,6 +10,7 @@
 
 #include <colorPicker/ColorPicker/ColorPickerConstants.h>
 #include <common/interop/shared_constants.h>
+#include <common/utils/logger_helper.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule,
                       DWORD ul_reason_for_call,
@@ -108,7 +109,7 @@ private:
 
     void launch_process()
     {
-        Logger::trace(L"Launching ColorPicker process");
+        Logger::trace(L"Starting ColorPicker process");
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"";
@@ -119,7 +120,11 @@ private:
         sei.lpFile = L"modules\\ColorPicker\\ColorPickerUI.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
-        if (!ShellExecuteExW(&sei))
+        if (ShellExecuteExW(&sei))
+        {
+            Logger::trace("Successfully started the Color Picker process");
+        }
+        else
         {
             DWORD error = GetLastError();
             std::wstring message = L"ColorPicker failed to start with error = ";
@@ -153,6 +158,7 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_COLORPICKER_NAME);
         app_key = ColorPickerConstants::ModuleKey;
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", "ColorPicker");
         send_telemetry_event = CreateDefaultEvent(CommonSharedConstants::COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT);
         m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
         init_settings();
@@ -224,6 +230,7 @@ public:
 
     virtual void enable()
     {
+        Logger::trace("ColorPicker::enable()");
         ResetEvent(send_telemetry_event);
         ResetEvent(m_hInvokeEvent);
         launch_process();
@@ -232,6 +239,7 @@ public:
 
     virtual void disable()
     {
+        Logger::trace("ColorPicker::disable()");
         if (m_enabled)
         {
             ResetEvent(send_telemetry_event);
