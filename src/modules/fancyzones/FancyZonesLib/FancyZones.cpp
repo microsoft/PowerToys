@@ -202,6 +202,8 @@ private:
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
 
+    ZoneColors GetZoneColors() const noexcept;
+
     const HINSTANCE m_hinstance{};
 
     mutable std::shared_mutex m_lock;
@@ -825,15 +827,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId, r
                 parentId = parentArea->UniqueId();
             }
 
-            ZoneColors colors
-            {
-                .primaryColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor),
-                .borderColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor),
-                .highlightColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor),
-                .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
-            };
-
-            auto workArea = MakeZoneWindow(m_hinstance, monitor, uniqueId, parentId, colors, m_settings->GetSettings()->overlappingZonesAlgorithm);
+            auto workArea = MakeZoneWindow(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), m_settings->GetSettings()->overlappingZonesAlgorithm);
             if (workArea)
             {
                 m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
@@ -1187,14 +1181,7 @@ void FancyZones::OnSettingsChanged() noexcept
     m_workAreaHandler.Clear();
 
     // update zone colors
-    ZoneColors colors
-    {
-        .primaryColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor),
-        .borderColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor),
-        .highlightColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor),
-        .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
-    };
-    m_workAreaHandler.UpdateZoneColors(colors);
+    m_workAreaHandler.UpdateZoneColors(GetZoneColors());
 
     // update overlapping algorithm
     m_workAreaHandler.UpdateOverlappingAlgorithm(m_settings->GetSettings()->overlappingZonesAlgorithm);
@@ -1326,6 +1313,16 @@ HMONITOR FancyZones::WorkAreaKeyFromWindow(HWND window) noexcept
     {
         return MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     }
+}
+
+ZoneColors FancyZones::GetZoneColors() const noexcept
+{
+    return ZoneColors {
+        .primaryColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor),
+        .borderColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor),
+        .highlightColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor),
+        .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
+    };
 }
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance,
