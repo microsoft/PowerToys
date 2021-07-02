@@ -61,6 +61,8 @@ namespace NonLocalizable
     const wchar_t MonitorId[] = L"monitor-id";
     const wchar_t TopCoordinate[] = L"top-coordinate";
     const wchar_t LeftCoordinate[] = L"left-coordinate";
+    const wchar_t Width[] = L"width";
+    const wchar_t Height[] = L"height";
     const wchar_t IsSelected[] = L"is-selected";
     const wchar_t ProcessId[] = L"process-id";
     const wchar_t SpanZonesAcrossMonitors[] = L"span-zones-across-monitors";
@@ -514,8 +516,8 @@ namespace JSONHelpers
         result.SetNamedValue(NonLocalizable::MonitorId, json::value(monitor.id));
         result.SetNamedValue(NonLocalizable::TopCoordinate, json::value(monitor.top));
         result.SetNamedValue(NonLocalizable::LeftCoordinate, json::value(monitor.left));
-        result.SetNamedValue(L"width", json::value(monitor.width));
-        result.SetNamedValue(L"height", json::value(monitor.height));
+        result.SetNamedValue(NonLocalizable::Width, json::value(monitor.width));
+        result.SetNamedValue(NonLocalizable::Height, json::value(monitor.height));
         result.SetNamedValue(NonLocalizable::IsSelected, json::value(monitor.isSelected));
 
         return result;
