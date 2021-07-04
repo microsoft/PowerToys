@@ -105,6 +105,10 @@
     <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
       <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\SidePanel\SettingsPageControl.xaml.cs">
+      <DependentUpon>SettingsPageControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SidePanel\SidePanelLink.cs" />
     <Compile Include="Converters\AwakeModeToBoolConverter.cs" />
     <Compile Include="Converters\ModuleEnabledToOpacityConverter.cs" />
     <Compile Include="Converters\UpdatingStateCannotDownloadToVisibilityConverter.cs" />
@@ -309,6 +313,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\ShortcutVisualControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\SidePanel\SettingsPageControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
