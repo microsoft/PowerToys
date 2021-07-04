@@ -223,8 +223,8 @@
 
                 <Button x:Uid="KeyboardManager_RemapKeyboardButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
                     Command="{Binding Path=RemapKeyboardCommand}"
+                    Style="{StaticResource AccentButtonStyle}"
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
                 <ListView x:Name="RemapKeysList"

@@ -25,6 +25,19 @@
                                   ModuleImageLink="https://aka.ms/powertoys">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
+                <Button Click="OobeButton_Click"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Margin="0,12,0,24">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon FontSize="13" Glyph="&#xF133;" />
+                            <TextBlock Margin="8,0,0,0"
+                               x:Uid="Oobe_Button"/>
+                    </StackPanel>
+                    </Button.Content>
+                </Button>
+                
+                
                 <TextBlock x:Uid="Admin_Mode" 
                        FontWeight="SemiBold"
                        TextWrapping="Wrap"
@@ -37,7 +50,6 @@
 
                 <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
                     Command = "{Binding RestartElevatedButtonEventHandler}"
                     IsEnabled="{Binding Mode=TwoWay, Path=IsAdminButtonEnabled}"
                     />
@@ -126,8 +138,6 @@
                            Visibility="{Binding IsNewVersionCheckedAndUpToDate, Converter={StaticResource VisibleIfTrueConverter}}"/>
 
                     <Button x:Uid="GeneralPage_CheckForUpdates"
-                        Style="{StaticResource AccentButtonStyle}"
-                        Foreground="White"
                         Margin="{StaticResource SmallTopMargin}"
                         Command="{Binding CheckForUpdatesEventHandler}"
                         IsEnabled="{Binding IsDownloadAllowed}"
@@ -172,8 +182,6 @@
 
                     <Button x:Uid="General_DownloadAndInstall"
                         Margin="{StaticResource SmallTopMargin}"
-                        Style="{StaticResource AccentButtonStyle}"
-                        Foreground="White"
                         Command="{Binding UpdateNowButtonEventHandler}"
                         IsEnabled="{Binding IsDownloadAllowed}"/>
                 </StackPanel>
@@ -210,8 +218,6 @@
 
                     <Button x:Uid="General_InstallNow"
                         Margin="{StaticResource SmallTopMargin}"
-                        Style="{StaticResource AccentButtonStyle}"
-                        Foreground="White"
                         Command="{Binding UpdateNowButtonEventHandler}"
                         IsEnabled="{Binding AutoUpdatesEnabled}"/>
                 </StackPanel>
@@ -246,8 +252,6 @@
 
                     <Button x:Uid="General_TryAgainToDownloadAndInstall"
                         Margin="{StaticResource SmallTopMargin}"
-                        Style="{StaticResource AccentButtonStyle}"
-                        Foreground="White"
                         Command="{Binding UpdateNowButtonEventHandler}"
                         IsEnabled="{Binding IsDownloadAllowed}"/>
                 </StackPanel>

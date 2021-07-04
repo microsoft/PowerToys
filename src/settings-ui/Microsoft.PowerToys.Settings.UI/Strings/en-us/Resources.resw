@@ -1247,7 +1247,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="OOBE_Settings.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="Oobe_Button.Label" xml:space="preserve">
+  <data name="Oobe_Button.Text" xml:space="preserve">
     <value>Welcome to PowerToys</value>
   </data>
   <data name="OobeWindow_Title" xml:space="preserve">
