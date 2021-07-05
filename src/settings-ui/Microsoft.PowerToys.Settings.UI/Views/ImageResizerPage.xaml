@@ -58,7 +58,7 @@
 
             <TextBlock x:Uid="ImageResizer_CustomSizes"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <ListView x:Name="ImagesSizesListView" 
                       x:Uid="ImagesSizesListView"
@@ -226,7 +226,7 @@
 
             <TextBlock x:Uid="Encoding"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <ComboBox x:Uid="ImageResizer_FallBackEncoderText"
                           SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}"
@@ -279,7 +279,7 @@
 
             <TextBlock x:Uid="File"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
                       HorizontalAlignment="Left"
@@ -295,7 +295,7 @@
                         <TextBlock Name="ImageResizer_FilenameFormatHeader"
                             x:Uid="ImageResizer_FilenameFormatHeader"
                             Margin="0,0,0,0"
-                            Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                            Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
                         <TextBlock Text="&#xE946;"
                            FontFamily="Segoe MDL2 Assets"
                            Margin="4,4,0,0"/>

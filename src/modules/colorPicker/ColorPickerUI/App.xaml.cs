@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using System.Windows;
+using ColorPicker.Helpers;
 using ColorPicker.Mouse;
 using ManagedCommon;
 using Microsoft.PowerToys.Common.UI;
@@ -30,6 +31,7 @@ namespace ColorPickerUI
             _instanceMutex = new Mutex(true, @"Local\PowerToys_ColorPicker_InstanceMutex", out bool createdNew);
             if (!createdNew)
             {
+                Logger.LogWarning("There is ColorPicker instance running. Exiting Color Picker");
                 _instanceMutex = null;
                 Environment.Exit(0);
                 return;
@@ -39,8 +41,10 @@ namespace ColorPickerUI
             {
                 _ = int.TryParse(_args[0], out _powerToysRunnerPid);
 
+                Logger.LogInfo($"Color Picker started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
+                    Logger.LogInfo("PowerToys Runner exited. Exiting ColorPicker");
                     Environment.Exit(0);
                 });
             }

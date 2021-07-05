@@ -58,7 +58,7 @@
 
             <TextBlock x:Uid="Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
             
             <Custom:HotkeySettingsControl x:Uid="ColorPicker_ActivationShortcut"
                                           Margin="{StaticResource SmallTopMargin}"
@@ -72,7 +72,7 @@
             <TextBlock x:Uid="ColorPicker_ActivationAction"
                        Margin="{StaticResource MediumTopMargin}"
                        x:Name="ColorPicker_ActivationAction" 
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
             <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ColorPicker_ActivationAction}">
                 <RadioButton
                          IsChecked="{Binding ActivationOpensColorPickerAndEditor, Mode=TwoWay}"
@@ -117,7 +117,7 @@
 
             <TextBlock x:Uid="ColorFormats"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
             
             <ComboBox x:Name="ColorPicker_ComboBox"
                       x:Uid="ColorPicker_CopiedColorRepresentation"
@@ -138,12 +138,12 @@
 
             <TextBlock x:Uid="ColorPicker_Editor"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
             
             <TextBlock x:Name="ColorFormatsListViewLabel"
                        TextWrapping="WrapWholeWords"
                        x:Uid="ColorPicker_ColorFormatsDescription"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
                        Margin="{StaticResource SmallTopMargin}"/>
             
             <!-- Disabled reordering by dragging -->
