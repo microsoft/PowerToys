@@ -60,7 +60,7 @@ private:
 
     bool is_process_running()
     {
-        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
+        return WaitForSingleObject(p_info.hProcess, 0) == WAIT_TIMEOUT;
     }
 
     void launch_process()
