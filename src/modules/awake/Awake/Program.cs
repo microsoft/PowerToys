@@ -42,6 +42,10 @@ namespace Awake
 
         private static int Main(string[] args)
         {
+            // Log initialization needs to always happen before we test whether
+            // only one instance of Awake is running.
+            _log = LogManager.GetCurrentClassLogger();
+
             bool instantiated;
             LockMutex = new Mutex(true, Constants.AppName, out instantiated);
 
@@ -50,7 +54,6 @@ namespace Awake
                 ForceExit(Constants.AppName + " is already running! Exiting the application.", 1);
             }
 
-            _log = LogManager.GetCurrentClassLogger();
             _settingsUtils = new SettingsUtils();
 
             _log.Info("Launching PowerToys Awake...");
@@ -145,7 +148,10 @@ namespace Awake
             APIHelper.SetNoKeepAwake();
             TrayHelper.ClearTray();
 
-            Environment.Exit(exitCode);
+            // Because we are running a message loop for the tray, we can't just use Environment.Exit,
+            // but have to make sure that we properly send the termination message.
+            var cwResult = System.Diagnostics.Process.GetCurrentProcess().CloseMainWindow();
+            _log.Info($"Request to close main window statius: {cwResult}");
         }
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid)
@@ -240,7 +246,6 @@ namespace Awake
 
         private static void SetupIndefiniteKeepAwake(bool displayOn)
         {
-            // Indefinite keep awake.
             APIHelper.SetIndefiniteKeepAwake(LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
         }
 

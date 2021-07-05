@@ -253,6 +253,8 @@ namespace Awake.Core
                 {
                     _log.Info($"Initiated temporary keep awake in background thread: {GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
                     var startTime = DateTime.UtcNow;
+
+                    // TODO: Replace this with a timer.
                     while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(Math.Abs(seconds)))
                     {
                         if (_threadToken.IsCancellationRequested)
