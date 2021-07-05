@@ -27,7 +27,7 @@
     <ClInclude Include="ZoneSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ZoneWindow.h">
+    <ClInclude Include="WorkArea.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FancyZones.h">
@@ -98,7 +98,7 @@
     <ClCompile Include="ZoneSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ZoneWindow.cpp">
+    <ClCompile Include="WorkArea.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FancyZones.cpp">

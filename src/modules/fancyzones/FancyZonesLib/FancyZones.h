@@ -4,7 +4,7 @@
 
 #include <functional>
 
-interface IZoneWindow;
+interface IWorkArea;
 interface IFancyZonesSettings;
 interface IZoneSet;
 
