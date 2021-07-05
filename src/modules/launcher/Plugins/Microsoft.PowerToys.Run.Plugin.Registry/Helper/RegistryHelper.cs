@@ -52,7 +52,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
             }
 
             var baseKey = query.Split('\\').FirstOrDefault() ?? string.Empty;
+#pragma warning disable CS8604 // Possible null reference argument.
             var subKey = query.Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase).TrimStart('\\');
+#pragma warning restore CS8604 // Possible null reference argument.
             var baseKeyResult = _baseKeys
                 .Where(found => found.Key.StartsWith(baseKey, StringComparison.InvariantCultureIgnoreCase))
                 .Select(found => found.Value)
@@ -100,6 +102,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
             do
             {
                 result = FindSubKey(subKey, subKeysNames.ElementAtOrDefault(index) ?? string.Empty);
+#pragma warning restore CS8604 // Possible null reference argument.
 
                 if (result.Count == 0)
                 {

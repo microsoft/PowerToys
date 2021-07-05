@@ -52,6 +52,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
             queryKey = querySplit.FirstOrDefault() ?? string.Empty;
             queryValueName = querySplit.LastOrDefault() ?? string.Empty;
+#pragma warning restore CS8601 // Possible null reference assignment.
+#pragma warning disable CS8601 // Possible null reference assignment.
+#pragma warning restore CS8601 // Possible null reference assignment.
             return true;
         }
 
