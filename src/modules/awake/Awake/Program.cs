@@ -51,7 +51,7 @@ namespace Awake
 
             if (!instantiated)
             {
-                ForceExit(Constants.AppName + " is already running! Exiting the application.", 1);
+                Exit(Constants.AppName + " is already running! Exiting the application.", 1, true);
             }
 
             _settingsUtils = new SettingsUtils();
@@ -136,12 +136,12 @@ namespace Awake
         {
             _log.Info($"Exited through handler with control type: {ctrlType}");
 
-            ForceExit("Exiting from the internal termination handler.", Environment.ExitCode);
+            Exit("Exiting from the internal termination handler.", Environment.ExitCode);
 
             return false;
         }
 
-        private static void ForceExit(string message, int exitCode)
+        private static void Exit(string message, int exitCode, bool force = false)
         {
             _log.Info(message);
 
@@ -152,17 +152,22 @@ namespace Awake
             // but have to make sure that we properly send the termination message.
             var cwResult = System.Diagnostics.Process.GetCurrentProcess().CloseMainWindow();
             _log.Info($"Request to close main window statius: {cwResult}");
+
+            if (force)
+            {
+                Environment.Exit(exitCode);
+            }
         }
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid)
         {
+            _handler += new ConsoleEventHandler(ExitHandler);
+            APIHelper.SetConsoleControlHandler(_handler, true);
+
             if (pid == 0)
             {
                 _log.Info("No PID specified. Allocating console...");
                 APIHelper.AllocateConsole();
-
-                _handler += new ConsoleEventHandler(ExitHandler);
-                APIHelper.SetConsoleControlHandler(_handler, true);
             }
 
             _log.Info($"The value for --use-pt-config is: {usePtConfig}");
@@ -237,7 +242,7 @@ namespace Awake
             {
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
-                    ForceExit("Terminating from PowerToys binding hook.", 0);
+                    Exit("Terminating from PowerToys binding hook.", 0, true);
                 });
             }
 

@@ -51,12 +51,12 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
 
-    HANDLE m_hProcess;
-
     HANDLE send_telemetry_event;
 
     // Handle to event used to invoke PowerToys Awake
     HANDLE m_hInvokeEvent;
+
+    PROCESS_INFORMATION p_info;
 
     bool is_process_running()
     {
@@ -69,22 +69,19 @@ private:
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"--use-pt-config --pid " + std::to_wstring(powertoys_pid);
+        std::wstring application_path = L"modules\\Awake\\PowerToys.Awake.exe";
+        std::wstring full_command_path = application_path + L" " + executable_args.data();
         Logger::trace(L"PowerToys Awake launching with parameters: " + executable_args);
 
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\Awake\\PowerToys.Awake.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-        if (!ShellExecuteExW(&sei))
+        STARTUPINFO info = { sizeof(info) };
+
+        if (!CreateProcess(application_path.c_str(), full_command_path.data(), NULL, NULL, true, NULL, NULL, NULL, &info, &p_info))
         {
             DWORD error = GetLastError();
-            std::wstring message = L"PowerToys Awake failed to start with error = ";
+            std::wstring message = L"PowerToys Awake failed to start with error: ";
             message += std::to_wstring(error);
             Logger::error(message);
         }
-
-        m_hProcess = sei.hProcess;
     }
 
 public:
@@ -162,7 +159,8 @@ public:
         {
             ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);
-            TerminateProcess(m_hProcess, 1);
+            TerminateProcess(p_info.hProcess, 1);
+            CloseHandle(p_info.hProcess);
         }
 
         m_enabled = false;
