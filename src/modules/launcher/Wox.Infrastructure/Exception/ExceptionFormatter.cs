@@ -88,7 +88,9 @@ namespace Wox.Infrastructure.Exception
             sb.AppendLine();
             sb.AppendLine("## Assemblies - " + AppDomain.CurrentDomain.FriendlyName);
             sb.AppendLine();
+#pragma warning disable SYSLIB0005 // Type or member is obsolete
             foreach (var ass in AppDomain.CurrentDomain.GetAssemblies().OrderBy(o => o.GlobalAssemblyCache ? 50 : 0))
+#pragma warning restore SYSLIB0005 // Type or member is obsolete
             {
                 sb.Append("* ");
                 sb.Append(ass.FullName);
