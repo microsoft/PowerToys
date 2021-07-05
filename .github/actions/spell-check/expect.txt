@@ -1065,6 +1065,7 @@ IVector
 IView
 IVirtual
 IWeb
+IWork
 IXml
 IWindows
 ixx
