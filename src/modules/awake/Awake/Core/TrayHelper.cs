@@ -57,10 +57,10 @@ namespace Awake.Core
                 text,
                 settings.Properties.KeepDisplayOn,
                 settings.Properties.Mode,
-                PassiveKeepAwakeCallback(text),
-                IndefiniteKeepAwakeCallback(text),
-                TimedKeepAwakeCallback(text),
-                KeepDisplayOnCallback(text),
+                PassiveKeepAwakeCallback(Constants.AppName),
+                IndefiniteKeepAwakeCallback(Constants.AppName),
+                TimedKeepAwakeCallback(Constants.AppName),
+                KeepDisplayOnCallback(Constants.AppName),
                 ExitCallback());
         }
 

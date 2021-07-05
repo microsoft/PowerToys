@@ -27,8 +27,6 @@ namespace Awake
     internal class Program
     {
         private static Mutex? _mutex = null;
-        private const string AppName = "Awake";
-        private const string FullAppName = "PowerToys " + AppName;
         private static FileSystemWatcher? _watcher = null;
         private static SettingsUtils? _settingsUtils = null;
 
@@ -45,11 +43,11 @@ namespace Awake
         private static int Main(string[] args)
         {
             bool instantiated;
-            LockMutex = new Mutex(true, AppName, out instantiated);
+            LockMutex = new Mutex(true, Constants.AppName, out instantiated);
 
             if (!instantiated)
             {
-                ForceExit(AppName + " is already running! Exiting the application.", 1);
+                ForceExit(Constants.AppName + " is already running! Exiting the application.", 1);
             }
 
             _log = LogManager.GetCurrentClassLogger();
@@ -122,7 +120,7 @@ namespace Awake
                 pidOption,
             };
 
-            rootCommand.Description = AppName;
+            rootCommand.Description = Constants.AppName;
 
             rootCommand.Handler = CommandHandler.Create<bool, bool, uint, int>(HandleCommandLineArguments);
 
@@ -173,10 +171,10 @@ namespace Awake
                 try
                 {
 #pragma warning disable CS8604 // Possible null reference argument.
-                    TrayHelper.InitializeTray(FullAppName, new Icon(Application.GetResourceStream(new Uri("/Images/Awake.ico", UriKind.Relative)).Stream));
+                    TrayHelper.InitializeTray(Constants.FullAppName, new Icon(Application.GetResourceStream(new Uri("/Images/Awake.ico", UriKind.Relative)).Stream));
 #pragma warning restore CS8604 // Possible null reference argument.
 
-                    var settingsPath = _settingsUtils.GetSettingsFilePath(AppName);
+                    var settingsPath = _settingsUtils.GetSettingsFilePath(Constants.AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");
 
                     _watcher = new FileSystemWatcher
@@ -202,7 +200,7 @@ namespace Awake
                         .Select(e => e.EventArgs)
                         .Subscribe(HandleAwakeConfigChange);
 
-                    TrayHelper.SetTray(FullAppName, new AwakeSettings());
+                    TrayHelper.SetTray(Constants.FullAppName, new AwakeSettings());
 
                     // Initially the file might not be updated, so we need to start processing
                     // settings right away.
@@ -257,7 +255,7 @@ namespace Awake
         {
             try
             {
-                AwakeSettings settings = _settingsUtils.GetSettings<AwakeSettings>(AppName);
+                AwakeSettings settings = _settingsUtils.GetSettings<AwakeSettings>(Constants.AppName);
 
                 if (settings != null)
                 {
@@ -294,7 +292,7 @@ namespace Awake
                             }
                     }
 
-                    TrayHelper.SetTray(FullAppName, settings);
+                    TrayHelper.SetTray(Constants.FullAppName, settings);
                 }
                 else
                 {
