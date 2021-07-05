@@ -26,11 +26,7 @@ namespace PowerLauncher.ViewModel
 
         public ICommand ActivateContextButtonsHoverCommand { get; }
 
-        public ICommand ActivateContextButtonsSelectionCommand { get; }
-
         public ICommand DeactivateContextButtonsHoverCommand { get; }
-
-        public ICommand DeactivateContextButtonsSelectionCommand { get; }
 
         public bool IsSelected { get; private set; }
 
@@ -79,19 +75,12 @@ namespace PowerLauncher.ViewModel
             LoadContextMenu();
 
             ActivateContextButtonsHoverCommand = new RelayCommand(ActivateContextButtonsHoverAction);
-            ActivateContextButtonsSelectionCommand = new RelayCommand(ActivateContextButtonsSelectionAction);
             DeactivateContextButtonsHoverCommand = new RelayCommand(DeactivateContextButtonsHoverAction);
-            DeactivateContextButtonsSelectionCommand = new RelayCommand(DeactivateContextButtonsSelectionAction);
         }
 
         private void ActivateContextButtonsHoverAction(object sender)
         {
             ActivateContextButtons(ActivationType.Hover);
-        }
-
-        private void ActivateContextButtonsSelectionAction(object sender)
-        {
-            ActivateContextButtons(ActivationType.Selection);
         }
 
         public void ActivateContextButtons(ActivationType activationType)
@@ -120,11 +109,6 @@ namespace PowerLauncher.ViewModel
         private void DeactivateContextButtonsHoverAction(object sender)
         {
             DeactivateContextButtons(ActivationType.Hover);
-        }
-
-        private void DeactivateContextButtonsSelectionAction(object sender)
-        {
-            DeactivateContextButtons(ActivationType.Selection);
         }
 
         public void DeactivateContextButtons(ActivationType activationType)

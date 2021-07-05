@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -256,8 +256,6 @@ namespace PowerLauncher.ViewModel
                 SelectedResults.SelectPrevPage();
             });
 
-            SelectFirstResultCommand = new RelayCommand(_ => SelectedResults.SelectFirstResult());
-
             OpenResultWithKeyboardCommand = new RelayCommand(index =>
             {
                 OpenResultsEvent(index, false);
@@ -266,31 +264,6 @@ namespace PowerLauncher.ViewModel
             OpenResultWithMouseCommand = new RelayCommand(index =>
             {
                 OpenResultsEvent(index, true);
-            });
-
-            LoadContextMenuCommand = new RelayCommand(_ =>
-            {
-                if (SelectedIsFromQueryResults())
-                {
-                    SelectedResults = ContextMenu;
-                }
-                else
-                {
-                    SelectedResults = Results;
-                }
-            });
-
-            LoadHistoryCommand = new RelayCommand(_ =>
-            {
-                if (SelectedIsFromQueryResults())
-                {
-                    SelectedResults = History;
-                    History.SelectedIndex = _history.Items.Count - 1;
-                }
-                else
-                {
-                    SelectedResults = Results;
-                }
             });
 
             ClearQueryCommand = new RelayCommand(_ =>
@@ -450,12 +423,6 @@ namespace PowerLauncher.ViewModel
         public ICommand SelectNextPageCommand { get; private set; }
 
         public ICommand SelectPrevPageCommand { get; private set; }
-
-        public ICommand SelectFirstResultCommand { get; private set; }
-
-        public ICommand LoadContextMenuCommand { get; private set; }
-
-        public ICommand LoadHistoryCommand { get; private set; }
 
         public ICommand OpenResultWithKeyboardCommand { get; private set; }
 
