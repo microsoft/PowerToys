@@ -173,7 +173,7 @@ namespace Awake
                 try
                 {
 #pragma warning disable CS8604 // Possible null reference argument.
-                    TrayHelper.InitializeTray(AppName, new Icon(Application.GetResourceStream(new Uri("/Images/Awake.ico", UriKind.Relative)).Stream));
+                    TrayHelper.InitializeTray(FullAppName, new Icon(Application.GetResourceStream(new Uri("/Images/Awake.ico", UriKind.Relative)).Stream));
 #pragma warning restore CS8604 // Possible null reference argument.
 
                     var settingsPath = _settingsUtils.GetSettingsFilePath(AppName);
@@ -294,7 +294,7 @@ namespace Awake
                             }
                     }
 
-                    TrayHelper.SetTray(AppName, settings);
+                    TrayHelper.SetTray(FullAppName, settings);
                 }
                 else
                 {

@@ -236,7 +236,8 @@
                                    Grid.Column="1"
                                    FontSize="20"
                                    Margin="0,0,0,-2"
-                                   VerticalAlignment="Bottom">
+                                   VerticalAlignment="Bottom"
+                                   IsHitTestVisible="False">
                                <viewmodel:ResultsViewModel.FormattedText>
                                     <MultiBinding Converter="{StaticResource highlightTextConverter}">
                                         <Binding Path="Result.Title" />
