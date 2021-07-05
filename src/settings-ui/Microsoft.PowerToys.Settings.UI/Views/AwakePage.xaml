@@ -5,10 +5,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:c="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400" 
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
 
@@ -16,104 +14,71 @@
         <c:AwakeModeToBoolConverter x:Key="AwakeModeToBoolConverter" />
     </Page.Resources>
 
-    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="LayoutVisualStates">
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState x:Name="SmallLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.Width" Value="Auto" />
-                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage" />
-                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage" />
-                        <Setter Target="AboutImage.Margin" Value="0,12,12,0" />
-                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <controls:SettingsPageControl x:Uid="About_Awake"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/Awake.png"
+                                  ModuleImageLink="https://aka.ms/PowerToysOverview_Awake">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+                <ToggleSwitch x:Uid="Awake_EnableAwake" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
 
-        <StackPanel Orientation="Vertical"
-                    x:Name="AwakeView"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,48,0"
-                    MaxWidth="{StaticResource MaxContentWidth}">
-            <ToggleSwitch x:Uid="Awake_EnableAwake" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-
-            <TextBlock x:Uid="Awake_Behavior_GroupSettings"
+                <TextBlock x:Uid="Awake_Behavior_GroupSettings"
                        Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <CheckBox x:Uid="Awake_EnableDisplayKeepAwake"
+                <CheckBox x:Uid="Awake_EnableDisplayKeepAwake"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       IsChecked="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}"
                       Margin="{StaticResource XSmallTopMargin}" />
-            
-            <TextBlock x:Uid="Awake_Mode"
+
+                <TextBlock x:Uid="Awake_Mode"
                        Margin="{StaticResource SmallTopMargin}"
                        x:Name="ModeTitleLabel"
                        Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
 
-            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
+                <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
                         Margin="0,-8,0,0">
-                <RadioButton x:Uid="Awake_NoKeepAwake"
+                    <RadioButton x:Uid="Awake_NoKeepAwake"
                              Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                              IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}, ConverterParameter=0}">
-                    <RadioButton.Content>
-                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <RadioButton.Content>
+                            <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Awake_NoKeepAwakeContent"/>
                         <LineBreak/>
                         <Run Foreground="{ThemeResource SystemBaseMediumColor}"
                              x:Uid="Awake_NoKeepAwakeDescription"/>
-                        </TextBlock>
-                    </RadioButton.Content>
-                </RadioButton>
-                <RadioButton x:Uid="Awake_IndefiniteKeepAwake"
+                            </TextBlock>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Uid="Awake_IndefiniteKeepAwake"
                              Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                              IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}, ConverterParameter=1}">
-                    <RadioButton.Content>
-                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <RadioButton.Content>
+                            <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Awake_IndefiniteKeepAwakeContent"/>
                         <LineBreak/>
                         <Run Foreground="{ThemeResource SystemBaseMediumColor}"
                              x:Uid="Awake_IndefiniteKeepAwakeDescription"/>
-                        </TextBlock>
-                    </RadioButton.Content>
-                </RadioButton>
-                <RadioButton x:Uid="Awake_TemporaryKeepAwake"
+                            </TextBlock>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Uid="Awake_TemporaryKeepAwake"
                              Margin="{StaticResource SmallTopMargin}"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                              IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}, ConverterParameter=2}">
-                    <RadioButton.Content>
-                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <RadioButton.Content>
+                            <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Awake_TemporaryKeepAwakeContent"/>
                         <LineBreak/>
                         <Run Foreground="{ThemeResource SystemBaseMediumColor}"
                              x:Uid="Awake_TemporaryKeepAwakeDescription"/>
-                        </TextBlock>
-                    </RadioButton.Content>
-                </RadioButton>
+                            </TextBlock>
+                        </RadioButton.Content>
+                    </RadioButton>
 
-                <StackPanel Margin="28,8,0,0" Orientation="Horizontal">
-                    <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
+                    <StackPanel Margin="28,8,0,0" Orientation="Horizontal">
+                        <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
                             Value="{x:Bind ViewModel.Hours, Mode=TwoWay}"
                             Minimum="0"
                             SpinButtonPlacementMode="Compact"
@@ -122,7 +87,7 @@
                             IsEnabled="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}"
                             SmallChange="1" 
                             LargeChange="5"/>
-                    <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
+                        <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
                             Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}"
                             Minimum="0"
                             SpinButtonPlacementMode="Compact"
@@ -132,57 +97,17 @@
                             MinWidth="90"
                             SmallChange="1" 
                             LargeChange="5"/>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
-        </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
 
-        <RelativePanel x:Name="SidePanel" 
-                    HorizontalAlignment="Left"
-                    Width="{StaticResource SidePanelWidth}"
-                    Grid.Column="1">
-            <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="About_Awake"
-                           x:Name="AboutTitle"
-                           Grid.ColumnSpan="2"
-                           Style="{StaticResource SettingsGroupTitleStyle}"
-                           Margin="{StaticResource XSmallBottomMargin}"/>
-                <TextBlock x:Uid="Awake_Description"
-                           TextWrapping="Wrap"
-                           Grid.Row="1" />
-            </StackPanel>
-
-            <Border x:Name="AboutImage"
-                    CornerRadius="4"
-                    Grid.Row="2"
-                    MaxWidth="240"
-                    HorizontalAlignment="Left"
-                    Margin="{StaticResource SmallTopBottomMargin}"
-                    RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="Awake_ImageHyperlinkToDocs">
-                    <Image x:Uid="Awake_Image" Source="ms-appx:///Assets/Modules/Awake.png" />
-                </HyperlinkButton>
-            </Border>
-            <StackPanel x:Name="LinksPanel"
-                        Margin="0,1,0,0"
-                        RelativePanel.Below="AboutImage"
-                        Orientation="Vertical" >
-                <HyperlinkButton x:Uid="Awake_ImageHyperlinkToDocs">
-                    <TextBlock x:Uid="Module_overview" />
-                </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
-                    <TextBlock x:Uid="Give_Feedback" />
-                </HyperlinkButton>
-
-                <TextBlock 
-                x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}" />
-
-                <HyperlinkButton Margin="0,-3,0,0"
-                                 x:Uid="Awake_ModuleAttributionHyperlink">
-                    <TextBlock x:Uid="Awake_ModuleAttributionLabel"
-                               TextWrapping="Wrap" />
-                </HyperlinkButton>
-            </StackPanel>
-        </RelativePanel>
-    </Grid>
+        <controls:SettingsPageControl.ModuleLinks>
+            <controls:SidePanelLink x:Uid="Learn_More" Link="https://aka.ms/PowerToysOverview_Awake"/>
+            <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
+        </controls:SettingsPageControl.ModuleLinks>
+        <controls:SettingsPageControl.AttributionLinks>
+            <controls:SidePanelLink Label="Den Delimarsky's Awake" Link="https://Awake.den.dev"/>
+        </controls:SettingsPageControl.AttributionLinks>
+    </controls:SettingsPageControl>
 </Page>

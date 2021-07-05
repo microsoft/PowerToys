@@ -1,0 +1,117 @@
+﻿<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.SettingsPageControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    mc:Ignorable="d"
+    >
+
+    <UserControl.Resources>
+        <converters:DoubleToVisibilityConverter x:Name="doubleToVisibilityConverter" GreaterThan="0" TrueValue="Visible" FalseValue="Collapsed" />
+    </UserControl.Resources>
+
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="Auto"/>
+                        <Setter Target="ModuleContentPresenter.(Grid.Row)" Value="1" />
+                        <Setter Target="ModuleContentPresenter.Margin" Value="0" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage" />
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage" />
+                        <Setter Target="LinksPanel.Margin" Value="0,12,0,0" />
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0" />
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ContentPresenter x:Name="ModuleContentPresenter"
+                          Content="{x:Bind ModuleContent}"
+                           Margin="0,0,48,0"
+                          HorizontalAlignment="Left"
+                          MaxWidth="{StaticResource MaxContentWidth}"/>
+
+        <RelativePanel Grid.Column="1" x:Name="SidePanel" Width="{StaticResource SidePanelWidth}">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock  x:Name="AboutTitle"
+                        Text="{x:Bind ModuleTitle}"
+                        Style="{StaticResource SettingsGroupTitleStyle}"
+                        Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock Text="{x:Bind ModuleDescription}"
+                           TextWrapping="Wrap">
+                </TextBlock>
+            </StackPanel>
+
+            <HyperlinkButton x:Name="AboutImage"
+                         RelativePanel.Below="DescriptionPanel"
+                         MaxWidth="240"
+                         CornerRadius="4"
+                         NavigateUri="{x:Bind ModuleImageLink}"
+                         Margin="{StaticResource SmallTopBottomMargin}">
+                <Image>
+                    <Image.Source>
+                        <BitmapImage UriSource="{x:Bind ModuleImageSource}" />
+                    </Image.Source>
+                </Image>
+            </HyperlinkButton>
+
+            <StackPanel x:Name="LinksPanel"
+                    Margin="0,1,0,0"
+                    RelativePanel.Below="AboutImage"
+                    Orientation="Vertical">
+
+                <StackPanel x:Name="ModuleLinksPanel" Orientation="Vertical">
+                    <ItemsControl ItemsSource="{x:Bind ModuleLinks}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:SidePanelLink">
+                                <HyperlinkButton NavigateUri="{x:Bind Link}" Margin="0,-3,0,0">
+                                    <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" />
+                                </HyperlinkButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel x:Name="AttributionPanel"
+                              Visibility="{x:Bind AttributionLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}"
+                            Orientation="Vertical">
+                    <TextBlock x:Uid="AttributionTitle" Style="{StaticResource SettingsGroupTitleStyle}" />
+
+                    <ItemsControl x:Name="AttributionLinksItemControl" ItemsSource="{x:Bind AttributionLinks}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:SidePanelLink">
+                                <HyperlinkButton NavigateUri="{x:Bind Link}" Margin="0,-3,0,0">
+                                    <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" />
+                                </HyperlinkButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </RelativePanel>
+    </Grid>
+</UserControl>
