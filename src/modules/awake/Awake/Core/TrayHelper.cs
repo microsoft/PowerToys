@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.PowerToys.Settings.UI.Library;
 
@@ -32,16 +33,22 @@ namespace Awake.Core
 
         public static void InitializeTray(string text, Icon icon, ContextMenuStrip? contextMenu = null)
         {
-            System.Threading.Tasks.Task.Factory.StartNew(
+            Task.Factory.StartNew(
                 (tray) =>
-            {
-                ((NotifyIcon?)tray).Text = text;
-                ((NotifyIcon?)tray).Icon = icon;
-                ((NotifyIcon?)tray).ContextMenuStrip = contextMenu;
-                ((NotifyIcon?)tray).Visible = true;
+                {
+                    ((NotifyIcon?)tray).Text = text;
+                    ((NotifyIcon?)tray).Icon = icon;
+                    ((NotifyIcon?)tray).ContextMenuStrip = contextMenu;
+                    ((NotifyIcon?)tray).Visible = true;
 
-                Application.Run();
-            }, TrayIcon);
+                    Application.Run();
+                }, TrayIcon);
+        }
+
+        public static void ClearTray()
+        {
+            TrayIcon.Icon = null;
+            TrayIcon.Dispose();
         }
 
         internal static void SetTray(string text, AwakeSettings settings)
@@ -61,7 +68,7 @@ namespace Awake.Core
         {
             return () =>
             {
-                Environment.Exit(0);
+                Environment.Exit(Environment.ExitCode);
             };
         }
 

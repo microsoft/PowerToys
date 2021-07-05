@@ -36,6 +36,12 @@ namespace Awake
 
         private static Logger? _log;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        private static ConsoleEventHandler _handler;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+        private static ManualResetEvent _exitSignal = new ManualResetEvent(false);
+
         private static int Main(string[] args)
         {
             bool instantiated;
@@ -125,9 +131,22 @@ namespace Awake
             return rootCommand.InvokeAsync(args).Result;
         }
 
+        private static bool ExitHandler(ControlType ctrlType)
+        {
+            _log.Info($"Exited through handler with control type: {ctrlType}");
+
+            ForceExit("Exiting from the internal termination handler.", Environment.ExitCode);
+
+            return false;
+        }
+
         private static void ForceExit(string message, int exitCode)
         {
             _log.Info(message);
+
+            APIHelper.SetNoKeepAwake();
+            TrayHelper.ClearTray();
+
             Environment.Exit(exitCode);
         }
 
@@ -137,6 +156,9 @@ namespace Awake
             {
                 _log.Info("No PID specified. Allocating console...");
                 APIHelper.AllocateConsole();
+
+                _handler += new ConsoleEventHandler(ExitHandler);
+                APIHelper.SetConsoleControlHandler(_handler, true);
             }
 
             _log.Info($"The value for --use-pt-config is: {usePtConfig}");
@@ -207,17 +229,15 @@ namespace Awake
                 }
             }
 
-            var exitSignal = new ManualResetEvent(false);
             if (pid != 0)
             {
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
-                    exitSignal.Set();
-                    Environment.Exit(0);
+                    ForceExit("Terminating from PowerToys binding hook.", 0);
                 });
             }
 
-            exitSignal.WaitOne();
+            _exitSignal.WaitOne();
         }
 
         private static void SetupIndefiniteKeepAwake(bool displayOn)

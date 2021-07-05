@@ -21,6 +21,18 @@ namespace Awake.Core
         ES_SYSTEM_REQUIRED = 0x00000001,
     }
 
+    // See: https://docs.microsoft.com/windows/console/handlerroutine
+    public enum ControlType
+    {
+        CTRL_C_EVENT = 0,
+        CTRL_BREAK_EVENT = 1,
+        CTRL_CLOSE_EVENT = 2,
+        CTRL_LOGOFF_EVENT = 5,
+        CTRL_SHUTDOWN_EVENT = 6,
+    }
+
+    public delegate bool ConsoleEventHandler(ControlType ctrlType);
+
     /// <summary>
     /// Helper class that allows talking to Win32 APIs without having to rely on PInvoke in other parts
     /// of the codebase.
@@ -38,12 +50,19 @@ namespace Awake.Core
 
         private static Task? _runnerThread;
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetConsoleCtrlHandler(ConsoleEventHandler handler, bool add);
+
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool AllocConsole();
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool FreeConsole();
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
@@ -65,6 +84,16 @@ namespace Awake.Core
         {
             _log = LogManager.GetCurrentClassLogger();
             _tokenSource = new CancellationTokenSource();
+        }
+
+        public static void SetConsoleControlHandler(ConsoleEventHandler handler, bool addHandler)
+        {
+            SetConsoleCtrlHandler(handler, addHandler);
+        }
+
+        public static void DeallocateConsole()
+        {
+            FreeConsole();
         }
 
         public static void AllocateConsole()
@@ -139,7 +168,7 @@ namespace Awake.Core
             }
             catch (OperationCanceledException)
             {
-                _log.Info("Confirmed background thread cancellation when setting passive keep awake.");
+                _log.Info("Confirmed background thread cancellation when disabling explicit keep awake.");
             }
         }
 
