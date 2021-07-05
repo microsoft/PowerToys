@@ -6,7 +6,7 @@
 /**
  * Class representing single work area, which is defined by monitor and virtual desktop.
  */
-interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow : public IUnknown
+interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea : public IUnknown
 {
     /**
      * A window is being moved or resized. Track down window position and give zone layout
@@ -97,11 +97,15 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
     /**
      * @returns Unique work area identifier. Format: <device-id>_<resolution>_<virtual-desktop-id>
      */
-    IFACEMETHOD_(std::wstring, UniqueId)() = 0;
+    IFACEMETHOD_(std::wstring, UniqueId)() const = 0;
     /**
      * @returns Active zone layout for this work area.
      */
-    IFACEMETHOD_(IZoneSet*, ActiveZoneSet)() = 0;
+    IFACEMETHOD_(IZoneSet*, ActiveZoneSet)() const = 0;
+    /*
+    * @returns Zone index of the window
+    */
+    IFACEMETHOD_(std::vector<size_t>, GetWindowZoneIndexes)(HWND window) const = 0;
     IFACEMETHOD_(void, ShowZoneWindow)() = 0;
     IFACEMETHOD_(void, HideZoneWindow)() = 0;
     /**
@@ -109,7 +113,7 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      */
     IFACEMETHOD_(void, UpdateActiveZoneSet)() = 0;
     /**
-     * Clear the selected zones when this ZoneWindow loses focus.
+     * Clear the selected zones when this WorkArea loses focus.
      */
     IFACEMETHOD_(void, ClearSelectedZones)() = 0;
     /*
@@ -126,4 +130,4 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
     IFACEMETHOD_(void, SetOverlappingZonesAlgorithm)(OverlappingZonesAlgorithm overlappingAlgorithm) = 0;
 };
 
-winrt::com_ptr<IZoneWindow> MakeZoneWindow(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
+winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;

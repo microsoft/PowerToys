@@ -60,7 +60,7 @@
     <ClInclude Include="Zone.h" />
     <ClInclude Include="ZoneColors.h" />
     <ClInclude Include="ZoneSet.h" />
-    <ClInclude Include="ZoneWindow.h" />
+    <ClInclude Include="WorkArea.h" />
     <ClInclude Include="ZoneWindowDrawing.h" />
   </ItemGroup>
   <ItemGroup>
@@ -85,7 +85,7 @@
     <ClCompile Include="WindowMoveHandler.cpp" />
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="ZoneSet.cpp" />
-    <ClCompile Include="ZoneWindow.cpp" />
+    <ClCompile Include="WorkArea.cpp" />
     <ClCompile Include="ZoneWindowDrawing.cpp" />
   </ItemGroup>
   <ItemGroup>

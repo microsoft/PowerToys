@@ -15,7 +15,7 @@
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/ZoneSet.h>
-#include <FancyZonesLib/ZoneWindow.h>
+#include <FancyZonesLib/WorkArea.h>
 #include <FancyZonesLib/WindowMoveHandler.h>
 #include <FancyZonesLib/util.h>
 
@@ -181,16 +181,15 @@ private:
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
-    bool ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
+    bool ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IWorkArea> zoneWindow) noexcept;
 
     void RegisterVirtualDesktopUpdates() noexcept;
 
     void OnSettingsChanged() noexcept;
 
-    std::vector<size_t> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
-    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
-    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
-    void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<size_t>& zoneIndexSet) noexcept;
+    std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept;
+    std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
+    void MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneWindow, const std::vector<size_t>& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent(require_write_lock) noexcept;
     void UpdateZoneSets(require_write_lock) noexcept;
@@ -302,39 +301,23 @@ FancyZones::VirtualDesktopChanged() noexcept
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
 }
 
-std::vector<size_t> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
-    HWND window,
-    winrt::com_ptr<IZoneWindow> workArea) noexcept
-{
-    const auto activeZoneSet = workArea->ActiveZoneSet();
-    if (activeZoneSet)
-    {
-        wil::unique_cotaskmem_string zoneSetId;
-        if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &zoneSetId)))
-        {
-            return FancyZonesDataInstance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), zoneSetId.get());
-        }
-    }
-    return {};
-}
-
-std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> FancyZones::GetAppZoneHistoryInfo(
+std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> FancyZones::GetAppZoneHistoryInfo(
     HWND window,
     HMONITOR monitor,
-    std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept
+    std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
 {
     if (workAreaMap.contains(monitor))
     {
         auto workArea = workAreaMap[monitor];
         workAreaMap.erase(monitor); // monitor processed, remove entry from the map
-        return { workArea, GetZoneIndexSetFromWorkAreaHistory(window, workArea) };
+        return { workArea, workArea->GetWindowZoneIndexes(window) };
     }
     return { nullptr, {} };
 }
 
-std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> FancyZones::GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept
+std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> FancyZones::GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept
 {
-    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> appZoneHistoryInfo{ nullptr, {} };
+    std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> appZoneHistoryInfo{ nullptr, {} };
     auto workAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId);
 
     // Search application history on currently active monitor.
@@ -345,7 +328,7 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> FancyZones::GetAppZo
         // No application history on primary monitor, search on remaining monitors.
         for (const auto& [monitor, workArea] : workAreaMap)
         {
-            auto zoneIndexSet = GetZoneIndexSetFromWorkAreaHistory(window, workArea);
+            auto zoneIndexSet = workArea->GetWindowZoneIndexes(window);
             if (!zoneIndexSet.empty())
             {
                 return { workArea, zoneIndexSet };
@@ -356,7 +339,7 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> FancyZones::GetAppZo
     return appZoneHistoryInfo;
 }
 
-void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<size_t>& zoneIndexSet) noexcept
+void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneWindow, const std::vector<size_t>& zoneIndexSet) noexcept
 {
     _TRACER_;
     auto& fancyZonesData = FancyZonesDataInstance();
@@ -402,8 +385,8 @@ void FancyZones::WindowCreated(HWND window) noexcept
         bool windowZoned{ false };
         if (moveToAppLastZone)
         {
-            const bool primaryActive = primary == active;
-            std::pair<winrt::com_ptr<IZoneWindow>, std::vector<size_t>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
+            const bool primaryActive = (primary == active);
+            std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
             const bool windowMinimized = IsIconic(window);
             if (!appZoneHistoryInfo.second.empty() && !windowMinimized)
             {
@@ -827,7 +810,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId, r
                 parentId = parentArea->UniqueId();
             }
 
-            auto workArea = MakeZoneWindow(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), m_settings->GetSettings()->overlappingZonesAlgorithm);
+            auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), m_settings->GetSettings()->overlappingZonesAlgorithm);
             if (workArea)
             {
                 m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
@@ -997,7 +980,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
 
         // If that didn't work, extract zones from all other monitors and target one of them
         std::vector<RECT> zoneRects;
-        std::vector<std::pair<size_t, winrt::com_ptr<IZoneWindow>>> zoneRectsInfo;
+        std::vector<std::pair<size_t, winrt::com_ptr<IWorkArea>>> zoneRectsInfo;
         RECT currentMonitorRect{ .top = 0, .bottom = -1 };
 
         for (const auto& [monitor, monitorRect] : allMonitors)
@@ -1120,7 +1103,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
     return false;
 }
 
-bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IWorkArea> zoneWindow) noexcept
 {
     // Check whether Alt is used in the shortcut key combination
     if (GetAsyncKeyState(VK_MENU) & 0x8000)

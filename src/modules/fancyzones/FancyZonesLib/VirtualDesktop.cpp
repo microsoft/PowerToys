@@ -77,7 +77,7 @@ std::optional<GUID> GetDesktopIdFromCurrentSession()
     return std::nullopt;
 }
 
-bool GetZoneWindowDesktopId(IZoneWindow* zoneWindow, GUID* desktopId)
+bool GetZoneWindowDesktopId(IWorkArea* zoneWindow, GUID* desktopId)
 {
     // Format: <device-id>_<resolution>_<virtual-desktop-id>
     std::wstring uniqueId = zoneWindow->UniqueId();
