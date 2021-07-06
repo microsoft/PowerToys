@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#include <mutex>
-
 #include "FancyZonesWinHookEventIDs.h"
 
 UINT WM_PRIV_MOVESIZESTART;
