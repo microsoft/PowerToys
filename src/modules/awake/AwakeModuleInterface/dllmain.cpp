@@ -34,29 +34,18 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
-// The PowerToy name that will be shown in the settings.
 const static wchar_t* MODULE_NAME = L"Awake";
-
-// Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"A module that keeps your computer awake on-demand.";
 
-// Implement the PowerToy Module Interface and all the required methods.
 class Awake : public PowertoyModuleIface
 {
     std::wstring app_name;
-
-    // Contains the non localized key of the powertoy
     std::wstring app_key;
 
 private:
-    // The PowerToy state.
     bool m_enabled = false;
-
     HANDLE send_telemetry_event;
-
-    // Handle to event used to invoke PowerToys Awake
     HANDLE m_hInvokeEvent;
-
     PROCESS_INFORMATION p_info;
 
     bool is_process_running()
@@ -85,8 +74,31 @@ private:
         }
     }
 
+    std::wstring HWNDToString(HWND sourceHwnd)
+    {
+        TCHAR hwndBuffer[64];
+        swprintf_s(hwndBuffer, _T("%p"), sourceHwnd);
+        return hwndBuffer;
+    }
+
+    // Returns the list of window handles for a given process. Used to clean up
+    // the tray in the PowerToys Awake process that was spawned from the PowerToys runner.
+    std::set<HWND> EnumerateWindowHandles(DWORD processId)
+    {
+        std::set<HWND> handles;
+        for (HWND hwnd = GetTopWindow(NULL); hwnd; hwnd = GetNextWindow(hwnd, GW_HWNDNEXT))
+        {
+            DWORD dwWindowProcessID;
+            DWORD dwThreadID = GetWindowThreadProcessId(hwnd, &dwWindowProcessID);
+            if (dwWindowProcessID == processId)
+            {
+                handles.emplace(hwnd);
+            }
+        }
+        return handles;
+    }
+
 public:
-    // Constructor
     Awake()
     {
         app_name = GET_RESOURCE_STRING(IDS_AWAKE_NAME);
@@ -97,37 +109,31 @@ public:
         Logger::info("Launcher object is constructing");
     };
 
-    // Destroy the powertoy and free memory
     virtual void destroy() override
     {
         delete this;
     }
 
-    // Return the display name of the powertoy, this will be cached by the runner
     virtual const wchar_t* get_name() override
     {
         return MODULE_NAME;
     }
 
-    // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
-        // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
-    // Return the non localized key of the powertoy, this will be cached by the runner
     virtual const wchar_t* get_key() override
     {
         return app_key.c_str();
     }
 
-    // Called by the runner to pass the updated settings values as a serialized JSON.
     virtual void set_config(const wchar_t* config) override
     {
         try
@@ -137,7 +143,7 @@ public:
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             // If you don't need to do any custom processing of the settings, proceed
-            // to persists the values calling:
+            // to persists the values.
             values.save_to_settings_file();
         }
         catch (std::exception&)
@@ -184,29 +190,6 @@ public:
     virtual bool is_enabled() override
     {
         return m_enabled;
-    }
-
-    std::wstring HWNDToString(HWND sourceHwnd)
-    {
-        TCHAR hwndBuffer[64];
-        swprintf_s(hwndBuffer, _T("%p"), sourceHwnd);
-        return hwndBuffer;
-
-    }
-
-    std::set<HWND> EnumerateWindowHandles(DWORD processId)
-    {
-        std::set<HWND> handles;
-        for (HWND hwnd = GetTopWindow(NULL); hwnd; hwnd = GetNextWindow(hwnd, GW_HWNDNEXT))
-        {
-            DWORD dwWindowProcessID;
-            DWORD dwThreadID = GetWindowThreadProcessId(hwnd, &dwWindowProcessID);
-            if (dwWindowProcessID == processId)
-            {
-                handles.emplace(hwnd);
-            }
-        }
-        return handles;
     }
 };
 
