@@ -20,13 +20,13 @@ namespace Awake.Core
     {
         private static readonly Logger _log;
 
-        private static NotifyIcon? trayIcon;
+        private static NotifyIcon? _trayIcon;
 
-        private static NotifyIcon TrayIcon { get => trayIcon; set => trayIcon = value; }
+        private static NotifyIcon TrayIcon { get => _trayIcon; set => _trayIcon = value; }
 
-        private static SettingsUtils? moduleSettings;
+        private static SettingsUtils? _moduleSettings;
 
-        private static SettingsUtils ModuleSettings { get => moduleSettings; set => moduleSettings = value; }
+        private static SettingsUtils ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
 
         static TrayHelper()
         {
