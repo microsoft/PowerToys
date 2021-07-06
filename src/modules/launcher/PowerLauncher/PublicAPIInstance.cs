@@ -35,6 +35,10 @@ namespace Wox
             _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public void ChangeQuery(string query, bool requery = false)
@@ -94,6 +98,7 @@ namespace Wox
             {
                 var toast = new ToastNotification(builder.GetToastContent().GetXml());
                 ToastNotificationManagerCompat.CreateToastNotifier().Show(toast);
+#pragma warning restore CS0618 // Type or member is obsolete
             });
         }
 

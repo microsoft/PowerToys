@@ -44,6 +44,7 @@ namespace PowerLauncher
         public static void Main()
         {
             Log.Info($"Starting PowerToys Run with PID={Environment.ProcessId}", typeof(App));
+#pragma warning restore CA1837 // Use 'Environment.ProcessId'
             int powerToysPid = GetPowerToysPId();
             if (powerToysPid != 0)
             {
