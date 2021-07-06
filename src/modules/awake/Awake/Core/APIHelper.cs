@@ -252,16 +252,17 @@ namespace Awake.Core
                 if (success)
                 {
                     _log.Info($"Initiated temporary keep awake in background thread: {GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
-                    var startTime = DateTime.UtcNow;
 
-                    // TODO: Replace this with a timer.
-                    while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(Math.Abs(seconds)))
+                    System.Timers.Timer timedLoopTimer = new System.Timers.Timer(seconds * 1000);
+                    timedLoopTimer.Elapsed += (s, e) =>
                     {
-                        if (_threadToken.IsCancellationRequested)
-                        {
-                            _threadToken.ThrowIfCancellationRequested();
-                        }
-                    }
+                        _tokenSource.Cancel();
+
+                        timedLoopTimer.Stop();
+                    };
+                    timedLoopTimer.Start();
+
+                    WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
 
                     return success;
                 }
