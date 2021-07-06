@@ -185,7 +185,7 @@ namespace Awake.Core
             }
             catch (OperationCanceledException)
             {
-                _log.Info("Confirmed background thread cancellation when setting indefinite keep awake.");
+                _log.Info("Confirmed background thread cancellation when setting timed keep awake.");
             }
 
             _tokenSource = new CancellationTokenSource();
