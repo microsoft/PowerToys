@@ -14,7 +14,9 @@ namespace PowerLauncher.Helper
 #pragma warning restore CS0618 // Type or member is obsolete
     [Guid("DD5CACDA-7C2E-4997-A62A-04A597B58F76")]
     [ComVisible(true)]
+#pragma warning disable CS0618 // Type or member is obsolete
     public class LauncherNotificationActivator : NotificationActivator
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         public override void OnActivated(string invokedArgs, NotificationUserInput userInput, string appUserModelId)
         {

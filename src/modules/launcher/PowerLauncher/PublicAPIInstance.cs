@@ -36,8 +36,12 @@ namespace Wox
             _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
+#pragma warning disable CS0618 // Type or member is obsolete
             DesktopNotificationManagerCompat.RegisterActivator<LauncherNotificationActivator>();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
             DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("PowerToysRun");
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public void ChangeQuery(string query, bool requery = false)
@@ -96,7 +100,9 @@ namespace Wox
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var toast = new ToastNotification(builder.GetToastContent().GetXml());
+#pragma warning disable CS0618 // Type or member is obsolete
                 DesktopNotificationManagerCompat.CreateToastNotifier().Show(toast);
+#pragma warning restore CS0618 // Type or member is obsolete
             });
         }
 

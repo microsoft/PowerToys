@@ -114,7 +114,9 @@ namespace PowerLauncher.Helper
             // get current active window
             IntPtr hWnd = NativeMethods.GetForegroundWindow();
 
+#pragma warning disable CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
             if (hWnd != null && !hWnd.Equals(IntPtr.Zero))
+#pragma warning restore CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
             {
                 // if current active window is NOT desktop or shell
                 if (!(hWnd.Equals(HWND_DESKTOP) || hWnd.Equals(HWND_SHELL)))
@@ -142,7 +144,9 @@ namespace PowerLauncher.Helper
                     {
                         IntPtr hWndDesktop = NativeMethods.FindWindowEx(hWnd, IntPtr.Zero, "SHELLDLL_DefView", null);
                         hWndDesktop = NativeMethods.FindWindowEx(hWndDesktop, IntPtr.Zero, "SysListView32", "FolderView");
+#pragma warning disable CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
                         if (hWndDesktop != null && !hWndDesktop.Equals(IntPtr.Zero))
+#pragma warning restore CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
                         {
                             return false;
                         }
