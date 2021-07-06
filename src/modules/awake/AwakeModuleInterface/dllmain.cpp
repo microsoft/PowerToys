@@ -189,7 +189,7 @@ public:
     std::wstring HWNDToString(HWND sourceHwnd)
     {
         TCHAR hwndBuffer[64];
-        _stprintf(hwndBuffer, _T("%p"), sourceHwnd);
+        swprintf_s(hwndBuffer, _T("%p"), sourceHwnd);
         return hwndBuffer;
 
     }

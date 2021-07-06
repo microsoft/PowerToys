@@ -46,8 +46,7 @@ namespace Awake
             // only one instance of Awake is running.
             _log = LogManager.GetCurrentClassLogger();
 
-            bool instantiated;
-            LockMutex = new Mutex(true, Constants.AppName, out instantiated);
+            LockMutex = new Mutex(true, Constants.AppName, out bool instantiated);
 
             if (!instantiated)
             {
@@ -63,7 +62,7 @@ namespace Awake
 
             _log.Info("Parsing parameters...");
 
-            var configOption = new Option<bool>(
+            Option<bool>? configOption = new Option<bool>(
                     aliases: new[] { "--use-pt-config", "-c" },
                     getDefaultValue: () => false,
                     description: "Specifies whether PowerToys Awake will be using the PowerToys configuration file for managing the state.")
@@ -76,7 +75,7 @@ namespace Awake
 
             configOption.Required = false;
 
-            var displayOption = new Option<bool>(
+            Option<bool>? displayOption = new Option<bool>(
                     aliases: new[] { "--display-on", "-d" },
                     getDefaultValue: () => true,
                     description: "Determines whether the display should be kept awake.")
@@ -89,7 +88,7 @@ namespace Awake
 
             displayOption.Required = false;
 
-            var timeOption = new Option<uint>(
+            Option<uint>? timeOption = new Option<uint>(
                     aliases: new[] { "--time-limit", "-t" },
                     getDefaultValue: () => 0,
                     description: "Determines the interval, in seconds, during which the computer is kept awake.")
@@ -102,7 +101,7 @@ namespace Awake
 
             timeOption.Required = false;
 
-            var pidOption = new Option<int>(
+            Option<int>? pidOption = new Option<int>(
                     aliases: new[] { "--pid", "-p" },
                     getDefaultValue: () => 0,
                     description: "Bind the execution of PowerToys Awake to another process.")
@@ -115,7 +114,7 @@ namespace Awake
 
             pidOption.Required = false;
 
-            var rootCommand = new RootCommand
+            RootCommand? rootCommand = new RootCommand
             {
                 configOption,
                 displayOption,
@@ -150,7 +149,7 @@ namespace Awake
 
             // Because we are running a message loop for the tray, we can't just use Environment.Exit,
             // but have to make sure that we properly send the termination message.
-            var cwResult = System.Diagnostics.Process.GetCurrentProcess().CloseMainWindow();
+            bool cwResult = System.Diagnostics.Process.GetCurrentProcess().CloseMainWindow();
             _log.Info($"Request to close main window status: {cwResult}");
 
             if (force)
@@ -185,7 +184,7 @@ namespace Awake
                     TrayHelper.InitializeTray(Constants.FullAppName, new Icon(Application.GetResourceStream(new Uri("/Images/Awake.ico", UriKind.Relative)).Stream));
 #pragma warning restore CS8604 // Possible null reference argument.
 
-                    var settingsPath = _settingsUtils.GetSettingsFilePath(Constants.AppName);
+                    string? settingsPath = _settingsUtils.GetSettingsFilePath(Constants.AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");
 
                     _watcher = new FileSystemWatcher
@@ -196,15 +195,15 @@ namespace Awake
                         Filter = Path.GetFileName(settingsPath),
                     };
 
-                    var changedObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                    IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? changedObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
                             h => _watcher.Changed += h,
                             h => _watcher.Changed -= h);
 
-                    var createdObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                    IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? createdObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
                             cre => _watcher.Created += cre,
                             cre => _watcher.Created -= cre);
 
-                    var mergedObservable = Observable.Merge(changedObservable, createdObservable);
+                    IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? mergedObservable = Observable.Merge(changedObservable, createdObservable);
 
                     mergedObservable.Throttle(TimeSpan.FromMilliseconds(25))
                         .SubscribeOn(TaskPoolScheduler.Default)
@@ -219,14 +218,14 @@ namespace Awake
                 }
                 catch (Exception ex)
                 {
-                    var errorString = $"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}";
+                    string? errorString = $"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}";
                     _log.Info(errorString);
                     _log.Debug(errorString);
                 }
             }
             else
             {
-                var mode = timeLimit <= 0 ? AwakeMode.INDEFINITE : AwakeMode.TIMED;
+                AwakeMode mode = timeLimit <= 0 ? AwakeMode.INDEFINITE : AwakeMode.TIMED;
 
                 if (mode == AwakeMode.INDEFINITE)
                 {
@@ -306,7 +305,7 @@ namespace Awake
                 }
                 else
                 {
-                    var errorMessage = "Settings are null.";
+                    string? errorMessage = "Settings are null.";
                     _log.Info(errorMessage);
                     _log.Debug(errorMessage);
                 }
@@ -335,7 +334,7 @@ namespace Awake
 
         private static void LogUnexpectedOrCancelledKeepAwakeThreadCompletion()
         {
-            var errorMessage = "The keep-awake thread was terminated early.";
+            string? errorMessage = "The keep-awake thread was terminated early.";
             _log.Info(errorMessage);
             _log.Debug(errorMessage);
         }
