@@ -15,7 +15,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [TestCase("localhost", true, "http://localhost/")]
         [TestCase("127.0.0.1", true, "http://127.0.0.1/")]
         [TestCase("127.0.0.1:80", true, "http://127.0.0.1/")]
-        [TestCase("127", true, "http://0.0.0.127/")]
+        [TestCase("127", false, null)]
         [TestCase("", false, null)]
         [TestCase("https://google.com", true, "https://google.com/")]
         [TestCase("ftps://google.com", true, "ftps://google.com/")]

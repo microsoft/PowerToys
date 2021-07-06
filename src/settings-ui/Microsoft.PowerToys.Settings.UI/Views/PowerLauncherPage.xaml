@@ -6,64 +6,31 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
-    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
+    
     <Page.Resources>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
         <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
     </Page.Resources>
 
-    <Grid RowSpacing="{StaticResource DefaultRowSpacing}" >
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="LayoutVisualStates">
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState x:Name="SmallLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="Auto"/>
-                        <Setter Target="LauncherView.(Grid.Row)" Value="1" />
-                        <Setter Target="LauncherView.Margin" Value="0" />
-                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
-                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
-                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
-                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <controls:SettingsPageControl x:Uid="About_PowerLauncher"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/PowerLauncher.png"
+                                  ModuleImageLink="https://aka.ms/PowerToysOverview_PowerToysRun">
+        <controls:SettingsPageControl.ModuleContent>
 
-        <StackPanel Orientation="Vertical"
-                    x:Name="LauncherView"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,48,0"
-                    MaxWidth="{StaticResource MaxContentWidth}">
-            <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
+            <StackPanel Orientation="Vertical">
+                <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"/>
 
             <TextBlock x:Uid="Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
-            <CustomControls:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
+            <controls:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
                                                   HorizontalAlignment="Left"
                                                   MinWidth="240"
                                                   Margin="{StaticResource SmallTopMargin}"
@@ -359,55 +326,14 @@
             </ListView>
         </StackPanel>
 
-        <RelativePanel x:Name="SidePanel" 
-                    HorizontalAlignment="Left"
-                    Width="{StaticResource SidePanelWidth}"
-                    Grid.Column="1">
-            <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="About_PowerLauncher" x:Name="AboutTitle" Grid.ColumnSpan="2"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
-                <TextBlock x:Uid="PowerLauncher_Description"
-                           TextWrapping="Wrap"
-                           Grid.Row="1" />
-            </StackPanel>
-
-            <Border x:Name="AboutImage"
-                    CornerRadius="4"
-                    Grid.Row="2"
-                    MaxWidth="240"
-                    HorizontalAlignment="Left"
-                    Margin="{StaticResource SmallTopBottomMargin}"
-                    RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="PowerToys_Run_ImageHyperlinkToDocs">
-                    <Image x:Uid="PowerToys_Run_Image" Source="ms-appx:///Assets/Modules/PowerLauncher.png" />
-                </HyperlinkButton>
-            </Border>
-
-            <StackPanel x:Name="LinksPanel"
-                        Margin="0,1,0,0"
-                        RelativePanel.Below="AboutImage"
-                        Orientation="Vertical" >
-                <HyperlinkButton x:Uid="PowerToys_Run_ImageHyperlinkToDocs">
-                    <TextBlock x:Uid="Module_overview" />
-                </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
-                    <TextBlock x:Uid="Give_Feedback" />
-                </HyperlinkButton>
-
-                <TextBlock x:Uid="AttributionTitle"
-                           Style="{StaticResource SettingsGroupTitleStyle}"
-                           Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
-
-                <HyperlinkButton Margin="0,-3,0,0" NavigateUri="https://github.com/Wox-launcher/Wox/">
-                    <TextBlock Text="Wox"/>
-                </HyperlinkButton>
-
-                <HyperlinkButton NavigateUri="https://github.com/betsegaw/windowwalker/">
-                    <TextBlock Text="Beta Tadele's Window Walker" />
-                </HyperlinkButton>
-
-            </StackPanel>
-        </RelativePanel>
-    </Grid>
+    </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.ModuleLinks>
+            <controls:SidePanelLink x:Uid="Learn_More" Link="https://aka.ms/PowerToysOverview_PowerToysRun"/>
+            <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
+        </controls:SettingsPageControl.ModuleLinks>
+        <controls:SettingsPageControl.AttributionLinks>
+            <controls:SidePanelLink Label="Wox" Link="https://github.com/Wox-launcher/Wox/"/>
+            <controls:SidePanelLink Label="Beta Tadele's Window Walker" Link="https://github.com/betsegaw/windowwalker/"/>
+        </controls:SettingsPageControl.AttributionLinks>
+    </controls:SettingsPageControl>
 </Page>
