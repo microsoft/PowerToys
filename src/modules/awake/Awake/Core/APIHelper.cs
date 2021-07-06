@@ -49,6 +49,7 @@ namespace Awake.Core
         private static CancellationToken _threadToken;
 
         private static Task? _runnerThread;
+        private static System.Timers.Timer _timedLoopTimer;
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetConsoleCtrlHandler(ConsoleEventHandler handler, bool add);
@@ -82,6 +83,7 @@ namespace Awake.Core
 
         static APIHelper()
         {
+            _timedLoopTimer = new System.Timers.Timer();
             _log = LogManager.GetCurrentClassLogger();
             _tokenSource = new CancellationTokenSource();
         }
@@ -253,16 +255,24 @@ namespace Awake.Core
                 {
                     _log.Info($"Initiated temporary keep awake in background thread: {GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
 
-                    System.Timers.Timer timedLoopTimer = new System.Timers.Timer(seconds * 1000);
-                    timedLoopTimer.Elapsed += (s, e) =>
+                    _timedLoopTimer = new System.Timers.Timer(seconds * 1000);
+                    _timedLoopTimer.Elapsed += (s, e) =>
                     {
                         _tokenSource.Cancel();
 
-                        timedLoopTimer.Stop();
+                        _timedLoopTimer.Stop();
                     };
-                    timedLoopTimer.Start();
+
+                    _timedLoopTimer.Disposed += (s, e) =>
+                    {
+                        _log.Info("Old timer disposed.");
+                    };
+
+                    _timedLoopTimer.Start();
 
                     WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
+                    _timedLoopTimer.Stop();
+                    _timedLoopTimer.Dispose();
 
                     return success;
                 }
