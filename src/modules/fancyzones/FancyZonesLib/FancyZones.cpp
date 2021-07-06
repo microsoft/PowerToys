@@ -12,7 +12,6 @@
 
 #include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
-#include <FancyZonesLib/FileWatcher.h>
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/ZoneSet.h>
