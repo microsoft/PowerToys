@@ -151,7 +151,7 @@ namespace Awake
             // Because we are running a message loop for the tray, we can't just use Environment.Exit,
             // but have to make sure that we properly send the termination message.
             var cwResult = System.Diagnostics.Process.GetCurrentProcess().CloseMainWindow();
-            _log.Info($"Request to close main window statius: {cwResult}");
+            _log.Info($"Request to close main window status: {cwResult}");
 
             if (force)
             {
@@ -313,7 +313,7 @@ namespace Awake
             }
             catch (Exception ex)
             {
-                var errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
+                string? errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
                 _log.Info(errorMessage);
                 _log.Debug(errorMessage);
             }

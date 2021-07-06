@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.PowerToys.Settings.UI.Library;
+using NLog;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.
@@ -17,6 +18,8 @@ namespace Awake.Core
 {
     internal static class TrayHelper
     {
+        private static readonly Logger _log;
+
         private static NotifyIcon? trayIcon;
 
         private static NotifyIcon TrayIcon { get => trayIcon; set => trayIcon = value; }
@@ -27,6 +30,7 @@ namespace Awake.Core
 
         static TrayHelper()
         {
+            _log = LogManager.GetCurrentClassLogger();
             TrayIcon = new NotifyIcon();
             ModuleSettings = new SettingsUtils();
         }
@@ -41,7 +45,9 @@ namespace Awake.Core
                     ((NotifyIcon?)tray).ContextMenuStrip = contextMenu;
                     ((NotifyIcon?)tray).Visible = true;
 
+                    _log.Info("Setting up the tray.");
                     Application.Run();
+                    _log.Info("Tray setup complete.");
                 }, TrayIcon);
         }
 

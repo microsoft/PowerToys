@@ -15,6 +15,7 @@
 #include <common/utils/winapi_error.h>
 
 #include <filesystem>
+#include <set>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -157,19 +158,55 @@ public:
     {
         if (m_enabled)
         {
+            Logger::trace(L"Disabling Awake...");
             ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);
-            TerminateProcess(p_info.hProcess, 1);
-            CloseHandle(p_info.hProcess);
+
+            // Ensures that we close the existing windows, which tackles
+            // the problem of the "hanging tray" - icons that are still visible
+            // even though the process is no longer running.
+            for (HWND handleId : EnumerateWindowHandles(p_info.dwProcessId))
+            {
+                Logger::trace(L"Sending window close to handle ID: " + HWNDToString(handleId));
+                SendMessage(handleId, WM_CLOSE, 0, 0);
+            }
+
+            if (!TerminateProcess(p_info.hProcess, 1))
+            {
+                Logger::trace(L"Terminated the Awake process.");
+                CloseHandle(p_info.hProcess);
+            }
         }
 
         m_enabled = false;
     }
 
-    // Returns if the powertoys is enabled
     virtual bool is_enabled() override
     {
         return m_enabled;
+    }
+
+    std::wstring HWNDToString(HWND sourceHwnd)
+    {
+        TCHAR hwndBuffer[64];
+        _stprintf(hwndBuffer, _T("%p"), sourceHwnd);
+        return hwndBuffer;
+
+    }
+
+    std::set<HWND> EnumerateWindowHandles(DWORD processId)
+    {
+        std::set<HWND> handles;
+        for (HWND hwnd = GetTopWindow(NULL); hwnd; hwnd = GetNextWindow(hwnd, GW_HWNDNEXT))
+        {
+            DWORD dwWindowProcessID;
+            DWORD dwThreadID = GetWindowThreadProcessId(hwnd, &dwWindowProcessID);
+            if (dwWindowProcessID == processId)
+            {
+                handles.emplace(hwnd);
+            }
+        }
+        return handles;
     }
 };
 
