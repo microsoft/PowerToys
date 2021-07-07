@@ -2413,6 +2413,7 @@ wprintf
 wprp
 wregex
 WResize
+writefile
 wsf
 wsh
 wsl
