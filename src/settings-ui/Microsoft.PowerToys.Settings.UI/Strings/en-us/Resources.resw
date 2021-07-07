@@ -1366,4 +1366,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="EditTooltip.Text" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Edit</value>
+  </data>
 </root>

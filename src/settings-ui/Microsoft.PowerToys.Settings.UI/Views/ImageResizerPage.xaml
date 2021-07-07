@@ -44,8 +44,8 @@
 
                     <ListView.ItemTemplate>
                         <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
-                            <Grid Padding="0,12,12,12" Width="420">
-                                    <Grid.ColumnDefinitions>
+                            <Grid Padding="0,12,12,12" Width="420" AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
+                                <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="40" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="52" />
@@ -53,10 +53,11 @@
               
                         
                                     <FontIcon Glyph="&#xE1D8;" FontSize="18" Margin="0,8,0,0" VerticalAlignment="Top" Grid.RowSpan="2" Foreground="{StaticResource SystemColorControlAccentBrush}" />
+                                <TextBlock>
 
+                                </TextBlock>
                                 <StackPanel Orientation="Vertical" Grid.Column="1" Margin="0,0,16,0">
                                     <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="18" />
-
                                     <StackPanel Orientation="Horizontal" Grid.Row="1" Spacing="4" Grid.Column="1" Margin="0,4,0,0" >
                                         <TextBlock Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}"/>
                                         <TextBlock Text="{x:Bind Width, Mode=OneWay}" FontWeight="SemiBold" />
@@ -67,12 +68,12 @@
                                 </StackPanel>
                                 <StackPanel HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal">
                                     <Button 
+                                        x:Uid="EditButton"
                                         Background="Transparent"
                                         FontFamily="Segoe MDL2 Assets"
                                         Width="36"
                                         Height="36"
                                         Content="&#xE104;">
-                                        
                                         <ToolTipService.ToolTip>
                                             <TextBlock x:Uid="EditTooltip"/>
                                         </ToolTipService.ToolTip>
@@ -83,9 +84,7 @@
                                                         x:Uid="ImageResizer_Name"
                                                         Text="{x:Bind Path=Name, Mode=TwoWay}" 
                                                         Width="240"
-
                                                         HorizontalAlignment="Left"/>
-
 
                                                     <ComboBox
                                                         x:Uid="ImageResizer_Fit"
@@ -113,7 +112,6 @@
                                                             SpinButtonPlacementMode="Compact"
                                                             Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
-                                                      
                                                     </StackPanel>
                                                     <ComboBox x:Uid="ImageResizer_Size"
                                                                   SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
