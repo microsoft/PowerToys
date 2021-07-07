@@ -110,6 +110,8 @@
     </Compile>
     <Compile Include="Controls\SidePanel\SidePanelLink.cs" />
     <Compile Include="Converters\AwakeModeToBoolConverter.cs" />
+    <Compile Include="Converters\ImageResizerFitToStringConverter.cs" />
+    <Compile Include="Converters\ImageResizerUnitToStringConverter.cs" />
     <Compile Include="Converters\ModuleEnabledToOpacityConverter.cs" />
     <Compile Include="Converters\UpdatingStateCannotDownloadToVisibilityConverter.cs" />
     <Compile Include="Converters\UpdatingStateReadyToDownloadToVisibilityConverter.cs" />
