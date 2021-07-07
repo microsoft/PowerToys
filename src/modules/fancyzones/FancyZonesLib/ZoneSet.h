@@ -53,7 +53,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * Assign window to the zone based on zone index inside zone layout.
      *
      * @param   window         Handle of window which should be assigned to zone.
-     * @param   workAreaWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
      *                         current monitor desktop work area.
      * @param   index          Zone index within zone layout.
      */
@@ -63,7 +63,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * Assign window to the zones based on the set of zone indices inside zone layout.
      *
      * @param   window         Handle of window which should be assigned to zone.
-     * @param   workAreaWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
      *                         current monitor desktop work area.
      * @param   indexSet       The set of zone indices within zone layout.
      */
@@ -74,7 +74,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * not their on-screen position.
      *
      * @param   window         Handle of window which should be assigned to zone.
-     * @param   workAreaWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
      *                         current monitor desktop work area.
      * @param   vkCode         Pressed arrow key.
      * @param   cycle          Whether we should move window to the first zone if we reached last zone in layout.
@@ -89,7 +89,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * their on-screen position.
      *
      * @param   window         Handle of window which should be assigned to zone.
-     * @param   workAreaWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
      *                         current monitor desktop work area.
      * @param   vkCode         Pressed arrow key.
      * @param   cycle          Whether we should move window to the first zone if we reached last zone in layout.
@@ -104,7 +104,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * their on-screen position.
      *
      * @param   window         Handle of window which should be assigned to zone.
-     * @param   workAreaWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
      *                         current monitor desktop work area.
      * @param   vkCode         Pressed arrow key.
      *
@@ -117,7 +117,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * Assign window to the zone based on cursor coordinates.
      *
      * @param   window         Handle of window which should be assigned to zone.
-     * @param   workAreaWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
      *                         current monitor desktop work area.
      * @param   pt             Cursor coordinates.
      */
@@ -159,7 +159,7 @@ struct ZoneSetConfig
         FancyZonesDataTypes::ZoneSetLayoutType layoutType,
         HMONITOR monitor,
         int sensitivityRadius,
-        Settings::OverlappingZonesAlgorithm selectionAlgorithm = {}) noexcept :
+        OverlappingZonesAlgorithm selectionAlgorithm = {}) noexcept :
             Id(id),
             LayoutType(layoutType),
             Monitor(monitor),
@@ -172,7 +172,7 @@ struct ZoneSetConfig
     FancyZonesDataTypes::ZoneSetLayoutType LayoutType{};
     HMONITOR Monitor{};
     int SensitivityRadius;
-    Settings::OverlappingZonesAlgorithm SelectionAlgorithm = Settings::OverlappingZonesAlgorithm::Smallest;
+    OverlappingZonesAlgorithm SelectionAlgorithm = OverlappingZonesAlgorithm::Smallest;
 };
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept;

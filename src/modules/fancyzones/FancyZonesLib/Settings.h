@@ -12,18 +12,18 @@ namespace ZonedWindowProperties
     const wchar_t MultiMonitorDeviceID[]    = L"FancyZones#MultiMonitorDevice";
 }
 
+enum struct OverlappingZonesAlgorithm : int
+{
+    Smallest = 0,
+    Largest = 1,
+    Positional = 2,
+    ClosestCenter = 3,
+    EnumElements = 4, // number of elements in the enum, not counting this
+};
+
 // in reality, this file needs to be kept in sync currently with src/settings-ui/Microsoft.PowerToys.Settings.UI.Library/FZConfigProperties.cs
 struct Settings
 {
-    enum struct OverlappingZonesAlgorithm : int
-    {
-        Smallest = 0,
-        Largest = 1,
-        Positional = 2,
-        ClosestCenter = 3,
-        EnumElements = 4, // number of elements in the enum, not counting this
-    };
-
     // The values specified here are the defaults.
     bool shiftDrag = true;
     bool mouseSwitch = false;
@@ -54,8 +54,6 @@ struct Settings
 
 interface __declspec(uuid("{BA4E77C4-6F44-4C5D-93D3-CBDE880495C2}")) IFancyZonesSettings : public IUnknown
 {
-    IFACEMETHOD_(void, SetCallback)(interface IFancyZonesCallback* callback) = 0;
-    IFACEMETHOD_(void, ResetCallback)() = 0;
     IFACEMETHOD_(bool, GetConfig)(_Out_ PWSTR buffer, _Out_ int *buffer_size) = 0;
     IFACEMETHOD_(void, SetConfig)(PCWSTR serializedPowerToysSettings) = 0;
     IFACEMETHOD_(void, ReloadSettings)() = 0;

@@ -203,6 +203,7 @@ namespace FancyZonesUtils
     void RestoreWindowOrigin(HWND window) noexcept;
 
     bool IsValidGuid(const std::wstring& str);
+    std::optional<std::wstring> GuidToString(const GUID& guid) noexcept;
 
     std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const std::wstring& virtualDesktopId);
     std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId);
@@ -216,4 +217,6 @@ namespace FancyZonesUtils
 
     // If HWND is already dead, we assume it wasn't elevated
     bool IsProcessOfWindowElevated(HWND window);
+
+    bool IsSplashScreen(HWND window);
 }

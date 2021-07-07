@@ -11,6 +11,7 @@
 #include "Zone.h"
 #include "ZoneSet.h"
 #include "FancyZones.h"
+#include "ZoneColors.h"
 
 class ZoneWindowDrawing
 {
@@ -65,5 +66,5 @@ public:
     void Flash();
     void DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                            const std::vector<size_t>& highlightZones,
-                           winrt::com_ptr<IZoneWindowHost> host);
+                           const ZoneColors& colors);
 };

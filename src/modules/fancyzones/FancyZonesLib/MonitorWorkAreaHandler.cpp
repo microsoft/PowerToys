@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "MonitorWorkAreaHandler.h"
-#include "VirtualDesktopUtils.h"
+#include "VirtualDesktop.h"
 
-winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkArea(const GUID& desktopId, HMONITOR monitor)
+winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkArea(const GUID& desktopId, HMONITOR monitor)
 {
     auto desktopIt = workAreaMap.find(desktopId);
     if (desktopIt != std::end(workAreaMap))
@@ -17,7 +17,7 @@ winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkArea(const GUID& desk
     return nullptr;
 }
 
-winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkAreaFromCursor(const GUID& desktopId)
+winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkAreaFromCursor(const GUID& desktopId)
 {
     auto allMonitorsWorkArea = GetWorkArea(desktopId, NULL);
     if (allMonitorsWorkArea)
@@ -38,41 +38,35 @@ winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkAreaFromCursor(const 
     }
 }
 
-winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkArea(HWND window)
+winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkArea(HWND window, const GUID& desktopId)
 {
-    GUID desktopId{};
-    if (VirtualDesktopUtils::GetWindowDesktopId(window, &desktopId))
+    auto allMonitorsWorkArea = GetWorkArea(desktopId, NULL);
+    if (allMonitorsWorkArea)
     {
-        auto allMonitorsWorkArea = GetWorkArea(desktopId, NULL);
-        if (allMonitorsWorkArea)
-        {
-            // First, check if there's a work area spanning all monitors (signalled by the NULL monitor handle)
-            return allMonitorsWorkArea;
-        }
-        else
-        {
-            // Otherwise, look for the work area based on the window's position
-            HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-            return GetWorkArea(desktopId, monitor);
-        }
+        // First, check if there's a work area spanning all monitors (signalled by the NULL monitor handle)
+        return allMonitorsWorkArea;
     }
-
-    return nullptr;
+    else
+    {
+        // Otherwise, look for the work area based on the window's position
+        HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        return GetWorkArea(desktopId, monitor);
+    }
 }
 
-const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& MonitorWorkAreaHandler::GetWorkAreasByDesktopId(const GUID& desktopId)
+const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& MonitorWorkAreaHandler::GetWorkAreasByDesktopId(const GUID& desktopId)
 {
     if (workAreaMap.contains(desktopId))
     {
         return workAreaMap[desktopId];
     }
-    static const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>> empty;
+    static const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>> empty;
     return empty;
 }
 
-std::vector<winrt::com_ptr<IZoneWindow>> MonitorWorkAreaHandler::GetAllWorkAreas()
+std::vector<winrt::com_ptr<IWorkArea>> MonitorWorkAreaHandler::GetAllWorkAreas()
 {
-    std::vector<winrt::com_ptr<IZoneWindow>> workAreas{};
+    std::vector<winrt::com_ptr<IWorkArea>> workAreas{};
     for (const auto& [desktopId, perDesktopData] : workAreaMap)
     {
         std::transform(std::begin(perDesktopData),
@@ -83,7 +77,7 @@ std::vector<winrt::com_ptr<IZoneWindow>> MonitorWorkAreaHandler::GetAllWorkAreas
     return workAreas;
 }
 
-void MonitorWorkAreaHandler::AddWorkArea(const GUID& desktopId, HMONITOR monitor, winrt::com_ptr<IZoneWindow>& workArea)
+void MonitorWorkAreaHandler::AddWorkArea(const GUID& desktopId, HMONITOR monitor, winrt::com_ptr<IWorkArea>& workArea)
 {
     if (!workAreaMap.contains(desktopId))
     {
@@ -133,4 +127,26 @@ void MonitorWorkAreaHandler::RegisterUpdates(const std::vector<GUID>& active)
 void MonitorWorkAreaHandler::Clear()
 {
     workAreaMap.clear();
+}
+
+void MonitorWorkAreaHandler::UpdateZoneColors(const ZoneColors& colors)
+{
+    for (const auto& workArea : workAreaMap)
+    {
+        for (const auto& zoneWindow : workArea.second)
+        {
+            zoneWindow.second->SetZoneColors(colors);
+        }
+    }
+}
+
+void MonitorWorkAreaHandler::UpdateOverlappingAlgorithm(OverlappingZonesAlgorithm overlappingAlgorithm)
+{
+    for (const auto& workArea : workAreaMap)
+    {
+        for (const auto& zoneWindow : workArea.second)
+        {
+            zoneWindow.second->SetOverlappingZonesAlgorithm(overlappingAlgorithm);
+        }
+    }
 }

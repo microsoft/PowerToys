@@ -45,6 +45,7 @@
     <ClInclude Include="FancyZonesData.h" />
     <ClInclude Include="JsonHelpers.h" />
     <ClInclude Include="KeyState.h" />
+    <ClInclude Include="MonitorUtils.h" />
     <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Generated Files/resource.h" />
@@ -53,11 +54,12 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
-    <ClInclude Include="VirtualDesktopUtils.h" />
+    <ClInclude Include="VirtualDesktop.h" />
     <ClInclude Include="WindowMoveHandler.h" />
     <ClInclude Include="Zone.h" />
+    <ClInclude Include="ZoneColors.h" />
     <ClInclude Include="ZoneSet.h" />
-    <ClInclude Include="ZoneWindow.h" />
+    <ClInclude Include="WorkArea.h" />
     <ClInclude Include="ZoneWindowDrawing.h" />
   </ItemGroup>
   <ItemGroup>
@@ -67,6 +69,7 @@
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
     <ClCompile Include="FancyZonesData.cpp" />
     <ClCompile Include="JsonHelpers.cpp" />
+    <ClCompile Include="MonitorUtils.cpp" />
     <ClCompile Include="MonitorWorkAreaHandler.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />
     <ClCompile Include="pch.cpp">
@@ -76,11 +79,11 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="util.cpp" />
-    <ClCompile Include="VirtualDesktopUtils.cpp" />
+    <ClCompile Include="VirtualDesktop.cpp" />
     <ClCompile Include="WindowMoveHandler.cpp" />
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="ZoneSet.cpp" />
-    <ClCompile Include="ZoneWindow.cpp" />
+    <ClCompile Include="WorkArea.cpp" />
     <ClCompile Include="ZoneWindowDrawing.cpp" />
   </ItemGroup>
   <ItemGroup>
