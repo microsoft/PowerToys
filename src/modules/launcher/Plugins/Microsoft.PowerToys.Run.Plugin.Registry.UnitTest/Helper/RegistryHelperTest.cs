@@ -24,9 +24,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
             var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey(query);
             Assert.IsTrue(baseKeyList != null && baseKeyList.Count() == 1);
             Assert.AreEqual(expectedBaseKey, baseKeyList?.FirstOrDefault()?.Name ?? string.Empty);
-#pragma warning restore CS8604 // Possible null reference argument.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         [TestMethod]
@@ -35,7 +32,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
             var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey("HKC\\Control Panel\\Accessibility"); /* #no-spell-check-line */
 
             Assert.IsTrue(baseKeyList != null && baseKeyList.Count() > 1);
-#pragma warning restore CS8604 // Possible null reference argument.
 
             var list = baseKeyList?.Select(found => found.Name);
             Assert.IsTrue(list?.Contains("HKEY_CLASSES_ROOT"));

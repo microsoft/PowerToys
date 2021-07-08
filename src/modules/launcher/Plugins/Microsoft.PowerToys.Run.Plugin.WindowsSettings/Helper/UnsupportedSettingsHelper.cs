@@ -69,9 +69,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
             try
             {
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 registryValueData = Win32.Registry.GetValue(registryKey, valueName, uint.MinValue);
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
             }
             catch (Exception exception)
             {

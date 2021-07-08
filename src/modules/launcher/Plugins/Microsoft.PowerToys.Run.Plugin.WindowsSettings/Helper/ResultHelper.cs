@@ -104,9 +104,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             {
                 var commandSplit = command.Split(' ');
                 var file = commandSplit.FirstOrDefault() ?? string.Empty;
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 var arguments = command[file.Length..].TrimStart();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
                 processStartInfo = new ProcessStartInfo(file, arguments)
                 {

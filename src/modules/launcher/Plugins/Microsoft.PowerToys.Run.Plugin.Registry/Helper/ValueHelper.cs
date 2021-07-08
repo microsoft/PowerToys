@@ -32,10 +32,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 RegistryValueKind.DWord => $"0x{unformattedValue:X8} ({unformattedValueInt})",
                 RegistryValueKind.QWord => $"0x{unformattedValue:X16} ({unformattedValueLong})",
                 RegistryValueKind.Binary => (unformattedValue as byte[] ?? Array.Empty<byte>()).Aggregate(string.Empty, (current, singleByte) => $"{current} {singleByte:X2}"),
-#pragma warning disable CS8605 // Unboxing a possibly null value.
-#pragma warning restore CS8605 // Unboxing a possibly null value.
-#pragma warning disable CS8604 // Possible null reference argument.
-#pragma warning restore CS8604 // Possible null reference argument.
                 _ => $"{unformattedValue}",
             };
 
