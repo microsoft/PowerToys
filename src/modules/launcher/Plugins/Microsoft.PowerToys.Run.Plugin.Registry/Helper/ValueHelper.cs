@@ -25,17 +25,13 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         {
             var unformattedValue = key.GetValue(valueName);
 
+            var unformattedValueInt = unformattedValue != null ? (uint)(int)unformattedValue : 0;
+            var unformattedValueLong = unformattedValue != null ? (ulong)(long)unformattedValue : 0;
             var valueData = key.GetValueKind(valueName) switch
             {
-#pragma warning disable CS8605 // Unboxing a possibly null value.
-                RegistryValueKind.DWord => $"0x{unformattedValue:X8} ({(uint)(int)unformattedValue})",
-#pragma warning restore CS8605 // Unboxing a possibly null value.
-#pragma warning disable CS8605 // Unboxing a possibly null value.
-                RegistryValueKind.QWord => $"0x{unformattedValue:X16} ({(ulong)(long)unformattedValue})",
-#pragma warning restore CS8605 // Unboxing a possibly null value.
-#pragma warning disable CS8604 // Possible null reference argument.
-                RegistryValueKind.Binary => (unformattedValue as byte[]).Aggregate(string.Empty, (current, singleByte) => $"{current} {singleByte:X2}"),
-#pragma warning restore CS8604 // Possible null reference argument.
+                RegistryValueKind.DWord => $"0x{unformattedValue:X8} ({unformattedValueInt})",
+                RegistryValueKind.QWord => $"0x{unformattedValue:X16} ({unformattedValueLong})",
+                RegistryValueKind.Binary => (unformattedValue as byte[] ?? Array.Empty<byte>()).Aggregate(string.Empty, (current, singleByte) => $"{current} {singleByte:X2}"),
                 _ => $"{unformattedValue}",
             };
 

@@ -51,11 +51,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 return (null, string.Empty);
             }
 
-            var baseKey = query.Split('\\').FirstOrDefault();
-#pragma warning disable CS8604 // Possible null reference argument.
+            var baseKey = query.Split('\\').FirstOrDefault() ?? string.Empty;
             var subKey = query.Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase).TrimStart('\\');
-#pragma warning restore CS8604 // Possible null reference argument.
-
             var baseKeyResult = _baseKeys
                 .Where(found => found.Key.StartsWith(baseKey, StringComparison.InvariantCultureIgnoreCase))
                 .Select(found => found.Value)
@@ -102,9 +99,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
             do
             {
-#pragma warning disable CS8604 // Possible null reference argument.
-                result = FindSubKey(subKey, subKeysNames.ElementAtOrDefault(index));
-#pragma warning restore CS8604 // Possible null reference argument.
+                result = FindSubKey(subKey, subKeysNames.ElementAtOrDefault(index) ?? string.Empty);
 
                 if (result.Count == 0)
                 {
@@ -172,17 +167,22 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
                     if (string.Equals(subKey, searchSubKey, StringComparison.InvariantCultureIgnoreCase))
                     {
-#pragma warning disable CS8604 // Possible null reference argument.
-                        list.Add(new RegistryEntry(parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree)));
-#pragma warning restore CS8604 // Possible null reference argument.
+                        var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
+                        if (key != null)
+                        {
+                            list.Add(new RegistryEntry(key));
+                        }
+
                         return list;
                     }
 
                     try
                     {
-#pragma warning disable CS8604 // Possible null reference argument.
-                        list.Add(new RegistryEntry(parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree)));
-#pragma warning restore CS8604 // Possible null reference argument.
+                        var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
+                        if (key != null)
+                        {
+                            list.Add(new RegistryEntry(key));
+                        }
                     }
                     catch (Exception exception)
                     {

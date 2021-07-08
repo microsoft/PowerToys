@@ -9,9 +9,7 @@ using Microsoft.Toolkit.Uwp.Notifications;
 namespace PowerLauncher.Helper
 {
     [ClassInterface(ClassInterfaceType.None)]
-#pragma warning disable CS0618 // Type or member is obsolete
     [ComSourceInterfaces(typeof(INotificationActivationCallback))]
-#pragma warning restore CS0618 // Type or member is obsolete
     [Guid("DD5CACDA-7C2E-4997-A62A-04A597B58F76")]
     [ComVisible(true)]
 #pragma warning disable CS0618 // Type or member is obsolete
