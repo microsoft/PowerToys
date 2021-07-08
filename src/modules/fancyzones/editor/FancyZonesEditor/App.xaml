@@ -10,21 +10,9 @@
                 <ui:ThemeResources />
                 <ui:XamlControlsResources />
                 <ResourceDictionary Source="pack://application:,,,/Styles/ButtonStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Styles/GridViewStyles.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Styles/LayoutPreviewStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
-            <Style x:Key="UWPFocusVisualStyle">
-                <Setter Property="Control.Template">
-                    <Setter.Value>
-                        <ControlTemplate>
-                            <Border Margin="-2"
-                                    CornerRadius="4"
-                                    BorderThickness="2"
-                                    BorderBrush="{DynamicResource PrimaryForegroundBrush}" />
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

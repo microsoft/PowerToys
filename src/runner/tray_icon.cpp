@@ -2,11 +2,13 @@
 #include "Generated files/resource.h"
 #include "settings_window.h"
 #include "tray_icon.h"
+#include "CentralizedHotkeys.h"
 #include <Windows.h>
 
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/version/version.h>
+#include <common/logger/logger.h>
 
 namespace
 {
@@ -104,6 +106,15 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
 {
     switch (message)
     {
+    case WM_HOTKEY:
+    {
+        // We use the tray icon WndProc to avoid creating a dedicated window just for this message.
+        const auto modifiersMask = LOWORD(lparam);
+        const auto vkCode = HIWORD(lparam);
+        Logger::trace(L"On {} hotkey", CentralizedHotkeys::ToWstring({ modifiersMask, vkCode }));
+        CentralizedHotkeys::PopulateHotkey({ modifiersMask, vkCode });
+        break;
+    }
     case WM_CREATE:
         if (wm_taskbar_restart == 0)
         {
@@ -225,7 +236,7 @@ void start_tray_icon()
                                   wc.hInstance,
                                   nullptr);
         WINRT_VERIFY(hwnd);
-
+        CentralizedHotkeys::RegisterWindow(hwnd);
         memset(&tray_icon_data, 0, sizeof(tray_icon_data));
         tray_icon_data.cbSize = sizeof(tray_icon_data);
         tray_icon_data.hIcon = icon;

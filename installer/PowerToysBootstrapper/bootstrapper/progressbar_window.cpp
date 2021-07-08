@@ -1,6 +1,5 @@
 #include "pch.h"
 
-#include <common/updating/notifications.h>
 #include <common/utils/window.h>
 
 #include "progressbar_window.h"

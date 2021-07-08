@@ -161,7 +161,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private LayoutModel _selectedModel = null;
+        private LayoutModel _selectedModel;
 
         public LayoutModel AppliedModel
         {
@@ -180,11 +180,19 @@ namespace FancyZonesEditor
             }
         }
 
-        private LayoutModel _appliedModel = null;
+        private LayoutModel _appliedModel;
 
         public static bool IsPredefinedLayout(LayoutModel model)
         {
             return model.Type != LayoutType.Custom;
+        }
+
+        public void InitModels()
+        {
+            foreach (var model in DefaultModels)
+            {
+                model.InitTemplateZones();
+            }
         }
 
         public LayoutModel UpdateSelectedLayoutModel()

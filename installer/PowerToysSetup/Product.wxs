@@ -2,17 +2,22 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
 
+  <!-- Names of folders and projects -->
   <?define FancyZonesProjectName="FancyZones"?>
   <?define ImageResizerProjectName="ImageResizer"?>
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
-  <?define ShortcutGuideProjectName="ShortcutGuide"?>
   <?define ColorPickerProjectName="ColorPicker"?>
+  <?define VideoConferenceProjectName="VideoConference"?>
+  <?define AwakeProjectName="Awake"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
+  <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
-
-	<Product Id="*"
+  <?define ShortcutGuideExecutable=$(var.BinX64Dir)\modules\ShortcutGuide\ShortcutGuide?>
+  <?define ShortcutGuideModuleInterface=$(var.BinX64Dir)\modules\ShortcutGuide\ShortcutGuideModuleInterface?>
+  
+    <Product Id="*"
        Name="PowerToys (Preview)"
        Language="1033"
        Version="$(var.Version)"
@@ -70,7 +75,7 @@
     <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
-    <Property Id="WixShellExecTarget" Value="[#action_runner.exe]" />
+    <Property Id="WixShellExecTarget" Value="[#PowerToys_ActionRunner.exe]" />
 
     <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
       <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
@@ -205,20 +210,53 @@
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
-	      <Directory Id="ToolsFolder" Name="Tools"/>
+          <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
-            <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
+            <Directory Id="ShortcutGuideInstallFolder" Name="ShortcutGuide">
+              <Directory Id="ShortcutGuideExecutableInstallFolder" Name="ShortcutGuide">
+                    <Directory Id="ShortcutGuideSvgsInstallFolder" Name="svgs"/>
+                </Directory>
+                <Directory Id="ShortcutGuideModuleInterfaceInstallFolder" Name="ShortcutGuideModuleInterface"/>
+                </Directory>
+            <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled                 -->
+            <!-- <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
+              <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
+            </Directory>                 -->
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
-            <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)" />
+            <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
+              <Directory Id="AwakeInstallFolderRuntimes" Name="Runtimes">
+                <Directory Id="AwakeInstallFolderRuntimesWin" Name="Win">
+                  <Directory Id="AwakeInstallFolderRuntimesWinLib" Name="Lib">
+                    <Directory Id="AwakeInstallFolderNetcoreApp21" Name="netcoreapp2.1" />
+                    <Directory Id="AwakeInstallFolderNetcoreApp30" Name="netcoreapp3.0" />
+                    <Directory Id="AwakeInstallFolderNetStandard20" Name="netstandard2.0" />
+                  </Directory>
+                </Directory>
+              </Directory>
+            </Directory>
+            
+
+            <!-- KBM -->
+            <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)">
+              <Directory Id="KeyboardManagerEditorInstallFolder" Name="KeyboardManagerEditor" />
+              <Directory Id="KeyboardManagerEngineInstallFolder" Name="KeyboardManagerEngine" />
+            </Directory>
+
+            <!-- Color Picker -->
             <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
               <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
             </Directory>
+
+            <!-- Launcher -->
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="AssetsFolder" Name="Assets" />
               <Directory Id="LauncherImagesFolder" Name="Images" />
+              <Directory Id="LauncherPropertiesFolder" Name="Properties" />
+
+              <!-- Plugins -->
               <Directory Id="LauncherPluginsFolder" Name="Plugins">
                 <Directory Id="CalculatorPluginFolder" Name="Calculator">
                   <Directory Id="CalculatorImagesFolder" Name="Images" />
@@ -244,6 +282,10 @@
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
+                <Directory Id="UnitConverterPluginFolder" Name="Community.UnitConverter">
+                  <Directory Id="UnitConverterImagesFolder" Name="Images" />
+                  <Directory Id="UnitConverterLanguagesFolder" Name="Languages" />
+                </Directory>
                 <Directory Id="VSCodeWorkspacesPluginFolder" Name="VSCodeWorkspace">
                   <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
                   <Directory Id="VSCodeWorkspaceLanguagesFolder" Name="Languages" />
@@ -266,10 +308,15 @@
                 <Directory Id="SystemPluginFolder" Name="System">
                   <Directory Id="SystemImagesFolder" Name="Images" />
                 </Directory>
+                <Directory Id="WindowsSettingsPluginFolder" Name="Microsoft.PowerToys.Run.Plugin.WindowsSettings">
+                  <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
+                  <Directory Id="WindowsSettingsLanguagesFolder" Name="Languages" />
+                </Directory>
               </Directory>
-              <Directory Id="LauncherPropertiesFolder" Name="Properties" />
             </Directory>
           </Directory>
+
+          <!-- Settings -->
           <Directory Id="SettingsV2InstallFolder" Name="Settings">
             <Directory Id="SettingsV2ViewsInstallFolder" Name="Views"/>
             <Directory Id="SettingsV2StylesInstallFolder" Name="Styles"/>
@@ -319,9 +366,12 @@
       <Component Id="BackgroundActivator_dll" Guid="23B25EE4-BCA2-45DF-BBCD-82FBDF01C5AB" Win64="yes">
         <File Id="BackgroundActivatorDLL.dll" KeyPath="yes" Checksum="yes" />
       </Component>
-      <Component Id="action_runner_exe" Guid="626ABB17-16F0-4007-9A58-6998724A5E14" Win64="yes">
-        <File Id="action_runner.exe" KeyPath="yes" Checksum="yes" />
+      <Component Id="PowerToys_ActionRunner_exe" Guid="626ABB17-16F0-4007-9A58-6998724A5E14" Win64="yes">
+        <File Id="PowerToys.ActionRunner.exe" KeyPath="yes" Checksum="yes" />
       </Component>
+      <Component Id="PowerToys_Update_exe" Guid="446D0AD4-AA8F-45BA-BDAC-6C620DF77AFF" Win64="yes">
+        <File Id="PowerToys.Update.exe" KeyPath="yes" Checksum="yes" />
+      </Component>      
       <Component Id="License_rtf" Guid="3E5AE43B-CFB4-449B-A346-94CAAFF3312E" Win64="yes">
         <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="yes" />
       </Component>
@@ -356,30 +406,34 @@
       </Component>
     </DirectoryRef>
     
-    <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">
-      <Component Id="PowerToysSvgs" Guid="7C4D4EED-9338-423D-992C-DCE02F3E2D35" Win64="yes">
-        <File Source="$(var.BinX64Dir)svgs\0.svg" />
-        <File Source="$(var.BinX64Dir)svgs\1.svg" />
-        <File Source="$(var.BinX64Dir)svgs\2.svg" />
-        <File Source="$(var.BinX64Dir)svgs\3.svg" />
-        <File Source="$(var.BinX64Dir)svgs\4.svg" />
-        <File Source="$(var.BinX64Dir)svgs\5.svg" />
-        <File Source="$(var.BinX64Dir)svgs\6.svg" />
-        <File Source="$(var.BinX64Dir)svgs\7.svg" />
-        <File Source="$(var.BinX64Dir)svgs\8.svg" />
-        <File Source="$(var.BinX64Dir)svgs\9.svg" />
-        <File Source="$(var.BinX64Dir)svgs\no_active_window.svg" />
-        <File Source="$(var.BinX64Dir)svgs\overlay.svg" />
-        <File Source="$(var.BinX64Dir)svgs\overlay_portrait.svg" />
+    <!-- Shortcut guide files -->
+    <DirectoryRef Id="ShortcutGuideSvgsInstallFolder" FileSource="$(var.ShortcutGuideExecutable)\svgs\">
+      <Component Id="ShortcutGuideSvgs" Guid="7C4D4EED-9338-423D-992C-DCE02F3E2D35" Win64="yes">
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\0.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\1.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\2.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\3.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\4.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\5.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\6.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\7.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\8.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\9.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\no_active_window.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\overlay.svg" />
+        <File Source="$(var.ShortcutGuideExecutable)\svgs\overlay_portrait.svg" />
       </Component>
     </DirectoryRef>
+
+    <!-- FancyZone -->
     <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\fancyzones.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesModuleInterface.dll" KeyPath="yes" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.runtimeconfig.json" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.deps.json" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\PowerToys.FancyZones.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ModernWpf.dll" />
@@ -389,12 +443,17 @@
         <File Id="FancyZones_Microsoft.PowerToys.Common.UI" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.PowerToys.Common.UI.dll" />
         <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedTelemetry.dll" />
         <File Id="FancyZone_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.IO.Abstractions.dll" />
+        <File Id="FancyZones_System.Runtime.CompilerServices.Unsafe.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Runtime.CompilerServices.Unsafe.dll" />
+        <File Id="FancyZones_System.Text.Encodings.Web.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Encodings.Web.dll" />
       </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="ToolsFolder">
       <Component Id="BugReportTool_exe" Guid="0F8E3E9F-2E86-4660-A3BF-AE4DD431B93C" Win64="yes">
         <File Source="$(var.BinX64Dir)BugReportTool\BugReportTool.exe" Id="BugReportTool.exe" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="WebcamReportTool_exe" Guid="B6005DAC-8C26-4865-91B3-99F098422C13" Win64="yes">
+        <File Source="$(var.BinX64Dir)WebcamReportTool\WebcamReportTool.exe" Id="WebcamReportTool.exe" Checksum="yes" />
       </Component>
     </DirectoryRef>
 
@@ -476,6 +535,7 @@
       </Component>
     </DirectoryRef>
 
+    <!-- Image Resizer -->
     <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)">
       <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe" />
@@ -505,6 +565,7 @@
           <RegistryValue Value="[ImageResizerInstallFolder]ImageResizerExt.dll" Type="string" />
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
+
         <!-- Registry Key for the drag and drop handler -->
         <RegistryValue Root="HKCR"
                        Key="Directory\ShellEx\DragDropHandlers\ImageResizer"
@@ -566,6 +627,7 @@
       </Component>
     </DirectoryRef>
 
+    <!-- PowerRename -->
     <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
@@ -581,26 +643,81 @@
       </Component>
     </DirectoryRef>
 
-    <DirectoryRef Id="ShortcutGuideInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\">
-      <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\$(var.ShortcutGuideProjectName).dll" KeyPath="yes" />
+    <!-- Shortcut guide -->
+    <DirectoryRef Id="ShortcutGuideModuleInterfaceInstallFolder" FileSource="$(var.ShortcutGuideModuleInterface)">
+      <Component Id="Module_ShortcutGuideModuleInterface" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
+        <File Source="$(var.ShortcutGuideModuleInterface)\ShortcutGuideModuleInterface.dll" KeyPath="yes" />
       </Component>
     </DirectoryRef>
 
+    <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled -->
+    <!-- <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
+     <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
+      <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
+      <File SelfRegCost="1" Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter_x64.dll" KeyPath="yes">
+        <Class Id="{31AD75E9-8C3A-49C8-B9ED-5880D6B4A764}" Context="InprocServer32" ThreadingModel="apartment" Description="PowerToys VideoConference Mute" />
+      </File>
+      <File SelfRegCost="1" Source="$(var.BinX32Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter_x86.dll">
+        <Class Id="{31AD75E9-8C3A-49C8-B9ED-5880D6B4A732}" Context="InprocServer32" ThreadingModel="apartment" Description="PowerToys VideoConference Mute" />
+      </File>
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceModule.dll" />
+     </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="VideoConferenceIconsFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons">
+     <Component Id="Module_VideoConferenceIcons" Guid="5996527a-40fc-432e-b34c-abc0b4bd3887" Win64="yes">
+      <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Light.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Light.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Light.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Light.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Light.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Dark.png" />
+      <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Light.png" />
+     </Component>
+    </DirectoryRef> -->
+
+    <DirectoryRef Id="ShortcutGuideExecutableInstallFolder" FileSource="$(var.ShortcutGuideExecutable)">
+      <Component Id="Module_ShortcutGuideExecutable" Guid="DA6E5710-F1DF-44EB-A316-300FA39544E9" Win64="yes">
+        <File Source="$(var.ShortcutGuideExecutable)\PowerToys.ShortcutGuide.exe" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- KBM -->
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\">
       <Component Id="Module_KeyboardManager" Guid="9279BD82-786F-4F0B-8E49-DB484EE34C9B" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManager.dll" />
       </Component>
     </DirectoryRef>
 
+    <!-- KBM Editor -->
+    <DirectoryRef Id="KeyboardManagerEditorInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor">
+      <Component Id="Module_KeyboardManager_Editor" Guid="1240F1B8-17FE-4D68-B9AF-91882B0B1933" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- KBM Engine -->
+    <DirectoryRef Id="KeyboardManagerEngineInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine">
+      <Component Id="Module_KeyboardManager_Engine" Guid="14DBAA38-B98D-431F-9439-8EDE1C0670DB" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Color Picker -->
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
       <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
-        <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPickerUI.exe;ColorPickerUI.dll;ColorPickerUI.deps.json;ColorPickerUI.runtimeconfig.json;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Text.Json.dll;ManagedTelemetry.dll;ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;Microsoft.PowerToys.Common.UI.dll?>
+        <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPickerUI.exe;ColorPickerUI.dll;ColorPickerUI.deps.json;ColorPickerUI.runtimeconfig.json;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Text.Json.dll;ManagedTelemetry.dll;ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;Microsoft.PowerToys.Common.UI.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
 
+    <!-- Color Picker Resources -->
     <DirectoryRef Id="ColorPickerResourcesFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources">
       <Component Id="Module_ColorPicker_Resources" Guid="7544BD0F-1DB6-4C53-89D3-ADAD472FDCC1">
         <?foreach File in colorPicker.cur;icon.ico?>
@@ -608,7 +725,39 @@
         <?endforeach?>
       </Component>
     </DirectoryRef>
+    
+    <!-- Awake -->
+    <DirectoryRef Id="AwakeInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)">
+      <Component Id="Module_Awake" Guid="F26F5780-5B38-43B2-BC21-8406ED6E2071" Win64="yes">
+        <?foreach File in AwakeModuleInterface.dll;ManagedCommon.dll;ManagedTelemetry.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.Win32.Registry.dll;Microsoft.Win32.SystemEvents.dll;NLog.config;NLog.dll;PowerToys.Awake.deps.json;PowerToys.Awake.dll;PowerToys.Awake.exe;PowerToys.Awake.runtimeconfig.json;PowerToysInterop.dll;System.CommandLine.dll;System.Configuration.ConfigurationManager.dll;System.Drawing.Common.dll;System.IO.Abstractions.dll;System.Reactive.dll;System.Runtime.Caching.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Security.AccessControl.dll;System.Security.Cryptography.ProtectedData.dll;System.Security.Permissions.dll;System.Security.Principal.Windows.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Windows.Extensions.dll?>
+        <File Id="AwakeFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+    
+    <DirectoryRef Id="AwakeInstallFolderNetStandard20" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0">
+      <Component Id="Module_Awake_runtime_netstandard20" Guid="414A31AB-91A8-4F17-9B4B-DB7B93A2BB23">
+        <File Id="AwakeFile_runtime_Microsoft.Win32.Registry.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\Microsoft.Win32.Registry.dll" />
+        <File Id="AwakeFile_runtime_System.Runtime.Caching.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll" />
+        <File Id="AwakeFile_runtime_System.Security.AccessControl.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll" />
+        <File Id="AwakeFile_runtime_System.Security.Cryptography.ProtectedData.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll" />
+      </Component>
+    </DirectoryRef>
 
+    <DirectoryRef Id="AwakeInstallFolderNetcoreApp30" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0">
+      <Component Id="Module_Awake_runtime_netcoreapp30" Guid="1EBB21FE-083A-4AE6-9208-7DC72A421860">
+        <File Id="AwakeFile_runtime_Microsoft.Win32.SystemEvents.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll" />
+        <File Id="AwakeFile_runtime_System.Drawing.Common.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll" />
+        <File Id="AwakeFile_runtime_System.Windows.Extensions.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="AwakeInstallFolderNetcoreApp21" FileSource="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp2.1">
+      <Component Id="Module_Awake_runtime_netcoreapp21" Guid="52ED2831-6F3F-47D3-AA1A-88C697BE9D0F">
+        <File Id="AwakeFile_runtime_System.Security.Principal.Windows.dll" Source="$(var.BinX64Dir)modules\$(var.AwakeProjectName)\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll" />
+      </Component>
+    </DirectoryRef>
+    
     <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
@@ -646,7 +795,7 @@
         <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.exe"/>
         <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.exe"/>
         <!-- dll -->
-        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToys.Settings.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;ManagedTelemetry.dll;ManagedCommon.dll;ColorCode.Core.dll;ColorCode.UWP.dll;Microsoft.Graphics.Canvas.winmd;Microsoft.Toolkit.Parsers.dll;Microsoft.Toolkit.Uwp.UI.Animations.dll;Microsoft.Toolkit.Uwp.UI.Controls.dll?>
+        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToys.Settings.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;ManagedTelemetry.dll;ManagedCommon.dll;ColorCode.Core.dll;ColorCode.UWP.dll;Microsoft.Graphics.Canvas.winmd;Microsoft.Toolkit.Parsers.dll;Microsoft.Toolkit.Uwp.UI.Animations.dll;Microsoft.Toolkit.Uwp.UI.Controls.dll;System.Deployment.dll;System.Windows.Forms.dll;System.Runtime.Serialization.Formatters.Soap.dll?>
           <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)Settings\$(var.File)" />
         <?endforeach?>
         <!-- json -->
@@ -686,22 +835,22 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules">
       <Component Id="SettingsV2AssetsModules" Guid="A0B961A9-77D0-4223-88A9-E3B41BD9C329" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png?>
-          <File Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
+        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png?>
+          <File Id="SettingsV2AssetsModules_$(var.File)" Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules\OOBE">
       <Component Id="SettingsV2OOBEAssetsModules" Guid="E2360A83-6694-4B33-B5F6-641A906359EE" Win64="yes">
-        <?foreach File in ColorPicker.gif;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
-          <File Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
+        <?foreach File in ColorPicker.gif;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
+          <File Id="SettingsV2OOBEAssetsModules_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\FluentIcons">
       <Component Id="SettingsV2OOBEAssetsFluentIcons" Guid="6A380D5A-DA63-45B5-B68F-06D57CDD1B9C" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;FileExplorerPreview.png;ImageResizer.png;KeyboardManager.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ShortcutGuide.png;VideoConferenceMute.png ?>
-          <File Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
+        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;FileExplorerPreview.png;ImageResizer.png;KeyboardManager.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ShortcutGuide.png;VideoConferenceMute.png ?>
+          <File Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
@@ -767,14 +916,19 @@
       <ComponentRef Id="powertoys_exe" />
       <ComponentRef Id="PowerToysStartMenuShortcut"/>
       <ComponentRef Id="BackgroundActivator_dll" />
-      <ComponentRef Id="action_runner_exe" />
+      <ComponentRef Id="PowerToys_ActionRunner_exe" />
+      <ComponentRef Id="PowerToys_Update_exe" />
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
       <ComponentRef Id="powertoysinterop_dll" />
       <ComponentRef Id="vcredist_dlls" />
-      <ComponentRef Id="PowerToysSvgs" />
-      <ComponentRef Id="Module_ShortcutGuide" />
+      <ComponentRef Id="ShortcutGuideSvgs" />
+      <ComponentRef Id="Module_ShortcutGuideModuleInterface" />
+      <ComponentRef Id="Module_ShortcutGuideExecutable" />
+      <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled -->
+      <!-- <ComponentRef Id="Module_VideoConference" />
+      <ComponentRef Id="Module_VideoConferenceIcons" /> -->
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
@@ -783,8 +937,14 @@
       <ComponentRef Id="Module_PowerPreview" />
       <ComponentRef Id="Module_PowerPreview_PerUserRegistry" />
       <ComponentRef Id="Module_KeyboardManager" />
+      <ComponentRef Id="Module_KeyboardManager_Editor" />
+      <ComponentRef Id="Module_KeyboardManager_Engine" />
       <ComponentRef Id="Module_ColorPicker" />
       <ComponentRef Id="Module_ColorPicker_Resources"/>
+      <ComponentRef Id="Module_Awake"/>
+      <ComponentRef Id="Module_Awake_runtime_netstandard20"/>
+      <ComponentRef Id="Module_Awake_runtime_netcoreapp30"/>
+      <ComponentRef Id="Module_Awake_runtime_netcoreapp21"/>
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2AssetsModules" />
@@ -798,6 +958,7 @@
     </ComponentGroup>
     <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
       <ComponentRef Id="BugReportTool_exe" />
+      <ComponentRef Id="WebcamReportTool_exe" />
     </ComponentGroup>
   </Fragment>
 
@@ -807,7 +968,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;EverythingPluginFolder;ServicePluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;WindowsSettingsPluginFolder;EverythingPluginFolder?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
@@ -864,7 +1025,7 @@
                 <Component Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
                     <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\SvgPreviewHandler.resources.dll" />
                 </Component>
-                <!-- Launcher plugin resources -->
+                <!-- PowerToys Run aka Launcher plugin resources -->
                 <Component Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder">
                     <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
                 </Component>
@@ -898,6 +1059,12 @@
                 <Component Id="Launcher_Service_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ServicePluginFolder">
                     <File Id="Launcher_Service_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Service.resources.dll" />
                 </Component>
+                <Component Id="Launcher_System_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder">
+                    <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
+                </Component>
+                <!--<Component Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
+                    <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
+                </Component>-->
                 <?undef IdSafeLanguage?>
             <?endforeach?>
         <?endif?>
@@ -915,7 +1082,7 @@
 
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;UnitsNet.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.Lib.dll" />
@@ -988,6 +1155,17 @@
         <?foreach File in indexer.dark.png;indexer.light.png;Warning.light.png;Warning.dark.png?>
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
         <?endforeach?>
+      </Component>
+
+      <!-- UnitConverter Plugin -->
+      <Component Id="UnitConverterComponent" Directory="UnitConverterPluginFolder" Guid="D4F429E3-C619-49D6-9416-88A757D18E02">
+        <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.UnitConverter.deps.json;Community.PowerToys.Run.Plugin.UnitConverter.dll?>
+        <File Id="UnitConverter_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="UnitConverterImagesComponent" Directory="UnitConverterImagesFolder" Guid="16ABD217-0898-47B2-89D9-AF1ABF00F543">
+        <File Id="UnitConverterLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\unitconverter.light.png" />
+        <File Id="UnitConverterDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\unitconverter.dark.png" />
       </Component>
 
       <!-- Uri Plugin -->
@@ -1082,6 +1260,17 @@
         <File Id="SystemShutdownLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\shutdown.light.png" />
         <File Id="SystemSleepDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.dark.png" />
         <File Id="SystemSleepLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.light.png" />
+      </Component>
+
+      <!-- WindowsSettings Plugin -->
+      <Component Id="WindowsSettingsComponent" Directory="WindowsSettingsPluginFolder" Guid="ACEC2B6D-8E95-43BF-A1E4-137E95F07C96">
+        <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;ManagedTelemetry.dll?>
+          <File Id="WindowsSettings_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="WindowsSettingsImagesComponent" Directory="WindowsSettingsImagesFolder" Guid="E1CE33A7-6318-4FA6-A46B-9302A00BD6AA">
+          <File Id="WindowsSettingsDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Images\WindowsSettings.dark.png" />
+          <File Id="WindowsSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Images\WindowsSettings.light.png" />
       </Component>
 
     </ComponentGroup>

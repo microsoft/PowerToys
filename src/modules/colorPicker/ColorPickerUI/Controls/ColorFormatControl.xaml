@@ -1,22 +1,18 @@
 ﻿<UserControl x:Class="ColorPicker.Controls.ColorFormatControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:p="clr-namespace:ColorPicker.Properties"
-             xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d">
-    <UserControl.Resources>
-        <SolidColorBrush x:Key="TextControlBorderBrushFocused"
-                         Color="Transparent" />
-    </UserControl.Resources>
+
     <Border x:Name="MainBorder"
-                    Margin="12,16,12,0"
-                    Width="308"
-                    Height="36"
-                    CornerRadius="2"
-                    HorizontalAlignment="Stretch"
-                    Background="{DynamicResource ColorControlBackgroundBrush}">
+            Margin="12,16,12,0"
+            Width="308"
+            Height="36"
+            CornerRadius="2"
+            HorizontalAlignment="Stretch"
+            Background="{DynamicResource ColorControlBackgroundBrush}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="64"/>
@@ -42,32 +38,22 @@
                        IsReadOnly="True"
                        VerticalAlignment="Center"
                        Padding="8"
-                       AutomationProperties.LabeledBy="{Binding FormatNameTextBlock}"
+                     AutomationProperties.LabeledBy="{Binding ElementName=FormatNameTextBlock, Path=Text}"
                      />
 
             <Button x:Name="CopyToClipboardButton"
                     ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}"
                     Background="{DynamicResource ColorControlBackgroundBrush}"
+                    Foreground="{DynamicResource SecondaryForegroundBrush}"
                     Height="36"
                     Width="36"
                     Grid.Column="2"
                     AutomationProperties.HelpText="{Binding ElementName=FormatNameTextBlock, Path=Text}"
-                    AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}">
-                <Button.Content>
-                    <TextBlock FontFamily="Segoe MDL2 Assets"
-                           Text="&#xE16F;"
-                           FontSize="12" />
-                </Button.Content>
-                <Button.Resources>
-                    <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=IsMouseOver, ElementName=MainBorder}" Value="False">
-                                <Setter Property="Opacity" Value="0"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Resources>
-            </Button>
+                    AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
+                    FontSize="12"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    FontFamily="Segoe MDL2 Assets"
+                    Content="&#xE16F;" />       
         </Grid>
         <Border.Effect>
             <DropShadowEffect BlurRadius="6" Opacity="0.24" ShadowDepth="1" />

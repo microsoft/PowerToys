@@ -10,6 +10,24 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId=";Microsoft_plugin_default_browser_open_failed" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to open default browser]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Det gick inte att öppna standardwebbläsaren.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Microsoft_plugin_uri_default_browser" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open default browser]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Öppna standardwebbläsaren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Microsoft_plugin_uri_open_failed" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to open URL]]></Val>
@@ -45,10 +63,13 @@
       </Item>
       <Item ItemId=";Microsoft_plugin_uri_website" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open in browser]]></Val>
+          <Val><![CDATA[Open in default browser]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Öppna i webbläsaren]]></Val>
+            <Val><![CDATA[Öppna i standardwebbläsaren]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Open in browser]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

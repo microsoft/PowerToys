@@ -84,7 +84,7 @@ namespace ImageResizer.Models
         }
 
         public bool HasAuto
-            => Width == 0 || Height == 0;
+            => Width == 0 || Height == 0 || double.IsNaN(Width) || double.IsNaN(Height);
 
         [JsonProperty(PropertyName = "unit")]
         public ResizeUnit Unit
@@ -125,7 +125,7 @@ namespace ImageResizer.Models
 
         private double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)
         {
-            if (value == 0)
+            if (value == 0 || double.IsNaN(value))
             {
                 if (Fit == ResizeFit.Fit)
                 {

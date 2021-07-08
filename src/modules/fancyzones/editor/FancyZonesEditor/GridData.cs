@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
 using FancyZonesEditor.Models;
 
@@ -76,18 +75,26 @@ namespace FancyZonesEditor
 
         public struct Zone
         {
-            public int Index;
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
+            public int Index { get; set; }
+
+            public int Left { get; set; }
+
+            public int Top { get; set; }
+
+            public int Right { get; set; }
+
+            public int Bottom { get; set; }
         }
 
         public struct Resizer
         {
-            public Orientation Orientation;
-            public List<int> NegativeSideIndices; // all zones to the left/up, in order
-            public List<int> PositiveSideIndices; // all zones to the right/down, in order
+            public Orientation Orientation { get; set; }
+
+            // all zones to the left/up, in order
+            public List<int> NegativeSideIndices { get; set; }
+
+            // all zones to the right/down, in order
+            public List<int> PositiveSideIndices { get; set; }
         }
 
         private List<Zone> _zones;
@@ -121,7 +128,7 @@ namespace FancyZonesEditor
 
             if (zoneCount > rows * cols)
             {
-                throw new ArgumentException("Invalid index found in model.CellChildMap");
+                return;
             }
 
             var indexCount = Enumerable.Repeat(0, zoneCount).ToList();
@@ -147,33 +154,18 @@ namespace FancyZonesEditor
             {
                 if (indexCount[index] == 0)
                 {
-                    throw new ArgumentException("Indices in model.CellChildMap are not contiguous");
+                    return;
                 }
 
                 if (indexCount[index] != (indexRowHigh[index] - indexRowLow[index] + 1) * (indexColHigh[index] - indexColLow[index] + 1))
                 {
-                    throw new ArgumentException("One or more indices in model.CellChildMap don't form a rectangle");
+                    return;
                 }
             }
 
-            if (model.RowPercents.Count != rows)
+            if (model.RowPercents.Count != model.Rows || model.ColumnPercents.Count != model.Columns || model.RowPercents.Exists((x) => (x < 1)) || model.ColumnPercents.Exists((x) => (x < 1)))
             {
-                throw new ArgumentException("model.RowPercents has invalid size");
-            }
-
-            if (model.ColumnPercents.Count != cols)
-            {
-                throw new ArgumentException("model.ColumnPercents has invalid size");
-            }
-
-            if (model.RowPercents.Exists((x) => (x < 1)))
-            {
-                throw new ArgumentException("Invalid value in model.RowPercents");
-            }
-
-            if (model.ColumnPercents.Exists((x) => (x < 1)))
-            {
-                throw new ArgumentException("Invalid value in model.ColumnPercents");
+                return;
             }
 
             var rowPrefixSum = PrefixSum(model.RowPercents);
@@ -181,7 +173,7 @@ namespace FancyZonesEditor
 
             if (rowPrefixSum[rows] != Multiplier || colPrefixSum[cols] != Multiplier)
             {
-                throw new ArgumentException();
+                return;
             }
 
             _zones = new List<Zone>(zoneCount);

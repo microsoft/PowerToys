@@ -55,4 +55,9 @@ public:
     {
         logger->critical(fmt, args...);
     }
+
+    static void flush()
+    {
+        logger->flush();
+    }
 };

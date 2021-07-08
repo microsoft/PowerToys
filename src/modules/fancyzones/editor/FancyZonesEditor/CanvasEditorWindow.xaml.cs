@@ -18,6 +18,7 @@ namespace FancyZonesEditor
             InitializeComponent();
 
             KeyUp += CanvasEditorWindow_KeyUp;
+            KeyDown += CanvasEditorWindow_KeyDown;
 
             _model = App.Overlay.CurrentDataContext as CanvasLayoutModel;
             _stashedModel = (CanvasLayoutModel)_model.Clone();
@@ -47,6 +48,15 @@ namespace FancyZonesEditor
             if (e.Key == Key.Escape)
             {
                 OnCancel(sender, null);
+            }
+        }
+
+        private void CanvasEditorWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            {
+                e.Handled = true;
+                App.Overlay.FocusEditor();
             }
         }
     }

@@ -153,9 +153,9 @@
     <value>Press the Color Picker icon to capture a color from your screen.</value>
     <comment>Message that shows when the user launches the window for the first time or when no colors have been selected</comment>
   </data>
-  <data name="OK" xml:space="preserve">
-    <value>OK</value>
-    <comment>OK button content</comment>
+  <data name="Select" xml:space="preserve">
+    <value>Select</value>
+    <comment>Select button content</comment>
   </data>
   <data name="Open_settings" xml:space="preserve">
     <value>Open settings</value>

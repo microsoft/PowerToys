@@ -134,7 +134,11 @@ namespace Microsoft.Plugin.Folder
             {
                 if (disposing)
                 {
-                    _context.API.ThemeChanged -= OnThemeChanged;
+                    if (_context != null && _context.API != null)
+                    {
+                        _context.API.ThemeChanged -= OnThemeChanged;
+                    }
+
                     _disposed = true;
                 }
             }

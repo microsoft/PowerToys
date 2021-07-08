@@ -258,7 +258,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // File.ReadAllLines must be mocked for url applications
             var mockFile = new Mock<IFile>();
-            mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
+            mockFile.Setup(m => m.ReadLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
             Win32Program.FileWrapper = mockFile.Object;
 
             string fullPath = directory + "\\" + path;
@@ -281,7 +281,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // File.ReadAllLines must be mocked for url applications
             var mockFile = new Mock<IFile>();
-            mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
+            mockFile.Setup(m => m.ReadLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
             Win32Program.FileWrapper = mockFile.Object;
 
             string oldFullPath = directory + "\\" + oldpath;

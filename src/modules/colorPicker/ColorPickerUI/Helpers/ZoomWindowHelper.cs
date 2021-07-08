@@ -18,33 +18,27 @@ namespace ColorPicker.Helpers
     [Export(typeof(ZoomWindowHelper))]
     public class ZoomWindowHelper
     {
-        private const int ZoomWindowChangeDelayInMS = 50;
         private const int ZoomFactor = 2;
         private const int BaseZoomImageSize = 50;
         private const int MaxZoomLevel = 4;
         private const int MinZoomLevel = 0;
 
+        private static readonly Bitmap _bmp = new Bitmap(BaseZoomImageSize, BaseZoomImageSize, PixelFormat.Format32bppArgb);
+        private static readonly Graphics _graphics = Graphics.FromImage(_bmp);
+
         private readonly IZoomViewModel _zoomViewModel;
         private readonly AppStateHandler _appStateHandler;
-        private readonly IThrottledActionInvoker _throttledActionInvoker;
 
         private int _currentZoomLevel;
         private int _previousZoomLevel;
 
         private ZoomWindow _zoomWindow;
 
-        private double _lastLeft;
-        private double _lastTop;
-
-        private double _previousScaledX;
-        private double _previousScaledY;
-
         [ImportingConstructor]
-        public ZoomWindowHelper(IZoomViewModel zoomViewModel, AppStateHandler appStateHandler, IThrottledActionInvoker throttledActionInvoker)
+        public ZoomWindowHelper(IZoomViewModel zoomViewModel, AppStateHandler appStateHandler)
         {
             _zoomViewModel = zoomViewModel;
             _appStateHandler = appStateHandler;
-            _throttledActionInvoker = throttledActionInvoker;
             _appStateHandler.AppClosed += AppStateHandler_AppClosed;
             _appStateHandler.AppHidden += AppStateHandler_AppClosed;
         }
@@ -73,7 +67,7 @@ namespace ColorPicker.Helpers
         {
             _currentZoomLevel = 0;
             _previousZoomLevel = 0;
-            HideZoomWindow();
+            HideZoomWindow(true);
         }
 
         private void SetZoomImage(System.Windows.Point point)
@@ -89,28 +83,17 @@ namespace ColorPicker.Helpers
             {
                 var x = (int)point.X - (BaseZoomImageSize / 2);
                 var y = (int)point.Y - (BaseZoomImageSize / 2);
-                var rect = new Rectangle(x, y, BaseZoomImageSize, BaseZoomImageSize);
 
-                using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
-                {
-                    var g = Graphics.FromImage(bmp);
-                    g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+                _graphics.CopyFromScreen(x, y, 0, 0, _bmp.Size, CopyPixelOperation.SourceCopy);
 
-                    var bitmapImage = BitmapToImageSource(bmp);
-
-                    _zoomViewModel.ZoomArea = bitmapImage;
-                    _zoomViewModel.ZoomFactor = 1;
-                }
+                _zoomViewModel.ZoomArea = BitmapToImageSource(_bmp);
             }
             else
             {
-                var enlarge = (_currentZoomLevel - _previousZoomLevel) > 0 ? true : false;
-                var currentZoomFactor = enlarge ? ZoomFactor : 1.0 / ZoomFactor;
-
-                _zoomViewModel.ZoomFactor *= currentZoomFactor;
+                _zoomViewModel.ZoomFactor = Math.Pow(ZoomFactor, _currentZoomLevel - 1);
             }
 
-            ShowZoomWindow((int)point.X, (int)point.Y);
+            ShowZoomWindow(point);
         }
 
         private static BitmapSource BitmapToImageSource(Bitmap bitmap)
@@ -130,84 +113,67 @@ namespace ColorPicker.Helpers
             }
         }
 
-        private void HideZoomWindow()
+        private void HideZoomWindow(bool fully = false)
         {
             if (_zoomWindow != null)
             {
-                _zoomWindow.Hide();
+                _zoomWindow.Opacity = 0;
+                _zoomViewModel.DesiredWidth = 0;
+                _zoomViewModel.DesiredHeight = 0;
+
+                if (fully)
+                {
+                    _zoomWindow.Hide();
+                }
             }
         }
 
-        private void ShowZoomWindow(int x, int y)
+        private void ShowZoomWindow(System.Windows.Point point)
         {
-            if (_zoomWindow == null)
+            _zoomWindow ??= new ZoomWindow
             {
-                _zoomWindow = new ZoomWindow();
-                _zoomWindow.Content = _zoomViewModel;
-                _zoomWindow.Loaded += ZoomWindow_Loaded;
-                _zoomWindow.IsVisibleChanged += ZoomWindow_IsVisibleChanged;
-            }
+                Content = _zoomViewModel,
+                Opacity = 0,
+            };
 
-            // we just started zooming, remember where we opened zoom window
-            if (_currentZoomLevel == 1 && _previousZoomLevel == 0)
-            {
-                var dpi = MonitorResolutionHelper.GetCurrentMonitorDpi();
-                _previousScaledX = x / dpi.DpiScaleX;
-                _previousScaledY = y / dpi.DpiScaleY;
-            }
-
-            _lastLeft = Math.Floor(_previousScaledX - (BaseZoomImageSize * Math.Pow(ZoomFactor, _currentZoomLevel - 1) / 2));
-            _lastTop = Math.Floor(_previousScaledY - (BaseZoomImageSize * Math.Pow(ZoomFactor, _currentZoomLevel - 1) / 2));
-
-            var justShown = false;
             if (!_zoomWindow.IsVisible)
             {
-                _zoomWindow.Left = _lastLeft;
-                _zoomWindow.Top = _lastTop;
-                _zoomViewModel.Height = BaseZoomImageSize;
-                _zoomViewModel.Width = BaseZoomImageSize;
                 _zoomWindow.Show();
-                justShown = true;
+            }
+
+            if (_zoomWindow.Opacity < 0.5)
+            {
+                var halfWidth = _zoomWindow.Width / 2;
+                var halfHeight = _zoomWindow.Height / 2;
+
+                // usually takes 1-3 iterations to converge
+                // 5 is just an arbitrary limit to prevent infinite loops
+                for (var i = 0; i < 5; i++)
+                {
+                    // mouse position relative to top left of _zoomWindow
+                    var scaledPoint = _zoomWindow.PointFromScreen(point);
+
+                    var diffX = scaledPoint.X - halfWidth;
+                    var diffY = scaledPoint.Y - halfHeight;
+
+                    // minimum difference that is considered important
+                    const double minDiff = 0.05;
+                    if (Math.Abs(diffX) < minDiff && Math.Abs(diffY) < minDiff)
+                    {
+                        break;
+                    }
+
+                    _zoomWindow.Left += diffX;
+                    _zoomWindow.Top += diffY;
+                }
 
                 // make sure color picker window is on top of just opened zoom window
                 AppStateHandler.SetTopMost();
+                _zoomWindow.Opacity = 1;
             }
 
-            // dirty hack - sometimes when we just show a window on a second monitor with different DPI,
-            // window position is not set correctly on a first time, we need to "ping" it again to make it appear on the proper location
-            if (justShown)
-            {
-                _zoomWindow.Left = _lastLeft + 1;
-                _zoomWindow.Top = _lastTop + 1;
-                SessionEventHelper.Event.ZoomUsed = true;
-            }
-
-            _throttledActionInvoker.ScheduleAction(
-            () =>
-            {
-                _zoomWindow.DesiredLeft = _lastLeft;
-                _zoomWindow.DesiredTop = _lastTop;
-                _zoomViewModel.DesiredHeight = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
-                _zoomViewModel.DesiredWidth = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
-            },
-            ZoomWindowChangeDelayInMS);
-        }
-
-        private void ZoomWindow_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            // need to set at this point again, to avoid issues moving between screens with different scaling
-            if ((bool)e.NewValue)
-            {
-                _zoomWindow.Left = _lastLeft;
-                _zoomWindow.Top = _lastTop;
-            }
-        }
-
-        private void ZoomWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            // need to call it again at load time, because it does was not dpi aware at the first time of Show() call
-            _zoomWindow.Left = _lastLeft;
-            _zoomWindow.Top = _lastTop;
+            _zoomViewModel.DesiredHeight = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
+            _zoomViewModel.DesiredWidth = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
         }
 
         private void AppStateHandler_AppClosed(object sender, EventArgs e)

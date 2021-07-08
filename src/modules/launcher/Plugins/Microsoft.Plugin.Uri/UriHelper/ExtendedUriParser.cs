@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using Microsoft.Plugin.Uri.Interfaces;
 
 namespace Microsoft.Plugin.Uri.UriHelper
@@ -21,7 +22,8 @@ namespace Microsoft.Plugin.Uri.UriHelper
             // Using CurrentCulture since this is a user typed string
             if (input.EndsWith(":", StringComparison.CurrentCulture)
                 || input.EndsWith(".", StringComparison.CurrentCulture)
-                || input.EndsWith(":/", StringComparison.CurrentCulture))
+                || input.EndsWith(":/", StringComparison.CurrentCulture)
+                || input.All(char.IsDigit))
             {
                 result = default;
                 return false;

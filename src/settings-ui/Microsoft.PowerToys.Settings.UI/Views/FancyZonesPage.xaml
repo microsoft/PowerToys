@@ -2,15 +2,11 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.FancyZonesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
-    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:Core="using:Microsoft.Xaml.Interactions.Core"        
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"     
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
@@ -19,53 +15,18 @@
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
-    <Grid x:Name="MainView" RowSpacing="{StaticResource DefaultRowSpacing}">
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="LayoutVisualStates">
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState x:Name="SmallLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="Auto"/>
-                        <Setter Target="FZView.(Grid.Row)" Value="1" />
-                        <Setter Target="FZView.Margin" Value="0" />
-                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
-                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
-                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
-                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <StackPanel x:Name="FZView"
-                    Orientation="Vertical"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,48,0"
-                    MaxWidth="{StaticResource MaxContentWidth}">
+    <controls:SettingsPageControl x:Uid="About_FancyZones"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/FancyZones.png"
+                                  ModuleImageLink="https://aka.ms/PowerToysOverview_FancyZones">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
             <ToggleSwitch x:Name="FancyZones_EnableToggleControl_HeaderText"
                             x:Uid="FancyZones_EnableToggleControl_HeaderText"
                             IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
 
             <TextBlock x:Uid="FancyZones_Editor_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <Button Margin="{StaticResource SmallTopMargin}"
                     Style="{StaticResource AccentButtonStyle}"
@@ -82,7 +43,7 @@
                 </StackPanel>
             </Button>
             
-            <CustomControls:HotkeySettingsControl 
+            <controls:HotkeySettingsControl 
                 x:Uid="FancyZones_HotkeyEditorControl"
                 Margin="{StaticResource SmallTopMargin}"
                 HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
@@ -101,7 +62,7 @@
 
             <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}"
@@ -134,11 +95,12 @@
                 <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />
                 <ComboBoxItem x:Uid="FancyZones_OverlappingZonesLargest" />
                 <ComboBoxItem x:Uid="FancyZones_OverlappingZonesPositional" />
+                <ComboBoxItem x:Uid="FancyZones_OverlappingZonesClosestCenter" />
             </ComboBox>
 
             <TextBlock x:Uid="FancyZones_WindowBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CheckBox x:Uid="FancyZones_OverrideSnapHotkeysCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}"
@@ -191,7 +153,7 @@
 
             <TextBlock x:Uid="FancyZones_QuickLayoutSwitch_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CheckBox x:Uid="FancyZones_QuickLayoutSwitch"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}"
@@ -205,7 +167,7 @@
 
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}"
@@ -228,14 +190,14 @@
                        FontWeight="SemiBold"
                        FontSize="16"
                        Margin="0,16,0,0"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             </StackPanel>
 
             <TextBlock Name="FancyZones_ZoneHighlightColor"
                 x:Uid="FancyZones_ZoneHighlightColor"
                 Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
@@ -269,7 +231,7 @@
             <TextBlock Name="FancyZones_InActiveColor"
                 x:Uid="FancyZones_InActiveColor"
                 Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
@@ -298,7 +260,7 @@
             <TextBlock Name="FancyZones_BorderColor"
                 x:Uid="FancyZones_BorderColor"
                 Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
@@ -328,7 +290,7 @@
 
             <TextBlock x:Uid="FancyZones_ExcludeApps"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"
@@ -344,42 +306,12 @@
                      MinHeight="160" />
         </StackPanel>
 
-        <RelativePanel x:Name="SidePanel" 
-                    HorizontalAlignment="Left"
-                    Width="{StaticResource SidePanelWidth}"
-                    Grid.Column="1">
-            <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="About_FancyZones"
-                           x:Name="AboutTitle" Grid.ColumnSpan="2"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
-                <TextBlock x:Uid="FancyZones_Description"
-                           TextWrapping="Wrap"/>
-            </StackPanel>
+        
+</controls:SettingsPageControl.ModuleContent>
 
-            <Border x:Name="AboutImage"
-                    CornerRadius="4"
-                    Grid.Row="2"
-                    MaxWidth="240"
-                    HorizontalAlignment="Left"
-                    Margin="{StaticResource SmallTopBottomMargin}"
-                    RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="FancyZones_ImageHyperlinkToDocs">
-                    <Image x:Uid="Fancyzones_Image" Source="ms-appx:///Assets/Modules/FancyZones.png" />
-                </HyperlinkButton>
-            </Border>
-
-            <StackPanel x:Name="LinksPanel"
-                        Margin="0,1,0,0"
-                        RelativePanel.Below="AboutImage"
-                        Orientation="Vertical" >
-                <HyperlinkButton x:Uid="FancyZones_ImageHyperlinkToDocs">
-                    <TextBlock x:Uid="Module_overview" />
-                </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
-                    <TextBlock x:Uid="Give_Feedback" />
-                </HyperlinkButton>
-            </StackPanel>
-        </RelativePanel>
-    </Grid>
+<controls:SettingsPageControl.ModuleLinks>
+    <controls:SidePanelLink x:Uid="Learn_More" Link="https://aka.ms/PowerToysOverview_FancyZones"/>
+    <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
+</controls:SettingsPageControl.ModuleLinks>
+</controls:SettingsPageControl>
 </Page>

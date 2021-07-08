@@ -155,7 +155,33 @@ namespace PowerToysSettings
             return get_modifiers_repeat() | MOD_NOREPEAT;
         }
 
-    protected:
+        std::wstring to_string()
+        {
+            std::wstring result = L"";
+            if (shift_pressed())
+            {
+                result += L"shift+";
+            }
+
+            if (ctrl_pressed())
+            {
+                result += L"ctrl+";
+            }
+
+            if (win_pressed())
+            {
+                result += L"win+";
+            }
+
+            if (alt_pressed())
+            {
+                result += L"alt+";
+            }
+
+            result += key_from_code(get_code());
+            return result;
+        }
+
         static std::wstring key_from_code(UINT key_code)
         {
             auto layout = GetKeyboardLayout(0);
@@ -209,6 +235,8 @@ namespace PowerToysSettings
             }
             return L"(Key " + std::to_wstring(key_code) + L")";
         }
+
+    protected:
         HotkeyObject(json::JsonObject hotkey_json) :
             m_json(std::move(hotkey_json))
         {
