@@ -74,30 +74,6 @@ private:
         }
     }
 
-    std::wstring HWNDToString(HWND sourceHwnd)
-    {
-        TCHAR hwndBuffer[64];
-        swprintf_s(hwndBuffer, _T("%p"), sourceHwnd);
-        return hwndBuffer;
-    }
-
-    // Returns the list of window handles for a given process. Used to clean up
-    // the tray in the PowerToys Awake process that was spawned from the PowerToys runner.
-    std::set<HWND> EnumerateWindowHandles(DWORD processId)
-    {
-        std::set<HWND> handles;
-        for (HWND hwnd = GetTopWindow(NULL); hwnd; hwnd = GetNextWindow(hwnd, GW_HWNDNEXT))
-        {
-            DWORD dwWindowProcessID;
-            DWORD dwThreadID = GetWindowThreadProcessId(hwnd, &dwWindowProcessID);
-            if (dwWindowProcessID == processId)
-            {
-                handles.emplace(hwnd);
-            }
-        }
-        return handles;
-    }
-
 public:
     Awake()
     {
