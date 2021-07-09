@@ -58,12 +58,12 @@
                                 </TextBlock>
                                 <StackPanel Orientation="Vertical" Grid.Column="1" Margin="0,0,16,0">
                                     <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="18" />
-                                    <StackPanel Orientation="Horizontal" Grid.Row="1" Spacing="4" Grid.Column="1" Margin="0,4,0,0" >
-                                        <TextBlock Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}"/>
-                                        <TextBlock Text="{x:Bind Width, Mode=OneWay}" FontWeight="SemiBold" />
-                                        <TextBlock Text="x" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}"/>
-                                        <TextBlock Text="{x:Bind Height, Mode=OneWay}" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter},ConverterParameter=ToLower}" Foreground="{ThemeResource SystemBaseMediumColor}"/>
+                                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Margin="0,4,0,0" >
+                                        <TextBlock Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{x:Bind Width, Mode=OneWay}" FontWeight="SemiBold" Margin="0,0,4,0"/>
+                                        <TextBlock Text="x" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{x:Bind Height, Mode=OneWay}" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" FontWeight="SemiBold" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter},ConverterParameter=ToLower}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal">
