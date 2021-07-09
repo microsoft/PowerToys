@@ -2,7 +2,7 @@
 #include "FancyZonesLib\FancyZonesData.h"
 #include "FancyZonesLib\FancyZonesDataTypes.h"
 #include "FancyZonesLib\JsonHelpers.h"
-#include "FancyZonesLib\VirtualDesktopUtils.h"
+#include "FancyZonesLib\VirtualDesktop.h"
 #include "FancyZonesLib\ZoneSet.h"
 
 #include <filesystem>
@@ -27,7 +27,7 @@ namespace FancyZonesUnitTests
                 auto hres = CoCreateGuid(&m_id);
                 Assert::AreEqual(S_OK, hres);
 
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius, Settings::OverlappingZonesAlgorithm::Smallest);
+                ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, Mocks::Monitor(), DefaultValues::SensitivityRadius, OverlappingZonesAlgorithm::Smallest);
                 m_set = MakeZoneSet(m_config);
             }
 

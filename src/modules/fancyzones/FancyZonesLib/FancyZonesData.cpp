@@ -196,7 +196,7 @@ bool FancyZonesData::AddDevice(const std::wstring& deviceId)
     std::scoped_lock lock{ dataLock };
     if (!deviceInfoMap.contains(deviceId))
     {
-        // Creates default entry in map when ZoneWindow is created
+        // Creates default entry in map when WorkArea is created
         GUID guid;
         auto result{ CoCreateGuid(&guid) };
         wil::unique_cotaskmem_string guidString;
