@@ -156,7 +156,6 @@ private:
 
     void OnSettingsChanged() noexcept;
 
-    std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneWindow, const std::vector<size_t>& zoneIndexSet) noexcept;
 
@@ -266,27 +265,25 @@ FancyZones::VirtualDesktopChanged() noexcept
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
 }
 
-std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> FancyZones::GetAppZoneHistoryInfo(
-    HWND window,
-    HMONITOR monitor,
-    std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
-{
-    if (workAreaMap.contains(monitor))
-    {
-        auto workArea = workAreaMap[monitor];
-        workAreaMap.erase(monitor); // monitor processed, remove entry from the map
-        return { workArea, workArea->GetWindowZoneIndexes(window) };
-    }
-    return { nullptr, {} };
-}
-
 std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> FancyZones::GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept
 {
     std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> appZoneHistoryInfo{ nullptr, {} };
     auto workAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId);
+    if (workAreaMap.empty())
+    {
+        Logger::debug(L"No work area for the current desktop.");
+    }
 
     // Search application history on currently active monitor.
-    appZoneHistoryInfo = GetAppZoneHistoryInfo(window, monitor, workAreaMap);
+    if (workAreaMap.contains(monitor))
+    {
+        auto workArea = workAreaMap[monitor];
+        appZoneHistoryInfo = { workArea, workArea->GetWindowZoneIndexes(window) };
+    }
+    else
+    {
+        Logger::debug(L"No work area for the currently active monitor.");
+    }
 
     if (isPrimaryMonitor && appZoneHistoryInfo.second.empty())
     {
@@ -351,13 +348,22 @@ void FancyZones::WindowCreated(HWND window) noexcept
         {
             const bool primaryActive = (primary == active);
             std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
-            const bool windowMinimized = IsIconic(window);
-            if (!appZoneHistoryInfo.second.empty() && !windowMinimized)
+            
+            if (!appZoneHistoryInfo.second.empty())
             {
-                MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
-                windowZoned = true;
+                const bool windowMinimized = IsIconic(window);
+                if (!windowMinimized)
+                {
+                    MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
+                    windowZoned = true;
+                }
+            }
+            else
+            {
+                Logger::warn(L"App zone history is empty for the processing window on a current virtual desktop");
             }
         }
+
         if (!windowZoned && openOnActiveMonitor)
         {
             m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { MonitorUtils::OpenWindowOnActiveMonitor(window, active); } }).wait();
