@@ -54,14 +54,11 @@
                     IsEnabled="{Binding Mode=TwoWay, Path=IsAdminButtonEnabled}"
                     />
 
-                <TextBlock 
+                <TextBlock x:Uid="General_RunAsAdminRequired"
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                        TextWrapping="Wrap"
-                       Visibility="Visible"
-                       Margin="0,24,0,-8">
-                    <Run Text="&#xE7BA;" FontSize="12" FontFamily="Segoe MDL2 Assets"/>
-                    <Run x:Uid="General_RunAsAdminRequired" />
-                </TextBlock>
+                       Visibility="{Binding Mode=TwoWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Margin="0,24,0,-8" />
 
                 <ToggleSwitch Margin="{StaticResource SmallTopMargin}"
                           x:Uid="GeneralSettings_AlwaysRunAsAdminText"

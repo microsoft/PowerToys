@@ -20,14 +20,11 @@
         <controls:SettingsPageControl.ModuleContent>
             
             <StackPanel Orientation="Vertical">
-                <TextBlock
+            <TextBlock x:Uid="FileExplorerPreview_RunAsAdminRequired"
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                        Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"
                        Margin="{StaticResource SmallBottomMargin}"
-                       TextWrapping="Wrap">
-                        <Run Text="&#xE7BA;" FontSize="12" FontFamily="Segoe MDL2 Assets"/>
-                        <Run x:Uid="FileExplorerPreview_RunAsAdminRequired" />
-                </TextBlock>
+                       TextWrapping="Wrap"/>
 
             <TextBlock x:Uid="FileExplorerPreview_AffectsAllUsers"
                        Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
