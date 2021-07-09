@@ -10,16 +10,14 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO.Abstractions;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Windows.Media.Imaging;
 using ImageResizer.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace ImageResizer.Properties
 {
-    [JsonObject(MemberSerialization.OptIn)]
     public sealed partial class Settings : IDataErrorInfo, INotifyPropertyChanged
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
@@ -63,6 +61,7 @@ namespace ImageResizer.Properties
             AllSizes = new AllSizesCollection(this);
         }
 
+        [JsonIgnore]
         public IEnumerable<ResizeSize> AllSizes { get; set; }
 
         // Using OrdinalIgnoreCase since this is internal and used for comparison with symbols
@@ -78,6 +77,7 @@ namespace ImageResizer.Properties
                     .Replace("%5", "{4}", StringComparison.OrdinalIgnoreCase)
                     .Replace("%6", "{5}", StringComparison.OrdinalIgnoreCase));
 
+        [JsonIgnore]
         public ResizeSize SelectedSize
         {
             get => SelectedSizeIndex >= 0 && SelectedSizeIndex < Sizes.Count
@@ -222,6 +222,7 @@ namespace ImageResizer.Properties
 
         private static Settings defaultInstance = new Settings();
 
+        [JsonIgnore]
         public static Settings Default
         {
             get
@@ -231,7 +232,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_selectedSizeIndex")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_selectedSizeIndex")]
         public int SelectedSizeIndex
         {
             get => _selectedSizeIndex;
@@ -242,7 +244,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_shrinkOnly")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_shrinkOnly")]
         public bool ShrinkOnly
         {
             get => _shrinkOnly;
@@ -253,7 +256,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_replace")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_replace")]
         public bool Replace
         {
             get => _replace;
@@ -264,7 +268,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_ignoreOrientation")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_ignoreOrientation")]
         public bool IgnoreOrientation
         {
             get => _ignoreOrientation;
@@ -275,7 +280,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_jpegQualityLevel")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_jpegQualityLevel")]
         public int JpegQualityLevel
         {
             get => _jpegQualityLevel;
@@ -286,7 +292,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_pngInterlaceOption")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_pngInterlaceOption")]
         public PngInterlaceOption PngInterlaceOption
         {
             get => _pngInterlaceOption;
@@ -297,7 +304,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_tiffCompressOption")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_tiffCompressOption")]
         public TiffCompressOption TiffCompressOption
         {
             get => _tiffCompressOption;
@@ -308,7 +316,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_fileName")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_fileName")]
         public string FileName
         {
             get => _fileName;
@@ -324,10 +333,13 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_sizes")]
+        [JsonInclude]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_sizes")]
         public ObservableCollection<ResizeSize> Sizes { get; private set; }
 
-        [JsonProperty(PropertyName = "imageresizer_keepDateModified")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_keepDateModified")]
         public bool KeepDateModified
         {
             get => _keepDateModified;
@@ -338,8 +350,9 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_fallbackEncoder")]
-        public System.Guid FallbackEncoder
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_fallbackEncoder")]
+        public Guid FallbackEncoder
         {
             get => _fallbackEncoder;
             set
@@ -349,7 +362,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_customSize")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_customSize")]
         public CustomSize CustomSize
         {
             get => _customSize;
@@ -372,18 +386,7 @@ namespace ImageResizer.Properties
         public void Save()
         {
             _jsonMutex.WaitOne();
-            string jsonData = "{\"version\":\"1.0\",\"name\":\"ImageResizer\",\"properties\":";
-            string tempJsonData = JsonConvert.SerializeObject(this);
-            JObject tempSettings = JObject.Parse(tempJsonData);
-
-            // Replace the <Value> of the property with { "value": <Value> } to be consistent with PowerToys
-            foreach (var property in tempSettings)
-            {
-                tempSettings[property.Key] = new JObject { { "value", property.Value } };
-            }
-
-            jsonData += tempSettings.ToString(Formatting.None);
-            jsonData += "}";
+            string jsonData = JsonSerializer.Serialize(new SettingsWrapper() { Properties = this });
 
             // Create directory if it doesn't exist
             IFileInfo file = _fileSystem.FileInfo.FromFileName(SettingsPath);
@@ -405,15 +408,7 @@ namespace ImageResizer.Properties
             }
 
             string jsonData = _fileSystem.File.ReadAllText(SettingsPath);
-            JObject imageResizerSettings = JObject.Parse(jsonData);
-
-            // Replace the { "value": <Value> } with <Value> to match the Settings object format
-            foreach (var property in (JObject)imageResizerSettings["properties"])
-            {
-                imageResizerSettings["properties"][property.Key] = property.Value["value"];
-            }
-
-            Settings jsonSettings = JsonConvert.DeserializeObject<Settings>(imageResizerSettings["properties"].ToString(), new JsonSerializerSettings() { ObjectCreationHandling = ObjectCreationHandling.Replace });
+            Settings jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData)?.Properties;
 
             // Needs to be called on the App UI thread as the properties are bound to the UI.
             App.Current.Dispatcher.Invoke(() =>
