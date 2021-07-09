@@ -186,5 +186,9 @@ public
         static String ^ ShowColorPickerSharedEvent() {
             return gcnew String(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
         }
+
+        static String ^ AwakeExitEvent() {
+            return gcnew String(CommonSharedConstants::AWAKE_EXIT_EVENT);
+        }
     };
 }

@@ -62,10 +62,6 @@ namespace Awake.Core
         private static extern bool AllocConsole();
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool FreeConsole();
-
-        [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
 
         [DllImport("kernel32.dll")]
@@ -91,11 +87,6 @@ namespace Awake.Core
         public static void SetConsoleControlHandler(ConsoleEventHandler handler, bool addHandler)
         {
             SetConsoleCtrlHandler(handler, addHandler);
-        }
-
-        public static void DeallocateConsole()
-        {
-            FreeConsole();
         }
 
         public static void AllocateConsole()

@@ -4,7 +4,7 @@
 
 namespace Awake.Core
 {
-    internal static class Constants
+    internal static class InternalConstants
     {
         internal const string AppName = "Awake";
         internal const string FullAppName = "PowerToys " + AppName;

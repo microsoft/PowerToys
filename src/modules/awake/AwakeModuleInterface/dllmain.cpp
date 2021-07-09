@@ -168,18 +168,25 @@ public:
             ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);
 
-            // Ensures that we close the existing windows, which tackles
-            // the problem of the "hanging tray" - icons that are still visible
-            // even though the process is no longer running.
-            for (HWND handleId : EnumerateWindowHandles(p_info.dwProcessId))
+            auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::AWAKE_EXIT_EVENT);
+            if (!exitEvent)
             {
-                Logger::trace(L"Sending window close to handle ID: " + HWNDToString(handleId));
-                SendMessage(handleId, WM_CLOSE, 0, 0);
+                Logger::warn(L"Failed to create exit event for PowerToys Awake. {}", get_last_error_or_default(GetLastError()));
             }
-
-            if (!TerminateProcess(p_info.hProcess, 1))
+            else
             {
-                Logger::trace(L"Terminated the Awake process.");
+                Logger::trace(L"Signaled exit event for PowerToys Awake.");
+                if (!SetEvent(exitEvent))
+                {
+                    Logger::warn(L"Failed to signal exit event for PowerToys Awake. {}", get_last_error_or_default(GetLastError()));
+
+                    // For some reason, we couldn't process the signal correctly, so we still
+                    // need to terminate the Awake process.
+                    TerminateProcess(p_info.hProcess, 1);
+                }
+
+                ResetEvent(exitEvent);
+                CloseHandle(exitEvent);
                 CloseHandle(p_info.hProcess);
             }
         }
