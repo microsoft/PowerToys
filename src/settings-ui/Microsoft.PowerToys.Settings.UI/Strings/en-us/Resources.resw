@@ -1341,4 +1341,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download and install</value>
   </data>
+  <data name="Learn_More_Description.AutomationProperties.Name" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
 </root>
