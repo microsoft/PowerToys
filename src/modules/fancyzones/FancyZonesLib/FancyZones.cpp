@@ -282,7 +282,7 @@ std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> FancyZones::GetAppZone
     }
     else
     {
-        Logger::debug(L"No work area for the current desktop.");
+        Logger::debug(L"No work area for the currently active monitor.");
     }
 
     if (isPrimaryMonitor && appZoneHistoryInfo.second.empty())
