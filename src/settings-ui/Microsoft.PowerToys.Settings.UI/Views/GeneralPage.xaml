@@ -163,16 +163,7 @@
                                x:Uid="General_NewVersionAvailable"
                                FontWeight="SemiBold"
                                Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-
-                        <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
-                            <TextBlock Text="{Binding PowerToysNewAvailableVersion }" Style="{StaticResource SemiBoldBody}"/>
-                        </HyperlinkButton>
-
-                        <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" 
-                                     Margin="4,-6,0,0" 
-                                     IsEnabled="{Binding AutoUpdatesEnabled}">
-                            <TextBlock x:Name="General_ReadMore_ReadyToDownload" x:Uid="General_ReadMore" />
-                        </HyperlinkButton>
+                        <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" Content="{Binding PowerToysNewAvailableVersion}" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}"/>
                     </StackPanel>
 
                     <TextBlock x:Name="General_Downloading"
@@ -205,15 +196,7 @@
                                x:Uid="General_NewVersionReadyToInstall"
                                Style="{StaticResource SemiBoldBody}"
                                Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                        <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
-                            <TextBlock Text="{Binding PowerToysNewAvailableVersion }" Style="{StaticResource SemiBoldBody}"/>
-                        </HyperlinkButton>
-
-                        <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" 
-                                     Margin="4,-6,0,0" 
-                                     IsEnabled="{Binding AutoUpdatesEnabled}">
-                            <TextBlock x:Name="General_ReadMore_ReadyToInstall" x:Uid="General_ReadMore" />
-                        </HyperlinkButton>
+                        <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" Content="{Binding PowerToysNewAvailableVersion}" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}"/>
                     </StackPanel>
 
                     <Button x:Uid="General_InstallNow"
@@ -229,7 +212,7 @@
                         <TextBlock x:Name="General_Version_Error" 
                                x:Uid="General_Version" 
                                Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                        <TextBlock Text="{Binding PowerToysVersion }"
+                        <TextBlock Text="{Binding PowerToysVersion}"
                                Margin="4,0,0,0"
                                Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
                     </StackPanel>
@@ -240,9 +223,7 @@
                         <TextBlock x:Name="General_FailedToDownloadTheNewVersion" 
                                x:Uid="General_FailedToDownloadTheNewVersion"
                                Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
-                        <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink }" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}">
-                            <TextBlock Text="{Binding PowerToysNewAvailableVersion }" />
-                        </HyperlinkButton>
+                        <HyperlinkButton NavigateUri="{Binding PowerToysNewAvailableVersionLink}" Content="{Binding PowerToysNewAvailableVersion}" Margin="4,-6,0,0" IsEnabled="{Binding AutoUpdatesEnabled}"/>
                     </StackPanel>
 
                     <TextBlock x:Name="General_Downloading_TryAgain"
