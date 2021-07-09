@@ -176,14 +176,17 @@
                        Margin="{StaticResource SmallTopMargin}"
                        Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
                        TextWrapping="Wrap"/>
-            
-            <TextBlock x:Uid="Run_AllPluginsDisabled"
+
+            <TextBlock
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                        Visibility="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                        TextWrapping="Wrap"
-                       Margin="{StaticResource SmallTopMargin}"/>
+                       Margin="{StaticResource SmallTopMargin}">
+                           <Run Text="&#xE7BA;" FontSize="12" FontFamily="Segoe MDL2 Assets"/>
+                           <Run x:Uid="Run_AllPluginsDisabled" />
+             </TextBlock>
 
-            <TextBlock x:Uid="Run_PluginsLoading"
+                <TextBlock x:Uid="Run_PluginsLoading"
                        Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                        TextWrapping="Wrap"
                        Margin="{StaticResource SmallTopMargin}"/>
