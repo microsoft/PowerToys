@@ -1,11 +1,10 @@
 #pragma once
 
 #include <common/hooks/WinHookEvent.h>
-#include "Settings.h"
 
 #include <functional>
 
-interface IZoneWindow;
+interface IWorkArea;
 interface IFancyZonesSettings;
 interface IZoneSet;
 
@@ -51,63 +50,6 @@ interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343F}")) IFancyZones
      */
     IFACEMETHOD_(bool, OnKeyDown)
     (PKBDLLHOOKSTRUCT info) = 0;
-    /**
-     * Toggle FancyZones editor application.
-     */
-    IFACEMETHOD_(void, ToggleEditor)
-    () = 0;
-    /**
-     * Callback triggered when user changes FancyZones settings.
-     */
-    IFACEMETHOD_(void, SettingsChanged)
-    () = 0;
-};
-
-/**
- * Helper functions used by each ZoneWindow (representing work area).
- */
-interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindowHost : public IUnknown
-{
-    /**
-     * Assign window to appropriate zone inside new zone layout.
-     */
-    IFACEMETHOD_(void, MoveWindowsOnActiveZoneSetChange)
-    () = 0;
-    /**
-     * @returns Basic zone color.
-     */
-    IFACEMETHOD_(COLORREF, GetZoneColor)
-    () = 0;
-    /**
-     * @returns Zone border color.
-     */
-    IFACEMETHOD_(COLORREF, GetZoneBorderColor)
-    () = 0;
-    /**
-     * @returns Color used to highlight zone while giving zone layout hints.
-     */
-    IFACEMETHOD_(COLORREF, GetZoneHighlightColor)
-    () = 0;
-    /**
-     * @returns Integer in range [0, 100] indicating opacity of highlighted zone (while giving zone layout hints).
-     */
-    IFACEMETHOD_(int, GetZoneHighlightOpacity)
-    () = 0;
-    /**
-     * @returns Boolean indicating if dragged window should be transparent.
-     */
-    IFACEMETHOD_(bool, isMakeDraggedWindowTransparentActive)
-    () = 0;
-    /**
-     * @returns Boolean indicating if move/size operation is currently active.
-     */
-    IFACEMETHOD_(bool, InMoveSize)
-    () = 0;
-    /**
-     * @returns Enumeration value indicating the algorithm used to choose one of multiple overlapped zones to highlight.
-     */
-    IFACEMETHOD_(Settings::OverlappingZonesAlgorithm, GetOverlappingZonesAlgorithm)
-    () = 0;
 };
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings, std::function<void()> disableCallback) noexcept;
