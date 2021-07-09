@@ -166,28 +166,21 @@ namespace Awake.Core
 
         public static void SetTray(string text, bool keepDisplayOn, AwakeMode mode, Action passiveKeepAwakeCallback, Action indefiniteKeepAwakeCallback, Action<uint, uint> timedKeepAwakeCallback, Action keepDisplayOnCallback, Action exitCallback)
         {
-            var contextMenuStrip = new ContextMenuStrip();
+            ContextMenuStrip? contextMenuStrip = new ContextMenuStrip();
 
             // Main toolstrip.
-            var operationContextMenu = new ToolStripMenuItem
+            ToolStripMenuItem? operationContextMenu = new ToolStripMenuItem
             {
                 Text = "Mode",
             };
 
             // No keep-awake menu item.
-            var passiveMenuItem = new ToolStripMenuItem
+            ToolStripMenuItem? passiveMenuItem = new ToolStripMenuItem
             {
                 Text = "Off (Passive)",
             };
 
-            if (mode == AwakeMode.PASSIVE)
-            {
-                passiveMenuItem.Checked = true;
-            }
-            else
-            {
-                passiveMenuItem.Checked = false;
-            }
+            passiveMenuItem.Checked = mode == AwakeMode.PASSIVE;
 
             passiveMenuItem.Click += (e, s) =>
             {
@@ -196,19 +189,12 @@ namespace Awake.Core
             };
 
             // Indefinite keep-awake menu item.
-            var indefiniteMenuItem = new ToolStripMenuItem
+            ToolStripMenuItem? indefiniteMenuItem = new ToolStripMenuItem
             {
                 Text = "Keep awake indefinitely",
             };
 
-            if (mode == AwakeMode.INDEFINITE)
-            {
-                indefiniteMenuItem.Checked = true;
-            }
-            else
-            {
-                indefiniteMenuItem.Checked = false;
-            }
+            indefiniteMenuItem.Checked = mode == AwakeMode.INDEFINITE;
 
             indefiniteMenuItem.Click += (e, s) =>
             {
@@ -216,18 +202,12 @@ namespace Awake.Core
                 indefiniteKeepAwakeCallback();
             };
 
-            var displayOnMenuItem = new ToolStripMenuItem
+            ToolStripMenuItem? displayOnMenuItem = new ToolStripMenuItem
             {
                 Text = "Keep screen on",
             };
-            if (keepDisplayOn)
-            {
-                displayOnMenuItem.Checked = true;
-            }
-            else
-            {
-                displayOnMenuItem.Checked = false;
-            }
+
+            displayOnMenuItem.Checked = keepDisplayOn;
 
             displayOnMenuItem.Click += (e, s) =>
             {
@@ -236,43 +216,40 @@ namespace Awake.Core
             };
 
             // Timed keep-awake menu item
-            var timedMenuItem = new ToolStripMenuItem
+            ToolStripMenuItem? timedMenuItem = new ToolStripMenuItem
             {
                 Text = "Keep awake temporarily",
             };
-            if (mode == AwakeMode.TIMED)
-            {
-                timedMenuItem.Checked = true;
-            }
-            else
-            {
-                timedMenuItem.Checked = false;
-            }
 
-            var halfHourMenuItem = new ToolStripMenuItem
+            timedMenuItem.Checked = mode == AwakeMode.TIMED;
+
+            ToolStripMenuItem? halfHourMenuItem = new ToolStripMenuItem
             {
                 Text = "30 minutes",
             };
+
             halfHourMenuItem.Click += (e, s) =>
             {
                 // User is setting the keep-awake to 30 minutes.
                 timedKeepAwakeCallback(0, 30);
             };
 
-            var oneHourMenuItem = new ToolStripMenuItem
+            ToolStripMenuItem? oneHourMenuItem = new ToolStripMenuItem
             {
                 Text = "1 hour",
             };
+
             oneHourMenuItem.Click += (e, s) =>
             {
                 // User is setting the keep-awake to 1 hour.
                 timedKeepAwakeCallback(1, 0);
             };
 
-            var twoHoursMenuItem = new ToolStripMenuItem
+            ToolStripMenuItem? twoHoursMenuItem = new ToolStripMenuItem
             {
                 Text = "2 hours",
             };
+
             twoHoursMenuItem.Click += (e, s) =>
             {
                 // User is setting the keep-awake to 2 hours.
@@ -280,10 +257,11 @@ namespace Awake.Core
             };
 
             // Exit menu item.
-            var exitContextMenu = new ToolStripMenuItem
+            ToolStripMenuItem? exitContextMenu = new ToolStripMenuItem
             {
                 Text = "Exit",
             };
+
             exitContextMenu.Click += (e, s) =>
             {
                 // User is setting the keep-awake to 2 hours.

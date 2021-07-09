@@ -183,10 +183,10 @@ namespace Awake
                 {
                     new Thread(() =>
                     {
-                        var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.AwakeExitEvent());
+                        EventWaitHandle? eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.AwakeExitEvent());
                         if (eventHandle.WaitOne())
                         {
-                            Exit("Received a signal to end the process.Making sure we quit...", 0, true);
+                            Exit("Received a signal to end the process. Making sure we quit...", 0, true);
                         }
                     }).Start();
 
@@ -286,14 +286,12 @@ namespace Awake
 
                         case AwakeMode.INDEFINITE:
                             {
-                                // Indefinite keep awake.
                                 SetupIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
                                 break;
                             }
 
                         case AwakeMode.TIMED:
                             {
-                                // Timed keep-awake.
                                 uint computedTime = (settings.Properties.Hours * 60 * 60) + (settings.Properties.Minutes * 60);
                                 SetupTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
 
@@ -302,7 +300,7 @@ namespace Awake
 
                         default:
                             {
-                                var errorMessage = "Unknown mode of operation. Check config file.";
+                                string? errorMessage = "Unknown mode of operation. Check config file.";
                                 _log.Info(errorMessage);
                                 _log.Debug(errorMessage);
                                 break;
