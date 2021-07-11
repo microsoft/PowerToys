@@ -50,8 +50,7 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="52" />
                                     </Grid.ColumnDefinitions>
-              
-                        
+
                                     <FontIcon Glyph="&#xE1D8;" FontSize="18" Margin="0,8,0,0" VerticalAlignment="Top" Grid.RowSpan="2" Foreground="{StaticResource SystemColorControlAccentBrush}" />
                                 <TextBlock>
 
@@ -61,7 +60,7 @@
                                     <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Margin="0,4,0,0" >
                                         <TextBlock Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
                                         <TextBlock Text="{x:Bind Width, Mode=OneWay}" FontWeight="SemiBold" Margin="0,0,4,0"/>
-                                        <TextBlock Text="x" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
+                                        <TextBlock Text="&#xE947;" FontFamily="Segoe MDL2 Assets" FontSize="11" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,5,4,0"/>
                                         <TextBlock Text="{x:Bind Height, Mode=OneWay}" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" FontWeight="SemiBold" Margin="0,0,4,0"/>
                                         <TextBlock Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter},ConverterParameter=ToLower}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
                                     </StackPanel>
@@ -73,7 +72,7 @@
                                         FontFamily="Segoe MDL2 Assets"
                                         Width="36"
                                         Height="36"
-                                        Content="&#xE104;">
+                                        Content="&#xE70F;">
                                         <ToolTipService.ToolTip>
                                             <TextBlock x:Uid="EditTooltip"/>
                                         </ToolTipService.ToolTip>

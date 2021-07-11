@@ -1369,4 +1369,18 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Label of a cancel button</comment>
+  </data>
+  <data name="Delete_Dialog_Description" xml:space="preserve">
+    <value>You are about to delete this item</value>
+  </data>
+  <data name="Delete_Dialog_Title" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+    <comment>Label of a confirmation button</comment>
+  </data>
 </root>
