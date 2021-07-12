@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
+using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.Image
@@ -19,7 +20,15 @@ namespace Wox.Infrastructure.Image
 
         private readonly ConcurrentDictionary<string, ImageSource> _data = new ConcurrentDictionary<string, ImageSource>();
 
+        [NonSerialized]
+        private readonly WoxJsonStorage<ConcurrentDictionary<string, int>> _usageStorage;
+
         public ConcurrentDictionary<string, int> Usage { get; private set; } = new ConcurrentDictionary<string, int>();
+
+        public ImageCache()
+        {
+            _usageStorage = new WoxJsonStorage<ConcurrentDictionary<string, int>>("ImageUsageCache");
+        }
 
         public ImageSource this[string path]
         {
@@ -87,9 +96,14 @@ namespace Wox.Infrastructure.Image
             return new Dictionary<string, int>(Usage);
         }
 
-        public void SetUsageAsDictionary(Dictionary<string, int> usage)
+        public void Initialize()
         {
-            Usage = new ConcurrentDictionary<string, int>(usage);
+            Usage = _usageStorage.Load();
+        }
+
+        public void Save()
+        {
+            _usageStorage.Save();
         }
     }
 }
