@@ -89,7 +89,7 @@
 
                 <TextBox x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"
-                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps}"
+                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps, UpdateSourceTrigger=PropertyChanged}"
                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                      ScrollViewer.VerticalScrollBarVisibility ="Visible"
                      ScrollViewer.VerticalScrollMode="Enabled"

@@ -294,7 +294,7 @@
 
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"
-                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps}"
+                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                      ScrollViewer.VerticalScrollBarVisibility ="Visible"
                      ScrollViewer.VerticalScrollMode="Enabled"
