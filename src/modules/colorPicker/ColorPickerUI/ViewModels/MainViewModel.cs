@@ -118,10 +118,7 @@ namespace ColorPicker.ViewModels
         {
             ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
             ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
-            if (_userSettings.ShowColorName.Value)
-            {
-                ColorName = ColorNameHelper.GetColorName(color);
-            }
+            ColorName = ColorNameHelper.GetColorName(color);
         }
 
         /// <summary>
