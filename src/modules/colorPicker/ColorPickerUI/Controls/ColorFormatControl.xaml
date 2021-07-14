@@ -48,12 +48,12 @@
                     Height="36"
                     Width="36"
                     Grid.Column="2"
-                    AutomationProperties.HelpText="{Binding ElementName=FormatNameTextBlock, Path=Text}"
                     AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
+                    AutomationProperties.HelpText="{Binding ElementName=ColorTextRepresentationTextBlock, Path=Text}"
                     FontSize="12"
                     Style="{StaticResource DefaultButtonStyle}"
                     FontFamily="Segoe MDL2 Assets"
-                    Content="&#xE16F;" />       
+                    Content="&#xE16F;" />
         </Grid>
         <Border.Effect>
             <DropShadowEffect BlurRadius="6" Opacity="0.24" ShadowDepth="1" />
