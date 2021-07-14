@@ -274,4 +274,10 @@
   <data name="Width" xml:space="preserve">
     <value>Width</value>
   </data>
+  <data name="Crash_Report_Message_Box_Text_Part1" xml:space="preserve">
+    <value>Error logged to </value>
+  </data>
+  <data name="Crash_Report_Message_Box_Text_Part2" xml:space="preserve">
+    <value>Please report the bug to </value>
+  </data>
 </root>
