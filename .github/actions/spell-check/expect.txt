@@ -939,6 +939,7 @@ INVALIDARG
 invalidoperatioexception
 IObject
 iobjectwithsitesetsite
+IObservable
 IOle
 iolewindowcontextsensitivehelp
 iomanip
