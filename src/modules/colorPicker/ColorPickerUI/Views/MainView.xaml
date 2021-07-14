@@ -44,8 +44,9 @@
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource PrimaryForegroundBrush}"
                        Grid.Column="1"
-                       AutomationProperties.LiveSetting="Polite"
-                       AutomationProperties.LabeledBy="{Binding ColorText}" 
+                       AutomationProperties.LiveSetting="Assertive"
+                       AutomationProperties.LabeledBy="{Binding ColorName}" 
+                       AutomationProperties.Name="{Binding ColorName}" 
                        Text="{Binding ColorText}"/>
                 </Grid>
 

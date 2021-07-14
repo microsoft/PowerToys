@@ -19,7 +19,7 @@ namespace ColorPicker.Views
             INotifyPropertyChanged viewModel = (INotifyPropertyChanged)this.DataContext;
             viewModel.PropertyChanged += (sender, args) =>
             {
-                if (args.PropertyName != "ColorText")
+                if (args.PropertyName != "ColorName")
                 {
                     return;
                 }
