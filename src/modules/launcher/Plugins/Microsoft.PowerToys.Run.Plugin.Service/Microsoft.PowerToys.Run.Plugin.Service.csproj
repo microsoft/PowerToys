@@ -3,7 +3,7 @@
   <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.Service</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.Run.Plugin.Service</AssemblyName>
     <Version>$(Version).0</Version>

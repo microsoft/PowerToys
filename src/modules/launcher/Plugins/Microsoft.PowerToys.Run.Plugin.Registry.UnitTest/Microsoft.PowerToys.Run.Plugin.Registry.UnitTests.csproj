@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <Platforms>x64</Platforms>
     <NeutralLanguage>en-US</NeutralLanguage>
     <LangVersion>8.0</LangVersion>

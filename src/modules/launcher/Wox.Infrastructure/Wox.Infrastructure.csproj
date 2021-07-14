@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 <Import Project="..\..\..\Version.props" />
   
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <ProjectGuid>{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <UseWpf>true</UseWpf>

@@ -217,7 +217,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             get
             {
+#pragma warning disable CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
                 return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) != null;
+#pragma warning restore CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
             }
         }
 

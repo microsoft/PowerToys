@@ -94,7 +94,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 {
                     foreach (var valueName in valueNames)
                     {
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
                         valueList.Add(KeyValuePair.Create(valueName, key.GetValue(valueName)));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
                     }
                 }
                 catch (Exception valueException)

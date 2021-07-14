@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 <Import Project="..\..\..\..\Version.props" />
   
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <ProjectGuid>{FDB3555B-58EF-4AE6-B5F1-904719637AB4}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.Plugin.Program</RootNamespace>
@@ -57,10 +57,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" >
+    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" >
+    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj">
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
@@ -71,7 +71,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
   

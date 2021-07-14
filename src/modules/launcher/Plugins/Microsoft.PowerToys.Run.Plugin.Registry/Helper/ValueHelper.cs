@@ -25,11 +25,13 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         {
             var unformattedValue = key.GetValue(valueName);
 
+            var unformattedValueInt = unformattedValue != null ? (uint)(int)unformattedValue : 0;
+            var unformattedValueLong = unformattedValue != null ? (ulong)(long)unformattedValue : 0;
             var valueData = key.GetValueKind(valueName) switch
             {
-                RegistryValueKind.DWord => $"0x{unformattedValue:X8} ({(uint)(int)unformattedValue})",
-                RegistryValueKind.QWord => $"0x{unformattedValue:X16} ({(ulong)(long)unformattedValue})",
-                RegistryValueKind.Binary => (unformattedValue as byte[]).Aggregate(string.Empty, (current, singleByte) => $"{current} {singleByte:X2}"),
+                RegistryValueKind.DWord => $"0x{unformattedValue:X8} ({unformattedValueInt})",
+                RegistryValueKind.QWord => $"0x{unformattedValue:X16} ({unformattedValueLong})",
+                RegistryValueKind.Binary => (unformattedValue as byte[] ?? Array.Empty<byte>()).Aggregate(string.Empty, (current, singleByte) => $"{current} {singleByte:X2}"),
                 _ => $"{unformattedValue}",
             };
 
