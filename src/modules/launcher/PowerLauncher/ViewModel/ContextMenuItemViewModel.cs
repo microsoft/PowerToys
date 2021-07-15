@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,52 +13,13 @@ namespace PowerLauncher.ViewModel
     {
         private ICommand _command;
 
-        public string PluginName { get; set; }
+        public string PluginName { get; }
 
-        private string _title;
+        public string Title { get; }
 
-        public string Title
-        {
-            get => _title;
-            set
-            {
-                if (_title != value)
-                {
-                    _title = value;
-                    OnPropertyChanged(nameof(Title));
-                }
-            }
-        }
+        public string Glyph { get; }
 
-        private string _glyph;
-
-        public string Glyph
-        {
-            get => _glyph;
-            set
-            {
-                if (_glyph != value)
-                {
-                    _glyph = value;
-                    OnPropertyChanged(nameof(Glyph));
-                }
-            }
-        }
-
-        private string _fontFamily;
-
-        public string FontFamily
-        {
-            get => _fontFamily;
-            set
-            {
-                if (_fontFamily != value)
-                {
-                    _fontFamily = value;
-                    OnPropertyChanged(nameof(FontFamily));
-                }
-            }
-        }
+        public string FontFamily { get; }
 
         public ICommand Command
         {
@@ -78,11 +39,22 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        public Key AcceleratorKey { get; set; }
+        public Key AcceleratorKey { get; }
 
-        public ModifierKeys AcceleratorModifiers { get; set; }
+        public ModifierKeys AcceleratorModifiers { get; }
 
         public bool IsAcceleratorKeyEnabled { get; set; }
+
+        public ContextMenuItemViewModel(string pluginName, string title, string glyph, string fontFamily, Key acceleratorKey, ModifierKeys acceleratorModifiers, ICommand command)
+        {
+            PluginName = pluginName;
+            Title = title;
+            Glyph = glyph;
+            FontFamily = fontFamily;
+            Command = command;
+            AcceleratorKey = acceleratorKey;
+            AcceleratorModifiers = acceleratorModifiers;
+        }
 
         public void SendTelemetryEvent(LauncherResultActionEvent.TriggerType triggerType)
         {
