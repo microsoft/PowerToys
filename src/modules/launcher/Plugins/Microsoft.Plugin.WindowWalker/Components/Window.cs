@@ -211,19 +211,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether determines whether the specified windows is the owner
-        /// </summary>
-        public bool IsOwner
-        {
-            get
-            {
-#pragma warning disable CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
-                return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) != null;
-#pragma warning restore CS8073 // The result of the expression is always the same since a value of this type is never equal to 'null'
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether returns true if the window is minimized
         /// </summary>
         public bool Minimized
