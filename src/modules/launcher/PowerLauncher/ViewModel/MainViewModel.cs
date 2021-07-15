@@ -910,7 +910,6 @@ namespace PowerLauncher.ViewModel
             list.Add(r);
             Results.AddResults(list, _updateToken);
             Results.Clear();
-            MainWindowVisibility = System.Windows.Visibility.Collapsed;
 
             // Fix Cold start for plugins, "m" is just a random string needed to query results
             var pluginQueryPairs = QueryBuilder.Build("m");
