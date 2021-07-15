@@ -7,6 +7,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -277,6 +278,22 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             HotkeyTextBox.Text = hotkeySettings.ToString();
+            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            {
+                TextBoxAutomationPeer peer =
+                    FrameworkElementAutomationPeer.FromElement(HotkeyTextBox) as TextBoxAutomationPeer;
+                string textBoxChangeActivityId = "textBoxChangedOnLosingFocus";
+
+                if (peer != null)
+                {
+                    peer.RaiseNotificationEvent(
+                        AutomationNotificationKind.ActionCompleted,
+                        AutomationNotificationProcessing.ImportantMostRecent,
+                        HotkeyTextBox.Text,
+                        textBoxChangeActivityId);
+                }
+            }
+
             _isActive = false;
         }
 
