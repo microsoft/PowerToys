@@ -10,8 +10,33 @@
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
+    winui:BackdropMaterial.ApplyToRootOrPageBackground="True"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Light">
+                            <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="LayerFillColorDefaultBrush"/>
+                            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent"/>
+                        </ResourceDictionary>
+                        <ResourceDictionary x:Key="Dark">
+                            <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="LayerFillColorDefaultBrush"/>
+                            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent"/>
+                        </ResourceDictionary>
+                        <ResourceDictionary x:Key="HighContrast">
+                            <SolidColorBrush x:Key="NavigationViewContentBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
     <i:Interaction.Behaviors>
         <ic:EventTriggerBehavior EventName="Loaded">
             <ic:InvokeCommandAction Command="{x:Bind ViewModel.LoadedCommand}" />
@@ -21,6 +46,7 @@
     <Grid>
         <winui:NavigationView
         x:Name="navigationView"
+        Background="{ThemeResource HomePageBackgroundBrush}"
         IsBackButtonVisible="Collapsed"
         IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
         SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"

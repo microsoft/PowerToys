@@ -7,7 +7,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" ControlsResourcesVersion="Version2" />
                 <ResourceDictionary Source="/Controls/KeyVisual/KeyVisual.xaml" />
                 <ResourceDictionary Source="/Styles/_FontSizes.xaml" />
                 <ResourceDictionary Source="/Styles/_Thickness.xaml" />
@@ -15,7 +15,32 @@
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/Styles/Button.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            
             <converters:ModuleEnabledToOpacityConverter x:Key="ModuleEnabledToOpacityConverter"/>
+
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent"/>
+                    <SolidColorBrush x:Key="PageHeaderForegroundBrush" Color="White"/>
+                    <StaticResource x:Key="ControlExampleDisplayBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                    <Thickness x:Key="ControlExampleDisplayBorderThickness">0</Thickness>
+                    <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent"/>
+                    <SolidColorBrush x:Key="PageHeaderForegroundBrush" Color="White"/>
+                    <StaticResource x:Key="ControlExampleDisplayBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                    <Thickness x:Key="ControlExampleDisplayBorderThickness">0</Thickness>
+                    <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="PageHeaderForegroundBrush" Color="White"/>
+                    <SolidColorBrush x:Key="ControlExampleDisplayBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <Thickness x:Key="ControlExampleDisplayBorderThickness">1</Thickness>
+                    <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </xaml:XamlApplication>
