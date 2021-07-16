@@ -13,7 +13,8 @@
         Topmost="True"
         Background="Transparent"
         SizeToContent="WidthAndHeight"
-        AllowsTransparency="True">
+        AllowsTransparency="True"
+        AutomationProperties.Name="Color Picker">
     <e:Interaction.Behaviors>
         <behaviors:ChangeWindowPositionBehavior/>
         <behaviors:AppearAnimationBehavior/>
