@@ -27,7 +27,6 @@
         IsSettingsVisible="False"
         OpenPaneLength="296"
         CompactModeThresholdWidth="0"
-        Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
         SelectionChanged="NavigationView_SelectionChanged">
             <winui:NavigationView.MenuItems>
                 <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage" AutomationProperties.HeadingLevel="Level1">
@@ -99,29 +98,15 @@
 
             </winui:NavigationView.MenuItems>
             <i:Interaction.Behaviors>
-                <behaviors:NavigationViewHeaderBehavior
-                DefaultHeader="{x:Bind ViewModel.Selected.Content, Mode=OneWay}">
-                    <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-                        <DataTemplate>
-                            <Grid Margin="0, -2, 0, 6">
-                                <TextBlock
-                                Text="{Binding}"
-                                FontWeight="Bold"
-                                Style="{ThemeResource TitleTextBlockStyle}"
-                                Margin="{StaticResource SmallLeftRightMargin}"
-                                AutomationProperties.HeadingLevel="Level1" />
-                        </Grid>
-                    </DataTemplate>
-                </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-            </behaviors:NavigationViewHeaderBehavior>
-            <ic:EventTriggerBehavior EventName="ItemInvoked">
+                <behaviors:NavigationViewHeaderBehavior DefaultHeader="{x:Bind ViewModel.Selected.Content, Mode=OneWay}"/>
+                <ic:EventTriggerBehavior EventName="ItemInvoked">
                 <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
             </ic:EventTriggerBehavior>
         </i:Interaction.Behaviors>
         <ScrollViewer x:Name="scrollViewer"
                       VerticalScrollBarVisibility="Auto"
                       Grid.Column="0">
-                <Grid Margin="{StaticResource MediumLeftRightBottomMargin}">
+                <Grid>
                     <Frame x:Name="shellFrame" />
                 </Grid>
         </ScrollViewer>
