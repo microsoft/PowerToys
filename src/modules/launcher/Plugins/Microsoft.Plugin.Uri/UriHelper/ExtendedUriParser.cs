@@ -35,7 +35,8 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 var hadDefaultPort = urlBuilder.Uri.IsDefaultPort;
                 urlBuilder.Port = hadDefaultPort ? -1 : urlBuilder.Port;
 
-                if (!input.Contains("HTTP://", StringComparison.OrdinalIgnoreCase))
+                if (!input.Contains("HTTP://", StringComparison.OrdinalIgnoreCase) &&
+                    !input.Contains("FTPS://", StringComparison.OrdinalIgnoreCase))
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttps;
                 }
