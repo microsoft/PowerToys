@@ -70,6 +70,7 @@
                          RelativePanel.Below="DescriptionPanel"
                          MaxWidth="240"
                          CornerRadius="4"
+                         x:Uid="Learn_More_Description"
                          NavigateUri="{x:Bind ModuleImageLink}"
                          Margin="{StaticResource SmallTopBottomMargin}">
                 <Image>

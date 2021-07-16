@@ -811,7 +811,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Administrator mode</value>
   </data>
   <data name="General_RunAsAdminRequired.Text" xml:space="preserve">
-    <value>You need to run as administrator to use this setting.</value>
+    <value>* You need to run as administrator to use this setting.</value>
   </data>
   <data name="ShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts with the following hotkeys are valid:</value>
@@ -885,7 +885,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Preview Pane</value>
   </data>
   <data name="FileExplorerPreview_RunAsAdminRequired.Text" xml:space="preserve">
-    <value>You need to run as administrator to modify these settings.</value>
+    <value>* You need to run as administrator to modify these settings.</value>
   </data>
   <data name="FileExplorerPreview_AffectsAllUsers.Text" xml:space="preserve">
     <value>The settings on this page affect all users on the system</value>
@@ -1036,13 +1036,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Additional options</value>
   </data>
   <data name="Run_NotAccessibleWarning.Text" xml:space="preserve">
-    <value>Please define an activation phrase or allow this plugin for the global results to use it.</value>
+    <value>* Please define an activation phrase or allow this plugin for the global results to use it.</value>
   </data>
   <data name="Run_AllPluginsDisabled.Text" xml:space="preserve">
-    <value>PowerToys Run can't provide any results without plugins. Please enable at least one plugin.</value>
+    <value>* PowerToys Run can't provide any results without plugins. Please enable at least one plugin.</value>
   </data>
   <data name="Run_NotAllowedActionKeyword.Text" xml:space="preserve">
-    <value>This activation phrase overrides the behavior of other plugins. Please change it to something else.</value>
+    <value>* This activation phrase overrides the behavior of other plugins. Please change it to something else.</value>
   </data>
   <data name="Run_PluginUseDescription.Text" xml:space="preserve">
     <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options.</value>
@@ -1312,7 +1312,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>You can always change modes quickly by {right-clicking the Awake icon} in the system tray.</value>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Text" xml:space="preserve">
-    <value>An error occurred trying to update to</value>
+    <value>* An error occurred trying to update to</value>
   </data>
   <data name="General_InstallNow.Content" xml:space="preserve">
     <value>Install now</value>
@@ -1340,5 +1340,8 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download and install</value>
+  </data>
+  <data name="Learn_More_Description.AutomationProperties.Name" xml:space="preserve">
+    <value>Learn more</value>
   </data>
 </root>
