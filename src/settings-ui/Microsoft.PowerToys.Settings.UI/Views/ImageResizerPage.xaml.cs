@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable SA1130 // Use lambda syntax
-            dialog.Commands.Add(new UICommand(ResourceLoader.GetForCurrentView().GetString("Yes"), async delegate(IUICommand command)
+            dialog.Commands.Add(new UICommand(ResourceLoader.GetForCurrentView().GetString("OK"), async delegate(IUICommand command)
 #pragma warning restore SA1130 // Use lambda syntax
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
             {
@@ -58,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }));
 
-            dialog.Commands.Add(new UICommand(ResourceLoader.GetForCurrentView().GetString("No")));
+            dialog.Commands.Add(new UICommand(ResourceLoader.GetForCurrentView().GetString("Cancel")));
             await dialog.ShowAsync();
         }
 
