@@ -4,11 +4,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using ManagedCommon;
+using Microsoft.Plugin.Indexer;
 using Microsoft.PowerToys.Run.Plugin.System.Win32;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.System
@@ -16,6 +20,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
     public class Main : IPlugin, IPluginI18n
     {
         private PluginInitContext _context;
+        private IndexerSettings _settings;
+        private PluginJsonStorage<IndexerSettings> _storage;
 
         internal const int EWXLOGOFF = 0x00000000;
         internal const int EWXSHUTDOWN = 0x00000001;
@@ -30,9 +36,20 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public string Description => Properties.Resources.Microsoft_plugin_sys_plugin_description;
 
+        private static Task<SettingsRepository<GeneralSettings>> GetSettingsRepository(ISettingsUtils settingsUtils)
+        {
+            return Task.Run(() =>
+            {
+                return SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
+            });
+        }
+
         public void Init(PluginInitContext context)
         {
-            this._context = context;
+            _context = context;
+            _storage = new PluginJsonStorage<IndexerSettings>();
+            _settings = _storage.Load();
+
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconTheme(_context.API.GetCurrentTheme());
         }
@@ -73,8 +90,29 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\shutdown.{IconTheme}.png",
                     Action = c =>
                     {
-                        Helper.OpenInShell("shutdown", "/s /t 0");
-                        return true;
+                        if (this._context.CurrentPluginMetadata.ConfirmSys)
+                        {
+                            MessageBoxResult messageBoxResult = MessageBox.Show(
+                                "You are about to shut down this computer, are you sure?",
+                                "Please Confirm",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Warning);
+
+                            if (messageBoxResult == MessageBoxResult.Yes)
+                            {
+                                Helper.OpenInShell("shutdown", "/s /t 0");
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            Helper.OpenInShell("shutdown", "/s /t 0");
+                            return true;
+                        }
                     },
                 },
                 new Result
@@ -84,8 +122,29 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\restart.{IconTheme}.png",
                     Action = c =>
                     {
-                        Helper.OpenInShell("shutdown", "/r /t 0");
-                        return true;
+                        if (this._context.CurrentPluginMetadata.ConfirmSys)
+                        {
+                            MessageBoxResult messageBoxResult = MessageBox.Show(
+                                "You are about to restart this computer, are you sure?",
+                                "Please Confirm",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Warning);
+
+                            if (messageBoxResult == MessageBoxResult.Yes)
+                            {
+                                Helper.OpenInShell("shutdown", "/r /t 0");
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            Helper.OpenInShell("shutdown", "/r /t 0");
+                            return true;
+                        }
                     },
                 },
                 new Result
@@ -95,8 +154,29 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\logoff.{IconTheme}.png",
                     Action = c =>
                     {
-                        NativeMethods.ExitWindowsEx(EWXLOGOFF, 0);
-                        return true;
+                        if (this._context.CurrentPluginMetadata.ConfirmSys)
+                        {
+                            MessageBoxResult messageBoxResult = MessageBox.Show(
+                                "You are about to log off this computer, are you sure?",
+                                "Please Confirm",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Warning);
+
+                            if (messageBoxResult == MessageBoxResult.Yes)
+                            {
+                                NativeMethods.ExitWindowsEx(EWXLOGOFF, 0);
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            NativeMethods.ExitWindowsEx(EWXLOGOFF, 0);
+                            return true;
+                        }
                     },
                 },
                 new Result
@@ -106,8 +186,29 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\lock.{IconTheme}.png",
                     Action = c =>
                     {
-                        NativeMethods.LockWorkStation();
-                        return true;
+                        if (this._context.CurrentPluginMetadata.ConfirmSys)
+                        {
+                            MessageBoxResult messageBoxResult = MessageBox.Show(
+                                "You are about to lock this computer, are you sure?",
+                                "Please Confirm",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Warning);
+
+                            if (messageBoxResult == MessageBoxResult.Yes)
+                            {
+                                NativeMethods.LockWorkStation();
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            NativeMethods.LockWorkStation();
+                            return true;
+                        }
                     },
                 },
                 new Result
@@ -117,8 +218,29 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\sleep.{IconTheme}.png",
                     Action = c =>
                     {
-                        NativeMethods.SetSuspendState(false, true, true);
-                        return true;
+                        if (this._context.CurrentPluginMetadata.ConfirmSys)
+                        {
+                            MessageBoxResult messageBoxResult = MessageBox.Show(
+                                "You are about to put this computer to sleep, are you sure?",
+                                "Please Confirm",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Warning);
+
+                            if (messageBoxResult == MessageBoxResult.Yes)
+                            {
+                                NativeMethods.SetSuspendState(false, true, true);
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            NativeMethods.SetSuspendState(false, true, true);
+                            return true;
+                        }
                     },
                 },
                 new Result
@@ -128,8 +250,29 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\sleep.{IconTheme}.png", // Icon change needed
                     Action = c =>
                     {
-                        NativeMethods.SetSuspendState(true, true, true);
-                        return true;
+                        if (this._context.CurrentPluginMetadata.ConfirmSys)
+                        {
+                            MessageBoxResult messageBoxResult = MessageBox.Show(
+                                "You are about to put this computer into hybernation, are you sure?",
+                                "Please Confirm",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Warning);
+
+                            if (messageBoxResult == MessageBoxResult.Yes)
+                            {
+                                NativeMethods.SetSuspendState(true, true, true);
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            NativeMethods.SetSuspendState(true, true, true);
+                            return true;
+                        }
                     },
                 },
                 new Result

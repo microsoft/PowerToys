@@ -1029,6 +1029,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PowerLauncher_IncludeInGlobalResult.Content" xml:space="preserve">
     <value>Include in global result</value>
   </data>
+  <data name="PowerLauncher_ConfirmSystemActions.Content" xml:space="preserve">
+    <value>Confirm system actions</value>
+  </data>
   <data name="PowerLauncher_EnablePluginToggle.AutomationProperties.Name" xml:space="preserve">
     <value>Enable plugin</value>
   </data>
