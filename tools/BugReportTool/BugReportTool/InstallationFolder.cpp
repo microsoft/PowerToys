@@ -169,15 +169,15 @@ public:
 		os = GetOutputStream(tmpDir);
 	}
 
-	void Report(path dirPath, int identation = 0)
+	void Report(path dirPath, int indentation = 0)
 	{
 		set<pair<path, bool>> paths;
 		try
 		{
-			directory_iterator end_itr;
-			for (directory_iterator itr(dirPath); itr != end_itr; ++itr)
+			directory_iterator end_it;
+			for (directory_iterator it(dirPath); it != end_it; ++it)
 			{
-				paths.insert({ itr->path(), itr->is_directory() });
+				paths.insert({ it->path(), it->is_directory() });
 			}
 		}
 		catch (filesystem::filesystem_error err)
@@ -191,7 +191,7 @@ public:
 			auto isDirectory = filePair.second;
 
 			auto fileName = filePath.wstring().substr(dirPath.wstring().size() + 1);
-			os << wstring(identation, ' ') << fileName << " ";
+			os << wstring(indentation, ' ') << fileName << " ";
 			if (!isDirectory)
 			{
 				os << GetVersion(filePath) << " " << GetChecksum(filePath);
@@ -200,7 +200,7 @@ public:
 			os << endl;
 			if (isDirectory)
 			{
-				Report(filePath, identation + 2);
+				Report(filePath, indentation + 2);
 			}
 		}
 	}
