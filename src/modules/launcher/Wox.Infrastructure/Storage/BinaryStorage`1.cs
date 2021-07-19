@@ -98,7 +98,9 @@ namespace Wox.Infrastructure.Storage
 
             try
             {
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
                 var t = ((T)binaryFormatter.Deserialize(stream)).NonNull();
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
                 return t;
             }
             catch (System.Exception e)
@@ -141,7 +143,9 @@ namespace Wox.Infrastructure.Storage
 
                 try
                 {
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
                     binaryFormatter.Serialize(stream, data);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
                 }
                 catch (SerializationException e)
                 {
