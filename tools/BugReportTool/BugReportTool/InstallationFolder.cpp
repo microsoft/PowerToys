@@ -46,10 +46,14 @@ wstring GetVersion(path filePath)
 	return version;
 }
 
-path GetRootPath()
+optional<path> GetRootPath()
 {
 	WCHAR modulePath[MAX_PATH];
-	GetModuleFileNameW(NULL, modulePath, MAX_PATH);
+	if (!GetModuleFileName(NULL, modulePath, MAX_PATH))
+	{
+		return nullopt;
+	}
+
 	path rootPath = path(modulePath);
 	rootPath = rootPath.remove_filename();
 	rootPath = rootPath.append("..");
@@ -71,8 +75,6 @@ wstring GetChecksum(path filePath)
 	DWORD cbHash = 0;
 	CHAR rgbDigits[] = "0123456789abcdef";
 	LPCWSTR filename = filePath.c_str();
-	// Logic to check usage goes here.
-
 	hFile = CreateFile(filename,
 		GENERIC_READ,
 		FILE_SHARE_READ,
@@ -206,5 +208,9 @@ public:
 
 void InstallationFolder::ReportStructure(const path& tmpDir)
 {
-	Reporter(tmpDir).Report(GetRootPath());
+	auto rootPath = GetRootPath();
+	if (rootPath)
+	{
+		Reporter(tmpDir).Report(rootPath.value());
+	}
 }
