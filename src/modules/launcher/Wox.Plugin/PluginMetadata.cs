@@ -58,6 +58,8 @@ namespace Wox.Plugin
 
         public bool IsGlobal { get; set; }
 
+        public bool ConfirmSys { get; set; }
+
         public string IcoPathDark { get; set; }
 
         public string IcoPathLight { get; set; }

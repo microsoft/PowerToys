@@ -2,6 +2,7 @@
   "ID": "CEA08895D2544B019B2E9C5009600DF4",
   "ActionKeyword": "",
   "IsGlobal": true,
+  "ConfirmSys": false,
   "Name": "System Commands",
   "Author": "Wox",
   "Version": "1.0.0",
