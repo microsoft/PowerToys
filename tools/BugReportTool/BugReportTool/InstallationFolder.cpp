@@ -13,17 +13,17 @@ wstring GetVersion(path filePath)
 {
 	DWORD  verHandle = 0;
 	UINT   size = 0;
-	LPBYTE lpBuffer = NULL;
+	LPVOID lpBuffer = nullptr;
 	DWORD  verSize = GetFileVersionInfoSize(filePath.c_str(), &verHandle);
 	wstring version = L"None";
 
-	if (verSize != NULL)
+	if (verSize != 0)
 	{
 		LPSTR verData = new char[verSize];
 
 		if (GetFileVersionInfo(filePath.c_str(), verHandle, verSize, verData))
 		{
-			if (VerQueryValue(verData, L"\\", (VOID FAR * FAR*) & lpBuffer, &size))
+			if (VerQueryValue(verData, L"\\", &lpBuffer, &size))
 			{
 				if (size)
 				{
