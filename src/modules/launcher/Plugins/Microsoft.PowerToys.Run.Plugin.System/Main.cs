@@ -253,7 +253,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                         if (this._context.CurrentPluginMetadata.ConfirmSys)
                         {
                             MessageBoxResult messageBoxResult = MessageBox.Show(
-                                "You are about to put this computer into hybernation, are you sure?",
+                                "You are about to put this computer into hibernation, are you sure?",
                                 "Please Confirm",
                                 MessageBoxButton.YesNo,
                                 MessageBoxImage.Warning);
