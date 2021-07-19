@@ -1215,7 +1215,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_ImageResizer" xml:space="preserve">
-    <value>ImageResizer</value>
+    <value>Image Resizer</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_KBM" xml:space="preserve">
