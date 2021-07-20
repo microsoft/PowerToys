@@ -242,12 +242,22 @@ namespace ColorPicker.Controls
 #pragma warning restore CA1801 // Review unused parameters
         {
             HideDetails();
+            AppStateHandler.BlockEscapeKeyClosingColorPickerEditor = false;
 
             // Revert to original color
             var originalColorBackground = new SolidColorBrush(_originalColor);
             CurrentColorButton.Background = originalColorBackground;
 
             HexCode.Text = ColorToHex(_originalColor);
+        }
+
+#pragma warning disable CA1822 // Mark members as static
+#pragma warning disable CA1801 // Review unused parameters
+        private void DetailsFlyout_Opened(object sender, object e)
+#pragma warning restore CA1801 // Review unused parameters
+#pragma warning restore CA1822 // Mark members as static
+        {
+            AppStateHandler.BlockEscapeKeyClosingColorPickerEditor = true;
         }
 
         private void ColorVariationButton_Click(object sender, RoutedEventArgs e)
