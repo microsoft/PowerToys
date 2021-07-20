@@ -24,17 +24,13 @@ namespace PowerLauncher.ViewModel
 
         public ObservableCollection<ContextMenuItemViewModel> ContextMenuItems { get; } = new ObservableCollection<ContextMenuItemViewModel>();
 
-        public ICommand ActivateContextButtonsHoverCommand { get; set; }
+        public ICommand ActivateContextButtonsHoverCommand { get; }
 
-        public ICommand ActivateContextButtonsSelectionCommand { get; set; }
+        public ICommand DeactivateContextButtonsHoverCommand { get; }
 
-        public ICommand DeactivateContextButtonsHoverCommand { get; set; }
+        public bool IsSelected { get; private set; }
 
-        public ICommand DeactivateContextButtonsSelectionCommand { get; set; }
-
-        public bool IsSelected { get; set; }
-
-        public bool IsHovered { get; set; }
+        public bool IsHovered { get; private set; }
 
         private bool _areContextButtonsActive;
 
@@ -79,19 +75,12 @@ namespace PowerLauncher.ViewModel
             LoadContextMenu();
 
             ActivateContextButtonsHoverCommand = new RelayCommand(ActivateContextButtonsHoverAction);
-            ActivateContextButtonsSelectionCommand = new RelayCommand(ActivateContextButtonsSelectionAction);
             DeactivateContextButtonsHoverCommand = new RelayCommand(DeactivateContextButtonsHoverAction);
-            DeactivateContextButtonsSelectionCommand = new RelayCommand(DeactivateContextButtonsSelectionAction);
         }
 
         private void ActivateContextButtonsHoverAction(object sender)
         {
             ActivateContextButtons(ActivationType.Hover);
-        }
-
-        private void ActivateContextButtonsSelectionAction(object sender)
-        {
-            ActivateContextButtons(ActivationType.Selection);
         }
 
         public void ActivateContextButtons(ActivationType activationType)
@@ -120,11 +109,6 @@ namespace PowerLauncher.ViewModel
         private void DeactivateContextButtonsHoverAction(object sender)
         {
             DeactivateContextButtons(ActivationType.Hover);
-        }
-
-        private void DeactivateContextButtonsSelectionAction(object sender)
-        {
-            DeactivateContextButtons(ActivationType.Selection);
         }
 
         public void DeactivateContextButtons(ActivationType activationType)
@@ -156,15 +140,14 @@ namespace PowerLauncher.ViewModel
             ContextMenuItems.Clear();
             foreach (var r in results)
             {
-                ContextMenuItems.Add(new ContextMenuItemViewModel()
-                {
-                    PluginName = r.PluginName,
-                    Title = r.Title,
-                    Glyph = r.Glyph,
-                    FontFamily = r.FontFamily,
-                    AcceleratorKey = r.AcceleratorKey,
-                    AcceleratorModifiers = r.AcceleratorModifiers,
-                    Command = new RelayCommand(_ =>
+                ContextMenuItems.Add(new ContextMenuItemViewModel(
+                    r.PluginName,
+                    r.Title,
+                    r.Glyph,
+                    r.FontFamily,
+                    r.AcceleratorKey,
+                    r.AcceleratorModifiers,
+                    new RelayCommand(_ =>
                     {
                         bool hideWindow =
                             r.Action != null &&
@@ -179,8 +162,7 @@ namespace PowerLauncher.ViewModel
                             // TODO - Do we hide the window
                             // MainWindowVisibility = Visibility.Collapsed;
                         }
-                    }),
-                });
+                    })));
             }
         }
 

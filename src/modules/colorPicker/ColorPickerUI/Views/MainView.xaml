@@ -35,14 +35,18 @@
                     VerticalAlignment="Stretch"
                     BorderBrush="{DynamicResource WindowBorderBrush}"
                     BorderThickness="1"
-                    x:Name="ColorBorderSmall"
                     CornerRadius="4"/>
 
-                    <TextBlock Margin="8,5,8,8"
+                    <TextBlock 
+                       x:Name="ColorTextBlock"
+                       Margin="8,5,8,8"
                        FontSize="16"
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource PrimaryForegroundBrush}"
                        Grid.Column="1"
+                       AutomationProperties.LiveSetting="Assertive"
+                       AutomationProperties.LabeledBy="{Binding ColorName}" 
+                       AutomationProperties.Name="{Binding ColorName}" 
                        Text="{Binding ColorText}"/>
                 </Grid>
 

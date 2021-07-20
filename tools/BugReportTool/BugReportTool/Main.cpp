@@ -17,6 +17,7 @@
 #include "ReportMonitorInfo.h"
 #include "RegistryUtils.h"
 #include "EventViewer.h"
+#include "InstallationFolder.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -297,6 +298,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         printf("Failed to copy PowerToys folder\n");
         return 1;
     }
+
+    InstallationFolder::ReportStructure(reportDir);
 
     // Hide sensitive information
     HideUserPrivateInfo(reportDir);

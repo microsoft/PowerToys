@@ -15,6 +15,7 @@
 #include <common/utils/winapi_error.h>
 
 #include <filesystem>
+#include <set>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -33,34 +34,23 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
-// The PowerToy name that will be shown in the settings.
 const static wchar_t* MODULE_NAME = L"Awake";
-
-// Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"A module that keeps your computer awake on-demand.";
 
-// Implement the PowerToy Module Interface and all the required methods.
 class Awake : public PowertoyModuleIface
 {
     std::wstring app_name;
-
-    // Contains the non localized key of the powertoy
     std::wstring app_key;
 
 private:
-    // The PowerToy state.
     bool m_enabled = false;
-
-    HANDLE m_hProcess;
-
     HANDLE send_telemetry_event;
-
-    // Handle to event used to invoke PowerToys Awake
     HANDLE m_hInvokeEvent;
+    PROCESS_INFORMATION p_info;
 
     bool is_process_running()
     {
-        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
+        return WaitForSingleObject(p_info.hProcess, 0) == WAIT_TIMEOUT;
     }
 
     void launch_process()
@@ -69,26 +59,22 @@ private:
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"--use-pt-config --pid " + std::to_wstring(powertoys_pid);
+        std::wstring application_path = L"modules\\Awake\\PowerToys.Awake.exe";
+        std::wstring full_command_path = application_path + L" " + executable_args.data();
         Logger::trace(L"PowerToys Awake launching with parameters: " + executable_args);
 
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\Awake\\PowerToys.Awake.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-        if (!ShellExecuteExW(&sei))
+        STARTUPINFO info = { sizeof(info) };
+
+        if (!CreateProcess(application_path.c_str(), full_command_path.data(), NULL, NULL, true, NULL, NULL, NULL, &info, &p_info))
         {
             DWORD error = GetLastError();
-            std::wstring message = L"PowerToys Awake failed to start with error = ";
+            std::wstring message = L"PowerToys Awake failed to start with error: ";
             message += std::to_wstring(error);
             Logger::error(message);
         }
-
-        m_hProcess = sei.hProcess;
     }
 
 public:
-    // Constructor
     Awake()
     {
         app_name = GET_RESOURCE_STRING(IDS_AWAKE_NAME);
@@ -99,37 +85,31 @@ public:
         Logger::info("Launcher object is constructing");
     };
 
-    // Destroy the powertoy and free memory
     virtual void destroy() override
     {
         delete this;
     }
 
-    // Return the display name of the powertoy, this will be cached by the runner
     virtual const wchar_t* get_name() override
     {
         return MODULE_NAME;
     }
 
-    // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
-        // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
-    // Return the non localized key of the powertoy, this will be cached by the runner
     virtual const wchar_t* get_key() override
     {
         return app_key.c_str();
     }
 
-    // Called by the runner to pass the updated settings values as a serialized JSON.
     virtual void set_config(const wchar_t* config) override
     {
         try
@@ -139,7 +119,7 @@ public:
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             // If you don't need to do any custom processing of the settings, proceed
-            // to persists the values calling:
+            // to persists the values.
             values.save_to_settings_file();
         }
         catch (std::exception&)
@@ -160,15 +140,36 @@ public:
     {
         if (m_enabled)
         {
+            Logger::trace(L"Disabling Awake...");
             ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);
-            TerminateProcess(m_hProcess, 1);
+
+            auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::AWAKE_EXIT_EVENT);
+            if (!exitEvent)
+            {
+                Logger::warn(L"Failed to create exit event for PowerToys Awake. {}", get_last_error_or_default(GetLastError()));
+            }
+            else
+            {
+                Logger::trace(L"Signaled exit event for PowerToys Awake.");
+                if (!SetEvent(exitEvent))
+                {
+                    Logger::warn(L"Failed to signal exit event for PowerToys Awake. {}", get_last_error_or_default(GetLastError()));
+
+                    // For some reason, we couldn't process the signal correctly, so we still
+                    // need to terminate the Awake process.
+                    TerminateProcess(p_info.hProcess, 1);
+                }
+
+                ResetEvent(exitEvent);
+                CloseHandle(exitEvent);
+                CloseHandle(p_info.hProcess);
+            }
         }
 
         m_enabled = false;
     }
 
-    // Returns if the powertoys is enabled
     virtual bool is_enabled() override
     {
         return m_enabled;

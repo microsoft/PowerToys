@@ -173,7 +173,9 @@
             <TextBlock FontSize="16"
                        Foreground="White"
                        HorizontalAlignment="Center"
-                       VerticalAlignment="Center" >
+                       VerticalAlignment="Center"
+                       AutomationProperties.LiveSetting="Assertive"
+                       AutomationProperties.Name="{x:Static p:Resources.Copied_to_clipboard}">
                 <Run Text="&#xE16F; " FontFamily="Segoe MDL2 Assets"/>
                 <Run Text="{x:Static p:Resources.Copied_to_clipboard}" FontWeight="SemiBold"/>
             </TextBlock>

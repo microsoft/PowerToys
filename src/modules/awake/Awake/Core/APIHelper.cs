@@ -21,6 +21,18 @@ namespace Awake.Core
         ES_SYSTEM_REQUIRED = 0x00000001,
     }
 
+    // See: https://docs.microsoft.com/windows/console/handlerroutine
+    public enum ControlType
+    {
+        CTRL_C_EVENT = 0,
+        CTRL_BREAK_EVENT = 1,
+        CTRL_CLOSE_EVENT = 2,
+        CTRL_LOGOFF_EVENT = 5,
+        CTRL_SHUTDOWN_EVENT = 6,
+    }
+
+    public delegate bool ConsoleEventHandler(ControlType ctrlType);
+
     /// <summary>
     /// Helper class that allows talking to Win32 APIs without having to rely on PInvoke in other parts
     /// of the codebase.
@@ -37,6 +49,10 @@ namespace Awake.Core
         private static CancellationToken _threadToken;
 
         private static Task? _runnerThread;
+        private static System.Timers.Timer _timedLoopTimer;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetConsoleCtrlHandler(ConsoleEventHandler handler, bool add);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
@@ -63,8 +79,14 @@ namespace Awake.Core
 
         static APIHelper()
         {
+            _timedLoopTimer = new System.Timers.Timer();
             _log = LogManager.GetCurrentClassLogger();
             _tokenSource = new CancellationTokenSource();
+        }
+
+        public static void SetConsoleControlHandler(ConsoleEventHandler handler, bool addHandler)
+        {
+            SetConsoleCtrlHandler(handler, addHandler);
         }
 
         public static void AllocateConsole()
@@ -139,7 +161,7 @@ namespace Awake.Core
             }
             catch (OperationCanceledException)
             {
-                _log.Info("Confirmed background thread cancellation when setting passive keep awake.");
+                _log.Info("Confirmed background thread cancellation when disabling explicit keep awake.");
             }
         }
 
@@ -156,7 +178,7 @@ namespace Awake.Core
             }
             catch (OperationCanceledException)
             {
-                _log.Info("Confirmed background thread cancellation when setting indefinite keep awake.");
+                _log.Info("Confirmed background thread cancellation when setting timed keep awake.");
             }
 
             _tokenSource = new CancellationTokenSource();
@@ -223,14 +245,25 @@ namespace Awake.Core
                 if (success)
                 {
                     _log.Info($"Initiated temporary keep awake in background thread: {GetCurrentThreadId()}. Screen on: {keepDisplayOn}");
-                    var startTime = DateTime.UtcNow;
-                    while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(Math.Abs(seconds)))
+
+                    _timedLoopTimer = new System.Timers.Timer(seconds * 1000);
+                    _timedLoopTimer.Elapsed += (s, e) =>
                     {
-                        if (_threadToken.IsCancellationRequested)
-                        {
-                            _threadToken.ThrowIfCancellationRequested();
-                        }
-                    }
+                        _tokenSource.Cancel();
+
+                        _timedLoopTimer.Stop();
+                    };
+
+                    _timedLoopTimer.Disposed += (s, e) =>
+                    {
+                        _log.Info("Old timer disposed.");
+                    };
+
+                    _timedLoopTimer.Start();
+
+                    WaitHandle.WaitAny(new[] { _threadToken.WaitHandle });
+                    _timedLoopTimer.Stop();
+                    _timedLoopTimer.Dispose();
 
                     return success;
                 }
