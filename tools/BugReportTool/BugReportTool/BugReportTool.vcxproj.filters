@@ -13,6 +13,7 @@
     <ClCompile Include="RegistryUtils.cpp" />
     <ClCompile Include="EventViewer.cpp" />
     <ClCompile Include="XmlDocumentEx.cpp" />
+    <ClCompile Include="InstallationFolder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ZipTools">
@@ -30,5 +31,6 @@
     <ClInclude Include="RegistryUtils.h" />
     <ClInclude Include="EventViewer.h" />
     <ClInclude Include="XmlDocumentEx.h" />
+    <ClInclude Include="InstallationFolder.h" />
   </ItemGroup>
 </Project>
