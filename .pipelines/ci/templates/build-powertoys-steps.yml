@@ -112,14 +112,6 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet test'
-  inputs:
-    command: 'test'
-    projects: '**\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll'
-    testRunTitle: 'Registry tests'
-    continueOnError: true
-
 # directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'MS Tests'
