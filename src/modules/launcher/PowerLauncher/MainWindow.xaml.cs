@@ -253,6 +253,9 @@ namespace PowerLauncher
 
         private void Launcher_KeyDown(object sender, KeyEventArgs e)
         {
+            int delta = 8;
+            Screen screen = Screen.FromPoint(new System.Drawing.Point((int)(this.Left + ((ActualWidth - SearchBox.ActualWidth) / 2)), (int)this.Top));
+
             if (e.Key == Key.Tab && Keyboard.IsKeyDown(Key.LeftShift))
             {
                 _viewModel.SelectPrevTabItemCommand.Execute(null);
@@ -267,18 +270,42 @@ namespace PowerLauncher
             }
             else if (e.Key == Key.Down)
             {
+                if (_viewModel.QueryText.Length == 0)
+                {
+                    if (Top + Height + delta < screen.Bounds.Height)
+                    {
+                        Top += delta;
+                    }
+                }
+
                 _viewModel.SelectNextItemCommand.Execute(null);
                 UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
             else if (e.Key == Key.Up)
             {
+                if (_viewModel.QueryText.Length == 0)
+                {
+                    if (Top - delta > screen.Bounds.Y)
+                    {
+                        Top -= delta;
+                    }
+                }
+
                 _viewModel.SelectPrevItemCommand.Execute(null);
                 UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
             else if (e.Key == Key.Right)
             {
+                if (_viewModel.QueryText.Length == 0)
+                {
+                    if (Left + ActualWidth + delta < screen.WorkingArea.X + screen.WorkingArea.Width + ((ActualWidth - SearchBox.ActualWidth) / 2))
+                    {
+                        Left += delta;
+                    }
+                }
+
                 if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
                 {
                     _viewModel.SelectNextContextMenuItemCommand.Execute(null);
@@ -287,6 +314,14 @@ namespace PowerLauncher
             }
             else if (e.Key == Key.Left)
             {
+                if (_viewModel.QueryText.Length == 0)
+                {
+                    if (Left - delta > screen.WorkingArea.X - ((ActualWidth - SearchBox.ActualWidth) / 2))
+                    {
+                        Left -= delta;
+                    }
+                }
+
                 if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
                 {
                     if (_viewModel.Results != null && _viewModel.Results.IsContextMenuItemSelected())
