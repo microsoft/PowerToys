@@ -34,7 +34,7 @@
         <StackPanel Margin="16"
                     FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
 
-            <local:MyButton x:Name="newZoneButton"
+            <local:ClickAutomationEventButton x:Name="newZoneButton"
                     AutomationProperties.LabeledBy="{Binding ElementName=newZoneName}"
                     HorizontalAlignment="Stretch"
                     Height="64"

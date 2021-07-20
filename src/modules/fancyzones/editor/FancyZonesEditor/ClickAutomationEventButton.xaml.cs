@@ -10,9 +10,9 @@ using System.Windows.Controls;
 
 namespace FancyZonesEditor
 {
-    public partial class MyButton : Button
+    public partial class ClickAutomationEventButton : Button
     {
-        public MyButton()
+        public ClickAutomationEventButton()
             : base()
         {
             InitializeComponent();
@@ -27,14 +27,14 @@ namespace FancyZonesEditor
 
         public static readonly DependencyProperty ValueProperty =
         DependencyProperty.Register(
-            "Value", typeof(string), typeof(MyButton));
+            "Value", typeof(string), typeof(ClickAutomationEventButton));
 
         private void OnClick(object sender, RoutedEventArgs e)
         {
             if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
             {
-                MyButtonAutomationPeer peer =
-                    UIElementAutomationPeer.FromElement(this) as MyButtonAutomationPeer;
+                ClickAutomationEventButtonAutomationPeer peer =
+                    UIElementAutomationPeer.FromElement(this) as ClickAutomationEventButtonAutomationPeer;
 
                 if (peer != null)
                 {
@@ -48,19 +48,19 @@ namespace FancyZonesEditor
 
         protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new MyButtonAutomationPeer(this);
+            return new ClickAutomationEventButtonAutomationPeer(this);
         }
 
-        public class MyButtonAutomationPeer : FrameworkElementAutomationPeer, IValueProvider
+        public class ClickAutomationEventButtonAutomationPeer : FrameworkElementAutomationPeer, IValueProvider
         {
-            public MyButtonAutomationPeer(MyButton control)
+            public ClickAutomationEventButtonAutomationPeer(ClickAutomationEventButton control)
                 : base(control)
             {
             }
 
             protected override string GetClassNameCore()
             {
-                return "MyButton";
+                return nameof(ClickAutomationEventButton);
             }
 
             protected override AutomationControlType GetAutomationControlTypeCore()
@@ -83,11 +83,11 @@ namespace FancyZonesEditor
                 MyOwner.Value = value;
             }
 
-            private MyButton MyOwner
+            private ClickAutomationEventButton MyOwner
             {
                 get
                 {
-                    return (MyButton)Owner;
+                    return (ClickAutomationEventButton)Owner;
                 }
             }
 
