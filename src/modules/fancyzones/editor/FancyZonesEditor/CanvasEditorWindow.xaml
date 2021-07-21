@@ -35,7 +35,6 @@
                     FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
 
             <local:ClickAutomationEventButton x:Name="newZoneButton"
-                    AutomationProperties.LabeledBy="{Binding ElementName=newZoneName}"
                     HorizontalAlignment="Stretch"
                     Height="64"
                     Width="64"
