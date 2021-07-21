@@ -141,10 +141,16 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
             L"modules/ColorPicker/ColorPicker.dll",
-            L"modules/Awake/AwakeModuleInterface.dll",
-            // TODO(yuyoyuppe): uncomment when VCM should be enabled
-            //L"modules/VideoConference/VideoConferenceModule.dll"
+            L"modules/Awake/AwakeModuleInterface.dll"
+
         };
+        // TODO(yuyoyuppe): uncomment when VCM should be enabled
+        //const auto VCM_PATH = L"modules/VideoConference/VideoConferenceModule.dll";
+        //if (const auto mf = LoadLibraryA("mf.dll"))
+        //{
+        //    FreeLibrary(mf);
+        //    knownModules.emplace_back(VCM_PATH);
+        //}
 
         for (const auto& moduleSubdir : knownModules)
         {

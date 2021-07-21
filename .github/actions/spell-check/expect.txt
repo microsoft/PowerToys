@@ -399,6 +399,7 @@ ddd
 ddee
 ddf
 Deact
+DECLAR
 declspec
 decltype
 Dedup
@@ -1434,6 +1435,7 @@ ntdll
 NTFS
 NTSTATUS
 nuget
+null
 nullopt
 nullptr
 NUMLOCK
@@ -2311,6 +2313,7 @@ WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 Windowsapp
 WINDOWSBUILDNUMBER
+Windowscodecs
 windowsdesktop
 windowssearch
 windowsx

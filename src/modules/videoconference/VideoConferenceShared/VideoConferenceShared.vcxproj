@@ -21,7 +21,7 @@
   </ItemGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>mfplat.lib;Mfsensorgroup.lib;OneCoreUAP.lib;Mf.lib;Shlwapi.lib;Strmiids.lib;%(AdditionalDependencies);</AdditionalDependencies>
+      <AdditionalDependencies>mfplat.lib;Mfsensorgroup.lib;Mf.lib;Shlwapi.lib;Strmiids.lib;%(AdditionalDependencies);</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <PropertyGroup Label="Globals">
@@ -116,7 +116,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraStateUpdateChannels.h" />
+    <ClInclude Include="DLLProviderHelpers.h" />
     <ClInclude Include="Logging.h" />
+    <ClInclude Include="MediaFoundationAPIProvider.h" />
     <ClInclude Include="SerializedSharedMemory.h" />
     <ClInclude Include="naming.h" />
     <ClInclude Include="MicrophoneDevice.h" />

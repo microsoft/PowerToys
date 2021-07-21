@@ -17,7 +17,6 @@
 #include <wil/resource.h>
 #include <wil/com.h>
 
-#include <mfapi.h>
 #include <mfidl.h>
 #include <mftransform.h>
 #include <dshow.h>

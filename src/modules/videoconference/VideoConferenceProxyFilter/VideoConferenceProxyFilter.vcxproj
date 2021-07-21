@@ -62,7 +62,7 @@
     </Lib>
     <PreBuildEvent Condition="'$(Platform)'=='x64'">
       <Command>call "$(ProjectDir)build_vcm_x86.cmd"</Command>
-    </PreBuildEvent>    
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Platform)'!='Win32'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>
@@ -87,7 +87,7 @@
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)VideoConferenceShared.lib;mfplat.lib;Mfsensorgroup.lib;OneCoreUAP.lib;Mf.lib;Shlwapi.lib;Strmiids.lib;%(AdditionalDependencies);</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)VideoConferenceShared.lib;Windowscodecs.lib;Wtsapi32.lib;mfplat.lib;WindowsApp.lib;Mfsensorgroup.lib;Mf.lib;Shlwapi.lib;Strmiids.lib;%(AdditionalDependencies);</AdditionalDependencies>
       <ModuleDefinitionFile>module.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
