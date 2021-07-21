@@ -208,15 +208,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";About_VideoConference.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[About Video Conference]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Informatie over videovergadering]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";Admin_mode.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Administrator mode]]></Val>
@@ -2984,7 +2975,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Monitor with mouse cursor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Controleren met muiscursor]]></Val>
+            <Val><![CDATA[Beeldscherm met muiscursor]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2993,7 +2984,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Monitor with focused window]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Controleren met venster met focus]]></Val>
+            <Val><![CDATA[Beeldscherm met gefocust venster]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3002,7 +2993,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Primary monitor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Primair controleren]]></Val>
+            <Val><![CDATA[Hoofdbeeldscherm]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
