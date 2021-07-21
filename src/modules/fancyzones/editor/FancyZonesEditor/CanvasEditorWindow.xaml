@@ -50,7 +50,7 @@
                     DataContext="{Binding Path=Model, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
                     IsEnabled="{Binding IsZoneAddingAllowed}"
                     Click="OnAddZone"
-                    Value="{x:Static props:Resources.New_zone_added}" />
+                    OnClickAutomationValue="{x:Static props:Resources.New_zone_added}" />
 
             <Grid Margin="0,24,0,0">
                 <Grid.ColumnDefinitions>

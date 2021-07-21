@@ -19,13 +19,13 @@ namespace FancyZonesEditor
             Click += OnClick;
         }
 
-        public string Value
+        public string OnClickAutomationValue
         {
-            get { return (string)GetValue(ValueProperty); }
-            set { SetValue(ValueProperty, value); }
+            get { return (string)GetValue(OnClickAutomationValueProperty); }
+            set { SetValue(OnClickAutomationValueProperty, value); }
         }
 
-        public static readonly DependencyProperty ValueProperty =
+        public static readonly DependencyProperty OnClickAutomationValueProperty =
         DependencyProperty.Register(
             "Value", typeof(string), typeof(ClickAutomationEventButton));
 
@@ -41,7 +41,7 @@ namespace FancyZonesEditor
                     peer.RaisePropertyChangedEvent(
                         ValuePatternIdentifiers.ValueProperty,
                         null,
-                        Value);
+                        OnClickAutomationValue);
                 }
             }
         }
@@ -80,7 +80,7 @@ namespace FancyZonesEditor
 
             public void SetValue(string value)
             {
-                MyOwner.Value = value;
+                MyOwner.OnClickAutomationValue = value;
             }
 
             private ClickAutomationEventButton MyOwner
@@ -93,7 +93,7 @@ namespace FancyZonesEditor
 
             public string Value
             {
-                get { return MyOwner.Value; }
+                get { return MyOwner.OnClickAutomationValue; }
             }
 
             public bool IsReadOnly
