@@ -22,7 +22,7 @@
 
                 <TextBlock x:Uid="VideoConference_Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
 
                 <controls:HotkeySettingsControl 
                                           x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header"
@@ -55,7 +55,7 @@
                                           />
                 <TextBlock x:Uid="VideoConference_Microphone"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
                 <ComboBox x:Uid="VideoConference_SelectedMicrophone"
                       Width="240"
@@ -67,7 +67,7 @@
 
                 <TextBlock x:Uid="VideoConference_Camera"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
                 <ComboBox x:Uid="VideoConference_SelectedCamera"
                       Width="240"
@@ -109,7 +109,7 @@
 
                 <TextBlock x:Uid="VideoConference_Toolbar"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
                 <ComboBox x:Uid="VideoConference_ToolbarPosition" 
                       MinWidth="240"
