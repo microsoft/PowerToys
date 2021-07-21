@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Confirm system commands.
+        ///   Looks up a localized string similar to Show a dialog to confirm system commands.
         /// </summary>
         internal static string confirm_system_commands {
             get {

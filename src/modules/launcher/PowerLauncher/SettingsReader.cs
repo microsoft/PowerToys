@@ -209,7 +209,6 @@ namespace PowerLauncher
                 Author = x.Metadata.Author,
                 Disabled = x.Metadata.Disabled,
                 IsGlobal = x.Metadata.IsGlobal,
-                ConfirmSys = x.Metadata.ConfirmSys,
                 ActionKeyword = x.Metadata.ActionKeyword,
                 IconPathDark = GetIcon(x.Metadata, x.Metadata.IcoPathDark),
                 IconPathLight = GetIcon(x.Metadata, x.Metadata.IcoPathLight),

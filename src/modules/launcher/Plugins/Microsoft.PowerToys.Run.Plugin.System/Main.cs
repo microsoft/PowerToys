@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using ManagedCommon;
@@ -17,7 +19,7 @@ using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.System
 {
-    public class Main : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n, ISettingProvider
     {
         private PluginInitContext _context;
         private const string ConfirmSystemCommands = nameof(ConfirmSystemCommands);
@@ -37,7 +39,9 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public string Description => Properties.Resources.Microsoft_plugin_sys_plugin_description;
 
-        public static IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        private bool _confirmSystemCommands;
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
         {
             new PluginAdditionalOption()
             {
@@ -206,7 +210,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         private bool ExecuteCommand(string confirmationMessage, Action command)
         {
-            if (this._context.CurrentPluginMetadata.ConfirmSys)
+            if (this._context.CurrentPluginMetadata.ConfirmSystemCommands)
             {
                 MessageBoxResult messageBoxResult = MessageBox.Show(
                     confirmationMessage,
@@ -222,6 +226,25 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
             command();
             return true;
+        }
+
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            var confirmSystemCommands = false;
+
+            if (settings.AdditionalOptions != null)
+            {
+                var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ConfirmSystemCommands);
+
+                confirmSystemCommands = option == null ? false : option.Value;
+            }
+
+            _confirmSystemCommands = confirmSystemCommands;
         }
     }
 }
