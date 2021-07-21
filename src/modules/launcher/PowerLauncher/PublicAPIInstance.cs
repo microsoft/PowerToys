@@ -35,9 +35,6 @@ namespace Wox
             _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
-
-            DesktopNotificationManagerCompat.RegisterActivator<LauncherNotificationActivator>();
-            DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("PowerToysRun");
         }
 
         public void ChangeQuery(string query, bool requery = false)
@@ -96,7 +93,7 @@ namespace Wox
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var toast = new ToastNotification(builder.GetToastContent().GetXml());
-                DesktopNotificationManagerCompat.CreateToastNotifier().Show(toast);
+                ToastNotificationManagerCompat.CreateToastNotifier().Show(toast);
             });
         }
 

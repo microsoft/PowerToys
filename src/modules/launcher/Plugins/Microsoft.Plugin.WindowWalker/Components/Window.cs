@@ -211,17 +211,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether determines whether the specified windows is the owner
-        /// </summary>
-        public bool IsOwner
-        {
-            get
-            {
-                return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) != null;
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether returns true if the window is minimized
         /// </summary>
         public bool Minimized

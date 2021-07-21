@@ -29,7 +29,6 @@ namespace Wox.Infrastructure.Image
         private static readonly ImageCache ImageCache = new ImageCache();
         private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
 
-        private static BinaryStorage<Dictionary<string, int>> _storage;
         private static IImageHashGenerator _hashGenerator;
 
         public static string ErrorIconPath { get; set; }
@@ -49,9 +48,8 @@ namespace Wox.Infrastructure.Image
 
         public static void Initialize(Theme theme)
         {
-            _storage = new BinaryStorage<Dictionary<string, int>>("Image");
             _hashGenerator = new ImageHashGenerator();
-            ImageCache.SetUsageAsDictionary(_storage.TryLoad(new Dictionary<string, int>()));
+            ImageCache.Initialize();
 
             foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon, Constant.LightThemedDefaultIcon, Constant.LightThemedErrorIcon })
             {
@@ -78,7 +76,7 @@ namespace Wox.Infrastructure.Image
         public static void Save()
         {
             ImageCache.Cleanup();
-            _storage.Save(ImageCache.GetUsageAsDictionary());
+            ImageCache.Save();
         }
 
         // Todo : Update it with icons specific to each theme.
