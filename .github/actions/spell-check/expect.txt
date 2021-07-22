@@ -192,6 +192,7 @@ buildtools
 buildtransitive
 BValue
 bytearray
+CALG
 callbackptr
 Camer
 Cangjie
@@ -707,6 +708,7 @@ Hardlines
 HARDWAREINPUT
 hashcode
 Hashset
+HASHVAL
 hbitmap
 hbmp
 hbr
@@ -714,6 +716,8 @@ HBRBACKGROUND
 HBRUSH
 hcblack
 HCERTSTORE
+HCRYPTHASH
+HCRYPTPROV
 hcwhite
 hdc
 HDF
@@ -2214,6 +2218,7 @@ VDId
 vec
 VERBSONLY
 VERBW
+VERIFYCONTEXT
 verrsrc
 VERSIONINFO
 Versioning

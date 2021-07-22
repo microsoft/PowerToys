@@ -50,7 +50,7 @@ echo   ^<PropertyGroup^> >> !launcherPublishProfile!
 echo     ^<PublishProtocol^>FileSystem^</PublishProtocol^> >> !launcherPublishProfile!
 echo     ^<Configuration^>Release^</Configuration^> >> !launcherPublishProfile!
 echo     ^<Platform^>x64^</Platform^> >> !launcherPublishProfile!
-echo     ^<TargetFramework^>netcoreapp3.1^</TargetFramework^> >> !launcherPublishProfile!
+echo     ^<TargetFramework^>net5.0-windows10.0.18362.0^</TargetFramework^> >> !launcherPublishProfile!
 echo     ^<PublishDir^>..\..\..\..\x64\Release\modules\launcher^</PublishDir^> >> !launcherPublishProfile!
 echo     ^<RuntimeIdentifier^>win-x64^</RuntimeIdentifier^> >> !launcherPublishProfile!
 echo     ^<SelfContained^>false^</SelfContained^> >> !launcherPublishProfile!

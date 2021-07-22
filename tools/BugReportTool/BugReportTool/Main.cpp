@@ -17,6 +17,7 @@
 #include "ReportMonitorInfo.h"
 #include "RegistryUtils.h"
 #include "EventViewer.h"
+#include "InstallationFolder.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -29,6 +30,7 @@ map<wstring, vector<wstring>> escapeInfo = {
 
 vector<wstring> filesToDelete = {
     L"PowerToys Run\\Cache",
+    L"PowerToys Run\\Settings\\ImageUsageCache.json",
     L"PowerRename\\replace-mru.json",
     L"PowerRename\\search-mru.json",
     L"PowerToys Run\\Settings\\UserSelectedRecord.json",
@@ -297,6 +299,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         printf("Failed to copy PowerToys folder\n");
         return 1;
     }
+
+    InstallationFolder::ReportStructure(reportDir);
 
     // Hide sensitive information
     HideUserPrivateInfo(reportDir);
