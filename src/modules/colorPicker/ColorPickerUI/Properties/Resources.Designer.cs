@@ -79,6 +79,15 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Color history.
+        /// </summary>
+        public static string ColorHistory {
+            get {
+                return ResourceManager.GetString("ColorHistory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copied to clipboard.
         /// </summary>
         public static string Copied_to_clipboard {

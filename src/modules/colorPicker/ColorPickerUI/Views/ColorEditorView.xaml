@@ -25,6 +25,7 @@
                          Padding="0"
                          TabIndex="2"
                          Width="64"
+                         AutomationProperties.Name="{x:Static p:Resources.ColorHistory}"
                          HorizontalAlignment="Center"
                          ui:FocusVisualHelper.UseSystemFocusVisuals="True"
                          ItemsSource="{Binding ColorsHistory}"

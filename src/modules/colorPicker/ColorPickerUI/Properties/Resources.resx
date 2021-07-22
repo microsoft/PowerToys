@@ -364,4 +364,7 @@
   <data name="Select_color" xml:space="preserve">
     <value>Select color</value>
   </data>
+  <data name="ColorHistory" xml:space="preserve">
+    <value>Color history</value>
+  </data>
 </root>
