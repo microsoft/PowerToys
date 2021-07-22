@@ -9,6 +9,7 @@
 #include <FancyZonesLib/Generated Files/resource.h>
 #include <FancyZonesLib/FancyZonesData.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
+#include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/trace.h>
 
 

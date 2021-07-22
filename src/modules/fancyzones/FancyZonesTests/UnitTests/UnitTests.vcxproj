@@ -49,9 +49,9 @@
     </ClCompile>
     <ClCompile Include="Util.Spec.cpp" />
     <ClCompile Include="Util.cpp" />
+    <ClCompile Include="WorkArea.Spec.cpp" />
     <ClCompile Include="Zone.Spec.cpp" />
     <ClCompile Include="ZoneSet.Spec.cpp" />
-    <ClCompile Include="ZoneWindow.Spec.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

@@ -53,10 +53,6 @@ public:
         LoadSettings(name, true);
     }
 
-    IFACEMETHODIMP_(void)
-    SetCallback(IFancyZonesCallback* callback) { m_callback = callback; }
-    IFACEMETHODIMP_(void)
-    ResetCallback() { m_callback = nullptr; }
     IFACEMETHODIMP_(bool)
     GetConfig(_Out_ PWSTR buffer, _Out_ int* buffer_sizeg) noexcept;
     IFACEMETHODIMP_(void)
@@ -70,7 +66,6 @@ private:
     void LoadSettings(PCWSTR config, bool fromFile) noexcept;
     void SaveSettings() noexcept;
 
-    IFancyZonesCallback* m_callback{};
     const HINSTANCE m_hinstance;
     std::wstring m_moduleName{};
     std::wstring m_moduleKey{};
@@ -143,20 +138,12 @@ FancyZonesSettings::SetConfig(PCWSTR serializedPowerToysSettingsJson) noexcept
 {
     LoadSettings(serializedPowerToysSettingsJson, false /*fromFile*/);
     SaveSettings();
-    if (m_callback)
-    {
-        m_callback->SettingsChanged();
-    }
 }
 
 IFACEMETHODIMP_(void)
 FancyZonesSettings::ReloadSettings() noexcept
 {
     LoadSettings(m_moduleKey.c_str(), true /*fromFile*/);
-    if (m_callback)
-    {
-        m_callback->SettingsChanged();
-    }
 }
 
 void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
@@ -226,9 +213,9 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
         if (auto val = values.get_int_value(NonLocalizable::OverlappingZonesAlgorithmID))
         {
             // Avoid undefined behavior
-            if (*val >= 0 || *val < (int)Settings::OverlappingZonesAlgorithm::EnumElements)
+            if (*val >= 0 || *val < (int)OverlappingZonesAlgorithm::EnumElements)
             {
-                m_settings.overlappingZonesAlgorithm = (Settings::OverlappingZonesAlgorithm)*val;
+                m_settings.overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)*val;
             }
         }
     }

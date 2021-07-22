@@ -94,6 +94,12 @@ namespace PowerLauncher.Plugin
                 return null;
             }
 
+            if (string.IsNullOrEmpty(metadata.IcoPathDark) || string.IsNullOrEmpty(metadata.IcoPathLight))
+            {
+                Log.Error($"|PluginConfig.GetPluginMetadata|couldn't get icon information for config <{configPath}>", MethodBase.GetCurrentMethod().DeclaringType);
+                return null;
+            }
+
             if (!File.Exists(metadata.ExecuteFilePath))
             {
                 Log.Error($"|PluginConfig.GetPluginMetadata|execute file path didn't exist <{metadata.ExecuteFilePath}> for config <{configPath}", MethodBase.GetCurrentMethod().DeclaringType);

@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -90,6 +91,20 @@ namespace ColorPicker.Controls
             resize.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
             ColorCopiedNotificationBorder.BeginAnimation(Border.OpacityProperty, opacityAppear);
             ColorCopiedNotificationBorder.BeginAnimation(Border.HeightProperty, resize);
+
+            var clipboardNotification = ((Decorator)ColorCopiedNotificationBorder).Child;
+            if (clipboardNotification == null)
+            {
+                return;
+            }
+
+            var peer = UIElementAutomationPeer.FromElement(clipboardNotification);
+            if (peer == null)
+            {
+                peer = UIElementAutomationPeer.CreatePeerForElement(clipboardNotification);
+            }
+
+            peer.RaiseAutomationEvent(AutomationEvents.MenuOpened);
         }
 
         private void HideCopiedIndicator()

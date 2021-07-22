@@ -9,7 +9,7 @@
 
 #include "FancyZonesData.h"
 #include "Settings.h"
-#include "ZoneWindow.h"
+#include "WorkArea.h"
 #include "util.h"
 
 // Non-Localizable strings
@@ -59,7 +59,7 @@ WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& 
 {
 }
 
-void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& zoneWindowMap) noexcept
 {
     if (!FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
     {
@@ -125,7 +125,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     }
 }
 
-void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& zoneWindowMap) noexcept
 {
     if (!m_inMoveSize)
     {
@@ -137,7 +137,7 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
 
     if (m_zoneWindowMoveSize)
     {
-        // Update the ZoneWindow already handling move/size
+        // Update the WorkArea already handling move/size
         if (!m_dragEnabled)
         {
             // Drag got disabled, tell it to cancel and hide all windows
@@ -180,7 +180,7 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
     else if (m_dragEnabled)
     {
         // We'll get here if the user presses/releases shift while dragging.
-        // Restart the drag on the ZoneWindow that m_windowMoveSize is on
+        // Restart the drag on the WorkArea that m_windowMoveSize is on
         MoveSizeStart(m_windowMoveSize, monitor, ptScreen, zoneWindowMap);
 
         // m_dragEnabled could get set to false if we're moving an elevated window.
@@ -192,7 +192,7 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
     }
 }
 
-void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& zoneWindowMap) noexcept
 {
     if (window != m_windowMoveSize)
     {
@@ -273,7 +273,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
     }
 }
 
-void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>& indexSet, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>& indexSet, winrt::com_ptr<IWorkArea> zoneWindow) noexcept
 {
     if (window != m_windowMoveSize)
     {
@@ -281,17 +281,17 @@ void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const std::vec
     }
 }
 
-bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IWorkArea> zoneWindow) noexcept
 {
     return zoneWindow && zoneWindow->MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, cycle);
 }
 
-bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IWorkArea> zoneWindow) noexcept
 {
     return zoneWindow && zoneWindow->MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle);
 }
 
-bool WindowMoveHandler::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+bool WindowMoveHandler::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, winrt::com_ptr<IWorkArea> zoneWindow) noexcept
 {
     return zoneWindow && zoneWindow->ExtendWindowByDirectionAndPosition(window, vkCode);
 }

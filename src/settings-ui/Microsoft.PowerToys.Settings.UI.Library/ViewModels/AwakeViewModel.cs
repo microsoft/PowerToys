@@ -58,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
 
-                    var outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                     NotifyPropertyChanged();
                 }
@@ -143,7 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 SndAwakeSettings outsettings = new SndAwakeSettings(Settings);
                 SndModuleSettings<SndAwakeSettings> ipcMessage = new SndModuleSettings<SndAwakeSettings>(outsettings);
 
-                var targetMessage = ipcMessage.ToJsonString();
+                string targetMessage = ipcMessage.ToJsonString();
                 SendConfigMSG(targetMessage);
             }
         }

@@ -243,7 +243,7 @@ void start_tray_icon()
         tray_icon_data.hWnd = hwnd;
         tray_icon_data.uID = id_tray_icon;
         tray_icon_data.uCallbackMessage = wm_icon_notify;
-        std::wstring about_msg_pt_version = L"PowerToys\n" + get_product_version();
+        std::wstring about_msg_pt_version = L"PowerToys " + get_product_version();
         wcscpy_s(tray_icon_data.szTip, sizeof(tray_icon_data.szTip) / sizeof(WCHAR), about_msg_pt_version.c_str());
         tray_icon_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 
