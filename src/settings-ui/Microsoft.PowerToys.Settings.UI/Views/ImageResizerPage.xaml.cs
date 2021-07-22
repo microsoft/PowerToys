@@ -36,30 +36,35 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public async void DeleteCustomSize(object sender, RoutedEventArgs e)
         {
-            MessageDialog dialog = new MessageDialog(ResourceLoader.GetForCurrentView().GetString("Delete_Dialog_Description"), ResourceLoader.GetForCurrentView().GetString("Delete_Dialog_Title"));
+            Button deleteRowButton = (Button)sender;
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-#pragma warning disable SA1130 // Use lambda syntax
-            dialog.Commands.Add(new UICommand(ResourceLoader.GetForCurrentView().GetString("OK"), async delegate(IUICommand command)
-#pragma warning restore SA1130 // Use lambda syntax
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+            if (deleteRowButton != null)
             {
-                Button deleteRowButton = (Button)sender;
+                ImageSize x = (ImageSize)deleteRowButton.DataContext;
+                ResourceLoader resourceLoader = ResourceLoader.GetForCurrentView();
 
+                ContentDialog dialog = new ContentDialog();
+                dialog.XamlRoot = RootPage.XamlRoot;
+                dialog.Title = x.Name;
+                dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
+                dialog.CloseButtonText = resourceLoader.GetString("No");
+                dialog.DefaultButton = ContentDialogButton.Primary;
+                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
+                dialog.PrimaryButtonClick += (s, args) =>
+                {
                 // Using InvariantCulture since this is internal and expected to be numerical
                 bool success = int.TryParse(deleteRowButton?.CommandParameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int rowNum);
                 if (success)
-                {
-                    ViewModel.DeleteImageSize(rowNum);
-                }
-                else
-                {
-                    Logger.LogError("Failed to delete custom image size.");
-                }
-            }));
-
-            dialog.Commands.Add(new UICommand(ResourceLoader.GetForCurrentView().GetString("Cancel")));
-            await dialog.ShowAsync();
+                    {
+                        ViewModel.DeleteImageSize(rowNum);
+                    }
+                    else
+                    {
+                        Logger.LogError("Failed to delete custom image size.");
+                    }
+                };
+                var result = await dialog.ShowAsync();
+            }
         }
 
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "JSON exceptions from saving new settings should be caught and logged.")]
