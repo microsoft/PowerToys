@@ -364,7 +364,16 @@
   <data name="Select_color" xml:space="preserve">
     <value>Select color</value>
   </data>
-  <data name="ColorHistory" xml:space="preserve">
+  <data name="Color_Code" xml:space="preserve">
+    <value>Color code</value>
+  </data>
+  <data name="Color_History" xml:space="preserve">
     <value>Color history</value>
+  </data>
+  <data name="Color_Palette" xml:space="preserve">
+    <value>Color palette</value>
+  </data>
+  <data name="Color_Picker_Control" xml:space="preserve">
+    <value>Color picker control</value>
   </data>
 </root>

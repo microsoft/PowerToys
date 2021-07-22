@@ -79,11 +79,38 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Color code.
+        /// </summary>
+        public static string Color_Code {
+            get {
+                return ResourceManager.GetString("Color_Code", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Color history.
         /// </summary>
-        public static string ColorHistory {
+        public static string Color_History {
             get {
-                return ResourceManager.GetString("ColorHistory", resourceCulture);
+                return ResourceManager.GetString("Color_History", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color palette.
+        /// </summary>
+        public static string Color_Palette {
+            get {
+                return ResourceManager.GetString("Color_Palette", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color picker control.
+        /// </summary>
+        public static string Color_Picker_Control {
+            get {
+                return ResourceManager.GetString("Color_Picker_Control", resourceCulture);
             }
         }
         

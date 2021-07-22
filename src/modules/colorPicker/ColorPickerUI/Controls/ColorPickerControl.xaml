@@ -8,9 +8,9 @@
              xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d"
              TabIndex="3"
+             AutomationProperties.Name="{x:Static p:Resources.Color_Palette}"
              FocusManager.IsFocusScope="True"
-             KeyboardNavigation.TabNavigation="Once"
-             >
+             KeyboardNavigation.TabNavigation="Once">
     <UserControl.Resources>
 
         <Style TargetType="Thumb"
