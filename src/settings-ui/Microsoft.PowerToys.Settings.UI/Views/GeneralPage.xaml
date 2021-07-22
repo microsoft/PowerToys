@@ -51,7 +51,7 @@
                           IsEnabled="{Binding Mode=TwoWay, Path=IsElevated}"
                           IsOn="{Binding Mode=TwoWay, Path=RunElevated}"/>
 
-                <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp">
+                <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp" Margin="-12,0,0,0">
                     <TextBlock x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" TextWrapping="Wrap" />
                 </HyperlinkButton>
 
@@ -73,7 +73,7 @@
 
                     <RadioButton x:Uid="Radio_Theme_Default"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
-                    <HyperlinkButton Click="OpenColorsSettings_Click">
+                    <HyperlinkButton Click="OpenColorsSettings_Click" Margin="-12,0,0,0">
                         <TextBlock x:Uid="Windows_Color_Settings" />
                     </HyperlinkButton>
                 </StackPanel>

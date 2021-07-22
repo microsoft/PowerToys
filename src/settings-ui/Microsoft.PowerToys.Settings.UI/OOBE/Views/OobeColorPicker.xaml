@@ -31,7 +31,8 @@
                            Margin="0,4,0,0"
                            Text="{x:Bind ViewModel.Description}" />
 
-                <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}" Margin="0,0,0,4">
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}"
+                                 Margin="-12,0,0,4">
                     <TextBlock>
                                 <Run x:Uid="Oobe_LearnMore" />
                                 <Run Text="{x:Bind ViewModel.ModuleName}" />

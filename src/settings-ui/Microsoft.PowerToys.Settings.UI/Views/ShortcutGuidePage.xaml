@@ -78,6 +78,7 @@
                     <RadioButton x:Uid="Radio_Theme_Default"/>
                 </muxc:RadioButtons>
                 <HyperlinkButton Click="OpenColorsSettings_Click"
+                                 Margin="-12,0,0,0"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <TextBlock x:Uid="Windows_Color_Settings" />
                 </HyperlinkButton>

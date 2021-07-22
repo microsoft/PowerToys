@@ -34,7 +34,7 @@
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage" />
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage" />
                         <Setter Target="LinksPanel.Margin" Value="0,12,0,0" />
-                        <Setter Target="AboutImage.Margin" Value="-12,12,12,0" />
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0" />
                         <Setter Target="Header.Margin" Value="24,44,0,0" />
                     </VisualState.Setters>
                 </VisualState>
@@ -78,10 +78,12 @@
             <HyperlinkButton x:Name="AboutImage"
                          RelativePanel.Below="AboutDescription"
                          MaxWidth="240"
-                         CornerRadius="4"
+                         CornerRadius="8"
                          x:Uid="Learn_More_Description"
+                         Padding="0"
+                             Background="Red"
                          NavigateUri="{x:Bind ModuleImageLink}"
-                         Margin="-12, 12, 0, 12">
+                         Margin="0, 12, 0, 12">
                 <Image>
                     <Image.Source>
                         <BitmapImage UriSource="{x:Bind ModuleImageSource}" />
