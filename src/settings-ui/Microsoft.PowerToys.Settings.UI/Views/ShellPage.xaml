@@ -134,7 +134,7 @@
                         Background="Transparent"
                         Style="{StaticResource AccentButtonStyle}"
                         BorderBrush="Transparent"
-                        Foreground="{StaticResource AccentTextFillColorPrimaryBrush}"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Margin="4,0,4,-4">
                     <Button.Content>
                         <StackPanel Orientation="Horizontal">

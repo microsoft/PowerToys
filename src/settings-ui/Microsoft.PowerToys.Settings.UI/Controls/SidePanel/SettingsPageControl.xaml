@@ -72,7 +72,7 @@
 
             <TextBlock x:Name="AboutDescription"
                        Text="{x:Bind ModuleDescription}"
-                       Foreground="{StaticResource TextFillColorSecondaryBrush}"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        TextWrapping="Wrap"/>
 
             <HyperlinkButton x:Name="AboutImage"
@@ -81,7 +81,6 @@
                          CornerRadius="8"
                          x:Uid="Learn_More_Description"
                          Padding="0"
-                             Background="Red"
                          NavigateUri="{x:Bind ModuleImageLink}"
                          Margin="0, 12, 0, 12">
                 <Image>
