@@ -119,7 +119,7 @@
                     <ItemsControl IsTabStop="False"
                                   TabIndex="4"
                                   FocusManager.IsFocusScope="True"
-                                  KeyboardNavigation.TabNavigation="Once"   
+                                  KeyboardNavigation.TabNavigation="Continue"
                                   ItemsSource="{Binding ColorRepresentations}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
