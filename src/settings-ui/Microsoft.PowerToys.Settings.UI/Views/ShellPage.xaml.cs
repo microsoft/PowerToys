@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Windows.Data.Json;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -154,6 +155,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void Refresh()
         {
             shellFrame.Navigate(typeof(GeneralPage));
+        }
+
+        private void OobeButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenOobeWindowCallback();
         }
 
         [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]

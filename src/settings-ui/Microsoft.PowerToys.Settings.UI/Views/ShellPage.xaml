@@ -129,6 +129,22 @@
                 </winui:NavigationViewItem>-->
 
             </winui:NavigationView.MenuItems>
+            <winui:NavigationView.PaneFooter>
+                <Button Click="OobeButton_Click"
+                        Background="Transparent"
+                        Style="{StaticResource AccentButtonStyle}"
+                        BorderBrush="Transparent"
+                        Foreground="{StaticResource AccentTextFillColorPrimaryBrush}"
+                        Margin="4,0,4,-4">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon FontSize="13" Glyph="&#xF133;" Margin="2,0,0,0" />
+                            <TextBlock Margin="20,0,0,0"
+                               x:Uid="Oobe_Button"/>
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+            </winui:NavigationView.PaneFooter>
             <i:Interaction.Behaviors>
                
                 <ic:EventTriggerBehavior EventName="ItemInvoked">

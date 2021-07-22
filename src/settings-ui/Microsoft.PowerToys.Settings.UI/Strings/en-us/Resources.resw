@@ -187,7 +187,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
     <value>Video Conference</value>
-	    <comment>do not loc the product name</comment>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="VideoConference_Camera.Text" xml:space="preserve">
     <value>Camera</value>
@@ -487,7 +487,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   </data>
   <data name="PowerToys.ModuleTitle" xml:space="preserve">
     <value>PowerToys</value>
-	    <comment>do not loc the product name</comment>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
@@ -757,11 +757,11 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   </data>
   <data name="FancyZones.ModuleTitle" xml:space="preserve">
     <value>FancyZones</value>
-	    <comment>do not loc the product name</comment>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
     <value>File Explorer</value>
-	    <comment>do not loc the product name</comment>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
     <value>File Explorer</value>
@@ -769,19 +769,19 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   </data>
   <data name="ImageResizer.ModuleTitle" xml:space="preserve">
     <value>Image Resizer</value>
-	    <comment>do not loc the product name</comment>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="KeyboardManager.ModuleTitle" xml:space="preserve">
     <value>Keyboard Manager</value>
-	    <comment>do not loc the product name</comment>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="ColorPicker.ModuleTitle" xml:space="preserve">
     <value>Color Picker</value>
-	    <comment>do not loc the product name</comment>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="PowerLauncher.ModuleTitle" xml:space="preserve">
     <value>PowerToys Run</value>
-	    <comment>do not loc the product name</comment>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="PowerToys_Run_Image.AutomationProperties.Name" xml:space="preserve">
     <value>PowerToys Run</value>
@@ -796,7 +796,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   </data>
   <data name="ShortcutGuide.ModuleTitle" xml:space="preserve">
     <value>Shortcut Guide</value>
-	    <comment>do not loc the product name</comment>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="Shortcut_Guide_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Guide</value>
@@ -1267,7 +1267,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
     <value>Awake</value>
-	    <comment>do not loc the product name</comment>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="Awake.ModuleDescription" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>

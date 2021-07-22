@@ -24,19 +24,6 @@
                                   ModuleImageLink="https://aka.ms/powertoys">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <Button Click="OobeButton_Click"
-                        Style="{StaticResource AccentButtonStyle}"
-                        Margin="0,12,0,24">
-                    <Button.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon FontSize="13" Glyph="&#xF133;" />
-                            <TextBlock Margin="8,0,0,0"
-                               x:Uid="Oobe_Button"/>
-                    </StackPanel>
-                    </Button.Content>
-                </Button>
-                
-                
                 <TextBlock x:Uid="Admin_Mode" 
                        FontWeight="SemiBold"
                        TextWrapping="Wrap"
