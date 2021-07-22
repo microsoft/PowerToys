@@ -9,20 +9,24 @@ namespace fs = std::filesystem;
 
 namespace updating
 {
-    constexpr size_t REQUIRED_MINIMAL_PATCH = 15;
-
-    bool dotnet_is_installed()
+    bool dotnet_is_installed(const size_t major, const size_t minor, const size_t requiredMinimalPatch)
     {
         auto runtimes = exec_and_read_output(LR"(dotnet --list-runtimes)");
         if (!runtimes)
         {
             return false;
         }
-        std::regex dotnet3_1_x{ R"(Microsoft\.WindowsDesktop\.App\s3\.1\.(\d+))" };
+        std::array<char, 512> regexBuffer;
+        sprintf_s(regexBuffer.data(),
+                  regexBuffer.size(),
+                  R"(Microsoft\.WindowsDesktop\.App\s%zu\.%zu\.(\d+))",
+                  major,
+                  minor);
+        std::regex dotnetRegex{ regexBuffer.data() };
 
         size_t latestPatchInstalled = 0;
         using rexit = std::sregex_iterator;
-        for (auto it = rexit{ begin(*runtimes), end(*runtimes), dotnet3_1_x }; it != rexit{}; ++it)
+        for (auto it = rexit{ begin(*runtimes), end(*runtimes), dotnetRegex }; it != rexit{}; ++it)
         {
             if (!it->ready() || it->size() < 2)
             {
@@ -40,16 +44,15 @@ namespace updating
                 latestPatchInstalled = std::max(patch, latestPatchInstalled);
             }
         }
-        return latestPatchInstalled >= REQUIRED_MINIMAL_PATCH;
+        return latestPatchInstalled >= requiredMinimalPatch;
     }
 
-    std::optional<fs::path> download_dotnet()
+    std::optional<fs::path> download_dotnet(const wchar_t* dotnetDesktopDownloadLink)
     {
-        const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/d30352fe-d4f3-4203-91b9-01a3b66a802e/bb416e6573fa278fec92113abefc58b3/windowsdesktop-runtime-3.1.15-win-x64.exe";
         const wchar_t DOTNET_DESKTOP_FILENAME[] = L"windowsdesktop-runtime.exe";
 
         auto dotnet_download_path = fs::temp_directory_path() / DOTNET_DESKTOP_FILENAME;
-        winrt::Windows::Foundation::Uri download_link{ DOTNET_DESKTOP_DOWNLOAD_LINK };
+        winrt::Windows::Foundation::Uri download_link{ dotnetDesktopDownloadLink };
 
         const size_t max_attempts = 3;
         bool download_success = false;
