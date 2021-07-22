@@ -19,7 +19,7 @@
         <localConverters:UpdatingStateReadyToInstallToVisibilityConverter x:Key="UpdatingStateReadyToInstallToVisibilityConverter" />
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="About_PowerToys"
+    <controls:SettingsPageControl x:Uid="PowerToys"
                                   ModuleImageSource="ms-appx:///Assets/Modules/PT.png"
                                   ModuleImageLink="https://aka.ms/powertoys">
         <controls:SettingsPageControl.ModuleContent>

@@ -6,14 +6,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
-    mc:Ignorable="d"
-    >
+    mc:Ignorable="d">
 
     <UserControl.Resources>
         <converters:DoubleToVisibilityConverter x:Name="doubleToVisibilityConverter" GreaterThan="0" TrueValue="Visible" FalseValue="Collapsed" />
     </UserControl.Resources>
 
-    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}" Margin="0">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
@@ -29,13 +28,14 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
                         <Setter Target="SidePanel.Width" Value="Auto"/>
-                        <Setter Target="ModuleContentPresenter.(Grid.Row)" Value="1" />
-                        <Setter Target="ModuleContentPresenter.Margin" Value="0" />
+                        <Setter Target="SidePanel.Margin" Value="24,0,24,0"/>
+                        <Setter Target="ModuleContentPresenter.(Grid.Row)" Value="2" />
+                        <Setter Target="ModuleContentPresenter.Margin" Value="24,0,0,0" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage" />
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage" />
                         <Setter Target="LinksPanel.Margin" Value="0,12,0,0" />
-                        <Setter Target="AboutImage.Margin" Value="0,12,12,0" />
-                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
+                        <Setter Target="AboutImage.Margin" Value="-12,12,12,0" />
+                        <Setter Target="Header.Margin" Value="24,44,0,0" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -45,34 +45,43 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <TextBlock x:Name="Header"
+                   Text="{x:Bind ModuleTitle}"
+                   FontWeight="SemiBold"
+                   FontSize="28"
+                   Margin="48,44,0,0"
+                   VerticalAlignment="Stretch"/>
+
         <ContentPresenter x:Name="ModuleContentPresenter"
                           Content="{x:Bind ModuleContent}"
-                           Margin="0,0,48,0"
+                          Margin="48,12,48,0"
                           HorizontalAlignment="Left"
+                          Grid.Row="1"
                           MaxWidth="{StaticResource MaxContentWidth}"/>
 
-        <RelativePanel Grid.Column="1" x:Name="SidePanel" Width="{StaticResource SidePanelWidth}">
-            <StackPanel x:Name="DescriptionPanel">
-                <TextBlock  x:Name="AboutTitle"
-                        Text="{x:Bind ModuleTitle}"
-                        Style="{StaticResource SettingsGroupTitleStyle}"
-                        Margin="{StaticResource XSmallBottomMargin}"/>
-                <TextBlock Text="{x:Bind ModuleDescription}"
-                           TextWrapping="Wrap">
-                </TextBlock>
-            </StackPanel>
+        <RelativePanel Grid.Column="1"
+                       Grid.Row="1"
+                       x:Name="SidePanel"
+                       Width="{StaticResource SidePanelWidth}"
+                       Margin="0,12,48,0">
+
+            <TextBlock x:Name="AboutDescription"
+                       Text="{x:Bind ModuleDescription}"
+                       Foreground="{StaticResource TextFillColorSecondaryBrush}"
+                       TextWrapping="Wrap"/>
 
             <HyperlinkButton x:Name="AboutImage"
-                         RelativePanel.Below="DescriptionPanel"
+                         RelativePanel.Below="AboutDescription"
                          MaxWidth="240"
                          CornerRadius="4"
                          x:Uid="Learn_More_Description"
                          NavigateUri="{x:Bind ModuleImageLink}"
-                         Margin="{StaticResource SmallTopBottomMargin}">
+                         Margin="-12, 12, 0, 12">
                 <Image>
                     <Image.Source>
                         <BitmapImage UriSource="{x:Bind ModuleImageSource}" />
@@ -89,7 +98,7 @@
                     <ItemsControl ItemsSource="{x:Bind ModuleLinks}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:SidePanelLink">
-                                <HyperlinkButton NavigateUri="{x:Bind Link}" Margin="0,-3,0,0">
+                                <HyperlinkButton NavigateUri="{x:Bind Link}" Margin="-12,-3,0,0">
                                     <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" />
                                 </HyperlinkButton>
                             </DataTemplate>
@@ -105,7 +114,7 @@
                     <ItemsControl x:Name="AttributionLinksItemControl" ItemsSource="{x:Bind AttributionLinks}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:SidePanelLink">
-                                <HyperlinkButton NavigateUri="{x:Bind Link}" Margin="0,-3,0,0">
+                                <HyperlinkButton NavigateUri="{x:Bind Link}" Margin="-12,-3,0,0">
                                     <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" />
                                 </HyperlinkButton>
                             </DataTemplate>

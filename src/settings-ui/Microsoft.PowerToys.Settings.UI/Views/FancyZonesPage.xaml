@@ -14,7 +14,7 @@
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="About_FancyZones"
+    <controls:SettingsPageControl x:Uid="FancyZones"
                                   ModuleImageSource="ms-appx:///Assets/Modules/FancyZones.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_FancyZones">
         <controls:SettingsPageControl.ModuleContent>

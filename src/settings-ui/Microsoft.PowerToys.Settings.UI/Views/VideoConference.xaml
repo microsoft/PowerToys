@@ -7,7 +7,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="About_VideoConference"
+    <controls:SettingsPageControl x:Uid="VideoConference"
                                   ModuleImageSource="ms-appx:///Assets/Modules/VideoConference.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_VideoConference">
         <controls:SettingsPageControl.ModuleContent>

@@ -14,7 +14,7 @@
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="About_ShortcutGuide"
+    <controls:SettingsPageControl x:Uid="ShortcutGuide"
                                   ModuleImageSource="ms-appx:///Assets/Modules/ShortcutGuide.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_ShortcutGuide">
         <controls:SettingsPageControl.ModuleContent>

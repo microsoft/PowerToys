@@ -30,18 +30,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AttributionLinks = new ObservableCollection<SidePanelLink>();
         }
 
-        public object ModuleContent
-        {
-            get { return (object)GetValue(ModuleContentProperty); }
-            set { SetValue(ModuleContentProperty, value); }
-        }
-
-        public static readonly DependencyProperty ModuleContentProperty = DependencyProperty.Register("Content", typeof(object), typeof(SettingsPageControl), new PropertyMetadata(new Grid()));
-
         public string ModuleTitle
         {
-            get => (string)GetValue(ModuleTitleProperty);
-            set => SetValue(ModuleTitleProperty, value);
+            get { return (string)GetValue(ModuleTitleProperty); }
+            set { SetValue(ModuleTitleProperty, value); }
         }
 
         public string ModuleDescription
@@ -78,11 +70,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(AttributionLinksProperty, value);
         }
 
-        public static readonly DependencyProperty ModuleTitleProperty = DependencyProperty.Register("ModuleTitle", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
+        public object ModuleContent
+        {
+            get { return (object)GetValue(ModuleContentProperty); }
+            set { SetValue(ModuleContentProperty, value); }
+        }
+
+        public static readonly DependencyProperty ModuleTitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleDescriptionProperty = DependencyProperty.Register("ModuleDescription", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleImageSourceProperty = DependencyProperty.Register("ModuleImageSource", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleImageLinkProperty = DependencyProperty.Register("ModuleImageLink", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleLinksProperty = DependencyProperty.Register("ModuleLinks", typeof(ObservableCollection<SidePanelLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<SidePanelLink>()));
         public static readonly DependencyProperty AttributionLinksProperty = DependencyProperty.Register("AttributionLinks", typeof(ObservableCollection<SidePanelLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<SidePanelLink>()));
+        public static readonly DependencyProperty ModuleContentProperty = DependencyProperty.Register("Content", typeof(object), typeof(SettingsPageControl), new PropertyMetadata(new Grid()));
     }
 }

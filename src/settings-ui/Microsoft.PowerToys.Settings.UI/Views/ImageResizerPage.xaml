@@ -10,7 +10,7 @@
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
-    <controls:SettingsPageControl x:Uid="About_ImageResizer"
+    <controls:SettingsPageControl x:Uid="ImageResizer"
                                   ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_ImageResizer">
         <controls:SettingsPageControl.ModuleContent>

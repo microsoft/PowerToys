@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
-    <controls:SettingsPageControl x:Uid="About_PowerRename"
+    <controls:SettingsPageControl x:Uid="PowerRename"
                                   ModuleImageSource="ms-appx:///Assets/Modules/PowerRename.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_PowerRename">
         <controls:SettingsPageControl.ModuleContent>

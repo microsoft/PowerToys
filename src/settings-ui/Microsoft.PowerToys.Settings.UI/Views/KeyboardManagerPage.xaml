@@ -187,7 +187,7 @@
         </DataTemplate>
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="About_KeyboardManager"
+    <controls:SettingsPageControl x:Uid="KeyboardManager"
                                   ModuleImageSource="ms-appx:///Assets/Modules/KBM.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_KeyboardManage">
         <controls:SettingsPageControl.ModuleContent>

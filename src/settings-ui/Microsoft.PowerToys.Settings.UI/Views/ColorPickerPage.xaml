@@ -10,7 +10,7 @@
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
-    <controls:SettingsPageControl x:Uid="About_ColorPicker"
+    <controls:SettingsPageControl x:Uid="ColorPicker"
                                   ModuleImageSource="ms-appx:///Assets/Modules/ColorPicker.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_ColorPicker">
         <controls:SettingsPageControl.ModuleContent>

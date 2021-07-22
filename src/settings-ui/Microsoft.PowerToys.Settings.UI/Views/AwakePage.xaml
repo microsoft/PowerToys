@@ -14,7 +14,7 @@
         <c:AwakeModeToBoolConverter x:Key="AwakeModeToBoolConverter" />
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="About_Awake"
+    <controls:SettingsPageControl x:Uid="Awake"
                                   ModuleImageSource="ms-appx:///Assets/Modules/Awake.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_Awake">
         <controls:SettingsPageControl.ModuleContent>

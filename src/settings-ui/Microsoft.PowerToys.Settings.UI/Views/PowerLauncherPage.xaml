@@ -16,7 +16,7 @@
         <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="About_PowerLauncher"
+    <controls:SettingsPageControl x:Uid="PowerLauncher"
                                   ModuleImageSource="ms-appx:///Assets/Modules/PowerLauncher.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_PowerToysRun">
         <controls:SettingsPageControl.ModuleContent>
