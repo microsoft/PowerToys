@@ -20,8 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public bool IsGlobal { get; set; }
 
-        public bool ConfirmSys { get; set; }
-
         public string ActionKeyword { get; set; }
 
         public string IconPathDark { get; set; }

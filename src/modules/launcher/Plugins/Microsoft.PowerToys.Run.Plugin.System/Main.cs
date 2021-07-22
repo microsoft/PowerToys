@@ -51,14 +51,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             },
         };
 
-        private static Task<SettingsRepository<GeneralSettings>> GetSettingsRepository(ISettingsUtils settingsUtils)
-        {
-            return Task.Run(() =>
-            {
-                return SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
-            });
-        }
-
         public void Init(PluginInitContext context)
         {
             _context = context;
@@ -210,7 +202,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         private bool ExecuteCommand(string confirmationMessage, Action command)
         {
-            if (this._context.CurrentPluginMetadata.ConfirmSystemCommands)
+            if (_confirmSystemCommands)
             {
                 MessageBoxResult messageBoxResult = MessageBox.Show(
                     confirmationMessage,
@@ -237,7 +229,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         {
             var confirmSystemCommands = false;
 
-            if (settings.AdditionalOptions != null)
+            if (settings != null && settings.AdditionalOptions != null)
             {
                 var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ConfirmSystemCommands);
 

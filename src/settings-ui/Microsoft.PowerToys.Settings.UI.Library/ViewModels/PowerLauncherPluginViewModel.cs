@@ -85,24 +85,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool ConfirmSys
-        {
-            get
-            {
-                return settings.ConfirmSys;
-            }
-
-            set
-            {
-                if (settings.ConfirmSys != value)
-                {
-                    settings.ConfirmSys = value;
-                    NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ShowNotAccessibleWarning));
-                }
-            }
-        }
-
         public string ActionKeyword
         {
             get
