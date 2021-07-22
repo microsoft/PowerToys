@@ -485,9 +485,8 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
   </data>
-  <data name="PowerToys.ModuleTitle" xml:space="preserve">
+  <data name="General.ModuleTitle" xml:space="preserve">
     <value>PowerToys</value>
-    <comment>do not loc the product name</comment>
   </data>
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
@@ -850,7 +849,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="KeyboardManager_RemapShortcutsSubtitle.Text" xml:space="preserve">
     <value>Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.</value>
   </data>
-  <data name="PowerToys.ModuleDescription" xml:space="preserve">
+  <data name="General.ModuleDescription" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
 
 Made with 💗 by Microsoft and the PowerToys community.</value>
