@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -37,11 +38,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set { Set(ref isBackEnabled, value); }
         }
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        private static extern IntPtr LoadLibrary(string dllToLoad);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        private static extern bool FreeLibrary(IntPtr hModule);
+
         public bool IsVideoConferenceBuild
         {
             get
             {
-                return this != null && File.Exists("modules/VideoConference/VideoConferenceModule.dll");
+                var mfHandle = LoadLibrary("mf.dll");
+                bool mfAvailable = mfHandle != null;
+                if (mfAvailable)
+                {
+                    FreeLibrary(mfHandle);
+                }
+
+                return this != null && File.Exists("modules/VideoConference/VideoConferenceModule.dll") && mfAvailable;
             }
         }
 
