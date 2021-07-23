@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -198,6 +198,20 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         public string GetTranslatedPluginTitle()
         {
             return Properties.Resources.Microsoft_plugin_sys_plugin_name;
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            var confirmSystemCommands = false;
+
+            if (settings != null && settings.AdditionalOptions != null)
+            {
+                var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ConfirmSystemCommands);
+
+                confirmSystemCommands = option == null ? false : option.Value;
+            }
+
+            _confirmSystemCommands = confirmSystemCommands;
         }
 
         private bool ExecuteCommand(string confirmationMessage, Action command)
