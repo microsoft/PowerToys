@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PdfMorePagesMessage" xml:space="preserve">
-    <value>This PDF contains more pages, this preview only shows the first 10 pages. Open PDF to view all pages.</value>
+    <value>This PDF contains more than 10 pages. Open the document to view all pages.</value>
     <comment>This text is displayed if PDF has more than 10 pages.</comment>
   </data>
   <data name="PdfNotPreviewedError" xml:space="preserve">
