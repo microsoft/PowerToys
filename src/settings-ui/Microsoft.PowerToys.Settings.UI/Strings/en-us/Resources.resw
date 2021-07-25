@@ -1347,4 +1347,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="ColorPicker_ColorFormat_ToggleSwitch.AutomationProperties.Name" xml:space="preserve">
     <value>Show format in editor</value>
   </data>
+  <data name="Oobe_Hero_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Module hero image</value>
+  </data>
 </root>
