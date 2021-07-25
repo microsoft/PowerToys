@@ -51,8 +51,6 @@ namespace Wox.Plugin
             {
                 _pluginDirectory = value;
                 ExecuteFilePath = Path.Combine(value, ExecuteFileName);
-                IcoPathDark = Path.Combine(value, IcoPathDark);
-                IcoPathLight = Path.Combine(value, IcoPathLight);
             }
         }
 

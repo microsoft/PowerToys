@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -43,7 +43,7 @@ namespace ViewModelTests
             var fancyZonesRepository = new BackCompatTestProperties.MockSettingsRepository<FancyZonesSettings>(mockSettingsUtils);
 
             // Initialise View Model with test Config files
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(generalSettingsRepository, fancyZonesRepository, ColorPickerIsEnabledByDefault_IPC);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils, generalSettingsRepository, fancyZonesRepository, ColorPickerIsEnabledByDefault_IPC);
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.FancyZones, viewModel.IsEnabled);
@@ -85,6 +85,8 @@ namespace ViewModelTests
 
         private Mock<ISettingsUtils> mockFancyZonesSettingsUtils;
 
+        private Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+
         [TestInitialize]
         public void SetUpStubSettingUtils()
         {
@@ -95,6 +97,8 @@ namespace ViewModelTests
         [TestMethod]
         public void IsEnabledShouldDisableModuleWhenSuccessful()
         {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
@@ -103,7 +107,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsTrue(viewModel.IsEnabled); // check if the module is enabled.
 
             // act
@@ -113,323 +117,405 @@ namespace ViewModelTests
         [TestMethod]
         public void ShiftDragShouldSetValue2FalseWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsFalse(snd.Powertoys.FancyZones.Properties.FancyzonesShiftDrag.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsTrue(viewModel.ShiftDrag); // check if value was initialized to false.
 
             // act
             viewModel.ShiftDrag = false;
+
+            // assert
+            var expected = viewModel.ShiftDrag;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesShiftDrag.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void OverrideSnapHotkeysShouldSetValue2TrueWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesOverrideSnapHotkeys.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsFalse(viewModel.OverrideSnapHotkeys); // check if value was initialized to false.
 
             // act
             viewModel.OverrideSnapHotkeys = true;
+
+            // assert
+            var expected = viewModel.OverrideSnapHotkeys;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesOverrideSnapHotkeys.Value;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void MoveWindowsAcrossMonitorsShouldSetValue2TrueWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsFalse(viewModel.MoveWindowsAcrossMonitors); // check if value was initialized to false.
+
+            // act
+            viewModel.MoveWindowsAcrossMonitors = true;
+
+            // assert
+            var expected = viewModel.MoveWindowsAcrossMonitors;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void MoveWindowsBasedOnPositionShouldSetValue2TrueWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesMoveWindowsBasedOnPosition.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsFalse(viewModel.MoveWindowsBasedOnPosition); // check if value was initialized to false.
+            Assert.IsTrue(viewModel.MoveWindowsBasedOnZoneIndex); // check if value was initialized to true.
 
             // act
             viewModel.MoveWindowsBasedOnPosition = true;
+
+            // assert
+            var basedOnPositionExpected = viewModel.MoveWindowsBasedOnPosition;
+            var basedOnPositionActual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesMoveWindowsBasedOnPosition.Value;
+            Assert.AreEqual(basedOnPositionExpected, basedOnPositionActual);
+
+            var basedOnZoneIndexExpected = viewModel.MoveWindowsBasedOnZoneIndex;
+            var basedOnZoneIndexActual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesMoveWindowsBasedOnPosition.Value;
+            Assert.AreNotEqual(basedOnZoneIndexExpected, basedOnZoneIndexActual);
         }
 
         [TestMethod]
-        public void ZoneSetChangeFlashZonesShouldSetValue2FalseWhenSuccessful()
+        public void QuickLayoutSwitchShouldSetValue2FalseWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesMakeDraggedWindowTransparent.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsTrue(viewModel.QuickLayoutSwitch); // check if value was initialized to true.
+
+            // act
+            viewModel.QuickLayoutSwitch = false;
+
+            // assert
+            var expected = viewModel.QuickLayoutSwitch;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesQuickLayoutSwitch.Value;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void FlashZonesOnQuickSwitchShouldSetValue2FalseWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsTrue(viewModel.FlashZonesOnQuickSwitch); // check if value was initialized to true.
+
+            // act
+            viewModel.FlashZonesOnQuickSwitch = false;
+
+            // assert
+            var expected = viewModel.FlashZonesOnQuickSwitch;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesFlashZonesOnQuickSwitch.Value;
+            Assert.AreEqual(expected, actual);
+        }
+
+       /*
+        * Temporarily commented out
+        *
+       [TestMethod]
+        public void MakeDraggedWindowsTransparentShouldSetValue2TrueWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsFalse(viewModel.MakeDraggedWindowsTransparent); // check if value was initialized to false.
 
             // act
             viewModel.MakeDraggedWindowsTransparent = true;
-        }
+
+            // assert
+            var expected = viewModel.MakeDraggedWindowsTransparent;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesShiftDrag.Value;
+            Assert.AreEqual(expected, actual);
+        }*/
 
         [TestMethod]
         public void MouseSwitchShouldSetValue2TrueWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesMouseSwitch.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsFalse(viewModel.MouseSwitch); // check if value was initialized to false.
 
             // act
             viewModel.MouseSwitch = true;
+
+            // assert
+            var expected = viewModel.MouseSwitch;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesMouseSwitch.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void DisplayChangeMoveWindowsShouldSetValue2TrueWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesDisplayChangeMoveWindows.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsFalse(viewModel.DisplayChangeMoveWindows); // check if value was initialized to false.
 
             // act
             viewModel.DisplayChangeMoveWindows = true;
+
+            // assert
+            var expected = viewModel.DisplayChangeMoveWindows;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesDisplayChangeMoveWindows.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void ZoneSetChangeMoveWindowsShouldSetValue2TrueWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesZoneSetChangeMoveWindows.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsFalse(viewModel.ZoneSetChangeMoveWindows); // check if value was initialized to false.
 
             // act
             viewModel.ZoneSetChangeMoveWindows = true;
+
+            // assert
+            var expected = viewModel.ZoneSetChangeMoveWindows;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void AppLastZoneMoveWindowsShouldSetValue2TrueWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesAppLastZoneMoveWindows.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsFalse(viewModel.AppLastZoneMoveWindows); // check if value was initialized to false.
 
             // act
             viewModel.AppLastZoneMoveWindows = true;
+
+            // assert
+            var expected = viewModel.AppLastZoneMoveWindows;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesAppLastZoneMoveWindows.Value;
+            Assert.AreEqual(expected, actual);
         }
 
+        [TestMethod]
         public void OpenWindowOnActiveMonitorShouldSetValue2TrueWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesOpenWindowOnActiveMonitor.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsFalse(viewModel.OpenWindowOnActiveMonitor); // check if value was initialized to false.
 
             // act
             viewModel.OpenWindowOnActiveMonitor = true;
+
+            // assert
+            var expected = viewModel.OpenWindowOnActiveMonitor;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void RestoreSizeShouldSetValue2TrueWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesRestoreSize.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsFalse(viewModel.RestoreSize); // check if value was initialized to false.
 
             // act
             viewModel.RestoreSize = true;
+
+            // assert
+            var expected = viewModel.RestoreSize;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesRestoreSize.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void UseCursorPosEditorStartupScreenShouldSetValue2FalseWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.UseCursorposEditorStartupscreen.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsTrue(viewModel.UseCursorPosEditorStartupScreen); // check if value was initialized to false.
 
             // act
             viewModel.UseCursorPosEditorStartupScreen = true;
+
+            // assert
+            var expected = viewModel.UseCursorPosEditorStartupScreen;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.UseCursorposEditorStartupscreen.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void ShowOnAllMonitorsShouldSetValue2TrueWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesShowOnAllMonitors.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.IsFalse(viewModel.ShowOnAllMonitors); // check if value was initialized to false.
 
             // act
             viewModel.ShowOnAllMonitors = true;
+
+            // assert
+            var expected = viewModel.ShowOnAllMonitors;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesShowOnAllMonitors.Value;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SpanZonesAcrossMonitorsShouldSetValue2TrueWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsFalse(viewModel.SpanZonesAcrossMonitors); // check if value was initialized to false.
+
+            // act
+            viewModel.SpanZonesAcrossMonitors = true;
+
+            // assert
+            var expected = viewModel.SpanZonesAcrossMonitors;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesSpanZonesAcrossMonitors.Value;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void OverlappingZonesAlgorithmIndexShouldSetValue2AnotherWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.AreEqual(0, viewModel.OverlappingZonesAlgorithmIndex); // check if value was initialized to false.
+
+            // act
+            viewModel.OverlappingZonesAlgorithmIndex = 1;
+
+            // assert
+            var expected = viewModel.OverlappingZonesAlgorithmIndex;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesOverlappingZonesAlgorithm.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void ZoneHighlightColorShouldSetColorValue2WhiteWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.AreEqual("#FFFFFF", snd.Powertoys.FancyZones.Properties.FancyzonesZoneHighlightColor.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.AreEqual(ConfigDefaults.DefaultFancyZonesZoneHighlightColor, viewModel.ZoneHighlightColor);
 
             // act
             viewModel.ZoneHighlightColor = "#FFFFFF";
+
+            // assert
+            var expected = viewModel.ZoneHighlightColor;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesZoneHighlightColor.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void ZoneBorderColorShouldSetColorValue2WhiteWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.AreEqual("#FFFFFF", snd.Powertoys.FancyZones.Properties.FancyzonesBorderColor.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.AreEqual(ConfigDefaults.DefaultFancyzonesBorderColor, viewModel.ZoneBorderColor);
 
             // act
             viewModel.ZoneBorderColor = "#FFFFFF";
+
+            // assert
+            var expected = viewModel.ZoneBorderColor;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesBorderColor.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void ZoneInActiveColorShouldSetColorValue2WhiteWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.AreEqual("#FFFFFF", snd.Powertoys.FancyZones.Properties.FancyzonesInActiveColor.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.AreEqual(ConfigDefaults.DefaultFancyZonesInActiveColor, viewModel.ZoneInActiveColor);
 
             // act
             viewModel.ZoneInActiveColor = "#FFFFFF";
+
+            // assert
+            var expected = viewModel.ZoneInActiveColor;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesInActiveColor.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void ExcludedAppsShouldSetColorValue2WhiteWhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.AreEqual("Sample", snd.Powertoys.FancyZones.Properties.FancyzonesExcludedApps.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.AreEqual(string.Empty, viewModel.ExcludedApps);
 
             // act
             viewModel.ExcludedApps = "Sample";
+
+            // assert
+            var expected = viewModel.ExcludedApps;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesExcludedApps.Value;
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
         public void HighlightOpacityShouldSetOpacityValueTo60WhenSuccessful()
         {
-            // Assert
-            Func<string, int> sendMockIPCConfigMSG = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.AreEqual(60, snd.Powertoys.FancyZones.Properties.FancyzonesHighlightOpacity.Value);
-                return 0;
-            };
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
 
             // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
             Assert.AreEqual(50, viewModel.HighlightOpacity);
 
             // act
             viewModel.HighlightOpacity = 60;
+
+            // assert
+            var expected = viewModel.HighlightOpacity;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesHighlightOpacity.Value;
+            Assert.AreEqual(expected, actual);
         }
     }
 }

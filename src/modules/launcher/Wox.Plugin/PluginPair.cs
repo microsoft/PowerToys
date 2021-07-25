@@ -114,6 +114,7 @@ namespace Wox.Plugin
         private void LoadPlugin()
         {
             var stopWatch = new Stopwatch();
+            stopWatch.Start();
             CreatePluginInstance();
             stopWatch.Stop();
             Metadata.InitTime += stopWatch.ElapsedMilliseconds;
@@ -136,11 +137,21 @@ namespace Wox.Plugin
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                Log.Exception($"Couldn't load assembly for {Metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
+                Log.Exception($"Couldn't load assembly for {Metadata.Name} in {Metadata.ExecuteFilePath}", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return false;
             }
 
-            var types = _assembly.GetTypes();
+            Type[] types;
+            try
+            {
+                types = _assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                Log.Exception($"Couldn't get assembly types for {Metadata.Name} in {Metadata.ExecuteFilePath}. The plugin might be corrupted. Uninstall PowerToys, manually delete the install folder and reinstall.", e, MethodBase.GetCurrentMethod().DeclaringType);
+                return false;
+            }
+
             Type type;
             try
             {
@@ -148,7 +159,7 @@ namespace Wox.Plugin
             }
             catch (InvalidOperationException e)
             {
-                Log.Exception($"Can't find class implement IPlugin for <{Metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+                Log.Exception($"Can't find class implement IPlugin for <{Metadata.Name}> in {Metadata.ExecuteFilePath}", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return false;
             }
 
@@ -160,7 +171,7 @@ namespace Wox.Plugin
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                Log.Exception($"Can't create instance for <{Metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+                Log.Exception($"Can't create instance for <{Metadata.Name}> in {Metadata.ExecuteFilePath}", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return false;
             }
 

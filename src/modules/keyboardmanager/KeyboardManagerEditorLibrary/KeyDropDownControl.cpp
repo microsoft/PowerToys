@@ -255,7 +255,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
                 // If exactly one key is selected consider it to be a key remap
                 if (GetNumberOfSelectedKeys(selectedKeyCodes) == 1)
                 {
-                    shortcutRemapBuffer[validationResult.second].first[colIndex] = selectedKeyCodes[0];
+                    shortcutRemapBuffer[validationResult.second].first[colIndex] = (DWORD)selectedKeyCodes[0];
                 }
                 else
                 {
@@ -357,7 +357,7 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(StackPanel table, Stac
         KeyShortcutUnion currentShortcut;
         if (GetNumberOfSelectedKeys(selectedKeyCodes) == 1 && isHybridControl)
         {
-            currentShortcut = selectedKeyCodes[0];
+            currentShortcut = (DWORD)selectedKeyCodes[0];
         }
         else
         {

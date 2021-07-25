@@ -12,7 +12,6 @@ namespace notifications
     constexpr inline const wchar_t UPDATING_PROCESS_TOAST_TAG[] = L"PTUpdateNotifyTag";
 
     void override_application_id(const std::wstring_view appID);
-    void register_background_toast_handler();
     void run_desktop_app_activator_loop();
 
     bool register_application_id(const std::wstring_view appName, const std::wstring_view iconPath);

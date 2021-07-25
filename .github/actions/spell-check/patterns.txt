@@ -31,6 +31,8 @@ TestCase\("[^"]+"
 
 # Windows paths
 \\native
+\\netcoreapp
+\\netstandard
 \\notifications
 \\recyclebin
 \\reinstall
@@ -41,6 +43,7 @@ TestCase\("[^"]+"
 \\restore
 \\result
 \\runner
+\\runtimes
 \\Telemetry
 \\telemetry
 \\testapp
@@ -55,6 +58,9 @@ TestCase\("[^"]+"
 
 # Id info inside markdown file (registry.md) 
 ^\|\s+ID\s+\|\s*\`[0-9A-F]{32}\`
+
+# TestCase strings intentionally have non dictionary items
+\[TestCase\(new string.*\]
 
 # marker for ignoring a comment to the end of the line
 ^.*/\* #no-spell-check-line \*/.*$

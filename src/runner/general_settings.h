@@ -4,7 +4,6 @@
 
 struct GeneralSettings
 {
-    bool isPackaged;
     bool isStartupEnabled;
     std::wstring startupDisabledReason;
     std::map<std::wstring, bool> isModulesEnabledMap;

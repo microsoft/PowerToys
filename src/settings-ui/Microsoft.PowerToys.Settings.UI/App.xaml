@@ -3,7 +3,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <XamlControlsResources  xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <XamlControlsResources ControlsResourcesVersion="Version1" xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="/Controls/KeyVisual/KeyVisual.xaml" />
                 <ResourceDictionary Source="/Styles/_Colors.xaml" />
                 <ResourceDictionary Source="/Styles/_FontSizes.xaml" />
@@ -13,13 +13,7 @@
                 <ResourceDictionary Source="/Styles/Page.xaml" />
                 <ResourceDictionary Source="/Styles/Button.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <converters:ModuleEnabledToForegroundConverter x:Key="ModuleEnabledToForegroundConverter" />
-
-            <SolidColorBrush x:Key="DarkForegroundDisabledBrush">#66FFFFFF</SolidColorBrush>
-            <SolidColorBrush x:Key="DarkForegroundBrush">#FFFFFFFF</SolidColorBrush>
-
-            <SolidColorBrush x:Key="LightForegroundDisabledBrush">#66000000</SolidColorBrush>
-            <SolidColorBrush x:Key="LightForegroundBrush">#FF000000</SolidColorBrush>
+            <converters:ModuleEnabledToOpacityConverter x:Key="ModuleEnabledToOpacityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </xaml:XamlApplication>

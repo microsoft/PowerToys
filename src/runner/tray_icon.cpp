@@ -2,11 +2,13 @@
 #include "Generated files/resource.h"
 #include "settings_window.h"
 #include "tray_icon.h"
+#include "CentralizedHotkeys.h"
 #include <Windows.h>
 
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/version/version.h>
+#include <common/logger/logger.h>
 
 namespace
 {
@@ -104,6 +106,15 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
 {
     switch (message)
     {
+    case WM_HOTKEY:
+    {
+        // We use the tray icon WndProc to avoid creating a dedicated window just for this message.
+        const auto modifiersMask = LOWORD(lparam);
+        const auto vkCode = HIWORD(lparam);
+        Logger::trace(L"On {} hotkey", CentralizedHotkeys::ToWstring({ modifiersMask, vkCode }));
+        CentralizedHotkeys::PopulateHotkey({ modifiersMask, vkCode });
+        break;
+    }
     case WM_CREATE:
         if (wm_taskbar_restart == 0)
         {
@@ -225,14 +236,14 @@ void start_tray_icon()
                                   wc.hInstance,
                                   nullptr);
         WINRT_VERIFY(hwnd);
-
+        CentralizedHotkeys::RegisterWindow(hwnd);
         memset(&tray_icon_data, 0, sizeof(tray_icon_data));
         tray_icon_data.cbSize = sizeof(tray_icon_data);
         tray_icon_data.hIcon = icon;
         tray_icon_data.hWnd = hwnd;
         tray_icon_data.uID = id_tray_icon;
         tray_icon_data.uCallbackMessage = wm_icon_notify;
-        std::wstring about_msg_pt_version = L"PowerToys\n" + get_product_version();
+        std::wstring about_msg_pt_version = L"PowerToys " + get_product_version();
         wcscpy_s(tray_icon_data.szTip, sizeof(tray_icon_data.szTip) / sizeof(WCHAR), about_msg_pt_version.c_str());
         tray_icon_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 

@@ -57,7 +57,14 @@ namespace PowerLauncher
 
         public void ReadSettingsOnChange()
         {
-            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", ReadSettings);
+            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher(
+                PowerLauncherSettings.ModuleName,
+                "settings.json",
+                () =>
+                {
+                    Log.Info("Settings were changed. Read settings.", GetType());
+                    ReadSettings();
+                });
         }
 
         public void ReadSettings()
@@ -73,6 +80,10 @@ namespace PowerLauncher
                     CreateSettingsIfNotExists();
 
                     var overloadSettings = _settingsUtils.GetSettingsOrDefault<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                    if (overloadSettings != null)
+                    {
+                        Log.Info($"Successfully read new settings. retryCount={retryCount}", GetType());
+                    }
 
                     if (overloadSettings.Plugins == null || overloadSettings.Plugins.Count() != PluginManager.AllPlugins.Count)
                     {
@@ -182,6 +193,12 @@ namespace PowerLauncher
             return results.Values.ToList();
         }
 
+        private static string GetIcon(PluginMetadata metadata, string iconPath)
+        {
+            var pluginDirectory = Path.GetFileName(metadata.PluginDirectory);
+            return Path.Combine(pluginDirectory, iconPath);
+        }
+
         private static IEnumerable<PowerLauncherPluginSettings> GetDefaultPluginsSettings()
         {
             return PluginManager.AllPlugins.Select(x => new PowerLauncherPluginSettings()
@@ -193,8 +210,8 @@ namespace PowerLauncher
                 Disabled = x.Metadata.Disabled,
                 IsGlobal = x.Metadata.IsGlobal,
                 ActionKeyword = x.Metadata.ActionKeyword,
-                IconPathDark = x.Metadata.IcoPathDark,
-                IconPathLight = x.Metadata.IcoPathLight,
+                IconPathDark = GetIcon(x.Metadata, x.Metadata.IcoPathDark),
+                IconPathLight = GetIcon(x.Metadata, x.Metadata.IcoPathLight),
                 AdditionalOptions = x.Plugin is ISettingProvider ? (x.Plugin as ISettingProvider).AdditionalOptions : new List<PluginAdditionalOption>(),
             });
         }

@@ -80,6 +80,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool videoConference = true;
+
+        [JsonPropertyName("Video Conference")]
+        public bool VideoConference
+        {
+            get => this.videoConference;
+            set
+            {
+                if (this.videoConference != value)
+                {
+                    LogTelemetryEvent(value);
+                    this.videoConference = value;
+                }
+            }
+        }
+
         private bool powerRename = true;
 
         public bool PowerRename
@@ -139,6 +155,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     colorPicker = value;
+                }
+            }
+        }
+
+        private bool awake;
+
+        [JsonPropertyName("Awake")]
+        public bool Awake
+        {
+            get => awake;
+            set
+            {
+                if (awake != value)
+                {
+                    LogTelemetryEvent(value);
+                    awake = value;
                 }
             }
         }

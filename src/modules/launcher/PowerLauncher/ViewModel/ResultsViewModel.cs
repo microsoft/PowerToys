@@ -95,8 +95,6 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        public Thickness Margin { get; set; }
-
         private Visibility _visibility = Visibility.Hidden;
 
         public Visibility Visibility

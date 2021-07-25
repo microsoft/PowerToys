@@ -78,12 +78,6 @@ namespace PowerToys.Settings
                 return Constants.ShowColorPickerSharedEvent();
             });
 
-            OobeShellPage.SetShortcutGuideSharedEventCallback(() =>
-            {
-                NativeMethods.AllowSetForegroundWindow(PowerToys.Settings.Program.PowerToysPID);
-                return Constants.ShowShortcutGuideSharedEvent();
-            });
-
             OobeShellPage.SetOpenMainWindowCallback((Type type) =>
             {
                 ((App)Application.Current).OpenSettingsWindow(type);

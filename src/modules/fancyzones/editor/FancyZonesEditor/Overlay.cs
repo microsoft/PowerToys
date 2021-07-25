@@ -14,7 +14,8 @@ namespace FancyZonesEditor
     {
         private MainWindow _mainWindow;
         private LayoutPreview _layoutPreview;
-        private UserControl _editor;
+        private UserControl _editorLayout;
+        private EditorWindow _editorWindow;
 
         public List<Monitor> Monitors { get; private set; }
 
@@ -115,35 +116,7 @@ namespace FancyZonesEditor
 
         private int _currentDesktop;
 
-        public bool SpanZonesAcrossMonitors
-        {
-            get
-            {
-                return _spanZonesAcrossMonitors;
-            }
-
-            set
-            {
-                _spanZonesAcrossMonitors = value;
-
-                if (_spanZonesAcrossMonitors)
-                {
-                    Rect workArea = default;
-                    Rect bounds = default;
-
-                    foreach (Monitor monitor in Monitors)
-                    {
-                        workArea = Rect.Union(workArea, monitor.Device.WorkAreaRect);
-                        bounds = Rect.Union(bounds, monitor.Device.ScaledBounds);
-                    }
-
-                    Monitors.Clear();
-                    Monitors.Add(new Monitor(bounds, workArea, true));
-                }
-            }
-        }
-
-        private bool _spanZonesAcrossMonitors;
+        public bool SpanZonesAcrossMonitors { get; set; }
 
         public bool MultiMonitorMode
         {
@@ -157,14 +130,6 @@ namespace FancyZonesEditor
         {
             WorkAreas = new List<Rect>();
             Monitors = new List<Monitor>();
-
-            var screens = System.Windows.Forms.Screen.AllScreens;
-            foreach (System.Windows.Forms.Screen screen in screens)
-            {
-                Rect bounds = new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
-                Rect workArea = new Rect(screen.WorkingArea.X, screen.WorkingArea.Y, screen.WorkingArea.Width, screen.WorkingArea.Height);
-                Add(bounds, workArea, screen.Primary);
-            }
         }
 
         public void Show()
@@ -228,34 +193,32 @@ namespace FancyZonesEditor
             _layoutPreview = null;
             if (CurrentDataContext is GridLayoutModel)
             {
-                _editor = new GridEditor();
+                _editorLayout = new GridEditor();
             }
             else if (CurrentDataContext is CanvasLayoutModel)
             {
-                _editor = new CanvasEditor();
+                _editorLayout = new CanvasEditor();
             }
 
-            CurrentLayoutWindow.Content = _editor;
-
-            EditorWindow window;
+            CurrentLayoutWindow.Content = _editorLayout;
 
             if (model is GridLayoutModel)
             {
-                window = new GridEditorWindow();
+                _editorWindow = new GridEditorWindow();
             }
             else
             {
-                window = new CanvasEditorWindow();
+                _editorWindow = new CanvasEditorWindow();
             }
 
-            window.Owner = Monitors[App.Overlay.CurrentDesktop].Window;
-            window.DataContext = model;
-            window.Show();
+            _editorWindow.Owner = Monitors[App.Overlay.CurrentDesktop].Window;
+            _editorWindow.DataContext = model;
+            _editorWindow.Show();
         }
 
         public void CloseEditor()
         {
-            _editor = null;
+            _editorLayout = null;
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
@@ -265,6 +228,22 @@ namespace FancyZonesEditor
             CurrentLayoutWindow.Content = _layoutPreview;
 
             OpenMainWindow();
+        }
+
+        public void FocusEditor()
+        {
+            if (_editorLayout != null && _editorLayout is CanvasEditor canvasEditor)
+            {
+                canvasEditor.FocusZone();
+            }
+        }
+
+        public void FocusEditorWindow()
+        {
+            if (_editorWindow != null)
+            {
+                _editorWindow.Focus();
+            }
         }
 
         public void CloseLayoutWindow()
@@ -337,12 +316,10 @@ namespace FancyZonesEditor
             _mainWindow.Topmost = false;
         }
 
-        private void Add(Rect bounds, Rect workArea, bool primary)
+        public void AddMonitor(Monitor monitor)
         {
-            var monitor = new Monitor(bounds, workArea, primary);
-
             bool inserted = false;
-            var workAreaRect = workArea;
+            var workAreaRect = monitor.Device.WorkAreaRect;
             for (int i = 0; i < Monitors.Count && !inserted; i++)
             {
                 var rect = Monitors[i].Device.WorkAreaRect;
