@@ -36,7 +36,7 @@
                       ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
                       Padding="-12,0,0,0"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      SelectionMode="Single"
+                      SelectionMode="None"
                       ScrollViewer.HorizontalScrollMode="Enabled"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
                       ScrollViewer.IsHorizontalRailEnabled="True"
