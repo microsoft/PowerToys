@@ -256,7 +256,8 @@
 
                                 <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
                                               x:Name="ToggleSwitch"
-                                              HorizontalAlignment="Center"
+                                              OnContent=""
+                                              OffContent=""
                                               IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"
                                               Grid.Column="2" />
                             </Grid>
