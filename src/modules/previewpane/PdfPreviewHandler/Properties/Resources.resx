@@ -122,7 +122,7 @@
     <comment>This text is displayed if PDF has more than 10 pages.</comment>
   </data>
   <data name="PdfNotPreviewedError" xml:space="preserve">
-    <value>This PDF could not be preview due to an internal error.</value>
+    <value>This PDF could not be previewed due to an internal error.</value>
     <comment>This text is displayed if PDF fails to preview</comment>
   </data>
   <data name="PdfPasswordProtectedError" xml:space="preserve">
