@@ -51,10 +51,7 @@
                                         <ColumnDefinition Width="52" />
                                     </Grid.ColumnDefinitions>
 
-                                    <FontIcon Glyph="&#xE1D8;" FontSize="18" Margin="0,8,0,0" VerticalAlignment="Top" Grid.RowSpan="2" Foreground="{StaticResource SystemColorControlAccentBrush}" />
-                                <TextBlock>
-
-                                </TextBlock>
+                                <FontIcon Glyph="&#xE73F;" FontSize="18" Margin="0,8,0,0" VerticalAlignment="Top" Grid.RowSpan="2" Foreground="{StaticResource SystemColorControlAccentBrush}" />
                                 <StackPanel Orientation="Vertical" Grid.Column="1" Margin="0,0,16,0">
                                     <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="18" />
                                     <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Margin="0,4,0,0" >
