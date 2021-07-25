@@ -127,7 +127,7 @@
                 </ItemsControl.ItemContainerTransitions>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Width="466" Background="Transparent">
+                            <Grid Width="420" AutomationProperties.Name="{Binding Name}" Background="Transparent">
                             <!-- Disabled reordering by dragging
                             
                             <Interactivity:Interaction.Behaviors>
@@ -165,6 +165,7 @@
                             <ToggleSwitch IsOn="{Binding IsShown, Mode=TwoWay}"
                                           OnContent=""
                                           OffContent=""
+                                          x:Uid="ColorPicker_ColorFormat_ToggleSwitch"
                                           Grid.RowSpan="2"
                                           HorizontalAlignment="Right"
                                           Margin="0,0,-36,0"/>
