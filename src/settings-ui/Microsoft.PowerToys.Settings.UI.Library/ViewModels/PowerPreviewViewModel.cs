@@ -122,7 +122,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (value != _pdfRenderIsEnabled)
                 {
-                    _mdRenderIsEnabled = value;
+                    _pdfRenderIsEnabled = value;
                     Settings.Properties.EnablePdfPreview = value;
                     RaisePropertyChanged();
                 }
