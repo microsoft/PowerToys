@@ -57,7 +57,7 @@
                                     <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Margin="0,4,0,0" >
                                         <TextBlock Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
                                         <TextBlock Text="{x:Bind Width, Mode=OneWay}" FontWeight="SemiBold" Margin="0,0,4,0"/>
-                                        <TextBlock Text="&#xE947;" FontFamily="Segoe MDL2 Assets" FontSize="11" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,5,4,0"/>
+                                        <TextBlock Text="&#xE947;" FontFamily="Segoe MDL2 Assets" FontSize="11" AutomationProperties.AccessibilityView="Raw" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,5,4,0"/>
                                         <TextBlock Text="{x:Bind Height, Mode=OneWay}" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" FontWeight="SemiBold" Margin="0,0,4,0"/>
                                         <TextBlock Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter},ConverterParameter=ToLower}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
                                     </StackPanel>
@@ -229,7 +229,7 @@
                             x:Uid="ImageResizer_FilenameFormatHeader"
                             Margin="0,0,0,0"
                             Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                            <TextBlock Text="&#xE946;"
+                            <TextBlock Text="&#xE946;" AutomationProperties.AccessibilityView="Raw"
                            FontFamily="Segoe MDL2 Assets"
                            Margin="4,4,0,0"/>
                         </StackPanel>
