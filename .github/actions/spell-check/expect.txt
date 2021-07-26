@@ -664,6 +664,7 @@ Functiondiscoverykeys
 fwlink
 fwrite
 fxcop
+FZE
 gabime
 GAC
 gacutil

@@ -80,6 +80,15 @@ namespace FancyZonesEditor
             FancyZonesEditorIO = new FancyZonesEditorIO();
             Overlay = new Overlay();
             MainWindowSettings = new MainWindowSettingsModel();
+
+            new Thread(() =>
+            {
+                var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, interop.Constants.FZEExitEvent());
+                if (eventHandle.WaitOne())
+                {
+                    Environment.Exit(0);
+                }
+            }).Start();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
