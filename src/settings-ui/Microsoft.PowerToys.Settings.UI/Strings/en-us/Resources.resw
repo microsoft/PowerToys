@@ -610,23 +610,20 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ImageResizer_Configurations.AutomationProperties.Name" xml:space="preserve">
     <value>Configurations</value>
   </data>
-  <data name="ImageResizer_Name.AutomationProperties.Name" xml:space="preserve">
-    <value>Configuration Name</value>
+  <data name="ImageResizer_Name.Header" xml:space="preserve">
+    <value>Name</value>
   </data>
-  <data name="ImageResizer_Fit_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Fit Property</value>
+  <data name="ImageResizer_Fit.Header" xml:space="preserve">
+    <value>Fit</value>
   </data>
-  <data name="ImageResizer_Width_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Width Property</value>
+  <data name="ImageResizer_Width.Header" xml:space="preserve">
+    <value>Width</value>
   </data>
-  <data name="ImageResizer_Height_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Height Property</value>
+  <data name="ImageResizer_Height.Header" xml:space="preserve">
+    <value>Height</value>
   </data>
-  <data name="ImageResizer_Size_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Size Property</value>
-  </data>
-  <data name="ImageResizer_Times_Symbol.AutomationProperties.Name" xml:space="preserve">
-    <value>Times Symbol</value>
+  <data name="ImageResizer_Size.Header" xml:space="preserve">
+    <value>Unit</value>
   </data>
   <data name="RemoveButton.AutomationProperties.Name" xml:space="preserve">
     <value>Remove</value>
@@ -706,6 +703,10 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>WMPhoto encoder</value>
   </data>
   <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
+    <value>Fill</value>
+    <comment>Refers to filling an image into a certain size. It could overflow</comment>
+  </data>
+  <data name="ImageResizer_Sizes_Fit_Fill_ThirdPersonSingular.Text" xml:space="preserve">
     <value>Fill</value>
     <comment>Refers to filling an image into a certain size. It could overflow</comment>
   </data>
@@ -1341,6 +1342,44 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download and install</value>
   </data>
+  <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
+    <value>Fills</value>
+  </data>
+  <data name="ImageResizer_Fit_Fit_ThirdPersonSingular" xml:space="preserve">
+    <value>Fits within</value>
+  </data>
+  <data name="ImageResizer_Fit_Stretch_ThirdPersonSingular" xml:space="preserve">
+    <value>Stretches to</value>
+  </data>
+  <data name="ImageResizer_Unit_Centimeter" xml:space="preserve">
+    <value>Centimeters</value>
+  </data>
+  <data name="ImageResizer_Unit_Inch" xml:space="preserve">
+    <value>Inches</value>
+  </data>
+  <data name="ImageResizer_Unit_Percent" xml:space="preserve">
+    <value>Percent</value>
+  </data>
+  <data name="ImageResizer_Unit_Pixel" xml:space="preserve">
+    <value>Pixels</value>
+  </data>
+  <data name="EditTooltip.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+    <comment>Label of a cancel button</comment>
+  </data>
+  <data name="Delete_Dialog_Description" xml:space="preserve">
+    <value>Are you sure you want to delete this item?</value>
+  </data>
+	<data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+    <comment>Label of a confirmation button</comment>
+	  </data>
   <data name="Learn_More_Description.AutomationProperties.Name" xml:space="preserve">
     <value>Learn more</value>
   </data>
