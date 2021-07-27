@@ -10,7 +10,7 @@
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:toolkitconverters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
-    AutomationProperties.LandmarkType="Main">
+    AutomationProperties.LandmarkType="Main" x:Name="RootPage">
     <Page.Resources>
         <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
@@ -61,12 +61,12 @@
                                         <TextBlock Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter},ConverterParameter=ToLower}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
                                     </StackPanel>
                                 </StackPanel>
-                                <StackPanel HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal">
+                                <StackPanel Spacing="8" HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal">
                                     <Button 
                                         x:Uid="EditButton"
                                         Background="Transparent"
                                         FontFamily="Segoe MDL2 Assets"
-                                        Width="36"
+                                        Width="40"
                                         Height="36"
                                         Content="&#xE70F;">
                                         <ToolTipService.ToolTip>
@@ -126,7 +126,7 @@
                                         x:Uid="RemoveButton"
                                         Background="Transparent"
                                         FontFamily="Segoe MDL2 Assets"
-                                        Width="36"
+                                        Width="40"
                                         Height="36"
                                         Content="&#xE74D;"
                                         Click="DeleteCustomSize"

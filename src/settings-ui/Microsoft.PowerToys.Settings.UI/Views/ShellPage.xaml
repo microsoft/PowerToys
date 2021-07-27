@@ -42,9 +42,6 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="navigationView.HeaderTemplate" Value="{StaticResource HeaderSmallTemplate}"/>
-                    </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
@@ -58,8 +55,7 @@
         IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
         SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
         IsSettingsVisible="False"
-        CompactModeThresholdWidth="0"
-        SelectionChanged="NavigationView_SelectionChanged">
+        CompactModeThresholdWidth="0">
             <winui:NavigationView.MenuItems>
                 <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
@@ -146,18 +142,12 @@
                 </Button>
             </winui:NavigationView.PaneFooter>
             <i:Interaction.Behaviors>
-               
+
                 <ic:EventTriggerBehavior EventName="ItemInvoked">
-                <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
-            </ic:EventTriggerBehavior>
-        </i:Interaction.Behaviors>
-        <ScrollViewer x:Name="scrollViewer"
-                      VerticalScrollBarVisibility="Auto"
-                      Grid.Column="0">
-                <Grid>
-                    <Frame x:Name="shellFrame" />
-                </Grid>
-        </ScrollViewer>
-    </winui:NavigationView>
+                    <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
+                </ic:EventTriggerBehavior>
+            </i:Interaction.Behaviors>
+            <Frame x:Name="shellFrame" />
+        </winui:NavigationView>
     </Grid>
 </UserControl>

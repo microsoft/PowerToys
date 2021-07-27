@@ -161,11 +161,5 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             OpenOobeWindowCallback();
         }
-
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
-        private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
-        {
-            scrollViewer.ChangeView(null, 0, null, true);
-        }
     }
 }

@@ -126,7 +126,7 @@
                 </ItemsControl.ItemContainerTransitions>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Width="466" Background="Transparent">
+                        <Grid Width="420" Background="Transparent">
                             <!-- Disabled reordering by dragging
                             
                             <Interactivity:Interaction.Behaviors>
@@ -185,7 +185,7 @@
                                     IsEnabled="{Binding CanMoveUp}"
                                     Grid.Row="0"
                                     HorizontalAlignment="Right"
-                                    Margin="0,0,24,0"
+                                    Margin="0,0,24,4"
                                     Background="Transparent"
                                     Visibility="Collapsed"
                                     FontFamily="Segoe MDL2 Assets"
