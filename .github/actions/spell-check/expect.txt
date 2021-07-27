@@ -664,6 +664,7 @@ Functiondiscoverykeys
 fwlink
 fwrite
 fxcop
+FZE
 gabime
 GAC
 gacutil
@@ -1300,6 +1301,7 @@ MSDN
 msedge
 mshtmdid
 msi
+MSIFASTINSTALL
 MSIHANDLE
 MSIINSTALLER
 MSIL
@@ -2095,6 +2097,7 @@ todo
 toggleswitch
 toolbar
 Toolchain
+toolkitconverters
 toolset
 toolstrip
 tooltip
