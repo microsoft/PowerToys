@@ -6,11 +6,18 @@
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:toolkitconverters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    AutomationProperties.LandmarkType="Main">
+    AutomationProperties.LandmarkType="Main" x:Name="RootPage">
 
+    <Page.Resources>
+        <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
+        <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
+        <toolkitconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed" />
+    </Page.Resources>
     <controls:SettingsPageControl x:Uid="About_ImageResizer"
                                   ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_ImageResizer">
@@ -27,7 +34,7 @@
                 <ListView x:Name="ImagesSizesListView" 
                       x:Uid="ImagesSizesListView"
                       ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
-                      Padding="0,0,0,24"
+                      Padding="-12,0,0,0"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       SelectionMode="None"
                       ScrollViewer.HorizontalScrollMode="Enabled"
@@ -35,142 +42,104 @@
                       ScrollViewer.IsHorizontalRailEnabled="True"
                       ContainerContentChanging="ImagesSizesListView_ContainerContentChanging">
 
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
-                            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
-                            <Setter Property="Background" Value="{ThemeResource ListViewItemBackground}"/>
-                            <Setter Property="Foreground" Value="{ThemeResource ListViewItemForeground}"/>
-                            <Setter Property="TabNavigation" Value="Local"/>
-                            <Setter Property="IsHoldingEnabled" Value="True"/>
-                            <Setter Property="Padding" Value="0"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="VerticalContentAlignment" Value="Center"/>
-                            <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}"/>
-                            <Setter Property="MinHeight" Value="0"/>
-                            <Setter Property="AllowDrop" Value="False"/>
-                            <Setter Property="UseSystemFocusVisuals" Value="True"/>
-                            <Setter Property="FocusVisualMargin" Value="0"/>
-                            <Setter Property="FocusVisualPrimaryBrush" Value="{ThemeResource ListViewItemFocusVisualPrimaryBrush}"/>
-                            <Setter Property="FocusVisualPrimaryThickness" Value="2"/>
-                            <Setter Property="FocusVisualSecondaryBrush" Value="{ThemeResource ListViewItemFocusVisualSecondaryBrush}"/>
-                            <Setter Property="FocusVisualSecondaryThickness" Value="1"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListViewItem">
-                                        <ListViewItemPresenter 
-                                        CheckBrush="{ThemeResource ListViewItemCheckBrush}" 
-                                        ContentMargin="{TemplateBinding Padding}" 
-                                        CheckMode="{ThemeResource ListViewItemCheckMode}" 
-                                        ContentTransitions="{TemplateBinding ContentTransitions}" 
-                                        CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}" 
-                                        DragForeground="{ThemeResource ListViewItemDragForeground}" 
-                                        DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}" 
-                                        DragBackground="{ThemeResource ListViewItemDragBackground}" 
-                                        DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}" 
-                                        FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}" 
-                                        FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}" 
-                                        FocusBorderBrush="{ThemeResource ListViewItemFocusBorderBrush}" 
-                                        FocusVisualMargin="{TemplateBinding FocusVisualMargin}" 
-                                        FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}" 
-                                        FocusSecondaryBorderBrush="{ThemeResource ListViewItemFocusSecondaryBorderBrush}" 
-                                        FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}" 
-                                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                        Control.IsTemplateFocusTarget="True" 
-                                        PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}" 
-                                        PressedBackground="{ThemeResource ListViewItemBackgroundPressed}"
-                                        PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}" 
-                                        PointerOverBackground="{ThemeResource ListViewItemBackgroundPointerOver}" ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}" 
-                                        SelectedPressedBackground="{ThemeResource ListViewItemBackgroundSelectedPressed}" 
-                                        SelectionCheckMarkVisualEnabled="{ThemeResource ListViewItemSelectionCheckMarkVisualEnabled}" 
-                                        SelectedForeground="{ThemeResource ListViewItemForegroundSelected}" 
-                                        SelectedPointerOverBackground="{ThemeResource ListViewItemBackgroundSelectedPointerOver}" 
-                                        SelectedBackground="{ThemeResource ListViewItemBackgroundSelected}" 
-                                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-
-                    </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
-                        <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize" >
-                            <StackPanel Name="ImageResizer_Configurations" x:Uid="ImageResizer_Configurations" Orientation="Horizontal" Padding="0" Spacing="4">
-                                <TextBox Name="ImageResizer_Name"
-                                     x:Uid="ImageResizer_Name"
-                                     Text="{x:Bind Path=Name, Mode=TwoWay}" 
-                                     Width="90"
-                                     VerticalAlignment="Center"
-                                     Margin="{StaticResource SmallTopMargin}"/>
+                        <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
+                            <Grid Padding="0,12,12,12" Width="420" AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
+                                <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="52" />
+                                    </Grid.ColumnDefinitions>
 
-                                <ComboBox Name="ImageResizer_Fit_Property"
-                                      x:Uid="ImageResizer_Fit_Property"
-                                      SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}"
-                                      Width="90"
-                                      VerticalAlignment="Center"
-                                      Margin="{StaticResource SmallTopMargin}">
-                                    <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
-                                    <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
-                                    <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
-                                </ComboBox>
+                                <FontIcon Glyph="&#xE73F;" FontSize="18" Margin="0,8,0,0" VerticalAlignment="Top" Grid.RowSpan="2" Foreground="{StaticResource SystemColorControlAccentBrush}" />
+                                <StackPanel Orientation="Vertical" Grid.Column="1" Margin="0,0,16,0">
+                                    <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="18" />
+                                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Margin="0,4,0,0" >
+                                        <TextBlock Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{x:Bind Width, Mode=OneWay}" FontWeight="SemiBold" Margin="0,0,4,0"/>
+                                        <TextBlock Text="&#xE947;" FontFamily="Segoe MDL2 Assets" FontSize="11" AutomationProperties.AccessibilityView="Raw" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,5,4,0"/>
+                                        <TextBlock Text="{x:Bind Height, Mode=OneWay}" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" FontWeight="SemiBold" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter},ConverterParameter=ToLower}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal">
+                                    <Button 
+                                        x:Uid="EditButton"
+                                        Background="Transparent"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        Width="36"
+                                        Height="36"
+                                        Content="&#xE70F;">
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="EditTooltip"/>
+                                        </ToolTipService.ToolTip>
+                                        <Button.Flyout>
+                                            <Flyout>
+                                                <StackPanel Spacing="16" Margin="0,12,0,0">
+                                                    <TextBox
+                                                        x:Uid="ImageResizer_Name"
+                                                        Text="{x:Bind Path=Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                        Width="240"
+                                                        HorizontalAlignment="Left"/>
 
-                                <muxc:NumberBox Name="ImageResizer_Width_Property"
-                                            x:Uid="ImageResizer_Width_Property"
-                                            Value="{x:Bind Path=Width, Mode=TwoWay}" 
-                                            Minimum="0"
-                                            MinWidth="68"
-                                            SpinButtonPlacementMode="Compact"
-                                            VerticalAlignment="Center"
-                                            Margin="{StaticResource SmallTopMargin}"/>
+                                                    <ComboBox
+                                                        x:Uid="ImageResizer_Fit"
+                                                        SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}"
+                                                        Width="240"
+                                                        HorizontalAlignment="Left">
+                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
+                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
+                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
+                                                    </ComboBox>
 
-                                <TextBlock Name="ImageResizer_Times_Symbol"
-                                       x:Uid="ImageResizer_Times_Symbol"
-                                       Text="&#xE711;"
-                                       FontFamily="Segoe MDL2 Assets"
-                                       TextAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Margin="{StaticResource SmallTopMargin}" 
-                                       Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"                                    
-                                       Width="25"/>
+                                                    <StackPanel Spacing="8" Orientation="Horizontal">
+                                                        <muxc:NumberBox
+                                                            x:Uid="ImageResizer_Width"
+                                                            Value="{x:Bind Path=Width, Mode=TwoWay}" 
+                                                            Minimum="0"
+                                                            Width="116"
+                                                            SpinButtonPlacementMode="Compact"/>
 
-                                <muxc:NumberBox Name="ImageResizer_Height_Property"
-                                            x:Uid="ImageResizer_Height_Property"
-                                            Value="{x:Bind Path=Height, Mode=TwoWay}" 
-                                            MinWidth="68"
-                                            Minimum="0"
-                                            VerticalAlignment="Center"
-                                            SpinButtonPlacementMode="Compact"
-                                            Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"
-                                            IsEnabled="{x:Bind Path=EnableEtraBoxes, Mode=OneWay}"
-                                            Margin="{StaticResource SmallTopMargin}"/>
+                                                        <muxc:NumberBox
+                                                            x:Uid="ImageResizer_Height"
+                                                            Value="{x:Bind Path=Height, Mode=TwoWay}" 
+                                                            Width="116"
+                                                            Minimum="0"
+                                                            SpinButtonPlacementMode="Compact"
+                                                            Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
-                                <ComboBox Name="ImageResizer_Size_Property"
-                                      x:Uid="ImageResizer_Size_Property"
-                                      SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
-                                      MinWidth="120"
-                                      VerticalAlignment="Center"
-                                      Margin="{StaticResource SmallTopMargin}">
-                                    <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
-                                    <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
-                                    <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
-                                    <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Pixels" />
-                                </ComboBox>
-                                <Button x:Name="RemoveButton"
-                                    x:Uid="RemoveButton"
-                                    Background="Transparent"
-                                    FontFamily="Segoe MDL2 Assets"
-                                    Width="34"
-                                    Content="&#xE74D;"
-                                    VerticalAlignment="Center"
-                                    Margin="{StaticResource SmallTopMargin}" 
-                                    UseLayoutRounding="False"
-                                    Click="DeleteCustomSize"
-                                    CommandParameter="{Binding Id}">
-                                    <ToolTipService.ToolTip>
-                                        <TextBlock x:Uid="RemoveTooltip"/>
-                                    </ToolTipService.ToolTip>
-                                </Button>
-                            </StackPanel>
+                                                    </StackPanel>
+                                                    <ComboBox x:Uid="ImageResizer_Size"
+                                                                  SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
+                                                                  Width="240"
+                                                              Margin="0,0,0,24">
+                                                        <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
+                                                        <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
+                                                        <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
+                                                        <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Pixels" />
+                                                    </ComboBox>
+                                                </StackPanel>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                        </Button>
+
+                                    <Button x:Name="RemoveButton"
+                                        x:Uid="RemoveButton"
+                                        Background="Transparent"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        Width="36"
+                                        Height="36"
+                                        Content="&#xE74D;"
+                                        Click="DeleteCustomSize"
+                                        CommandParameter="{Binding Id}">
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="RemoveTooltip"/>
+                                        </ToolTipService.ToolTip>
+                                    </Button>
+                                </StackPanel>
+                             
+                            </Grid>
+         
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -260,7 +229,7 @@
                             x:Uid="ImageResizer_FilenameFormatHeader"
                             Margin="0,0,0,0"
                             Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                            <TextBlock Text="&#xE946;"
+                            <TextBlock Text="&#xE946;" AutomationProperties.AccessibilityView="Raw"
                            FontFamily="Segoe MDL2 Assets"
                            Margin="4,4,0,0"/>
                         </StackPanel>

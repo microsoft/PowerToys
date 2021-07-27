@@ -9,6 +9,8 @@ using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
+using Windows.ApplicationModel.Resources;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -32,19 +34,36 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
         }
 
-        public void DeleteCustomSize(object sender, RoutedEventArgs e)
+        public async void DeleteCustomSize(object sender, RoutedEventArgs e)
         {
             Button deleteRowButton = (Button)sender;
 
-            // Using InvariantCulture since this is internal and expected to be numerical
-            bool success = int.TryParse(deleteRowButton?.CommandParameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int rowNum);
-            if (success)
+            if (deleteRowButton != null)
             {
-                ViewModel.DeleteImageSize(rowNum);
-            }
-            else
-            {
-                Logger.LogError("Failed to delete custom image size.");
+                ImageSize x = (ImageSize)deleteRowButton.DataContext;
+                ResourceLoader resourceLoader = ResourceLoader.GetForCurrentView();
+
+                ContentDialog dialog = new ContentDialog();
+                dialog.XamlRoot = RootPage.XamlRoot;
+                dialog.Title = x.Name;
+                dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
+                dialog.CloseButtonText = resourceLoader.GetString("No");
+                dialog.DefaultButton = ContentDialogButton.Primary;
+                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
+                dialog.PrimaryButtonClick += (s, args) =>
+                {
+                // Using InvariantCulture since this is internal and expected to be numerical
+                bool success = int.TryParse(deleteRowButton?.CommandParameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int rowNum);
+                if (success)
+                    {
+                        ViewModel.DeleteImageSize(rowNum);
+                    }
+                    else
+                    {
+                        Logger.LogError("Failed to delete custom image size.");
+                    }
+                };
+                var result = await dialog.ShowAsync();
             }
         }
 
