@@ -529,6 +529,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New zone added.
+        /// </summary>
+        public static string New_zone_added {
+            get {
+                return ResourceManager.GetString("New_zone_added", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create or duplicate a layout to get started.
         /// </summary>
         public static string No_Custom_Layouts_Message {

@@ -34,8 +34,7 @@
         <StackPanel Margin="16"
                     FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
 
-            <Button x:Name="newZoneButton"
-                    AutomationProperties.LabeledBy="{Binding ElementName=newZoneName}"
+            <local:ClickAutomationEventButton x:Name="newZoneButton"
                     HorizontalAlignment="Stretch"
                     Height="64"
                     Width="64"
@@ -49,7 +48,8 @@
                     ToolTip="{x:Static props:Resources.Add_zone}"
                     DataContext="{Binding Path=Model, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
                     IsEnabled="{Binding IsZoneAddingAllowed}"
-                    Click="OnAddZone" />
+                    Click="OnAddZone"
+                    OnClickAutomationValue="{x:Static props:Resources.New_zone_added}" />
 
             <Grid Margin="0,24,0,0">
                 <Grid.ColumnDefinitions>

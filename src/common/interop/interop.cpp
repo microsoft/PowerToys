@@ -179,6 +179,10 @@ public
             return gcnew String(CommonSharedConstants::RUN_EXIT_EVENT);
         }
 
+        static String ^ FZEExitEvent() {
+            return gcnew String(CommonSharedConstants::FZE_EXIT_EVENT);
+        }
+
         static String ^ ColorPickerSendSettingsTelemetryEvent() {
             return gcnew String(CommonSharedConstants::COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT);
         }
