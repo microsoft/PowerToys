@@ -186,8 +186,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Hide toolbar when both camera and microphone are unmuted</value>
   </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
-    <value>Video Conference</value>
-    <comment>do not loc the product name</comment>
+    <value>About Video Conference</value>
   </data>
   <data name="VideoConference_Camera.Text" xml:space="preserve">
     <value>Camera</value>
@@ -486,7 +485,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="General.ModuleTitle" xml:space="preserve">
-    <value>PowerToys</value>
+    <value>About PowerToys</value>
   </data>
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
@@ -598,7 +597,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image sizes</value>
   </data>
-  <data name="ImageResizer.ModuleDescription" xml:space="preserve">
+  <data name="About_ImageResizer.ModuleDescription" xml:space="preserve">
     <value>Lets you resize images by right-clicking.</value>
   </data>
   <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
@@ -611,23 +610,20 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ImageResizer_Configurations.AutomationProperties.Name" xml:space="preserve">
     <value>Configurations</value>
   </data>
-  <data name="ImageResizer_Name.AutomationProperties.Name" xml:space="preserve">
-    <value>Configuration Name</value>
+  <data name="ImageResizer_Name.Header" xml:space="preserve">
+    <value>Name</value>
   </data>
-  <data name="ImageResizer_Fit_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Fit Property</value>
+  <data name="ImageResizer_Fit.Header" xml:space="preserve">
+    <value>Fit</value>
   </data>
-  <data name="ImageResizer_Width_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Width Property</value>
+  <data name="ImageResizer_Width.Header" xml:space="preserve">
+    <value>Width</value>
   </data>
-  <data name="ImageResizer_Height_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Height Property</value>
+  <data name="ImageResizer_Height.Header" xml:space="preserve">
+    <value>Height</value>
   </data>
-  <data name="ImageResizer_Size_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Size Property</value>
-  </data>
-  <data name="ImageResizer_Times_Symbol.AutomationProperties.Name" xml:space="preserve">
-    <value>Times Symbol</value>
+  <data name="ImageResizer_Size.Header" xml:space="preserve">
+    <value>Unit</value>
   </data>
   <data name="RemoveButton.AutomationProperties.Name" xml:space="preserve">
     <value>Remove</value>
@@ -710,6 +706,10 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Fill</value>
     <comment>Refers to filling an image into a certain size. It could overflow</comment>
   </data>
+  <data name="ImageResizer_Sizes_Fit_Fill_ThirdPersonSingular.Text" xml:space="preserve">
+    <value>Fill</value>
+    <comment>Refers to filling an image into a certain size. It could overflow</comment>
+  </data>
   <data name="ImageResizer_Sizes_Fit_Fit.Content" xml:space="preserve">
     <value>Fit</value>
     <comment>Refers to fitting an image into a certain size. It won't overflow</comment>
@@ -755,38 +755,32 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Running as administrator</value>
   </data>
   <data name="FancyZones.ModuleTitle" xml:space="preserve">
-    <value>FancyZones</value>
-    <comment>do not loc the product name</comment>
+    <value>About FancyZones</value>
   </data>
   <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
-    <value>File Explorer</value>
-    <comment>do not loc the product name</comment>
+    <value>About File Explorer</value>
   </data>
   <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
     <value>File Explorer</value>
     <comment>Use same translation as Windows does for File Explorer</comment>
   </data>
   <data name="ImageResizer.ModuleTitle" xml:space="preserve">
-    <value>Image Resizer</value>
-    <comment>do not loc the product name</comment>
+    <value>About Image Resizer</value>
   </data>
   <data name="KeyboardManager.ModuleTitle" xml:space="preserve">
-    <value>Keyboard Manager</value>
-    <comment>do not loc the product name</comment>
+    <value>About Keyboard Manager</value>
   </data>
   <data name="ColorPicker.ModuleTitle" xml:space="preserve">
-    <value>Color Picker</value>
-    <comment>do not loc the product name</comment>
+    <value>About Color Picker</value>
   </data>
   <data name="PowerLauncher.ModuleTitle" xml:space="preserve">
-    <value>PowerToys Run</value>
-    <comment>do not loc the product name</comment>
+    <value>About PowerToys Run</value>
   </data>
   <data name="PowerToys_Run_Image.AutomationProperties.Name" xml:space="preserve">
     <value>PowerToys Run</value>
   </data>
   <data name="PowerRename.ModuleTitle" xml:space="preserve">
-    <value>PowerRename</value>
+    <value>About PowerRename</value>
     <comment>do not loc the product name</comment>
   </data>
   <data name="PowerRename_Image.AutomationProperties.Name" xml:space="preserve">
@@ -794,8 +788,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <comment>do not loc</comment>
   </data>
   <data name="ShortcutGuide.ModuleTitle" xml:space="preserve">
-    <value>Shortcut Guide</value>
-    <comment>do not loc the product name</comment>
+    <value>About Shortcut Guide</value>
   </data>
   <data name="Shortcut_Guide_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Guide</value>
@@ -1265,8 +1258,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>PowerToys Settings</value>
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
-    <value>Awake</value>
-    <comment>do not loc the product name</comment>
+    <value>About Awake</value>
   </data>
   <data name="Awake.ModuleDescription" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>
@@ -1350,6 +1342,44 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download and install</value>
   </data>
+  <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
+    <value>Fills</value>
+  </data>
+  <data name="ImageResizer_Fit_Fit_ThirdPersonSingular" xml:space="preserve">
+    <value>Fits within</value>
+  </data>
+  <data name="ImageResizer_Fit_Stretch_ThirdPersonSingular" xml:space="preserve">
+    <value>Stretches to</value>
+  </data>
+  <data name="ImageResizer_Unit_Centimeter" xml:space="preserve">
+    <value>Centimeters</value>
+  </data>
+  <data name="ImageResizer_Unit_Inch" xml:space="preserve">
+    <value>Inches</value>
+  </data>
+  <data name="ImageResizer_Unit_Percent" xml:space="preserve">
+    <value>Percent</value>
+  </data>
+  <data name="ImageResizer_Unit_Pixel" xml:space="preserve">
+    <value>Pixels</value>
+  </data>
+  <data name="EditTooltip.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+    <comment>Label of a cancel button</comment>
+  </data>
+  <data name="Delete_Dialog_Description" xml:space="preserve">
+    <value>Are you sure you want to delete this item?</value>
+  </data>
+	<data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+    <comment>Label of a confirmation button</comment>
+	  </data>
   <data name="Learn_More_Description.AutomationProperties.Name" xml:space="preserve">
     <value>Learn more</value>
   </data>

@@ -399,6 +399,7 @@ ddd
 ddee
 ddf
 Deact
+DECLAR
 declspec
 decltype
 Dedup
@@ -663,6 +664,7 @@ Functiondiscoverykeys
 fwlink
 fwrite
 fxcop
+FZE
 gabime
 GAC
 gacutil
@@ -1299,6 +1301,7 @@ MSDN
 msedge
 mshtmdid
 msi
+MSIFASTINSTALL
 MSIHANDLE
 MSIINSTALLER
 MSIL
@@ -1434,6 +1437,7 @@ ntdll
 NTFS
 NTSTATUS
 nuget
+null
 nullopt
 nullptr
 NUMLOCK
@@ -2092,6 +2096,7 @@ todo
 toggleswitch
 toolbar
 Toolchain
+toolkitconverters
 toolset
 toolstrip
 tooltip
@@ -2311,6 +2316,7 @@ WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 Windowsapp
 WINDOWSBUILDNUMBER
+Windowscodecs
 windowsdesktop
 windowssearch
 windowsx

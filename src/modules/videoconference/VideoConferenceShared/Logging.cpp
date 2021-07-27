@@ -7,6 +7,7 @@
 #include <chrono>
 #include <filesystem>
 
+#include <initguid.h>
 #include <mfapi.h>
 
 #pragma warning(disable : 4127)

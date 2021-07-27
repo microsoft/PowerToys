@@ -297,6 +297,7 @@
                 <ui:FlyoutService.Flyout>
                     <ui:Flyout x:Name="DetailsFlyout"
                                Placement="Bottom"
+                               Opened="DetailsFlyout_Opened"
                                Closed="DetailsFlyout_Closed">
                         <Grid Margin="0,4,0,12"
                               KeyboardNavigation.TabNavigation="Contained"
