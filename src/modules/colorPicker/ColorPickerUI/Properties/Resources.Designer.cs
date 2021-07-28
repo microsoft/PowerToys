@@ -79,6 +79,42 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Color code.
+        /// </summary>
+        public static string Color_Code {
+            get {
+                return ResourceManager.GetString("Color_Code", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color history.
+        /// </summary>
+        public static string Color_History {
+            get {
+                return ResourceManager.GetString("Color_History", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color palette.
+        /// </summary>
+        public static string Color_Palette {
+            get {
+                return ResourceManager.GetString("Color_Palette", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color picker control.
+        /// </summary>
+        public static string Color_Picker_Control {
+            get {
+                return ResourceManager.GetString("Color_Picker_Control", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copied to clipboard.
         /// </summary>
         public static string Copied_to_clipboard {
@@ -106,6 +142,24 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Color dark 1.
+        /// </summary>
+        public static string Darker_color {
+            get {
+                return ResourceManager.GetString("Darker_color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color dark 2.
+        /// </summary>
+        public static string Darkest_color {
+            get {
+                return ResourceManager.GetString("Darkest_color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Green value.
         /// </summary>
         public static string Green_value {
@@ -129,6 +183,24 @@ namespace ColorPicker.Properties {
         public static string Hue_slider {
             get {
                 return ResourceManager.GetString("Hue_slider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color light 1.
+        /// </summary>
+        public static string Lighter_color {
+            get {
+                return ResourceManager.GetString("Lighter_color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color light 2.
+        /// </summary>
+        public static string Lightest_color {
+            get {
+                return ResourceManager.GetString("Lightest color", resourceCulture);
             }
         }
         

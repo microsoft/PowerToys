@@ -51,8 +51,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 return (null, string.Empty);
             }
 
-            var baseKey = query.Split('\\').FirstOrDefault() ?? string.Empty;
+            var baseKey = query.Split('\\').FirstOrDefault();
             var subKey = query.Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase).TrimStart('\\');
+
             var baseKeyResult = _baseKeys
                 .Where(found => found.Key.StartsWith(baseKey, StringComparison.InvariantCultureIgnoreCase))
                 .Select(found => found.Value)
@@ -99,7 +100,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
             do
             {
-                result = FindSubKey(subKey, subKeysNames.ElementAtOrDefault(index) ?? string.Empty);
+                result = FindSubKey(subKey, subKeysNames.ElementAtOrDefault(index));
 
                 if (result.Count == 0)
                 {
@@ -167,22 +168,13 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
                     if (string.Equals(subKey, searchSubKey, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
-                        if (key != null)
-                        {
-                            list.Add(new RegistryEntry(key));
-                        }
-
+                        list.Add(new RegistryEntry(parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree)));
                         return list;
                     }
 
                     try
                     {
-                        var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
-                        if (key != null)
-                        {
-                            list.Add(new RegistryEntry(key));
-                        }
+                        list.Add(new RegistryEntry(parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree)));
                     }
                     catch (Exception exception)
                     {

@@ -50,8 +50,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
             var querySplit = query.Split(QuerySplitCharacter);
 
-            queryKey = querySplit.FirstOrDefault() ?? string.Empty;
-            queryValueName = querySplit.LastOrDefault() ?? string.Empty;
+            queryKey = querySplit.FirstOrDefault();
+            queryValueName = querySplit.LastOrDefault();
             return true;
         }
 

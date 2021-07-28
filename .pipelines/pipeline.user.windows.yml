@@ -102,6 +102,7 @@ build:
             - 'modules\FancyZones\ManagedCommon.dll'
             - 'modules\FancyZones\ManagedTelemetry.dll'
             - 'modules\FancyZones\PowerToys.FancyZones.exe'
+            - 'modules\FancyZones\PowerToysInterop.dll'
             - 'modules\FancyZones\Telemetry.dll'
             - 'modules\FancyZones\Microsoft.PowerToys.Common.UI.dll'
             - 'modules\FileExplorerPreview\ManagedTelemetry.dll'

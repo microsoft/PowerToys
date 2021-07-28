@@ -38,21 +38,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set { Set(ref isBackEnabled, value); }
         }
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        private static extern IntPtr LoadLibrary(string dllToLoad);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        private static extern bool FreeLibrary(IntPtr hModule);
-
         public bool IsVideoConferenceBuild
         {
             get
             {
-                var mfHandle = LoadLibrary("mf.dll");
+                var mfHandle = NativeMethods.LoadLibrary("mf.dll");
                 bool mfAvailable = mfHandle != null;
                 if (mfAvailable)
                 {
-                    FreeLibrary(mfHandle);
+                    NativeMethods.FreeLibrary(mfHandle);
                 }
 
                 return this != null && File.Exists("modules/VideoConference/VideoConferenceModule.dll") && mfAvailable;
