@@ -129,8 +129,7 @@ steps:
       **\UnitTest-ColorPickerUI.dll
       **\Microsoft.Interop.Tests.dll
       !**\obj\**
-      !**\ref\**
-      
+
 - task: VSTest@2
   displayName: 'XUnit Tests'
   inputs:
@@ -140,7 +139,6 @@ steps:
     testAssemblyVer2: |
       **\ImageResizer.Test.dll
       !**\obj\**
-      !**\ref\**
 
 - task: VSTest@2
   displayName: 'NUnit Tests'
@@ -157,7 +155,6 @@ steps:
       **\Wox.Test.dll
       **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
       !**\obj\**
-      !**\ref\**
 
 # Native dlls
 - task: VSTest@2
