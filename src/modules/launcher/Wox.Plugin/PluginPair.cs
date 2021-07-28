@@ -80,6 +80,7 @@ namespace Wox.Plugin
 
             Metadata.ActionKeyword = setting.ActionKeyword;
             Metadata.IsGlobal = setting.IsGlobal;
+
             if (Plugin is ISettingProvider)
             {
                 (Plugin as ISettingProvider).UpdateSettings(setting);
