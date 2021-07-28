@@ -377,10 +377,10 @@
     <value>Color picker control</value>
   </data>
   <data name="Darker_color" xml:space="preserve">
-    <value>Color dark 2</value>
+    <value>Color dark 1</value>
   </data>
   <data name="Darkest_color" xml:space="preserve">
-    <value>Color dark 1</value>
+    <value>Color dark 2</value>
   </data>
   <data name="Lighter_color" xml:space="preserve">
     <value>Color light 1</value>

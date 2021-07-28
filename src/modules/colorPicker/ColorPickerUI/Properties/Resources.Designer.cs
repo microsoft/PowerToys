@@ -142,7 +142,7 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Color dark 2.
+        ///   Looks up a localized string similar to Color dark 1.
         /// </summary>
         public static string Darker_color {
             get {
@@ -151,7 +151,7 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Color dark 1.
+        ///   Looks up a localized string similar to Color dark 2.
         /// </summary>
         public static string Darkest_color {
             get {
