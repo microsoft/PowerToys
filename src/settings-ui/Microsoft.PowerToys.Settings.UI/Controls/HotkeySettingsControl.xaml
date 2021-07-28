@@ -21,7 +21,7 @@
             </TextBlock>
         </ToolTipService.ToolTip>
         <TextBox.Header>
-            <TextBlock>
+            <TextBlock AutomationProperties.Name="{x:Bind Header, Mode=OneTime}">
                     <Run Text="{x:Bind Header, Mode=OneTime}"/>
                     <Run Text="&#xE946;" FontFamily="Segoe MDL2 Assets"/>
             </TextBlock>

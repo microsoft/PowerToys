@@ -100,42 +100,27 @@
                 <TextBlock x:Uid="General_Updates"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
+                
+                
+                
                 <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateUpToDateToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal"
-                            Margin="{StaticResource SmallTopMargin}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                        <TextBlock x:Name="General_Version_UpToDate" 
-                               x:Uid="General_Version" 
-                               Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                        <TextBlock Text="{Binding PowerToysVersion }"
-                               Margin="4,0,0,0"
-                               Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                    </StackPanel>
 
-                    <StackPanel Orientation="Horizontal"
-                            Margin="{StaticResource SmallTopMargin}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=General_VersionLastChecked}"
-                            Visibility="{Binding AutoUpdatesEnabled, Converter={StaticResource VisibleIfTrueConverter}}">
+                    <TextBlock Margin="{StaticResource SmallTopMargin}" Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}">
+                        <Run x:Uid="General_Version" />
+                        <Run Text="{Binding PowerToysVersion}"/>
+                    </TextBlock>
 
-                        <TextBlock x:Name="General_VersionLastChecked"
-                               x:Uid="General_VersionLastChecked"
-                               Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
+                    <TextBlock Margin="{StaticResource SmallTopMargin}" Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}">
+                        <Run x:Uid="General_VersionLastChecked" />
+                        <Run Text="{Binding UpdateCheckedDate, Mode=OneWay}"/>
+                    </TextBlock>
 
-                        <TextBlock Text="{Binding UpdateCheckedDate, Mode=OneWay}"
+                    <TextBlock x:Uid="General_CheckingForUpdates" Margin="{StaticResource SmallTopMargin}" Visibility="{Binding IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"/>
+
+                    <TextBlock x:Uid="General_UpToDate"
+                               Margin="{StaticResource SmallTopMargin}"
                                Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
-                               Margin="6,0" />
-                    </StackPanel>
-
-                    <TextBlock x:Name="General_CheckingForUpdates"
-                           x:Uid="General_CheckingForUpdates"
-                           Margin="{StaticResource SmallTopMargin}"
-                           Visibility="{Binding IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"/>
-
-                    <TextBlock x:Name="General_UpToDate"
-                           x:Uid="General_UpToDate"
-                           Margin="{StaticResource SmallTopMargin}"
-                           Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
-                           Visibility="{Binding IsNewVersionCheckedAndUpToDate, Converter={StaticResource VisibleIfTrueConverter}}"/>
+                               Visibility="{Binding IsNewVersionCheckedAndUpToDate, Converter={StaticResource VisibleIfTrueConverter}}"/>
 
                     <Button x:Uid="GeneralPage_CheckForUpdates"
                         Margin="{StaticResource SmallTopMargin}"
@@ -144,17 +129,12 @@
                         />
                 </StackPanel>
 
-                <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToDownloadToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal"
-                            Margin="{StaticResource SmallTopMargin}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                        <TextBlock x:Name="General_Version_ReadyToDownload" 
-                               x:Uid="General_Version" 
-                               Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                        <TextBlock Text="{Binding PowerToysVersion }"
-                               Margin="4,0,0,0"
-                               Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                    </StackPanel>
+                     <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToDownloadToVisibilityConverter}}">
+
+                    <TextBlock Margin="{StaticResource SmallTopMargin}" Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}">
+                        <Run x:Uid="General_Version" />
+                        <Run Text="{Binding PowerToysVersion}" />
+                    </TextBlock>
 
                     <StackPanel Orientation="Horizontal"
                             Margin="{StaticResource SmallTopMargin}"
@@ -178,16 +158,10 @@
                 </StackPanel>
 
                 <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToInstallToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal"
-                            Margin="{StaticResource SmallTopMargin}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                        <TextBlock x:Name="General_Version_ReadyToInstall" 
-                               x:Uid="General_Version" 
-                               Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                        <TextBlock Text="{Binding PowerToysVersion }"
-                               Margin="4,0,0,0"
-                               Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                    </StackPanel>
+                    <TextBlock Margin="{StaticResource SmallTopMargin}" Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}">
+                            <Run x:Uid="General_Version" />
+                            <Run Text="{Binding PowerToysVersion}"/>
+                    </TextBlock>
 
                     <StackPanel Orientation="Horizontal"
                             Margin="{StaticResource SmallTopMargin}"
@@ -206,17 +180,12 @@
                 </StackPanel>
 
                 <StackPanel Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateCannotDownloadToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal"
-                            Margin="{StaticResource SmallTopMargin}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                        <TextBlock x:Name="General_Version_Error" 
-                               x:Uid="General_Version" 
-                               Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                        <TextBlock Text="{Binding PowerToysVersion}"
-                               Margin="4,0,0,0"
-                               Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                    </StackPanel>
 
+                    <TextBlock Margin="{StaticResource SmallTopMargin}" Opacity="{Binding AutoUpdatesEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}">
+                        <Run x:Uid="General_Version"  />
+                        <Run Text="{Binding PowerToysVersion}"/>
+                    </TextBlock>
+                    
                     <StackPanel Orientation="Horizontal"
                             Margin="{StaticResource SmallTopMargin}"
                             AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
@@ -237,6 +206,8 @@
                         IsEnabled="{Binding IsDownloadAllowed}"/>
                 </StackPanel>
 
+                
+                
                 <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates" 
                           Margin="{StaticResource MediumTopMargin}"
                           Visibility="{Binding Mode=TwoWay, Path=IsAdmin, Converter={StaticResource VisibleIfTrueConverter}}"

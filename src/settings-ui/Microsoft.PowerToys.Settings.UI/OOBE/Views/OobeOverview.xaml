@@ -14,6 +14,7 @@
         </Grid.RowDefinitions>
 
         <Image Stretch="UniformToFill"
+                AutomationProperties.AccessibilityView="Raw"
                Source="{x:Bind ViewModel.PreviewImageSource}" />
 
         <ScrollViewer Grid.Row="1"

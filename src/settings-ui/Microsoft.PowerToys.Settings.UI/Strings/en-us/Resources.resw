@@ -1383,4 +1383,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Learn_More_Description.AutomationProperties.Name" xml:space="preserve">
     <value>Learn more</value>
   </data>
+    <data name="ColorPicker_ColorFormat_ToggleSwitch.AutomationProperties.Name" xml:space="preserve">
+    <value>Show format in editor</value>
+  </data>
 </root>

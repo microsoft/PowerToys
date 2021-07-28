@@ -255,6 +255,7 @@
                                 </StackPanel>
 
                                 <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
+                                              AutomationProperties.HelpText="{x:Bind Path=Name}"
                                               x:Name="ToggleSwitch"
                                               OnContent=""
                                               OffContent=""
