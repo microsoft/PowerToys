@@ -208,15 +208,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";About_VideoConference.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[About Video Conference]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Konferencja wideo — informacje]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";Admin_mode.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Administrator mode]]></Val>
@@ -960,12 +951,12 @@
       </Item>
       <Item ItemId=";FileExplorerPreview_RunAsAdminRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You need to run as administrator to modify these settings.]]></Val>
+          <Val><![CDATA[* You need to run as administrator to modify these settings.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aby zmodyfikować te ustawienia, należy uruchomić program jako administrator.]]></Val>
+            <Val><![CDATA[* Aby zmodyfikować te ustawienia, musisz uruchomić jako administrator.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[You need to run as administrator to modify these settings]]></Val>
+            <Val><![CDATA[You need to run as administrator to modify these settings.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1164,10 +1155,13 @@
       </Item>
       <Item ItemId=";General_FailedToDownloadTheNewVersion.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[An error occurred trying to update to]]></Val>
+          <Val><![CDATA[* An error occurred trying to update to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wystąpił błąd podczas próby aktualizacji do]]></Val>
+            <Val><![CDATA[* Wystąpił błąd podczas próby aktualizacji do]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[An error occurred trying to update to]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1218,12 +1212,12 @@
       </Item>
       <Item ItemId=";General_RunAsAdminRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You need to run as administrator to use this setting.]]></Val>
+          <Val><![CDATA[* You need to run as administrator to use this setting.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aby korzystać z tego ustawienia, musisz uruchomić jako administrator.]]></Val>
+            <Val><![CDATA[* Aby korzystać z tego ustawienia, musisz uruchomić jako administrator.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[You need to run as administrator to use this setting]]></Val>
+            <Val><![CDATA[You need to run as administrator to use this setting.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1918,6 +1912,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Learn_More_Description.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn more]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dowiedz się więcej]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";MadeWithOssLove.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Made with ]D83D;]DC97; by Microsoft and the PowerToys community.]]></Val>
@@ -2181,10 +2184,13 @@
       </Item>
       <Item ItemId=";Oobe_ImageResizer" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[ImageResizer]]></Val>
+          <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ImageResizer]]></Val>
+            <Val><![CDATA[Zmiana rozmiaru obrazów]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[ImageResizer]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2919,28 +2925,37 @@
       </Item>
       <Item ItemId=";Run_AllPluginsDisabled.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[PowerToys Run can't provide any results without plugins. Please enable at least one plugin.]]></Val>
+          <Val><![CDATA[* PowerToys Run can't provide any results without plugins. Please enable at least one plugin.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Funkcja PowerToys Run nie może dostarczyć żadnych wyników bez wtyczek. Włącz co najmniej jedną wtyczkę.]]></Val>
+            <Val><![CDATA[* Funkcja PowerToys Run nie może dostarczyć żadnych wyników bez wtyczek. Włącz co najmniej jedną wtyczkę.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerToys Run can't provide any results without plugins. Please enable at least one plugin.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Run_NotAccessibleWarning.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Please define an activation phrase or allow this plugin for the global results to use it.]]></Val>
+          <Val><![CDATA[* Please define an activation phrase or allow this plugin for the global results to use it.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zdefiniuj frazę aktywacji lub zezwól tej wtyczce na korzystanie z niej przez wyniki globalne.]]></Val>
+            <Val><![CDATA[* Zdefiniuj frazę aktywacji lub zezwól tej wtyczce na korzystanie z niej przez wyniki globalne.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Please define an activation phrase or allow this plugin for the global results to use it.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Run_NotAllowedActionKeyword.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[This activation phrase overrides the behavior of other plugins. Please change it to something else.]]></Val>
+          <Val><![CDATA[* This activation phrase overrides the behavior of other plugins. Please change it to something else.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ta fraza aktywacji przesłania zachowanie innych wtyczek. Zmień ją na inną.]]></Val>
+            <Val><![CDATA[* Ta fraza aktywacji przesłania zachowanie innych wtyczek. Zmień ją na inną.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[This activation phrase overrides the behavior of other plugins. Please change it to something else.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3301,15 +3316,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";VideoConference_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Video Conference Mute is a quick and easy way to do an global "mute" of both your microphone and webcam.]D;]A;Disabling this module or closing PowerToys will unmute the microphone and camera.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wyciszenie konferencji wideo to szybka i prosta metoda przeprowadzenia globalnego „wyciszenia” zarówno mikrofonu, jak i kamery internetowej.]D;]A;Wyłączenie tego modułu lub zamknięcie dodatków PowerToys spowoduje wyłączenie wyciszenia mikrofonu i kamery.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";VideoConference_Enable.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable Video Conference]]></Val>
@@ -3324,15 +3330,6 @@
           <Val><![CDATA[Hide toolbar when both camera and microphone are unmuted]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ukryj pasek narzędzi, gdy kamera i mikrofon mają wyłączone wyciszenie]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";VideoConference_ImageHyperlinkToDocs.NavigateUri" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[https://aka.ms/PowerToysOverview_VideoConference]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[https://aka.ms/PowerToysOverview_VideoConference]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
