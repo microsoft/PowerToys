@@ -5,7 +5,12 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 {

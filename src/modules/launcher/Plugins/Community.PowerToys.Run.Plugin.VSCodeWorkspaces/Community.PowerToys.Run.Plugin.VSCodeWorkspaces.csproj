@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 <Import Project="..\..\..\..\Version.props" />
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows10.0.18362</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectGuid>{4D971245-7A70-41D5-BAA0-DDB5684CAF51}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Community.PowerToys.Run.Plugin.VSCodeWorkspaces</RootNamespace>
@@ -54,6 +54,12 @@
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="Windows.Foundation.UniversalApiContract">
+      <HintPath>C:\Program Files (x86)\Windows Kits\10\References\10.0.18362.0\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd</HintPath>
+    </Reference>
   </ItemGroup>
   
   <ItemGroup>
