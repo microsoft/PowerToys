@@ -1,13 +1,13 @@
 ## Shortcut Guide
  * Run PowerToys as user:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [X] Verify `Win + Shift + /` opens the guide
+   - [X] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
    * Restore the `Win + Shift + /` hotkey.
-   - [ ] Open the guide and close it pressing `Esc`
-   - [ ] Open the guide and close it pressing and releasing the `Win` key
+   - [X] Open the guide and close it pressing `Esc`
+   - [X] Open the guide and close it pressing and releasing the `Win` key
  * With PowerToys running as a user, open an elevated app and keep it on foreground:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
+   - [X] Verify `Win + Shift + /` opens the guide
+   - [X] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
 ## File Explorer Add-ons
  * Running as user:
