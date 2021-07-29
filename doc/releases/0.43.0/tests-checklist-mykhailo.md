@@ -12,18 +12,18 @@
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane shows the correct content
+   - [X] verify the README.md Preview Pane shows the correct content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane works for the SVG files
-   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   - [X] verify Preview Pane works for the SVG files
+   - [X] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
  * Running as admin:
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane doesn't show any content
+   - [X] verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane doesn't show the preview for the SVG files
+   - [X] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached
-   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   - [X] copy and paste one of the SVG file and verify the new file show the generic SVG icon
 
 ## Expresso
  - [ ] Try out the features and see if they work, no list at this time.
