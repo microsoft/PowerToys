@@ -96,7 +96,7 @@
    - [ ] verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\runner\svgs
    - [ ] verify Preview Pane doesn't show the preview for the SVG files
-   * the Icon Preview for the existing SVG will still show since the icons are cached
+   * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system)
    - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
 
 ## Image Resizer
