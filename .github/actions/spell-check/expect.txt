@@ -248,6 +248,7 @@ CLASSDC
 classmethod
 classname
 CLASSNOTAVAILABLE
+cleanmgr
 clickable
 clickonce
 CLIENTEDGE
