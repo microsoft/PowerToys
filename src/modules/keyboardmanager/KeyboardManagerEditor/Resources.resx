@@ -357,6 +357,9 @@
   <data name="Delete_Remapping_Button" xml:space="preserve">
     <value>Delete Remapping</value>
   </data>
+  <data name="Delete_Remapping_Event" xml:space="preserve">
+    <value>Remapping deleted</value>
+  </data>
   <data name="AutomationProperties_Row" xml:space="preserve">
     <value>Row </value>
   </data>

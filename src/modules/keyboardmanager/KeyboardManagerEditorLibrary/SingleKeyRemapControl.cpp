@@ -135,7 +135,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     deleteRemapKeys.Content(deleteSymbol);
     deleteRemapKeys.Background(Media::SolidColorBrush(Colors::Transparent()));
     deleteRemapKeys.HorizontalAlignment(HorizontalAlignment::Center);
-    deleteRemapKeys.Click([&, parent, row, brush](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    deleteRemapKeys.Click([&, parent, row, brush, deleteRemapKeys](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         uint32_t rowIndex;
         // Get index of delete button
         UIElementCollection children = parent.Children();
@@ -156,6 +156,15 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
             StackPanel targetCol = row.Children().GetAt(2).as<StackPanel>();
             Button delButton = row.Children().GetAt(3).as<Button>();
             UpdateAccessibleNames(sourceCol, targetCol, delButton, i);
+        }
+
+        if (auto automationPeer{ Automation::Peers::FrameworkElementAutomationPeer::FromElement(deleteRemapKeys) })
+        {
+            automationPeer.RaiseNotificationEvent(
+                Automation::Peers::AutomationNotificationKind::ActionCompleted,
+                Automation::Peers::AutomationNotificationProcessing::ImportantMostRecent,
+                GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_EVENT),
+                L"KeyRemappingDeletedNotificationEvent" /* unique name for this notification category */);
         }
 
         children.RemoveAt(rowIndex);
