@@ -736,7 +736,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="On.Content" xml:space="preserve">
     <value>On</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Text" xml:space="preserve">
+  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Content" xml:space="preserve">
     <value>Learn more about administrator mode</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
@@ -796,7 +796,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="General_Repository.Label" xml:space="preserve">
     <value>GitHub repository</value>
   </data>
-  <data name="General_Updates.Text" xml:space="preserve">
+  <data name="General_Updates.Header" xml:space="preserve">
     <value>Updates</value>
   </data>
   <data name="General_Version.Text" xml:space="preserve">
@@ -808,10 +808,10 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>
   </data>
-  <data name="Admin_mode.Text" xml:space="preserve">
+  <data name="Admin_mode.Header" xml:space="preserve">
     <value>Administrator mode</value>
   </data>
-  <data name="General_RunAsAdminRequired.Text" xml:space="preserve">
+  <data name="General_RunAsAdminRequired.Message" xml:space="preserve">
     <value>* You need to run as administrator to use this setting.</value>
   </data>
   <data name="ShortcutWarningLabel.Text" xml:space="preserve">
@@ -1316,8 +1316,8 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Oobe_Awake_TipsAndTricks.Text" xml:space="preserve">
     <value>You can always change modes quickly by {right-clicking the Awake icon} in the system tray.</value>
   </data>
-  <data name="General_FailedToDownloadTheNewVersion.Text" xml:space="preserve">
-    <value>* An error occurred trying to update to</value>
+  <data name="General_FailedToDownloadTheNewVersion.Message" xml:space="preserve">
+    <value>An error occurred trying to install this update</value>
   </data>
   <data name="General_InstallNow.Content" xml:space="preserve">
     <value>Install now</value>
@@ -1334,13 +1334,13 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_TryAgainToDownloadAndInstall.Content" xml:space="preserve">
     <value>Try again to download and install</value>
   </data>
-  <data name="General_CheckingForUpdates.Text" xml:space="preserve">
+  <data name="General_CheckingForUpdates.Message" xml:space="preserve">
     <value>Checking for updates...</value>
   </data>
-  <data name="General_NewVersionReadyToInstall.Text" xml:space="preserve">
-    <value>A new version is ready to install:</value>
+  <data name="General_NewVersionReadyToInstall.Message" xml:space="preserve">
+    <value>A new version is ready to install</value>
   </data>
-  <data name="General_UpToDate.Text" xml:space="preserve">
+  <data name="General_UpToDate.Message" xml:space="preserve">
     <value>PowerToys is up to date</value>
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
