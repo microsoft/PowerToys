@@ -5,11 +5,10 @@
 
     <!-- Template for the header of a section of settings -->
     <DataTemplate x:Key="SectionHeaderTemplate">
-        <TextBlock
-                    Text="{Binding}"
-                    Style="{ThemeResource BodyStrongTextBlockStyle}"
-                    Margin="2,32,0,8"
-                    AutomationProperties.HeadingLevel="Level2" />
+        <TextBlock Text="{Binding}"
+                   Style="{ThemeResource BodyStrongTextBlockStyle}"
+                   Margin="2,32,0,8"
+                   AutomationProperties.HeadingLevel="Level2" />
     </DataTemplate>
 
     <!-- Template for content of a section of settings -->

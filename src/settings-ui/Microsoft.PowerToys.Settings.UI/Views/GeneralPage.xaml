@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls" xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
@@ -58,31 +59,53 @@
                 </HyperlinkButton>
 
 
-                <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
+                <TextBlock 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
                 <!-- Replaced the Radiobuttons parent control with a StackPanel to mitigate the Tab and Arrow key related keyboard navigation issues due to XAML Islands
             Tracking issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
                 <TextBlock x:Name="RadioButtons_Name_Theme" 
-                       x:Uid="ColorModeHeader"
+                     
                        Margin="{StaticResource SmallTopMargin}"/>
-                <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Theme}">
-                    <RadioButton x:Uid="Radio_Theme_Dark"
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}"/>
 
-                    <RadioButton x:Uid="Radio_Theme_Light" 
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}"/>
 
-                    <RadioButton x:Uid="Radio_Theme_Default"
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
-                    <HyperlinkButton Click="OpenColorsSettings_Click" Margin="-12,0,0,0">
-                        <TextBlock x:Uid="Windows_Color_Settings" />
-                    </HyperlinkButton>
-                </StackPanel>
 
-                <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_RunAtStartUp"  
-                          Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=Startup}"/>
+
+
+
+                <toolkitcontrols:HeaderedItemsControl IsEnabled="True" x:Uid="ShortcutGuide_Appearance_Behavior">
+                    <muxc:Expander IsExpanded="True" Style="{StaticResource SettingsExpanderStyle}">
+                        <muxc:Expander.Header>
+                            <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                <controls:Setting.Description>
+                                    <HyperlinkButton Click="OpenColorsSettings_Click"
+                                                     x:Uid="Windows_Color_Settings"/>
+                                </controls:Setting.Description>
+                                <controls:Setting.ActionContent>
+                                    <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
+                                        <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
+                                        <ComboBoxItem x:Uid="Radio_Theme_Light"/>
+                                        <ComboBoxItem x:Uid="Radio_Theme_Default"/>
+                                    </ComboBox>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </muxc:Expander.Header>
+                        <muxc:Expander.Content>
+                            <StackPanel Orientation="Vertical">
+                                <controls:Setting x:Uid="GeneralPage_RunAtStartUp" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <ToggleSwitch  IsOn="{Binding Mode=TwoWay, Path=Startup}"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                            </StackPanel>
+                        </muxc:Expander.Content>
+                    </muxc:Expander>
+
+                </toolkitcontrols:HeaderedItemsControl>
+
+
+
+
 
 
                 <TextBlock x:Uid="General_Updates"

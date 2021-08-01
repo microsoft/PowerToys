@@ -18,8 +18,7 @@
          
             <StackPanel Orientation="Vertical"
                     x:Name="PowerRenameView"
-                    HorizontalAlignment="Stretch"
-                    Margin="0,0,48,0">
+                    HorizontalAlignment="Stretch">
 
                 <controls:Setting x:Uid="PowerRename_Toggle_Enable">
                     <controls:Setting.Icon>

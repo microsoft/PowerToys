@@ -80,14 +80,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             // normalization for switch statements
             switch (GeneralSettingsConfig.Theme.ToUpperInvariant())
             {
-                case "LIGHT":
-                    _isLightThemeRadioButtonChecked = true;
-                    break;
                 case "DARK":
-                    _isDarkThemeRadioButtonChecked = true;
+                    _themeIndex = 0;
+                    break;
+                case "LIGHT":
+                    _themeIndex = 1;
                     break;
                 case "SYSTEM":
-                    _isSystemThemeRadioButtonChecked = true;
+                    _themeIndex = 2;
                     break;
             }
 
@@ -116,9 +116,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _isElevated;
         private bool _runElevated;
         private bool _isAdmin;
-        private bool _isDarkThemeRadioButtonChecked;
-        private bool _isLightThemeRadioButtonChecked;
-        private bool _isSystemThemeRadioButtonChecked;
+        private int _themeIndex;
+
         private bool _autoDownloadUpdates;
 
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
@@ -255,86 +254,76 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This may throw if the XAML page is not initialized in tests (https://github.com/microsoft/PowerToys/pull/2676)")]
-        public bool IsDarkThemeRadioButtonChecked
+        public int ThemeIndex
         {
             get
             {
-                return _isDarkThemeRadioButtonChecked;
+                return _themeIndex;
             }
 
             set
             {
-                if (value == true)
+                if (_themeIndex != value)
                 {
-                    GeneralSettingsConfig.Theme = "dark";
-                    _isDarkThemeRadioButtonChecked = value;
-                    try
+                    if (value == 0)
                     {
-                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogError("Exception encountered when changing Settings theme", e);
-                    }
+                        // set theme to dark.
+                        GeneralSettingsConfig.Theme = "dark";
+                        _themeIndex = value;
 
-                    NotifyPropertyChanged();
-                }
-            }
-        }
+                        try
+                        {
+                            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+                        {
+                            Logger.LogError("Exception encountered when changing Settings theme", e);
+                        }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This may throw if the XAML page is not initialized in tests (https://github.com/microsoft/PowerToys/pull/2676)")]
-        public bool IsLightThemeRadioButtonChecked
-        {
-            get
-            {
-                return _isLightThemeRadioButtonChecked;
-            }
-
-            set
-            {
-                if (value == true)
-                {
-                    GeneralSettingsConfig.Theme = "light";
-                    _isLightThemeRadioButtonChecked = value;
-                    try
-                    {
-                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogError("Exception encountered when changing Settings theme", e);
+                        NotifyPropertyChanged();
                     }
 
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This may throw if the XAML page is not initialized in tests (https://github.com/microsoft/PowerToys/pull/2676)")]
-        public bool IsSystemThemeRadioButtonChecked
-        {
-            get
-            {
-                return _isSystemThemeRadioButtonChecked;
-            }
-
-            set
-            {
-                if (value == true)
-                {
-                    GeneralSettingsConfig.Theme = "system";
-                    _isSystemThemeRadioButtonChecked = value;
-                    try
+                    if (value == 1)
                     {
-                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogError("Exception encountered when changing Settings theme", e);
+                        // set theme to light.
+                        GeneralSettingsConfig.Theme = "light";
+                        _themeIndex = value;
+
+                        try
+                        {
+                            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+                        {
+                            Logger.LogError("Exception encountered when changing Settings theme", e);
+                        }
+
+                        NotifyPropertyChanged();
                     }
 
-                    NotifyPropertyChanged();
+                    if (value == 2)
+                    {
+                        // set theme to system default.
+                        GeneralSettingsConfig.Theme = "system";
+                        _themeIndex = value;
+
+                        try
+                        {
+                            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+                        {
+                            Logger.LogError("Exception encountered when changing Settings theme", e);
+                        }
+
+                        NotifyPropertyChanged();
+                    }
                 }
             }
         }

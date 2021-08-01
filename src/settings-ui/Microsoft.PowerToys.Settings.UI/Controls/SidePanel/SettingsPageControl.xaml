@@ -43,7 +43,7 @@
 
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="240"/>
+                        <ColumnDefinition Width="160"/>
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Border CornerRadius="4" VerticalAlignment="Top">
@@ -60,7 +60,7 @@
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    TextWrapping="Wrap"/>
 
-                        <ItemsControl ItemsSource="{x:Bind ModuleLinks}">
+                        <ItemsControl ItemsSource="{x:Bind ModuleLinks}" Margin="0,16,0,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="local:SidePanelLink">
                                     <HyperlinkButton NavigateUri="{x:Bind Link}">

@@ -22,7 +22,16 @@
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Center"
                           MinHeight="48">
-
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Background" Value="Red" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <!-- Icon -->
@@ -70,8 +79,9 @@
                                     <Style TargetType="HyperlinkButton" BasedOn="{StaticResource TextBlockButtonStyle}">
                                         <Style.Setters>
                                             <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="FontSize" Value="12"/>
                                             <Setter Property="Margin" Value="0"/>
-                                            <Setter Property="Padding" Value="0,6,0,0"/>
+                                            <Setter Property="Padding" Value="0,0,0,0"/>
                                         </Style.Setters>
                                     </Style>
                                 </ContentPresenter.Resources>

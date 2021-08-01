@@ -362,9 +362,6 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
     <value>Maximum number of results</value>
   </data>
-  <data name="Shortcuts.Text" xml:space="preserve">
-    <value>Shortcuts</value>
-  </data>
   <data name="PowerLauncher_OpenPowerLauncher.Header" xml:space="preserve">
     <value>Open PowerToys Run</value>
   </data>
@@ -508,8 +505,11 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Restart as administrator</value>
     <comment>running PowerToys as a higher level user, account is typically referred to as an admin / administrator</comment>
   </data>
-  <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
+  <data name="GeneralPage_RunAtStartUp.Header" xml:space="preserve">
     <value>Run at startup</value>
+  </data>
+	<data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
+    <value>PowerToys will launch automatically</value>
   </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
@@ -574,7 +574,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Press duration before showing (ms)</value>
     <comment>pressing a key in milliseconds</comment>
   </data>
-  <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
+  <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
@@ -584,11 +584,11 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
   </data>
-  <data name="ShortcutGuide_DisabledApps.Text" xml:space="preserve">
-    <value>Disable for apps</value>
+	<data name="ShortcutGuide_DisabledApps.Header" xml:space="preserve">
+    <value>Exclude apps</value>
   </data>
-  <data name="ShortcutGuide_DisabledApps_TextBoxControl.Header" xml:space="preserve">
-    <value>Turn off Shortcut Guide when these applications have focus. Add one application name per line.</value>
+  <data name="ShortcutGuide_DisabledApps.Description" xml:space="preserve">
+    <value>Turns off Shortcut Guide when these applications have focus. Add one application name per line.</value>
   </data>
   <data name="ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
@@ -901,7 +901,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
   </data>
-  <data name="ColorModeHeader.Text" xml:space="preserve">
+  <data name="ColorModeHeader.Header" xml:space="preserve">
     <value>Choose a mode</value>
   </data>
   <data name="Radio_Theme_Dark.Content" xml:space="preserve">
@@ -916,7 +916,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Windows default</value>
     <comment>Windows refers to the Operating system</comment>
   </data>
-  <data name="Windows_Color_Settings.Text" xml:space="preserve">
+  <data name="Windows_Color_Settings.Content" xml:space="preserve">
     <value>Windows color settings</value>
     <comment>Windows refers to the Operating system</comment>
   </data>
@@ -1087,7 +1087,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Quick layout switch</value>
   </data>
   <data name="ShortcutGuide_OpenShortcutGuide.Header" xml:space="preserve">
-    <value>Open Shortcut Guide</value>
+    <value>Activation shortcut</value>
   </data>
   <data name="Oobe_GetStarted.Text" xml:space="preserve">
     <value>Let's get started!</value>
