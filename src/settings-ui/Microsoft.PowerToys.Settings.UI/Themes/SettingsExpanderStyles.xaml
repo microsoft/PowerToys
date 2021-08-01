@@ -6,7 +6,6 @@
 
     <!-- Thickness -->
     <Thickness x:Key="ExpanderContentPadding">0</Thickness>
-
     <Thickness x:Key="ExpanderSettingMargin">56, 12, 40, 12</Thickness>
 
     <!-- Styles -->
@@ -17,6 +16,7 @@
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Padding" Value="0, 14, 0, 14" />
         <Setter Property="Margin" Value="0"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
     </Style>
 
     <Thickness x:Key="ExpanderChevronMargin">0,0,8,0</Thickness>
@@ -28,6 +28,7 @@
         <Setter Property="BorderBrush" Value="{ThemeResource CardBorderBrush}" />
         <Setter Property="CornerRadius" Value="0" />
         <Setter Property="Padding" Value="{StaticResource ExpanderSettingMargin}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
     </Style>
 
     <!-- Setting expander style -->
@@ -35,6 +36,8 @@
         <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource CardBorderThickness}" />
         <Setter Property="BorderBrush" Value="{ThemeResource CardBorderBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
 
 </ResourceDictionary>

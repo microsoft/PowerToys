@@ -23,8 +23,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             this.DefaultStyleKey = typeof(Setting);
         }
 
-        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
-           "Title",
+        public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(
+           "Header",
            typeof(string),
            typeof(Setting),
            new PropertyMetadata(default(string)));
@@ -48,10 +48,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             null);
 
         [Localizable(true)]
-        public string Title
+        public string Header
         {
-            get => (string)GetValue(TitleProperty);
-            set => SetValue(TitleProperty, value);
+            get => (string)GetValue(HeaderProperty);
+            set => SetValue(HeaderProperty, value);
         }
 
         [Localizable(true)]

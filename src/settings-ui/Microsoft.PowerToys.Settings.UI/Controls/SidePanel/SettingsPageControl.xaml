@@ -66,9 +66,10 @@
 
                 <ContentPresenter x:Name="ModuleContentPresenter"
                           Content="{x:Bind ModuleContent}"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Stretch"
                           Margin="48,12,48,0"
-                          HorizontalAlignment="Left"
-                          MaxWidth="{StaticResource MaxContentWidth}"/>
+                          />
 
                 <RelativePanel Grid.Column="1"
                        x:Name="SidePanel"

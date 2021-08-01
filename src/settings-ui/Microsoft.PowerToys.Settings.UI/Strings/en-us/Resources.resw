@@ -514,7 +514,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
   </data>
-  <data name="PowerRename_ShellIntegration.Text" xml:space="preserve">
+  <data name="PowerRename_ShellIntegration.Header" xml:space="preserve">
     <value>Shell integration</value>
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
@@ -526,10 +526,10 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Settings theme</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
-    <value>Show icon on context menu</value>
+    <value>Show PowerRename in right-click context menu</value>
   </data>
-  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
-    <value>Appear only in extended context menu (Shift + Right-click)</value>
+  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Content" xml:space="preserve">
+    <value>Only appear in the extended context menu (Shift + Right-click)</value>
   </data>
   <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
     <value>Maximum number of items</value>
@@ -552,13 +552,13 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
-  <data name="PowerRename_AutoCompleteHeader.Text" xml:space="preserve">
+  <data name="PowerRename_AutoCompleteHeader.Header" xml:space="preserve">
     <value>Autocomplete</value>
   </data>
   <data name="OpenSource_Notice.Label" xml:space="preserve">
     <value>Open-source notice</value>
   </data>
-  <data name="PowerRename_Toggle_AutoComplete.Content" xml:space="preserve">
+  <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
     <value>Enable autocomplete for the search and replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Text" xml:space="preserve">
@@ -951,11 +951,15 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_WindowBehavior_GroupSettings.Text" xml:space="preserve">
     <value>Window behavior</value>
   </data>
-  <data name="PowerRename_BehaviorHeader.Text" xml:space="preserve">
+  <data name="PowerRename_BehaviorHeader.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
-  <data name="PowerRename_Toggle_UseBoostLib.Content" xml:space="preserve">
-    <value>Use Boost library (provides extended features but may use different regex syntax)</value>
+  <data name="PowerRename_Toggle_UseBoostLib.Header" xml:space="preserve">
+    <value>Use Boost library</value>
+    <comment>Boost is a product name, should not be translated</comment>
+  </data>
+	<data name="PowerRename_Toggle_UseBoostLib.Description" xml:space="preserve">
+    <value>Provides extended features but may use different regex syntax</value>
     <comment>Boost is a product name, should not be translated</comment>
   </data>
   <data name="MadeWithOssLove.Text" xml:space="preserve">

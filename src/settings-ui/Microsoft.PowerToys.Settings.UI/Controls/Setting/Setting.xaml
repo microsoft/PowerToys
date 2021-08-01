@@ -27,7 +27,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <!-- Icon -->
                             <ColumnDefinition Width="*"/>
-                            <!-- Title and subtitle -->
+                            <!-- Header and subtitle -->
                             <ColumnDefinition Width="Auto"/>
                             <!-- Action control -->
                         </Grid.ColumnDefinitions>
@@ -44,16 +44,15 @@
                           VerticalAlignment="Center"/>
 
 
-                        <StackPanel x:Name="TitleDescriptionPanel"
+                        <StackPanel
                             VerticalAlignment="Center"
                             Grid.Column="1"
                             HorizontalAlignment="Stretch"
                             Margin="0,0,16,0">
 
                             <TextBlock
-                                x:Name="TitlePresenter"
-                                Text="{TemplateBinding Title}"
-                                FontWeight="SemiBold"
+                                x:Name="HeaderPresenter"
+                                Text="{TemplateBinding Header}"
                                 VerticalAlignment="Center"
                                 Foreground="{ThemeResource CardPrimaryForegroundBrush}" />
 
