@@ -879,19 +879,19 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
     <value>PowerToys is up to date.</value>
   </data>
-  <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Text" xml:space="preserve">
+  <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Header" xml:space="preserve">
     <value>Icon Preview</value>
   </data>
-  <data name="FileExplorerPreview_PreviewPane_GroupSettings.Text" xml:space="preserve">
+  <data name="FileExplorerPreview_PreviewPane_GroupSettings.Header" xml:space="preserve">
     <value>Preview Pane</value>
   </data>
-  <data name="FileExplorerPreview_RunAsAdminRequired.Text" xml:space="preserve">
-    <value>* You need to run as administrator to modify these settings.</value>
+  <data name="FileExplorerPreview_RunAsAdminRequired.Message" xml:space="preserve">
+    <value>You need to run as administrator to modify these settings.</value>
   </data>
-  <data name="FileExplorerPreview_AffectsAllUsers.Text" xml:space="preserve">
+  <data name="FileExplorerPreview_AffectsAllUsers.Message" xml:space="preserve">
     <value>The settings on this page affect all users on the system</value>
   </data>
-  <data name="FileExplorerPreview_RebootRequired.Text" xml:space="preserve">
+  <data name="FileExplorerPreview_RebootRequired.Message" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">

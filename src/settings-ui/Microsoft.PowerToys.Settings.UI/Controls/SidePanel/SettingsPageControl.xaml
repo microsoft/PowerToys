@@ -10,126 +10,103 @@
 
     <UserControl.Resources>
         <converters:DoubleToVisibilityConverter x:Name="doubleToVisibilityConverter" GreaterThan="0" TrueValue="Visible" FalseValue="Collapsed" />
+        <Style TargetType="HyperlinkButton" BasedOn="{StaticResource TextBlockButtonStyle}">
+            <Style.Setters>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Margin" Value="0,0,16,0"/>
+            </Style.Setters>
+        </Style>
     </UserControl.Resources>
 
-    <Grid RowSpacing="{StaticResource DefaultRowSpacing}" Margin="0">
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}" Padding="48,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*"/>
+ 
         </Grid.RowDefinitions>
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="LayoutVisualStates">
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState x:Name="SmallLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="Auto"/>
-                        <Setter Target="SidePanel.Margin" Value="24,0,24,0"/>
-                        <Setter Target="ModuleContentPresenter.(Grid.Row)" Value="1" />
-                        <Setter Target="ModuleContentPresenter.Margin" Value="24,0,0,0" />
-                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage" />
-                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage" />
-                        <Setter Target="LinksPanel.Margin" Value="0,12,0,0" />
-                        <Setter Target="AboutImage.Margin" Value="0,12,12,0" />
-                        <Setter Target="Header.Margin" Value="24,44,0,0" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
+        
 
         <TextBlock x:Name="Header"
                    Text="{x:Bind ModuleTitle}"
                    FontWeight="SemiBold"
                    FontSize="28"
-                   Margin="48,44,0,0"
+                   Margin="0,44,0,0"
                    VerticalAlignment="Stretch"/>
 
         <ScrollViewer Grid.Row="1">
-            <Grid RowSpacing="{StaticResource DefaultRowSpacing}" Margin="0,0,0,48">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <Grid RowSpacing="{StaticResource DefaultRowSpacing}" Padding="0,0,48,48">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-
-                <ContentPresenter x:Name="ModuleContentPresenter"
-                          Content="{x:Bind ModuleContent}"
-                          HorizontalAlignment="Stretch"
-                          HorizontalContentAlignment="Stretch"
-                          Margin="48,12,48,0"
-                          />
-
-                <RelativePanel Grid.Column="1"
-                       x:Name="SidePanel"
-                       Width="{StaticResource SidePanelWidth}"
-                       Margin="0,12,48,0">
-
-                    <TextBlock x:Name="AboutDescription"
-                       Text="{x:Bind ModuleDescription}"
-                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                       TextWrapping="Wrap"/>
-
-                    <HyperlinkButton x:Name="AboutImage"
-                         RelativePanel.Below="AboutDescription"
-                         MaxWidth="240"
-                         CornerRadius="8"
-                         x:Uid="Learn_More_Description"
-                         Padding="0"
-                         NavigateUri="{x:Bind ModuleImageLink}"
-                         Margin="0, 12, 0, 12">
-                        <Image>
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="240"/>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border CornerRadius="4" VerticalAlignment="Top">
+                        <Image AutomationProperties.AccessibilityView="Raw">
                             <Image.Source>
                                 <BitmapImage UriSource="{x:Bind ModuleImageSource}" />
                             </Image.Source>
                         </Image>
-                    </HyperlinkButton>
+                    </Border>
+                    
+                    <StackPanel Grid.Column="1">
+                        <TextBlock x:Name="AboutDescription"
+                                   Text="{x:Bind ModuleDescription}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
 
-                    <StackPanel x:Name="LinksPanel"
-                    Margin="0,1,0,0"
-                    RelativePanel.Below="AboutImage"
-                    Orientation="Vertical">
-
-                        <StackPanel x:Name="ModuleLinksPanel" Orientation="Vertical">
-                            <ItemsControl ItemsSource="{x:Bind ModuleLinks}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="local:SidePanelLink">
-                                        <HyperlinkButton NavigateUri="{x:Bind Link}" Margin="-12,-3,0,0">
-                                            <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" />
-                                        </HyperlinkButton>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-
-                        <StackPanel x:Name="AttributionPanel"
-                              Visibility="{x:Bind AttributionLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}"
-                            Orientation="Vertical">
-                            <TextBlock x:Uid="AttributionTitle" Style="{StaticResource SettingsGroupTitleStyle}" />
-
-                            <ItemsControl x:Name="AttributionLinksItemControl" ItemsSource="{x:Bind AttributionLinks}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="local:SidePanelLink">
-                                        <HyperlinkButton NavigateUri="{x:Bind Link}" Margin="-12,-3,0,0">
-                                            <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" />
-                                        </HyperlinkButton>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
+                        <ItemsControl ItemsSource="{x:Bind ModuleLinks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="local:SidePanelLink">
+                                    <HyperlinkButton NavigateUri="{x:Bind Link}">
+                                        <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" />
+                                    </HyperlinkButton>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
                     </StackPanel>
-                </RelativePanel>
+                 
+                </Grid>
+
+                <ContentPresenter x:Name="ModuleContentPresenter" Grid.Row="1"
+                          Content="{x:Bind ModuleContent}"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Stretch"
+                          Margin="0,12,0,0"/>
+
+                <StackPanel x:Name="AttributionPanel" Grid.Row="2"
+                             Visibility="{x:Bind AttributionLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}"
+                            Orientation="Vertical">
+                    <TextBlock x:Uid="AttributionTitle"
+                               Style="{ThemeResource BodyStrongTextBlockStyle}"
+                               Margin="2,32,0,8"
+                               AutomationProperties.HeadingLevel="Level2"/>
+
+                    <ItemsControl x:Name="AttributionLinksItemControl" ItemsSource="{x:Bind AttributionLinks}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:SidePanelLink">
+                                <HyperlinkButton NavigateUri="{x:Bind Link}">
+                                    <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" />
+                                </HyperlinkButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
             </Grid>
         </ScrollViewer>
     </Grid>

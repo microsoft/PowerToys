@@ -6,6 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
@@ -18,44 +20,55 @@
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_FileExplorerAddOns">
         <controls:SettingsPageControl.ModuleContent>
             
+            
             <StackPanel Orientation="Vertical">
-            <TextBlock x:Uid="FileExplorerPreview_RunAsAdminRequired"
-                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                       Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"
-                       Margin="{StaticResource SmallBottomMargin}"
-                       TextWrapping="Wrap"/>
 
-            <TextBlock x:Uid="FileExplorerPreview_AffectsAllUsers"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
-                       Margin="{StaticResource SmallBottomMargin}"
-                       TextWrapping="Wrap"/>
+                <muxc:InfoBar Severity="Warning"
+                                   x:Uid="FileExplorerPreview_RunAsAdminRequired"
+                                   IsOpen="True"
+                                   IsClosable="False"
+                                   Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-            <TextBlock x:Uid="FileExplorerPreview_PreviewPane_GroupSettings"
+                <muxc:InfoBar Severity="Informational"
+                                   x:Uid="FileExplorerPreview_AffectsAllUsers"
+                                   IsOpen="True"
+                                   IsClosable="False"
+                                   />
+
+
+
+
+
+                <toolkitcontrols:HeaderedItemsControl x:Uid="FileExplorerPreview_PreviewPane_GroupSettings">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE12A;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}" FlowDirection="RightToLeft" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD" Icon="&#xE12A;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MDRenderIsEnabled}" FlowDirection="RightToLeft" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </toolkitcontrols:HeaderedItemsControl>
+
+                <toolkitcontrols:HeaderedItemsControl x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail" Icon="&#xE12A;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}" FlowDirection="RightToLeft" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <muxc:InfoBar Severity="Informational"
+                                   x:Uid="FileExplorerPreview_RebootRequired"
+                                   IsOpen="True"
+                                   IsClosable="False"
+                                   />
+                </toolkitcontrols:HeaderedItemsControl>
+                <!--<TextBlock x:Uid=""
                        Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-
-            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}"                          
-                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
-
-            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}"
-                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
-
-            <TextBlock x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-
-            <TextBlock x:Uid="FileExplorerPreview_RebootRequired"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
-                       Margin="{StaticResource SmallTopBottomMargin}"
-                       TextWrapping="Wrap"/>
-
-            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail"
-                          IsOn="{Binding Mode=TwoWay, Path=SVGThumbnailIsEnabled}"
-                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>-->
         </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
