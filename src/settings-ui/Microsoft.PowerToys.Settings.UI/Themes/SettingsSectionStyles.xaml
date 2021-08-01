@@ -1,0 +1,26 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls">
+
+    <!-- Template for the header of a section of settings -->
+    <DataTemplate x:Key="SectionHeaderTemplate">
+        <TextBlock
+                    Text="{Binding}"
+                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                    Margin="2,32,0,8"
+                    AutomationProperties.HeadingLevel="Level2" />
+    </DataTemplate>
+
+    <!-- Template for content of a section of settings -->
+    <Style TargetType="toolkitcontrols:HeaderedItemsControl">
+        <Setter Property="HeaderTemplate" Value="{StaticResource SectionHeaderTemplate}"/>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" Spacing="2"/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

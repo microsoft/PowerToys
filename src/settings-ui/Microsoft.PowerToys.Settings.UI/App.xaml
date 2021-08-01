@@ -14,6 +14,10 @@
                 <ResourceDictionary Source="/Styles/_Sizes.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/Styles/Button.xaml"/>
+
+                <ResourceDictionary Source="/Themes/Colors.xaml"/>
+                <ResourceDictionary Source="/Themes/SettingsExpanderStyles.xaml"/>
+                <ResourceDictionary Source="/Themes/SettingsSectionStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             
             <converters:ModuleEnabledToOpacityConverter x:Key="ModuleEnabledToOpacityConverter"/>
@@ -41,6 +45,12 @@
                     <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
+            
+            
+            
+            
+            
+            
         </ResourceDictionary>
     </Application.Resources>
 </xaml:XamlApplication>

@@ -24,6 +24,8 @@
                                   ModuleImageLink="https://aka.ms/powertoys">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
+
+                <controls:Setting/>
                 <TextBlock x:Uid="Admin_Mode" 
                        FontWeight="SemiBold"
                        TextWrapping="Wrap"
