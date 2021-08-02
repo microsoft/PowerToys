@@ -45,12 +45,13 @@
                     <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
-            
-            
-            
-            
-            
+
+
+
+       
             
         </ResourceDictionary>
+
+
     </Application.Resources>
 </xaml:XamlApplication>

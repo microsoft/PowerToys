@@ -186,7 +186,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Hide toolbar when both camera and microphone are unmuted</value>
   </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
-    <value>About Video Conference</value>
+    <value>Video Conference</value>
   </data>
   <data name="VideoConference_Camera.Text" xml:space="preserve">
     <value>Camera</value>
@@ -482,7 +482,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="General.ModuleTitle" xml:space="preserve">
-    <value>About PowerToys</value>
+    <value>General</value>
   </data>
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
@@ -508,7 +508,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="GeneralPage_RunAtStartUp.Header" xml:space="preserve">
     <value>Run at startup</value>
   </data>
-	<data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
+  <data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
     <value>PowerToys will launch automatically</value>
   </data>
   <data name="PowerRename.ModuleDescription" xml:space="preserve">
@@ -584,7 +584,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
   </data>
-	<data name="ShortcutGuide_DisabledApps.Header" xml:space="preserve">
+  <data name="ShortcutGuide_DisabledApps.Header" xml:space="preserve">
     <value>Exclude apps</value>
   </data>
   <data name="ShortcutGuide_DisabledApps.Description" xml:space="preserve">
@@ -740,7 +740,10 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Learn more about administrator mode</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
-    <value>Download updates automatically (Except on metered connections)</value>
+    <value>Download updates automatically</value>
+  </data>
+	<data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Description" xml:space="preserve">
+    <value>Except on metered connections</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
     <value>Currently running as administrator</value>
@@ -755,32 +758,32 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Running as administrator</value>
   </data>
   <data name="FancyZones.ModuleTitle" xml:space="preserve">
-    <value>About FancyZones</value>
+    <value>FancyZones</value>
   </data>
   <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
-    <value>About File Explorer</value>
+    <value>File Explorer</value>
   </data>
   <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
     <value>File Explorer</value>
     <comment>Use same translation as Windows does for File Explorer</comment>
   </data>
   <data name="ImageResizer.ModuleTitle" xml:space="preserve">
-    <value>About Image Resizer</value>
+    <value>Image Resizer</value>
   </data>
   <data name="KeyboardManager.ModuleTitle" xml:space="preserve">
-    <value>About Keyboard Manager</value>
+    <value>Keyboard Manager</value>
   </data>
   <data name="ColorPicker.ModuleTitle" xml:space="preserve">
-    <value>About Color Picker</value>
+    <value>Color Picker</value>
   </data>
   <data name="PowerLauncher.ModuleTitle" xml:space="preserve">
-    <value>About PowerToys Run</value>
+    <value>PowerToys Run</value>
   </data>
   <data name="PowerToys_Run_Image.AutomationProperties.Name" xml:space="preserve">
     <value>PowerToys Run</value>
   </data>
   <data name="PowerRename.ModuleTitle" xml:space="preserve">
-    <value>About PowerRename</value>
+    <value>PowerRename</value>
     <comment>do not loc the product name</comment>
   </data>
   <data name="PowerRename_Image.AutomationProperties.Name" xml:space="preserve">
@@ -788,7 +791,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <comment>do not loc</comment>
   </data>
   <data name="ShortcutGuide.ModuleTitle" xml:space="preserve">
-    <value>About Shortcut Guide</value>
+    <value>Shortcut Guide</value>
   </data>
   <data name="Shortcut_Guide_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Guide</value>
@@ -799,9 +802,6 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="General_Updates.Header" xml:space="preserve">
     <value>Updates</value>
   </data>
-  <data name="General_Version.Text" xml:space="preserve">
-    <value>Installed version:</value>
-  </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
   </data>
@@ -811,8 +811,8 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="Admin_mode.Header" xml:space="preserve">
     <value>Administrator mode</value>
   </data>
-  <data name="General_RunAsAdminRequired.Message" xml:space="preserve">
-    <value>* You need to run as administrator to use this setting.</value>
+  <data name="General_RunAsAdminRequired.Title" xml:space="preserve">
+    <value>You need to run as administrator to use this setting.</value>
   </data>
   <data name="ShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts with the following hotkeys are valid:</value>
@@ -844,7 +844,6 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   </data>
   <data name="General.ModuleDescription" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
-
 Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the OS</comment>
   </data>
@@ -958,7 +957,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Use Boost library</value>
     <comment>Boost is a product name, should not be translated</comment>
   </data>
-	<data name="PowerRename_Toggle_UseBoostLib.Description" xml:space="preserve">
+  <data name="PowerRename_Toggle_UseBoostLib.Description" xml:space="preserve">
     <value>Provides extended features but may use different regex syntax</value>
     <comment>Boost is a product name, should not be translated</comment>
   </data>
@@ -1262,7 +1261,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>PowerToys Settings</value>
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
-    <value>About Awake</value>
+    <value>Awake</value>
   </data>
   <data name="Awake.ModuleDescription" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>
@@ -1316,7 +1315,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Oobe_Awake_TipsAndTricks.Text" xml:space="preserve">
     <value>You can always change modes quickly by {right-clicking the Awake icon} in the system tray.</value>
   </data>
-  <data name="General_FailedToDownloadTheNewVersion.Message" xml:space="preserve">
+  <data name="General_FailedToDownloadTheNewVersion.Title" xml:space="preserve">
     <value>An error occurred trying to install this update</value>
   </data>
   <data name="General_InstallNow.Content" xml:space="preserve">
@@ -1325,8 +1324,8 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_ReadMore.Text" xml:space="preserve">
     <value>Read more</value>
   </data>
-  <data name="General_NewVersionAvailable.Text" xml:space="preserve">
-    <value>A new version is available: </value>
+  <data name="General_NewVersionAvailable.Title" xml:space="preserve">
+    <value>A new version is available</value>
   </data>
   <data name="General_Downloading.Text" xml:space="preserve">
     <value>Downloading...</value>
@@ -1334,13 +1333,13 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_TryAgainToDownloadAndInstall.Content" xml:space="preserve">
     <value>Try again to download and install</value>
   </data>
-  <data name="General_CheckingForUpdates.Message" xml:space="preserve">
+  <data name="General_CheckingForUpdates.Text" xml:space="preserve">
     <value>Checking for updates...</value>
   </data>
-  <data name="General_NewVersionReadyToInstall.Message" xml:space="preserve">
+  <data name="General_NewVersionReadyToInstall.Title" xml:space="preserve">
     <value>A new version is ready to install</value>
   </data>
-  <data name="General_UpToDate.Message" xml:space="preserve">
+  <data name="General_UpToDate.Title" xml:space="preserve">
     <value>PowerToys is up to date</value>
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
@@ -1380,11 +1379,14 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Delete_Dialog_Description" xml:space="preserve">
     <value>Are you sure you want to delete this item?</value>
   </data>
-	<data name="Yes" xml:space="preserve">
+  <data name="Yes" xml:space="preserve">
     <value>Yes</value>
     <comment>Label of a confirmation button</comment>
-	  </data>
+  </data>
   <data name="Learn_More_Description.AutomationProperties.Name" xml:space="preserve">
     <value>Learn more</value>
+  </data>
+  <data name="SeeWhatsNew.Content" xml:space="preserve">
+    <value>See what's new</value>
   </data>
 </root>

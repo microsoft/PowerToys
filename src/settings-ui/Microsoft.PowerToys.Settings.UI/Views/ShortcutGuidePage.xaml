@@ -80,7 +80,7 @@
                             </StackPanel>
                         </muxc:Expander.Content>
                     </muxc:Expander>
-                    <muxc:Expander IsExpanded="True" Style="{StaticResource SettingsExpanderStyle}"    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <muxc:Expander IsExpanded="True" Style="{StaticResource SettingsExpanderStyle}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                         <muxc:Expander.Header>
                             <controls:Setting x:Uid="ShortcutGuide_DisabledApps" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
                         </muxc:Expander.Header>
