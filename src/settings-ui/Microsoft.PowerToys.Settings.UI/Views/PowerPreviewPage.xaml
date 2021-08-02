@@ -54,17 +54,19 @@
                 </toolkitcontrols:HeaderedItemsControl>
 
                 <toolkitcontrols:HeaderedItemsControl x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
-                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail" Icon="&#xE91B;">
-                        <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}" FlowDirection="RightToLeft" />
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
 
                     <muxc:InfoBar Severity="Informational"
                                    x:Uid="FileExplorerPreview_RebootRequired"
                                    IsOpen="True"
                                    IsClosable="False"
                                    />
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail" Icon="&#xE91B;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}" FlowDirection="RightToLeft" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                
                 </toolkitcontrols:HeaderedItemsControl>
                 <!--<TextBlock x:Uid=""
                        Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
