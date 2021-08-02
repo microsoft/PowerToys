@@ -40,13 +40,13 @@
 
 
                 <toolkitcontrols:HeaderedItemsControl x:Uid="FileExplorerPreview_PreviewPane_GroupSettings">
-                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE12A;">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}" FlowDirection="RightToLeft" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD" Icon="&#xE12A;">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD" Icon="&#xE943;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MDRenderIsEnabled}" FlowDirection="RightToLeft" />
                         </controls:Setting.ActionContent>
@@ -54,7 +54,7 @@
                 </toolkitcontrols:HeaderedItemsControl>
 
                 <toolkitcontrols:HeaderedItemsControl x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
-                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail" Icon="&#xE12A;">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}" FlowDirection="RightToLeft" />
                         </controls:Setting.ActionContent>

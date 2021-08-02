@@ -7,6 +7,7 @@
     xmlns:c="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
@@ -19,66 +20,73 @@
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_Awake">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <ToggleSwitch x:Uid="Awake_EnableAwake" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
 
-                <TextBlock x:Uid="Awake_Behavior_GroupSettings"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+                <controls:Setting x:Uid="Awake_EnableAwake">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAwake.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" FlowDirection="RightToLeft" />
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
 
-                <CheckBox x:Uid="Awake_EnableDisplayKeepAwake"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      IsChecked="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}"
-                      Margin="{StaticResource XSmallTopMargin}" />
 
-                <TextBlock x:Uid="Awake_Mode"
-                       Margin="{StaticResource SmallTopMargin}"
-                       x:Name="ModeTitleLabel"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
 
-                <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
-                        Margin="0,-8,0,0">
-                    <RadioButton x:Uid="Awake_NoKeepAwake"
-                             Margin="{StaticResource SmallTopMargin}"
+
+                <toolkitcontrols:HeaderedItemsControl x:Uid="Awake_Behavior_GroupSettings">
+                    <controls:Setting x:Uid="Awake_EnableDisplayKeepAwake" Icon="&#xE7FB;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch FlowDirection="RightToLeft" IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                    
+                    <muxc:Expander IsExpanded="True" Style="{StaticResource SettingsExpanderStyle}">
+                        <muxc:Expander.Header>
+                            <controls:Setting x:Uid="Awake_Mode" Icon="&#xEC4E;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
+                        </muxc:Expander.Header>
+                        <muxc:Expander.Content>
+                            <StackPanel Padding="16" Spacing="12">
+                                <RadioButton x:Uid="Awake_NoKeepAwake"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                              IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}, ConverterParameter=0}">
-                        <RadioButton.Content>
-                            <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                                    <RadioButton.Content>
+                                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Awake_NoKeepAwakeContent"/>
                         <LineBreak/>
-                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                        <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                              x:Uid="Awake_NoKeepAwakeDescription"/>
-                            </TextBlock>
-                        </RadioButton.Content>
-                    </RadioButton>
-                    <RadioButton x:Uid="Awake_IndefiniteKeepAwake"
-                             Margin="{StaticResource SmallTopMargin}"
+                                        </TextBlock>
+                                    </RadioButton.Content>
+                                </RadioButton>
+                                <RadioButton x:Uid="Awake_IndefiniteKeepAwake"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                              IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}, ConverterParameter=1}">
-                        <RadioButton.Content>
-                            <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                                    <RadioButton.Content>
+                                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Awake_IndefiniteKeepAwakeContent"/>
                         <LineBreak/>
-                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                        <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                              x:Uid="Awake_IndefiniteKeepAwakeDescription"/>
-                            </TextBlock>
-                        </RadioButton.Content>
-                    </RadioButton>
-                    <RadioButton x:Uid="Awake_TemporaryKeepAwake"
-                             Margin="{StaticResource SmallTopMargin}"
+                                        </TextBlock>
+                                    </RadioButton.Content>
+                                </RadioButton>
+                                <RadioButton x:Uid="Awake_TemporaryKeepAwake"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                              IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}, ConverterParameter=2}">
-                        <RadioButton.Content>
-                            <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                                    <RadioButton.Content>
+                                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="Awake_TemporaryKeepAwakeContent"/>
                         <LineBreak/>
-                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                        <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                              x:Uid="Awake_TemporaryKeepAwakeDescription"/>
-                            </TextBlock>
-                        </RadioButton.Content>
-                    </RadioButton>
+                                        </TextBlock>
+                                    </RadioButton.Content>
+                                </RadioButton>
+                                <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
+                        Margin="0,-8,0,0">
 
-                    <StackPanel Margin="28,8,0,0" Orientation="Horizontal">
-                        <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
+                                    <StackPanel Margin="28,8,0,0" Orientation="Horizontal">
+                                        <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
                             Value="{x:Bind ViewModel.Hours, Mode=TwoWay}"
                             Minimum="0"
                             SpinButtonPlacementMode="Compact"
@@ -87,7 +95,7 @@
                             IsEnabled="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}"
                             SmallChange="1" 
                             LargeChange="5"/>
-                        <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
+                                        <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
                             Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}"
                             Minimum="0"
                             SpinButtonPlacementMode="Compact"
@@ -97,8 +105,16 @@
                             MinWidth="90"
                             SmallChange="1" 
                             LargeChange="5"/>
-                    </StackPanel>
-                </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </muxc:Expander.Content>
+                    </muxc:Expander>
+                </toolkitcontrols:HeaderedItemsControl>
+
+              
+
+               
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 

@@ -189,7 +189,8 @@
                             <StackPanel Orientation="Vertical">
                                 <controls:Setting x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{Binding Mode=TwoWay, Path=IsElevated}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.Description>
-                                        <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
+                                        <HyperlinkButton
+                                            NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
                                              x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
                                     </controls:Setting.Description>
                                     <controls:Setting.ActionContent>
