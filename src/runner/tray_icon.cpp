@@ -83,6 +83,9 @@ void handle_tray_command(HWND window, const WPARAM command_id)
             about_box_shown = false;
         }
         break;
+    case ID_DOCUMENTATION_MENU_COMMAND:
+        ShellExecuteA(NULL, "open", "https://aka.ms/PowerToysOverview", NULL, NULL, SW_SHOWNORMAL);
+        break;
     case ID_REPORT_BUG_COMMAND:
         std::wstring bug_report_path = get_module_folderpath();
         bug_report_path += L"\\Tools\\BugReportTool.exe";
@@ -171,10 +174,12 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                     static std::wstring settings_menuitem_label = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT);
                     static std::wstring exit_menuitem_label = GET_RESOURCE_STRING(IDS_EXIT_MENU_TEXT);
                     static std::wstring submit_bug_menuitem_label = GET_RESOURCE_STRING(IDS_SUBMIT_BUG_TEXT);
+                    static std::wstring documentation_menuitem_label = GET_RESOURCE_STRING(IDS_DOCUMENTATION_MENU_TEXT);
                     
                     change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
                     change_menu_item_text(ID_EXIT_MENU_COMMAND, exit_menuitem_label.data());
                     change_menu_item_text(ID_REPORT_BUG_COMMAND, submit_bug_menuitem_label.data());
+                    change_menu_item_text(ID_DOCUMENTATION_MENU_COMMAND, documentation_menuitem_label.data());
                 }
                 if (!h_sub_menu)
                 {
