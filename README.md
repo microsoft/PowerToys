@@ -77,7 +77,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.43 - July 2021 Update
 
-Our goals for the [v0.43 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F22) cycle primarily centered around stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
+Our goals for the [v0.43 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F22) primarily centered around stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
 
 An experimental version of PowerToys (v0.44) will be released the 2nd week of August and will include an updated version of Video Conference Mute.
 
