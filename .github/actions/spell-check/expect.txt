@@ -1299,6 +1299,7 @@ mscorlib
 msdata
 MSDN
 msedge
+MSGFLT
 mshtmdid
 msi
 MSIFASTINSTALL
