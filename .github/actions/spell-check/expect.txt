@@ -40,7 +40,6 @@ ALIGNLEFT
 ALLAPPS
 Alloc
 ALLOWUNDO
-aplhanumeric
 ALPHATYPE
 Altdown
 altform

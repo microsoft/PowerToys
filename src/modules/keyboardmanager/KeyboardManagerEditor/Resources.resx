@@ -368,6 +368,6 @@
     <comment>Key on a keyboard</comment>
   </data>
   <data name="ADD_SHORTCUT_TARGET_APP_TOOLTIP" xml:space="preserve">
-    <value>Only aplhanumeric characters, '.' and ' ' allowed</value>
+    <value>Only alphanumeric characters, '.' and ' ' allowed</value>
   </data>
 </root>
