@@ -72,6 +72,9 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 {
     // Textbox for target application
     TextBox targetAppTextBox;
+    ToolTip targetAppTextBoxToolTip;
+    targetAppTextBoxToolTip.Content(box_value(GET_RESOURCE_STRING(IDS_ADD_SHORTCUT_TARGET_APP_TOOLTIP)));
+    ToolTipService::SetToolTip(targetAppTextBox, targetAppTextBoxToolTip);
 
     // Create new ShortcutControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<ShortcutControl>> newrow;
