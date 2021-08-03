@@ -978,6 +978,7 @@ IRegistry
 IReloadable
 IRepository
 IResult
+isalnum
 ISavable
 isbi
 ISearch
