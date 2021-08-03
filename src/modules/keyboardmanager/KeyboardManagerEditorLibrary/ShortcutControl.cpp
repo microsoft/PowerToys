@@ -113,6 +113,20 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     targetAppTextBox.Width(EditorConstants::ShortcutTableDropDownWidth);
     targetAppTextBox.PlaceholderText(KeyboardManagerEditorStrings::DefaultAppName);
     targetAppTextBox.Text(targetAppName);
+    targetAppTextBox.TextChanged([targetAppTextBox](const auto& sender, auto const& e) {
+        // Alphanumeric characters only
+        const std::wstring& text = std::wstring{ targetAppTextBox.Text() };
+        std::wstring newText;
+        for (auto c : text)
+        {
+            if (isalnum(c) || c == ' ' || c == '.')
+            {
+                newText += c;
+            }
+        }
+        targetAppTextBox.Text(newText);
+        targetAppTextBox.SelectionStart(static_cast<int32_t>(newText.size()));
+    });
 
     // GotFocus handler will be called whenever the user tabs into or clicks on the textbox
     targetAppTextBox.GotFocus([targetAppTextBox](auto const& sender, auto const& e) {
