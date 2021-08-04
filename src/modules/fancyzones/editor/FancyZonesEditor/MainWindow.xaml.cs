@@ -259,11 +259,11 @@ namespace FancyZonesEditor
 
                     if (_settings.SelectedModel is GridLayoutModel grid)
                     {
-                        _backup = new GridLayoutModel(grid);
+                        _backup = new GridLayoutModel(grid, false);
                     }
                     else if (_settings.SelectedModel is CanvasLayoutModel canvas)
                     {
-                        _backup = new CanvasLayoutModel(canvas);
+                        _backup = new CanvasLayoutModel(canvas, false);
                     }
 
                     await EditLayoutDialog.ShowAsync();
