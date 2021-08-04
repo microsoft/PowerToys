@@ -18,6 +18,8 @@
         <localConverters:UpdatingStateCannotDownloadToVisibilityConverter x:Key="UpdatingStateCannotDownloadToVisibilityConverter" />
         <localConverters:UpdatingStateReadyToDownloadToVisibilityConverter x:Key="UpdatingStateReadyToDownloadToVisibilityConverter" />
         <localConverters:UpdatingStateReadyToInstallToVisibilityConverter x:Key="UpdatingStateReadyToInstallToVisibilityConverter" />
+
+
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="General"
@@ -26,10 +28,10 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="General_Updates">
+                <toolkitcontrols:HeaderedItemsControl x:Uid="General_Version">
                     <controls:Setting Header="{Binding PowerToysVersion}" Icon="&#xE117;">
                         <controls:Setting.Description>
-                            <TextBlock>
+                            <TextBlock Style="{StaticResource SecondaryTextStyle}">
                             <Run x:Uid="General_VersionLastChecked" />
                             <Run Text="{Binding UpdateCheckedDate, Mode=OneWay}"/>
                             </TextBlock>
@@ -63,7 +65,7 @@
                     <muxc:InfoBar x:Uid="General_NewVersionAvailable"
                               IsOpen="True"
                               IsClosable="False"
-                              Severity="Informational"
+                              Severity="Success"
                               Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToDownloadToVisibilityConverter}}">
                         <muxc:InfoBar.Content>
                             <StackPanel Spacing="16">
@@ -90,6 +92,7 @@
                         </muxc:InfoBar.Content>
                         <muxc:InfoBar.ActionButton>
                             <Button x:Uid="General_DownloadAndInstall"
+                                    HorizontalAlignment="Right"
                                 Command="{Binding UpdateNowButtonEventHandler}"
                                 IsEnabled="{Binding IsDownloadAllowed}"/>
                         </muxc:InfoBar.ActionButton>
@@ -118,6 +121,7 @@
                         </muxc:InfoBar.Content>
                         <muxc:InfoBar.ActionButton>
                             <Button x:Uid="General_InstallNow"
+                                    HorizontalAlignment="Right"
                                     Command="{Binding UpdateNowButtonEventHandler}"
                                     IsEnabled="{Binding IsDownloadAllowed}"/>
                         </muxc:InfoBar.ActionButton>
@@ -156,6 +160,7 @@
                         </muxc:InfoBar.Content>
                         <muxc:InfoBar.ActionButton>
                             <Button x:Uid="General_TryAgainToDownloadAndInstall"
+                                    HorizontalAlignment="Right"
                                     Command="{Binding UpdateNowButtonEventHandler}"
                                     IsEnabled="{Binding IsDownloadAllowed}"/>
                         </muxc:InfoBar.ActionButton>
@@ -202,7 +207,6 @@
                                           IsClosable="False"
                                           IsOpen="True"
                                           Visibility="{Binding Mode=TwoWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"/>
-
                             </StackPanel>
                         </muxc:Expander.Content>
                     </muxc:Expander>

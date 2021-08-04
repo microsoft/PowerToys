@@ -35,10 +35,6 @@
                                    IsClosable="False"
                                    />
 
-
-
-
-
                 <toolkitcontrols:HeaderedItemsControl x:Uid="FileExplorerPreview_PreviewPane_GroupSettings">
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>

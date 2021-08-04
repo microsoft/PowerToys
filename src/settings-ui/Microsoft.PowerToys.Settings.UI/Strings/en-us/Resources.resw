@@ -594,7 +594,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Example: outlook.exe</value>
     <comment>Don't translate outlook.exe</comment>
   </data>
-  <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
+  <data name="ImageResizer_CustomSizes.Header" xml:space="preserve">
     <value>Image sizes</value>
   </data>
   <data name="About_ImageResizer.ModuleDescription" xml:space="preserve">
@@ -629,15 +629,11 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Remove</value>
     <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
-  <data name="RemoveTooltip.Text" xml:space="preserve">
-    <value>Remove</value>
-    <comment>Removes a user defined setting group for Image Resizer</comment>
-  </data>
   <data name="ImageResizer_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer</value>
   </data>
-  <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
-    <value>Add size</value>
+  <data name="ImageResizer_AddSizeButton.Content" xml:space="preserve">
+    <value>Add a size</value>
   </data>
   <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
     <value>Save sizes</value>
@@ -651,7 +647,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
     <value>TIFF compression</value>
   </data>
-  <data name="File.Text" xml:space="preserve">
+  <data name="File.Header" xml:space="preserve">
     <value>File</value>
     <comment>as in a computer file</comment>
   </data>
@@ -799,8 +795,8 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="General_Repository.Label" xml:space="preserve">
     <value>GitHub repository</value>
   </data>
-  <data name="General_Updates.Header" xml:space="preserve">
-    <value>Updates</value>
+  <data name="General_Version.Header" xml:space="preserve">
+    <value>Version</value>
   </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
@@ -827,13 +823,13 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ImageResizer_FileFormatDescription.Text" xml:space="preserve">
     <value>The following parameters can be used:</value>
   </data>
-  <data name="ImageResizer_FilenameFormatHeader.Text" xml:space="preserve">
+  <data name="ImageResizer_FilenameFormatHeader.Header" xml:space="preserve">
     <value>Filename format</value>
   </data>
   <data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
     <value>Use original date modified</value>
   </data>
-  <data name="Encoding.Text" xml:space="preserve">
+  <data name="Encoding.Header" xml:space="preserve">
     <value>Encoding</value>
   </data>
   <data name="KeyboardManager_RemapKeyboardSubtitle.Text" xml:space="preserve">
@@ -884,13 +880,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FileExplorerPreview_PreviewPane_GroupSettings.Header" xml:space="preserve">
     <value>Preview Pane</value>
   </data>
-  <data name="FileExplorerPreview_RunAsAdminRequired.Message" xml:space="preserve">
+  <data name="FileExplorerPreview_RunAsAdminRequired.Title" xml:space="preserve">
     <value>You need to run as administrator to modify these settings.</value>
   </data>
-  <data name="FileExplorerPreview_AffectsAllUsers.Message" xml:space="preserve">
+  <data name="FileExplorerPreview_AffectsAllUsers.Title" xml:space="preserve">
     <value>The settings on this page affect all users on the system</value>
   </data>
-  <data name="FileExplorerPreview_RebootRequired.Message" xml:space="preserve">
+  <data name="FileExplorerPreview_RebootRequired.Title" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
@@ -1325,25 +1321,25 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Read more</value>
   </data>
   <data name="General_NewVersionAvailable.Title" xml:space="preserve">
-    <value>A new version is available</value>
+    <value>An update is available</value>
   </data>
   <data name="General_Downloading.Text" xml:space="preserve">
     <value>Downloading...</value>
   </data>
   <data name="General_TryAgainToDownloadAndInstall.Content" xml:space="preserve">
-    <value>Try again to download and install</value>
+    <value>Try again to download &amp; install</value>
   </data>
   <data name="General_CheckingForUpdates.Text" xml:space="preserve">
     <value>Checking for updates...</value>
   </data>
   <data name="General_NewVersionReadyToInstall.Title" xml:space="preserve">
-    <value>A new version is ready to install</value>
+    <value>An update is ready to install</value>
   </data>
   <data name="General_UpToDate.Title" xml:space="preserve">
     <value>PowerToys is up to date</value>
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
-    <value>Download and install</value>
+    <value>Download &amp; install</value>
   </data>
   <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
     <value>Fills</value>
@@ -1365,9 +1361,6 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="ImageResizer_Unit_Pixel" xml:space="preserve">
     <value>Pixels</value>
-  </data>
-  <data name="EditTooltip.Text" xml:space="preserve">
-    <value>Edit</value>
   </data>
   <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>

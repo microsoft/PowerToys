@@ -4,7 +4,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls">
 
     <Style TargetType="controls:Setting">
-        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource CardBorderThickness}" />
         <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
@@ -68,7 +68,7 @@
                             <ContentPresenter
                                 x:Name="DescriptionPresenter"
                                 Content="{TemplateBinding Description}"
-                                FontSize="12"
+                                FontSize="{StaticResource SecondaryTextFontSize}"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                 <ContentPresenter.Resources>
                                     <Style TargetType="TextBlock"  BasedOn="{StaticResource CaptionTextBlockStyle}">

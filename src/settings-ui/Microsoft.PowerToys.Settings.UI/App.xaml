@@ -19,7 +19,25 @@
                 <ResourceDictionary Source="/Themes/SettingsExpanderStyles.xaml"/>
                 <ResourceDictionary Source="/Themes/SettingsSectionStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            
+        
+            <Thickness x:Key="InfoBarIconMargin">6,16,20,16</Thickness>
+
+            <Thickness x:Key="InfoBarContentRootPadding">16,0,0,0</Thickness>
+
+
+
+            <Style TargetType="ListViewItem" >
+                <Setter Property="Margin" Value="0,0,0,2" />
+                <Setter Property="Padding" Value="2,0,0,0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            </Style>
+
+            <x:Double x:Key="SecondaryTextFontSize">12</x:Double>
+            <Style x:Key="SecondaryTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{StaticResource SecondaryTextFontSize}"/>
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </Style>
+
             <converters:ModuleEnabledToOpacityConverter x:Key="ModuleEnabledToOpacityConverter"/>
 
             <ResourceDictionary.ThemeDictionaries>
