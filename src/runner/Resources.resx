@@ -110,7 +110,7 @@
     <value>Settings</value>
   </data>
   <data name="DOCUMENTATION_MENU_TEXT" xml:space="preserve">
-    <value>Documentation</value>
+    <value>Open documentation</value>
   </data>
   <data name="EXIT_MENU_TEXT" xml:space="preserve">
     <value>Exit</value>
