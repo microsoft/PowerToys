@@ -1387,6 +1387,6 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Show format in editor</value>
   </data>
   <data name="GeneralPage_Documentation.Label" xml:space="preserve">
-    <value>Documentation</value>
+    <value>Open documentation</value>
   </data>
 </root>
