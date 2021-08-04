@@ -390,7 +390,8 @@
                                  Margin="12,0,0,0"
                                  ui:ControlHelper.Header="{x:Static props:Resources.Name}"
                                  MinWidth="286"
-                                 HorizontalAlignment="Stretch" />
+                                 HorizontalAlignment="Stretch"
+                                 GotKeyboardFocus="TextBox_GotKeyboardFocus"/>
                     </StackPanel>
 
                     <!-- Shortcut panel -->

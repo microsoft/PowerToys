@@ -446,5 +446,11 @@ namespace FancyZonesEditor
                 }
             }
         }
+
+        private void TextBox_GotKeyboardFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            tb.SelectionStart = tb.Text.Length;
+        }
     }
 }
