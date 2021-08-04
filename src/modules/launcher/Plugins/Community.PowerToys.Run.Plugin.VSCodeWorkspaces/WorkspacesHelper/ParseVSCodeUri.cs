@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Text.RegularExpressions;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
@@ -13,7 +16,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
         private static readonly Regex CodespacesWorkspace = new Regex(@"^vscode-remote://vsonline\+(.+?(?=\/))(.+)$", RegexOptions.Compiled);
 
-        public static (TypeWorkspace? TypeWorkspace, String MachineName, String Path) GetTypeWorkspace(string uri)
+        public static (TypeWorkspace? TypeWorkspace, string MachineName, string Path) GetTypeWorkspace(string uri)
         {
             if (LocalWorkspace.IsMatch(uri))
             {
@@ -48,7 +51,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                 if (match.Groups.Count > 1)
                 {
-                    return (TypeWorkspace.Codespaces, String.Empty, match.Groups[2].Value);
+                    return (TypeWorkspace.Codespaces, string.Empty, match.Groups[2].Value);
                 }
             }
 

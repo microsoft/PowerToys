@@ -4,8 +4,10 @@
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
-    public class VSCodeStorageFile
+    public class VSCodeWorkspaceEntry
     {
-        public OpenedPathsList OpenedPathsList { get; set; }
+        public string FolderUri { get; set; }
+
+        public string Label { get; set; }
     }
 }
