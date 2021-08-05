@@ -289,10 +289,10 @@
                             Margin="8">
                     <TextBlock Text="&#xE109;"
                                FontFamily="Segoe MDL2 Assets"
-                               Foreground="White" />
+                               Foreground="{DynamicResource AccentButtonForeground}" />
                     <TextBlock Text="{x:Static props:Resources.Create_new_layout}"
                                Margin="12,-3,0,0"
-                               Foreground="White" />
+                               Foreground="{DynamicResource AccentButtonForeground}" />
                 </StackPanel>
                 <Button.Effect>
                     <DropShadowEffect BlurRadius="6"
