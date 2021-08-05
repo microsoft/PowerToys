@@ -26,6 +26,7 @@ namespace FancyZonesEditor
         private LayoutModel _backup;
 
         private ContentDialog _openedDialog;
+        private bool _openingDialog = false; // Is the dialog being opened.
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
@@ -247,19 +248,32 @@ namespace FancyZonesEditor
 
         private async void EditLayout_Click(object sender, RoutedEventArgs e)
         {
-            var dataContext = ((FrameworkElement)sender).DataContext;
-            Select((LayoutModel)dataContext);
-
-            if (_settings.SelectedModel is GridLayoutModel grid)
+            // Avoid trying to open the same dialog twice.
+            if (!_openingDialog)
             {
-                _backup = new GridLayoutModel(grid);
-            }
-            else if (_settings.SelectedModel is CanvasLayoutModel canvas)
-            {
-                _backup = new CanvasLayoutModel(canvas);
-            }
+                _openingDialog = true;
+                try
+                {
+                    var dataContext = ((FrameworkElement)sender).DataContext;
+                    Select((LayoutModel)dataContext);
 
-            await EditLayoutDialog.ShowAsync();
+                    if (_settings.SelectedModel is GridLayoutModel grid)
+                    {
+                        _backup = new GridLayoutModel(grid);
+                    }
+                    else if (_settings.SelectedModel is CanvasLayoutModel canvas)
+                    {
+                        _backup = new CanvasLayoutModel(canvas);
+                    }
+
+                    await EditLayoutDialog.ShowAsync();
+                }
+                catch
+                {
+                    _openingDialog = false;
+                    throw;
+                }
+            }
         }
 
         private void EditZones_Click(object sender, RoutedEventArgs e)
@@ -411,6 +425,7 @@ namespace FancyZonesEditor
 
         private void Dialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
+            _openingDialog = false;
             _openedDialog = null;
         }
 
@@ -445,6 +460,12 @@ namespace FancyZonesEditor
                     selectedComboBox.IsDropDownOpen = true;
                 }
             }
+        }
+
+        private void TextBox_GotKeyboardFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            tb.SelectionStart = tb.Text.Length;
         }
     }
 }
