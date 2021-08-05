@@ -348,29 +348,41 @@
                             x:Name="duplicateLayoutButton"
                             AutomationProperties.Name="{x:Static props:Resources.Duplicate}"
                             ToolTip="{x:Static props:Resources.Duplicate}"
-                            Content="&#xE8C8;"
-                            FontFamily="Segoe MDL2 Assets"
                             Style="{StaticResource IconOnlyButtonStyle}"
-                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
+                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                        <Button.Content>
+                            <TextBlock Text="&#xE8C8;" 
+                                       FontFamily="Segoe MDL2 Assets"
+                                       AutomationProperties.Name="{x:Static props:Resources.Duplicate}" />
+                        </Button.Content>
+                    </Button>
 
                     <Button Click="DuplicateLayout_Click"
                             x:Name="createFromTemplateLayoutButton"
                             AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}"
                             ToolTip="{x:Static props:Resources.Create_Custom_From_Template}"
-                            Content="&#xE8C8;"
-                            FontFamily="Segoe MDL2 Assets"
                             Style="{StaticResource IconOnlyButtonStyle}"
-                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}" />
+                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
+                        <Button.Content>
+                            <TextBlock Text="&#xE8C8;" 
+                                       FontFamily="Segoe MDL2 Assets"
+                                       AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}" />
+                        </Button.Content>
+                    </Button>
 
-                    <Button Click="DeleteLayout_Click"
+                        <Button Click="DeleteLayout_Click"
                             x:Name="deleteLayoutButton"
                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                            ToolTip="{x:Static props:Resources.Delete}"
-                            Content="&#xE107;"
-                            FontFamily="Segoe MDL2 Assets"
-                            Foreground="#c50500"
+                            ToolTip="{x:Static props:Resources.Delete}"   
                             Style="{StaticResource IconOnlyButtonStyle}"
-                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
+                            Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                        <Button.Content>
+                            <TextBlock Text="&#xE107;" 
+                                       FontFamily="Segoe MDL2 Assets"
+                                       Foreground="#c50500"
+                                       AutomationProperties.Name="{x:Static props:Resources.Delete}" />
+                        </Button.Content>
+                    </Button>
                 </StackPanel>
 
                 <StackPanel>
@@ -383,6 +395,7 @@
                                    ToolTip="{x:Static props:Resources.Name}"
                                    FontSize="16"
                                    VerticalAlignment="Bottom" Margin="0,0,0,8"
+                                   AutomationProperties.Name="{x:Static props:Resources.Name}"
                                    Text="&#xE932;" />
                         <TextBox Text="{Binding Name}"
                                  ui:ControlHelper.PlaceholderText="{x:Static props:Resources.Name}"
@@ -391,7 +404,9 @@
                                  ui:ControlHelper.Header="{x:Static props:Resources.Name}"
                                  MinWidth="286"
                                  HorizontalAlignment="Stretch"
-                                 GotKeyboardFocus="TextBox_GotKeyboardFocus"/>
+                                 GotKeyboardFocus="TextBox_GotKeyboardFocus" />
+
+              
                     </StackPanel>
 
                     <!-- Shortcut panel -->
@@ -407,6 +422,7 @@
                                        Margin="8,4,0,0"
                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
                                        Text="&#xE946;"
+                                       AutomationProperties.Name="{x:Static props:Resources.QuickKey_Description}"
                                        ToolTip="{x:Static props:Resources.QuickKey_Description}" />
                         </StackPanel>
 
@@ -417,6 +433,7 @@
                                        VerticalAlignment="Center"
                                        FontSize="16"
                                        ToolTip="{x:Static props:Resources.QuickKey_Title}"
+                                       AutomationProperties.Name="{x:Static props:Resources.QuickKey_Title}"
                                        Text="&#xEDA7;" />
 
                             <ComboBox x:Name="quickKeySelectionComboBox"
@@ -468,6 +485,7 @@
                                    VerticalAlignment="Center"
                                    FontSize="16"
                                    Margin="0,16,0,0"
+                                   AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
                                    ToolTip="{x:Static props:Resources.Number_of_zones}"
                                    Text="&#xECA5;" />
 
@@ -492,6 +510,7 @@
                             <TextBlock FontFamily="Segoe MDL2 Assets"
                                        VerticalAlignment="Center"
                                        FontSize="16"
+                                       AutomationProperties.Name="{x:Static props:Resources.Space_Around_Zones}"
                                        ToolTip="{x:Static props:Resources.Space_Around_Zones}"
                                        Text="&#xE91B;" />
 
@@ -543,6 +562,7 @@
                                        VerticalAlignment="Center"
                                        FontSize="16"
                                        ToolTip="{x:Static props:Resources.Distance_adjacent_zones}"
+                                        AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
                                        Text="&#xF617;" />
 
                             <ui:NumberBox Text="{Binding SensitivityRadius}"
@@ -601,6 +621,7 @@
                                        FontSize="16"
                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
                                        Margin="0,4,0,0"
+                                       AutomationProperties.Name="{x:Static props:Resources.Layout_Grid_Title}"
                                        HorizontalAlignment="Left"
                                        FontFamily="Segoe MDL2 Assets" />
                             <StackPanel Grid.Column="1"
@@ -635,6 +656,7 @@
                             <TextBlock Text="&#xF5ED;"
                                        FontSize="16"
                                        Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                       AutomationProperties.Name="{x:Static props:Resources.Layout_Canvas_Title}"
                                        Margin="0,4,0,0"
                                        HorizontalAlignment="Left"
                                        FontFamily="Segoe MDL2 Assets" />
