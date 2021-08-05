@@ -51,6 +51,7 @@
         x:Name="navigationView"
         Background="{ThemeResource HomePageBackgroundBrush}"
         IsBackButtonVisible="Collapsed"
+           
         IsTitleBarAutoPaddingEnabled="False"
         IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
         SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"

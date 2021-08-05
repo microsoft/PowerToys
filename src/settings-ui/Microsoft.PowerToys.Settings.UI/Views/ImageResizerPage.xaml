@@ -34,28 +34,26 @@
                 </controls:Setting>
 
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="ImageResizer_CustomSizes">
+                <toolkitcontrols:HeaderedItemsControl x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="ImageResizer_CustomSizes" Icon="&#xE2B2;">
                         <controls:Setting.ActionContent>
                             <Button x:Uid="ImageResizer_AddSizeButton" Click="AddSizeButton_Click" Style="{ThemeResource AccentButtonStyle}" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                </toolkitcontrols:HeaderedItemsControl>
 
-                <ListView x:Name="ImagesSizesListView" 
+
+                    <ListView x:Name="ImagesSizesListView" 
                       x:Uid="ImagesSizesListView"
                       ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       SelectionMode="None"
                       ScrollViewer.HorizontalScrollMode="Enabled"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
                       ScrollViewer.IsHorizontalRailEnabled="True"
-                  
                       ContainerContentChanging="ImagesSizesListView_ContainerContentChanging">
-                   
-                    <ListView.ItemTemplate>
+                        <ListView.ItemTemplate>
                         <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
-                            <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}" HorizontalAlignment="Stretch"
+                            <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                                  HorizontalAlignment="Stretch"
                                   Background="{ThemeResource CardBackgroundBrush}"
                                   BorderThickness="{ThemeResource CardBorderThickness}"
                                   BorderBrush="{ThemeResource CardBorderBrush}"
@@ -71,7 +69,8 @@
                                 </Grid.ColumnDefinitions>
                             
                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center" Grid.Column="1" Margin="0,0,16,0">
-                                    <TextBlock Text="{x:Bind Name, Mode=OneWay}"/>
+                                        <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontWeight="SemiBold"
+                                       FontSize="16"/>
                                     <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Margin="0,4,0,0">
                                         <TextBlock Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" Style="{ThemeResource SecondaryTextStyle}" Margin="0,0,4,0"/>
                                         <TextBlock Text="{x:Bind Width, Mode=OneWay}" FontWeight="SemiBold" Margin="0,0,4,0"  Style="{ThemeResource SecondaryTextStyle}"/>
@@ -162,15 +161,14 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+                </toolkitcontrols:HeaderedItemsControl>
 
 
-
-                <toolkitcontrols:HeaderedItemsControl x:Uid="Encoding">
+                <toolkitcontrols:HeaderedItemsControl x:Uid="Encoding" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="ImageResizer_FallBackEncoderText">
                         <controls:Setting.ActionContent>
                             <ComboBox SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}"
-                                      MinWidth="240"
-                                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                                      MinWidth="240">
                                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
                                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
                                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
@@ -221,7 +219,7 @@
                 </toolkitcontrols:HeaderedItemsControl>
 
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="File">
+                <toolkitcontrols:HeaderedItemsControl x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <muxc:Expander IsExpanded="True" Style="{StaticResource SettingsExpanderStyle}">
                         <muxc:Expander.Header>
                             <controls:Setting x:Uid="ImageResizer_FilenameFormatHeader" Style="{StaticResource ExpanderHeaderSettingStyle}">
@@ -230,8 +228,7 @@
                                         <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
                                          HorizontalAlignment="Right"
                                          MinWidth="240"
-                                        x:Uid="ImageResizer_FilenameFormatPlaceholder"
-                                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                                        x:Uid="ImageResizer_FilenameFormatPlaceholder"/>
                                         <Button Content="&#xE946;" FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                             <ToolTipService.ToolTip>
                                                 <ToolTip>

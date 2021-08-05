@@ -33,7 +33,7 @@
 
 
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="Awake_Behavior_GroupSettings"  IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <toolkitcontrols:HeaderedItemsControl x:Uid="Awake_Behavior_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="Awake_EnableDisplayKeepAwake" Icon="&#xE7FB;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch FlowDirection="RightToLeft" IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />

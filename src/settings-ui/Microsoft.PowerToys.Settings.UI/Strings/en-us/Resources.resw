@@ -321,10 +321,6 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ColorPicker_ChangeCursor.Content" xml:space="preserve">
     <value>Change cursor when picking a color</value>
   </data>
-  <data name="ColorPicker_ActivationShortcut.Header" xml:space="preserve">
-    <value>Activate Color Picker</value>
-    <comment>do not loc product name</comment>
-  </data>
   <data name="PowerLauncher.ModuleDescription" xml:space="preserve">
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
   </data>
@@ -916,7 +912,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the Operating system</comment>
   </data>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
-    <value>Color format for clipboard</value>
+    <value>Default color format</value>
   </data>
   <data name="ColorPickerFirst.Text" xml:space="preserve">
     <value>Color Picker with editor mode enabled</value>
@@ -929,11 +925,14 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="EditorFirst.Text" xml:space="preserve">
     <value>Editor</value>
   </data>
-  <data name="ColorPicker_ActivationAction.Text" xml:space="preserve">
+  <data name="ColorPicker_ActivationAction.Header" xml:space="preserve">
     <value>Activation behavior</value>
   </data>
-  <data name="ColorFormats.Text" xml:space="preserve">
+  <data name="ColorFormats.Header" xml:space="preserve">
     <value>Picker behavior</value>
+  </data>
+	<data name="ColorPicker_CopiedColorRepresentation.Description" xml:space="preserve">
+    <value>This format will be copied to your clipboard</value>
   </data>
   <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
     <value>Learn more about remapping limitations</value>
@@ -970,11 +969,20 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="EditorFirst_Description.Text" xml:space="preserve">
     <value>Open directly into the editor mode</value>
   </data>
-  <data name="ColorPicker_ColorFormatsDescription.Text" xml:space="preserve">
-    <value>Editor color formats</value>
+  <data name="ColorPicker_ColorFormats.Header" xml:space="preserve">
+    <value>Color formats</value>
   </data>
-  <data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
-    <value>Show color name</value>
+	<data name="ColorPicker_ColorFormats.Description" xml:space="preserve">
+    <value>Select which color formats (and in what order) should show up in the editor</value>
+  </data>
+	<data name="MoveUp.Text" xml:space="preserve">
+    <value>Move up</value>
+  </data>
+	<data name="MoveDown.Text" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+	<data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
+    <value>Show color name when color picking</value>
   </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
     <value>Large</value>
@@ -998,7 +1006,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" xml:space="preserve">
     <value>Win + Left/Right to move windows based on zone index</value>
   </data>
-  <data name="ColorPicker_Editor.Text" xml:space="preserve">
+  <data name="ColorPicker_Editor.Header" xml:space="preserve">
     <value>Editor</value>
   </data>
   <data name="FancyZones_OverlappingZonesClosestCenter.Content" xml:space="preserve">
@@ -1081,7 +1089,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
   </data>
-  <data name="ShortcutGuide_OpenShortcutGuide.Header" xml:space="preserve">
+  <data name="Activation_Shortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
   <data name="Oobe_GetStarted.Text" xml:space="preserve">
