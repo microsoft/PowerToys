@@ -9,6 +9,7 @@
 #include <common/utils/resources.h>
 #include <common/version/version.h>
 #include <common/logger/logger.h>
+#include <common/utils/elevation.h>
 
 namespace
 {
@@ -83,9 +84,6 @@ void handle_tray_command(HWND window, const WPARAM command_id)
             about_box_shown = false;
         }
         break;
-    case ID_DOCUMENTATION_MENU_COMMAND:
-        ShellExecuteA(NULL, "open", "https://aka.ms/PowerToysOverview", NULL, NULL, SW_SHOWNORMAL);
-        break;
     case ID_REPORT_BUG_COMMAND:
         std::wstring bug_report_path = get_module_folderpath();
         bug_report_path += L"\\Tools\\BugReportTool.exe";
@@ -101,6 +99,9 @@ void handle_tray_command(HWND window, const WPARAM command_id)
             MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
         }
 
+        break;
+    case ID_DOCUMENTATION_MENU_COMMAND:
+        RunNonElevatedEx(L"https://aka.ms/PowerToysOverview", L"");
         break;
     }
 }
