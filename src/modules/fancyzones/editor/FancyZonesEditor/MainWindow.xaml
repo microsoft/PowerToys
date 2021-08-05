@@ -288,6 +288,7 @@
                 <StackPanel Orientation="Horizontal"
                             Margin="8">
                     <TextBlock Text="&#xE109;"
+                               AutomationProperties.Name="{x:Static props:Resources.Create_new_layout}"
                                FontFamily="Segoe MDL2 Assets"
                                Foreground="{DynamicResource AccentButtonForeground}" />
                     <TextBlock Text="{x:Static props:Resources.Create_new_layout}"
