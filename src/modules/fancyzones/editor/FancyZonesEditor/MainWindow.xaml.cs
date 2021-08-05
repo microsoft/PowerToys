@@ -235,6 +235,8 @@ namespace FancyZonesEditor
 
         private void OnClosing(object sender, EventArgs e)
         {
+            CancelLayoutChanges();
+
             App.FancyZonesEditorIO.SerializeZoneSettings();
             App.Overlay.CloseLayoutWindow();
             App.Current.Shutdown();
@@ -259,11 +261,11 @@ namespace FancyZonesEditor
 
                     if (_settings.SelectedModel is GridLayoutModel grid)
                     {
-                        _backup = new GridLayoutModel(grid);
+                        _backup = new GridLayoutModel(grid, false);
                     }
                     else if (_settings.SelectedModel is CanvasLayoutModel canvas)
                     {
-                        _backup = new CanvasLayoutModel(canvas);
+                        _backup = new CanvasLayoutModel(canvas, false);
                     }
 
                     await EditLayoutDialog.ShowAsync();
@@ -354,10 +356,7 @@ namespace FancyZonesEditor
         // EditLayout: Cancel changes
         private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            // restore model properties from settings
-            _settings.RestoreSelectedModel(_backup);
-            _backup = null;
-
+            CancelLayoutChanges();
             Select(_settings.AppliedModel);
         }
 
@@ -466,6 +465,15 @@ namespace FancyZonesEditor
         {
             TextBox tb = sender as TextBox;
             tb.SelectionStart = tb.Text.Length;
+        }
+
+        private void CancelLayoutChanges()
+        {
+            if (_backup != null)
+            {
+                _settings.RestoreSelectedModel(_backup);
+                _backup = null;
+            }
         }
     }
 }
