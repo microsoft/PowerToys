@@ -207,11 +207,11 @@
     <value>About PowerToys</value>
   </data>
   <data name="About_PowerToys.ModuleDescription" xml:space="preserve">
-    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Made with ? by Microsoft and the PowerToys community.</value>
+    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Made with ❤ by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the OS</comment>
   </data>
   <data name="MadeWithOssLove.Text" xml:space="preserve">
-    <value>Made with ?? by Microsoft and the PowerToys community.</value>
+    <value>Made with ❤ by Microsoft and the PowerToys community.</value>
   </data>
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
@@ -508,7 +508,7 @@
     <value>Zone highlight color</value>
   </data>
   <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
-    <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>
+    <value>After zone layout changes, windows assigned to a zone will match new size/positions</value>
   </data>
   <data name="FancyZones_BorderColor.Text" xml:space="preserve">
     <value>Zone border color</value>
@@ -908,7 +908,7 @@
   </data>
   <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
     <value>Learn more about remapping limitations</value>
-    <comment>This is a link that will discuss what is and is not possible for Keyboard manager to remap</comment>
+    <comment>Hyperlink to documentation what is and is not possible for Keyboard manager to remap</comment>
   </data>
 
 <!-- Power Rename -->
@@ -928,7 +928,7 @@
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
-    <value>Show icon on context menu</value>
+    <value>Show icon in context menu</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
     <value>Appear only in extended context menu (Shift + Right-click)</value>
