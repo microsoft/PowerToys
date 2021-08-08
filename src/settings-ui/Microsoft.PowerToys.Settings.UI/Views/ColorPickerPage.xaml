@@ -124,10 +124,7 @@
                     <!-- CanReorderItems="True" AllowDrop="True" -->
                     <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
                                           SelectionMode="None"
-                      HorizontalAlignment="Stretch">
-                        <ItemsControl.ItemContainerTransitions>
-                            <TransitionCollection/>
-                        </ItemsControl.ItemContainerTransitions>
+                                          HorizontalAlignment="Stretch">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid
