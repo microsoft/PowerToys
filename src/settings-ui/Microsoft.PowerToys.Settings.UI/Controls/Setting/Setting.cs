@@ -8,6 +8,8 @@ using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
+    [TemplateVisualState(Name = "Normal", GroupName = "CommonStates")]
+    [TemplateVisualState(Name = "Disabled", GroupName = "CommonStates")]
     [TemplatePart(Name = PartIconPresenter, Type = typeof(ContentPresenter))]
     [TemplatePart(Name = PartDescriptionPresenter, Type = typeof(ContentPresenter))]
     public class Setting : ContentControl
@@ -75,11 +77,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         protected override void OnApplyTemplate()
         {
-            base.OnApplyTemplate();
+            IsEnabledChanged -= Setting_IsEnabledChanged;
             _setting = (Setting)this;
             _iconPresenter = (ContentPresenter)_setting.GetTemplateChild(PartIconPresenter);
             _descriptionPresenter = (ContentPresenter)_setting.GetTemplateChild(PartDescriptionPresenter);
             Update();
+            SetEnabledState();
+            IsEnabledChanged += Setting_IsEnabledChanged;
+            base.OnApplyTemplate();
         }
 
         private static void OnIconChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -90,6 +95,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private static void OnDescriptionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((Setting)d).Update();
+        }
+
+        private void Setting_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            SetEnabledState();
+        }
+
+        private void SetEnabledState()
+        {
+            VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
         }
 
         private void Update()
