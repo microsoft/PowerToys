@@ -8,7 +8,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:toolkitconverters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main" x:Name="RootPage">
@@ -34,7 +33,7 @@
                 </controls:Setting>
 
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="ImageResizer_CustomSizes" Icon="&#xE2B2;">
                         <controls:Setting.ActionContent>
                             <Button x:Uid="ImageResizer_AddSizeButton" Click="AddSizeButton_Click" Style="{ThemeResource AccentButtonStyle}" />
@@ -161,10 +160,10 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
 
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="Encoding" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="ImageResizer_FallBackEncoderText">
                         <controls:Setting.ActionContent>
                             <ComboBox SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}"
@@ -216,10 +215,10 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
 
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <muxc:Expander IsExpanded="True" Style="{StaticResource SettingsExpanderStyle}">
                         <muxc:Expander.Header>
                             <controls:Setting x:Uid="ImageResizer_FilenameFormatHeader" Style="{StaticResource ExpanderHeaderSettingStyle}">
@@ -276,7 +275,7 @@
                                         Margin="16,0,0,0" />
                         </muxc:Expander.Content>
                     </muxc:Expander>
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
 
 
             </StackPanel>

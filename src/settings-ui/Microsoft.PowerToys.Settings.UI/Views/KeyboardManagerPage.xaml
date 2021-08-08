@@ -5,10 +5,8 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
-    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
@@ -93,7 +91,7 @@
                 </controls:Setting>
 
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
+                <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
                     <controls:Setting x:Uid="KeyboardManager_RemapKeys" Icon="&#xE92E;">
                         <controls:Setting.ActionContent>
                             <Button x:Uid="KeyboardManager_RemapKeyboardButton"
@@ -149,10 +147,10 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
 
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="KeyboardManager_Shortcuts"   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
+                <controls:SettingsGroup x:Uid="KeyboardManager_Shortcuts"   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
                     <controls:Setting x:Uid="KeyboardManager_RemapShortcuts" Icon="&#xEDA7;">
                         <controls:Setting.ActionContent>
                             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
@@ -215,7 +213,7 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.ModuleLinks>

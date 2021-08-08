@@ -19,9 +19,17 @@
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_FancyZones">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-            <ToggleSwitch x:Name="FancyZones_EnableToggleControl_HeaderText"
-                            x:Uid="FancyZones_EnableToggleControl_HeaderText"
-                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
+
+                <controls:Setting x:Uid="FancyZones_EnableToggleControl_HeaderText">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" FlowDirection="RightToLeft" />
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
+
+
 
             <TextBlock x:Uid="FancyZones_Editor_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"

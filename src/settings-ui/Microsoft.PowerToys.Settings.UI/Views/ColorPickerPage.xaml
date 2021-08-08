@@ -6,9 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
-    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
@@ -29,7 +26,7 @@
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="Shortcuts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="Shortcuts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;">
                         <controls:Setting.Description>
                             <TextBlock>
@@ -41,8 +38,8 @@
                             <controls:HotkeySettingsControl Width="240" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" Keys="Win, Ctrl, Alt, Shift"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    
-                </toolkitcontrols:HeaderedItemsControl>
+
+                </controls:SettingsGroup>
 
 
 
@@ -83,7 +80,7 @@
                 </muxc:Expander>
 
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="ColorFormats" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <muxc:Expander IsExpanded="True" Style="{StaticResource SettingsExpanderStyle}">
                         <muxc:Expander.Header>
                             <controls:Setting x:Uid="ColorPicker_CopiedColorRepresentation" Icon="&#xEF3C;" Style="{StaticResource ExpanderHeaderSettingStyle}">
@@ -115,9 +112,9 @@
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{Binding IsEnabled}"/>
                           -->
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="ColorPicker_ColorFormats" Icon="&#xE14C;"/>
 
                     <!-- Disabled reordering by dragging -->
@@ -198,7 +195,7 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
             </StackPanel>
 
 </controls:SettingsPageControl.ModuleContent>

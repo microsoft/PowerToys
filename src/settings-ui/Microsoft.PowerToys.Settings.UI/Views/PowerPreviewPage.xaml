@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
@@ -35,7 +34,7 @@
                                    IsClosable="False"
                                    />
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="FileExplorerPreview_PreviewPane_GroupSettings">
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane_GroupSettings">
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
                         <controls:Setting.ActionContent>
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}" FlowDirection="RightToLeft" />
@@ -47,9 +46,9 @@
                             <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MDRenderIsEnabled}" FlowDirection="RightToLeft" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
 
                     <muxc:InfoBar Severity="Informational"
                                    x:Uid="FileExplorerPreview_RebootRequired"
@@ -63,7 +62,7 @@
                     </controls:Setting>
 
                 
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
                 <!--<TextBlock x:Uid=""
                        Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
                        Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>-->
