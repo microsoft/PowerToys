@@ -9,6 +9,7 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
@@ -29,8 +30,10 @@ namespace PowerLauncher
         private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed;
+        private HwndSource _hwndSource;
         private Timer _firstDeleteTimer = new Timer();
         private bool _coldStateHotkeyPressed;
+        private bool _disposedValue;
 
         public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
             : this()
@@ -91,6 +94,12 @@ namespace PowerLauncher
             // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
             _ = NativeMethods.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
             Activate();
+        }
+
+        private void OnSourceInitialized(object sender, EventArgs e)
+        {
+            _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+            _hwndSource.AddHook(EnvironmentHelper.ProcessWindowMessages);
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -358,8 +367,6 @@ namespace PowerLauncher
             }
         }
 
-        private bool disposedValue;
-
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = (TextBox)sender;
@@ -450,7 +457,7 @@ namespace PowerLauncher
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -458,12 +465,14 @@ namespace PowerLauncher
                     {
                         _firstDeleteTimer.Dispose();
                     }
+
+                    _hwndSource?.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
                 _firstDeleteTimer = null;
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
