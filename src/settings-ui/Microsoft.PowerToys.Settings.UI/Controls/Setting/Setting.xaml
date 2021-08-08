@@ -9,7 +9,7 @@
         <Setter Property="BorderThickness" Value="{ThemeResource CardBorderThickness}" />
         <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
         <Setter Property="Padding" Value="16" />
-        <Setter Property="Margin" Value="0,0,0,2"/>
+        <Setter Property="Margin" Value="0,0,0,0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:Setting">
@@ -74,7 +74,7 @@
                                 FontSize="{StaticResource SecondaryTextFontSize}"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                 <ContentPresenter.Resources>
-                                    <Style TargetType="TextBlock"  BasedOn="{StaticResource CaptionTextBlockStyle}">
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
                                         <Style.Setters>
                                             <Setter Property="TextWrapping" Value="WrapWholeWords"/>
                                         </Style.Setters>

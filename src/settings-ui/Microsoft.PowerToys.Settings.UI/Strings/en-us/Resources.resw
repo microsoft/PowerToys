@@ -268,29 +268,21 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Select the profile to display the active key remap and shortcuts</value>
     <comment>Keyboard Manager configuration dropdown description</comment>
   </data>
-  <data name="KeyboardManager_RemapKeyboardButton.Content" xml:space="preserve">
+  <data name="KeyboardManager_RemapKeyboardButton.Header" xml:space="preserve">
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
-  </data>
-  <data name="KeyboardManager_RemapKeys.Header" xml:space="preserve">
-    <value>Remap keys</value>
-    <comment>Keyboard Manager remap keyboard header</comment>
   </data>
 	<data name="KeyboardManager_Keys.Header" xml:space="preserve">
     <value>Keys</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
-  <data name="KeyboardManager_RemapShortcutsButton.Content" xml:space="preserve">
+  <data name="KeyboardManager_RemapShortcutsButton.Header" xml:space="preserve">
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
 	<data name="KeyboardManager_Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
     <comment>Keyboard Manager remap keyboard header</comment>
-  </data>
-  <data name="KeyboardManager_RemapShortcuts.Header" xml:space="preserve">
-    <value>Remap shortcuts</value>
-    <comment>Keyboard Manager remap shortcuts header</comment>
   </data>
   <data name="RemapKeysList.AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
@@ -836,10 +828,10 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="Encoding.Header" xml:space="preserve">
     <value>Encoding</value>
   </data>
-  <data name="KeyboardManager_RemapKeys.Description" xml:space="preserve">
+  <data name="KeyboardManager_RemapKeyboardButton.Description" xml:space="preserve">
     <value>Remap keys to other keys or shortcuts.</value>
   </data>
-  <data name="KeyboardManager_RemapShortcuts.Description" xml:space="preserve">
+  <data name="KeyboardManager_RemapShortcutsButton.Description" xml:space="preserve">
     <value>Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.</value>
   </data>
   <data name="General.ModuleDescription" xml:space="preserve">
