@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Image resizer]]></Val>
+            <Val><![CDATA[Image Resizer]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Settings can be accessed from within Image Resizer.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[De instellingen zijn toegankelijk vanuit Image resizer.]]></Val>
+            <Val><![CDATA[De instellingen zijn toegankelijk vanuit Image Resizer.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Settings header for Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Headerinstellingen voor Image resizer]]></Val>
+            <Val><![CDATA[Headerinstellingen voor Image Resizer]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
