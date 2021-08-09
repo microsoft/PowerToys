@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:localConverters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls" xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
@@ -28,7 +28,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="General_Version">
+                <controls:SettingsGroup x:Uid="General_Version">
                   
                     <controls:Setting Header="{Binding PowerToysVersion}" Icon="&#xE117;">
                         <controls:Setting.Description>
@@ -174,13 +174,13 @@
                           IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}"
                           IsEnabled="{Binding AutoUpdatesEnabled}" />
                     </controls:Setting>
-                </toolkitcontrols:HeaderedItemsControl>
+                    </controls:SettingsGroup>
 
 
 
 
 
-                <toolkitcontrols:HeaderedItemsControl x:Uid="Admin_Mode">
+                <controls:SettingsGroup x:Uid="Admin_Mode">
                     <muxc:Expander IsExpanded="True">
                         <muxc:Expander.Header>
                             <controls:Setting x:Uid="Admin_Mode" Icon="&#xE1A7;" Description="{Binding Mode=TwoWay, Path=RunningAsText}" Style="{StaticResource ExpanderHeaderSettingStyle}">
@@ -211,11 +211,11 @@
                             </StackPanel>
                         </muxc:Expander.Content>
                     </muxc:Expander>
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
 
 
 
-                <toolkitcontrols:HeaderedItemsControl IsEnabled="True" x:Uid="ShortcutGuide_Appearance_Behavior">
+                    <controls:SettingsGroup IsEnabled="True" x:Uid="ShortcutGuide_Appearance_Behavior">
                     <muxc:Expander IsExpanded="True">
                         <muxc:Expander.Header>
                             <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;" Style="{StaticResource ExpanderHeaderSettingStyle}">
@@ -243,15 +243,10 @@
                         </muxc:Expander.Content>
                     </muxc:Expander>
 
-                </toolkitcontrols:HeaderedItemsControl>
+                </controls:SettingsGroup>
             </StackPanel>
                
         </controls:SettingsPageControl.ModuleContent>
-        <!-- 
-                <HyperlinkButton Click="OobeButton_Click">
-                    <TextBlock x:Uid="Oobe_Button"/>
-                </HyperlinkButton> -->
-        <!-- Side panel -->
 
         <controls:SettingsPageControl.ModuleLinks>
             <controls:SidePanelLink x:Uid="General_Repository" Link="https://aka.ms/powertoys"/>
