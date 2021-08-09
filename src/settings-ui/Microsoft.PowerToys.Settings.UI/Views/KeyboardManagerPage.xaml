@@ -93,13 +93,13 @@
 
                 <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
 
-                    <!--<Button Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=RemapKeyboardCommand}">
+                    <Button Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=RemapKeyboardCommand}">
                         <controls:Setting x:Uid="KeyboardManager_RemapKeyboardButton" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xE92E;">
                             <controls:Setting.ActionContent>
                                 <FontIcon Glyph="&#xE8A7;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                             </controls:Setting.ActionContent>
                         </controls:Setting>
-                    </Button>-->
+                    </Button>
 
                     <ListView x:Name="RemapKeysList"
                               x:Uid="RemapKeysList"
@@ -151,13 +151,13 @@
 
 
                 <controls:SettingsGroup x:Uid="KeyboardManager_Shortcuts"   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
-                    <!--<Button Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=EditShortcutCommand}">
+                    <Button Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=EditShortcutCommand}">
                         <controls:Setting x:Uid="KeyboardManager_RemapShortcutsButton" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xE92E;">
                             <controls:Setting.ActionContent>
-                                <FontIcon Glyph="&#xEDA7;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
+                                <FontIcon Glyph="&#xE8A7;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                             </controls:Setting.ActionContent>
                         </controls:Setting>
-                    </Button>-->
+                    </Button>
                     
                     <ListView x:Name="RemapShortcutsList"
                               x:Uid="RemapShortcutsList"
