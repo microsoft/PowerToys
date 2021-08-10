@@ -352,7 +352,10 @@
                             FontFamily="Segoe MDL2 Assets"
                             Style="{StaticResource IconOnlyButtonStyle}"
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
-
+                    
+                    <!--Used by narrator for announcements-->
+                    <TextBlock x:Name="LayoutCreationAnnounce" />
+                    
                     <Button Click="DuplicateLayout_Click"
                             x:Name="createFromTemplateLayoutButton"
                             AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}"

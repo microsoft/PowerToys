@@ -5,7 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Forms.Automation;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
@@ -26,6 +29,7 @@ namespace FancyZonesEditor
         private LayoutModel _backup;
 
         private ContentDialog _openedDialog;
+        private TextBlock _createLayoutAnnounce;
         private bool _openingDialog = false; // Is the dialog being opened.
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
@@ -33,6 +37,7 @@ namespace FancyZonesEditor
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
         {
             InitializeComponent();
+            _createLayoutAnnounce = (TextBlock)FindName("LayoutCreationAnnounce");
             DataContext = _settings;
 
             KeyUp += MainWindow_KeyUp;
@@ -191,6 +196,7 @@ namespace FancyZonesEditor
                 name = name.TrimEnd();
             }
 
+            AnnounceSuccessfulLayoutCreation(name);
             int maxCustomIndex = 0;
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
@@ -220,6 +226,16 @@ namespace FancyZonesEditor
 
             App.Overlay.SetLayoutSettings(App.Overlay.Monitors[App.Overlay.CurrentDesktop], model);
             App.FancyZonesEditorIO.SerializeZoneSettings();
+        }
+
+        private void AnnounceSuccessfulLayoutCreation(string name)
+        {
+            if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
+            {
+                var peer = UIElementAutomationPeer.FromElement(_createLayoutAnnounce);
+                AutomationProperties.SetName(_createLayoutAnnounce, name + " " + FancyZonesEditor.Properties.Resources.Layout_Creation_Announce);
+                peer?.RaiseAutomationEvent(AutomationEvents.MenuOpened);
+            }
         }
 
         private void Apply()
