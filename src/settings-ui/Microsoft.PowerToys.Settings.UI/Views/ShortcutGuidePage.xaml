@@ -77,12 +77,16 @@
                             </StackPanel>
                         </muxc:Expander.Content>
                     </muxc:Expander>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <muxc:Expander IsExpanded="True">
                         <muxc:Expander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_DisabledApps" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
+                            <controls:Setting x:Uid="ShortcutGuide_DisabledApps" Icon="&#xE103;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
                         </muxc:Expander.Header>
                         <muxc:Expander.Content>
                             <TextBox x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
+                                     Margin="{StaticResource ExpanderSettingMargin}"
                                          Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps, UpdateSourceTrigger=PropertyChanged}"
                                          ScrollViewer.VerticalScrollBarVisibility ="Visible"
                                          ScrollViewer.VerticalScrollMode="Enabled"

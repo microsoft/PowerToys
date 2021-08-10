@@ -72,6 +72,7 @@
                                 x:Name="DescriptionPresenter"
                                 Content="{TemplateBinding Description}"
                                 FontSize="{StaticResource SecondaryTextFontSize}"
+                                TextWrapping="WrapWholeWords"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                 <ContentPresenter.Resources>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">

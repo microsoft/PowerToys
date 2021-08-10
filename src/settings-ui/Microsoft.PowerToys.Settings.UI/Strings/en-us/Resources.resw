@@ -254,7 +254,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <comment>Keyboard Manager current configuration header</comment>
   </data>
   <data name="KeyboardManager.ModuleDescription" xml:space="preserve">
-    <value>Reconfigure your keyboard by remapping keys and shortcuts.</value>
+    <value>Reconfigure your keyboard by remapping keys and shortcuts</value>
     <comment>Keyboard Manager page description</comment>
   </data>
   <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
@@ -406,11 +406,11 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Enable FancyZones</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
-  <data name="FancyZones_ExcludeApps.Text" xml:space="preserve">
+  <data name="FancyZones_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
   </data>
-  <data name="FancyZones_ExcludeApps_TextBoxControl.Header" xml:space="preserve">
-    <value>To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.</value>
+  <data name="FancyZones_ExcludeApps.Description" xml:space="preserve">
+    <value>Excludes an application from snappting to zones and will only react to Windows Snap. Add one application name per line.</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
     <value>Zone opacity</value>
@@ -425,8 +425,12 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
     <value>Information Symbol</value>
   </data>
-  <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
+  <data name="FancyZones_LaunchEditorButtonControl.Header" xml:space="preserve">
     <value>Launch layout editor</value>
+    <comment>launches the FancyZones layout editor application</comment>
+  </data>
+  <data name="FancyZones_LaunchEditorButtonControl.Description" xml:space="preserve">
+    <value>Set and manage your layouts</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
@@ -438,8 +442,11 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows between zones across all monitors</value>
   </data>
-  <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
-    <value>Override Windows Snap shortcut (Win + Arrow) to move windows between zones</value>
+  <data name="FancyZones_OverrideSnapHotkeys.Header" xml:space="preserve">
+    <value>Override Windows Snap</value>
+  </data>
+  <data name="FancyZones_OverrideSnapHotkeys.Description" xml:space="preserve">
+    <value>This overrides the Windows Snap shortcut (Win + arrow) to move windows between zones</value>
   </data>
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Hold Shift key to activate zones while dragging</value>
@@ -452,15 +459,24 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_OpenWindowOnActiveMonitor.Content" xml:space="preserve">
-    <value>Move newly created windows to the current active monitor (EXPERIMENTAL)</value>
+    <value>Move newly created windows to the current active monitor (Experimental)</value>
   </data>
-  <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
-    <value>Follow mouse cursor instead of focus when launching editor in a multi screen environment</value>
+  <data name="FancyZones_UseCursorPosEditorStartupScreen.Header" xml:space="preserve">
+    <value>Launch editor where mouse cursor is</value>
   </data>
-  <data name="FancyZones_ZoneBehavior_GroupSettings.Text" xml:space="preserve">
+  <data name="FancyZones_UseCursorPosEditorStartupScreen.Description" xml:space="preserve">
+    <value>When using multiple screens, the editor will launch on the screen where the mouse cursor is</value>
+  </data>
+  <data name="FancyZones_ZoneBehavior_GroupSettings.Header" xml:space="preserve">
     <value>Zone behavior</value>
   </data>
-  <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
+  <data name="FancyZones_ZoneBehavior_GroupSettings.Description" xml:space="preserve">
+    <value>Manage how zones behave when using FancyZones</value>
+  </data>
+  <data name="FancyZones_Zones.Header" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="FancyZones_ZoneHighlightColor.Header" xml:space="preserve">
     <value>Zone highlight color</value>
   </data>
   <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
@@ -557,10 +573,10 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
     <value>Enable autocomplete for the search and replace fields</value>
   </data>
-  <data name="FancyZones_BorderColor.Text" xml:space="preserve">
+  <data name="FancyZones_BorderColor.Header" xml:space="preserve">
     <value>Zone border color</value>
   </data>
-  <data name="FancyZones_InActiveColor.Text" xml:space="preserve">
+  <data name="FancyZones_InActiveColor.Header" xml:space="preserve">
     <value>Zone inactive color</value>
   </data>
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
@@ -829,10 +845,10 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Encoding</value>
   </data>
   <data name="KeyboardManager_RemapKeyboardButton.Description" xml:space="preserve">
-    <value>Remap keys to other keys or shortcuts.</value>
+    <value>Remap keys to other keys or shortcuts</value>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Description" xml:space="preserve">
-    <value>Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.</value>
+    <value>Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well</value>
   </data>
   <data name="General.ModuleDescription" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
@@ -938,13 +954,21 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Learn more about remapping limitations</value>
     <comment>This is a link that will discuss what is and is not possible for Keyboard manager to remap</comment>
   </data>
-  <data name="FancyZones_Editor_GroupSettings.Text" xml:space="preserve">
+  <data name="FancyZones_Editor_GroupSettings.Header" xml:space="preserve">
     <value>Editor</value>
     <comment>refers to the FancyZone editor</comment>
   </data>
-  <data name="FancyZones_WindowBehavior_GroupSettings.Text" xml:space="preserve">
+  <data name="FancyZones_WindowBehavior_GroupSettings.Header" xml:space="preserve">
     <value>Window behavior</value>
   </data>
+  <data name="FancyZones_WindowBehavior_GroupSettings.Description" xml:space="preserve">
+    <value>Manage how windows behave when using FancyZones</value>
+  </data>
+  <data name="FancyZones_Windows.Header" xml:space="preserve">
+    <value>Windows</value>
+     <comment>refers to a set of windows, not the product name</comment>
+  </data>
+  
   <data name="PowerRename_BehaviorHeader.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
@@ -1022,7 +1046,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Activate the smallest zone by area</value>
   </data>
   <data name="FancyZones_OverlappingZones.Header" xml:space="preserve">
-    <value>When multiple zones overlap:</value>
+    <value>When multiple zones overlap</value>
   </data>
   <data name="PowerLauncher_Plugins.Text" xml:space="preserve">
     <value>Plugins</value>
@@ -1083,9 +1107,16 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
     <value>Flash zones when switching layout</value>
   </data>
-  <data name="FancyZones_QuickLayoutSwitch.Content" xml:space="preserve">
+  <data name="FancyZones_Layouts.Header" xml:space="preserve">
+    <value>Layouts</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch.Header" xml:space="preserve">
     <value>Enable quick layout switch</value>
   </data>
+  <data name="FancyZones_QuickLayoutSwitch.Description" xml:space="preserve">
+    <value>You can configure layout-specific shortcuts in the editor</value>
+  </data>
+  
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
   </data>
@@ -1391,6 +1422,9 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>See what's new</value>
   </data>
   <data name="Awake_Mode.Description" xml:space="preserve">
-    <value>Set the preferred state of your computer</value>
+    <value>Set the preferred behaviour or Awake</value>
+  </data>
+  <data name="ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
   </data>
 </root>

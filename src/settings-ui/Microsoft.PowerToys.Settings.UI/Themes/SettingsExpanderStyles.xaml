@@ -6,7 +6,7 @@
 
     <!-- Thickness -->
     <Thickness x:Key="ExpanderContentPadding">0</Thickness>
-    <Thickness x:Key="ExpanderSettingMargin">56, 12, 40, 12</Thickness>
+    <Thickness x:Key="ExpanderSettingMargin">56, 8, 40, 8</Thickness>
 
     <!-- Styles -->
     <!-- Setting used in a Expander header -->
@@ -38,5 +38,10 @@
         <Setter Property="BorderBrush" Value="{ThemeResource CardBorderBrush}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+
+    <Style x:Key="ExpanderSeparatorStyle" TargetType="Rectangle">
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Stroke" Value="{ThemeResource CardBorderBrush}" />
     </Style>
 </ResourceDictionary>
