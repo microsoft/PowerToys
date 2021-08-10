@@ -249,6 +249,14 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Keyboard Manager</value>
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
+  <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
+    <value>Navigation closed</value>
+    <comment>Accessibility announcement when the navigation pane collapses</comment>
+  </data>
+  <data name="Shell_NavigationMenu_Announce_Open" xml:space="preserve">
+    <value>Navigation opened</value>
+    <comment>Accessibility announcement when the navigation pane opens</comment>
+  </data>
   <data name="KeyboardManager_ConfigHeader.Text" xml:space="preserve">
     <value>Current configuration</value>
     <comment>Keyboard Manager current configuration header</comment>
@@ -1376,14 +1384,14 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Delete_Dialog_Description" xml:space="preserve">
     <value>Are you sure you want to delete this item?</value>
   </data>
-	<data name="Yes" xml:space="preserve">
+  <data name="Yes" xml:space="preserve">
     <value>Yes</value>
     <comment>Label of a confirmation button</comment>
-	  </data>
+  </data>
   <data name="Learn_More_Description.AutomationProperties.Name" xml:space="preserve">
     <value>Learn more</value>
   </data>
-    <data name="ColorPicker_ColorFormat_ToggleSwitch.AutomationProperties.Name" xml:space="preserve">
+  <data name="ColorPicker_ColorFormat_ToggleSwitch.AutomationProperties.Name" xml:space="preserve">
     <value>Show format in editor</value>
   </data>
 </root>

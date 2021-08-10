@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
@@ -183,10 +184,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
             {
+                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
-                    "Navigation opened",
+                    loader.GetString("Shell_NavigationMenu_Announce_Open"),
                     "navigationMenuPaneOpened");
             }
         }
@@ -208,10 +210,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuClosed))
             {
+                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
-                    "Navigation closed",
+                    loader.GetString("Shell_NavigationMenu_Announce_Collapse"),
                     "navigationMenuPaneClosed");
             }
         }
