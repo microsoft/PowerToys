@@ -491,5 +491,15 @@ namespace FancyZonesEditor
                 _backup = null;
             }
         }
+
+        private void NumberBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            // The TextBox inside a NumberBox doesn't inherit the Automation Properties name, so we have to set it.
+            var numberBox = sender as NumberBox;
+            const string numberBoxTextBoxName = "InputBox"; // Text box template part name given by ModernWPF.
+            numberBox.ApplyTemplate(); // Apply template to be able to change child's property.
+            var numberBoxTextBox = numberBox.Template.FindName(numberBoxTextBoxName, numberBox) as TextBox;
+            numberBoxTextBox.SetValue(AutomationProperties.NameProperty, numberBox.GetValue(AutomationProperties.NameProperty));
+        }
     }
 }
