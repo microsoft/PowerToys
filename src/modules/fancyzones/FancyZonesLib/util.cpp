@@ -12,6 +12,7 @@
 #include <wil/Resource.h>
 
 #include <fancyzones/FancyZonesLib/FancyZonesDataTypes.h>
+#include <fancyzones/FancyZonesLib/FancyZonesWindowProperties.h>
 
 // Non-Localizable strings
 namespace NonLocalizable
