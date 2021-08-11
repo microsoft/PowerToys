@@ -27,32 +27,32 @@
                 </controls:Setting>
 
                 <controls:SettingsGroup x:Uid="PowerRename_ShellIntegration">
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="PowerRename_Toggle_EnableOnContextMenu" Icon="&#xE14C;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextMenu}" FlowDirection="RightToLeft" />
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-                        </muxc:Expander.Header>
-                        <muxc:Expander.Content>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
                             <CheckBox x:Uid="PowerRename_Toggle_EnableOnExtendedContextMenu"
                                 IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu}"
                                 Margin="{StaticResource ExpanderSettingMargin}" />
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="PowerRename_AutoCompleteHeader">
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="PowerRename_Toggle_AutoComplete" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MRUEnabled}" FlowDirection="RightToLeft" />
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-                        </muxc:Expander.Header>
-                        <muxc:Expander.Content>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
                             <StackPanel HorizontalAlignment="Stretch">
                                 <CheckBox x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                                 IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}"
@@ -70,8 +70,8 @@
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                             </StackPanel>
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
 

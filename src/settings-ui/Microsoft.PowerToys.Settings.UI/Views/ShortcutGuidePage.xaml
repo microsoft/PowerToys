@@ -48,8 +48,8 @@
                 </controls:Setting>
 
                 <controls:SettingsGroup x:Uid="ShortcutGuide_Appearance_Behavior" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.Description>
                                     <HyperlinkButton Click="OpenColorsSettings_Click"
@@ -63,8 +63,8 @@
                                     </ComboBox>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-                        </muxc:Expander.Header>
-                        <muxc:Expander.Content>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
                             <StackPanel Orientation="Vertical">
                                 <controls:Setting x:Uid="ShortcutGuide_OverlayOpacity" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
@@ -75,16 +75,16 @@
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                             </StackPanel>
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="ShortcutGuide_DisabledApps" Icon="&#xE103;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
-                        </muxc:Expander.Header>
-                        <muxc:Expander.Content>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
                             <TextBox x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
                                      Margin="{StaticResource ExpanderSettingMargin}"
                                          Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps, UpdateSourceTrigger=PropertyChanged}"
@@ -95,8 +95,8 @@
                                          AcceptsReturn="True"
                                          MinWidth="240"
                                          MinHeight="160" />
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

@@ -34,8 +34,8 @@
 
 
                 <controls:SettingsGroup x:Uid="Shortcuts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.Description>
                                     <TextBlock>
@@ -47,13 +47,13 @@
                                     <controls:HotkeySettingsControl Width="240" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" Keys="Win, Ctrl, Alt, Shift"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-                        </muxc:Expander.Header>
-                        <muxc:Expander.Content>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
                             <StackPanel>
                                 <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" Margin="{StaticResource ExpanderSettingMargin}" />
                             </StackPanel>
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
 
@@ -93,8 +93,8 @@
 
 
                 <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="PowerLauncher_MaximumNumberOfResults" Icon="&#xE721;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
@@ -103,13 +103,11 @@
                                                     Minimum="1"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-                        </muxc:Expander.Header>
-                        <muxc:Expander.Content>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
                             <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" Margin="{StaticResource ExpanderSettingMargin}" />
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
-
-
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
@@ -176,8 +174,8 @@
                     
                     <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
                                 <Grid>
-                                    <muxc:Expander>
-                                        <muxc:Expander.Header>
+                                    <controls:SettingExpander>
+                                        <controls:SettingExpander.Header>
                                             <controls:Setting Header="{x:Bind Path=Name}" Description="{x:Bind Description}" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                                 <controls:Setting.Icon>
                                                     <Image Source="{x:Bind IconPath}"
@@ -191,8 +189,8 @@
                                                                   FlowDirection="RightToLeft"/>
                                                 </controls:Setting.ActionContent>
                                             </controls:Setting>
-                                        </muxc:Expander.Header>
-                                        <muxc:Expander.Content>
+                                        </controls:SettingExpander.Header>
+                                        <controls:SettingExpander.Content>
                                             <StackPanel>
                                                 <controls:Setting x:Uid="PowerLauncher_ActionKeyword" Style="{StaticResource ExpanderContentSettingStyle}">
                                                     <controls:Setting.ActionContent>
@@ -246,8 +244,8 @@
                                         Visibility="{x:Bind ShowNotAllowedKeywordWarning, Converter={StaticResource BoolToVisibilityConverter}}"
                                         TextWrapping="Wrap" />-->
                                            
-                                        </muxc:Expander.Content>
-                                    </muxc:Expander>
+                                        </controls:SettingExpander.Content>
+                                    </controls:SettingExpander>
                                 </Grid>
                             </DataTemplate>
                 </ListView.ItemTemplate>

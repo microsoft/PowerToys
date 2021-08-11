@@ -44,8 +44,8 @@
 
 
 
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.Description>
                                     <TextBlock>
@@ -57,9 +57,9 @@
                                     <controls:HotkeySettingsControl Width="240" HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" Keys="Win, Ctrl, Alt, Shift"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-                        </muxc:Expander.Header>
+                        </controls:SettingExpander.Header>
 
-                        <muxc:Expander.Content>
+                        <controls:SettingExpander.Content>
                             <StackPanel>
                                 <controls:Setting x:Uid="FancyZones_UseCursorPosEditorStartupScreen" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
@@ -67,17 +67,17 @@
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                             </StackPanel>
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
 
                 <controls:SettingsGroup x:Uid="FancyZones_Zones" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_ZoneBehavior_GroupSettings" Icon="&#xE620;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
-                        </muxc:Expander.Header>
-                        <muxc:Expander.Content>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
                             <StackPanel>
 
                                 <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}" Margin="{StaticResource ExpanderSettingMargin}"  />
@@ -180,18 +180,18 @@
                                 </controls:Setting>
 
                             </StackPanel>
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
                 
                 <controls:SettingsGroup x:Uid="FancyZones_Windows" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_WindowBehavior_GroupSettings" Icon="&#xE737;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
-                        </muxc:Expander.Header>
-                        <muxc:Expander.Content>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
                             <StackPanel>
                                 <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}" Margin="{StaticResource ExpanderSettingMargin}"/>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
@@ -206,19 +206,19 @@
                                 <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" Margin="{StaticResource ExpanderSettingMargin}"/>
                             </StackPanel>
 
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
 
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_OverrideSnapHotkeys" Icon="&#xE145;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}" FlowDirection="RightToLeft" />
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-                        </muxc:Expander.Header>
+                        </controls:SettingExpander.Header>
 
-                        <muxc:Expander.Content>
+                        <controls:SettingExpander.Content>
                             <StackPanel>
                                 <RadioButton x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnZoneIndex}" GroupName="OverrideSnapGroup" Margin="{StaticResource ExpanderSettingMargin}"/>
                                 <RadioButton x:Uid="FancyZones_MoveWindowBasedOnRelativePosition" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition}" GroupName="OverrideSnapGroup" Margin="{StaticResource ExpanderSettingMargin}"/>
@@ -227,26 +227,26 @@
                                               IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}"
                                               IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
                             </StackPanel>
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="FancyZones_Layouts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_QuickLayoutSwitch" Icon="&#xE737;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.QuickLayoutSwitch}" FlowDirection="RightToLeft" />
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-                        </muxc:Expander.Header>
+                        </controls:SettingExpander.Header>
 
-                        <muxc:Expander.Content>
+                        <controls:SettingExpander.Content>
                             <StackPanel>
                                 <CheckBox x:Uid="FancyZones_FlashZonesOnQuickSwitch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FlashZonesOnQuickSwitch}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.QuickSwitchEnabled}" Margin="{StaticResource ExpanderSettingMargin}"/>
                             </StackPanel>
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
 
@@ -255,11 +255,11 @@
 
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_ExcludeApps" Icon="&#xE103;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
-                        </muxc:Expander.Header>
-                        <muxc:Expander.Content>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
                             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                                  Margin="{StaticResource ExpanderSettingMargin}"
                                          Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps, UpdateSourceTrigger=PropertyChanged}"
@@ -270,8 +270,8 @@
                                          AcceptsReturn="True"
                                          MinWidth="240"
                                          MinHeight="160" />
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
             </StackPanel>
 

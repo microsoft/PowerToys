@@ -32,7 +32,8 @@
     </Style>
 
     <!-- Setting expander style -->
-    <Style TargetType="muxc:Expander">
+
+    <Style x:Key="SettingExpanderStyle" TargetType="muxc:Expander">
         <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource CardBorderThickness}" />
         <Setter Property="BorderBrush" Value="{ThemeResource CardBorderBrush}" />

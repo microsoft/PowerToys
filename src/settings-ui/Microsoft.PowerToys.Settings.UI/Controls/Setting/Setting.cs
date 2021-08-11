@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using Windows.UI.Accessibility;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -29,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
            "Header",
            typeof(string),
            typeof(Setting),
-           new PropertyMetadata(default(string)));
+           new PropertyMetadata(default(string), OnHeaderChanged));
 
         public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(
             "Description",
@@ -87,6 +89,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             base.OnApplyTemplate();
         }
 
+        private static void OnHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((Setting)d).Update();
+        }
+
         private static void OnIconChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((Setting)d).Update();
@@ -112,6 +119,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             if (_setting == null)
             {
                 return;
+            }
+
+            if (_setting.ActionContent != null)
+            {
+                if (!string.IsNullOrEmpty(_setting.Header))
+                {
+                    AutomationProperties.SetName((UIElement)_setting.ActionContent, _setting.Header);
+                }
             }
 
             if (_setting._iconPresenter != null)

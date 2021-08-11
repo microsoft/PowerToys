@@ -99,6 +99,7 @@
       <DependentUpon>HotkeySettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\KeyVisual\KeyVisual.cs" />
+    <Compile Include="Controls\SettingExpander\SettingExpander.cs" />
     <Compile Include="Controls\SettingsGroup\SettingsGroup.cs" />
     <Compile Include="Controls\Setting\Setting.cs" />
     <Compile Include="Controls\ShortcutTextControl.xaml.cs">

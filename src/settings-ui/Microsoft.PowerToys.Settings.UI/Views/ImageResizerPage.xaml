@@ -219,8 +219,8 @@
 
 
                 <controls:SettingsGroup x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <muxc:Expander IsExpanded="True">
-                        <muxc:Expander.Header>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="ImageResizer_FilenameFormatHeader" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <StackPanel Spacing="4" Orientation="Horizontal">
@@ -267,14 +267,14 @@
                                 </controls:Setting.ActionContent>
 
                             </controls:Setting>
-                        </muxc:Expander.Header>
-                        <muxc:Expander.Content>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
 
                             <CheckBox x:Uid="ImageResizer_UseOriginalDate"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified}"
-                                        Margin="16,0,0,0" />
-                        </muxc:Expander.Content>
-                    </muxc:Expander>
+                                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified}"
+                                      Margin="16,8,0,8" />
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
 
