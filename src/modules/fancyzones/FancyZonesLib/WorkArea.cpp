@@ -115,9 +115,9 @@ public:
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndex(HWND window, size_t index) noexcept;
+    MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>& indexSet) noexcept;
+    MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
@@ -130,7 +130,7 @@ public:
     SaveWindowProcessToZoneIndex(HWND window) noexcept;
     IFACEMETHODIMP_(IZoneSet*)
     ActiveZoneSet() const noexcept { return m_activeZoneSet.get(); }
-    IFACEMETHODIMP_(std::vector<size_t>)
+    IFACEMETHODIMP_(ZoneIndexSet)
     GetWindowZoneIndexes(HWND window) const noexcept;
     IFACEMETHODIMP_(void)
     ShowZoneWindow() noexcept;
@@ -155,7 +155,7 @@ private:
     void CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    std::vector<size_t> ZonesFromPoint(POINT pt) noexcept;
+    ZoneIndexSet ZonesFromPoint(POINT pt) noexcept;
     void SetAsTopmostWindow() noexcept;
 
     HMONITOR m_monitor{};
@@ -164,8 +164,8 @@ private:
     HWND m_windowMoveSize{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
     std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
-    std::vector<size_t> m_initialHighlightZone;
-    std::vector<size_t> m_highlightZone;
+    ZoneIndexSet m_initialHighlightZone;
+    ZoneIndexSet m_highlightZone;
     WPARAM m_keyLast{};
     size_t m_keyCycle{};
     std::unique_ptr<ZoneWindowDrawing> m_zoneWindowDrawing;
@@ -305,13 +305,13 @@ IFACEMETHODIMP WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcep
 }
 
 IFACEMETHODIMP_(void)
-WorkArea::MoveWindowIntoZoneByIndex(HWND window, size_t index) noexcept
+WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
 {
     MoveWindowIntoZoneByIndexSet(window, { index });
 }
 
 IFACEMETHODIMP_(void)
-WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>& indexSet) noexcept
+WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept
 {
     if (m_activeZoneSet)
     {
@@ -383,7 +383,7 @@ WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
     }
 }
 
-IFACEMETHODIMP_(std::vector<size_t>)
+IFACEMETHODIMP_(ZoneIndexSet)
 WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
 {
     if (m_activeZoneSet)
@@ -575,7 +575,7 @@ LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     return 0;
 }
 
-std::vector<size_t> WorkArea::ZonesFromPoint(POINT pt) noexcept
+ZoneIndexSet WorkArea::ZonesFromPoint(POINT pt) noexcept
 {
     if (m_activeZoneSet)
     {
