@@ -272,7 +272,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
-	<data name="KeyboardManager_Keys.Header" xml:space="preserve">
+  <data name="KeyboardManager_Keys.Header" xml:space="preserve">
     <value>Keys</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
@@ -280,7 +280,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
-	<data name="KeyboardManager_Shortcuts.Header" xml:space="preserve">
+  <data name="KeyboardManager_Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
@@ -413,7 +413,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Excluded apps</value>
   </data>
   <data name="FancyZones_ExcludeApps.Description" xml:space="preserve">
-    <value>Excludes an application from snappting to zones and will only react to Windows Snap. Add one application name per line.</value>
+    <value>Excludes an application from snapping to zones and will only react to Windows Snap. Add one application name per line.</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
     <value>Zone opacity</value>
@@ -950,7 +950,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorFormats.Header" xml:space="preserve">
     <value>Picker behavior</value>
   </data>
-	<data name="ColorPicker_CopiedColorRepresentation.Description" xml:space="preserve">
+  <data name="ColorPicker_CopiedColorRepresentation.Description" xml:space="preserve">
     <value>This format will be copied to your clipboard</value>
   </data>
   <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
@@ -969,9 +969,8 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="FancyZones_Windows.Header" xml:space="preserve">
     <value>Windows</value>
-     <comment>refers to a set of windows, not the product name</comment>
+    <comment>refers to a set of windows, not the product name</comment>
   </data>
-  
   <data name="PowerRename_BehaviorHeader.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
@@ -999,16 +998,16 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorPicker_ColorFormats.Header" xml:space="preserve">
     <value>Color formats</value>
   </data>
-	<data name="ColorPicker_ColorFormats.Description" xml:space="preserve">
+  <data name="ColorPicker_ColorFormats.Description" xml:space="preserve">
     <value>Select which color formats (and in what order) should show up in the editor</value>
   </data>
-	<data name="MoveUp.Text" xml:space="preserve">
+  <data name="MoveUp.Text" xml:space="preserve">
     <value>Move up</value>
   </data>
-	<data name="MoveDown.Text" xml:space="preserve">
+  <data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>
   </data>
-	<data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
+  <data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
     <value>Show color name when color picking</value>
   </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
@@ -1129,7 +1128,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_QuickLayoutSwitch.Description" xml:space="preserve">
     <value>You can configure layout-specific shortcuts in the editor</value>
   </data>
-  
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
   </data>

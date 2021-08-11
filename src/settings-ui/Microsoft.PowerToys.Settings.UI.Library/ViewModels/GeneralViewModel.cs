@@ -265,65 +265,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (_themeIndex != value)
                 {
-                    if (value == 0)
+                    switch (value)
                     {
-                        // set theme to dark.
-                        GeneralSettingsConfig.Theme = "dark";
-                        _themeIndex = value;
-
-                        try
-                        {
-                            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
-                        }
-#pragma warning disable CA1031 // Do not catch general exception types
-                        catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
-                        {
-                            Logger.LogError("Exception encountered when changing Settings theme", e);
-                        }
-
-                        NotifyPropertyChanged();
+                        case 0: GeneralSettingsConfig.Theme = "dark"; break;
+                        case 1: GeneralSettingsConfig.Theme = "light"; break;
+                        case 2: GeneralSettingsConfig.Theme = "system"; break;
                     }
 
-                    if (value == 1)
+                    _themeIndex = value;
+
+                    try
                     {
-                        // set theme to light.
-                        GeneralSettingsConfig.Theme = "light";
-                        _themeIndex = value;
-
-                        try
-                        {
-                            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
-                        }
+                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
+                    }
 #pragma warning disable CA1031 // Do not catch general exception types
-                        catch (Exception e)
+                    catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
-                        {
-                            Logger.LogError("Exception encountered when changing Settings theme", e);
-                        }
-
-                        NotifyPropertyChanged();
+                    {
+                        Logger.LogError("Exception encountered when changing Settings theme", e);
                     }
 
-                    if (value == 2)
-                    {
-                        // set theme to system default.
-                        GeneralSettingsConfig.Theme = "system";
-                        _themeIndex = value;
-
-                        try
-                        {
-                            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
-                        }
-#pragma warning disable CA1031 // Do not catch general exception types
-                        catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
-                        {
-                            Logger.LogError("Exception encountered when changing Settings theme", e);
-                        }
-
-                        NotifyPropertyChanged();
-                    }
+                    NotifyPropertyChanged();
                 }
             }
         }

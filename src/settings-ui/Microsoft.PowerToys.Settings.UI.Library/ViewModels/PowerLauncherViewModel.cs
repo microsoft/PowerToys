@@ -197,32 +197,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             set
             {
-                if (_themeIndex != value)
+                switch (value)
                 {
-                    if (value == 0)
-                    {
-                        // set theme to dark.
-                        settings.Properties.Theme = Theme.Dark;
-                        _themeIndex = value;
-                        UpdateSettings();
-                    }
-
-                    if (value == 1)
-                    {
-                        // set theme to light.
-                        settings.Properties.Theme = Theme.Light;
-                        _themeIndex = value;
-                        UpdateSettings();
-                    }
-
-                    if (value == 2)
-                    {
-                        // set theme to system default.
-                        settings.Properties.Theme = Theme.System;
-                        _themeIndex = value;
-                        UpdateSettings();
-                    }
+                    case 0: settings.Properties.Theme = Theme.Dark; break;
+                    case 1: settings.Properties.Theme = Theme.Light; break;
+                    case 2: settings.Properties.Theme = Theme.System; break;
                 }
+
+                _themeIndex = value;
+                UpdateSettings();
             }
         }
 
@@ -237,23 +220,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (_monitorPositionIndex != value)
                 {
-                    if (value == 0)
+                    switch (value)
                     {
-                        settings.Properties.Position = StartupPosition.Cursor;
-                        UpdateSettings();
+                        case 0: settings.Properties.Position = StartupPosition.Cursor; break;
+                        case 1: settings.Properties.Position = StartupPosition.PrimaryMonitor; break;
+                        case 2: settings.Properties.Position = StartupPosition.Focus; break;
                     }
 
-                    if (value == 1)
-                    {
-                        settings.Properties.Position = StartupPosition.PrimaryMonitor;
-                        UpdateSettings();
-                    }
-
-                    if (value == 2)
-                    {
-                        settings.Properties.Position = StartupPosition.Focus;
-                        UpdateSettings();
-                    }
+                    _monitorPositionIndex = value;
+                    UpdateSettings();
                 }
             }
         }
