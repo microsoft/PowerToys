@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
@@ -49,7 +49,7 @@
                     </controls:SettingExpander.Header>
                     <controls:SettingExpander.Content>
                         <StackPanel Padding="56,16,16,24" Spacing="12">
-                                <RadioButton IsChecked="{Binding ActivationOpensColorPickerAndEditor, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
+                            <RadioButton x:Uid="ColorPickerFirst_Accesible" IsChecked="{Binding ActivationOpensColorPickerAndEditor, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
                                 <RadioButton.Content>
                                     <StackPanel>
                                         <TextBlock x:Uid="ColorPickerFirst"/>
@@ -58,7 +58,7 @@
                                 </RadioButton.Content>
                             </RadioButton>
 
-                            <RadioButton IsChecked="{Binding ActivationOpensEditor, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
+                            <RadioButton x:Uid="EditorFirst_Accesible" IsChecked="{Binding ActivationOpensEditor, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
                                 <RadioButton.Content>
                                     <StackPanel>
                                         <TextBlock x:Uid="EditorFirst"/>
@@ -67,7 +67,7 @@
                                 </RadioButton.Content>
                             </RadioButton>
 
-                            <RadioButton IsChecked="{Binding ActivationOpensColorPickerOnly, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
+                            <RadioButton x:Uid="ColorPickerOnly_Accesible" IsChecked="{Binding ActivationOpensColorPickerOnly, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
                                 <RadioButton.Content>
                                     <StackPanel>
                                         <TextBlock x:Uid="ColorPickerOnly"/>
@@ -115,23 +115,24 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="ColorPicker_ColorFormats" Icon="&#xE14C;"/>
+                    <controls:Setting x:Name="ColorFormatsSetting" x:Uid="ColorPicker_ColorFormats" Icon="&#xE14C;"/>
 
                     <!-- Disabled reordering by dragging -->
                     <!-- CanReorderItems="True" AllowDrop="True" -->
                     <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
-                                          SelectionMode="None"
-                                          HorizontalAlignment="Stretch">
+                              AutomationProperties.Name="{Binding ElementName=ColorFormatsSetting, Path=Header}"
+                              SelectionMode="None"
+                              HorizontalAlignment="Stretch">
                         <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid
-                                  HorizontalAlignment="Stretch"
-                                  Background="{ThemeResource CardBackgroundBrush}"
-                                  BorderThickness="{ThemeResource CardBorderThickness}"
-                                  BorderBrush="{ThemeResource CardBorderBrush}"
-                                  CornerRadius="{ThemeResource ControlCornerRadius}"
-                                  Padding="0,0,16,0"
-                                  MinHeight="68">
+                            <DataTemplate x:DataType="models:ColorFormatModel">
+                                <Grid AutomationProperties.Name="{x:Bind Name}"
+                                      HorizontalAlignment="Stretch"
+                                      Background="{ThemeResource CardBackgroundBrush}"
+                                      BorderThickness="{ThemeResource CardBorderThickness}"
+                                      BorderBrush="{ThemeResource CardBorderBrush}"
+                                      CornerRadius="{ThemeResource ControlCornerRadius}"
+                                      Padding="0,0,16,0"
+                                      MinHeight="68">
                                     <!-- Disabled reordering by dragging
                             
                             <Interactivity:Interaction.Behaviors>
@@ -150,18 +151,20 @@
                                     <TextBlock FontWeight="SemiBold"
                                        FontSize="16"
                                        Margin="56,8,0,0"
-                                       Text="{Binding Name}"/>
+                                       Text="{x:Bind Name}"/>
                                     <TextBlock Style="{StaticResource SecondaryTextStyle}"
-                                       Text="{Binding Example}"
+                                       Text="{x:Bind Example}"
                                        Grid.Row="1"
                                        Margin="56,0,0,8"/>
-                                    <ToggleSwitch IsOn="{Binding IsShown, Mode=TwoWay}"
-                                          OnContent=""
-                                          OffContent=""
+                                    <ToggleSwitch IsOn="{x:Bind IsShown, Mode=TwoWay}"
+                                                  OnContent=""
+                                                  OffContent=""
                                                   FlowDirection="RightToLeft"
                                                   Grid.RowSpan="2"
-                                          HorizontalAlignment="Right"
-                                          Margin="0,0,56,0"/>
+                                                  x:Uid="Enable_ColorFormat"
+                                                  AutomationProperties.HelpText="{x:Bind Name}"
+                                                  HorizontalAlignment="Right"
+                                                  Margin="0,0,56,0"/>
                                     <!-- Disabled reordering by dragging
                             
                             <TextBlock Text="&#xE76F;"
@@ -179,17 +182,21 @@
                                             HorizontalAlignment="Right"
                                             VerticalAlignment="Center"
                                             Grid.RowSpan="2"
+                                            x:Uid="More_Options_Button"
                                             Content="&#xE10C;">
                                         <Button.Flyout>
                                             <MenuFlyout>
-                                                <MenuFlyoutItem IsEnabled="{Binding CanMoveUp}" Icon="Up" x:Uid="MoveUp" Click="ReorderButtonUp_Click"/>
-                                                <MenuFlyoutItem IsEnabled="{Binding CanMoveDown}" x:Uid="MoveDown" Click="ReorderButtonDown_Click">
+                                                <MenuFlyoutItem IsEnabled="{x:Bind CanMoveUp}" Icon="Up" x:Uid="MoveUp" Click="ReorderButtonUp_Click"/>
+                                                <MenuFlyoutItem IsEnabled="{x:Bind CanMoveDown}" x:Uid="MoveDown" Click="ReorderButtonDown_Click">
                                                     <MenuFlyoutItem.Icon>
                                                         <FontIcon Glyph="&#xE1FD;" />
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
                                             </MenuFlyout>
                                         </Button.Flyout>
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="More_Options_ButtonTooltip" />
+                                        </ToolTipService.ToolTip>
                                     </Button>
                                 </Grid>
                             </DataTemplate>

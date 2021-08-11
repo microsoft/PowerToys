@@ -123,9 +123,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             if (_setting.ActionContent != null)
             {
-                if (!string.IsNullOrEmpty(_setting.Header))
+                if (_setting.ActionContent.GetType() != typeof(Button))
                 {
-                    AutomationProperties.SetName((UIElement)_setting.ActionContent, _setting.Header);
+                    // We do not want to override the default AutomationProperties.Name of a button. It's content already describes what it does.
+                    if (!string.IsNullOrEmpty(_setting.Header))
+                    {
+                        AutomationProperties.SetName((UIElement)_setting.ActionContent, _setting.Header);
+                    }
                 }
             }
 
