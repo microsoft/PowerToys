@@ -3,23 +3,23 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
-    [TestFixture]
-    internal class ToolTipDataTest
+    [TestClass]
+    public class ToolTipDataTest
     {
-        [Test]
-        public void Constructor_ThrowsNullArgumentException_WhenToolTipTitleIsNull()
+        [TestMethod]
+        public void ConstructorThrowsNullArgumentExceptionWhenToolTipTitleIsNull()
         {
             // Arrange
             string title = null;
             string text = "text";
 
             // Assert
-            var ex = Assert.Throws<ArgumentException>(() => new ToolTipData(title, text));
+            var ex = Assert.ThrowsException<ArgumentException>(() => new ToolTipData(title, text));
         }
     }
 }
