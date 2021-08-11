@@ -21,19 +21,19 @@ namespace PowerLauncher
         private ToolTip _previouslyOpenedToolTip;
 
         // From https://docs.microsoft.com/en-us/dotnet/desktop/wpf/data/how-to-find-datatemplate-generated-elements
-        private TchildItem FindVisualChild<TchildItem>(DependencyObject obj)
-    where TchildItem : DependencyObject
+        private TChildItem FindVisualChild<TChildItem>(DependencyObject obj)
+    where TChildItem : DependencyObject
         {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
                 DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is TchildItem)
+                if (child != null && child is TChildItem)
                 {
-                    return (TchildItem)child;
+                    return (TChildItem)child;
                 }
                 else
                 {
-                    TchildItem childOfChild = FindVisualChild<TchildItem>(child);
+                    TChildItem childOfChild = FindVisualChild<TChildItem>(child);
                     if (childOfChild != null)
                     {
                         return childOfChild;
