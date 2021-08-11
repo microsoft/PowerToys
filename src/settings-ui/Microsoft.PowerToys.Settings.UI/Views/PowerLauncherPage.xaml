@@ -168,145 +168,88 @@
                         <muxc:ProgressRing IsActive="True" Width="20" Height="20" Margin="18,18" />
                         <TextBlock x:Uid="Run_PluginsLoading" Style="{ThemeResource SecondaryTextStyle}" VerticalAlignment="Center" />
                     </StackPanel>
-            
 
-          
-
-                <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
-                      IsItemClickEnabled="True"
-                      SelectionChanged="PluginsListView_SelectionChanged"
-                      x:Name="PluginsListView"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                      Margin="-12,12,0,0">
-                <ListView.Resources>
-                    <SolidColorBrush x:Key="ListViewItemBackgroundSelected"
-                                     Color="{ThemeResource SystemChromeLowColor}" />
-                    <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver"
-                                     Color="{ThemeResource SystemChromeLowColor}" />
-                    <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed"
-                                     Color="{ThemeResource SystemChromeLowColor}" />
-                </ListView.Resources>
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment"
-                                Value="Stretch" />
-                        <Setter Property="VerticalContentAlignment"
-                                Value="Stretch" />
-                        <Setter Property="Padding"
-                                Value="0,0,0,0" />
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.ItemTemplate>
+                    <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
+            IsItemClickEnabled="False" SelectionMode="None"
+                      x:Name="PluginsListView">
+                        <ListView.ItemTemplate>
+                    
                     <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
-                        <StackPanel Orientation="Vertical" Background="Transparent"
-                                    Padding="0,12,12,12">
-                            <Grid ColumnSpacing="0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="60" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="52" />
-                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <muxc:Expander>
+                                        <muxc:Expander.Header>
+                                            <controls:Setting Header="{x:Bind Path=Name}" Description="{x:Bind Description}" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                                <controls:Setting.Icon>
+                                                    <Image Source="{x:Bind IconPath}"
+                                                        Width="20"
+                                                        Opacity="{x:Bind DisabledOpacity, Mode=OneWay}"
+                                                        Height="20" />
+                                                </controls:Setting.Icon>
+                                                <controls:Setting.ActionContent>
+                                                    <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
+                                                                  IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"
+                                                                  FlowDirection="RightToLeft"/>
+                                                </controls:Setting.ActionContent>
+                                            </controls:Setting>
+                                        </muxc:Expander.Header>
+                                        <muxc:Expander.Content>
+                                            <StackPanel>
+                                                <controls:Setting x:Uid="PowerLauncher_ActionKeyword" Style="{StaticResource ExpanderContentSettingStyle}">
+                                                    <controls:Setting.ActionContent>
+                                                        <TextBox Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}"
+                                                                 Width="240"
+                                                                 IsEnabled="{x:Bind Enabled, Mode=OneWay}" />
+                                                    </controls:Setting.ActionContent>
+                                                </controls:Setting>
+                                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
+                                                          IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
+                                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}"
+                                                          Margin="{StaticResource ExpanderSettingMargin}"/>
+                                               
+                                                <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
+                                                          SelectionMode="None"
+                                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}">
 
-                                <Image Source="{x:Bind IconPath}"
-                                       Width="36"
-                                       Opacity="{x:Bind DisabledOpacity, Mode=OneWay}"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Top"
-                                       Margin="12,0,12,0"
-                                       Height="36" />
+                                                    <ListView.ItemTemplate>
+                                                        <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+                                                            <StackPanel Orientation="Vertical">
+                                                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                                                <CheckBox Content="{x:Bind Path=DisplayLabel}" 
+                                                                      IsChecked="{x:Bind Path=Value, Mode=TwoWay}"
+                                                                      Margin="{StaticResource ExpanderSettingMargin}"/>
+                                                            </StackPanel>
+                                                        
+                                                        </DataTemplate>
+                                                    </ListView.ItemTemplate>
+                                                </ListView>
 
-                                <StackPanel Orientation="Vertical"
-                                            Grid.Column="1" Margin="0,0,16,0">
-                                    <TextBlock FontSize="18"
-                                               Text="{x:Bind Path=Name}"
-                                               Opacity="{x:Bind DisabledOpacity}"/>
-                                    <TextBlock 
-                                               Opacity="{x:Bind DisabledOpacity}"
-                                               Foreground="{ThemeResource SystemBaseMediumColor}"
-                                               Text="{x:Bind Description}"
-                                               TextWrapping="Wrap"/>
-                                    <TextBlock 
+
+                                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                                <TextBlock Opacity="{x:Bind DisabledOpacity}"
+                                                           Margin="{StaticResource ExpanderSettingMargin}">
+                                                               <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                                               <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
+                                                </TextBlock>
+                                            </StackPanel>
+                                           
+
+                                                    <!--<TextBlock 
                                         x:Uid="Run_NotAccessibleWarning"
                                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                                         Visibility="{x:Bind ShowNotAccessibleWarning, Converter={StaticResource BoolToVisibilityConverter}}"
                                         TextWrapping="Wrap" />
 
-                                    <TextBlock 
+                                                    <TextBlock 
                                         x:Uid="Run_NotAllowedActionKeyword"
                                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                                         Visibility="{x:Bind ShowNotAllowedKeywordWarning, Converter={StaticResource BoolToVisibilityConverter}}"
-                                        TextWrapping="Wrap" />
-                                </StackPanel>
-
-                                <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
-                                              x:Name="ToggleSwitch"
-                                              OnContent=""
-                                              OffContent=""
-                                              IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"
-                                              Grid.Column="2" />
-                            </Grid>
-
-                            <StackPanel Margin="60,0,0,0" 
-                                        x:Name="AdditionalInfoPanel" 
-                                        Visibility="{x:Bind ShowAdditionalInfoPanel, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock x:Uid="PowerLauncher_ActionKeyword"
-                                           x:Name="ActionKeywordHeaderTextBlock"
-                                           Margin="{StaticResource SmallTopMargin}"
-                                           Opacity="{x:Bind DisabledOpacity}" />
-
-                                <TextBox x:Uid="PowerLauncher_ActionKeyword"
-                                         Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}"
-                                         Width="86"
-                                         Margin="0,6,0,0"
-                                         AutomationProperties.LabeledBy="{Binding ElementName=ActionKeywordHeaderTextBlock}"
-                                         HorizontalAlignment="Left"
-                                         IsEnabled="{x:Bind Enabled, Mode=OneWay}" />
-                                
-                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
-                                          IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
-                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}"
-                                          Margin="{StaticResource SmallTopMargin}"/>
-
-
-
-                                <TextBlock x:Name="AdditionalOptionsTextBlock"
-                                           x:Uid="Run_AdditionalOptions"
-                                           Margin="{StaticResource SmallTopMargin}"
-                                           Visibility="{x:Bind ShowAdditionalOptions, Converter={StaticResource BoolToVisibilityConverter}}"
-                                           Style="{StaticResource SettingsGroupTitleStyle}"
-                                           Opacity="{x:Bind DisabledOpacity}"/>
-
-                                <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
-                                          SelectionMode="None"
-                                          IsEnabled="{x:Bind Enabled, Mode=OneWay}">
-                                    <ListView.ItemContainerStyle>
-                                        <Style TargetType="ListViewItem">
-                                            <Setter Property="HorizontalContentAlignment"
-                                                Value="Stretch" />
-                                            <Setter Property="VerticalContentAlignment"
-                                                Value="Stretch" />
-                                            <Setter Property="Padding"
-                                                Value="0,0,0,0" />
-                                        </Style>
-                                    </ListView.ItemContainerStyle>
-                                    <ListView.ItemTemplate>
-                                        <DataTemplate x:DataType="ViewModels:PluginAdditionalOptionViewModel">
-                                            <CheckBox Content="{x:Bind Path=DisplayLabel}" 
-                                                      IsChecked="{x:Bind Path=Value, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </ListView.ItemTemplate>
-                                </ListView>
-
-                                <TextBlock Opacity="{x:Bind DisabledOpacity}"
-                                           Foreground="{ThemeResource SystemBaseMediumColor}"
-                                           HorizontalAlignment="Right"
-                                           Margin="0,0,12,0">
-                                           <Run x:Uid="PowerLauncher_AuthoredBy" />
-                                           <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
-                                </TextBlock>
-                            </StackPanel>
-                        </StackPanel>
-                    </DataTemplate>
+                                        TextWrapping="Wrap" />-->
+                                           
+                                        </muxc:Expander.Content>
+                                    </muxc:Expander>
+                                </Grid>
+                            </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
                 </controls:SettingsGroup>

@@ -1053,7 +1053,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PowerLauncher_Plugins.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>
-  <data name="PowerLauncher_ActionKeyword.Text" xml:space="preserve">
+  <data name="PowerLauncher_ActionKeyword.Header" xml:space="preserve">
     <value>Direct activation phrase</value>
   </data>
   <data name="PowerLauncher_AuthoredBy.Text" xml:space="preserve">

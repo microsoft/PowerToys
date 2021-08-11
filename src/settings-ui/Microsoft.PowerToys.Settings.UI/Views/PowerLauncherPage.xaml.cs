@@ -66,15 +66,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ColorsSettings);
         }
 
-        private void PluginsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var selectedPlugin = (sender as ListView)?.SelectedItem;
-            foreach (var plugin in ViewModel.Plugins)
-            {
-                plugin.ShowAdditionalInfoPanel = plugin == selectedPlugin;
-            }
-        }
-
         /*
         public Tuple<string, string> SelectedSearchResultPreference
         {
