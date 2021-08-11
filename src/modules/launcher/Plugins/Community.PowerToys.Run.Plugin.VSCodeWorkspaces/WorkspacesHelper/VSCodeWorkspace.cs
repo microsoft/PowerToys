@@ -1,4 +1,8 @@
-﻿using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
@@ -38,6 +42,6 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
         Codespaces = 2,
         RemoteWSL = 3,
         RemoteSSH = 4,
-        RemoteContainers = 5
+        RemoteContainers = 5,
     }
 }
