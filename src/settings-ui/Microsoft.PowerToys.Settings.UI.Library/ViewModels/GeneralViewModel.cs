@@ -466,6 +466,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         // callback function to launch the URL to check for updates.
         private void CheckForUpdatesClick()
         {
+            RefreshUpdatingState();
             IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
 
