@@ -203,7 +203,7 @@
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_RestoreSize" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}" Margin="{StaticResource ExpanderSettingMargin}"/>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}"/>
+                                <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}" Margin="{StaticResource ExpanderSettingMargin}"/>
                             </StackPanel>
 
                         </muxc:Expander.Content>

@@ -284,6 +284,9 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Shortcuts</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
+  <data name="Shortcuts.Header" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
   <data name="RemapKeysList.AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
   </data>
@@ -328,7 +331,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Enable PowerToys Run</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
-  <data name="PowerLauncher_SearchResults.Text" xml:space="preserve">
+  <data name="PowerLauncher_SearchResults.Header" xml:space="preserve">
     <value>Search &amp; results</value>
   </data>
   <data name="PowerLauncher_SearchResultPreference.Header" xml:space="preserve">
@@ -1048,7 +1051,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_OverlappingZones.Header" xml:space="preserve">
     <value>When multiple zones overlap</value>
   </data>
-  <data name="PowerLauncher_Plugins.Text" xml:space="preserve">
+  <data name="PowerLauncher_Plugins.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>
   <data name="PowerLauncher_ActionKeyword.Text" xml:space="preserve">
@@ -1070,20 +1073,30 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_NotAccessibleWarning.Text" xml:space="preserve">
     <value>* Please define an activation phrase or allow this plugin for the global results to use it.</value>
   </data>
-  <data name="Run_AllPluginsDisabled.Text" xml:space="preserve">
-    <value>* PowerToys Run can't provide any results without plugins. Please enable at least one plugin.</value>
+  <data name="Run_AllPluginsDisabled.Title" xml:space="preserve">
+    <value>PowerToys Run can't provide any results without plugins</value>
+  </data>
+  <data name="Run_AllPluginsDisabled.Message" xml:space="preserve">
+    <value>Enable at least one plugin to get started</value>
   </data>
   <data name="Run_NotAllowedActionKeyword.Text" xml:space="preserve">
     <value>* This activation phrase overrides the behavior of other plugins. Please change it to something else.</value>
   </data>
-  <data name="Run_PluginUseDescription.Text" xml:space="preserve">
+  <data name="Run_PluginUseDescription.Header" xml:space="preserve">
+    <value>Plugins</value>
+  </data>
+  <data name="Run_PluginUseDescription.Description" xml:space="preserve">
     <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options.</value>
   </data>
-  <data name="Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
+  <data name="Run_PositionAppearance_GroupSettings.Header" xml:space="preserve">
     <value>Position &amp; appearance</value>
   </data>
-  <data name="Run_PositionHeader.Text" xml:space="preserve">
-    <value>Show PowerToys Run on</value>
+  <data name="Run_PositionHeader.Header" xml:space="preserve">
+    <value>Preferred monitor position</value>
+    <comment>as in Show PowerToys Run on primary monitor</comment>
+  </data>
+  <data name="Run_PositionHeader.Description" xml:space="preserve">
+    <value>If multiple monitors are in use, PowerToys Run can be launched on the desired monitor.</value>
     <comment>as in Show PowerToys Run on primary monitor</comment>
   </data>
   <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">

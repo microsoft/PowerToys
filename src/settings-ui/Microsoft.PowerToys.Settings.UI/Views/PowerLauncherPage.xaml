@@ -22,21 +22,42 @@
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel Orientation="Vertical">
-                <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"/>
 
-            <TextBlock x:Uid="Shortcuts"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
+                <controls:Setting x:Uid="PowerLauncher_EnablePowerLauncher">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" FlowDirection="RightToLeft" />
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
 
-            <controls:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
-                                                  HorizontalAlignment="Left"
-                                                  MinWidth="240"
-                                                  Margin="{StaticResource SmallTopMargin}"
-                                                  HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
-                                                  Keys="Win, Ctrl, Alt, Shift"
-                                                  Enabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
-            <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
+
+                <controls:SettingsGroup x:Uid="Shortcuts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                    <muxc:Expander IsExpanded="True">
+                        <muxc:Expander.Header>
+                            <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                <controls:Setting.Description>
+                                    <TextBlock>
+                                            <Run x:Uid="ShortcutWarningLabel"/>
+                                            <Run Text="Win, Ctrl, Alt, Shift"/>
+                                    </TextBlock>
+                                </controls:Setting.Description>
+                                <controls:Setting.ActionContent>
+                                    <controls:HotkeySettingsControl Width="240" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" Keys="Win, Ctrl, Alt, Shift"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </muxc:Expander.Header>
+                        <muxc:Expander.Content>
+                            <StackPanel>
+                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" Margin="{StaticResource ExpanderSettingMargin}" />
+                            </StackPanel>
+                        </muxc:Expander.Content>
+                    </muxc:Expander>
+                </controls:SettingsGroup>
+
+
+                <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
@@ -57,29 +78,41 @@
                                           IsEnabled="False"
                                         />-->
 
-            <!--<CheckBox x:Uid="PowerLauncher_OverrideWinRKey" 
+                <!--<CheckBox x:Uid="PowerLauncher_OverrideWinRKey" 
                       Margin="{StaticResource SmallTopMargin}"
                       IsChecked="False"
                       IsEnabled="False"
                       />-->
 
-            <!--<CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
+                <!--<CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
                       Margin="{StaticResource SmallTopMargin}"
                       IsChecked="{Binding Mode=TwoWay, Path=ViewModel.OverrideWinSKey}"
                       IsEnabled="False"
                       />-->
 
-            <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                      />
 
-            <TextBlock x:Uid="PowerLauncher_SearchResults"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
-            <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
+                <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                    <muxc:Expander IsExpanded="True">
+                        <muxc:Expander.Header>
+                            <controls:Setting x:Uid="PowerLauncher_MaximumNumberOfResults" Icon="&#xE721;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
+                                                    Width="240"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    Minimum="1"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </muxc:Expander.Header>
+                        <muxc:Expander.Content>
+                            <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}" Margin="{StaticResource ExpanderSettingMargin}" />
+                        </muxc:Expander.Content>
+                    </muxc:Expander>
+
+
+                </controls:SettingsGroup>
+
+                <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
                       MinWidth="320"
                       Margin="{StaticResource SmallTopMargin}"
                       ItemsSource="{Binding searchResultPreferencesOptions}"
@@ -99,95 +132,47 @@
                       IsEnabled="False"
                       />-->
 
-            <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults"
-                            Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
-                            MinWidth="240"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Left"
-                            Minimum="1"
-                            Margin="{StaticResource SmallTopMargin}"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+                <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                    <controls:Setting x:Uid="Run_PositionHeader" Icon="&#xE18C;">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorPositionIndex}">
+                                <ComboBoxItem x:Uid="Run_Radio_Position_Cursor"/>
+                                <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor"/>
+                                <ComboBoxItem x:Uid="Run_Radio_Position_Focus"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-            <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-            />
+                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;">
+                        <controls:Setting.Description>
+                            <HyperlinkButton Click="OpenColorsSettings_Click"
+                                             x:Uid="Windows_Color_Settings"/>
+                        </controls:Setting.Description>
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
+                                <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
+                                <ComboBoxItem x:Uid="Radio_Theme_Light"/>
+                                <ComboBoxItem x:Uid="Radio_Theme_Default"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-            <TextBlock x:Uid="Run_PositionAppearance_GroupSettings"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
+                </controls:SettingsGroup>
 
-            <TextBlock x:Uid="Run_PositionHeader"
-                       x:Name="RadioButtons_Name_Position"
-                       Margin="{StaticResource SmallTopMargin}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
 
-            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Position}">
-       
-            <RadioButton x:Uid="Run_Radio_Position_Primary_Monitor"
-                         GroupName="Run_Position"
-                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsPrimaryMonitorPositionRadioButtonChecked}"
-                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+                <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                    <controls:Setting x:Uid="Run_PluginUseDescription" Icon="&#xEA86;"/>
+                    <muxc:InfoBar x:Uid="Run_AllPluginsDisabled" Severity="Error" IsOpen="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}" IsClosable="False" />
 
-            <RadioButton x:Uid="Run_Radio_Position_Cursor"
-                         GroupName="Run_Position"
-                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsCursorPositionRadioButtonChecked}"
-                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
-
-            <RadioButton x:Uid="Run_Radio_Position_Focus"
-                         GroupName="Run_Position"
-                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IsFocusPositionRadioButtonChecked}"
-                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
-
-            </StackPanel>
-
-            <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
-            The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
-            Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
-            <TextBlock x:Uid="ColorModeHeader"
-                       x:Name="RadioButtons_Name_Theme" 
-                       Margin="{StaticResource SmallTopMargin}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
-            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Theme}">
-                <RadioButton x:Uid="Radio_Theme_Dark"
-                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                             IsChecked="{Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}" />
-
-                <RadioButton x:Uid="Radio_Theme_Light"
-                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                             IsChecked="{Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}" />
-
-                <RadioButton x:Uid="Radio_Theme_Default"
-                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                             IsChecked="{Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}" />
-                <HyperlinkButton Click="OpenColorsSettings_Click" Margin="-12,0,0,0"
-                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <TextBlock x:Uid="Windows_Color_Settings" />
-                </HyperlinkButton>
-            </StackPanel>
-
-            <TextBlock x:Uid="PowerLauncher_Plugins"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-
-            <TextBlock x:Uid="Run_PluginUseDescription"
-                       Margin="{StaticResource SmallTopMargin}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
-                       TextWrapping="Wrap"/>
+                    <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <muxc:ProgressRing IsActive="True" Width="20" Height="20" Margin="18,18" />
+                        <TextBlock x:Uid="Run_PluginsLoading" Style="{ThemeResource SecondaryTextStyle}" VerticalAlignment="Center" />
+                    </StackPanel>
             
-            <TextBlock x:Uid="Run_AllPluginsDisabled"
-                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                       Visibility="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                       TextWrapping="Wrap"
-                       Margin="{StaticResource SmallTopMargin}"/>
 
-            <TextBlock x:Uid="Run_PluginsLoading"
-                       Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                       TextWrapping="Wrap"
-                       Margin="{StaticResource SmallTopMargin}"/>
+          
 
-            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
+                <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
                       IsItemClickEnabled="True"
                       SelectionChanged="PluginsListView_SelectionChanged"
                       x:Name="PluginsListView"
@@ -324,7 +309,8 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-        </StackPanel>
+                </controls:SettingsGroup>
+            </StackPanel>
 
     </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.ModuleLinks>
