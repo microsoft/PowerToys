@@ -62,10 +62,10 @@ build:
           exclude:
             - 'x64/Release/obj/**/*.pdb'
         # TODO(yuyoyuppe): uncomment when VCM should be enabled
-        #- from: 'x86/Release'
-        #  to: 'Build_Output'
-        #  include:
-        #    - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
+        - from: 'x86/Release'
+          to: 'Build_Output'
+          include:
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
@@ -166,8 +166,9 @@ build:
             - 'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
             - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
             # TODO(yuyoyuppe): uncomment when VCM should be enabled
-            #- 'modules\VideoConference\VideoConferenceModule.dll'
-            #- 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
+            - 'modules\VideoConference\VideoConferenceModule.dll'
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
             - 'Settings\ManagedTelemetry.dll'
             - 'Settings\Microsoft.PowerToys.Settings.UI.exe'
             - 'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'

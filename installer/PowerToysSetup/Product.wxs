@@ -222,9 +222,9 @@
                 <Directory Id="ShortcutGuideModuleInterfaceInstallFolder" Name="ShortcutGuideModuleInterface"/>
                 </Directory>
             <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled                 -->
-            <!-- <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
+             <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
               <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
-            </Directory>                 -->
+            </Directory>                 
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
@@ -650,7 +650,7 @@
     </DirectoryRef>
 
     <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled -->
-    <!-- <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
+     <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
      <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
       <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
       <File SelfRegCost="1" Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter_x64.dll" KeyPath="yes">
@@ -678,7 +678,7 @@
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Dark.png" />
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Light.png" />
      </Component>
-    </DirectoryRef> -->
+    </DirectoryRef> 
 
     <DirectoryRef Id="ShortcutGuideExecutableInstallFolder" FileSource="$(var.ShortcutGuideExecutable)">
       <Component Id="Module_ShortcutGuideExecutable" Guid="DA6E5710-F1DF-44EB-A316-300FA39544E9" Win64="yes">
@@ -926,8 +926,8 @@
       <ComponentRef Id="Module_ShortcutGuideModuleInterface" />
       <ComponentRef Id="Module_ShortcutGuideExecutable" />
       <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled -->
-      <!-- <ComponentRef Id="Module_VideoConference" />
-      <ComponentRef Id="Module_VideoConferenceIcons" /> -->
+       <ComponentRef Id="Module_VideoConference" />
+      <ComponentRef Id="Module_VideoConferenceIcons" /> 
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
