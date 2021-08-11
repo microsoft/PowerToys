@@ -62,7 +62,7 @@
                               Severity="Success"
                               Visibility="{Binding IsNewVersionCheckedAndUpToDate, Converter={StaticResource VisibleIfTrueConverter}}"/>
 
-                    <!-- New version avaialble -->
+                    <!-- New version available -->
                     <muxc:InfoBar x:Uid="General_NewVersionAvailable"
                               IsOpen="True"
                               IsClosable="False"
