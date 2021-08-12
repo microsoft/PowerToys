@@ -272,11 +272,19 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
+  <data name="KeyboardManager_RemapKeyboardButton_Accesible.AutomationProperties.Name" xml:space="preserve">
+    <value>Remap a key</value>
+    <comment>Keyboard Manager remap keyboard button content</comment>
+  </data>
   <data name="KeyboardManager_Keys.Header" xml:space="preserve">
     <value>Keys</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Header" xml:space="preserve">
+    <value>Remap a shortcut</value>
+    <comment>Keyboard Manager remap shortcuts button</comment>
+  </data>
+  <data name="KeyboardManager_RemapShortcutsButton_Accesible.AutomationProperties.Name" xml:space="preserve">
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
@@ -1461,5 +1469,9 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="More_Options_ButtonTooltip.Text" xml:space="preserve">
     <value>More options</value>
+  </data>
+  <data name="To.Text" xml:space="preserve">
+    <value>to</value>
+    <comment>as in: from x to y</comment>
   </data>
 </root>
