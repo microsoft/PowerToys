@@ -480,6 +480,7 @@
                                       KeyDown="EditDialogNumberBox_KeyDown"
                                       Margin="12,0,0,0"
                                       Header="{x:Static props:Resources.Number_of_zones}"
+                                      Loaded="NumberBox_Loaded"
                                       AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
                                       SpinButtonPlacementMode="Compact"
                                       Text="{Binding TemplateZoneCount}" />
@@ -508,6 +509,7 @@
                                           SpinButtonPlacementMode="Compact"
                                           HorizontalAlignment="Left"
                                           VerticalAlignment="Center"
+                                          Loaded="NumberBox_Loaded"
                                           AutomationProperties.Name="{x:Static props:Resources.Space_Around_Zones}"
                                           AutomationProperties.LabeledBy="{Binding ElementName=spacingTitle}" />
                             <TextBlock Text="{x:Static props:Resources.Pixels}"
@@ -554,6 +556,7 @@
                                           Maximum="1000"
                                           KeyDown="EditDialogNumberBox_KeyDown"
                                           Margin="12,0,0,0"
+                                          Loaded="NumberBox_Loaded"
                                           AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
                                           AutomationProperties.LabeledBy="{Binding ElementName=distanceTitle}"
                                           SpinButtonPlacementMode="Compact"
