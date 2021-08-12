@@ -227,6 +227,7 @@ CHECKCANCELED
 CHILDACTIVATE
 CHILDWINDOW
 chrdavis
+chrisharris
 chrono
 Chrzan
 chrzan
@@ -653,6 +654,7 @@ formatetc
 FPower
 FRAMECHANGED
 FRAMEDOWNLOAD
+franky
 Froml
 fstream
 ftps
@@ -1299,6 +1301,7 @@ mscorlib
 msdata
 MSDN
 msedge
+MSGFLT
 mshtmdid
 msi
 MSIFASTINSTALL
@@ -1915,6 +1918,7 @@ Soref
 SORTDOWN
 SOURCECLIENTAREAONLY
 SOURCEHEADER
+spamming
 spdisp
 spdlog
 spdo
@@ -2034,6 +2038,7 @@ syslog
 SYSMENU
 systemd
 SYSTEMTIME
+systray
 Tadele
 tadele
 Tahoma
@@ -2407,6 +2412,7 @@ XDiff
 XDocument
 XElement
 XFile
+xia
 XIncrement
 XInstance
 xlink

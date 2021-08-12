@@ -26,7 +26,7 @@ namespace
 struct Zone : winrt::implements<Zone, IZone>
 {
 public:
-    Zone(RECT zoneRect, const size_t zoneId) :
+    Zone(RECT zoneRect, const ZoneIndex zoneId) :
         m_zoneRect(zoneRect),
         m_id(zoneId)
     {
@@ -34,12 +34,12 @@ public:
 
     IFACEMETHODIMP_(RECT) GetZoneRect() const noexcept { return m_zoneRect; }
     IFACEMETHODIMP_(long) GetZoneArea() const noexcept { return max(m_zoneRect.bottom - m_zoneRect.top, 0) * max(m_zoneRect.right - m_zoneRect.left, 0); }
-    IFACEMETHODIMP_(size_t) Id() const noexcept { return m_id; }
+    IFACEMETHODIMP_(ZoneIndex) Id() const noexcept { return m_id; }
     IFACEMETHODIMP_(RECT) ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept;
 
 private:
     RECT m_zoneRect{};
-    const size_t m_id{};
+    const ZoneIndex m_id{};
     std::map<HWND, RECT> m_windows{};
 };
 
@@ -75,7 +75,7 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept
     return newWindowRect;
 }
 
-winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect, const size_t zoneId) noexcept
+winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect, const ZoneIndex zoneId) noexcept
 {
     if (ValidateZoneRect(zoneRect) && zoneId >= 0)
     {

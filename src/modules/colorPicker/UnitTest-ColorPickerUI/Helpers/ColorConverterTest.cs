@@ -190,7 +190,7 @@ namespace Microsoft.ColorPicker.UnitTests
             }
 
             Assert.IsTrue(hexValue.Length >= 6);
-            
+
             var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
@@ -287,7 +287,7 @@ namespace Microsoft.ColorPicker.UnitTests
 
             Assert.IsTrue(hexValue.Length >= 6);
 
-            var red = int.Parse( hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
@@ -322,6 +322,7 @@ namespace Microsoft.ColorPicker.UnitTests
                             _ = ColorHelper.ConvertToCMYKColor(color);
                         }
 #pragma warning disable CA1031 // Do not catch general exception types
+
                         // intentionally trying to catch
                         catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types

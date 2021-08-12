@@ -56,6 +56,7 @@
     <ClInclude Include="util.h" />
     <ClInclude Include="VirtualDesktop.h" />
     <ClInclude Include="WindowMoveHandler.h" />
+    <ClInclude Include="FancyZonesWindowProperties.h" />
     <ClInclude Include="Zone.h" />
     <ClInclude Include="ZoneColors.h" />
     <ClInclude Include="ZoneSet.h" />

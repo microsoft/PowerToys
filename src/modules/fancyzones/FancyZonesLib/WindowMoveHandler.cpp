@@ -273,7 +273,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
     }
 }
 
-void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>& indexSet, winrt::com_ptr<IWorkArea> zoneWindow) noexcept
+void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, winrt::com_ptr<IWorkArea> zoneWindow) noexcept
 {
     if (window != m_windowMoveSize)
     {

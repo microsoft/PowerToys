@@ -5,6 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
@@ -24,7 +26,7 @@
 
             <StackPanel Orientation="Vertical">
                 <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"/>
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}" />
 
             <TextBlock x:Uid="Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
@@ -176,7 +178,18 @@
                        Margin="{StaticResource SmallTopMargin}"
                        Opacity="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToOpacityConverter}}"
                        TextWrapping="Wrap"/>
-            
+
+            <AutoSuggestBox x:Uid="PowerLauncher_SearchList"
+                            QueryIcon="Find"
+                            Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}"
+                            Margin="{StaticResource SmallTopMargin}">
+                <i:Interaction.Behaviors>
+                    <ic:EventTriggerBehavior EventName="TextChanged">
+                        <ic:InvokeCommandAction Command="{x:Bind ViewModel.SearchPluginsCommand}" />
+                    </ic:EventTriggerBehavior>
+                </i:Interaction.Behaviors>
+            </AutoSuggestBox>
+                
             <TextBlock x:Uid="Run_AllPluginsDisabled"
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                        Visibility="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -187,8 +200,8 @@
                        Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                        TextWrapping="Wrap"
                        Margin="{StaticResource SmallTopMargin}"/>
-
-            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
+            <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"
+                      MinHeight="512"
                       IsItemClickEnabled="True"
                       SelectionChanged="PluginsListView_SelectionChanged"
                       x:Name="PluginsListView"

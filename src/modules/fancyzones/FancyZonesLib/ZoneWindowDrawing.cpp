@@ -278,7 +278,7 @@ void ZoneWindowDrawing::Flash()
 }
 
 void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
-                                          const std::vector<size_t>& highlightZones,
+                                          const ZoneIndexSet& highlightZones,
                                           const ZoneColors& colors)
 {
     _TRACER_;
@@ -294,7 +294,7 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
     highlightColor.a = colors.highlightOpacity / 100.f;
 
     std::vector<bool> isHighlighted(zones.size() + 1, false);
-    for (size_t x : highlightZones)
+    for (ZoneIndex x : highlightZones)
     {
         isHighlighted[x] = true;
     }

@@ -36,14 +36,7 @@ namespace updating
 
     std::optional<VersionHelper> extract_version_from_release_object(const json::JsonObject& release_object)
     {
-        try
-        {
-            return VersionHelper{ winrt::to_string(release_object.GetNamedString(L"tag_name")) };
-        }
-        catch (...)
-        {
-        }
-        return std::nullopt;
+        return VersionHelper::fromString(release_object.GetNamedString(L"tag_name"));
     }
 
     std::pair<Uri, std::wstring> extract_installer_asset_download_info(const json::JsonObject& release_object)
