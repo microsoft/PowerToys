@@ -177,7 +177,7 @@ build:
             - 'Settings\Telemetry.dll'
             - 'Settings\ManagedCommon.dll'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
       name: 'Build Power Toys Tools'
       command: '.pipelines\build-tools.cmd'
@@ -188,7 +188,17 @@ build:
             - 'BugReportTool\BugReportTool.exe'
             - 'WebcamReportTool\WebcamReportTool.exe'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
+    - !!buildcommand
+      name: 'Build Power Toys Installer Custom Action' # Need to do separately to sign dll before building installer
+      command: '.pipelines\build-installer-PTCustomActions.cmd'
+      artifacts:
+        - from: 'installer\PowerToysSetupCustomActions\x64\Release'
+          to: 'Build_Output'
+          include:
+            - 'PowerToysSetupCustomActions.dll'
+          signing_options:
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
       name: 'Build Power Toys Installer'
       command: '.pipelines\build-installer.cmd'
@@ -198,7 +208,7 @@ build:
           include:
             - 'PowerToysSetup-*.msi'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
       name: 'Build Power Toys Bootstrapper'
       command: '.pipelines\build-bootstrapper.cmd'
@@ -211,7 +221,7 @@ build:
           include:
             - 'PowerToysSetup-*.exe'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
 
 
 #package:
