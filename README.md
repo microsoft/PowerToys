@@ -75,72 +75,77 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.41 - June 2021 Update
+### 0.43 - July 2021 Update
 
-Our goals for [v0.39 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F20) and [v0.41 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F21) cycle included stability updates and optimizations, general bug fixes, accessibility improvements, and supporting the integration of the new community led project, Awake, which allows Power-Users to now keep their computer awake on demand! 
+Our goals for the [v0.43 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F22) primarily centered around stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
 
-#### Highlights from v0.39 / v0.41
+An experimental version of PowerToys (v0.44) will be released the 2nd week of August and will include an updated version of Video Conference Mute.
 
-The PowerToys team delayed our 0.39 release. We decided that we wanted to do more for the next release of PowerToys, so this longer time allowed us to get in more amazing pull requests by you, the community, to add / improve functionality which we merged into 0.41.
+#### Highlights from v0.43
 
 **General**
 
-- New Awake utility added! Power-Users can now keep their computer awake on-demand without having to manage its power settings. A huge thank you to [@dend](https://github.com/dend) for driving the development of this feature. Check out complete guidance and getting started info on [Microsoft Docs](https://aka.ms/PowerToysOverview_Awake)
-- Improved auto-update experience in PowerToys Settings
-- Improved settings layout for radio button groups. Updated images and menu for OOBE. Thanks [@niels9001](https://github.com/niels9001)!
-- Updated general bug report information.
+- New UI for sizes list view in Image Resizer settings. Thanks @niels9001!
+- Fixed FileInUse errors during install/update scenarios.
+- Fixed toggle switches on PowerToys run settings to display correctly.
+- Fixed header text not updating when theme color is changed. Thanks @niels9001!
+- Changed tooltip text for systray icon to be on a single line for Windows 11 compatibility.
+- Expanded the Report Bug tool to collect more robust diagnostic information.
+- Fixed screen reader functionality to stop announcing hidden text in settings.
+ 
+### Awake
+
+- Fixed bug when right-clicking menu of Awake app icon. Thanks @dend!
+- Fixed high CPU usage for timed keep awake. Thanks @dend!
+- Fixed Awake icon spamming notification tray. Thanks @dend!
+- Added telemetry to collect Awake settings and logs.
 
 ### Color Picker
 
-- New fix to prevent the creation of duplicate colors in the selection history. Thanks [@DoctorNefario](https://github.com/DoctorNefario)!
-- Fixed OOBE hotkey description. Thanks [@coc0a](https://github.com/coc0a)!
-- Improved editor UX to better support keyboard navigation. Thanks [@niels9001](https://github.com/niels9001)!
-- Updated Color Picker GIF for OOBE. Thanks [@niels9001](https://github.com/niels9001)!
+- Fixed escape behavior so that only the fly-out is closed if active.
+- Fixed several accessibility issues related to screen reader functionality and general usage of Color Picker.
 
 ### FancyZones
 
-- Full keyboard support added for the canvas editor’s main window and context. Thanks [@niels9001](https://github.com/niels9001)!
-    - Use `Arrows` to move a zone by 10 pixels or `Ctrl + Arrows` to move the zone by 1 pixel
-    - `Shift + Arrows` to resize a zone by 10 pixels (5 per edge), `Ctrl + Shift + Arrows` to resize a zone by 2 pixels (1 per edge)
-    - `Ctrl + Tab` to switch between the editor and dialog
-- New support for faster layout selection by double clicking a desired layout from the editor to automatically apply it and dismiss the editor.
-- New zone activation behavior allows users to snap a window to the zone who's center is closest to the cursor. Thanks [@ulazy1](https://github.com/ulazy1)!
-- Added process icon for FancyZones.
-- Fixed issue with zoning minimized windows.
-- Fixed a bunch of accessibility bugs
-- Now an independent exe, detached from the runner process.
+- Fixed bug causing multi-monitor spanning errors.
+- Added minimum zone size limit to the settings.
+- Fixed issue where re-opened windows don't appear in previously assigned zone.
+- Fixed excluded apps setting to save on text change instead of when leaving focus.
+- Fixed corrupt/outdated plugins load crash. 
+- Fixed issue with FancyZones not working after computer goes to sleep.
+- Added screen reader confirmation to canvas editor when new zones are added.
 
-### Image Resizer
+### Keyboard Manager
 
-- Fixed bug where specifying a width but no height generated a 1x1 px image instead of auto-adjusting the height. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed screen reader usage bugs to increase intuitiveness.
 
 ### PowerToys Run
 
-- Multiple crashing bugs resolved.
-- New Unit Converter plugin! Activate in the query prompt with the default activation phrase `%%`. Ex: `%% 10 ft in m`. Thanks [@jsoref](https://github.com/jsoref) and [@ThiefZero](https://github.com/ThiefZero)!
-- New Windows Settings plugin! Search for specific Windows settings from PowerToys Run by utilizing the default activation phrase `$` followed by the desired setting. Ex: `$ Add/Remove Programs` To list all settings of an area category, type `:` after the category name. Ex: `$ Device:`. Thanks [@TobiasSekan](https://github.com/TobiasSekan) and [@htcfreek](https://github.com/htcfreek).
-- Updated the URL plugin to enable quickly launching the default browser with  the action keyword, which defaults to `//`.
-- Added remainder/modulo support for Calculator plugin via `%` operator.
-- Faster launching from improved Win32 program indexing. Thanks [@royvou](https://github.com/royvou)!
-- Search text results now highlight matched characters from input. Thanks [@niels9001](https://github.com/niels9001)!
+- Fixed crashing bug due to missing image file app.dark.png.
+- Fixed URI plugin bug with handling numeric input. Thanks @davidegiacometti!
+- Improved launch performance of PowerToys run on first call. Thanks @davidegiacometti!
+- Changed URI plugin to launch HTTPS by default instead of HTTP. Thanks @chrisharris333!
+- Added confirmation dialog when system commands are executed from PowerToys Run. Thanks @chrisharris333!
 
-### Shortcut Guide 
+### Video Conference Mute
 
-- Now an independent exe, detached from the runner process.
-- Removed support for long `Win` press to activate Shortcut Guide. Users can now `Win + ?` to launch and new customization settings added for users to define their own shortcut.
+- Fixed toolbar top right vertical offset to allow users to close other app windows.
+- Fixed compatibility issues for certain systems when compiling from source.
 
 ## Community contributions
 
-We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
+We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
-[@Aaron-Junker](https://github.com/Aaron-Junker), [@coc0a](https://github.com/coc0a), [@davidegiacometti](https://github.com/davidegiacometti), [@dend](https://github.com/dend), [@DoctorNefario](https://github.com/DoctorNefario), [@dogancelik](https://github.com/dogancelik), [@htcfreek](https://github.com/htcfreek), [@itsme-alan](https://github.com/itsme-alan), [@Jay-o-Way](https://github.com/Jay-o-Way), [@djsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), [@nitroin](https://github.com/nitroin), [@ricardosantos9521](https://github.com/ricardosantos9521), [@ThiefZero](https://github.com/ThiefZero), [@TobiasSekan](https://github.com/TobiasSekan), and [@ulazy1](https://github.com/ulazy1)
+[@Aaron-Junker](https://github.com/Aaron-Junker), [@chrisharris333](https://github.com/chrisharris333), [@davidegiacometti](https://github.com/davidegiacometti), [@dend](https://github.com/dend), [@franky920920](https://github.com/franky920920) [@htcfreek](https://github.com/htcfreek), [@Jay-o-Way](https://github.com/Jay-o-Way), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001), [@royvou](https://github.com/royvou), and [@tony-xia](https://github.com/tony-xia)
 
-#### What is being planned for v0.43
+#### What is being planned for v0.45
 
-For [v0.43][github-next-release-work], we are planning to work on:
+For [v0.45][github-next-release-work], we are planning to work on:
 
 - Stability and bug fixes
 - Installer improvements
+- Upgrading PowerToys Run to .NET 5
+- Preliminary UI/UX investigations to adopt WinUI and improve accessibility
 
 ## PowerToys Community
 

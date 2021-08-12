@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -161,5 +163,61 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             scrollViewer.ChangeView(null, 0, null, true);
         }
+
+        private bool navigationViewInitialStateProcessed; // avoid announcing initial state of the navigation pane.
+
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
+#pragma warning disable CA1822 // Mark members as static
+        private void NavigationView_PaneOpened(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
+        {
+            if (!navigationViewInitialStateProcessed)
+            {
+                navigationViewInitialStateProcessed = true;
+                return;
+            }
+
+            var peer = FrameworkElementAutomationPeer.FromElement(sender);
+            if (peer == null)
+            {
+                peer = FrameworkElementAutomationPeer.CreatePeerForElement(sender);
+            }
+
+            if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
+            {
+                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+                peer.RaiseNotificationEvent(
+                    AutomationNotificationKind.ActionCompleted,
+                    AutomationNotificationProcessing.ImportantMostRecent,
+                    loader.GetString("Shell_NavigationMenu_Announce_Open"),
+                    "navigationMenuPaneOpened");
+            }
+        }
+
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
+        private void NavigationView_PaneClosed(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
+        {
+            if (!navigationViewInitialStateProcessed)
+            {
+                navigationViewInitialStateProcessed = true;
+                return;
+            }
+
+            var peer = FrameworkElementAutomationPeer.FromElement(sender);
+            if (peer == null)
+            {
+                peer = FrameworkElementAutomationPeer.CreatePeerForElement(sender);
+            }
+
+            if (AutomationPeer.ListenerExists(AutomationEvents.MenuClosed))
+            {
+                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+                peer.RaiseNotificationEvent(
+                    AutomationNotificationKind.ActionCompleted,
+                    AutomationNotificationProcessing.ImportantMostRecent,
+                    loader.GetString("Shell_NavigationMenu_Announce_Collapse"),
+                    "navigationMenuPaneClosed");
+            }
+        }
+#pragma warning restore CA1822 // Mark members as static
     }
 }

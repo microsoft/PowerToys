@@ -9,6 +9,7 @@
 #include <common/Display/dpi_aware.h>
 #include <common/utils/json.h>
 #include <FancyZonesLib/util.h>
+#include <FancyZonesLib/FancyZonesWindowProperties.h>
 
 #include <shlwapi.h>
 #include <filesystem>
@@ -375,7 +376,7 @@ void FancyZonesData::UpdateProcessIdToHandleMap(HWND window, const std::wstring_
     }
 }
 
-std::vector<size_t> FancyZonesData::GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
+ZoneIndexSet FancyZonesData::GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
 {
     std::scoped_lock lock{ dataLock };
     auto processPath = get_process_path(window);
@@ -422,10 +423,10 @@ bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& dev
                     }
 
                     // if there is another instance of same application placed in the same zone don't erase history
-                    size_t windowZoneStamp = reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID));
+                    ZoneIndex windowZoneStamp = reinterpret_cast<ZoneIndex>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID));
                     for (auto placedWindow : data->processIdToHandleMap)
                     {
-                        size_t placedWindowZoneStamp = reinterpret_cast<size_t>(::GetProp(placedWindow.second, ZonedWindowProperties::PropertyMultipleZoneID));
+                        ZoneIndex placedWindowZoneStamp = reinterpret_cast<ZoneIndex>(::GetProp(placedWindow.second, ZonedWindowProperties::PropertyMultipleZoneID));
                         if (IsWindow(placedWindow.second) && (windowZoneStamp == placedWindowZoneStamp))
                         {
                             return false;
@@ -451,7 +452,7 @@ bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& dev
     return false;
 }
 
-bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<size_t>& zoneIndexSet)
+bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet)
 {
     _TRACER_;
     std::scoped_lock lock{ dataLock };
