@@ -30,28 +30,11 @@
     </i:Interaction.Behaviors>
 
     <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="LayoutVisualStates">
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState x:Name="SmallLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-
-
+      
         <winui:NavigationView
         x:Name="navigationView"
         Background="{ThemeResource HomePageBackgroundBrush}"
         IsBackButtonVisible="Collapsed"
-           
         IsTitleBarAutoPaddingEnabled="False"
         IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
         SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
@@ -120,10 +103,16 @@
 
                 <!--TODO(yuyoyuppe): uncomment when VCM should be enabled-->
                 <!--<winui:NavigationViewItem x:Uid="Shell_VideoConference" helpers:NavHelper.NavigateTo="views:VideoConferencePage" IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}">
-                    <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE714;"/>
+                   <winui:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" ShowAsMonochrome="False"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>-->
+
+              <winui:NavigationViewItem x:Uid="Shell_VideoConference" helpers:NavHelper.NavigateTo="views:VideoConferencePage" >
+                    <winui:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" ShowAsMonochrome="False"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
 
             </winui:NavigationView.MenuItems>
             <winui:NavigationView.PaneFooter>

@@ -61,12 +61,9 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                
+
                 </controls:SettingsGroup>
-                <!--<TextBlock x:Uid=""
-                       Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>-->
-        </StackPanel>
+            </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.ModuleLinks>

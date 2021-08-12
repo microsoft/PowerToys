@@ -143,7 +143,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="VideoConference_SelectedMicrophone.Header" xml:space="preserve">
     <value>Selected microphone</value>
   </data>
-  <data name="VideoConference_CameraOverlayImagePathHeader.Text" xml:space="preserve">
+  <data name="VideoConference_CameraOverlayImagePathHeader.Header" xml:space="preserve">
     <value>Camera overlay image</value>
   </data>
   <data name="VideoConference_ToolbarPosition.Header" xml:space="preserve">
@@ -188,16 +188,16 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
     <value>Video Conference</value>
   </data>
-  <data name="VideoConference_Camera.Text" xml:space="preserve">
+  <data name="VideoConference_Camera.Header" xml:space="preserve">
     <value>Camera</value>
   </data>
-  <data name="VideoConference_Microphone.Text" xml:space="preserve">
+  <data name="VideoConference_Microphone.Header" xml:space="preserve">
     <value>Microphone</value>
   </data>
-  <data name="VideoConference_Toolbar.Text" xml:space="preserve">
+  <data name="VideoConference_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
   </data>
-  <data name="VideoConference_Shortcuts.Text" xml:space="preserve">
+  <data name="VideoConference_Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
   </data>
   <data name="VideoConference_CameraOverlayImageAlt.AutomationProperties.Name" xml:space="preserve">

@@ -26,12 +26,12 @@
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="720" />
                     </VisualState.StateTriggers>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="600" />
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
