@@ -49,7 +49,7 @@
                         <TextBlock Text="&#xE115;"
                                    Margin="0,3,0,0"
                                    FontFamily="Segoe MDL2 Assets" />
-                        <TextBlock x:Uid="OOBE_Settings"
+                        <TextBlock 
                                    Name="SettingsLabel" />
                     </StackPanel>
                 </Button>

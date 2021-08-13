@@ -46,6 +46,12 @@
                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             </Style>
 
+            <Style x:Key="HyperlinkButtonStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource TextBlockButtonStyle}">
+                <Style.Setters>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="Margin" Value="0,0,0,0"/>
+                </Style.Setters>
+            </Style>
 
 
 

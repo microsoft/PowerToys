@@ -3,21 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Documents;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
@@ -82,6 +70,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty ModuleImageLinkProperty = DependencyProperty.Register("ModuleImageLink", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleLinksProperty = DependencyProperty.Register("ModuleLinks", typeof(ObservableCollection<SidePanelLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<SidePanelLink>()));
         public static readonly DependencyProperty AttributionLinksProperty = DependencyProperty.Register("AttributionLinks", typeof(ObservableCollection<SidePanelLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<SidePanelLink>()));
-        public static readonly DependencyProperty ModuleContentProperty = DependencyProperty.Register("Content", typeof(object), typeof(SettingsPageControl), new PropertyMetadata(new Grid()));
+        public static readonly DependencyProperty ModuleContentProperty = DependencyProperty.Register("ModuleContent", typeof(object), typeof(SettingsPageControl), new PropertyMetadata(new Grid()));
     }
 }

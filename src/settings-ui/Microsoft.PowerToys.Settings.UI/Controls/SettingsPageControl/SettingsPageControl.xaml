@@ -28,8 +28,8 @@
 
         <TextBlock x:Name="Header"
                    Text="{x:Bind ModuleTitle}"
-                   FontWeight="SemiBold"
-                   FontSize="28"
+                   Style="{StaticResource TitleTextBlockStyle}"
+
                    Margin="0,44,0,0"
                    VerticalAlignment="Stretch"/>
 
@@ -64,7 +64,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="local:SidePanelLink">
                                     <HyperlinkButton NavigateUri="{x:Bind Link}">
-                                        <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                     </HyperlinkButton>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -96,7 +96,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:SidePanelLink">
                                 <HyperlinkButton NavigateUri="{x:Bind Link}">
-                                    <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                 </HyperlinkButton>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

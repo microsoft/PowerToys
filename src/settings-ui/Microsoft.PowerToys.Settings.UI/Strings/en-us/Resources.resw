@@ -497,10 +497,10 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
     <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>
   </data>
-  <data name="Give_Feedback.Label" xml:space="preserve">
+  <data name="Give_Feedback.Text" xml:space="preserve">
     <value>Give feedback</value>
   </data>
-  <data name="Learn_More.Label" xml:space="preserve">
+  <data name="Learn_More.Text" xml:space="preserve">
     <value>Learn more</value>
     <comment>This label is there to point people to additional overview for how to use the product</comment>
   </data>
@@ -517,14 +517,14 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
     <value>Update now</value>
   </data>
-  <data name="GeneralPage_PrivacyStatement_URL.Label" xml:space="preserve">
+  <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
     <value>Privacy statement</value>
   </data>
-  <data name="GeneralPage_ReportAbug.Label" xml:space="preserve">
+  <data name="GeneralPage_ReportAbug.Text" xml:space="preserve">
     <value>Report a bug</value>
     <comment>Report an issue inside powertoys</comment>
   </data>
-  <data name="GeneralPage_RequestAFeature_URL.Label" xml:space="preserve">
+  <data name="GeneralPage_RequestAFeature_URL.Text" xml:space="preserve">
     <value>Request a feature</value>
     <comment>Tell our team what we should build</comment>
   </data>
@@ -582,7 +582,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="PowerRename_AutoCompleteHeader.Header" xml:space="preserve">
     <value>Autocomplete</value>
   </data>
-  <data name="OpenSource_Notice.Label" xml:space="preserve">
+  <data name="OpenSource_Notice.Text" xml:space="preserve">
     <value>Open-source notice</value>
   </data>
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
@@ -819,7 +819,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="Shortcut_Guide_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Guide</value>
   </data>
-  <data name="General_Repository.Label" xml:space="preserve">
+  <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>
   </data>
   <data name="General_Version.Header" xml:space="preserve">
@@ -1169,6 +1169,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_Launch.Text" xml:space="preserve">
     <value>Launch</value>
   </data>
+  <data name="Launch_ColorPicker.Content" xml:space="preserve">
+    <value>Launch ColorPicker</value>
+  </data>
   <data name="Oobe_LearnMore.Text" xml:space="preserve">
     <value>Learn more about</value>
   </data>
@@ -1283,10 +1286,6 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>FancyZones</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_FileExplorer" xml:space="preserve">
-    <value>File Explorer add-ons</value>
-    <comment>Do not localize this string</comment>
-  </data>
   <data name="Oobe_ImageResizer" xml:space="preserve">
     <value>Image Resizer</value>
     <comment>Do not localize this string</comment>
@@ -1317,8 +1316,8 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Oobe_Welcome" xml:space="preserve">
     <value>Welcome</value>
   </data>
-  <data name="OOBE_Settings.Text" xml:space="preserve">
-    <value>Settings</value>
+  <data name="OOBE_Settings.Content" xml:space="preserve">
+    <value>Open Settings</value>
   </data>
   <data name="Oobe_Button.Text" xml:space="preserve">
     <value>Welcome to PowerToys</value>
@@ -1473,5 +1472,49 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="To.Text" xml:space="preserve">
     <value>to</value>
     <comment>as in: from x to y</comment>
+  </data>
+  <data name="LearnMore_Awake.Text" xml:space="preserve">
+    <value>Learn more about Awake</value>
+    <comment>Awake is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_ColorPicker.Text" xml:space="preserve">
+    <value>Learn more about Color Picker</value>
+    <comment>Color Picker is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_FancyZones.Text" xml:space="preserve">
+    <value>Learn more about FancyZones</value>
+    <comment>FancyZones is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_ImageResizer.Text" xml:space="preserve">
+    <value>Learn more about Image Resizer</value>
+    <comment>Image Resizer is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_KBM.Text" xml:space="preserve">
+    <value>Learn more about Keyboard Manager</value>
+    <comment>Keyboard Manager is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
+    <value>Learn more about File Explorer add-ons</value>
+    <comment>File Explorer is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_PowerRename.Text" xml:space="preserve">
+    <value>Learn more about PowerRename</value>
+    <comment>PowerRename is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_Run.Text" xml:space="preserve">
+    <value>Learn more about PowerToys Run</value>
+    <comment>PowerToys Run is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_ShortcutGuide.Text" xml:space="preserve">
+    <value>Learn more about Shortcut Guide</value>
+    <comment>Shortcut Guide is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_VCM.Text" xml:space="preserve">
+    <value>Learn more about Video Conference Mute</value>
+    <comment>Video Conference Mute is a product name, do not loc</comment>
+  </data>
+  <data name="Oobe_FileExplorer" xml:space="preserve">
+    <value>File Explorer add-ons</value>
+    <comment>Do not localize this string</comment>
   </data>
 </root>

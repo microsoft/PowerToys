@@ -8,7 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public class SidePanelLink
     {
-        public string Label { get; set; }
+        public string Text { get; set; }
 
         public Uri Link { get; set; }
     }

@@ -108,10 +108,13 @@
     <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
       <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\SidePanel\SettingsPageControl.xaml.cs">
+    <Compile Include="Controls\SettingsPageControl\SettingsPageControl.xaml.cs">
       <DependentUpon>SettingsPageControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\SidePanel\SidePanelLink.cs" />
+ <Compile Include="Controls\OOBEPageControl\OOBEPageControl.xaml.cs">
+      <DependentUpon>OOBEPageControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SettingsPageControl\SidePanelLink.cs" />
     <Compile Include="Converters\AwakeModeToBoolConverter.cs" />
     <Compile Include="Converters\ImageResizerFitToStringConverter.cs" />
     <Compile Include="Converters\ImageResizerUnitToStringConverter.cs" />
@@ -329,7 +332,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\SidePanel\SettingsPageControl.xaml">
+    <Page Include="Controls\SettingsPageControl\SettingsPageControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+<Page Include="Controls\OOBEPageControl\OOBEPageControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -255,12 +255,12 @@
 
     </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.ModuleLinks>
-            <controls:SidePanelLink x:Uid="Learn_More" Link="https://aka.ms/PowerToysOverview_PowerToysRun"/>
+            <controls:SidePanelLink x:Uid="LearnMore_Run" Link="https://aka.ms/PowerToysOverview_PowerToysRun"/>
             <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
         </controls:SettingsPageControl.ModuleLinks>
         <controls:SettingsPageControl.AttributionLinks>
-            <controls:SidePanelLink Label="Wox" Link="https://github.com/Wox-launcher/Wox/"/>
-            <controls:SidePanelLink Label="Beta Tadele's Window Walker" Link="https://github.com/betsegaw/windowwalker/"/>
+            <controls:SidePanelLink Text="Wox" Link="https://github.com/Wox-launcher/Wox/"/>
+            <controls:SidePanelLink Text="Beta Tadele's Window Walker" Link="https://github.com/betsegaw/windowwalker/"/>
         </controls:SettingsPageControl.AttributionLinks>
     </controls:SettingsPageControl>
 </Page>
