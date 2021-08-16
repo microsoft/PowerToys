@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             Modules.Insert((int)PowerToysModulesEnum.Overview, new OobePowerToysModule()
             {
-                ModuleName = loader.GetString("Oobe_GettingStarted"),
+                ModuleName = loader.GetString("Oobe_Welcome"),
                 Tag = "Overview",
                 IsNew = false,
                 Icon = "\uEF3C",

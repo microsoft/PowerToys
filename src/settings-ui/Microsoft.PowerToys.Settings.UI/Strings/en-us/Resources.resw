@@ -1174,7 +1174,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_PowerToysDescription.Text" xml:space="preserve">
     <value>Welcome to PowerToys!  These overviews will help you quickly learn the basics of all our utilities.</value>
   </data>
-  <data name="Oobe_GettingStarted" xml:space="preserve">
+  <data name="Oobe_GettingStarted.Text" xml:space="preserve">
     <value>Getting started</value>
   </data>
   <data name="Oobe_Launch.Text" xml:space="preserve">
@@ -1321,6 +1321,9 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Oobe_VideoConference" xml:space="preserve">
     <value>Video Conference</value>
     <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_Welcome" xml:space="preserve">
+    <value>Welcome</value>
   </data>
   <data name="OOBE_Settings.Content" xml:space="preserve">
     <value>Open Settings</value>
