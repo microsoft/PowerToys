@@ -43,7 +43,7 @@
             <winui:NavigationView.MenuItems>
                 <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE713;"/>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsSettings.png" ShowAsMonochrome="False"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 

@@ -1170,7 +1170,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Launch</value>
   </data>
   <data name="Launch_ColorPicker.Content" xml:space="preserve">
-    <value>Launch ColorPicker</value>
+    <value>Launch Color Picker</value>
   </data>
   <data name="Oobe_LearnMore.Text" xml:space="preserve">
     <value>Learn more about</value>
@@ -1202,18 +1202,16 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_VideoConference_Description" xml:space="preserve">
     <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
   </data>
-  <data name="Oobe_Overview_CheckoutLatestVersion.Text" xml:space="preserve">
-    <value>For returning users, check out what is new in our</value>
-  </data>
   <data name="Oobe_Overview_Description.Text" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.
-Take a moment to preview the various utilities listed or view our comprehensive documentation on</value>
+    
+Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>Microsoft Docs</value>
+    <value>Check out documentation on Microsoft Docs</value>
   </data>
   <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
-    <value>release notes</value>
+    <value>Check out what's new in our release notes</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
     <value>{Win} + {Shift} + {C} to open Color Picker.</value>
@@ -1516,5 +1514,11 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Oobe_FileExplorer" xml:space="preserve">
     <value>File Explorer add-ons</value>
     <comment>Do not localize this string</comment>
+  </data>
+  <data name="Launch_Run.Content" xml:space="preserve">
+    <value>Launch PowerToys Run</value>
+  </data>
+  <data name="Launch_ShortcutGuide.Content" xml:space="preserve">
+    <value>Launch Shortcut Guide</value>
   </data>
 </root>

@@ -111,7 +111,7 @@
     <Compile Include="Controls\SettingsPageControl\SettingsPageControl.xaml.cs">
       <DependentUpon>SettingsPageControl.xaml</DependentUpon>
     </Compile>
- <Compile Include="Controls\OOBEPageControl\OOBEPageControl.xaml.cs">
+    <Compile Include="Controls\OOBEPageControl\OOBEPageControl.xaml.cs">
       <DependentUpon>OOBEPageControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\SettingsPageControl\SidePanelLink.cs" />
@@ -231,6 +231,7 @@
     <Content Include="Assets\FluentIcons\FluentIconsPowerRename.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerToys.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerToysRun.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsSettings.png" />
     <Content Include="Assets\FluentIcons\FluentIconsShortcutGuide.png" />
     <Content Include="Assets\FluentIcons\FluentIconsVideoConferenceMute.png" />
     <Content Include="Assets\Logo.scale-200.png" />
@@ -336,7 +337,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-<Page Include="Controls\OOBEPageControl\OOBEPageControl.xaml">
+    <Page Include="Controls\OOBEPageControl\OOBEPageControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
