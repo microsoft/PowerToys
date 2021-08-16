@@ -1322,6 +1322,9 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Video Conference</value>
     <comment>Do not localize this string</comment>
   </data>
+  <data name="Oobe_Welcome" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
   <data name="OOBE_Settings.Content" xml:space="preserve">
     <value>Open Settings</value>
   </data>
