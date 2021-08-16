@@ -44,7 +44,9 @@
                                     </TextBlock>
                                 </controls:Setting.Description>
                                 <controls:Setting.ActionContent>
-                                    <controls:HotkeySettingsControl Width="240" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" Keys="Win, Ctrl, Alt, Shift"/>
+                                    <controls:HotkeySettingsControl HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
+                                                                    Keys="Win, Ctrl, Alt, Shift"
+                                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
@@ -98,7 +100,7 @@
                             <controls:Setting x:Uid="PowerLauncher_MaximumNumberOfResults" Icon="&#xE721;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
-                                                    Width="240"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     SpinButtonPlacementMode="Compact"
                                                     Minimum="1"/>
                                 </controls:Setting.ActionContent>
@@ -133,7 +135,7 @@
                 <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                     <controls:Setting x:Uid="Run_PositionHeader" Icon="&#xE18C;">
                         <controls:Setting.ActionContent>
-                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorPositionIndex}">
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MonitorPositionIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                 <ComboBoxItem x:Uid="Run_Radio_Position_Cursor"/>
                                 <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor"/>
                                 <ComboBoxItem x:Uid="Run_Radio_Position_Focus"/>
@@ -147,7 +149,7 @@
                                              x:Uid="Windows_Color_Settings"/>
                         </controls:Setting.Description>
                         <controls:Setting.ActionContent>
-                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                 <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
                                 <ComboBoxItem x:Uid="Radio_Theme_Light"/>
                                 <ComboBoxItem x:Uid="Radio_Theme_Default"/>
@@ -195,7 +197,7 @@
                                                 <controls:Setting x:Uid="PowerLauncher_ActionKeyword" Style="{StaticResource ExpanderContentSettingStyle}">
                                                     <controls:Setting.ActionContent>
                                                         <TextBox Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}"
-                                                                 Width="240"
+                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                                  IsEnabled="{x:Bind Enabled, Mode=OneWay}" />
                                                     </controls:Setting.ActionContent>
                                                 </controls:Setting>

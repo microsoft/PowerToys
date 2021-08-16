@@ -32,7 +32,9 @@
                             </TextBlock>
                         </controls:Setting.Description>
                         <controls:Setting.ActionContent>
-                            <controls:HotkeySettingsControl Width="240" HotkeySettings="{x:Bind Path=ViewModel.CameraAndMicrophoneMuteHotkey, Mode=TwoWay}" Keys="Win, Ctrl, Alt, Shift"/>
+                            <controls:HotkeySettingsControl HotkeySettings="{x:Bind Path=ViewModel.CameraAndMicrophoneMuteHotkey, Mode=TwoWay}"
+                                                            Keys="Win, Ctrl, Alt, Shift"
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
@@ -44,7 +46,9 @@
                             </TextBlock>
                         </controls:Setting.Description>
                         <controls:Setting.ActionContent>
-                            <controls:HotkeySettingsControl Width="240" HotkeySettings="{x:Bind Path=ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}" Keys="Win, Ctrl, Alt, Shift"/>
+                            <controls:HotkeySettingsControl HotkeySettings="{x:Bind Path=ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}"
+                                                            Keys="Win, Ctrl, Alt, Shift"
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
@@ -56,7 +60,9 @@
                             </TextBlock>
                         </controls:Setting.Description>
                         <controls:Setting.ActionContent>
-                            <controls:HotkeySettingsControl Width="240" HotkeySettings="{x:Bind Path=ViewModel.CameraMuteHotkey, Mode=TwoWay}" Keys="Win, Ctrl, Alt, Shift"/>
+                            <controls:HotkeySettingsControl HotkeySettings="{x:Bind Path=ViewModel.CameraMuteHotkey, Mode=TwoWay}"
+                                                            Keys="Win, Ctrl, Alt, Shift"
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
@@ -66,7 +72,7 @@
 
                     <controls:Setting x:Uid="VideoConference_SelectedMicrophone" Icon="&#xE1D6;">
                         <controls:Setting.ActionContent>
-                            <ComboBox Width="240"
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
                                       SelectedIndex="{Binding Path=SelectedMicrophoneIndex, Mode=TwoWay}"
                                       ItemsSource="{Binding MicrophoneNames, Mode=OneTime}"/>
                         </controls:Setting.ActionContent>
@@ -80,7 +86,7 @@
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="VideoConference_SelectedCamera" Icon="&#xE116;">
                                 <controls:Setting.ActionContent>
-                                    <ComboBox Width="240"
+                                    <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
                                               SelectedIndex="{Binding Path=SelectedCameraIndex, Mode=TwoWay}"
                                               ItemsSource="{Binding CameraNames, Mode=OneTime}"
                                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
@@ -121,7 +127,7 @@
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="VideoConference_ToolbarPosition" Icon="&#xEC12;">
                                 <controls:Setting.ActionContent>
-                                    <ComboBox MinWidth="240" SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarPostionIndex}">
+                                    <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarPostionIndex}">
                                         <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopLeftCorner"/>
                                         <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopCenter"/>
                                         <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopRightCorner"/>
@@ -136,7 +142,7 @@
                             <StackPanel Orientation="Vertical">
                                 <controls:Setting x:Uid="VideoConference_ToolbarMonitor" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <ComboBox MinWidth="240" SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarMonitorIndex}">
+                                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarMonitorIndex}">
                                             <ComboBoxItem x:Uid="VideoConference_ToolbarMonitor_Main"/>
                                             <ComboBoxItem x:Uid="VideoConference_ToolbarMonitor_All"/>
                                         </ComboBox>

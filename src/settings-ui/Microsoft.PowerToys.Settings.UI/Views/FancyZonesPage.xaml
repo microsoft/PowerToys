@@ -54,7 +54,9 @@
                                     </TextBlock>
                                 </controls:Setting.Description>
                                 <controls:Setting.ActionContent>
-                                    <controls:HotkeySettingsControl Width="240" HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" Keys="Win, Ctrl, Alt, Shift"/>
+                                    <controls:HotkeySettingsControl MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                                    HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
+                                                                    Keys="Win, Ctrl, Alt, Shift"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
@@ -90,7 +92,7 @@
                                
                                 <controls:Setting  x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <ComboBox SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}">
+                                        <ComboBox SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                             <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />
                                             <ComboBoxItem x:Uid="FancyZones_OverlappingZonesLargest" />
                                             <ComboBoxItem x:Uid="FancyZones_OverlappingZonesPositional" />
@@ -103,7 +105,7 @@
                                     <controls:Setting.ActionContent>
                                         <Slider Minimum="0"
                                             Maximum="100"
-                                            Width="240"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}"
                                             HorizontalAlignment="Right"/>
                                     </controls:Setting.ActionContent>

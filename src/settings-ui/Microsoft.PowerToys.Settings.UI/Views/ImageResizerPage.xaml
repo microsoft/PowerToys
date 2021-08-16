@@ -167,7 +167,7 @@
                     <controls:Setting x:Uid="ImageResizer_FallBackEncoderText">
                         <controls:Setting.ActionContent>
                             <ComboBox SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}"
-                                      MinWidth="240">
+                                      MinWidth="{StaticResource SettingActionControlMinWidth}">
                                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
                                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
                                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
@@ -184,7 +184,7 @@
                             Minimum="0"
                             Maximum="100"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
-                            MinWidth="240"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Right"
                             />
@@ -193,7 +193,7 @@
 
                     <controls:Setting x:Uid="ImageResizer_PNGInterlacing">
                         <controls:Setting.ActionContent>
-                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}">
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                 <ComboBoxItem x:Uid="Default"/>
                                 <ComboBoxItem x:Uid="On"/>
                                 <ComboBoxItem x:Uid="Off"/>
@@ -203,7 +203,7 @@
 
                     <controls:Setting x:Uid="ImageResizer_TIFFCompression">
                         <controls:Setting.ActionContent>
-                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}">
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default"/>
                                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None"/>
                                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3"/>
@@ -226,8 +226,8 @@
                                     <StackPanel Spacing="4" Orientation="Horizontal">
                                         <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
                                          HorizontalAlignment="Right"
-                                         MinWidth="240"
-                                        x:Uid="ImageResizer_FilenameFormatPlaceholder"/>
+                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                         x:Uid="ImageResizer_FilenameFormatPlaceholder"/>
                                         <Button Content="&#xE946;" FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                             <ToolTipService.ToolTip>
                                                 <ToolTip>

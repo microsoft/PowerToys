@@ -38,7 +38,7 @@
                             </TextBlock>
                         </controls:Setting.Description>
                         <controls:Setting.ActionContent>
-                            <Grid Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateUpToDateToVisibilityConverter}}">
+                            <Grid MinWidth="{StaticResource SettingActionControlMinWidth}" Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateUpToDateToVisibilityConverter}}">
                                 <StackPanel Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
                                         Orientation="Horizontal"
                                         Spacing="18"
@@ -224,7 +224,7 @@
                                                      x:Uid="Windows_Color_Settings"/>
                                 </controls:Setting.Description>
                                 <controls:Setting.ActionContent>
-                                    <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}">
+                                    <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                         <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
                                         <ComboBoxItem x:Uid="Radio_Theme_Light"/>
                                         <ComboBoxItem x:Uid="Radio_Theme_Default"/>
