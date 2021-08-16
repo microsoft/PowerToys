@@ -15,6 +15,7 @@ accessibilityinsights
 Acl
 aclapi
 AColumn
+Accesible
 acos
 acrt
 Actioncenter
@@ -269,6 +270,7 @@ codereview
 Codespaces
 COINIT
 colorconv
+colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
