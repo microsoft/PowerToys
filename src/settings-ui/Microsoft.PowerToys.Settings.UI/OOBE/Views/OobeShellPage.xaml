@@ -53,17 +53,6 @@
                               IsBackButtonVisible="Collapsed"
                               MenuItemsSource="{x:Bind Modules, Mode=OneTime}"
                               MenuItemTemplate="{StaticResource NavigationViewMenuItem}">
-            <winui:NavigationView.PaneCustomContent>
-                <StackPanel Grid.Column="0" Margin="16"
-                            Orientation="Vertical">
-                    <TextBlock x:Uid="Oobe_GettingStarted"
-                               TextWrapping="Wrap"
-                               FontWeight="SemiBold"
-                               AutomationProperties.HeadingLevel="Level1"
-                               Style="{StaticResource PageTitleStyle}"
-                               Margin="0,0,0,16" />
-                </StackPanel>
-            </winui:NavigationView.PaneCustomContent>
             <winui:NavigationView.Content>
                 <Frame x:Name="NavigationFrame" />
             </winui:NavigationView.Content>
