@@ -1,8 +1,0 @@
-﻿<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
-    <!-- OOBE -->
-    <Thickness x:Key="OobePageContentMargin">32, 24, 32, 24</Thickness>
-    
-</ResourceDictionary>

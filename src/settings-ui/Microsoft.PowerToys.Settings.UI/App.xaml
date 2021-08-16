@@ -9,9 +9,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" ControlsResourcesVersion="Version2" />
                 <ResourceDictionary Source="/Controls/KeyVisual/KeyVisual.xaml" />
-                <ResourceDictionary Source="/Styles/_FontSizes.xaml" />
-                <ResourceDictionary Source="/Styles/_Thickness.xaml" />
-                <ResourceDictionary Source="/Styles/_Sizes.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/Styles/Button.xaml"/>
 
