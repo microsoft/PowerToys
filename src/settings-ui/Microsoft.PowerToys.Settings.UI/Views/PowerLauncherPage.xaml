@@ -227,6 +227,8 @@
 
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                                 <TextBlock Opacity="{x:Bind DisabledOpacity}"
+                                                           HorizontalAlignment="Right"
+                                                           Style="{ThemeResource SecondaryTextStyle}"
                                                            Margin="{StaticResource ExpanderSettingMargin}">
                                                                <Run x:Uid="PowerLauncher_AuthoredBy" />
                                                                <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
