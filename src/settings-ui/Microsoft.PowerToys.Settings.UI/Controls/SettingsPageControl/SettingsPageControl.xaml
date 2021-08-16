@@ -18,7 +18,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid RowSpacing="24" Padding="48,0,0,0">
+    <Grid Padding="20,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*"/>
@@ -29,12 +29,14 @@
         <TextBlock x:Name="Header"
                    Text="{x:Bind ModuleTitle}"
                    Style="{StaticResource TitleTextBlockStyle}"
-
                    Margin="0,44,0,0"
                    VerticalAlignment="Stretch"/>
 
-        <ScrollViewer Grid.Row="1">
-            <Grid RowSpacing="24" Padding="0,0,48,48">
+        <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch">
+            <Grid RowSpacing="24"
+                  HorizontalAlignment="Left"
+                  Padding="0,0,20,48"
+                  MaxWidth="1048">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto"/>

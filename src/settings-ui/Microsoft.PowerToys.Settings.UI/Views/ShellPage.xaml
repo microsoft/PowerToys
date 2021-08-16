@@ -4,120 +4,150 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:behaviors="using:Microsoft.PowerToys.Settings.UI.Behaviors"
-    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
-    winui:BackdropMaterial.ApplyToRootOrPageBackground="True"
+    muxc:BackdropMaterial.ApplyToRootOrPageBackground="True"
     mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <DataTemplate x:Key="HeaderSmallTemplate">
-            <TextBlock x:Name="HeaderText"
-                                Text="{Binding}"
-                                Margin="-36,0,0,0"
-                                AutomationProperties.HeadingLevel="Level1" />
-        </DataTemplate>
-
-    </UserControl.Resources>
-    
     <i:Interaction.Behaviors>
         <ic:EventTriggerBehavior EventName="Loaded">
             <ic:InvokeCommandAction Command="{x:Bind ViewModel.LoadedCommand}" />
         </ic:EventTriggerBehavior>
     </i:Interaction.Behaviors>
 
-    <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-      
-        <winui:NavigationView
-        x:Name="navigationView"
-        Background="{ThemeResource HomePageBackgroundBrush}"
-        IsBackButtonVisible="Collapsed"
-        IsTitleBarAutoPaddingEnabled="False"
-        IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
-        SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
-        IsSettingsVisible="False"
-        CompactModeThresholdWidth="0"
-        PaneOpened="NavigationView_PaneOpened"
-        PaneClosed="NavigationView_PaneClosed">
-            <winui:NavigationView.MenuItems>
-                <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsSettings.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+    <Grid x:Name="RootGrid"
+          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+          Padding="12,0,0,0">
 
-                <winui:NavigationViewItem x:Uid="Shell_Awake" helpers:NavHelper.NavigateTo="views:AwakePage">
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAwake.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+        <muxc:NavigationView x:Name="navigationView"
+                             IsBackButtonVisible="Collapsed"
+                             IsTitleBarAutoPaddingEnabled="False"
+                             IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+                             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+                             IsSettingsVisible="False"
+                             CompactModeThresholdWidth="0"
+                             OpenPaneLength="288"
+                             PaneOpened="NavigationView_PaneOpened"
+                             PaneClosed="NavigationView_PaneClosed">
+            <muxc:NavigationView.Resources>
+                <SolidColorBrush x:Key="NavigationViewContentBackground"
+                                 Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush"
+                                 Color="Transparent" />
                 
-                <winui:NavigationViewItem x:Uid="Shell_ColorPicker" helpers:NavHelper.NavigateTo="views:ColorPickerPage">
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+            </muxc:NavigationView.Resources>
+            <muxc:NavigationView.MenuItems>
+                <muxc:NavigationViewItem x:Uid="Shell_General"
+                                         helpers:NavHelper.NavigateTo="views:GeneralPage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsSettings.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-                <winui:NavigationViewItem x:Uid="Shell_FancyZones" helpers:NavHelper.NavigateTo="views:FancyZonesPage">
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_Awake"
+                                         helpers:NavHelper.NavigateTo="views:AwakePage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAwake.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-                <winui:NavigationViewItem x:Uid="Shell_PowerPreview" helpers:NavHelper.NavigateTo="views:PowerPreviewPage">
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileExplorerPreview.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_ColorPicker"
+                                         helpers:NavHelper.NavigateTo="views:ColorPickerPage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-                <winui:NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage">
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsImageResizer.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_FancyZones"
+                                         helpers:NavHelper.NavigateTo="views:FancyZonesPage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-                <winui:NavigationViewItem x:Uid="Shell_KeyboardManager" helpers:NavHelper.NavigateTo="views:KeyboardManagerPage">
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsKeyboardManager.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_PowerPreview"
+                                         helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileExplorerPreview.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-                <winui:NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage">
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerRename.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_ImageResizer"
+                                         helpers:NavHelper.NavigateTo="views:ImageResizerPage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsImageResizer.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-                <winui:NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage">
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_KeyboardManager"
+                                         helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsKeyboardManager.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-                <winui:NavigationViewItem x:Uid="Shell_ShortcutGuide" helpers:NavHelper.NavigateTo="views:ShortcutGuidePage">
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_PowerRename"
+                                         helpers:NavHelper.NavigateTo="views:PowerRenamePage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerRename.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+
+                <muxc:NavigationViewItem x:Uid="Shell_PowerLauncher"
+                                         helpers:NavHelper.NavigateTo="views:PowerLauncherPage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+
+                <muxc:NavigationViewItem x:Uid="Shell_ShortcutGuide"
+                                         helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
                 <!--TODO(yuyoyuppe): uncomment when VCM should be enabled-->
                 <!--<winui:NavigationViewItem x:Uid="Shell_VideoConference" helpers:NavHelper.NavigateTo="views:VideoConferencePage" IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}">
-                   <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>-->
+                       <winui:NavigationViewItem.Icon>
+                            <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" ShowAsMonochrome="False"/>
+                        </winui:NavigationViewItem.Icon>
+                    </winui:NavigationViewItem>-->
 
-              <winui:NavigationViewItem x:Uid="Shell_VideoConference" helpers:NavHelper.NavigateTo="views:VideoConferencePage" >
-                    <winui:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png" ShowAsMonochrome="False"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
+                <muxc:NavigationViewItem x:Uid="Shell_VideoConference"
+                                         helpers:NavHelper.NavigateTo="views:VideoConferencePage"
+                                         Margin="0,0,12,0">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
 
-            </winui:NavigationView.MenuItems>
-            <winui:NavigationView.PaneFooter>
+            </muxc:NavigationView.MenuItems>
+            <muxc:NavigationView.PaneFooter>
                 <Button Click="OobeButton_Click"
                         Background="Transparent"
                         Style="{StaticResource AccentButtonStyle}"
@@ -132,7 +162,7 @@
                         </StackPanel>
                     </Button.Content>
                 </Button>
-            </winui:NavigationView.PaneFooter>
+            </muxc:NavigationView.PaneFooter>
             <i:Interaction.Behaviors>
 
                 <ic:EventTriggerBehavior EventName="ItemInvoked">
@@ -140,6 +170,6 @@
                 </ic:EventTriggerBehavior>
             </i:Interaction.Behaviors>
             <Frame x:Name="shellFrame" />
-        </winui:NavigationView>
+        </muxc:NavigationView>
     </Grid>
 </UserControl>
