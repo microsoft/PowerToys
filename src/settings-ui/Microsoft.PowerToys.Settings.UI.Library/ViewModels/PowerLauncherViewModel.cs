@@ -9,9 +9,11 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
@@ -24,6 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _isCursorPositionRadioButtonChecked;
         private bool _isPrimaryMonitorPositionRadioButtonChecked;
         private bool _isFocusPositionRadioButtonChecked;
+
+        private string _searchText;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -99,6 +103,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 plugin.PropertyChanged += OnPluginInfoChange;
             }
+
+            SearchPluginsCommand = new RelayCommand(SearchPlugins);
         }
 
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
@@ -304,6 +310,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public string SearchText
+        {
+            get
+            {
+                return _searchText;
+            }
+
+            set
+            {
+                if (_searchText != value)
+                {
+                    _searchText = value;
+                    OnPropertyChanged(nameof(SearchText));
+                }
+            }
+        }
+
+        public ICommand SearchPluginsCommand { get; }
+
         public HotkeySettings OpenPowerLauncher
         {
             get
@@ -451,6 +476,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public bool IsUpToDate(PowerLauncherSettings settings)
         {
             return this.settings.Equals(settings);
+        }
+
+        public void SearchPlugins()
+        {
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                var plugins = settings.Plugins.Where(p => p.Name.StartsWith(SearchText, StringComparison.OrdinalIgnoreCase) || p.Name.IndexOf($" {SearchText}", StringComparison.OrdinalIgnoreCase) > 0);
+                _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
+            }
+            else
+            {
+                _plugins = null;
+            }
+
+            OnPropertyChanged(nameof(Plugins));
         }
     }
 }

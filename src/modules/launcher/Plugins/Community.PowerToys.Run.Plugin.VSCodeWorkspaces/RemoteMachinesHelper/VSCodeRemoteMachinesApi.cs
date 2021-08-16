@@ -1,16 +1,22 @@
-﻿using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser;
-using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
-using Newtonsoft.Json;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser;
+using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
+using Newtonsoft.Json;
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
 {
     public class VSCodeRemoteMachinesApi
     {
-        public VSCodeRemoteMachinesApi() { }
+        public VSCodeRemoteMachinesApi()
+        {
+        }
 
         public List<VSCodeRemoteMachine> Machines
         {
@@ -18,7 +24,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
             {
                 var results = new List<VSCodeRemoteMachine>();
 
-                foreach (var vscodeInstance in VSCodeInstances.instances)
+                foreach (var vscodeInstance in VSCodeInstances.Instances)
                 {
                     // settings.json contains path of ssh_config
                     var vscode_settings = Path.Combine(vscodeInstance.AppData, "User\\settings.json");
@@ -40,8 +46,8 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
                                         var machine = new VSCodeRemoteMachine();
                                         machine.Host = h.Host;
                                         machine.VSCodeInstance = vscodeInstance;
-                                        machine.HostName = h.HostName != null ? h.HostName : String.Empty;
-                                        machine.User = h.User != null ? h.User : String.Empty;
+                                        machine.HostName = h.HostName != null ? h.HostName : string.Empty;
+                                        machine.User = h.User != null ? h.User : string.Empty;
 
                                         results.Add(machine);
                                     }
@@ -57,7 +63,6 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
                 }
 
                 return results;
-
             }
         }
     }

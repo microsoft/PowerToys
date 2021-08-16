@@ -2,16 +2,6 @@
 
 #include <common/SettingsAPI/settings_objects.h>
 
-// Zoned window properties are not localized.
-namespace ZonedWindowProperties
-{
-    const wchar_t PropertyMultipleZoneID[]  = L"FancyZones_zones";
-    const wchar_t PropertyRestoreSizeID[]   = L"FancyZones_RestoreSize";
-    const wchar_t PropertyRestoreOriginID[] = L"FancyZones_RestoreOrigin";
-
-    const wchar_t MultiMonitorDeviceID[]    = L"FancyZones#MultiMonitorDevice";
-}
-
 enum struct OverlappingZonesAlgorithm : int
 {
     Smallest = 0,
