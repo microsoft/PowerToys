@@ -271,7 +271,7 @@ namespace FancyZonesUnitTests
                 const auto zoneSet = workArea->ActiveZoneSet();
                 zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
                 const auto actualZoneIndexSet = zoneSet->GetZoneIndexSetFromWindow(window);
-                Assert::IsFalse(std::vector<size_t>{} == actualZoneIndexSet);
+                Assert::IsFalse(std::vector<ZoneIndex>{} == actualZoneIndexSet);
             }
 
             TEST_METHOD (MoveSizeEndWindowNotAdded)
@@ -287,7 +287,7 @@ namespace FancyZonesUnitTests
 
                 const auto zoneSet = workArea->ActiveZoneSet();
                 const auto actualZoneIndexSet = zoneSet->GetZoneIndexSetFromWindow(window);
-                Assert::IsTrue(std::vector<size_t>{} == actualZoneIndexSet);
+                Assert::IsTrue(std::vector<ZoneIndex>{} == actualZoneIndexSet);
             }
 
             TEST_METHOD (MoveSizeEndDifferentWindows)
@@ -327,7 +327,7 @@ namespace FancyZonesUnitTests
                 const auto zoneSet = workArea->ActiveZoneSet();
                 zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
                 const auto actualZoneIndex = zoneSet->GetZoneIndexSetFromWindow(window);
-                Assert::IsFalse(std::vector<size_t>{} == actualZoneIndex); // with invalid point zone remains the same
+                Assert::IsFalse(std::vector<ZoneIndex>{} == actualZoneIndex); // with invalid point zone remains the same
             }
 
             TEST_METHOD (MoveWindowIntoZoneByIndex)
@@ -352,7 +352,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
                 const auto& appHistoryArray = actualAppZoneHistory.begin()->second;
                 Assert::AreEqual((size_t)1, appHistoryArray.size());
-                Assert::IsTrue(std::vector<size_t>{ 0 } == appHistoryArray[0].zoneIndexSet);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray[0].zoneIndexSet);
             }
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionManyTimes)
@@ -369,7 +369,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
                 const auto& appHistoryArray = actualAppZoneHistory.begin()->second;
                 Assert::AreEqual((size_t)1, appHistoryArray.size());
-                Assert::IsTrue(std::vector<size_t>{ 2 } == appHistoryArray[0].zoneIndexSet);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 2 } == appHistoryArray[0].zoneIndexSet);
             }
 
             TEST_METHOD (SaveWindowProcessToZoneIndexNullptrWindow)
@@ -413,7 +413,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)1, m_fancyZonesData.GetAppZoneHistoryMap().size());
                 const auto& appHistoryArray1 = m_fancyZonesData.GetAppZoneHistoryMap().at(processPath);
                 Assert::AreEqual((size_t)1, appHistoryArray1.size());
-                Assert::IsTrue(std::vector<size_t>{ 0 } == appHistoryArray1[0].zoneIndexSet);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray1[0].zoneIndexSet);
 
                 // add zone without window
                 const auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
@@ -423,7 +423,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)1, m_fancyZonesData.GetAppZoneHistoryMap().size());
                 const auto& appHistoryArray2 = m_fancyZonesData.GetAppZoneHistoryMap().at(processPath);
                 Assert::AreEqual((size_t)1, appHistoryArray2.size());
-                Assert::IsTrue(std::vector<size_t>{ 0 } == appHistoryArray2[0].zoneIndexSet);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 0 } == appHistoryArray2[0].zoneIndexSet);
             }
 
             TEST_METHOD (SaveWindowProcessToZoneIndexWindowAdded)
@@ -445,7 +445,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)1, m_fancyZonesData.GetAppZoneHistoryMap().size());
                 const auto& appHistoryArray = m_fancyZonesData.GetAppZoneHistoryMap().at(processPath);
                 Assert::AreEqual((size_t)1, appHistoryArray.size());
-                Assert::IsTrue(std::vector<size_t>{ 2 } == appHistoryArray[0].zoneIndexSet);
+                Assert::IsTrue(std::vector<ZoneIndex>{ 2 } == appHistoryArray[0].zoneIndexSet);
 
                 workArea->SaveWindowProcessToZoneIndex(window);
 

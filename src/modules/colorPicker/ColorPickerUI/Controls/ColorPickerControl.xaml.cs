@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -39,6 +40,11 @@ namespace ColorPicker.Controls
             InitializeComponent();
 
             UpdateHueGradient(1, 1);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ColorPickerAutomationPeer(this);
         }
 
         public Color SelectedColor
@@ -370,6 +376,21 @@ namespace ColorPicker.Controls
         private void HexCode_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
             (sender as System.Windows.Controls.TextBox).SelectAll();
+        }
+    }
+
+#pragma warning disable SA1402 // File may only contain a single type
+    public class ColorPickerAutomationPeer : UserControlAutomationPeer
+#pragma warning restore SA1402 // File may only contain a single type
+    {
+        public ColorPickerAutomationPeer(ColorPickerControl owner)
+            : base(owner)
+        {
+        }
+
+        protected override string GetLocalizedControlTypeCore()
+        {
+            return ColorPicker.Properties.Resources.Color_Picker_Control;
         }
     }
 }

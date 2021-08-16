@@ -5,6 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
@@ -22,7 +24,6 @@
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel Orientation="Vertical">
-
                 <controls:Setting x:Uid="PowerLauncher_EnablePowerLauncher">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" ShowAsMonochrome="False" />
@@ -159,9 +160,21 @@
 
                 </controls:SettingsGroup>
 
-
                 <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                    <controls:Setting x:Uid="Run_PluginUseDescription" Icon="&#xEA86;"/>
+                    <controls:Setting x:Uid="Run_PluginUseDescription" Icon="&#xEA86;">
+                        <controls:Setting.ActionContent>
+                            <AutoSuggestBox x:Uid="PowerLauncher_SearchList"
+                                            QueryIcon="Find"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}">
+                                <i:Interaction.Behaviors>
+                                    <ic:EventTriggerBehavior EventName="TextChanged">
+                                        <ic:InvokeCommandAction Command="{x:Bind ViewModel.SearchPluginsCommand}" />
+                                    </ic:EventTriggerBehavior>
+                                </i:Interaction.Behaviors>
+                            </AutoSuggestBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                     <muxc:InfoBar x:Uid="Run_AllPluginsDisabled" Severity="Error" IsOpen="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}" IsClosable="False" />
 
                     <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -173,7 +186,6 @@
             IsItemClickEnabled="False" SelectionMode="None"
                       x:Name="PluginsListView">
                         <ListView.ItemTemplate>
-                    
                     <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
                                 <Grid>
                                     <controls:SettingExpander>

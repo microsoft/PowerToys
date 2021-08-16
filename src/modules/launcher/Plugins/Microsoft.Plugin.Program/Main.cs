@@ -39,7 +39,7 @@ namespace Microsoft.Plugin.Program
         private static PluginInitContext _context;
         private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed;
-        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper());
+        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWPApplication>>("UWP"));
         private static Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
         private static Win32ProgramRepository _win32ProgramRepository;
 
@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Program
             _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
 
             // Initialize the Win32ProgramRepository with the settings object
-            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper.FileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), Settings, _win32ProgramRepositoryHelper.PathsToWatch);
+            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper.FileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32Program>>("Win32"), Settings, _win32ProgramRepositoryHelper.PathsToWatch);
         }
 
         public void Save()

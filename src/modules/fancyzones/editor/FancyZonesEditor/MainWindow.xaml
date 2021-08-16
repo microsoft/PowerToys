@@ -352,7 +352,10 @@
                             FontFamily="Segoe MDL2 Assets"
                             Style="{StaticResource IconOnlyButtonStyle}"
                             Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
-
+                    
+                    <!--Used by narrator for announcements-->
+                    <TextBlock x:Name="LayoutCreationAnnounce" />
+                    
                     <Button Click="DuplicateLayout_Click"
                             x:Name="createFromTemplateLayoutButton"
                             AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}"
@@ -390,7 +393,8 @@
                                  Margin="12,0,0,0"
                                  ui:ControlHelper.Header="{x:Static props:Resources.Name}"
                                  MinWidth="286"
-                                 HorizontalAlignment="Stretch" />
+                                 HorizontalAlignment="Stretch"
+                                 GotKeyboardFocus="TextBox_GotKeyboardFocus"/>
                     </StackPanel>
 
                     <!-- Shortcut panel -->
@@ -476,6 +480,7 @@
                                       KeyDown="EditDialogNumberBox_KeyDown"
                                       Margin="12,0,0,0"
                                       Header="{x:Static props:Resources.Number_of_zones}"
+                                      Loaded="NumberBox_Loaded"
                                       AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
                                       SpinButtonPlacementMode="Compact"
                                       Text="{Binding TemplateZoneCount}" />
@@ -504,6 +509,7 @@
                                           SpinButtonPlacementMode="Compact"
                                           HorizontalAlignment="Left"
                                           VerticalAlignment="Center"
+                                          Loaded="NumberBox_Loaded"
                                           AutomationProperties.Name="{x:Static props:Resources.Space_Around_Zones}"
                                           AutomationProperties.LabeledBy="{Binding ElementName=spacingTitle}" />
                             <TextBlock Text="{x:Static props:Resources.Pixels}"
@@ -550,6 +556,7 @@
                                           Maximum="1000"
                                           KeyDown="EditDialogNumberBox_KeyDown"
                                           Margin="12,0,0,0"
+                                          Loaded="NumberBox_Loaded"
                                           AutomationProperties.Name="{x:Static props:Resources.Distance_adjacent_zones}"
                                           AutomationProperties.LabeledBy="{Binding ElementName=distanceTitle}"
                                           SpinButtonPlacementMode="Compact"

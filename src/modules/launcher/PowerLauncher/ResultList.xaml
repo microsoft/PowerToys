@@ -176,6 +176,7 @@
             ScrollViewer.VerticalScrollBarVisibility="Auto"       
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
+            SelectionChanged="SuggestionsListView_SelectionChanged"
             ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}"
             AutomationProperties.Name="{x:Static p:Resources.Results}">
             
@@ -208,7 +209,7 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Grid.ToolTip>
-                            <ToolTip Visibility="{Binding Result.ToolTipVisibility}">
+                            <ToolTip Visibility="{Binding Result.ToolTipVisibility}" Opened="ToolTip_Opened">
                                 <StackPanel>
                                     <TextBlock 
                                         Style="{DynamicResource CollapsableTextblock}"
@@ -270,6 +271,7 @@
                             SelectionMode="Single"
                             Margin="0,0,-8,0"
                             SelectedIndex="{Binding ContextMenuSelectedIndex}"
+                            SelectionChanged="ContextMenuListView_SelectionChanged"
                             Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BooleanToVisibilityConverter}}"
                             ItemContainerStyle="{StaticResource CommandButtonListViewItemContainerStyle}">
                             <ItemsControl.ItemsPanel>
@@ -288,9 +290,10 @@
                                         VerticalAlignment="Center"
                                         Height="42"
                                         Width="42"
+                                        Name="commandButton"
                                         BorderThickness="1" >
                                         <ToolTipService.ToolTip>
-                                            <ToolTip >
+                                            <ToolTip Opened="ToolTip_Opened">
                                                 <TextBlock
                                                     AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}"
                                                     Text="{Binding Title}"/>

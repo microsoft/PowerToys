@@ -130,17 +130,6 @@
                                       CornerRadius="{ThemeResource ControlCornerRadius}"
                                       Padding="0,0,16,0"
                                       MinHeight="68">
-                                    <!-- Disabled reordering by dragging
-                            
-                            <Interactivity:Interaction.Behaviors>
-                                <Core:EventTriggerBehavior EventName="PointerEntered">
-                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=GripperIcon}" PropertyName="Visibility" Value="Visible" />
-                                </Core:EventTriggerBehavior>
-                                <Core:EventTriggerBehavior EventName="PointerExited">
-                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=GripperIcon}" PropertyName="Visibility" Value="Collapsed" />
-                                </Core:EventTriggerBehavior>
-                            </Interactivity:Interaction.Behaviors> -->
-
                                     <Grid.RowDefinitions>
                                         <RowDefinition/>
                                         <RowDefinition/>
@@ -162,17 +151,6 @@
                                                   AutomationProperties.HelpText="{x:Bind Name}"
                                                   HorizontalAlignment="Right"
                                                   Margin="0,0,56,0"/>
-                                    <!-- Disabled reordering by dragging
-                            
-                            <TextBlock Text="&#xE76F;"
-                                       Visibility="Collapsed"
-                                       x:Name="GripperIcon"
-                                       VerticalAlignment="Center"
-                                       Grid.RowSpan="2"
-                                       FontSize="16"
-                                       HorizontalAlignment="Right"
-                                       Margin="0,0,36,0"
-                                       FontFamily="Segoe MDL2 Assets" /> -->
 
                                     <Button Background="Transparent"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"

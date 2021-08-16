@@ -13,7 +13,6 @@
 
         <controls:OOBEPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-
                 <TextBlock x:Uid="Oobe_HowToEnable"
                            Style="{ThemeResource OobeSubtitleStyle}" />
 

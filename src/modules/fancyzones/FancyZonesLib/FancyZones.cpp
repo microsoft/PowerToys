@@ -11,6 +11,7 @@
 #include <common/SettingsAPI/FileWatcher.h>
 
 #include <FancyZonesLib/FancyZonesData.h>
+#include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/Settings.h>
@@ -156,8 +157,8 @@ private:
 
     void OnSettingsChanged() noexcept;
 
-    std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
-    void MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneWindow, const std::vector<size_t>& zoneIndexSet) noexcept;
+    std::pair<winrt::com_ptr<IWorkArea>, ZoneIndexSet> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
+    void MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneWindow, const ZoneIndexSet& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent() noexcept;
     void UpdateZoneSets() noexcept;
@@ -265,9 +266,9 @@ FancyZones::VirtualDesktopChanged() noexcept
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
 }
 
-std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> FancyZones::GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept
+std::pair<winrt::com_ptr<IWorkArea>, ZoneIndexSet> FancyZones::GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept
 {
-    std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> appZoneHistoryInfo{ nullptr, {} };
+    std::pair<winrt::com_ptr<IWorkArea>, ZoneIndexSet> appZoneHistoryInfo{ nullptr, {} };
     auto workAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId);
     if (workAreaMap.empty())
     {
@@ -301,7 +302,7 @@ std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> FancyZones::GetAppZone
     return appZoneHistoryInfo;
 }
 
-void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneWindow, const std::vector<size_t>& zoneIndexSet) noexcept
+void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneWindow, const ZoneIndexSet& zoneIndexSet) noexcept
 {
     _TRACER_;
     auto& fancyZonesData = FancyZonesDataInstance();
@@ -328,7 +329,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
     // Avoid processing splash screens, already stamped (zoned) windows, or those windows
     // that belong to excluded applications list.
     const bool isSplashScreen = FancyZonesUtils::IsSplashScreen(window);
-    const bool isZoned = reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0;
+    const bool isZoned = reinterpret_cast<ZoneIndex>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0;
     const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray);
     const bool shouldProcessNewWindow = !isSplashScreen && !isZoned && isCandidateForLastKnownZone;
 
@@ -347,7 +348,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
         if (moveToAppLastZone)
         {
             const bool primaryActive = (primary == active);
-            std::pair<winrt::com_ptr<IWorkArea>, std::vector<size_t>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
+            std::pair<winrt::com_ptr<IWorkArea>, ZoneIndexSet> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
             
             if (!appZoneHistoryInfo.second.empty())
             {
@@ -828,31 +829,18 @@ void FancyZones::UpdateZoneWindows() noexcept
 void FancyZones::UpdateWindowsPositions() noexcept
 {
     auto callback = [](HWND window, LPARAM data) -> BOOL {
-        size_t bitmask = reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID));
-
-        if (bitmask != 0)
+        auto zoneIndexSet = GetZoneIndexSet(window);
+        auto strongThis = reinterpret_cast<FancyZones*>(data);
+        auto desktopId = strongThis->m_virtualDesktop.GetWindowDesktopId(window);
+        if (desktopId.has_value())
         {
-            std::vector<size_t> indexSet;
-            for (int i = 0; i < std::numeric_limits<size_t>::digits; i++)
+            auto zoneWindow = strongThis->m_workAreaHandler.GetWorkArea(window, *desktopId);
+            if (zoneWindow)
             {
-                if ((1ull << i) & bitmask)
-                {
-                    indexSet.push_back(i);
-                }
+                strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
             }
-
-            auto strongThis = reinterpret_cast<FancyZones*>(data);
-            auto desktopId = strongThis->m_virtualDesktop.GetWindowDesktopId(window);
-            if (desktopId.has_value())
-            {
-                auto zoneWindow = strongThis->m_workAreaHandler.GetWorkArea(window, *desktopId);
-                if (zoneWindow)
-                {
-                    strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, indexSet, zoneWindow);
-                }
-            }
-            
         }
+
         return TRUE;
     };
     EnumWindows(callback, reinterpret_cast<LPARAM>(this));
@@ -933,7 +921,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
 
         // If that didn't work, extract zones from all other monitors and target one of them
         std::vector<RECT> zoneRects;
-        std::vector<std::pair<size_t, winrt::com_ptr<IWorkArea>>> zoneRectsInfo;
+        std::vector<std::pair<ZoneIndex, winrt::com_ptr<IWorkArea>>> zoneRectsInfo;
         RECT currentMonitorRect{ .top = 0, .bottom = -1 };
 
         for (const auto& [monitor, monitorRect] : allMonitors)
@@ -975,7 +963,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             return false;
         }
 
-        size_t chosenIdx = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+        auto chosenIdx = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
 
         if (chosenIdx < zoneRects.size())
         {

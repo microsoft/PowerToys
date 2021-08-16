@@ -12,5 +12,4 @@
     <TextBox x:Name="HotkeyTextBox"
              x:Uid="SettingsPage_SetShortcut"
              IsReadOnly="True"/>
-
 </UserControl>

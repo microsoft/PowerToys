@@ -7,12 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
       mc:Ignorable="d">
-
-
     <controls:OOBEPageControl ModuleTitle="{x:Bind ViewModel.ModuleName}"
                                   ModuleImageSource="{x:Bind ViewModel.PreviewImageSource}"
                                   ModuleDescription="{x:Bind ViewModel.Description}">
-
         <controls:OOBEPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 

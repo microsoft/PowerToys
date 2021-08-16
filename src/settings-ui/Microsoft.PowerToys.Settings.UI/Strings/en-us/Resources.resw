@@ -249,6 +249,14 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Keyboard Manager</value>
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
+  <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
+    <value>Navigation closed</value>
+    <comment>Accessibility announcement when the navigation pane collapses</comment>
+  </data>
+  <data name="Shell_NavigationMenu_Announce_Open" xml:space="preserve">
+    <value>Navigation opened</value>
+    <comment>Accessibility announcement when the navigation pane opens</comment>
+  </data>
   <data name="KeyboardManager_ConfigHeader.Text" xml:space="preserve">
     <value>Current configuration</value>
     <comment>Keyboard Manager current configuration header</comment>
@@ -1523,5 +1531,14 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="Launch_ShortcutGuide.Content" xml:space="preserve">
     <value>Launch Shortcut Guide</value>
+    </data>
+  <data name="ColorPicker_ColorFormat_ToggleSwitch.AutomationProperties.Name" xml:space="preserve">
+    <value>Show format in editor</value>
+  </data>
+  <data name="PowerLauncher_SearchList.PlaceholderText" xml:space="preserve">
+    <value>Search this list</value>
+  </data>
+  <data name="PowerLauncher_SearchList.AutomationProperties.Name" xml:space="preserve">
+    <value>Search this list</value>
   </data>
 </root>

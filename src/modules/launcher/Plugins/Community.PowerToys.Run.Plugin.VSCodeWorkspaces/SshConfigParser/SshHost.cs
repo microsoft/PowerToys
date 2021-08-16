@@ -1,33 +1,39 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
 {
     public class SshHost
     {
-        public string IdentityFile 
+        public string IdentityFile
         {
             get => this[nameof(IdentityFile)]?.ToString();
             set => this[nameof(IdentityFile)] = value;
         }
 
-        public string Host 
+        public string Host
         {
             get => this[nameof(Host)]?.ToString();
             set => this[nameof(Host)] = value;
         }
 
-        public string HostName 
+        public string HostName
         {
             get => this[nameof(HostName)]?.ToString();
             set => this[nameof(HostName)] = value;
         }
 
-        public string User {
+        public string User
+        {
             get => this[nameof(User)]?.ToString();
             set => this[nameof(User)] = value;
         }
 
-        public string ForwardAgent {
+        public string ForwardAgent
+        {
             get => this[nameof(ForwardAgent)]?.ToString();
             set => this[nameof(ForwardAgent)] = value;
         }
@@ -36,7 +42,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
 
         public object this[string key]
         {
-            get 
+            get
             {
                 if (Properties.TryGetValue(key, out var value))
                 {
@@ -45,7 +51,11 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
 
                 return null;
             }
-            set { Properties[key] = value; }
+
+            set
+            {
+                Properties[key] = value;
+            }
         }
 
         public IEnumerable<string> Keys => Properties.Keys;
