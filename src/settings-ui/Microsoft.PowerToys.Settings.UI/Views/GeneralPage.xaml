@@ -215,10 +215,8 @@
 
 
 
-                    <controls:SettingsGroup IsEnabled="True" x:Uid="ShortcutGuide_Appearance_Behavior">
-                    <controls:SettingExpander IsExpanded="True">
-                        <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                <controls:SettingsGroup IsEnabled="True" x:Uid="ShortcutGuide_Appearance_Behavior">
+                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;">
                                 <controls:Setting.Description>
                                     <HyperlinkButton Click="OpenColorsSettings_Click"
                                                      x:Uid="Windows_Color_Settings"/>
@@ -231,17 +229,11 @@
                                     </ComboBox>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-                        </controls:SettingExpander.Header>
-                        <controls:SettingExpander.Content>
-                            <StackPanel Orientation="Vertical">
-                                <controls:Setting x:Uid="GeneralPage_RunAtStartUp" Style="{StaticResource ExpanderContentSettingStyle}">
-                                    <controls:Setting.ActionContent>
-                                        <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=Startup}" FlowDirection="RightToLeft"/>
-                                    </controls:Setting.ActionContent>
-                                </controls:Setting>
-                            </StackPanel>
-                        </controls:SettingExpander.Content>
-                    </controls:SettingExpander>
+                    <controls:Setting x:Uid="GeneralPage_RunAtStartUp">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=Startup}" FlowDirection="RightToLeft"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                 </controls:SettingsGroup>
             </StackPanel>
                

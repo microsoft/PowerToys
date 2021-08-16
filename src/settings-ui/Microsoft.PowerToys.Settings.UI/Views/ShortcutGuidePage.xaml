@@ -50,9 +50,8 @@
                 </controls:Setting>
 
                 <controls:SettingsGroup x:Uid="ShortcutGuide_Appearance_Behavior" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingExpander IsExpanded="True">
-                        <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;" Style="{StaticResource ExpanderHeaderSettingStyle}">
+
+                            <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;">
                                 <controls:Setting.Description>
                                     <HyperlinkButton Click="OpenColorsSettings_Click"
                                                      x:Uid="Windows_Color_Settings"/>
@@ -65,20 +64,16 @@
                                     </ComboBox>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-                        </controls:SettingExpander.Header>
-                        <controls:SettingExpander.Content>
-                            <StackPanel Orientation="Vertical">
-                                <controls:Setting x:Uid="ShortcutGuide_OverlayOpacity" Style="{StaticResource ExpanderContentSettingStyle}">
-                                    <controls:Setting.ActionContent>
-                                        <Slider Minimum="0"
-                                        Maximum="100"
-                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.OverlayOpacity}"/>
-                                    </controls:Setting.ActionContent>
-                                </controls:Setting>
-                            </StackPanel>
-                        </controls:SettingExpander.Content>
-                    </controls:SettingExpander>
+
+
+                    <controls:Setting x:Uid="ShortcutGuide_OverlayOpacity">
+                        <controls:Setting.ActionContent>
+                            <Slider Minimum="0"
+                                                Maximum="100"
+                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.OverlayOpacity}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">

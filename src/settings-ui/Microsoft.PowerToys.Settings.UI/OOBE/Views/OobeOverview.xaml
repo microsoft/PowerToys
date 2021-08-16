@@ -13,7 +13,7 @@
         <controls:OOBEPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <TextBlock Margin="0,4,0,0"
+                <TextBlock Margin="0,4,0,8"
                            x:Uid="Oobe_Overview_Description"
                            TextWrapping="Wrap"/>
                 <HyperlinkButton NavigateUri="{x:Bind ViewModel.DescriptionLink}" Style="{StaticResource HyperlinkButtonStyle}">

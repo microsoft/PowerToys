@@ -1030,8 +1030,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="MoveDown.Text" xml:space="preserve">
     <value>Move down</value>
   </data>
-  <data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
-    <value>Show color name when color picking</value>
+  <data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
+    <value>Show color name</value>
+  </data>
+  <data name="ColorPicker_ShowColorName.Description" xml:space="preserve">
+    <value>This will show the name of the color when picking a color</value>
   </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
     <value>Large</value>
@@ -1077,7 +1080,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Plugins</value>
   </data>
   <data name="PowerLauncher_ActionKeyword.Header" xml:space="preserve">
-    <value>Direct activation phrase</value>
+    <value>Direct activation command</value>
   </data>
   <data name="PowerLauncher_AuthoredBy.Text" xml:space="preserve">
     <value>Authored by</value>
