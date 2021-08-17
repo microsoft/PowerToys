@@ -869,7 +869,7 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2StylesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Styles">
       <Component Id="SettingsV2Styles" Guid="44B5C0E0-76DA-4604-BB86-FCD27A00EB71" Win64="yes">
-        <?foreach File in TextBlock.xbf;_FontSizes.xbf;_Sizes.xbf;_Thickness.xbf;Button.xbf?>
+        <?foreach File in TextBlock.xbf;Button.xbf?>
           <File Id="SettingsV2_Styles_$(var.File)" Source="$(var.BinX64Dir)Settings\Styles\$(var.File)" />
         <?endforeach?>
       </Component>
