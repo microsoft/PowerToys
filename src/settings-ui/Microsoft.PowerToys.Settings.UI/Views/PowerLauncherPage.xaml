@@ -262,7 +262,6 @@
     </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.ModuleLinks>
             <controls:SidePanelLink x:Uid="LearnMore_Run" Link="https://aka.ms/PowerToysOverview_PowerToysRun"/>
-            <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
         </controls:SettingsPageControl.ModuleLinks>
         <controls:SettingsPageControl.AttributionLinks>
             <controls:SidePanelLink Text="Wox" Link="https://github.com/Wox-launcher/Wox/"/>

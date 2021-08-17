@@ -19,8 +19,7 @@
     </i:Interaction.Behaviors>
 
     <Grid x:Name="RootGrid"
-          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-          Padding="12,0,0,0">
+          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
         <muxc:NavigationView x:Name="navigationView"
                              IsBackButtonVisible="Collapsed"
@@ -28,8 +27,9 @@
                              IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
                              SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
                              IsSettingsVisible="False"
-                             CompactModeThresholdWidth="0"
                              OpenPaneLength="288"
+                             CompactModeThresholdWidth="1007"
+                             ExpandedModeThresholdWidth="1007"
                              PaneOpened="NavigationView_PaneOpened"
                              PaneClosed="NavigationView_PaneClosed">
             <muxc:NavigationView.Resources>
@@ -148,23 +148,20 @@
 
             </muxc:NavigationView.MenuItems>
             <muxc:NavigationView.PaneFooter>
-                <Button Click="OobeButton_Click"
-                        Background="Transparent"
-                        Style="{StaticResource AccentButtonStyle}"
-                        BorderBrush="Transparent"
-                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                        Margin="4,0,4,-4">
-                    <Button.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon FontSize="13" Glyph="&#xF133;" Margin="2,0,0,0" />
-                            <TextBlock Margin="20,0,0,0"
-                               x:Uid="Oobe_Button"/>
-                        </StackPanel>
-                    </Button.Content>
-                </Button>
+                <StackPanel Orientation="Vertical">
+                    <muxc:NavigationViewItem x:Uid="OOBE_NavViewItem" Tapped="OOBEItem_Tapped">
+                        <muxc:NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xF133;"/>
+                        </muxc:NavigationViewItem.Icon>
+                    </muxc:NavigationViewItem>
+                    <muxc:NavigationViewItem x:Uid="Feedback_NavViewItem" Tapped="FeedbackItem_Tapped">
+                        <muxc:NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xED15;"/>
+                        </muxc:NavigationViewItem.Icon>
+                    </muxc:NavigationViewItem>
+                </StackPanel>
             </muxc:NavigationView.PaneFooter>
             <i:Interaction.Behaviors>
-
                 <ic:EventTriggerBehavior EventName="ItemInvoked">
                     <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
                 </ic:EventTriggerBehavior>

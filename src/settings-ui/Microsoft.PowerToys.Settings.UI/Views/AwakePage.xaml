@@ -107,7 +107,6 @@
 
         <controls:SettingsPageControl.ModuleLinks>
             <controls:SidePanelLink x:Uid="LearnMore_Awake" Link="https://aka.ms/PowerToysOverview_Awake"/>
-            <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
         </controls:SettingsPageControl.ModuleLinks>
         <controls:SettingsPageControl.AttributionLinks>
             <controls:SidePanelLink Text="Den Delimarsky's Awake" Link="https://Awake.den.dev"/>

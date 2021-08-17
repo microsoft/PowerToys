@@ -11,6 +11,7 @@ using Windows.Data.Json;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
+using WinUI = Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -217,6 +218,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     "navigationMenuPaneClosed");
             }
         }
-#pragma warning restore CA1822 // Mark members as static
+
+        private void OOBEItem_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            OpenOobeWindowCallback();
+        }
+
+        private async void FeedbackItem_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
+        }
     }
 }

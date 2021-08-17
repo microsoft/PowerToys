@@ -14,8 +14,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public SettingsPageControl()
         {
             this.InitializeComponent();
-            ModuleLinks = new ObservableCollection<SidePanelLink>();
-            AttributionLinks = new ObservableCollection<SidePanelLink>();
+            PrimaryLinks = new ObservableCollection<PageLink>();
+            AttributionLinks = new ObservableCollection<PageLink>();
         }
 
         public string ModuleTitle
@@ -43,18 +43,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
 #pragma warning disable CA2227 // Collection properties should be read only
-        public ObservableCollection<SidePanelLink> ModuleLinks
+        public ObservableCollection<PageLink> PrimaryLinks
 #pragma warning restore CA2227 // Collection properties should be read only
         {
-            get => (ObservableCollection<SidePanelLink>)GetValue(ModuleLinksProperty);
-            set => SetValue(ModuleLinksProperty, value);
+            get => (ObservableCollection<PageLink>)GetValue(PrimaryLinksProperty);
+            set => SetValue(PrimaryLinksProperty, value);
         }
 
 #pragma warning disable CA2227 // Collection properties should be read only
-        public ObservableCollection<SidePanelLink> AttributionLinks
+        public ObservableCollection<PageLink> AttributionLinks
 #pragma warning restore CA2227 // Collection properties should be read only
         {
-            get => (ObservableCollection<SidePanelLink>)GetValue(AttributionLinksProperty);
+            get => (ObservableCollection<PageLink>)GetValue(AttributionLinksProperty);
             set => SetValue(AttributionLinksProperty, value);
         }
 
@@ -68,8 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty ModuleDescriptionProperty = DependencyProperty.Register("ModuleDescription", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleImageSourceProperty = DependencyProperty.Register("ModuleImageSource", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleImageLinkProperty = DependencyProperty.Register("ModuleImageLink", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty ModuleLinksProperty = DependencyProperty.Register("ModuleLinks", typeof(ObservableCollection<SidePanelLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<SidePanelLink>()));
-        public static readonly DependencyProperty AttributionLinksProperty = DependencyProperty.Register("AttributionLinks", typeof(ObservableCollection<SidePanelLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<SidePanelLink>()));
+        public static readonly DependencyProperty PrimaryLinksProperty = DependencyProperty.Register("PrimaryLinks", typeof(ObservableCollection<PageLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<PageLink>()));
+        public static readonly DependencyProperty AttributionLinksProperty = DependencyProperty.Register("AttributionLinks", typeof(ObservableCollection<PageLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<PageLink>()));
         public static readonly DependencyProperty ModuleContentProperty = DependencyProperty.Register("ModuleContent", typeof(object), typeof(SettingsPageControl), new PropertyMetadata(new Grid()));
     }
 }

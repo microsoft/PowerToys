@@ -284,7 +284,6 @@
 
         <controls:SettingsPageControl.ModuleLinks>
             <controls:SidePanelLink x:Uid="LearnMore_ImageResizer" Link="https://aka.ms/PowerToysOverview_ImageResizer"/>
-            <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
         </controls:SettingsPageControl.ModuleLinks>
         <controls:SettingsPageControl.AttributionLinks>
             <controls:SidePanelLink Text="Brice Lambson's ImageResizer" Link="https://github.com/bricelam/ImageResizer/"/>

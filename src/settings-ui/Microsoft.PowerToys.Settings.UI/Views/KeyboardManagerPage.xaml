@@ -214,7 +214,6 @@
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.ModuleLinks>
             <controls:SidePanelLink x:Uid="LearnMore_KBM" Link="https://aka.ms/PowerToysOverview_KeyboardManager"/>
-            <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
         </controls:SettingsPageControl.ModuleLinks>
     </controls:SettingsPageControl>
 </Page>
