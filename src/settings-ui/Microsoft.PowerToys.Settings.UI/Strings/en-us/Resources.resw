@@ -122,13 +122,13 @@
     <comment>Navigation view item name for Video Conference</comment>
   </data>
   <data name="VideoConference_Enable.Header" xml:space="preserve">
-    <value>Enable Video Conference</value>
+    <value>Enable Video Conference Mute</value>
   </data>
   <data name="VideoConference.ModuleDescription" xml:space="preserve">
     <value>Video Conference Mute is a quick and easy way to do an global "mute" of both your microphone and webcam. Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
   </data>
   <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Mute camera and microphone</value>
+    <value>Mute camera &amp; microphone</value>
   </data>
   <data name="VideoConference_MicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
     <value>Mute microphone</value>
@@ -185,7 +185,7 @@
     <value>Hide toolbar when both camera and microphone are unmuted</value>
   </data>
   <data name="VideoConference.ModuleTitle" xml:space="preserve">
-    <value>Video Conference</value>
+    <value>Video Conference Mute</value>
   </data>
   <data name="VideoConference_Camera.Header" xml:space="preserve">
     <value>Camera</value>
