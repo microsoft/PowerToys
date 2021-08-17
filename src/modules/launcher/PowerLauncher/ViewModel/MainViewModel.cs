@@ -394,7 +394,7 @@ namespace PowerLauncher.ViewModel
                     _visibility = value;
                     if (LoadedAtLeastOnce)
                     {
-                        // Don't trigger telemetry on cold boot. Must've been loaded at least once.
+                        // Don't trigger telemetry on cold boot. Must have been loaded at least once.
                         if (value == Visibility.Visible)
                         {
                             PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
