@@ -116,6 +116,7 @@ namespace PowerLauncher
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
+            _viewModel.LoadedAtLeastOnce = true;
 
             BringProcessToForeground();
         }
