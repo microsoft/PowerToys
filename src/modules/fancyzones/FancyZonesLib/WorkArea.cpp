@@ -232,6 +232,7 @@ IFACEMETHODIMP WorkArea::MoveSizeEnter(HWND window) noexcept
     m_highlightZone = {};
     m_initialHighlightZone = {};
     ShowZoneWindow();
+    Trace::WorkArea::MoveSizeEnter(m_activeZoneSet);
     return S_OK;
 }
 
