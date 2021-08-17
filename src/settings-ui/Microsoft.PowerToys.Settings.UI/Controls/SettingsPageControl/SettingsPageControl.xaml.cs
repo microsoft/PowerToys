@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             this.InitializeComponent();
             PrimaryLinks = new ObservableCollection<PageLink>();
-            AttributionLinks = new ObservableCollection<PageLink>();
+            SecondaryLinks = new ObservableCollection<PageLink>();
         }
 
         public string ModuleTitle
@@ -50,12 +50,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(PrimaryLinksProperty, value);
         }
 
+        public string SecondaryLinksHeader
+        {
+            get { return (string)GetValue(SecondaryLinksHeaderProperty); }
+            set { SetValue(SecondaryLinksHeaderProperty, value); }
+        }
+
 #pragma warning disable CA2227 // Collection properties should be read only
-        public ObservableCollection<PageLink> AttributionLinks
+        public ObservableCollection<PageLink> SecondaryLinks
 #pragma warning restore CA2227 // Collection properties should be read only
         {
-            get => (ObservableCollection<PageLink>)GetValue(AttributionLinksProperty);
-            set => SetValue(AttributionLinksProperty, value);
+            get => (ObservableCollection<PageLink>)GetValue(SecondaryLinksProperty);
+            set => SetValue(SecondaryLinksProperty, value);
         }
 
         public object ModuleContent
@@ -64,12 +70,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(ModuleContentProperty, value); }
         }
 
-        public static readonly DependencyProperty ModuleTitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty ModuleTitleProperty = DependencyProperty.Register("ModuleTitle", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleDescriptionProperty = DependencyProperty.Register("ModuleDescription", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleImageSourceProperty = DependencyProperty.Register("ModuleImageSource", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleImageLinkProperty = DependencyProperty.Register("ModuleImageLink", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty PrimaryLinksProperty = DependencyProperty.Register("PrimaryLinks", typeof(ObservableCollection<PageLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<PageLink>()));
-        public static readonly DependencyProperty AttributionLinksProperty = DependencyProperty.Register("AttributionLinks", typeof(ObservableCollection<PageLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<PageLink>()));
+        public static readonly DependencyProperty SecondaryLinksHeaderProperty = DependencyProperty.Register("SecondaryLinksHeader", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty SecondaryLinksProperty = DependencyProperty.Register("SecondaryLinks", typeof(ObservableCollection<PageLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<PageLink>()));
         public static readonly DependencyProperty ModuleContentProperty = DependencyProperty.Register("ModuleContent", typeof(object), typeof(SettingsPageControl), new PropertyMetadata(new Grid()));
     }
 }

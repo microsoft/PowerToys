@@ -159,8 +159,8 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.ModuleLinks>
+        <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="LearnMore_VCM" Link="https://aka.ms/PowerToysOverview_VideoConference"/>
-        </controls:SettingsPageControl.ModuleLinks>
+        </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

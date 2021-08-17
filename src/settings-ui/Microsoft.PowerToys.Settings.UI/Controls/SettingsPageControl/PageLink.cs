@@ -6,7 +6,7 @@ using System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public class SidePanelLink
+    public class PageLink
     {
         public string Text { get; set; }
 

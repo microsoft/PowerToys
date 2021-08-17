@@ -87,11 +87,11 @@
 
         </controls:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.ModuleLinks>
-            <controls:SidePanelLink x:Uid="LearnMore_PowerRename" Link="https://aka.ms/PowerToysOverview_PowerRename"/>
-        </controls:SettingsPageControl.ModuleLinks>
-        <controls:SettingsPageControl.AttributionLinks>
-            <controls:SidePanelLink Text="Chris Davis's SmartRenamer" Link="https://github.com/chrdavis/SmartRename"/>
-        </controls:SettingsPageControl.AttributionLinks>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_PowerRename" Link="https://aka.ms/PowerToysOverview_PowerRename"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Chris Davis's SmartRenamer" Link="https://github.com/chrdavis/SmartRename"/>
+        </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

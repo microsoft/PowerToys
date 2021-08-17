@@ -282,11 +282,11 @@
 
         </controls:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.ModuleLinks>
-            <controls:SidePanelLink x:Uid="LearnMore_ImageResizer" Link="https://aka.ms/PowerToysOverview_ImageResizer"/>
-        </controls:SettingsPageControl.ModuleLinks>
-        <controls:SettingsPageControl.AttributionLinks>
-            <controls:SidePanelLink Text="Brice Lambson's ImageResizer" Link="https://github.com/bricelam/ImageResizer/"/>
-        </controls:SettingsPageControl.AttributionLinks>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_ImageResizer" Link="https://aka.ms/PowerToysOverview_ImageResizer"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Brice Lambson's ImageResizer" Link="https://github.com/bricelam/ImageResizer/"/>
+        </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

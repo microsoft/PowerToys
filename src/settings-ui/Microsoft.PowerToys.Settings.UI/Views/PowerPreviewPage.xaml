@@ -66,8 +66,8 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.ModuleLinks>
-            <controls:SidePanelLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns"/>
-        </controls:SettingsPageControl.ModuleLinks>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns"/>
+        </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

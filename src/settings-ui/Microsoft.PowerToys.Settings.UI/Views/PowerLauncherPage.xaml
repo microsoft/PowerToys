@@ -260,12 +260,12 @@
             </StackPanel>
 
     </controls:SettingsPageControl.ModuleContent>
-        <controls:SettingsPageControl.ModuleLinks>
-            <controls:SidePanelLink x:Uid="LearnMore_Run" Link="https://aka.ms/PowerToysOverview_PowerToysRun"/>
-        </controls:SettingsPageControl.ModuleLinks>
-        <controls:SettingsPageControl.AttributionLinks>
-            <controls:SidePanelLink Text="Wox" Link="https://github.com/Wox-launcher/Wox/"/>
-            <controls:SidePanelLink Text="Beta Tadele's Window Walker" Link="https://github.com/betsegaw/windowwalker/"/>
-        </controls:SettingsPageControl.AttributionLinks>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_Run" Link="https://aka.ms/PowerToysOverview_PowerToysRun"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Wox" Link="https://github.com/Wox-launcher/Wox/"/>
+            <controls:PageLink Text="Beta Tadele's Window Walker" Link="https://github.com/betsegaw/windowwalker/"/>
+        </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

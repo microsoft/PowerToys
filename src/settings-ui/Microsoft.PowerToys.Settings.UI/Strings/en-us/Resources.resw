@@ -1537,4 +1537,22 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="PowerLauncher_SearchList.AutomationProperties.Name" xml:space="preserve">
     <value>Search this list</value>
   </data>
+  <data name="Awake.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="ColorPicker.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="General.SecondaryLinksHeader" xml:space="preserve">
+    <value>Related information</value>
+  </data>
+  <data name="ImageResizer.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="PowerLauncher.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="PowerRename.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
 </root>

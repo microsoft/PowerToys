@@ -64,9 +64,9 @@
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    TextWrapping="Wrap"/>
 
-                        <ItemsControl ItemsSource="{x:Bind ModuleLinks}" Margin="0,8,0,0">
+                        <ItemsControl ItemsSource="{x:Bind PrimaryLinks}" Margin="0,8,0,0">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="local:SidePanelLink">
+                                <DataTemplate x:DataType="local:PageLink">
                                     <HyperlinkButton NavigateUri="{x:Bind Link}">
                                         <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                     </HyperlinkButton>
@@ -74,7 +74,7 @@
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <controls:WrapPanel Orientation="Horizontal"/>
+                                    <controls:WrapPanel Orientation="Horizontal" HorizontalSpacing="8"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
@@ -91,18 +91,18 @@
                                       Margin="0,12,0,0" Grid.Row="1"/>
 
                 <!-- Bottom panel -->
-                <StackPanel x:Name="AttributionPanel"
+                <StackPanel x:Name="SecondaryLinksPanel"
                             Grid.Row="2"
-                            Visibility="{x:Bind AttributionLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}"
+                            Visibility="{x:Bind SecondaryLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}"
                             Orientation="Vertical">
-                    <TextBlock x:Uid="AttributionTitle"
+                    <TextBlock Text="{x:Bind SecondaryLinksHeader}"
                                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                               Margin="2,32,0,8"
+                               Margin="2,8,0,0"
                                AutomationProperties.HeadingLevel="Level2"/>
 
-                    <ItemsControl x:Name="AttributionLinksItemControl" ItemsSource="{x:Bind AttributionLinks}">
+                    <ItemsControl x:Name="SecondaryLinksItemControl" Margin="2,0,0,0" ItemsSource="{x:Bind SecondaryLinks}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="local:SidePanelLink">
+                            <DataTemplate x:DataType="local:PageLink">
                                 <HyperlinkButton NavigateUri="{x:Bind Link}">
                                     <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                 </HyperlinkButton>
@@ -110,7 +110,7 @@
                         </ItemsControl.ItemTemplate>
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal"/>
+                                <controls:WrapPanel Orientation="Horizontal" HorizontalSpacing="8"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>

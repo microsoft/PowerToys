@@ -178,12 +178,12 @@
 
 </controls:SettingsPageControl.ModuleContent>
 
-<controls:SettingsPageControl.ModuleLinks>
-            <controls:SidePanelLink x:Uid="LearnMore_ColorPicker" Link="https://aka.ms/PowerToysOverview_ColorPicker"/>
-        </controls:SettingsPageControl.ModuleLinks>
-<controls:SettingsPageControl.AttributionLinks>
-    <controls:SidePanelLink Text="Martin Chrzan's Color Picker" Link="https://github.com/martinchrzan/ColorPicker/"/>
-            <controls:SidePanelLink Text="Niels Laute's UX concept" Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c"/>
-</controls:SettingsPageControl.AttributionLinks>
+<controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_ColorPicker" Link="https://aka.ms/PowerToysOverview_ColorPicker"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+<controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Martin Chrzan's Color Picker" Link="https://github.com/martinchrzan/ColorPicker/"/>
+            <controls:PageLink Text="Niels Laute's UX concept" Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c"/>
+</controls:SettingsPageControl.SecondaryLinks>
 </controls:SettingsPageControl>
 </Page>
