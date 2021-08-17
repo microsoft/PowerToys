@@ -39,10 +39,6 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                </controls:SettingsGroup>
-
-
-
                 <controls:SettingExpander IsExpanded="True" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander.Header>
                         <controls:Setting x:Uid="ColorPicker_ActivationAction" Icon="&#xEC4E;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
@@ -78,7 +74,7 @@
                         </StackPanel>
                     </controls:SettingExpander.Content>
                 </controls:SettingExpander>
-
+                </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="ColorPicker_CopiedColorRepresentation" Icon="&#xEF3C;">

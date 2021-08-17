@@ -64,7 +64,7 @@
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    TextWrapping="Wrap"/>
 
-                        <ItemsControl ItemsSource="{x:Bind ModuleLinks}" Margin="0,16,0,0">
+                        <ItemsControl ItemsSource="{x:Bind ModuleLinks}" Margin="0,8,0,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="local:SidePanelLink">
                                     <HyperlinkButton NavigateUri="{x:Bind Link}">

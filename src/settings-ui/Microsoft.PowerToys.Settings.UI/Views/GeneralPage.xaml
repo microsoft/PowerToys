@@ -187,9 +187,8 @@
                             <StackPanel Orientation="Vertical">
                                 <controls:Setting x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{Binding Mode=TwoWay, Path=IsElevated}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.Description>
-                                        <HyperlinkButton
-                                            NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
-                                             x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
+                                        <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
+                                                         x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
                                     </controls:Setting.Description>
                                     <controls:Setting.ActionContent>
                                         <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=RunElevated}" FlowDirection="RightToLeft"/>
@@ -198,8 +197,7 @@
                                 <muxc:InfoBar x:Uid="General_RunAsAdminRequired" 
                                           Severity="Warning"
                                           IsClosable="False"
-                                          IsOpen="True"
-                                          Visibility="{Binding Mode=TwoWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                          IsOpen="{Binding Mode=TwoWay, Path=IsElevated}"/>
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>

@@ -17,7 +17,7 @@
         <toolkitconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed" />
     </Page.Resources>
     <controls:SettingsPageControl x:Uid="ImageResizer"
-
+                                    
                                   ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_ImageResizer">
         <controls:SettingsPageControl.ModuleContent>
