@@ -52,6 +52,9 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [TestCase("http://[2001:0DB8::1]", true, "http://[2001:db8::1]/")]
         [TestCase("[2001:0DB8::1]:80", true, "https://[2001:db8::1]/")]
         [TestCase("http://[2001:0DB8::1]:80", true, "http://[2001:db8::1]/")]
+        [TestCase("mailto:example@mail.com", true, "mailto:example@mail.com")]
+        [TestCase("tel:411", true, "tel:411")]
+        [TestCase("ftp://example.com", true, "ftp://example.com/")]
         public void TryParseCanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
             // Arrange
