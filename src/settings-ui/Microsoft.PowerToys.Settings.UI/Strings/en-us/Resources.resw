@@ -303,6 +303,9 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
   </data>
+  <data name="Shortcut.Header" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
   <data name="RemapKeysList.AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
   </data>
@@ -429,7 +432,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Excluded apps</value>
   </data>
   <data name="FancyZones_ExcludeApps.Description" xml:space="preserve">
-    <value>Excludes an application from snapping to zones and will only react to Windows Snap. Add one application name per line.</value>
+    <value>Excludes an application from snapping to zones and will only react to Windows Snap - add one application name per line</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
     <value>Zone opacity</value>
@@ -623,7 +626,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Exclude apps</value>
   </data>
   <data name="ShortcutGuide_DisabledApps.Description" xml:space="preserve">
-    <value>Turns off Shortcut Guide when these applications have focus. Add one application name per line.</value>
+    <value>Turns off Shortcut Guide when these applications have focus - add one application name per line</value>
   </data>
   <data name="ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
@@ -871,7 +874,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Remap keys to other keys or shortcuts</value>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Description" xml:space="preserve">
-    <value>Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well</value>
+    <value>Remap shortcuts to other shortcuts or keys for all or specific applications</value>
   </data>
   <data name="General.ModuleDescription" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
@@ -1103,8 +1106,8 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_AdditionalOptions.Text" xml:space="preserve">
     <value>Additional options</value>
   </data>
-  <data name="Run_NotAccessibleWarning.Text" xml:space="preserve">
-    <value>* Please define an activation phrase or allow this plugin for the global results to use it.</value>
+  <data name="Run_NotAccessibleWarning.Title" xml:space="preserve">
+    <value>Please define an activation command or allow this plugin for the global results to use it.</value>
   </data>
   <data name="Run_AllPluginsDisabled.Title" xml:space="preserve">
     <value>PowerToys Run can't provide any results without plugins</value>
@@ -1112,14 +1115,14 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_AllPluginsDisabled.Message" xml:space="preserve">
     <value>Enable at least one plugin to get started</value>
   </data>
-  <data name="Run_NotAllowedActionKeyword.Text" xml:space="preserve">
-    <value>* This activation phrase overrides the behavior of other plugins. Please change it to something else.</value>
+  <data name="Run_NotAllowedActionKeyword.Title" xml:space="preserve">
+    <value>This activation command is already in use by another plugin.</value>
   </data>
   <data name="Run_PluginUseDescription.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>
   <data name="Run_PluginUseDescription.Description" xml:space="preserve">
-    <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options.</value>
+    <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options</value>
   </data>
   <data name="Run_PositionAppearance_GroupSettings.Header" xml:space="preserve">
     <value>Position &amp; appearance</value>
@@ -1129,7 +1132,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>as in Show PowerToys Run on primary monitor</comment>
   </data>
   <data name="Run_PositionHeader.Description" xml:space="preserve">
-    <value>If multiple monitors are in use, PowerToys Run can be launched on the desired monitor.</value>
+    <value>If multiple monitors are in use, PowerToys Run can be launched on the desired monitor</value>
     <comment>as in Show PowerToys Run on primary monitor</comment>
   </data>
   <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">

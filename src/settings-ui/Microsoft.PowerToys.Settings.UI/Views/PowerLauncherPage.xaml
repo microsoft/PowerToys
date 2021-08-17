@@ -34,7 +34,7 @@
                 </controls:Setting>
 
 
-                <controls:SettingsGroup x:Uid="Shortcuts" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
+                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
@@ -182,9 +182,10 @@
                         <TextBlock x:Uid="Run_PluginsLoading" Style="{ThemeResource SecondaryTextStyle}" VerticalAlignment="Center" />
                     </StackPanel>
 
-                    <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"                
-            IsItemClickEnabled="False" SelectionMode="None"
-                      x:Name="PluginsListView">
+                    <ListView ItemsSource="{x:Bind Path=ViewModel.Plugins, Mode=OneWay}"
+                              IsItemClickEnabled="False"
+                              SelectionMode="None"
+                              x:Name="PluginsListView">
                         <ListView.ItemTemplate>
                     <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
                                 <Grid>
@@ -194,7 +195,6 @@
                                                 <controls:Setting.Icon>
                                                     <Image Source="{x:Bind IconPath}"
                                                         Width="20"
-                                                        Opacity="{x:Bind DisabledOpacity, Mode=OneWay}"
                                                         Height="20" />
                                                 </controls:Setting.Icon>
                                                 <controls:Setting.ActionContent>
@@ -206,13 +206,14 @@
                                         </controls:SettingExpander.Header>
                                         <controls:SettingExpander.Content>
                                             <StackPanel>
-                                                <controls:Setting x:Uid="PowerLauncher_ActionKeyword" Style="{StaticResource ExpanderContentSettingStyle}">
+                                                <controls:Setting x:Uid="PowerLauncher_ActionKeyword" Style="{StaticResource ExpanderContentSettingStyle}" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                                     <controls:Setting.ActionContent>
                                                         <TextBox Text="{x:Bind Path=ActionKeyword, Mode=TwoWay}"
-                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                                 IsEnabled="{x:Bind Enabled, Mode=OneWay}" />
+                                                                 MinWidth="{StaticResource SettingActionControlMinWidth}" />
                                                     </controls:Setting.ActionContent>
                                                 </controls:Setting>
+                                                <muxc:InfoBar Severity="Warning" x:Uid="Run_NotAccessibleWarning" IsOpen="{x:Bind ShowNotAccessibleWarning}" IsClosable="False" />
+                                                <muxc:InfoBar Severity="Error" x:Uid="Run_NotAllowedActionKeyword" IsOpen="{x:Bind ShowNotAllowedKeywordWarning}" IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                                 <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
                                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
@@ -246,20 +247,9 @@
                                                                <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                                 </TextBlock>
                                             </StackPanel>
-                                           
 
-                                                    <!--<TextBlock 
-                                        x:Uid="Run_NotAccessibleWarning"
-                                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                                        Visibility="{x:Bind ShowNotAccessibleWarning, Converter={StaticResource BoolToVisibilityConverter}}"
-                                        TextWrapping="Wrap" />
+                                       
 
-                                                    <TextBlock 
-                                        x:Uid="Run_NotAllowedActionKeyword"
-                                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                                        Visibility="{x:Bind ShowNotAllowedKeywordWarning, Converter={StaticResource BoolToVisibilityConverter}}"
-                                        TextWrapping="Wrap" />-->
-                                           
                                         </controls:SettingExpander.Content>
                                     </controls:SettingExpander>
                                 </Grid>

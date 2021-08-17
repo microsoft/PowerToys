@@ -8,6 +8,8 @@
         <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource CardBorderThickness}" />
         <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="16" />
         <Setter Property="Margin" Value="0,0,0,0"/>
         <Setter Property="Template">

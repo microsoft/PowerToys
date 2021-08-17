@@ -7,15 +7,18 @@
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical" Spacing="2"/>
+                    <StackPanel Orientation="Vertical"
+                                Spacing="2"/>
                 </ItemsPanelTemplate>
             </Setter.Value>
         </Setter>
         <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:SettingsGroup">
-                    <Grid>
+                    <Grid HorizontalAlignment="Stretch">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal"/>
@@ -34,7 +37,7 @@
                                    Text="{TemplateBinding Header}"
                                    Grid.Row="0"
                                    Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                   Margin="2,32,0,8"
+                                   Margin="1,32,0,8"
                                    AutomationProperties.HeadingLevel="Level2"/>
                         <ItemsPresenter Grid.Row="1"/>
                     </Grid>

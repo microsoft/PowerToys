@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return (UpdatingSettings.UpdatingState)value == UpdatingSettings.UpdatingState.ReadyToInstall ? Visibility.Visible : Visibility.Collapsed;
+            return (UpdatingSettings.UpdatingState)value == UpdatingSettings.UpdatingState.ReadyToInstall ? true : false;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

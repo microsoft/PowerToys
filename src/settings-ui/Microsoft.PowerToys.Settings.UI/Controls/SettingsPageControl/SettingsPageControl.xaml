@@ -18,31 +18,33 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Padding="20,0,0,0">
+    <Grid RowSpacing="24" Padding="20,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*"/>
  
         </Grid.RowDefinitions>
         
-
         <TextBlock x:Name="Header"
                    Text="{x:Bind ModuleTitle}"
                    Style="{StaticResource TitleTextBlockStyle}"
                    Margin="0,44,0,0"
                    VerticalAlignment="Stretch"/>
 
-        <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch">
+        <ScrollViewer Grid.Row="1">
             <Grid RowSpacing="24"
-                  HorizontalAlignment="Left"
-                  Padding="0,0,20,48"
-                  MaxWidth="1048">
+                  Padding="0,0,20,48" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition MaxWidth="1048" Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
+                <!-- Top panel -->
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="160"/>
@@ -55,7 +57,7 @@
                             </Image.Source>
                         </Image>
                     </Border>
-                    
+
                     <StackPanel Grid.Column="1">
                         <TextBlock x:Name="AboutDescription"
                                    Text="{x:Bind ModuleDescription}"
@@ -77,17 +79,21 @@
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
                     </StackPanel>
-                 
+
                 </Grid>
 
-                <ContentPresenter x:Name="ModuleContentPresenter" Grid.Row="1"
-                          Content="{x:Bind ModuleContent}"
-                          HorizontalAlignment="Stretch"
-                          HorizontalContentAlignment="Stretch"
-                          Margin="0,12,0,0"/>
+                <!-- Content panel -->
+                <ContentPresenter x:Name="ModuleContentPresenter"
+                                      HorizontalAlignment="Stretch"
+                                      HorizontalContentAlignment="Stretch"
+                                      Content="{x:Bind ModuleContent}"
+                                      MaxWidth="1048"
+                                      Margin="0,12,0,0" Grid.Row="1"/>
 
-                <StackPanel x:Name="AttributionPanel" Grid.Row="2"
-                             Visibility="{x:Bind AttributionLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}"
+                <!-- Bottom panel -->
+                <StackPanel x:Name="AttributionPanel"
+                            Grid.Row="2"
+                            Visibility="{x:Bind AttributionLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}"
                             Orientation="Vertical">
                     <TextBlock x:Uid="AttributionTitle"
                                Style="{ThemeResource BodyStrongTextBlockStyle}"

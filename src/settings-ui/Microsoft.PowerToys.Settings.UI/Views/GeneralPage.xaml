@@ -25,7 +25,7 @@
                                   ModuleImageLink="https://aka.ms/powertoys">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <controls:SettingsGroup x:Uid="General_Version">
+                <controls:SettingsGroup x:Uid="General_Version" Margin="0,-32,0,0">
                     <controls:Setting Header="{Binding PowerToysVersion}" Icon="&#xE117;">
                         <controls:Setting.Description>
                             <TextBlock Style="{StaticResource SecondaryTextStyle}">
@@ -53,17 +53,15 @@
                     </controls:Setting>
 
                     <muxc:InfoBar x:Uid="General_UpToDate"
-                              IsOpen="True"
                               IsClosable="False"
                               Severity="Success"
-                              Visibility="{Binding IsNewVersionCheckedAndUpToDate, Converter={StaticResource VisibleIfTrueConverter}}"/>
+                              IsOpen="{Binding IsNewVersionCheckedAndUpToDate}"/>
 
                     <!-- New version available -->
                     <muxc:InfoBar x:Uid="General_NewVersionAvailable"
-                              IsOpen="True"
                               IsClosable="False"
                               Severity="Success"
-                              Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToDownloadToVisibilityConverter}}">
+                              IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToDownloadToVisibilityConverter}}">
                         <muxc:InfoBar.Content>
                             <StackPanel Spacing="16">
                                 <StackPanel Orientation="Horizontal"
@@ -98,10 +96,9 @@
 
                     <!-- Ready to install -->
                     <muxc:InfoBar x:Uid="General_NewVersionReadyToInstall"
-                              IsOpen="True"
-                              IsClosable="False"
-                              Severity="Success"
-                              Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToInstallToVisibilityConverter}}">
+                                  IsClosable="False"
+                                  Severity="Success"
+                                  IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToInstallToVisibilityConverter}}">
                         <muxc:InfoBar.Content>
                             <StackPanel Spacing="16">
                                 <StackPanel Orientation="Horizontal"
@@ -128,10 +125,9 @@
 
                     <!-- Install failed -->
                     <muxc:InfoBar x:Uid="General_FailedToDownloadTheNewVersion"
-                              IsOpen="True"
-                              IsClosable="False"
-                              Severity="Error"
-                              Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateCannotDownloadToVisibilityConverter}}">
+                                  IsClosable="False"
+                                  Severity="Error"
+                                  IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateCannotDownloadToVisibilityConverter}}">
                         <muxc:InfoBar.Content>
                             <StackPanel Spacing="16">
                                 <StackPanel Orientation="Horizontal"
