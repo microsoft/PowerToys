@@ -169,7 +169,7 @@ std::optional<GUID> VirtualDesktop::GetCurrentVirtualDesktopId() const
 
     desktopId = GetDesktopIdByTopLevelWindows();
         
-    return std::nullopt;
+    return desktopId;
 }
 
 std::optional<std::vector<GUID>> VirtualDesktop::GetVirtualDesktopIds(HKEY hKey) const
