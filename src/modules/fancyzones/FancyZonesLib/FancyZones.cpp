@@ -1068,7 +1068,8 @@ bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle
     if (GetAsyncKeyState(VK_MENU) & 0x8000)
     {
         bool result = m_windowMoveHandler.ExtendWindowByDirectionAndPosition(window, vkCode, zoneWindow);
-        if (result) {
+        if (result) 
+        {
             Trace::FancyZones::KeyboardSnapWindowToZone(zoneWindow->ActiveZoneSet());
         }
         return result;
