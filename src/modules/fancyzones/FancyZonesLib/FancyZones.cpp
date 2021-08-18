@@ -310,7 +310,7 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneW
     {
         if (zoneWindow)
         {
-            Trace::FancyZones::MoveNewWindowIntoZone(zoneWindow->ActiveZoneSet());
+            Trace::FancyZones::SnapNewWindowIntoZone(zoneWindow->ActiveZoneSet());
         }
         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
         fancyZonesData.UpdateProcessIdToHandleMap(window, zoneWindow->UniqueId());

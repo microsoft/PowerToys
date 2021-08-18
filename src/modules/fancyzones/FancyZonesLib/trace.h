@@ -18,7 +18,7 @@ public:
         static void EditorLaunched(int value) noexcept;
         static void Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept;
         static void QuickLayoutSwitched(bool shortcutUsed) noexcept;
-        static void MoveNewWindowIntoZone(IZoneSet* activeSet) noexcept;
+        static void SnapNewWindowIntoZone(IZoneSet* activeSet) noexcept;
         static void KeyboardSnapWindowToZone(IZoneSet* activeSet) noexcept;
     };
 

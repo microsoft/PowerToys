@@ -15,7 +15,7 @@
 #define EventSettingsKey "FancyZones_Settings"
 #define EventDesktopChangedKey "FancyZones_VirtualDesktopChanged"
 #define EventZoneWindowKeyUpKey "FancyZones_ZoneWindowKeyUp"
-#define EventMoveNewWindowIntoZone "FancyZones_SnapNewWindowIntoZone"
+#define EventSnapNewWindowIntoZone "FancyZones_SnapNewWindowIntoZone"
 #define EventKeyboardSnapWindowToZone "FancyZones_KeyboardSnapWindowToZone"
 #define EventMoveSizeEnterKey "FancyZones_MoveSizeEnter"
 #define EventMoveSizeEndKey "FancyZones_MoveSizeEnd"
@@ -253,12 +253,12 @@ void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept
         TraceLoggingBoolean(shortcutUsed, QuickLayoutSwitchedWithShortcutUsed));
 }
 
-void Trace::FancyZones::MoveNewWindowIntoZone(IZoneSet* activeSet) noexcept
+void Trace::FancyZones::SnapNewWindowIntoZone(IZoneSet* activeSet) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWrite(
         g_hProvider,
-        EventMoveNewWindowIntoZone,
+        EventSnapNewWindowIntoZone,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(reinterpret_cast<void*>(activeSet), ActiveSetKey),
