@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "PowerRenameEnum.h"
+#include <algorithm>
 #include <ShlGuid.h>
+#include <string>
 #include <helpers.h>
 
 IFACEMETHODIMP_(ULONG) CPowerRenameEnum::AddRef()
@@ -99,13 +101,36 @@ HRESULT CPowerRenameEnum::_ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ int d
 
         ULONG celtFetched;
         CComPtr<IShellItem> spsi;
-        while ((S_OK == pesi->Next(1, &spsi, &celtFetched)) && (SUCCEEDED(hr)))
+        std::vector<CComPtr<IShellItem>> items;
+
+        while ((S_OK == pesi->Next(1, &spsi, &celtFetched)))
         {
             if (m_canceled)
             {
                 return E_ABORT;
             }
 
+            items.push_back(spsi);
+        }
+
+        auto cmpShellItems = [](CComPtr<IShellItem> l, CComPtr<IShellItem> r) {
+            std::wstring lName, rName;
+            PWSTR path, name;
+
+            l->GetDisplayName(SIGDN_FILESYSPATH, &path);
+            SHStrDup(PathFindFileName(path), &name);
+            lName = std::wstring{ name };
+
+            r->GetDisplayName(SIGDN_FILESYSPATH, &path);
+            SHStrDup(PathFindFileName(path), &name);
+            rName = std::wstring{ name };
+
+            return lName < rName;
+        };
+        std::sort(items.begin(), items.end(), cmpShellItems);
+
+        for (const auto& item : items)
+        {
             CComPtr<IPowerRenameItemFactory> spFactory;
             hr = m_spsrm->GetRenameItemFactory(&spFactory);
             if (SUCCEEDED(hr))
@@ -114,10 +139,11 @@ HRESULT CPowerRenameEnum::_ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ int d
                 // Failure may be valid if we come across a shell item that does
                 // not support a file system path.  In that case we simply ignore
                 // the item.
-                if (SUCCEEDED(spFactory->Create(spsi, &spNewItem)))
+                if (SUCCEEDED(spFactory->Create(item, &spNewItem)))
                 {
                     spNewItem->PutDepth(depth);
                     hr = m_spsrm->AddItem(spNewItem);
+
                     if (SUCCEEDED(hr))
                     {
                         bool isFolder = false;
@@ -125,7 +151,7 @@ HRESULT CPowerRenameEnum::_ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ int d
                         {
                             // Bind to the IShellItem for the IEnumShellItems interface
                             CComPtr<IEnumShellItems> spesiNext;
-                            hr = spsi->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(&spesiNext));
+                            hr = item->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(&spesiNext));
                             if (SUCCEEDED(hr))
                             {
                                 // Parse the folder contents recursively
@@ -134,6 +160,10 @@ HRESULT CPowerRenameEnum::_ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ int d
                         }
                     }
                 }
+            }
+            if (FAILED(hr))
+            {
+                break;
             }
 
             spsi = nullptr;
