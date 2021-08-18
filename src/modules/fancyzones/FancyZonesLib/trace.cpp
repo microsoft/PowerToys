@@ -15,7 +15,7 @@
 #define EventSettingsKey "FancyZones_Settings"
 #define EventDesktopChangedKey "FancyZones_VirtualDesktopChanged"
 #define EventZoneWindowKeyUpKey "FancyZones_ZoneWindowKeyUp"
-#define EventMoveNewWindowIntoZone "FancyZones_MoveNewWindowIntoZone"
+#define EventMoveNewWindowIntoZone "FancyZones_SnapNewWindowIntoZone"
 #define EventKeyboardSnapWindowToZone "FancyZones_KeyboardSnapWindowToZone"
 #define EventMoveSizeEnterKey "FancyZones_MoveSizeEnter"
 #define EventMoveSizeEndKey "FancyZones_MoveSizeEnd"
