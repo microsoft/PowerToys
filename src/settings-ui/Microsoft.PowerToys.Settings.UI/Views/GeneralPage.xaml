@@ -12,12 +12,8 @@
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
-        <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
         <converters:BoolToVisibilityConverter x:Key="VisibleIfTrueConverter"/>
-        <localConverters:UpdatingStateUpToDateToVisibilityConverter x:Key="UpdatingStateUpToDateToVisibilityConverter" />
-        <localConverters:UpdatingStateCannotDownloadToVisibilityConverter x:Key="UpdatingStateCannotDownloadToVisibilityConverter" />
-        <localConverters:UpdatingStateReadyToDownloadToVisibilityConverter x:Key="UpdatingStateReadyToDownloadToVisibilityConverter" />
-        <localConverters:UpdatingStateReadyToInstallToVisibilityConverter x:Key="UpdatingStateReadyToInstallToVisibilityConverter" />
+        <localConverters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="General"
@@ -34,7 +30,7 @@
                             </TextBlock>
                         </controls:Setting.Description>
                         <controls:Setting.ActionContent>
-                            <Grid MinWidth="{StaticResource SettingActionControlMinWidth}" Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateUpToDateToVisibilityConverter}}">
+                            <Grid MinWidth="{StaticResource SettingActionControlMinWidth}" Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=UpToDate}">
                                 <StackPanel Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
                                         Orientation="Horizontal"
                                         Spacing="18"
@@ -61,7 +57,7 @@
                     <muxc:InfoBar x:Uid="General_NewVersionAvailable"
                               IsClosable="False"
                               Severity="Success"
-                              IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToDownloadToVisibilityConverter}}">
+                              IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}">
                         <muxc:InfoBar.Content>
                             <StackPanel Spacing="16">
                                 <StackPanel Orientation="Horizontal"
@@ -98,7 +94,7 @@
                     <muxc:InfoBar x:Uid="General_NewVersionReadyToInstall"
                                   IsClosable="False"
                                   Severity="Success"
-                                  IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateReadyToInstallToVisibilityConverter}}">
+                                  IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}">
                         <muxc:InfoBar.Content>
                             <StackPanel Spacing="16">
                                 <StackPanel Orientation="Horizontal"
@@ -127,7 +123,7 @@
                     <muxc:InfoBar x:Uid="General_FailedToDownloadTheNewVersion"
                                   IsClosable="False"
                                   Severity="Error"
-                                  IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdatingStateCannotDownloadToVisibilityConverter}}">
+                                  IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}">
                         <muxc:InfoBar.Content>
                             <StackPanel Spacing="16">
                                 <StackPanel Orientation="Horizontal"
