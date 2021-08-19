@@ -9,15 +9,15 @@ using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using NUnit.Framework;
 using Wox.Infrastructure.FileSystemHelper;
 using Wox.Infrastructure.Storage;
 using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
-    [TestFixture]
+    [TestClass]
     public class Win32ProgramRepositoryTest
     {
         private readonly ProgramPluginSettings _settings = new ProgramPluginSettings();
@@ -26,7 +26,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         private List<IFileSystemWatcherWrapper> _fileSystemWatchers;
         private List<Mock<IFileSystemWatcherWrapper>> _fileSystemMocks;
 
-        [SetUp]
+        [TestInitialize]
         public void SetFileSystemWatchers()
         {
             _fileSystemWatchers = new List<IFileSystemWatcherWrapper>();
@@ -39,7 +39,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             }
         }
 
-        [TestCase("Name", "ExecutableName", "FullPath", "description1", "description2")]
+        [DataTestMethod]
+        [DataRow("Name", "ExecutableName", "FullPath", "description1", "description2")]
         public void Win32RepositoryMustNotStoreDuplicatesWhileAddingItemsWithSameHashCode(string name, string exename, string fullPath, string description1, string description2)
         {
             // Arrange
@@ -73,7 +74,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(1, win32ProgramRepository.Count());
         }
 
-        [TestCase("path.appref-ms")]
+        [DataTestMethod]
+        [DataRow("path.appref-ms")]
         public void Win32ProgramRepositoryMustCallOnAppCreatedForApprefAppsWhenCreatedEventIsRaised(string path)
         {
             // Arrange
@@ -88,7 +90,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(Win32Program.ApplicationType.ApprefApplication, win32ProgramRepository.ElementAt(0).AppType);
         }
 
-        [TestCase("directory", "path.appref-ms")]
+        [DataTestMethod]
+        [DataRow("directory", "path.appref-ms")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForApprefAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
@@ -106,7 +109,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [TestCase("directory", "oldpath.appref-ms", "newpath.appref-ms")]
+        [DataTestMethod]
+        [DataRow("directory", "oldpath.appref-ms", "newpath.appref-ms")]
         public void Win32ProgramRepositoryMustCallOnAppRenamedForApprefAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
@@ -129,7 +133,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
 
-        [TestCase("path.exe")]
+        [DataTestMethod]
+        [DataRow("path.exe")]
         public void Win32ProgramRepositoryMustCallOnAppCreatedForExeAppsWhenCreatedEventIsRaised(string path)
         {
             // Arrange
@@ -149,7 +154,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(Win32Program.ApplicationType.Win32Application, win32ProgramRepository.ElementAt(0).AppType);
         }
 
-        [TestCase("directory", "path.exe")]
+        [DataTestMethod]
+        [DataRow("directory", "path.exe")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForExeAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
@@ -172,7 +178,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [TestCase("directory", "oldpath.appref-ms", "newpath.appref-ms")]
+        [DataTestMethod]
+        [DataRow("directory", "oldpath.appref-ms", "newpath.appref-ms")]
         public void Win32ProgramRepositoryMustCallOnAppRenamedForExeAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
@@ -200,7 +207,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
 
-        [TestCase("path.url")]
+        [DataTestMethod]
+        [DataRow("path.url")]
         public void Win32ProgramRepositoryMustNotCreateUrlAppWhenCreatedEventIsRaised(string path)
         {
             // We are handing internet shortcut apps using the Changed event instead
@@ -221,9 +229,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [TestCase("path.exe")]
-        [TestCase("path.lnk")]
-        [TestCase("path.appref-ms")]
+        [DataTestMethod]
+        [DataRow("path.exe")]
+        [DataRow("path.lnk")]
+        [DataRow("path.appref-ms")]
         public void Win32ProgramRepositoryMustNotCreateAnyAppOtherThanUrlAppWhenChangedEventIsRaised(string path)
         {
             // We are handing internet shortcut apps using the Changed event instead
@@ -249,7 +258,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [TestCase("directory", "path.url")]
+        [DataTestMethod]
+        [DataRow("directory", "path.url")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForUrlAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
@@ -272,7 +282,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [TestCase("directory", "oldpath.url", "newpath.url")]
+        [DataTestMethod]
+        [DataRow("directory", "oldpath.url", "newpath.url")]
         public void Win32ProgramRepositoryMustCallOnAppRenamedForUrlAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
@@ -300,7 +311,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
 
-        [TestCase("directory", "path.lnk")]
+        [DataTestMethod]
+        [DataRow("directory", "path.lnk")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForLnkAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
@@ -330,7 +342,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
-        [TestCase("directory", "oldpath.lnk", "path.lnk")]
+        [DataTestMethod]
+        [DataRow("directory", "oldpath.lnk", "path.lnk")]
         public void Win32ProgramRepositoryMustCallOnAppRenamedForLnkAppsWhenRenamedEventIsRaised(string directory, string oldpath, string path)
         {
             // Arrange

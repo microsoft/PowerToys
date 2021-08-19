@@ -722,6 +722,11 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
             {
                 Trace::VirtualDesktopChanged();
             }
+
+            if (m_currentDesktopId == GUID_NULL)
+            {
+                Logger::warn("Couldn't retrieve virtual desktop id");
+            }
         }
 
         if (changeType == DisplayChangeType::Initialization)

@@ -3,17 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows.Input;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerLauncher.ViewModel;
 using Wox.Plugin;
 
 namespace Wox.Test
 {
-    [TestFixture]
-    internal class ResultsViewModelTest
+    [TestClass]
+    public class ResultsViewModelTest
     {
-        [Test]
-        public void ContextMenuSelectedIndex_ShouldEqualNoSelectionIndex_WhenInitialized()
+        [TestMethod]
+        public void ContextMenuSelectedIndexShouldEqualNoSelectionIndexWhenInitialized()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -26,8 +26,8 @@ namespace Wox.Test
             Assert.AreEqual(ResultViewModel.NoSelectionIndex, selectedItem.ContextMenuSelectedIndex);
         }
 
-        [Test]
-        public void SelectNextContextMenuItem_IncrementsContextMenuSelectedIndex_WhenCalled()
+        [TestMethod]
+        public void SelectNextContextMenuItemIncrementsContextMenuSelectedIndexWhenCalled()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -43,8 +43,8 @@ namespace Wox.Test
             Assert.AreEqual(0, selectedItem.ContextMenuSelectedIndex);
         }
 
-        [Test]
-        public void SelectNextContextMenuItem_DoesnNotIncrementContextMenuSelectedIndex_WhenCalledOnLastItem()
+        [TestMethod]
+        public void SelectNextContextMenuItemDoesnNotIncrementContextMenuSelectedIndexWhenCalledOnLastItem()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -60,8 +60,8 @@ namespace Wox.Test
             Assert.AreEqual(0, selectedItem.ContextMenuSelectedIndex);
         }
 
-        [Test]
-        public void SelectPreviousContextMenuItem_DecrementsContextMenuSelectedIndex_WhenCalled()
+        [TestMethod]
+        public void SelectPreviousContextMenuItemDecrementsContextMenuSelectedIndexWhenCalled()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -82,8 +82,8 @@ namespace Wox.Test
             Assert.AreEqual(1, selectedItem.ContextMenuSelectedIndex);
         }
 
-        [Test]
-        public void SelectPreviousContextMenuItem_ResetsContextMenuSelectedIndex_WhenCalledOnFirstItem()
+        [TestMethod]
+        public void SelectPreviousContextMenuItemResetsContextMenuSelectedIndexWhenCalledOnFirstItem()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -100,8 +100,8 @@ namespace Wox.Test
             Assert.AreEqual(ResultViewModel.NoSelectionIndex, selectedItem.ContextMenuSelectedIndex);
         }
 
-        [Test]
-        public void IsContextMenuItemSelected_ReturnsTrue_WhenContextMenuItemIsSelected()
+        [TestMethod]
+        public void IsContextMenuItemSelectedReturnsTrueWhenContextMenuItemIsSelected()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -118,8 +118,8 @@ namespace Wox.Test
             Assert.IsTrue(isContextMenuItemSelected);
         }
 
-        [Test]
-        public void IsContextMenuItemSelected_ReturnsFalse_WhenContextMenuItemIsNotSelected()
+        [TestMethod]
+        public void IsContextMenuItemSelectedReturnsFalseWhenContextMenuItemIsNotSelected()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();

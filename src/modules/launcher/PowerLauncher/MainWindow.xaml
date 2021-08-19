@@ -16,6 +16,7 @@
         ShowInTaskbar="False"
         Icon="Images/app.dark.png"
         AllowsTransparency="True"
+        SourceInitialized="OnSourceInitialized"
         Loaded="OnLoaded"
         Closing="OnClosing"
         Background="Transparent"

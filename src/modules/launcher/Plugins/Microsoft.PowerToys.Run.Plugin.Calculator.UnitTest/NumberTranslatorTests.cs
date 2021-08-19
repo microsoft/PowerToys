@@ -4,15 +4,16 @@
 
 using System;
 using System.Globalization;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 {
-    [TestFixture]
+    [TestClass]
     public class NumberTranslatorTests
     {
-        [TestCase(null, "en-US")]
-        [TestCase("de-DE", null)]
+        [DataTestMethod]
+        [DataRow(null, "en-US")]
+        [DataRow("de-DE", null)]
         public void Create_ThrowError_WhenCalledNullOrEmpty(string sourceCultureName, string targetCultureName)
         {
             // Arrange
@@ -20,12 +21,13 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             CultureInfo targetCulture = targetCultureName != null ? new CultureInfo(targetCultureName) : null;
 
             // Act
-            Assert.Catch<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));
+            Assert.ThrowsException<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));
         }
 
-        [TestCase("en-US", "en-US")]
-        [TestCase("en-EN", "en-US")]
-        [TestCase("de-DE", "en-US")]
+        [DataTestMethod]
+        [DataRow("en-US", "en-US")]
+        [DataRow("en-EN", "en-US")]
+        [DataRow("de-DE", "en-US")]
         public void Create_WhenCalled(string sourceCultureName, string targetCultureName)
         {
             // Arrange
@@ -39,18 +41,20 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.IsNotNull(translator);
         }
 
-        [TestCase(null)]
+        [DataTestMethod]
+        [DataRow(null)]
         public void Translate_ThrowError_WhenCalledNull(string input)
         {
             // Arrange
             var translator = NumberTranslator.Create(new CultureInfo("de-DE"), new CultureInfo("en-US"));
 
             // Act
-            Assert.Catch<ArgumentNullException>(() => translator.Translate(input));
+            Assert.ThrowsException<ArgumentNullException>(() => translator.Translate(input));
         }
 
-        [TestCase("")]
-        [TestCase(" ")]
+        [DataTestMethod]
+        [DataRow("")]
+        [DataRow(" ")]
         public void Translate_WhenCalledEmpty(string input)
         {
             // Arrange
@@ -63,11 +67,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(input, result);
         }
 
-        [TestCase("2,0 * 2", "2.0 * 2")]
-        [TestCase("4 * 3,6 + 9", "4 * 3.6 + 9")]
-        [TestCase("5,2+6", "5.2+6")]
-        [TestCase("round(2,5)", "round(2.5)")]
-        [TestCase("3,3333", "3.3333")]
+        [DataTestMethod]
+        [DataRow("2,0 * 2", "2.0 * 2")]
+        [DataRow("4 * 3,6 + 9", "4 * 3.6 + 9")]
+        [DataRow("5,2+6", "5.2+6")]
+        [DataRow("round(2,5)", "round(2.5)")]
+        [DataRow("3,3333", "3.3333")]
         public void Translate_NoErrors_WhenCalled(string input, string expectedResult)
         {
             // Arrange
@@ -81,11 +86,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [TestCase("2.0 * 2", "2,0 * 2")]
-        [TestCase("4 * 3.6 + 9", "4 * 3,6 + 9")]
-        [TestCase("5.2+6", "5,2+6")]
-        [TestCase("round(2.5)", "round(2,5)")]
-        [TestCase("3.3333", "3,3333")]
+        [DataTestMethod]
+        [DataRow("2.0 * 2", "2,0 * 2")]
+        [DataRow("4 * 3.6 + 9", "4 * 3,6 + 9")]
+        [DataRow("5.2+6", "5,2+6")]
+        [DataRow("round(2.5)", "round(2,5)")]
+        [DataRow("3.3333", "3,3333")]
         public void TranslateBack_NoErrors_WhenCalled(string input, string expectedResult)
         {
             // Arrange
@@ -99,10 +105,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [TestCase(".", ",", "2,000,000", "2000000")]
-        [TestCase(".", ",", "2,000,000.6", "2000000.6")]
-        [TestCase(",", ".", "2.000.000", "2000000")]
-        [TestCase(",", ".", "2.000.000,6", "2000000.6")]
+        [DataTestMethod]
+        [DataRow(".", ",", "2,000,000", "2000000")]
+        [DataRow(".", ",", "2,000,000.6", "2000000.6")]
+        [DataRow(",", ".", "2.000.000", "2000000")]
+        [DataRow(",", ".", "2.000.000,6", "2000000.6")]
         public void Translate_RemoveNumberGroupSeparator_WhenCalled(string decimalSeparator, string groupSeparator, string input, string expectedResult)
         {
             // Arrange
