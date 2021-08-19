@@ -229,8 +229,8 @@
                                          MinWidth="{StaticResource SettingActionControlMinWidth}"
                                          x:Uid="ImageResizer_FilenameFormatPlaceholder"/>
                                         <Button Content="&#xE946;" FontFamily="{ThemeResource SymbolThemeFontFamily}">
-                                            <ToolTipService.ToolTip>
-                                                <ToolTip>
+                                            <Button.Flyout>
+                                                <Flyout>
                                                     <TextBlock x:Name="FileFormatTextBlock">
                                                 <Run x:Uid="ImageResizer_FileFormatDescription"/>
                                                 <LineBreak/>
@@ -259,8 +259,8 @@
                                                 <Run Text=" - "/>
                                                 <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
                                                     </TextBlock>
-                                                </ToolTip>
-                                            </ToolTipService.ToolTip>
+                                                </Flyout>
+                                            </Button.Flyout>
                                         </Button>
                                     </StackPanel>
 

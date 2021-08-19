@@ -556,16 +556,23 @@
     <value>Settings theme</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
-    <value>Show PowerRename in right-click context menu</value>
+    <value>Show in default context menu's</value>
   </data>
-  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Content" xml:space="preserve">
-    <value>Only appear in the extended context menu (Shift + Right-click)</value>
+  <data name="PowerRename_Toggle_EnableOnContextMenu.Description" xml:space="preserve">
+    <value>PowerRename appears in the default context menu whenever you right-click one or multiple files</value>
   </data>
+  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
+    <value>Show in extended context menu's</value>
+  </data>
+  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Description" xml:space="preserve">
+    <value>PowerRename only appears in extended context menu's (press Shift + right-click)</value>
+  </data>
+  
   <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
     <value>Maximum number of items</value>
   </data>
-  <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Content" xml:space="preserve">
-    <value>Show values from last use</value>
+  <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
+    <value>Show recently used filenames</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
     <value>Enable Markdown (.md) preview</value>
@@ -583,7 +590,7 @@
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
   <data name="PowerRename_AutoCompleteHeader.Header" xml:space="preserve">
-    <value>Autocomplete</value>
+    <value>Auto-complete</value>
   </data>
   <data name="OpenSource_Notice.Text" xml:space="preserve">
     <value>Open-source notice</value>
@@ -1554,5 +1561,11 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="PowerRename.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
+  </data>
+  <data name="EditTooltip.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="RemoveTooltip.Text" xml:space="preserve">
+    <value>Remove</value>
   </data>
 </root>
