@@ -28,6 +28,8 @@
         OpenPaneLength="296"
         CompactModeThresholdWidth="0"
         Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
+        PaneOpened="NavigationView_PaneOpened"
+        PaneClosed="NavigationView_PaneClosed"
         SelectionChanged="NavigationView_SelectionChanged">
             <winui:NavigationView.MenuItems>
                 <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">

@@ -1,28 +1,25 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 {
-    static class VSCodeInstances
+    public static class VSCodeInstances
     {
-        private static readonly string PathUserAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-
-        private static string _systemPath = String.Empty;
+        private static string _systemPath = string.Empty;
 
         private static string _userAppDataPath = Environment.GetEnvironmentVariable("AppData");
 
-        public static List<VSCodeInstance> instances = new List<VSCodeInstance>();
+        public static List<VSCodeInstance> Instances { get; set; } = new List<VSCodeInstance>();
 
         private static BitmapImage Bitmap2BitmapImage(Bitmap bitmap)
         {
@@ -42,15 +39,15 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
             }
         }
 
-        public static Bitmap bitmapOverlayToCenter(Bitmap bitmap1, Bitmap overlayBitmap)
+        public static Bitmap BitmapOverlayToCenter(Bitmap bitmap1, Bitmap overlayBitmap)
         {
             int bitmap1Width = bitmap1.Width;
             int bitmap1Height = bitmap1.Height;
 
             Bitmap overlayBitmapResized = new Bitmap(overlayBitmap, new System.Drawing.Size(bitmap1Width / 2, bitmap1Height / 2));
 
-            float marginLeft = (float)(bitmap1Width * 0.7 - overlayBitmapResized.Width * 0.5);
-            float marginTop = (float)(bitmap1Height * 0.7 - overlayBitmapResized.Height * 0.5);
+            float marginLeft = (float)((bitmap1Width * 0.7) - (overlayBitmapResized.Width * 0.5));
+            float marginTop = (float)((bitmap1Height * 0.7) - (overlayBitmapResized.Height * 0.5));
 
             Bitmap finalBitmap = new Bitmap(bitmap1Width, bitmap1Height);
             using (Graphics g = Graphics.FromImage(finalBitmap))
@@ -58,6 +55,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
                 g.DrawImage(bitmap1, System.Drawing.Point.Empty);
                 g.DrawImage(overlayBitmapResized, marginLeft, marginTop);
             }
+
             return finalBitmap;
         }
 
@@ -66,8 +64,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
         {
             if (_systemPath != Environment.GetEnvironmentVariable("PATH"))
             {
-
-                instances = new List<VSCodeInstance>();
+                Instances = new List<VSCodeInstance>();
 
                 _systemPath = Environment.GetEnvironmentVariable("PATH");
                 var paths = _systemPath.Split(";");
@@ -83,7 +80,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
                         if (files.Length > 0)
                         {
                             var file = files[0];
-                            var version = String.Empty;
+                            var version = string.Empty;
 
                             var instance = new VSCodeInstance
                             {
@@ -106,23 +103,23 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
                                 instance.VSCodeVersion = VSCodeVersion.Exploration;
                             }
 
-                            if (version != String.Empty)
+                            if (version != string.Empty)
                             {
                                 instance.AppData = Path.Combine(_userAppDataPath, version);
                                 var iconVSCode = Path.Join(iconPath, $"{version}.exe");
 
                                 var bitmapIconVscode = Icon.ExtractAssociatedIcon(iconVSCode).ToBitmap();
 
-                                //workspace
+                                // workspace
                                 var folderIcon = (Bitmap)System.Drawing.Image.FromFile(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "//Images//folder.png");
-                                instance.WorkspaceIconBitMap = Bitmap2BitmapImage(bitmapOverlayToCenter(folderIcon, bitmapIconVscode));
+                                instance.WorkspaceIconBitMap = Bitmap2BitmapImage(BitmapOverlayToCenter(folderIcon, bitmapIconVscode));
 
-                                //remote
+                                // remote
                                 var monitorIcon = (Bitmap)System.Drawing.Image.FromFile(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "//Images//monitor.png");
 
-                                instance.RemoteIconBitMap = Bitmap2BitmapImage(bitmapOverlayToCenter(monitorIcon, bitmapIconVscode));
+                                instance.RemoteIconBitMap = Bitmap2BitmapImage(BitmapOverlayToCenter(monitorIcon, bitmapIconVscode));
 
-                                instances.Add(instance);
+                                Instances.Add(instance);
                             }
                         }
                     }

@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using Microsoft.Win32.SafeHandles;
 using static PowerLauncher.Helper.WindowsInteropHelper;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
@@ -108,6 +109,7 @@ namespace PowerLauncher.Helper
         ERASEBKGND = 0x0014,
         SYSCOLORCHANGE = 0x0015,
         SHOWWINDOW = 0x0018,
+        SETTINGCHANGE = 0x001A,
         ACTIVATEAPP = 0x001C,
         SETCURSOR = 0x0020,
         MOUSEACTIVATE = 0x0021,

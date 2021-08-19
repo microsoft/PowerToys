@@ -1201,7 +1201,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual(expected.data.size(), entryData.size());
                 Assert::AreEqual(expectedZoneSetId.c_str(), entryData[0].zoneSetUuid.c_str());
                 Assert::AreEqual(expectedDeviceId.c_str(), entryData[0].deviceId.c_str());
-                Assert::IsTrue(std::vector<size_t>{ expectedIndex } == entryData[0].zoneIndexSet);
+                Assert::IsTrue(std::vector<ZoneIndex>{ expectedIndex } == entryData[0].zoneIndexSet);
             }
 
             TEST_METHOD (AppZoneHistoryParseManyApps)
@@ -1842,11 +1842,11 @@ namespace FancyZonesUnitTests
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
-                Assert::IsTrue(std::vector<size_t>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
 
                 const int expectedZoneIndex = 10;
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex } ));
-                Assert::IsTrue(std::vector<size_t>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
             }
 
             TEST_METHOD (AppLastZoneIndexZero)
@@ -1859,7 +1859,7 @@ namespace FancyZonesUnitTests
 
                 const int expectedZoneIndex = 0;
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<size_t>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
             }
 
             TEST_METHOD (AppLastZoneIndexNegative)
@@ -1870,9 +1870,9 @@ namespace FancyZonesUnitTests
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
-                const size_t expectedZoneIndex = -1;
+                const ZoneIndex expectedZoneIndex = -1;
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<size_t>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
             }
 
             TEST_METHOD (AppLastZoneIndexOverflow)
@@ -1883,9 +1883,9 @@ namespace FancyZonesUnitTests
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
-                const size_t expectedZoneIndex = ULLONG_MAX;
+                const ZoneIndex expectedZoneIndex = ULLONG_MAX;
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<size_t>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
             }
 
             TEST_METHOD (AppLastZoneIndexOverride)
@@ -1900,7 +1900,7 @@ namespace FancyZonesUnitTests
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { 1 }));
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { 2 }));
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<size_t>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
             }
 
             TEST_METHOD (AppLastZoneInvalidWindow)
@@ -1911,7 +1911,7 @@ namespace FancyZonesUnitTests
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
-                Assert::IsTrue(std::vector<size_t>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
 
                 const int expectedZoneIndex = 1;
                 Assert::IsFalse(data.SetAppLastZones(window, deviceId, zoneSetId, { expectedZoneIndex }));
@@ -1939,8 +1939,8 @@ namespace FancyZonesUnitTests
 
                 const int expectedZoneIndex = 10;
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId1, zoneSetId, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<size_t>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId1, zoneSetId));
-                Assert::IsTrue(std::vector<size_t>{} == data.GetAppLastZoneIndexSet(window, deviceId2, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId1, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId2, zoneSetId));
             }
 
             TEST_METHOD (AppLastZoneSetIdTest)
@@ -1954,8 +1954,8 @@ namespace FancyZonesUnitTests
 
                 const int expectedZoneIndex = 10;
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId1, { expectedZoneIndex }));
-                Assert::IsTrue(std::vector<size_t>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId1));
-                Assert::IsTrue(std::vector<size_t>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId2));
+                Assert::IsTrue(std::vector<ZoneIndex>{ expectedZoneIndex } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId1));
+                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId2));
             }
 
             TEST_METHOD (AppLastZoneRemoveWindow)
@@ -1968,7 +1968,7 @@ namespace FancyZonesUnitTests
 
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { 1 }));
                 Assert::IsTrue(data.RemoveAppLastZone(window, deviceId, zoneSetId));
-                Assert::IsTrue(std::vector<size_t>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
             }
 
             TEST_METHOD (AppLastZoneRemoveUnknownWindow)
@@ -1980,7 +1980,7 @@ namespace FancyZonesUnitTests
                 data.SetSettingsModulePath(m_moduleName);
 
                 Assert::IsFalse(data.RemoveAppLastZone(window, deviceId, zoneSetId));
-                Assert::IsTrue(std::vector<size_t>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{} == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
             }
 
             TEST_METHOD (AppLastZoneRemoveUnknownZoneSetId)
@@ -1994,7 +1994,7 @@ namespace FancyZonesUnitTests
 
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetIdToInsert, { 1 }));
                 Assert::IsFalse(data.RemoveAppLastZone(window, deviceId, zoneSetIdToRemove));
-                Assert::IsTrue(std::vector<size_t>{ 1 } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetIdToInsert));
+                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == data.GetAppLastZoneIndexSet(window, deviceId, zoneSetIdToInsert));
             }
 
             TEST_METHOD (AppLastZoneRemoveUnknownWindowId)
@@ -2008,7 +2008,7 @@ namespace FancyZonesUnitTests
 
                 Assert::IsTrue(data.SetAppLastZones(window, deviceIdToInsert, zoneSetId, { 1 }));
                 Assert::IsFalse(data.RemoveAppLastZone(window, deviceIdToRemove, zoneSetId));
-                Assert::IsTrue(std::vector<size_t>{ 1 } == data.GetAppLastZoneIndexSet(window, deviceIdToInsert, zoneSetId));
+                Assert::IsTrue(std::vector<ZoneIndex>{ 1 } == data.GetAppLastZoneIndexSet(window, deviceIdToInsert, zoneSetId));
             }
 
             TEST_METHOD (AppLastZoneRemoveNullWindow)

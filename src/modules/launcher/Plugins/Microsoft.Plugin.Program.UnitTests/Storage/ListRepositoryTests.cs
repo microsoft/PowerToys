@@ -3,15 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
-    [TestFixture]
+    [TestClass]
     public class ListRepositoryTests
     {
-        [Test]
+        [TestMethod]
         public void ContainsShouldReturnTrueWhenListIsInitializedWithItem()
         {
             // Arrange
@@ -25,7 +25,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsTrue(result);
         }
 
-        [Test]
+        [TestMethod]
         public void ContainsShouldReturnTrueWhenListIsUpdatedWithAdd()
         {
             // Arrange
@@ -40,7 +40,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsTrue(result);
         }
 
-        [Test]
+        [TestMethod]
         public void ContainsShouldReturnFalseWhenListIsUpdatedWithRemove()
         {
             // Arrange
@@ -55,7 +55,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsFalse(result);
         }
 
-        [Test]
+        [TestMethod]
         public async Task AddShouldNotThrowWhenBeingIterated()
         {
             // Arrange
@@ -94,7 +94,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             await Task.WhenAll(new Task[] { iterationTask, addTask }).ConfigureAwait(false);
         }
 
-        [Test]
+        [TestMethod]
         public async Task RemoveShouldNotThrowWhenBeingIterated()
         {
             // Arrange

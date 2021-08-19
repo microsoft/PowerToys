@@ -42,7 +42,7 @@ namespace FancyZonesEditor.Models
             Type = type;
         }
 
-        protected LayoutModel(LayoutModel other)
+        protected LayoutModel(LayoutModel other, bool enableQuickKeysPropertyChangedSubscribe)
         {
             _guid = other._guid;
             _name = other._name;
@@ -53,7 +53,10 @@ namespace FancyZonesEditor.Models
             _zoneCount = other._zoneCount;
             _quickKey = other._quickKey;
 
-            MainWindowSettingsModel.QuickKeys.PropertyChanged += QuickSwitchKeys_PropertyChanged;
+            if (enableQuickKeysPropertyChangedSubscribe)
+            {
+                MainWindowSettingsModel.QuickKeys.PropertyChanged += QuickSwitchKeys_PropertyChanged;
+            }
         }
 
         // Name - the display name for this layout model - is also used as the key in the registry
