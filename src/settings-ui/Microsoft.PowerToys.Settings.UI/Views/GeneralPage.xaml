@@ -158,9 +158,8 @@
                     <controls:Setting x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"
                                       Margin="0,-6,0,0"
                                       Visibility="{Binding Mode=TwoWay, Path=IsAdmin, Converter={StaticResource VisibleIfTrueConverter}}">
-                        <ToggleSwitch FlowDirection="RightToLeft"
-                          IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}"
-                          IsEnabled="{Binding AutoUpdatesEnabled}" />
+                        <ToggleSwitch  IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}"
+                                       IsEnabled="{Binding AutoUpdatesEnabled}" />
                     </controls:Setting>
                     </controls:SettingsGroup>
 
@@ -187,7 +186,7 @@
                                                          x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
                                     </controls:Setting.Description>
                                     <controls:Setting.ActionContent>
-                                        <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=RunElevated}" FlowDirection="RightToLeft"/>
+                                        <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=RunElevated}"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
                                 <muxc:InfoBar x:Uid="General_RunAsAdminRequired" 
@@ -217,7 +216,7 @@
                             </controls:Setting>
                     <controls:Setting x:Uid="GeneralPage_RunAtStartUp">
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=Startup}" FlowDirection="RightToLeft"/>
+                            <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=Startup}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>

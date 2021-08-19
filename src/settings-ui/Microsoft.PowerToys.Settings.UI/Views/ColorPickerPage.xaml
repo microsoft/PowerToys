@@ -22,7 +22,7 @@
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" FlowDirection="RightToLeft" />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
@@ -93,7 +93,7 @@
 
                     <controls:Setting x:Uid="ColorPicker_ShowColorName">
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{Binding ShowColorName, Mode=TwoWay}" FlowDirection="RightToLeft" />
+                            <ToggleSwitch IsOn="{Binding ShowColorName, Mode=TwoWay}" />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                     <!--
@@ -141,7 +141,6 @@
                                     <ToggleSwitch IsOn="{x:Bind IsShown, Mode=TwoWay}"
                                                   OnContent=""
                                                   OffContent=""
-                                                  FlowDirection="RightToLeft"
                                                   Grid.RowSpan="2"
                                                   x:Uid="Enable_ColorFormat"
                                                   AutomationProperties.HelpText="{x:Bind Name}"

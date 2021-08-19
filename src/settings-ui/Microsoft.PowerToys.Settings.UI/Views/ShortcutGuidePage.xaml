@@ -24,7 +24,7 @@
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" FlowDirection="RightToLeft" />
+                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 

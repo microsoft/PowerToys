@@ -29,7 +29,7 @@
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" FlowDirection="RightToLeft" />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
@@ -199,8 +199,7 @@
                                                 </controls:Setting.Icon>
                                                 <controls:Setting.ActionContent>
                                                     <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
-                                                                  IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"
-                                                                  FlowDirection="RightToLeft"/>
+                                                                  IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"/>
                                                 </controls:Setting.ActionContent>
                                             </controls:Setting>
                                         </controls:SettingExpander.Header>

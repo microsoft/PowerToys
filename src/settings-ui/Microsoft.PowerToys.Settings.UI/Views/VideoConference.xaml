@@ -19,7 +19,7 @@
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" FlowDirection="RightToLeft" IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                        <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
