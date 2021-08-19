@@ -376,6 +376,8 @@ namespace PowerLauncher.ViewModel
             }
         }
 
+        public bool LoadedAtLeastOnce { get; set; }
+
         private Visibility _visibility;
 
         public Visibility MainWindowVisibility
@@ -390,16 +392,20 @@ namespace PowerLauncher.ViewModel
                 if (_visibility != value)
                 {
                     _visibility = value;
-                    OnPropertyChanged(nameof(MainWindowVisibility));
-                }
+                    if (LoadedAtLeastOnce)
+                    {
+                        // Don't trigger telemetry on cold boot. Must have been loaded at least once.
+                        if (value == Visibility.Visible)
+                        {
+                            PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
+                        }
+                        else
+                        {
+                            PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
+                        }
+                    }
 
-                if (value == Visibility.Visible)
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
-                }
-                else
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
+                    OnPropertyChanged(nameof(MainWindowVisibility));
                 }
             }
         }

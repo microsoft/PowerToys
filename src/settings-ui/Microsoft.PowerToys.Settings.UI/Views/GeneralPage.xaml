@@ -223,7 +223,6 @@
             </StackPanel>
                
         </controls:SettingsPageControl.ModuleContent>
-
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="General_Repository" Link="https://aka.ms/powertoys"/>
             <controls:PageLink x:Uid="GeneralPage_ReportAbug" Link="https://aka.ms/powerToysReportBug"/>

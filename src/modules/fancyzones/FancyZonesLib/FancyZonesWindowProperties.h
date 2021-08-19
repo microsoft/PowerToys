@@ -21,7 +21,7 @@ inline ZoneIndexSet GetZoneIndexSet(HWND window)
 
     std::array<int, 2> data;
     memcpy(data.data(), &handle, sizeof data);
-    uint64_t bitmask = ((uint64_t)data[0] << 32) + data[1];
+    uint64_t bitmask = ((uint64_t)data[1] << 32) + data[0];
     
     if (bitmask != 0)
     {
@@ -39,7 +39,7 @@ inline ZoneIndexSet GetZoneIndexSet(HWND window)
 
 inline void StampWindow(HWND window, Bitmask bitmask) noexcept
 {
-    std::array<int, 2> data = { (bitmask >> 32), static_cast<int>(bitmask) };
+    std::array<int, 2> data = { static_cast<int>(bitmask), (bitmask >> 32) };
     HANDLE rawData;
     memcpy(&rawData, data.data(), sizeof data);
     SetProp(window, ZonedWindowProperties::PropertyMultipleZoneID, rawData);

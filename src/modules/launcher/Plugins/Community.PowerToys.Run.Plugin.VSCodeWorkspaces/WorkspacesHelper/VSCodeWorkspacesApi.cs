@@ -27,6 +27,14 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                 if (typeWorkspace.TypeWorkspace.HasValue)
                 {
                     var folderName = Path.GetFileName(unescapeUri);
+
+                    // Check we haven't returned '' if we have a path like C:\
+                    if (string.IsNullOrEmpty(folderName))
+                    {
+                        DirectoryInfo dirInfo = new DirectoryInfo(unescapeUri);
+                        folderName = dirInfo.Name.TrimEnd(':');
+                    }
+
                     return new VSCodeWorkspace()
                     {
                         Path = uri,

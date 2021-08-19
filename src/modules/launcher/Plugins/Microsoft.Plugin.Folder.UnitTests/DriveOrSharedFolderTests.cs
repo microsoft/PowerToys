@@ -4,26 +4,29 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Plugin.Folder.Sources;
 using Microsoft.Plugin.Folder.Sources.Result;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using NUnit.Framework;
 
 namespace Microsoft.Plugin.Folder.UnitTests
 {
+    [TestClass]
     public class DriveOrSharedFolderTests
     {
-        [TestCase(@"\\test-server\testdir", true)]
-        [TestCase(@"c:", true)]
-        [TestCase(@"c:\", true)]
-        [TestCase(@"C:\", true)]
-        [TestCase(@"d:\", true)]
-        [TestCase(@"z:\", false)]
-        [TestCase(@"nope.exe", false)]
-        [TestCase(@"win32\test.dll", false)]
-        [TestCase(@"a\b\c\d", false)]
-        [TestCase(@"D", false)]
-        [TestCase(@"ZZ:\test", false)]
+        [DataTestMethod]
+        [DataRow(@"\\test-server\testdir", true)]
+        [DataRow(@"c:", true)]
+        [DataRow(@"c:\", true)]
+        [DataRow(@"C:\", true)]
+        [DataRow(@"d:\", true)]
+        [DataRow(@"z:\", false)]
+        [DataRow(@"nope.exe", false)]
+        [DataRow(@"win32\test.dll", false)]
+        [DataRow(@"a\b\c\d", false)]
+        [DataRow(@"D", false)]
+        [DataRow(@"ZZ:\test", false)]
         public void IsDriveOrSharedFolder_WhenCalled(string search, bool expectedSuccess)
         {
             // Setup
@@ -42,15 +45,16 @@ namespace Microsoft.Plugin.Folder.UnitTests
             Assert.AreEqual(expectedSuccess, isDriveOrSharedFolder);
         }
 
-        [TestCase('A', true)]
-        [TestCase('C', true)]
-        [TestCase('c', true)]
-        [TestCase('Z', true)]
-        [TestCase('z', true)]
-        [TestCase('ª', false)]
-        [TestCase('α', false)]
-        [TestCase('Ω', false)]
-        [TestCase('ɀ', false)]
+        [DataTestMethod]
+        [DataRow('A', true)]
+        [DataRow('C', true)]
+        [DataRow('c', true)]
+        [DataRow('Z', true)]
+        [DataRow('z', true)]
+        [DataRow('ª', false)]
+        [DataRow('α', false)]
+        [DataRow('Ω', false)]
+        [DataRow('ɀ', false)]
         public void ValidDriveLetter_WhenCalled(char letter, bool expectedSuccess)
         {
             // Setup
@@ -61,10 +65,11 @@ namespace Microsoft.Plugin.Folder.UnitTests
             Assert.AreEqual(expectedSuccess, isDriveOrSharedFolder);
         }
 
-        [TestCase("C:", true)]
-        [TestCase("C:\test", true)]
-        [TestCase("D:", false)]
-        [TestCase("INVALID", false)]
+        [DataTestMethod]
+        [DataRow("C:", true)]
+        [DataRow("C:\test", true)]
+        [DataRow("D:", false)]
+        [DataRow("INVALID", false)]
         public void GenerateMaxFiles_WhenCalled(string search, bool hasValues)
         {
             // Setup
@@ -88,11 +93,11 @@ namespace Microsoft.Plugin.Folder.UnitTests
             // Assert
             if (hasValues)
             {
-                CollectionAssert.IsNotEmpty(results);
+                Assert.IsTrue(results.Count() > 0);
             }
             else
             {
-                CollectionAssert.IsEmpty(results);
+                Assert.IsTrue(results.Count() == 0);
             }
         }
     }
