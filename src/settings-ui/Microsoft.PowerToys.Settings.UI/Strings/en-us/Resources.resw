@@ -567,7 +567,6 @@
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Description" xml:space="preserve">
     <value>PowerRename only appears in extended context menu's (press Shift + right-click)</value>
   </data>
-  
   <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
     <value>Maximum number of items</value>
   </data>
@@ -596,7 +595,7 @@
     <value>Open-source notice</value>
   </data>
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
-    <value>Enable autocomplete for the search and replace fields</value>
+    <value>Enable auto-complete for the search and replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Header" xml:space="preserve">
     <value>Zone border color</value>
