@@ -1394,6 +1394,9 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="ColorPicker_ColorFormat_ToggleSwitch.AutomationProperties.Name" xml:space="preserve">
     <value>Show format in editor</value>
   </data>
+  <data name="GeneralPage_Documentation.Label" xml:space="preserve">
+    <value>Open documentation</value>
+  </data>
   <data name="PowerLauncher_SearchList.PlaceholderText" xml:space="preserve">
     <value>Search this list</value>
   </data>

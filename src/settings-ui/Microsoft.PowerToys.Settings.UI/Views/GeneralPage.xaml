@@ -222,6 +222,7 @@
         <!-- Side panel -->
 
         <controls:SettingsPageControl.ModuleLinks>
+            <controls:SidePanelLink x:Uid="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview"/>
             <controls:SidePanelLink x:Uid="General_Repository" Link="https://aka.ms/powertoys"/>
             <controls:SidePanelLink x:Uid="GeneralPage_ReportAbug" Link="https://aka.ms/powerToysReportBug"/>
             <controls:SidePanelLink x:Uid="GeneralPage_RequestAFeature_URL" Link="https://aka.ms/powerToysRequestFeature"/>
