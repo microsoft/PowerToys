@@ -149,12 +149,16 @@
             </muxc:NavigationView.MenuItems>
             <muxc:NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">
-                    <muxc:NavigationViewItem x:Uid="OOBE_NavViewItem" Tapped="OOBEItem_Tapped">
+                    <muxc:NavigationViewItem x:Uid="OOBE_NavViewItem"
+                                             Tapped="OOBEItem_Tapped"
+                                             Margin="0,0,12,0">
                         <muxc:NavigationViewItem.Icon>
                             <FontIcon Glyph="&#xF133;"/>
                         </muxc:NavigationViewItem.Icon>
                     </muxc:NavigationViewItem>
-                    <muxc:NavigationViewItem x:Uid="Feedback_NavViewItem" Tapped="FeedbackItem_Tapped">
+                    <muxc:NavigationViewItem x:Uid="Feedback_NavViewItem"
+                                             Tapped="FeedbackItem_Tapped"
+                                             Margin="0,0,12,0">
                         <muxc:NavigationViewItem.Icon>
                             <FontIcon Glyph="&#xED15;"/>
                         </muxc:NavigationViewItem.Icon>
