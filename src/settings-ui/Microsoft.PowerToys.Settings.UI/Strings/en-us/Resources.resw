@@ -571,7 +571,7 @@
     <value>Maximum number of items</value>
   </data>
   <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
-    <value>Show recently used filenames</value>
+    <value>Show recently used strings</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
     <value>Enable Markdown (.md) preview</value>
