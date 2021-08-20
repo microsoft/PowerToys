@@ -13,6 +13,7 @@
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="VisibleIfTrueConverter"/>
+        <converters:BoolNegationConverter x:Key="NegationConverter"/>
         <localConverters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
     </Page.Resources>
 
@@ -170,17 +171,17 @@
                 <controls:SettingsGroup x:Uid="Admin_Mode">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="Admin_Mode" Icon="&#xE1A7;" Description="{Binding Mode=TwoWay, Path=RunningAsText}" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                            <controls:Setting x:Uid="Admin_Mode" Icon="&#xE1A7;" Description="{Binding Mode=OneWay, Path=RunningAsText}" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
                                             Command = "{Binding RestartElevatedButtonEventHandler}"
-                                            IsEnabled="{Binding Mode=TwoWay, Path=IsAdminButtonEnabled}"/>
+                                            IsEnabled="{Binding Mode=OneWay, Path=IsAdminButtonEnabled}"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel Orientation="Vertical">
-                                <controls:Setting x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{Binding Mode=TwoWay, Path=IsElevated}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsEnabled="{Binding Mode=OneWay, Path=IsElevated}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.Description>
                                         <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp"
                                                          x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"/>
@@ -192,7 +193,7 @@
                                 <muxc:InfoBar x:Uid="General_RunAsAdminRequired" 
                                           Severity="Warning"
                                           IsClosable="False"
-                                          IsOpen="{Binding Mode=TwoWay, Path=IsElevated}"/>
+                                          IsOpen="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource NegationConverter}}"/>
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>

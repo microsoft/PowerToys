@@ -279,7 +279,7 @@
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
-  <data name="KeyboardManager_RemapKeyboardButton_Accesible.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_RemapKeyboardButton_Accessible.AutomationProperties.Name" xml:space="preserve">
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
@@ -291,7 +291,7 @@
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
-  <data name="KeyboardManager_RemapShortcutsButton_Accesible.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_RemapShortcutsButton_Accessible.AutomationProperties.Name" xml:space="preserve">
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
@@ -450,7 +450,7 @@
     <value>Launch layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
-  <data name="FancyZones_LaunchEditorButton_Accesible.AutomationProperties.Name" xml:space="preserve">
+  <data name="FancyZones_LaunchEditorButton_Accessible.AutomationProperties.Name" xml:space="preserve">
     <value>Launch layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
@@ -958,7 +958,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Color Picker with editor mode enabled</value>
     <comment>do not loc the product name</comment>
   </data>
-  <data name="ColorPickerFirst_Accesible.AutomationProperties.Name" xml:space="preserve">
+  <data name="ColorPickerFirst_Accessible.AutomationProperties.Name" xml:space="preserve">
     <value>Color Picker with editor mode enabled</value>
     <comment>do not loc the product name</comment>
   </data>
@@ -969,7 +969,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="EditorFirst.Text" xml:space="preserve">
     <value>Editor</value>
   </data>
-  <data name="EditorFirst_Accesible.AutomationProperties.Name" xml:space="preserve">
+  <data name="EditorFirst_Accessible.AutomationProperties.Name" xml:space="preserve">
     <value>Editor</value>
   </data>
   <data name="ColorPicker_ActivationAction.Header" xml:space="preserve">
@@ -1017,7 +1017,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Color Picker only</value>
     <comment>do not loc the product name</comment>
   </data>
-  <data name="ColorPickerOnly_Accesible.AutomationProperties.Name" xml:space="preserve">
+  <data name="ColorPickerOnly_Accessible.AutomationProperties.Name" xml:space="preserve">
     <value>Color Picker only</value>
     <comment>do not loc the product name</comment>
   </data>
