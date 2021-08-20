@@ -93,7 +93,7 @@
 
                 <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
 
-                    <Button x:Uid="KeyboardManager_RemapKeyboardButton_Accesible" Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=RemapKeyboardCommand}">
+                    <Button x:Uid="KeyboardManager_RemapKeyboardButton_Accessible" Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=RemapKeyboardCommand}">
                         <controls:Setting x:Uid="KeyboardManager_RemapKeyboardButton" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xE92E;">
                             <controls:Setting.ActionContent>
                                 <FontIcon Glyph="&#xE2B4;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
@@ -151,7 +151,7 @@
 
 
                 <controls:SettingsGroup x:Uid="KeyboardManager_Shortcuts"   IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.Enabled}">
-                    <Button x:Uid="KeyboardManager_RemapShortcutsButton_Accesible" Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=EditShortcutCommand}">
+                    <Button x:Uid="KeyboardManager_RemapShortcutsButton_Accessible" Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=EditShortcutCommand}">
                         <controls:Setting x:Uid="KeyboardManager_RemapShortcutsButton" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xE92E;">
                             <controls:Setting.ActionContent>
                                 <FontIcon Glyph="&#xE2B4;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />

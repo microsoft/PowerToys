@@ -14,16 +14,16 @@
 
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="VideoConference_Enable">
+                <controls:Setting x:Uid="VideoConference_Enable" IsEnabled="{ Binding Mode=OneWay, Path=IsElevated }">
                     <controls:Setting.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
-                        <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                        <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=IsEnabled}" />
                     </controls:Setting.ActionContent>
                 </controls:Setting>
 
-                <controls:SettingsGroup x:Uid="VideoConference_Shortcuts" IsEnabled="{x:Bind Mode=OneWay, Path=IsEnabled}">
+                <controls:SettingsGroup x:Uid="VideoConference_Shortcuts" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
                     <controls:Setting x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header">
                         <controls:Setting.Description>
                             <TextBlock>
@@ -68,7 +68,7 @@
 
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="VideoConference_Microphone" IsEnabled="{x:Bind Mode=OneWay, Path=IsEnabled}">
+                <controls:SettingsGroup x:Uid="VideoConference_Microphone" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
 
                     <controls:Setting x:Uid="VideoConference_SelectedMicrophone" Icon="&#xE1D6;">
                         <controls:Setting.ActionContent>
@@ -80,7 +80,7 @@
                 </controls:SettingsGroup>
 
 
-                <controls:SettingsGroup x:Uid="VideoConference_Camera" IsEnabled="{x:Bind Mode=OneWay, Path=IsEnabled}">
+                <controls:SettingsGroup x:Uid="VideoConference_Camera" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
@@ -121,7 +121,7 @@
 
 
 
-                <controls:SettingsGroup x:Uid="VideoConference_Toolbar" IsEnabled="{x:Bind Mode=OneWay, Path=IsEnabled}">
+                <controls:SettingsGroup x:Uid="VideoConference_Toolbar" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
 
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>

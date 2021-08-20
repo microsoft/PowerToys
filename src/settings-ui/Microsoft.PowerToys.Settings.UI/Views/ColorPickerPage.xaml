@@ -45,7 +45,7 @@
                     </controls:SettingExpander.Header>
                     <controls:SettingExpander.Content>
                         <StackPanel Padding="56,16,16,24" Spacing="12">
-                            <RadioButton x:Uid="ColorPickerFirst_Accesible" IsChecked="{Binding ActivationOpensColorPickerAndEditor, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
+                            <RadioButton x:Uid="ColorPickerFirst_Accessible" IsChecked="{Binding ActivationOpensColorPickerAndEditor, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
                                 <RadioButton.Content>
                                     <StackPanel>
                                         <TextBlock x:Uid="ColorPickerFirst"/>
@@ -54,7 +54,7 @@
                                 </RadioButton.Content>
                             </RadioButton>
 
-                            <RadioButton x:Uid="EditorFirst_Accesible" IsChecked="{Binding ActivationOpensEditor, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
+                            <RadioButton x:Uid="EditorFirst_Accessible" IsChecked="{Binding ActivationOpensEditor, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
                                 <RadioButton.Content>
                                     <StackPanel>
                                         <TextBlock x:Uid="EditorFirst"/>
@@ -63,7 +63,7 @@
                                 </RadioButton.Content>
                             </RadioButton>
 
-                            <RadioButton x:Uid="ColorPickerOnly_Accesible" IsChecked="{Binding ActivationOpensColorPickerOnly, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
+                            <RadioButton x:Uid="ColorPickerOnly_Accessible" IsChecked="{Binding ActivationOpensColorPickerOnly, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
                                 <RadioButton.Content>
                                     <StackPanel>
                                         <TextBlock x:Uid="ColorPickerOnly"/>

@@ -15,7 +15,7 @@ accessibilityinsights
 Acl
 aclapi
 AColumn
-Accesible
+Accessible
 acos
 acrt
 Actioncenter
