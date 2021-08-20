@@ -191,10 +191,10 @@ namespace ViewModelTests
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
                 GeneralSettingsFileName);
-            Assert.AreEqual(0, viewModel.ThemeIndex);
+            Assert.AreNotEqual(1, viewModel.ThemeIndex);
 
             // act
-            viewModel.ThemeIndex = 0;
+            viewModel.ThemeIndex = 1;
         }
 
         [TestMethod]
@@ -222,10 +222,10 @@ namespace ViewModelTests
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
                 GeneralSettingsFileName);
-            Assert.AreEqual(1, viewModel.ThemeIndex);
+            Assert.AreNotEqual(0, viewModel.ThemeIndex);
 
             // act
-            viewModel.ThemeIndex = 1;
+            viewModel.ThemeIndex = 0;
         }
 
         [TestMethod]
