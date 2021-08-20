@@ -26,25 +26,29 @@
                     <controls:Setting Header="{Binding PowerToysVersion}" Icon="&#xE117;">
                         <controls:Setting.Description>
                             <TextBlock Style="{StaticResource SecondaryTextStyle}">
-                            <Run x:Uid="General_VersionLastChecked" />
-                            <Run Text="{Binding UpdateCheckedDate, Mode=OneWay}"/>
+                                <Run x:Uid="General_VersionLastChecked" />
+                                <Run Text="{Binding UpdateCheckedDate, Mode=OneWay}"/>
                             </TextBlock>
                         </controls:Setting.Description>
                         <controls:Setting.ActionContent>
-                            <Grid MinWidth="{StaticResource SettingActionControlMinWidth}" Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=UpToDate}">
+                            <Grid Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=UpToDate}">
                                 <StackPanel Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
-                                        Orientation="Horizontal"
-                                        Spacing="18"
-                                        Margin="0,0,0,16">
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="18">
                                     <muxc:ProgressRing Height="24"
-                                                   Width="24"/>
+                                                       Width="24"/>
                                     <TextBlock x:Uid="General_CheckingForUpdates"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
 
                                 <Button x:Uid="GeneralPage_CheckForUpdates"
                                         Command="{Binding CheckForUpdatesEventHandler}"
-                                        IsEnabled="{Binding IsDownloadAllowed}"/>
+                                        IsEnabled="{Binding IsDownloadAllowed}"
+                                        Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}"
+                                        HorizontalAlignment="Right"/>
                             </Grid>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
@@ -78,7 +82,8 @@
                                     <muxc:ProgressRing Height="24"
                                                    Width="24"/>
                                     <TextBlock x:Uid="General_Downloading"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                               FontWeight="SemiBold"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
                             </StackPanel>
                         </muxc:InfoBar.Content>
@@ -144,6 +149,7 @@
                                     <muxc:ProgressRing Height="24"
                                                    Width="24"/>
                                     <TextBlock x:Uid="General_Downloading"
+                                               FontWeight="SemiBold"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
                             </StackPanel>
