@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
-using Newtonsoft.Json;
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
@@ -35,13 +35,14 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
 
                         try
                         {
-                            dynamic vscodeSettingsFile = JsonConvert.DeserializeObject<dynamic>(fileContent);
-                            if (vscodeSettingsFile.ContainsKey("remote.SSH.configFile"))
+                            JsonElement vscodeSettingsFile = JsonSerializer.Deserialize<JsonElement>(fileContent);
+                            if (vscodeSettingsFile.TryGetProperty("remote.SSH.configFile", out var pathElement))
                             {
-                                var path = vscodeSettingsFile["remote.SSH.configFile"];
-                                if (File.Exists(path.Value))
+                                var path = pathElement.GetString();
+
+                                if (File.Exists(path))
                                 {
-                                    foreach (SshHost h in SshConfig.ParseFile(path.Value))
+                                    foreach (SshHost h in SshConfig.ParseFile(path))
                                     {
                                         var machine = new VSCodeRemoteMachine();
                                         machine.Host = h.Host;

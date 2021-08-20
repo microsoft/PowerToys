@@ -4,15 +4,15 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using Wox.Plugin;
 
 namespace PowerLauncher.Storage
 {
     public class UserSelectedRecord
     {
-        [JsonProperty]
-        private readonly Dictionary<string, int> records = new Dictionary<string, int>();
+        [JsonInclude]
+        public Dictionary<string, int> Records { get; private set; } = new Dictionary<string, int>();
 
         public void Add(Result result)
         {
@@ -22,13 +22,13 @@ namespace PowerLauncher.Storage
             }
 
             var key = result.ToString();
-            if (records.TryGetValue(key, out int value))
+            if (Records.TryGetValue(key, out int value))
             {
-                records[key] = value + 1;
+                Records[key] = value + 1;
             }
             else
             {
-                records.Add(key, 1);
+                Records.Add(key, 1);
             }
         }
 
@@ -39,7 +39,7 @@ namespace PowerLauncher.Storage
                 throw new ArgumentNullException(nameof(result));
             }
 
-            if (result != null && records.TryGetValue(result.ToString(), out int value))
+            if (result != null && Records.TryGetValue(result.ToString(), out int value))
             {
                 return value;
             }
