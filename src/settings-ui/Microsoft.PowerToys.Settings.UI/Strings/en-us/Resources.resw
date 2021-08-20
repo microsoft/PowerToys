@@ -1320,7 +1320,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_VideoConference" xml:space="preserve">
-    <value>Video Conference</value>
+    <value>Video Conference Mute</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Welcome" xml:space="preserve">

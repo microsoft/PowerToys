@@ -177,6 +177,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/OOBEShortcutGuide.png",
                 Link = "https://aka.ms/PowerToysOverview_ShortcutGuide",
             });
+
             /* Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_VideoConference"),
