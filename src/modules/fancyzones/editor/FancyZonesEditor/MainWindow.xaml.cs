@@ -42,6 +42,20 @@ namespace FancyZonesEditor
 
             KeyUp += MainWindow_KeyUp;
 
+            // Prevent closing the dialog with enter
+            PreviewKeyDown += (object sender, KeyEventArgs e) =>
+            {
+                if (e.Key == Key.Enter && _openedDialog != null && _openedDialog.IsVisible)
+                {
+                    var source = e.OriginalSource as RadioButton;
+                    if (source != null && source.IsChecked != true)
+                    {
+                        source.IsChecked = true;
+                        e.Handled = true;
+                    }
+                }
+            };
+
             if (spanZonesAcrossMonitors)
             {
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
