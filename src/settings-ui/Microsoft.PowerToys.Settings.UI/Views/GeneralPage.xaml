@@ -25,13 +25,19 @@
                 <controls:SettingsGroup x:Uid="General_Version" Margin="0,-32,0,0">
                     <controls:Setting Header="{Binding PowerToysVersion}" Icon="&#xE117;">
                         <controls:Setting.Description>
+                            <StackPanel Orientation="Vertical">
+                               
                             <TextBlock Style="{StaticResource SecondaryTextStyle}">
                                 <Run x:Uid="General_VersionLastChecked" />
                                 <Run Text="{Binding UpdateCheckedDate, Mode=OneWay}"/>
                             </TextBlock>
+                                <HyperlinkButton x:Uid="ReleaseNotes"
+                                                 NavigateUri="https://github.com/microsoft/PowerToys/releases/"
+                                                 Margin="0,2,0,0"/>
+                            </StackPanel>
                         </controls:Setting.Description>
                         <controls:Setting.ActionContent>
-                            <Grid Visibility="{Binding PowerToysUpdatingState, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=UpToDate}">
+                            <Grid Visibility="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=UpToDate}">
                                 <StackPanel Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
                                             VerticalAlignment="Center"
                                             Orientation="Horizontal"
@@ -54,44 +60,41 @@
                     </controls:Setting>
 
                     <muxc:InfoBar x:Uid="General_UpToDate"
-                              IsClosable="False"
-                              Severity="Success"
-                              IsOpen="{Binding IsNewVersionCheckedAndUpToDate}"/>
+                                  IsClosable="False"
+                                  Severity="Success"
+                                  IsOpen="{Binding IsNewVersionCheckedAndUpToDate, Mode=OneWay}"/>
 
                     <!-- New version available -->
                     <muxc:InfoBar x:Uid="General_NewVersionAvailable"
-                              IsClosable="False"
-                              Severity="Success"
-                              IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}">
+                                  IsClosable="False"
+                                  Severity="Warning"
+                                  IsOpen="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
+                                  Message="{Binding PowerToysNewAvailableVersion, Mode=OneWay}">
                         <muxc:InfoBar.Content>
                             <StackPanel Spacing="16">
-                                <StackPanel Orientation="Horizontal"
-                                        Spacing="12">
-                                    <TextBlock Text="{Binding PowerToysNewAvailableVersion}"
-                                           VerticalAlignment="Center" />
-                                    <HyperlinkButton x:Uid="SeeWhatsNew"
-                                                 NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
-                                                 Margin="0,1,0,0"
-                                                 Padding="0" />
-                                </StackPanel>
+                                <Button x:Uid="General_DownloadAndInstall"
+                                        Command="{Binding UpdateNowButtonEventHandler}"
+                                        IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
+                                        Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}"/>
+                                
                                 <!-- In progress panel -->
                                 <StackPanel Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
-                                        Orientation="Horizontal"
-                                        Spacing="18"
-                                        Margin="0,0,0,16">
+                                            Orientation="Horizontal"
+                                            Spacing="18"
+                                            Margin="0,0,0,16">
                                     <muxc:ProgressRing Height="24"
-                                                   Width="24"/>
+                                                       Width="24"/>
                                     <TextBlock x:Uid="General_Downloading"
                                                FontWeight="SemiBold"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
                             </StackPanel>
                         </muxc:InfoBar.Content>
                         <muxc:InfoBar.ActionButton>
-                            <Button x:Uid="General_DownloadAndInstall"
-                                    HorizontalAlignment="Right"
-                                Command="{Binding UpdateNowButtonEventHandler}"
-                                IsEnabled="{Binding IsDownloadAllowed}"/>
+                            <HyperlinkButton x:Uid="SeeWhatsNew"
+                                             Style="{StaticResource HyperlinkButtonStyle}"
+                                             NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
+                                             HorizontalAlignment="Right" />
                         </muxc:InfoBar.ActionButton>
                     </muxc:InfoBar>
 
@@ -100,47 +103,39 @@
                     <muxc:InfoBar x:Uid="General_NewVersionReadyToInstall"
                                   IsClosable="False"
                                   Severity="Success"
-                                  IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}">
+                                  IsOpen="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
+                                  Message="{Binding PowerToysNewAvailableVersion}">
                         <muxc:InfoBar.Content>
                             <StackPanel Spacing="16">
-                                <StackPanel Orientation="Horizontal"
-                                        Spacing="12"
-                                        Margin="0,0,0,16">
-                                    <TextBlock Text="{Binding PowerToysNewAvailableVersion}"
-                                           VerticalAlignment="Center" />
-                                    <HyperlinkButton x:Uid="SeeWhatsNew"
-                                                 NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
-                                                 Margin="0,1,0,0"
-                                                 Padding="0" />
-                                </StackPanel>
+                                <Button x:Uid="General_InstallNow"
+                                        Command="{Binding UpdateNowButtonEventHandler}"
+                                        IsEnabled="{Binding IsDownloadAllowed}"
+                                        Margin="0,0,0,16"/>
                             </StackPanel>
                         </muxc:InfoBar.Content>
                         <muxc:InfoBar.ActionButton>
-                            <Button x:Uid="General_InstallNow"
-                                    HorizontalAlignment="Right"
-                                    Command="{Binding UpdateNowButtonEventHandler}"
-                                    IsEnabled="{Binding IsDownloadAllowed}"/>
+                            <HyperlinkButton x:Uid="SeeWhatsNew"
+                                             Style="{StaticResource HyperlinkButtonStyle}"
+                                             NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
+                                             HorizontalAlignment="Right" />
                         </muxc:InfoBar.ActionButton>
                     </muxc:InfoBar>
 
 
 
-                    <!-- Install failed -->
+                    <!-- Install failed  -->
                     <muxc:InfoBar x:Uid="General_FailedToDownloadTheNewVersion"
                                   IsClosable="False"
                                   Severity="Error"
-                                  IsOpen="{Binding PowerToysUpdatingState, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}">
+                                  IsOpen="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
+                                  Message="{Binding PowerToysNewAvailableVersion}">
                         <muxc:InfoBar.Content>
                             <StackPanel Spacing="16">
-                                <StackPanel Orientation="Horizontal"
-                                        Spacing="12">
-                                    <TextBlock Text="{Binding PowerToysNewAvailableVersion}"
-                                           VerticalAlignment="Center" />
-                                    <HyperlinkButton x:Uid="SeeWhatsNew"
-                                                 NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
-                                                 Margin="0,1,0,0"
-                                                 Padding="0" />
-                                </StackPanel>
+                                <Button x:Uid="General_TryAgainToDownloadAndInstall"
+                                    Command="{Binding UpdateNowButtonEventHandler}"
+                                    IsEnabled="{Binding IsDownloadAllowed}"
+                                    Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}"/>
+                                
                                 <!-- In progress panel -->
                                 <StackPanel Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource VisibleIfTrueConverter}}"
                                         Orientation="Horizontal"
@@ -155,10 +150,10 @@
                             </StackPanel>
                         </muxc:InfoBar.Content>
                         <muxc:InfoBar.ActionButton>
-                            <Button x:Uid="General_TryAgainToDownloadAndInstall"
-                                    HorizontalAlignment="Right"
-                                    Command="{Binding UpdateNowButtonEventHandler}"
-                                    IsEnabled="{Binding IsDownloadAllowed}"/>
+                            <HyperlinkButton x:Uid="SeeWhatsNew"
+                                                 NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
+                                                 HorizontalAlignment="Right"
+                                             Style="{StaticResource HyperlinkButtonStyle}"/>
                         </muxc:InfoBar.ActionButton>
                     </muxc:InfoBar>
 

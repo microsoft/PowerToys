@@ -1220,10 +1220,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
 Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>Check out documentation on Microsoft Docs</value>
+    <value>Documentation on Microsoft Docs</value>
   </data>
   <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
-    <value>Check out what's new in our release notes</value>
+    <value>Release notes</value>
+  </data>
+  <data name="ReleaseNotes.Content" xml:space="preserve">
+   <value>Release notes</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
     <value>{Win} + {Shift} + {C} to open Color Picker.</value>
@@ -1398,7 +1401,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>You can always change modes quickly by {right-clicking the Awake icon} in the system tray.</value>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Title" xml:space="preserve">
-    <value>An error occurred trying to install this update</value>
+    <value>An error occurred trying to install this update:</value>
   </data>
   <data name="General_InstallNow.Content" xml:space="preserve">
     <value>Install now</value>
@@ -1407,7 +1410,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Read more</value>
   </data>
   <data name="General_NewVersionAvailable.Title" xml:space="preserve">
-    <value>An update is available</value>
+    <value>An update is available:</value>
   </data>
   <data name="General_Downloading.Text" xml:space="preserve">
     <value>Downloading...</value>
@@ -1419,13 +1422,13 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Checking for updates...</value>
   </data>
   <data name="General_NewVersionReadyToInstall.Title" xml:space="preserve">
-    <value>An update is ready to install</value>
+    <value>An update is ready to install:</value>
   </data>
   <data name="General_UpToDate.Title" xml:space="preserve">
     <value>PowerToys is up to date</value>
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
-    <value>Download &amp; install</value>
+    <value>Download and install</value>
   </data>
   <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
     <value>Fills</value>
@@ -1463,7 +1466,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <comment>Label of a confirmation button</comment>
   </data>
   <data name="SeeWhatsNew.Content" xml:space="preserve">
-    <value>See what's new in this version</value>
+    <value>See what's new</value>
   </data>
   <data name="Awake_Mode.Description" xml:space="preserve">
     <value>Set the preferred behaviour or Awake</value>
