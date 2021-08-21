@@ -68,19 +68,20 @@
                                             IsChecked="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}, ConverterParameter=2}">
                                     <RadioButton.Content>
                                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
-                        <Run x:Uid="Awake_TemporaryKeepAwakeContent"/>
-                        <LineBreak/>
-                        <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                             x:Uid="Awake_TemporaryKeepAwakeDescription"/>
+                                            <Run x:Uid="Awake_TemporaryKeepAwakeContent"/>
+                                            <LineBreak/>
+                                            <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            x:Uid="Awake_TemporaryKeepAwakeDescription"/>
                                         </TextBlock>
                                     </RadioButton.Content>
                                 </RadioButton>
                                 <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ModeTitleLabel}"
-                        Margin="0,-8,0,0">
+                                            Margin="0,-8,0,0">
 
                                     <StackPanel Margin="28,8,0,0" Orientation="Horizontal">
                                         <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Hours"
                                             Value="{x:Bind ViewModel.Hours, Mode=TwoWay}"
+                                            IsEnabled="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}"
                                             Minimum="0"
                                             SpinButtonPlacementMode="Compact"
                                             HorizontalAlignment="Left"
@@ -89,6 +90,7 @@
                                             LargeChange="5"/>
                                         <muxc:NumberBox x:Uid="Awake_TemporaryKeepAwake_Minutes"
                                             Value="{x:Bind ViewModel.Minutes, Mode=TwoWay}"
+                                            IsEnabled="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}"
                                             Minimum="0"
                                             SpinButtonPlacementMode="Compact"
                                             Margin="8,0,0,0"

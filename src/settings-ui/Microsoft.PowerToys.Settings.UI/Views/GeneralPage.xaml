@@ -109,7 +109,7 @@
                             <StackPanel Spacing="16">
                                 <Button x:Uid="General_InstallNow"
                                         Command="{Binding UpdateNowButtonEventHandler}"
-                                        IsEnabled="{Binding IsDownloadAllowed}"
+                                        IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
                                         Margin="0,0,0,16"/>
                             </StackPanel>
                         </muxc:InfoBar.Content>
@@ -133,7 +133,7 @@
                             <StackPanel Spacing="16">
                                 <Button x:Uid="General_TryAgainToDownloadAndInstall"
                                     Command="{Binding UpdateNowButtonEventHandler}"
-                                    IsEnabled="{Binding IsDownloadAllowed}"
+                                    IsEnabled="{Binding IsDownloadAllowed, Mode=OneWay}"
                                     Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource NegationConverter}}"/>
                                 
                                 <!-- In progress panel -->
@@ -159,7 +159,7 @@
 
                     <controls:Setting x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates"
                                       Margin="0,-6,0,0"
-                                      Visibility="{Binding Mode=TwoWay, Path=IsAdmin, Converter={StaticResource VisibleIfTrueConverter}}">
+                                      Visibility="{Binding Mode=OneWay, Path=IsAdmin, Converter={StaticResource VisibleIfTrueConverter}}">
                         <ToggleSwitch  IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}"
                                        IsEnabled="{Binding AutoUpdatesEnabled}" />
                     </controls:Setting>
