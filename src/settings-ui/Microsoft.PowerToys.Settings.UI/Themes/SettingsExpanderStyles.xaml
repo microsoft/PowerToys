@@ -8,6 +8,8 @@
     <Thickness x:Key="ExpanderContentPadding">0</Thickness>
     <Thickness x:Key="ExpanderSettingMargin">56, 8, 40, 8</Thickness>
 
+    <SolidColorBrush x:Key="ExpanderChevronPointerOverBackground">Transparent</SolidColorBrush>
+
     <!-- Styles -->
     <!-- Setting used in a Expander header -->
     <Style x:Key="ExpanderHeaderSettingStyle" TargetType="controls:Setting">
