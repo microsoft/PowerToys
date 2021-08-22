@@ -532,7 +532,7 @@
     <comment>Tell our team what we should build</comment>
   </data>
   <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
-    <value>Restart as administrator</value>
+    <value>Restart PowerToys as administrator</value>
     <comment>running PowerToys as a higher level user, account is typically referred to as an admin / administrator</comment>
   </data>
   <data name="GeneralPage_RunAtStartUp.Header" xml:space="preserve">
