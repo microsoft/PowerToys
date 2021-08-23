@@ -99,24 +99,26 @@
       <DependentUpon>HotkeySettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\KeyVisual\KeyVisual.cs" />
+    <Compile Include="Controls\SettingExpander\SettingExpander.cs" />
+    <Compile Include="Controls\SettingsGroup\SettingsGroup.cs" />
+    <Compile Include="Controls\Setting\Setting.cs" />
     <Compile Include="Controls\ShortcutTextControl.xaml.cs">
       <DependentUpon>ShortcutTextControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
       <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\SidePanel\SettingsPageControl.xaml.cs">
+    <Compile Include="Controls\SettingsPageControl\SettingsPageControl.xaml.cs">
       <DependentUpon>SettingsPageControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\SidePanel\SidePanelLink.cs" />
+    <Compile Include="Controls\OOBEPageControl\OOBEPageControl.xaml.cs">
+      <DependentUpon>OOBEPageControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SettingsPageControl\PageLink.cs" />
     <Compile Include="Converters\AwakeModeToBoolConverter.cs" />
     <Compile Include="Converters\ImageResizerFitToStringConverter.cs" />
     <Compile Include="Converters\ImageResizerUnitToStringConverter.cs" />
-    <Compile Include="Converters\ModuleEnabledToOpacityConverter.cs" />
-    <Compile Include="Converters\UpdatingStateCannotDownloadToVisibilityConverter.cs" />
-    <Compile Include="Converters\UpdatingStateReadyToDownloadToVisibilityConverter.cs" />
-    <Compile Include="Converters\UpdatingStateReadyToInstallToVisibilityConverter.cs" />
-    <Compile Include="Converters\UpdatingStateUpToDateToVisibilityConverter.cs" />
+    <Compile Include="Converters\UpdateStateToBoolConverter.cs" />
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -225,6 +227,7 @@
     <Content Include="Assets\FluentIcons\FluentIconsPowerRename.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerToys.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerToysRun.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsSettings.png" />
     <Content Include="Assets\FluentIcons\FluentIconsShortcutGuide.png" />
     <Content Include="Assets\FluentIcons\FluentIconsVideoConferenceMute.png" />
     <Content Include="Assets\Logo.scale-200.png" />
@@ -267,16 +270,16 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.10</Version>
+      <Version>6.2.12</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI">
-      <Version>6.1.1</Version>
+      <Version>7.0.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
-      <Version>6.1.1</Version>
+      <Version>7.0.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Win32.UI.XamlApplication">
-      <Version>6.1.2</Version>
+      <Version>6.1.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.6.0-prerelease.210623001</Version>
@@ -307,6 +310,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\SettingsGroup\SettingsGroup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\Setting\Setting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\ShortcutTextControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -315,7 +326,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\SidePanel\SettingsPageControl.xaml">
+    <Page Include="Controls\SettingsPageControl\SettingsPageControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\OOBEPageControl\OOBEPageControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -371,29 +386,21 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Styles\Page.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Styles\TextBlock.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Styles\_Colors.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Styles\_FontSizes.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Styles\_Sizes.xaml">
+    <Page Include="Themes\Colors.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Styles\_Thickness.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="Themes\Generic.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\SettingsExpanderStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\AwakePage.xaml">
       <Generator>MSBuild:Compile</Generator>

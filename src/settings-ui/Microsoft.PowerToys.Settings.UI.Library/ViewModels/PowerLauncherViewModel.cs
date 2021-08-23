@@ -19,13 +19,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
-        private bool _isDarkThemeRadioButtonChecked;
-        private bool _isLightThemeRadioButtonChecked;
-        private bool _isSystemThemeRadioButtonChecked;
-
-        private bool _isCursorPositionRadioButtonChecked;
-        private bool _isPrimaryMonitorPositionRadioButtonChecked;
-        private bool _isFocusPositionRadioButtonChecked;
+        private int _themeIndex;
+        private int _monitorPositionIndex;
 
         private string _searchText;
 
@@ -75,27 +70,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             switch (settings.Properties.Theme)
             {
-                case Theme.Light:
-                    _isLightThemeRadioButtonChecked = true;
-                    break;
                 case Theme.Dark:
-                    _isDarkThemeRadioButtonChecked = true;
+                    _themeIndex = 0;
+                    break;
+                case Theme.Light:
+                    _themeIndex = 1;
                     break;
                 case Theme.System:
-                    _isSystemThemeRadioButtonChecked = true;
+                    _themeIndex = 2;
                     break;
             }
 
             switch (settings.Properties.Position)
             {
                 case StartupPosition.Cursor:
-                    _isCursorPositionRadioButtonChecked = true;
+                    _monitorPositionIndex = 0;
                     break;
                 case StartupPosition.PrimaryMonitor:
-                    _isPrimaryMonitorPositionRadioButtonChecked = true;
+                    _monitorPositionIndex = 1;
                     break;
                 case StartupPosition.Focus:
-                    _isFocusPositionRadioButtonChecked = true;
+                    _monitorPositionIndex = 2;
                     break;
             }
 
@@ -199,112 +194,46 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool IsDarkThemeRadioButtonChecked
+        public int ThemeIndex
         {
             get
             {
-                return _isDarkThemeRadioButtonChecked;
+                return _themeIndex;
             }
 
             set
             {
-                if (value == true)
+                switch (value)
                 {
-                    settings.Properties.Theme = Theme.Dark;
-                    _isDarkThemeRadioButtonChecked = value;
-
-                    UpdateSettings();
+                    case 0: settings.Properties.Theme = Theme.Dark; break;
+                    case 1: settings.Properties.Theme = Theme.Light; break;
+                    case 2: settings.Properties.Theme = Theme.System; break;
                 }
+
+                _themeIndex = value;
+                UpdateSettings();
             }
         }
 
-        public bool IsLightThemeRadioButtonChecked
+        public int MonitorPositionIndex
         {
             get
             {
-                return _isLightThemeRadioButtonChecked;
+                return _monitorPositionIndex;
             }
 
             set
             {
-                if (value == true)
+                if (_monitorPositionIndex != value)
                 {
-                    settings.Properties.Theme = Theme.Light;
-                    _isDarkThemeRadioButtonChecked = value;
+                    switch (value)
+                    {
+                        case 0: settings.Properties.Position = StartupPosition.Cursor; break;
+                        case 1: settings.Properties.Position = StartupPosition.PrimaryMonitor; break;
+                        case 2: settings.Properties.Position = StartupPosition.Focus; break;
+                    }
 
-                    UpdateSettings();
-                }
-            }
-        }
-
-        public bool IsSystemThemeRadioButtonChecked
-        {
-            get
-            {
-                return _isSystemThemeRadioButtonChecked;
-            }
-
-            set
-            {
-                if (value == true)
-                {
-                    settings.Properties.Theme = Theme.System;
-                    _isDarkThemeRadioButtonChecked = value;
-
-                    UpdateSettings();
-                }
-            }
-        }
-
-        public bool IsCursorPositionRadioButtonChecked
-        {
-            get
-            {
-                return _isCursorPositionRadioButtonChecked;
-            }
-
-            set
-            {
-                if (value == true)
-                {
-                    settings.Properties.Position = StartupPosition.Cursor;
-                    _isCursorPositionRadioButtonChecked = value;
-                    UpdateSettings();
-                }
-            }
-        }
-
-        public bool IsPrimaryMonitorPositionRadioButtonChecked
-        {
-            get
-            {
-                return _isPrimaryMonitorPositionRadioButtonChecked;
-            }
-
-            set
-            {
-                if (value == true)
-                {
-                    settings.Properties.Position = StartupPosition.PrimaryMonitor;
-                    _isPrimaryMonitorPositionRadioButtonChecked = value;
-                    UpdateSettings();
-                }
-            }
-        }
-
-        public bool IsFocusPositionRadioButtonChecked
-        {
-            get
-            {
-                return _isFocusPositionRadioButtonChecked;
-            }
-
-            set
-            {
-                if (value == true)
-                {
-                    settings.Properties.Position = StartupPosition.Focus;
-                    _isFocusPositionRadioButtonChecked = value;
+                    _monitorPositionIndex = value;
                     UpdateSettings();
                 }
             }

@@ -5,105 +5,96 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="About_ShortcutGuide"
+    <controls:SettingsPageControl x:Uid="ShortcutGuide"
                                   ModuleImageSource="ms-appx:///Assets/Modules/ShortcutGuide.png"
                                   ModuleImageLink="https://aka.ms/PowerToysOverview_ShortcutGuide">
         <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+                <controls:Setting x:Uid="ShortcutGuide_Enable">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
+
+                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+
+                    <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                        <controls:Setting.Description>
+                            <TextBlock>
+                                <Run x:Uid="ShortcutWarningLabel"/>
+                                <Run Text="Win, Ctrl, Alt, Shift"/>
+                            </TextBlock>
+                        </controls:Setting.Description>
+                        <controls:Setting.ActionContent>
+                            <controls:HotkeySettingsControl HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}"
+                                                            Keys="Win, Ctrl, Alt, Shift"
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="ShortcutGuide_Appearance_Behavior" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+
+                            <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;">
+                                <controls:Setting.Description>
+                                    <HyperlinkButton Click="OpenColorsSettings_Click"
+                                                     x:Uid="Windows_Color_Settings"/>
+                                </controls:Setting.Description>
+                                <controls:Setting.ActionContent>
+                                    <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                        <ComboBoxItem x:Uid="Radio_Theme_Dark"/>
+                                        <ComboBoxItem x:Uid="Radio_Theme_Light"/>
+                                        <ComboBoxItem x:Uid="Radio_Theme_Default"/>
+                                    </ComboBox>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
 
 
-            <StackPanel Orientation="Vertical"
-                    x:Name="ShortcutGuideView"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,48,0"
-                    MaxWidth="{StaticResource MaxContentWidth}">
-                <ToggleSwitch x:Uid="ShortcutGuide_Enable"
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
+                    <controls:Setting x:Uid="ShortcutGuide_OverlayOpacity">
+                        <controls:Setting.ActionContent>
+                            <Slider Minimum="0"
+                                                Maximum="100"
+                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.OverlayOpacity}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
 
-                <TextBlock x:Uid="Shortcuts"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-
-                <controls:HotkeySettingsControl x:Uid="ShortcutGuide_OpenShortcutGuide"
-                                                  HorizontalAlignment="Left"
-                                                  MinWidth="240"
-                                                  Margin="{StaticResource SmallTopMargin}"
-                                                  HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}"
-                                                  Keys="Win, Ctrl, Alt, Shift"
-                                                  Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-
-                <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-
-                <StackPanel Orientation="Horizontal" Margin="{StaticResource MediumTopMargin}" Spacing="12">
-                    <Slider x:Uid="ShortcutGuide_OverlayOpacity"
-                    Minimum="0"
-                    Maximum="100"
-                    Width="240"
-                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.OverlayOpacity}"
-                    IsThumbToolTipEnabled="False"
-                    HorizontalAlignment="Left"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-
-                    <TextBlock
-                        Text="{x:Bind Mode=OneWay, Path=ViewModel.OverlayOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
-                        VerticalAlignment="Center"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        Margin="0,16,0,0"
-                        Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                </StackPanel>
-
-                <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
-            The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
-            Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
-                <TextBlock Name="ShortcutGuide_Theme"
-                x:Uid="ColorModeHeader"
-                Margin="{StaticResource SmallTopMargin}"
-                Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                               SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
-                               AutomationProperties.LabeledBy="{Binding ElementName=ShortcutGuide_Theme}">
-                    <RadioButton x:Uid="Radio_Theme_Dark" />
-                    <RadioButton x:Uid="Radio_Theme_Light" />
-                    <RadioButton x:Uid="Radio_Theme_Default"/>
-                </muxc:RadioButtons>
-                <HyperlinkButton Click="OpenColorsSettings_Click"
-                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <TextBlock x:Uid="Windows_Color_Settings" />
-                </HyperlinkButton>
-
-                <TextBlock x:Uid="ShortcutGuide_DisabledApps"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-
-                <TextBox x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
-                     Margin="{StaticResource SmallTopMargin}"
-                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps, UpdateSourceTrigger=PropertyChanged}"
-                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                     ScrollViewer.VerticalScrollBarVisibility ="Visible"
-                     ScrollViewer.VerticalScrollMode="Enabled"
-                     ScrollViewer.IsVerticalRailEnabled="True"
-                     TextWrapping="Wrap"
-                     AcceptsReturn="True"
-                     HorizontalAlignment="Left"
-                     MinWidth="240"
-                     MinHeight="160" />
+                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="ShortcutGuide_DisabledApps" Icon="&#xE103;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <TextBox x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
+                                     Margin="{StaticResource ExpanderSettingMargin}"
+                                         Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps, UpdateSourceTrigger=PropertyChanged}"
+                                         ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                                         ScrollViewer.VerticalScrollMode="Enabled"
+                                         ScrollViewer.IsVerticalRailEnabled="True"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         MinWidth="240"
+                                         MinHeight="160" />
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
-        <controls:SettingsPageControl.ModuleLinks>
-            <controls:SidePanelLink x:Uid="Learn_More" Link="https://aka.ms/PowerToysOverview_ShortcutGuide"/>
-            <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
-        </controls:SettingsPageControl.ModuleLinks>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_ShortcutGuide" Link="https://aka.ms/PowerToysOverview_ShortcutGuide"/>
+        </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

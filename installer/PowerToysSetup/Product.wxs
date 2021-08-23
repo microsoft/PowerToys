@@ -794,7 +794,7 @@
         <File Source="$(var.BinX64Dir)Settings\PowerToys.Settings.exe"/>
         <File Source="$(var.BinX64Dir)Settings\Microsoft.PowerToys.Settings.UI.exe"/>
         <!-- dll -->
-        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToys.Settings.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;ManagedTelemetry.dll;ManagedCommon.dll;ColorCode.Core.dll;ColorCode.UWP.dll;Microsoft.Graphics.Canvas.winmd;Microsoft.Toolkit.Parsers.dll;Microsoft.Toolkit.Uwp.UI.Animations.dll;Microsoft.Toolkit.Uwp.UI.Controls.dll?>
+        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToys.Settings.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;ManagedTelemetry.dll;ManagedCommon.dll;ColorCode.Core.dll;ColorCode.UWP.dll;Microsoft.Graphics.Canvas.winmd;Microsoft.Toolkit.Uwp.UI.Controls.Core.dll;Microsoft.Toolkit.Uwp.UI.Controls.DataGrid.dll;Microsoft.Toolkit.Uwp.UI.Controls.Input.dll;Microsoft.Toolkit.Uwp.UI.Controls.Layout.dll;Microsoft.Toolkit.Uwp.UI.Controls.Markdown.dll;Microsoft.Toolkit.Uwp.UI.Controls.Media.dll;Microsoft.Toolkit.Uwp.UI.Controls.Primitives.dll?>
           <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)Settings\$(var.File)" />
         <?endforeach?>
         <!-- json -->
@@ -848,7 +848,7 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\FluentIcons">
       <Component Id="SettingsV2OOBEAssetsFluentIcons" Guid="6A380D5A-DA63-45B5-B68F-06D57CDD1B9C" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;FileExplorerPreview.png;ImageResizer.png;KeyboardManager.png;PowerRename.png;PowerToys.png;PowerToysRun.png;ShortcutGuide.png;VideoConferenceMute.png ?>
+        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;FileExplorerPreview.png;ImageResizer.png;KeyboardManager.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png ?>
           <File Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
         <?endforeach?>
       </Component>
@@ -869,7 +869,7 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2StylesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Styles">
       <Component Id="SettingsV2Styles" Guid="44B5C0E0-76DA-4604-BB86-FCD27A00EB71" Win64="yes">
-        <?foreach File in Page.xbf;TextBlock.xbf;_Colors.xbf;_FontSizes.xbf;_Sizes.xbf;_Thickness.xbf;Button.xbf?>
+        <?foreach File in TextBlock.xbf;Button.xbf?>
           <File Id="SettingsV2_Styles_$(var.File)" Source="$(var.BinX64Dir)Settings\Styles\$(var.File)" />
         <?endforeach?>
       </Component>

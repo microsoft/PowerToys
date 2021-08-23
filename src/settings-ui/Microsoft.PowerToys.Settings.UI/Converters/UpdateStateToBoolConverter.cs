@@ -3,24 +3,33 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Windows.UI.Xaml;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class ModuleEnabledToOpacityConverter : IValueConverter
+    public sealed class UpdateStateToBoolConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            bool isEnabled = (bool)value;
-            if (isEnabled)
+            if (value == null || parameter == null)
             {
-                return 1.0;
+                return false;
             }
             else
             {
-                return 0.4;
+                if (value.ToString() == (string)parameter)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 

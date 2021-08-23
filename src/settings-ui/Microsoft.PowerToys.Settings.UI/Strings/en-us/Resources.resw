@@ -122,14 +122,13 @@
     <comment>Navigation view item name for Video Conference</comment>
   </data>
   <data name="VideoConference_Enable.Header" xml:space="preserve">
-    <value>Enable Video Conference</value>
+    <value>Enable Video Conference Mute</value>
   </data>
-  <data name="About_VideoConference.ModuleDescription" xml:space="preserve">
-    <value>Video Conference Mute is a quick and easy way to do an global "mute" of both your microphone and webcam.
-Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
+  <data name="VideoConference.ModuleDescription" xml:space="preserve">
+    <value>Video Conference Mute is a quick and easy way to do an global "mute" of both your microphone and webcam. Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
   </data>
   <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Mute camera and microphone</value>
+    <value>Mute camera &amp; microphone</value>
   </data>
   <data name="VideoConference_MicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
     <value>Mute microphone</value>
@@ -143,7 +142,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="VideoConference_SelectedMicrophone.Header" xml:space="preserve">
     <value>Selected microphone</value>
   </data>
-  <data name="VideoConference_CameraOverlayImagePathHeader.Text" xml:space="preserve">
+  <data name="VideoConference_CameraOverlayImagePathHeader.Header" xml:space="preserve">
     <value>Camera overlay image</value>
   </data>
   <data name="VideoConference_ToolbarPosition.Header" xml:space="preserve">
@@ -185,19 +184,19 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="VideoConference_HideToolbarWhenUnmuted.Content" xml:space="preserve">
     <value>Hide toolbar when both camera and microphone are unmuted</value>
   </data>
-  <data name="About_VideoConference.ModuleTitle" xml:space="preserve">
-    <value>About Video Conference</value>
+  <data name="VideoConference.ModuleTitle" xml:space="preserve">
+    <value>Video Conference Mute</value>
   </data>
-  <data name="VideoConference_Camera.Text" xml:space="preserve">
+  <data name="VideoConference_Camera.Header" xml:space="preserve">
     <value>Camera</value>
   </data>
-  <data name="VideoConference_Microphone.Text" xml:space="preserve">
+  <data name="VideoConference_Microphone.Header" xml:space="preserve">
     <value>Microphone</value>
   </data>
-  <data name="VideoConference_Toolbar.Text" xml:space="preserve">
+  <data name="VideoConference_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
   </data>
-  <data name="VideoConference_Shortcuts.Text" xml:space="preserve">
+  <data name="VideoConference_Shortcuts.Header" xml:space="preserve">
     <value>Shortcuts</value>
   </data>
   <data name="VideoConference_CameraOverlayImageAlt.AutomationProperties.Name" xml:space="preserve">
@@ -261,8 +260,8 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Current configuration</value>
     <comment>Keyboard Manager current configuration header</comment>
   </data>
-  <data name="About_KeyboardManager.ModuleDescription" xml:space="preserve">
-    <value>Reconfigure your keyboard by remapping keys and shortcuts.</value>
+  <data name="KeyboardManager.ModuleDescription" xml:space="preserve">
+    <value>Reconfigure your keyboard by remapping keys and shortcuts</value>
     <comment>Keyboard Manager page description</comment>
   </data>
   <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
@@ -276,21 +275,35 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Select the profile to display the active key remap and shortcuts</value>
     <comment>Keyboard Manager configuration dropdown description</comment>
   </data>
-  <data name="KeyboardManager_RemapKeyboardButton.Content" xml:space="preserve">
+  <data name="KeyboardManager_RemapKeyboardButton.Header" xml:space="preserve">
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
-  <data name="KeyboardManager_RemapKeyboardHeader.Text" xml:space="preserve">
-    <value>Remap keys</value>
+  <data name="KeyboardManager_RemapKeyboardButton_Accessible.AutomationProperties.Name" xml:space="preserve">
+    <value>Remap a key</value>
+    <comment>Keyboard Manager remap keyboard button content</comment>
+  </data>
+  <data name="KeyboardManager_Keys.Header" xml:space="preserve">
+    <value>Keys</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
-  <data name="KeyboardManager_RemapShortcutsButton.Content" xml:space="preserve">
+  <data name="KeyboardManager_RemapShortcutsButton.Header" xml:space="preserve">
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
-  <data name="KeyboardManager_RemapShortcutsHeader.Text" xml:space="preserve">
-    <value>Remap shortcuts</value>
-    <comment>Keyboard Manager remap shortcuts header</comment>
+  <data name="KeyboardManager_RemapShortcutsButton_Accessible.AutomationProperties.Name" xml:space="preserve">
+    <value>Remap a shortcut</value>
+    <comment>Keyboard Manager remap shortcuts button</comment>
+  </data>
+  <data name="KeyboardManager_Shortcuts.Header" xml:space="preserve">
+    <value>Shortcuts</value>
+    <comment>Keyboard Manager remap keyboard header</comment>
+  </data>
+  <data name="Shortcuts.Header" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="Shortcut.Header" xml:space="preserve">
+    <value>Shortcut</value>
   </data>
   <data name="RemapKeysList.AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
@@ -319,7 +332,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Keyboard Manager</value>
     <comment>do not loc, product name</comment>
   </data>
-  <data name="About_ColorPicker.ModuleDescription" xml:space="preserve">
+  <data name="ColorPicker.ModuleDescription" xml:space="preserve">
     <value>Quick and simple system-wide color picker.</value>
   </data>
   <data name="ColorPicker_EnableColorPicker.Header" xml:space="preserve">
@@ -329,18 +342,14 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ColorPicker_ChangeCursor.Content" xml:space="preserve">
     <value>Change cursor when picking a color</value>
   </data>
-  <data name="ColorPicker_ActivationShortcut.Header" xml:space="preserve">
-    <value>Activate Color Picker</value>
-    <comment>do not loc product name</comment>
-  </data>
-  <data name="About_PowerLauncher.ModuleDescription" xml:space="preserve">
+  <data name="PowerLauncher.ModuleDescription" xml:space="preserve">
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
   </data>
   <data name="PowerLauncher_EnablePowerLauncher.Header" xml:space="preserve">
     <value>Enable PowerToys Run</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
-  <data name="PowerLauncher_SearchResults.Text" xml:space="preserve">
+  <data name="PowerLauncher_SearchResults.Header" xml:space="preserve">
     <value>Search &amp; results</value>
   </data>
   <data name="PowerLauncher_SearchResultPreference.Header" xml:space="preserve">
@@ -369,9 +378,6 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   </data>
   <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
     <value>Maximum number of results</value>
-  </data>
-  <data name="Shortcuts.Text" xml:space="preserve">
-    <value>Shortcuts</value>
   </data>
   <data name="PowerLauncher_OpenPowerLauncher.Header" xml:space="preserve">
     <value>Open PowerToys Run</value>
@@ -409,7 +415,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>FancyZones windows</value>
     <comment>do not loc the Product name</comment>
   </data>
-  <data name="About_FancyZones.ModuleDescription" xml:space="preserve">
+  <data name="FancyZones.ModuleDescription" xml:space="preserve">
     <value>Create window layouts to help make multi-tasking easy.</value>
     <comment>windows refers to application windows</comment>
   </data>
@@ -421,11 +427,11 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Enable FancyZones</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
-  <data name="FancyZones_ExcludeApps.Text" xml:space="preserve">
+  <data name="FancyZones_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
   </data>
-  <data name="FancyZones_ExcludeApps_TextBoxControl.Header" xml:space="preserve">
-    <value>To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.</value>
+  <data name="FancyZones_ExcludeApps.Description" xml:space="preserve">
+    <value>Excludes an application from snapping to zones and will only react to Windows Snap - add one application name per line</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
     <value>Zone opacity</value>
@@ -440,8 +446,16 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
     <value>Information Symbol</value>
   </data>
-  <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
+  <data name="FancyZones_LaunchEditorButtonControl.Header" xml:space="preserve">
     <value>Launch layout editor</value>
+    <comment>launches the FancyZones layout editor application</comment>
+  </data>
+  <data name="FancyZones_LaunchEditorButton_Accessible.AutomationProperties.Name" xml:space="preserve">
+    <value>Launch layout editor</value>
+    <comment>launches the FancyZones layout editor application</comment>
+  </data>
+  <data name="FancyZones_LaunchEditorButtonControl.Description" xml:space="preserve">
+    <value>Set and manage your layouts</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
@@ -453,8 +467,11 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows between zones across all monitors</value>
   </data>
-  <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
-    <value>Override Windows Snap shortcut (Win + Arrow) to move windows between zones</value>
+  <data name="FancyZones_OverrideSnapHotkeys.Header" xml:space="preserve">
+    <value>Override Windows Snap</value>
+  </data>
+  <data name="FancyZones_OverrideSnapHotkeys.Description" xml:space="preserve">
+    <value>This overrides the Windows Snap shortcut (Win + arrow) to move windows between zones</value>
   </data>
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Hold Shift key to activate zones while dragging</value>
@@ -467,33 +484,35 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_OpenWindowOnActiveMonitor.Content" xml:space="preserve">
-    <value>Move newly created windows to the current active monitor (EXPERIMENTAL)</value>
+    <value>Move newly created windows to the current active monitor (Experimental)</value>
   </data>
-  <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
-    <value>Follow mouse cursor instead of focus when launching editor in a multi screen environment</value>
+  <data name="FancyZones_UseCursorPosEditorStartupScreen.Header" xml:space="preserve">
+    <value>Launch editor where mouse cursor is</value>
   </data>
-  <data name="FancyZones_ZoneBehavior_GroupSettings.Text" xml:space="preserve">
+  <data name="FancyZones_UseCursorPosEditorStartupScreen.Description" xml:space="preserve">
+    <value>When using multiple screens, the editor will launch on the screen where the mouse cursor is</value>
+  </data>
+  <data name="FancyZones_ZoneBehavior_GroupSettings.Header" xml:space="preserve">
     <value>Zone behavior</value>
   </data>
-  <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
+  <data name="FancyZones_ZoneBehavior_GroupSettings.Description" xml:space="preserve">
+    <value>Manage how zones behave when using FancyZones</value>
+  </data>
+  <data name="FancyZones_Zones.Header" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="FancyZones_ZoneHighlightColor.Header" xml:space="preserve">
     <value>Zone highlight color</value>
   </data>
   <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
     <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>
   </data>
-  <data name="Give_Feedback.Label" xml:space="preserve">
-    <value>Give feedback</value>
-  </data>
-  <data name="Learn_More.Label" xml:space="preserve">
-    <value>Learn more</value>
-    <comment>This label is there to point people to additional overview for how to use the product</comment>
-  </data>
   <data name="AttributionTitle.Text" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
   </data>
-  <data name="About_PowerToys.ModuleTitle" xml:space="preserve">
-    <value>About PowerToys</value>
+  <data name="General.ModuleTitle" xml:space="preserve">
+    <value>General</value>
   </data>
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
@@ -501,28 +520,31 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
     <value>Update now</value>
   </data>
-  <data name="GeneralPage_PrivacyStatement_URL.Label" xml:space="preserve">
+  <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
     <value>Privacy statement</value>
   </data>
-  <data name="GeneralPage_ReportAbug.Label" xml:space="preserve">
+  <data name="GeneralPage_ReportAbug.Text" xml:space="preserve">
     <value>Report a bug</value>
     <comment>Report an issue inside powertoys</comment>
   </data>
-  <data name="GeneralPage_RequestAFeature_URL.Label" xml:space="preserve">
+  <data name="GeneralPage_RequestAFeature_URL.Text" xml:space="preserve">
     <value>Request a feature</value>
     <comment>Tell our team what we should build</comment>
   </data>
   <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
-    <value>Restart as administrator</value>
+    <value>Restart PowerToys as administrator</value>
     <comment>running PowerToys as a higher level user, account is typically referred to as an admin / administrator</comment>
   </data>
-  <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
+  <data name="GeneralPage_RunAtStartUp.Header" xml:space="preserve">
     <value>Run at startup</value>
   </data>
-  <data name="About_PowerRename.ModuleDescription" xml:space="preserve">
+  <data name="GeneralPage_RunAtStartUp.Description" xml:space="preserve">
+    <value>PowerToys will launch automatically</value>
+  </data>
+  <data name="PowerRename.ModuleDescription" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
   </data>
-  <data name="PowerRename_ShellIntegration.Text" xml:space="preserve">
+  <data name="PowerRename_ShellIntegration.Header" xml:space="preserve">
     <value>Shell integration</value>
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
@@ -534,16 +556,22 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Settings theme</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
-    <value>Show icon on context menu</value>
+    <value>Show in default context menu's</value>
+  </data>
+  <data name="PowerRename_Toggle_EnableOnContextMenu.Description" xml:space="preserve">
+    <value>PowerRename appears in the default context menu whenever you right-click one or multiple files</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
-    <value>Appear only in extended context menu (Shift + Right-click)</value>
+    <value>Show in extended context menu's</value>
+  </data>
+  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Description" xml:space="preserve">
+    <value>PowerRename only appears in extended context menu's (press Shift + right-click)</value>
   </data>
   <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
     <value>Maximum number of items</value>
   </data>
-  <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Content" xml:space="preserve">
-    <value>Show values from last use</value>
+  <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
+    <value>Show recently used strings</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
     <value>Enable Markdown (.md) preview</value>
@@ -557,32 +585,32 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Enable SVG (.svg) thumbnails</value>
     <comment>Do you want this feature on / off</comment>
   </data>
-  <data name="About_FileExplorerPreview.ModuleDescription" xml:space="preserve">
+  <data name="FileExplorerPreview.ModuleDescription" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
-  <data name="PowerRename_AutoCompleteHeader.Text" xml:space="preserve">
-    <value>Autocomplete</value>
+  <data name="PowerRename_AutoCompleteHeader.Header" xml:space="preserve">
+    <value>Auto-complete</value>
   </data>
-  <data name="OpenSource_Notice.Label" xml:space="preserve">
+  <data name="OpenSource_Notice.Text" xml:space="preserve">
     <value>Open-source notice</value>
   </data>
-  <data name="PowerRename_Toggle_AutoComplete.Content" xml:space="preserve">
-    <value>Enable autocomplete for the search and replace fields</value>
+  <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
+    <value>Enable auto-complete for the search and replace fields</value>
   </data>
-  <data name="FancyZones_BorderColor.Text" xml:space="preserve">
+  <data name="FancyZones_BorderColor.Header" xml:space="preserve">
     <value>Zone border color</value>
   </data>
-  <data name="FancyZones_InActiveColor.Text" xml:space="preserve">
+  <data name="FancyZones_InActiveColor.Header" xml:space="preserve">
     <value>Zone inactive color</value>
   </data>
-  <data name="About_ShortcutGuide.ModuleDescription" xml:space="preserve">
+  <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
   </data>
   <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
     <value>Press duration before showing (ms)</value>
     <comment>pressing a key in milliseconds</comment>
   </data>
-  <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
+  <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
@@ -592,20 +620,20 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
   </data>
-  <data name="ShortcutGuide_DisabledApps.Text" xml:space="preserve">
-    <value>Disable for apps</value>
+  <data name="ShortcutGuide_DisabledApps.Header" xml:space="preserve">
+    <value>Exclude apps</value>
   </data>
-  <data name="ShortcutGuide_DisabledApps_TextBoxControl.Header" xml:space="preserve">
-    <value>Turn off Shortcut Guide when these applications have focus. Add one application name per line.</value>
+  <data name="ShortcutGuide_DisabledApps.Description" xml:space="preserve">
+    <value>Turns off Shortcut Guide when these applications have focus - add one application name per line</value>
   </data>
   <data name="ShortcutGuide_DisabledApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
     <comment>Don't translate outlook.exe</comment>
   </data>
-  <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
+  <data name="ImageResizer_CustomSizes.Header" xml:space="preserve">
     <value>Image sizes</value>
   </data>
-  <data name="About_ImageResizer.ModuleDescription" xml:space="preserve">
+  <data name="ImageResizer.ModuleDescription" xml:space="preserve">
     <value>Lets you resize images by right-clicking.</value>
   </data>
   <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
@@ -637,15 +665,11 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
     <value>Remove</value>
     <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
-  <data name="RemoveTooltip.Text" xml:space="preserve">
-    <value>Remove</value>
-    <comment>Removes a user defined setting group for Image Resizer</comment>
-  </data>
   <data name="ImageResizer_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer</value>
   </data>
-  <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
-    <value>Add size</value>
+  <data name="ImageResizer_AddSizeButton.Content" xml:space="preserve">
+    <value>Add a size</value>
   </data>
   <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
     <value>Save sizes</value>
@@ -659,7 +683,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
     <value>TIFF compression</value>
   </data>
-  <data name="File.Text" xml:space="preserve">
+  <data name="File.Header" xml:space="preserve">
     <value>File</value>
     <comment>as in a computer file</comment>
   </data>
@@ -744,11 +768,14 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="On.Content" xml:space="preserve">
     <value>On</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Text" xml:space="preserve">
+  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Content" xml:space="preserve">
     <value>Learn more about administrator mode</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
-    <value>Download updates automatically (Except on metered connections)</value>
+    <value>Download updates automatically</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Description" xml:space="preserve">
+    <value>Except on metered connections</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
     <value>Currently running as administrator</value>
@@ -762,53 +789,50 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="GeneralSettings_RunningAsAdminText" xml:space="preserve">
     <value>Running as administrator</value>
   </data>
-  <data name="About_FancyZones.ModuleTitle" xml:space="preserve">
-    <value>About FancyZones</value>
+  <data name="FancyZones.ModuleTitle" xml:space="preserve">
+    <value>FancyZones</value>
   </data>
-  <data name="About_FileExplorerPreview.ModuleTitle" xml:space="preserve">
-    <value>About File Explorer</value>
+  <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
+    <value>File Explorer</value>
   </data>
   <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
     <value>File Explorer</value>
     <comment>Use same translation as Windows does for File Explorer</comment>
   </data>
-  <data name="About_ImageResizer.ModuleTitle" xml:space="preserve">
-    <value>About Image Resizer</value>
+  <data name="ImageResizer.ModuleTitle" xml:space="preserve">
+    <value>Image Resizer</value>
   </data>
-  <data name="About_KeyboardManager.ModuleTitle" xml:space="preserve">
-    <value>About Keyboard Manager</value>
+  <data name="KeyboardManager.ModuleTitle" xml:space="preserve">
+    <value>Keyboard Manager</value>
   </data>
-  <data name="About_ColorPicker.ModuleTitle" xml:space="preserve">
-    <value>About Color Picker</value>
+  <data name="ColorPicker.ModuleTitle" xml:space="preserve">
+    <value>Color Picker</value>
   </data>
-  <data name="About_PowerLauncher.ModuleTitle" xml:space="preserve">
-    <value>About PowerToys Run</value>
+  <data name="PowerLauncher.ModuleTitle" xml:space="preserve">
+    <value>PowerToys Run</value>
   </data>
   <data name="PowerToys_Run_Image.AutomationProperties.Name" xml:space="preserve">
     <value>PowerToys Run</value>
   </data>
-  <data name="About_PowerRename.ModuleTitle" xml:space="preserve">
-    <value>About PowerRename</value>
+  <data name="PowerRename.ModuleTitle" xml:space="preserve">
+    <value>PowerRename</value>
     <comment>do not loc the product name</comment>
   </data>
   <data name="PowerRename_Image.AutomationProperties.Name" xml:space="preserve">
     <value>PowerRename</value>
     <comment>do not loc</comment>
   </data>
-  <data name="About_ShortcutGuide.ModuleTitle" xml:space="preserve">
-    <value>About Shortcut Guide</value>
+  <data name="ShortcutGuide.ModuleTitle" xml:space="preserve">
+    <value>Shortcut Guide</value>
   </data>
   <data name="Shortcut_Guide_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Guide</value>
   </data>
-  <data name="General_Repository.Label" xml:space="preserve">
+  <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>
   </data>
-  <data name="General_Updates.Text" xml:space="preserve">
-    <value>Updates</value>
-  </data>
-  <data name="General_Version.Text" xml:space="preserve">
-    <value>Installed version:</value>
+  <data name="General_Version.Header" xml:space="preserve">
+    <value>Version</value>
   </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
@@ -816,11 +840,11 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>
   </data>
-  <data name="Admin_mode.Text" xml:space="preserve">
+  <data name="Admin_mode.Header" xml:space="preserve">
     <value>Administrator mode</value>
   </data>
-  <data name="General_RunAsAdminRequired.Text" xml:space="preserve">
-    <value>* You need to run as administrator to use this setting.</value>
+  <data name="General_RunAsAdminRequired.Title" xml:space="preserve">
+    <value>You need to run as administrator to use this setting.</value>
   </data>
   <data name="ShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts with the following hotkeys are valid:</value>
@@ -835,24 +859,23 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   <data name="ImageResizer_FileFormatDescription.Text" xml:space="preserve">
     <value>The following parameters can be used:</value>
   </data>
-  <data name="ImageResizer_FilenameFormatHeader.Text" xml:space="preserve">
+  <data name="ImageResizer_FilenameFormatHeader.Header" xml:space="preserve">
     <value>Filename format</value>
   </data>
   <data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
     <value>Use original date modified</value>
   </data>
-  <data name="Encoding.Text" xml:space="preserve">
+  <data name="Encoding.Header" xml:space="preserve">
     <value>Encoding</value>
   </data>
-  <data name="KeyboardManager_RemapKeyboardSubtitle.Text" xml:space="preserve">
-    <value>Remap keys to other keys or shortcuts.</value>
+  <data name="KeyboardManager_RemapKeyboardButton.Description" xml:space="preserve">
+    <value>Remap keys to other keys or shortcuts</value>
   </data>
-  <data name="KeyboardManager_RemapShortcutsSubtitle.Text" xml:space="preserve">
-    <value>Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.</value>
+  <data name="KeyboardManager_RemapShortcutsButton.Description" xml:space="preserve">
+    <value>Remap shortcuts to other shortcuts or keys for all or specific applications</value>
   </data>
-  <data name="About_PowerToys.ModuleDescription" xml:space="preserve">
+  <data name="General.ModuleDescription" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
-
 Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the OS</comment>
   </data>
@@ -887,19 +910,19 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
     <value>PowerToys is up to date.</value>
   </data>
-  <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Text" xml:space="preserve">
+  <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Header" xml:space="preserve">
     <value>Icon Preview</value>
   </data>
-  <data name="FileExplorerPreview_PreviewPane_GroupSettings.Text" xml:space="preserve">
+  <data name="FileExplorerPreview_PreviewPane_GroupSettings.Header" xml:space="preserve">
     <value>Preview Pane</value>
   </data>
-  <data name="FileExplorerPreview_RunAsAdminRequired.Text" xml:space="preserve">
-    <value>* You need to run as administrator to modify these settings.</value>
+  <data name="FileExplorerPreview_RunAsAdminRequired.Title" xml:space="preserve">
+    <value>You need to run as administrator to modify these settings.</value>
   </data>
-  <data name="FileExplorerPreview_AffectsAllUsers.Text" xml:space="preserve">
+  <data name="FileExplorerPreview_AffectsAllUsers.Title" xml:space="preserve">
     <value>The settings on this page affect all users on the system</value>
   </data>
-  <data name="FileExplorerPreview_RebootRequired.Text" xml:space="preserve">
+  <data name="FileExplorerPreview_RebootRequired.Title" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
@@ -909,7 +932,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
   </data>
-  <data name="ColorModeHeader.Text" xml:space="preserve">
+  <data name="ColorModeHeader.Header" xml:space="preserve">
     <value>Choose a mode</value>
   </data>
   <data name="Radio_Theme_Dark.Content" xml:space="preserve">
@@ -924,14 +947,18 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Windows default</value>
     <comment>Windows refers to the Operating system</comment>
   </data>
-  <data name="Windows_Color_Settings.Text" xml:space="preserve">
+  <data name="Windows_Color_Settings.Content" xml:space="preserve">
     <value>Windows color settings</value>
     <comment>Windows refers to the Operating system</comment>
   </data>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
-    <value>Color format for clipboard</value>
+    <value>Default color format</value>
   </data>
   <data name="ColorPickerFirst.Text" xml:space="preserve">
+    <value>Color Picker with editor mode enabled</value>
+    <comment>do not loc the product name</comment>
+  </data>
+  <data name="ColorPickerFirst_Accessible.AutomationProperties.Name" xml:space="preserve">
     <value>Color Picker with editor mode enabled</value>
     <comment>do not loc the product name</comment>
   </data>
@@ -942,28 +969,45 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="EditorFirst.Text" xml:space="preserve">
     <value>Editor</value>
   </data>
-  <data name="ColorPicker_ActivationAction.Text" xml:space="preserve">
+  <data name="EditorFirst_Accessible.AutomationProperties.Name" xml:space="preserve">
+    <value>Editor</value>
+  </data>
+  <data name="ColorPicker_ActivationAction.Header" xml:space="preserve">
     <value>Activation behavior</value>
   </data>
-  <data name="ColorFormats.Text" xml:space="preserve">
+  <data name="ColorFormats.Header" xml:space="preserve">
     <value>Picker behavior</value>
+  </data>
+  <data name="ColorPicker_CopiedColorRepresentation.Description" xml:space="preserve">
+    <value>This format will be copied to your clipboard</value>
   </data>
   <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
     <value>Learn more about remapping limitations</value>
     <comment>This is a link that will discuss what is and is not possible for Keyboard manager to remap</comment>
   </data>
-  <data name="FancyZones_Editor_GroupSettings.Text" xml:space="preserve">
+  <data name="FancyZones_Editor_GroupSettings.Header" xml:space="preserve">
     <value>Editor</value>
     <comment>refers to the FancyZone editor</comment>
   </data>
-  <data name="FancyZones_WindowBehavior_GroupSettings.Text" xml:space="preserve">
+  <data name="FancyZones_WindowBehavior_GroupSettings.Header" xml:space="preserve">
     <value>Window behavior</value>
   </data>
-  <data name="PowerRename_BehaviorHeader.Text" xml:space="preserve">
+  <data name="FancyZones_WindowBehavior_GroupSettings.Description" xml:space="preserve">
+    <value>Manage how windows behave when using FancyZones</value>
+  </data>
+  <data name="FancyZones_Windows.Header" xml:space="preserve">
+    <value>Windows</value>
+    <comment>refers to a set of windows, not the product name</comment>
+  </data>
+  <data name="PowerRename_BehaviorHeader.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
-  <data name="PowerRename_Toggle_UseBoostLib.Content" xml:space="preserve">
-    <value>Use Boost library (provides extended features but may use different regex syntax)</value>
+  <data name="PowerRename_Toggle_UseBoostLib.Header" xml:space="preserve">
+    <value>Use Boost library</value>
+    <comment>Boost is a product name, should not be translated</comment>
+  </data>
+  <data name="PowerRename_Toggle_UseBoostLib.Description" xml:space="preserve">
+    <value>Provides extended features but may use different regex syntax</value>
     <comment>Boost is a product name, should not be translated</comment>
   </data>
   <data name="MadeWithOssLove.Text" xml:space="preserve">
@@ -973,17 +1017,33 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Color Picker only</value>
     <comment>do not loc the product name</comment>
   </data>
+  <data name="ColorPickerOnly_Accessible.AutomationProperties.Name" xml:space="preserve">
+    <value>Color Picker only</value>
+    <comment>do not loc the product name</comment>
+  </data>
   <data name="ColorPickerOnly_Description.Text" xml:space="preserve">
     <value>Pick a color from the screen and copy formatted value to clipboard</value>
   </data>
   <data name="EditorFirst_Description.Text" xml:space="preserve">
     <value>Open directly into the editor mode</value>
   </data>
-  <data name="ColorPicker_ColorFormatsDescription.Text" xml:space="preserve">
-    <value>Editor color formats</value>
+  <data name="ColorPicker_ColorFormats.Header" xml:space="preserve">
+    <value>Color formats</value>
   </data>
-  <data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
+  <data name="ColorPicker_ColorFormats.Description" xml:space="preserve">
+    <value>Select which color formats (and in what order) should show up in the editor</value>
+  </data>
+  <data name="MoveUp.Text" xml:space="preserve">
+    <value>Move up</value>
+  </data>
+  <data name="MoveDown.Text" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+  <data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
     <value>Show color name</value>
+  </data>
+  <data name="ColorPicker_ShowColorName.Description" xml:space="preserve">
+    <value>This will show the name of the color when picking a color</value>
   </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
     <value>Large</value>
@@ -1007,7 +1067,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" xml:space="preserve">
     <value>Win + Left/Right to move windows based on zone index</value>
   </data>
-  <data name="ColorPicker_Editor.Text" xml:space="preserve">
+  <data name="ColorPicker_Editor.Header" xml:space="preserve">
     <value>Editor</value>
   </data>
   <data name="FancyZones_OverlappingZonesClosestCenter.Content" xml:space="preserve">
@@ -1023,13 +1083,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Activate the smallest zone by area</value>
   </data>
   <data name="FancyZones_OverlappingZones.Header" xml:space="preserve">
-    <value>When multiple zones overlap:</value>
+    <value>When multiple zones overlap</value>
   </data>
-  <data name="PowerLauncher_Plugins.Text" xml:space="preserve">
+  <data name="PowerLauncher_Plugins.Header" xml:space="preserve">
     <value>Plugins</value>
   </data>
-  <data name="PowerLauncher_ActionKeyword.Text" xml:space="preserve">
-    <value>Direct activation phrase</value>
+  <data name="PowerLauncher_ActionKeyword.Header" xml:space="preserve">
+    <value>Direct activation command</value>
   </data>
   <data name="PowerLauncher_AuthoredBy.Text" xml:space="preserve">
     <value>Authored by</value>
@@ -1044,23 +1104,33 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_AdditionalOptions.Text" xml:space="preserve">
     <value>Additional options</value>
   </data>
-  <data name="Run_NotAccessibleWarning.Text" xml:space="preserve">
-    <value>* Please define an activation phrase or allow this plugin for the global results to use it.</value>
+  <data name="Run_NotAccessibleWarning.Title" xml:space="preserve">
+    <value>Please define an activation command or allow this plugin for the global results to use it.</value>
   </data>
-  <data name="Run_AllPluginsDisabled.Text" xml:space="preserve">
-    <value>* PowerToys Run can't provide any results without plugins. Please enable at least one plugin.</value>
+  <data name="Run_AllPluginsDisabled.Title" xml:space="preserve">
+    <value>PowerToys Run can't provide any results without plugins</value>
   </data>
-  <data name="Run_NotAllowedActionKeyword.Text" xml:space="preserve">
-    <value>* This activation phrase overrides the behavior of other plugins. Please change it to something else.</value>
+  <data name="Run_AllPluginsDisabled.Message" xml:space="preserve">
+    <value>Enable at least one plugin to get started</value>
   </data>
-  <data name="Run_PluginUseDescription.Text" xml:space="preserve">
-    <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options.</value>
+  <data name="Run_NotAllowedActionKeyword.Title" xml:space="preserve">
+    <value>This activation command is already in use by another plugin.</value>
   </data>
-  <data name="Run_PositionAppearance_GroupSettings.Text" xml:space="preserve">
+  <data name="Run_PluginUseDescription.Header" xml:space="preserve">
+    <value>Plugins</value>
+  </data>
+  <data name="Run_PluginUseDescription.Description" xml:space="preserve">
+    <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options</value>
+  </data>
+  <data name="Run_PositionAppearance_GroupSettings.Header" xml:space="preserve">
     <value>Position &amp; appearance</value>
   </data>
-  <data name="Run_PositionHeader.Text" xml:space="preserve">
-    <value>Show PowerToys Run on</value>
+  <data name="Run_PositionHeader.Header" xml:space="preserve">
+    <value>Preferred monitor position</value>
+    <comment>as in Show PowerToys Run on primary monitor</comment>
+  </data>
+  <data name="Run_PositionHeader.Description" xml:space="preserve">
+    <value>If multiple monitors are in use, PowerToys Run can be launched on the desired monitor</value>
     <comment>as in Show PowerToys Run on primary monitor</comment>
   </data>
   <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
@@ -1084,14 +1154,20 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
     <value>Flash zones when switching layout</value>
   </data>
-  <data name="FancyZones_QuickLayoutSwitch.Content" xml:space="preserve">
+  <data name="FancyZones_Layouts.Header" xml:space="preserve">
+    <value>Layouts</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch.Header" xml:space="preserve">
     <value>Enable quick layout switch</value>
+  </data>
+  <data name="FancyZones_QuickLayoutSwitch.Description" xml:space="preserve">
+    <value>You can configure layout-specific shortcuts in the editor</value>
   </data>
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
   </data>
-  <data name="ShortcutGuide_OpenShortcutGuide.Header" xml:space="preserve">
-    <value>Open Shortcut Guide</value>
+  <data name="Activation_Shortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
   </data>
   <data name="Oobe_GetStarted.Text" xml:space="preserve">
     <value>Let's get started!</value>
@@ -1104,6 +1180,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Oobe_Launch.Text" xml:space="preserve">
     <value>Launch</value>
+  </data>
+  <data name="Launch_ColorPicker.Content" xml:space="preserve">
+    <value>Launch Color Picker</value>
   </data>
   <data name="Oobe_LearnMore.Text" xml:space="preserve">
     <value>Learn more about</value>
@@ -1135,18 +1214,19 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_VideoConference_Description" xml:space="preserve">
     <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
   </data>
-  <data name="Oobe_Overview_CheckoutLatestVersion.Text" xml:space="preserve">
-    <value>For returning users, check out what is new in our</value>
-  </data>
   <data name="Oobe_Overview_Description.Text" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.
-Take a moment to preview the various utilities listed or view our comprehensive documentation on</value>
+    
+Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>Microsoft Docs</value>
+    <value>Documentation on Microsoft Docs</value>
   </data>
   <data name="Oobe_Overview_LatestVersionLink.Text" xml:space="preserve">
-    <value>release notes</value>
+    <value>Release notes</value>
+  </data>
+  <data name="ReleaseNotes.Content" xml:space="preserve">
+    <value>Release notes</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
     <value>{Win} + {Shift} + {C} to open Color Picker.</value>
@@ -1219,10 +1299,6 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>FancyZones</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_FileExplorer" xml:space="preserve">
-    <value>File Explorer add-ons</value>
-    <comment>Do not localize this string</comment>
-  </data>
   <data name="Oobe_ImageResizer" xml:space="preserve">
     <value>Image Resizer</value>
     <comment>Do not localize this string</comment>
@@ -1247,17 +1323,21 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_VideoConference" xml:space="preserve">
-    <value>Video Conference</value>
+    <value>Video Conference Mute</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Welcome" xml:space="preserve">
     <value>Welcome</value>
   </data>
-  <data name="OOBE_Settings.Text" xml:space="preserve">
-    <value>Settings</value>
+  <data name="OOBE_Settings.Content" xml:space="preserve">
+    <value>Open Settings</value>
   </data>
-  <data name="Oobe_Button.Text" xml:space="preserve">
+  <data name="Oobe_NavViewItem.Content" xml:space="preserve">
     <value>Welcome to PowerToys</value>
+    <comment>Don't loc "PowerToys"</comment>
+  </data>
+  <data name="Feedback_NavViewItem.Content" xml:space="preserve">
+    <value>Give feedback</value>
   </data>
   <data name="OobeWindow_Title" xml:space="preserve">
     <value>Welcome to PowerToys</value>
@@ -1265,17 +1345,17 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
   </data>
-  <data name="About_Awake.ModuleTitle" xml:space="preserve">
-    <value>About Awake</value>
+  <data name="Awake.ModuleTitle" xml:space="preserve">
+    <value>Awake</value>
   </data>
-  <data name="About_Awake.ModuleDescription" xml:space="preserve">
+  <data name="Awake.ModuleDescription" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>
   </data>
   <data name="Awake_EnableAwake.Header" xml:space="preserve">
     <value>Enable Awake</value>
   </data>
   <data name="Awake_NoKeepAwakeContent.Text" xml:space="preserve">
-    <value>Off (Passive)</value>
+    <value>Inactive</value>
   </data>
   <data name="Awake_IndefiniteKeepAwakeContent.Text" xml:space="preserve">
     <value>Keep awake indefinitely</value>
@@ -1292,13 +1372,13 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Awake_TemporaryKeepAwakeDescription.Text" xml:space="preserve">
     <value>Keeps your PC awake until the set time elapses</value>
   </data>
-  <data name="Awake_EnableDisplayKeepAwake.Content" xml:space="preserve">
+  <data name="Awake_EnableDisplayKeepAwake.Header" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
-  <data name="Awake_Mode.Text" xml:space="preserve">
+  <data name="Awake_Mode.Header" xml:space="preserve">
     <value>Mode</value>
   </data>
-  <data name="Awake_Behavior_GroupSettings.Text" xml:space="preserve">
+  <data name="Awake_Behavior_GroupSettings.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
   <data name="Awake_TemporaryKeepAwake_Hours.Header" xml:space="preserve">
@@ -1320,8 +1400,8 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Oobe_Awake_TipsAndTricks.Text" xml:space="preserve">
     <value>You can always change modes quickly by {right-clicking the Awake icon} in the system tray.</value>
   </data>
-  <data name="General_FailedToDownloadTheNewVersion.Text" xml:space="preserve">
-    <value>* An error occurred trying to update to</value>
+  <data name="General_FailedToDownloadTheNewVersion.Title" xml:space="preserve">
+    <value>An error occurred trying to install this update:</value>
   </data>
   <data name="General_InstallNow.Content" xml:space="preserve">
     <value>Install now</value>
@@ -1329,22 +1409,22 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="General_ReadMore.Text" xml:space="preserve">
     <value>Read more</value>
   </data>
-  <data name="General_NewVersionAvailable.Text" xml:space="preserve">
-    <value>A new version is available: </value>
+  <data name="General_NewVersionAvailable.Title" xml:space="preserve">
+    <value>An update is available:</value>
   </data>
   <data name="General_Downloading.Text" xml:space="preserve">
     <value>Downloading...</value>
   </data>
   <data name="General_TryAgainToDownloadAndInstall.Content" xml:space="preserve">
-    <value>Try again to download and install</value>
+    <value>Try again to download &amp; install</value>
   </data>
   <data name="General_CheckingForUpdates.Text" xml:space="preserve">
     <value>Checking for updates...</value>
   </data>
-  <data name="General_NewVersionReadyToInstall.Text" xml:space="preserve">
-    <value>A new version is ready to install:</value>
+  <data name="General_NewVersionReadyToInstall.Title" xml:space="preserve">
+    <value>An update is ready to install:</value>
   </data>
-  <data name="General_UpToDate.Text" xml:space="preserve">
+  <data name="General_UpToDate.Title" xml:space="preserve">
     <value>PowerToys is up to date</value>
   </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
@@ -1371,9 +1451,6 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="ImageResizer_Unit_Pixel" xml:space="preserve">
     <value>Pixels</value>
   </data>
-  <data name="EditTooltip.Text" xml:space="preserve">
-    <value>Edit</value>
-  </data>
   <data name="EditButton.AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>
   </data>
@@ -1388,16 +1465,112 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Yes</value>
     <comment>Label of a confirmation button</comment>
   </data>
-  <data name="Learn_More_Description.AutomationProperties.Name" xml:space="preserve">
-    <value>Learn more</value>
+  <data name="SeeWhatsNew.Content" xml:space="preserve">
+    <value>See what's new</value>
+  </data>
+  <data name="Awake_Mode.Description" xml:space="preserve">
+    <value>Set the preferred behaviour or Awake</value>
+  </data>
+  <data name="ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="Enable_ColorFormat.AutomationProperties.Name" xml:space="preserve">
+    <value>Enable colorformat</value>
+  </data>
+  <data name="More_Options_Button.AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="More_Options_ButtonTooltip.Text" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="To.Text" xml:space="preserve">
+    <value>to</value>
+    <comment>as in: from x to y</comment>
+  </data>
+  <data name="LearnMore_Awake.Text" xml:space="preserve">
+    <value>Learn more about Awake</value>
+    <comment>Awake is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_ColorPicker.Text" xml:space="preserve">
+    <value>Learn more about Color Picker</value>
+    <comment>Color Picker is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_FancyZones.Text" xml:space="preserve">
+    <value>Learn more about FancyZones</value>
+    <comment>FancyZones is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_ImageResizer.Text" xml:space="preserve">
+    <value>Learn more about Image Resizer</value>
+    <comment>Image Resizer is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_KBM.Text" xml:space="preserve">
+    <value>Learn more about Keyboard Manager</value>
+    <comment>Keyboard Manager is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
+    <value>Learn more about File Explorer add-ons</value>
+    <comment>File Explorer is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_PowerRename.Text" xml:space="preserve">
+    <value>Learn more about PowerRename</value>
+    <comment>PowerRename is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_Run.Text" xml:space="preserve">
+    <value>Learn more about PowerToys Run</value>
+    <comment>PowerToys Run is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_ShortcutGuide.Text" xml:space="preserve">
+    <value>Learn more about Shortcut Guide</value>
+    <comment>Shortcut Guide is a product name, do not loc</comment>
+  </data>
+  <data name="LearnMore_VCM.Text" xml:space="preserve">
+    <value>Learn more about Video Conference Mute</value>
+    <comment>Video Conference Mute is a product name, do not loc</comment>
+  </data>
+  <data name="Oobe_FileExplorer" xml:space="preserve">
+    <value>File Explorer add-ons</value>
+    <comment>Do not localize this string</comment>
+  </data>
+  <data name="Launch_Run.Content" xml:space="preserve">
+    <value>Launch PowerToys Run</value>
+  </data>
+  <data name="Launch_ShortcutGuide.Content" xml:space="preserve">
+    <value>Launch Shortcut Guide</value>
   </data>
   <data name="ColorPicker_ColorFormat_ToggleSwitch.AutomationProperties.Name" xml:space="preserve">
     <value>Show format in editor</value>
   </data>
-  <data name="GeneralPage_Documentation.Label" xml:space="preserve">
-    <value>Open documentation</value>
+  <data name="GeneralPage_Documentation.Text" xml:space="preserve">
+    <value>Documentation</value>
   </data>
   <data name="PowerLauncher_SearchList.PlaceholderText" xml:space="preserve">
     <value>Search this list</value>
+  </data>
+  <data name="PowerLauncher_SearchList.AutomationProperties.Name" xml:space="preserve">
+    <value>Search this list</value>
+  </data>
+  <data name="Awake.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="ColorPicker.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="General.SecondaryLinksHeader" xml:space="preserve">
+    <value>Related information</value>
+  </data>
+  <data name="ImageResizer.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="PowerLauncher.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="PowerRename.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="EditTooltip.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="RemoveTooltip.Text" xml:space="preserve">
+    <value>Remove</value>
   </data>
 </root>

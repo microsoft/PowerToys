@@ -2,40 +2,22 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!--Common texts-->
-    <Style x:Key="PageTitleStyle" TargetType="TextBlock">
-        <Setter Property="VerticalAlignment" Value="Center" />
+    <Style x:Key="OobeSubtitleStyle" TargetType="TextBlock">
+        <Setter Property="Margin" Value="0,16,0,0" />
+        <Setter Property="Foreground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
+        <Setter Property="AutomationProperties.HeadingLevel" Value="Level3" />
+        <Setter Property="FontFamily" Value="XamlAutoFontFamily" />
+        <Setter Property="FontSize" Value="{StaticResource BodyTextBlockFontSize}" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="FontSize" Value="{StaticResource LargeFontSize}" />
-        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-        <Setter Property="TextWrapping" Value="NoWrap" />
-    </Style>
-
-    <Style x:Key="BodyTextStyle" TargetType="TextBlock">
-        <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="FontSize" Value="{StaticResource MediumFontSize}" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="LineStackingStrategy" Value="MaxHeight" />
+        <Setter Property="TextLineBounds" Value="Full" />
     </Style>
 
-
-    <Style x:Key="SettingsGroupTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource SubtitleTextBlockStyle}">
-        <Setter Property="Margin" Value="0,34,0,4" />
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="AutomationProperties.HeadingLevel" Value="Level2" />
-    </Style>
-
-    <Style x:Key="SettingsGroupTitleStyleAsHeader" TargetType="TextBlock" BasedOn="{StaticResource SettingsGroupTitleStyle}">
-        <Setter Property="Margin" Value="0,0,0,4" />
-    </Style>
-
-    <Style x:Key="OobeSubtitleStyle" TargetType="TextBlock">
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="Margin" Value="0,16,0,0" />
-    </Style>
-
-    <Style x:Key="SemiBoldBody" TargetType="TextBlock">
-        <Setter Property="FontWeight" Value="SemiBold"/>
+    <x:Double x:Key="SecondaryTextFontSize">12</x:Double>
+    <Style x:Key="SecondaryTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource SecondaryTextFontSize}"/>
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
     </Style>
 </ResourceDictionary>
