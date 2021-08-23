@@ -1226,7 +1226,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Release notes</value>
   </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
-   <value>Release notes</value>
+    <value>Release notes</value>
   </data>
   <data name="Oobe_ColorPicker_HowToUse.Text" xml:space="preserve">
     <value>{Win} + {Shift} + {C} to open Color Picker.</value>
@@ -1540,8 +1540,8 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="ColorPicker_ColorFormat_ToggleSwitch.AutomationProperties.Name" xml:space="preserve">
     <value>Show format in editor</value>
   </data>
-  <data name="GeneralPage_Documentation.Label" xml:space="preserve">
-    <value>Open documentation</value>
+  <data name="GeneralPage_Documentation.Text" xml:space="preserve">
+    <value>Documentation</value>
   </data>
   <data name="PowerLauncher_SearchList.PlaceholderText" xml:space="preserve">
     <value>Search this list</value>
