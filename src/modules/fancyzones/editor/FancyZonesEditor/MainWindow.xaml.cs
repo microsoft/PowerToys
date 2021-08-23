@@ -30,7 +30,6 @@ namespace FancyZonesEditor
 
         private ContentDialog _openedDialog;
         private TextBlock _createLayoutAnnounce;
-        private bool _openingDialog = false; // Is the dialog being opened.
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
@@ -281,31 +280,24 @@ namespace FancyZonesEditor
         private async void EditLayout_Click(object sender, RoutedEventArgs e)
         {
             // Avoid trying to open the same dialog twice.
-            if (!_openingDialog)
+            if (_openedDialog != null)
             {
-                _openingDialog = true;
-                try
-                {
-                    var dataContext = ((FrameworkElement)sender).DataContext;
-                    Select((LayoutModel)dataContext);
-
-                    if (_settings.SelectedModel is GridLayoutModel grid)
-                    {
-                        _backup = new GridLayoutModel(grid, false);
-                    }
-                    else if (_settings.SelectedModel is CanvasLayoutModel canvas)
-                    {
-                        _backup = new CanvasLayoutModel(canvas, false);
-                    }
-
-                    await EditLayoutDialog.ShowAsync();
-                }
-                catch
-                {
-                    _openingDialog = false;
-                    throw;
-                }
+                return;
             }
+
+            var dataContext = ((FrameworkElement)sender).DataContext;
+            Select((LayoutModel)dataContext);
+
+            if (_settings.SelectedModel is GridLayoutModel grid)
+            {
+                _backup = new GridLayoutModel(grid, false);
+            }
+            else if (_settings.SelectedModel is CanvasLayoutModel canvas)
+            {
+                _backup = new CanvasLayoutModel(canvas, false);
+            }
+
+            await EditLayoutDialog.ShowAsync();
         }
 
         private void EditZones_Click(object sender, RoutedEventArgs e)
@@ -454,7 +446,6 @@ namespace FancyZonesEditor
 
         private void Dialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
-            _openingDialog = false;
             _openedDialog = null;
         }
 
