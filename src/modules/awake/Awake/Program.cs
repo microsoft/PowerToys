@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows;
 using Awake.Core;
+using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using NLog;
@@ -27,8 +28,6 @@ namespace Awake
     internal class Program
     {
         private static Mutex? _mutex = null;
-        private const string AppName = "Awake";
-        private const string FullAppName = "PowerToys " + AppName;
         private static FileSystemWatcher? _watcher = null;
         private static SettingsUtils? _settingsUtils = null;
 
@@ -36,17 +35,25 @@ namespace Awake
 
         private static Logger? _log;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        private static ConsoleEventHandler _handler;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+        private static ManualResetEvent _exitSignal = new ManualResetEvent(false);
+
         private static int Main(string[] args)
         {
-            bool instantiated;
-            LockMutex = new Mutex(true, AppName, out instantiated);
+            // Log initialization needs to always happen before we test whether
+            // only one instance of Awake is running.
+            _log = LogManager.GetCurrentClassLogger();
+
+            LockMutex = new Mutex(true, InternalConstants.AppName, out bool instantiated);
 
             if (!instantiated)
             {
-                ForceExit(AppName + " is already running! Exiting the application.", 1);
+                Exit(InternalConstants.AppName + " is already running! Exiting the application.", 1, true);
             }
 
-            _log = LogManager.GetCurrentClassLogger();
             _settingsUtils = new SettingsUtils();
 
             _log.Info("Launching PowerToys Awake...");
@@ -56,7 +63,7 @@ namespace Awake
 
             _log.Info("Parsing parameters...");
 
-            var configOption = new Option<bool>(
+            Option<bool>? configOption = new Option<bool>(
                     aliases: new[] { "--use-pt-config", "-c" },
                     getDefaultValue: () => false,
                     description: "Specifies whether PowerToys Awake will be using the PowerToys configuration file for managing the state.")
@@ -69,7 +76,7 @@ namespace Awake
 
             configOption.Required = false;
 
-            var displayOption = new Option<bool>(
+            Option<bool>? displayOption = new Option<bool>(
                     aliases: new[] { "--display-on", "-d" },
                     getDefaultValue: () => true,
                     description: "Determines whether the display should be kept awake.")
@@ -82,7 +89,7 @@ namespace Awake
 
             displayOption.Required = false;
 
-            var timeOption = new Option<uint>(
+            Option<uint>? timeOption = new Option<uint>(
                     aliases: new[] { "--time-limit", "-t" },
                     getDefaultValue: () => 0,
                     description: "Determines the interval, in seconds, during which the computer is kept awake.")
@@ -95,7 +102,7 @@ namespace Awake
 
             timeOption.Required = false;
 
-            var pidOption = new Option<int>(
+            Option<int>? pidOption = new Option<int>(
                     aliases: new[] { "--pid", "-p" },
                     getDefaultValue: () => 0,
                     description: "Bind the execution of PowerToys Awake to another process.")
@@ -108,7 +115,7 @@ namespace Awake
 
             pidOption.Required = false;
 
-            var rootCommand = new RootCommand
+            RootCommand? rootCommand = new RootCommand
             {
                 configOption,
                 displayOption,
@@ -116,7 +123,7 @@ namespace Awake
                 pidOption,
             };
 
-            rootCommand.Description = AppName;
+            rootCommand.Description = InternalConstants.AppName;
 
             rootCommand.Handler = CommandHandler.Create<bool, bool, uint, int>(HandleCommandLineArguments);
 
@@ -125,14 +132,38 @@ namespace Awake
             return rootCommand.InvokeAsync(args).Result;
         }
 
-        private static void ForceExit(string message, int exitCode)
+        private static bool ExitHandler(ControlType ctrlType)
+        {
+            _log.Info($"Exited through handler with control type: {ctrlType}");
+
+            Exit("Exiting from the internal termination handler.", Environment.ExitCode);
+
+            return false;
+        }
+
+        private static void Exit(string message, int exitCode, bool force = false)
         {
             _log.Info(message);
-            Environment.Exit(exitCode);
+
+            APIHelper.SetNoKeepAwake();
+            TrayHelper.ClearTray();
+
+            // Because we are running a message loop for the tray, we can't just use Environment.Exit,
+            // but have to make sure that we properly send the termination message.
+            bool cwResult = System.Diagnostics.Process.GetCurrentProcess().CloseMainWindow();
+            _log.Info($"Request to close main window status: {cwResult}");
+
+            if (force)
+            {
+                Environment.Exit(exitCode);
+            }
         }
 
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid)
         {
+            _handler += new ConsoleEventHandler(ExitHandler);
+            APIHelper.SetConsoleControlHandler(_handler, true);
+
             if (pid == 0)
             {
                 _log.Info("No PID specified. Allocating console...");
@@ -150,11 +181,18 @@ namespace Awake
                 // and instead watch for changes in the file.
                 try
                 {
-#pragma warning disable CS8604 // Possible null reference argument.
-                    TrayHelper.InitializeTray(FullAppName, new Icon(Application.GetResourceStream(new Uri("/Images/Awake.ico", UriKind.Relative)).Stream));
-#pragma warning restore CS8604 // Possible null reference argument.
+                    new Thread(() =>
+                    {
+                        EventWaitHandle? eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.AwakeExitEvent());
+                        if (eventHandle.WaitOne())
+                        {
+                            Exit("Received a signal to end the process. Making sure we quit...", 0, true);
+                        }
+                    }).Start();
 
-                    var settingsPath = _settingsUtils.GetSettingsFilePath(AppName);
+                    TrayHelper.InitializeTray(InternalConstants.FullAppName, new Icon(Application.GetResourceStream(new Uri("/Images/Awake.ico", UriKind.Relative)).Stream));
+
+                    string? settingsPath = _settingsUtils.GetSettingsFilePath(InternalConstants.AppName);
                     _log.Info($"Reading configuration file: {settingsPath}");
 
                     _watcher = new FileSystemWatcher
@@ -165,22 +203,22 @@ namespace Awake
                         Filter = Path.GetFileName(settingsPath),
                     };
 
-                    var changedObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                    IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? changedObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
                             h => _watcher.Changed += h,
                             h => _watcher.Changed -= h);
 
-                    var createdObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
+                    IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? createdObservable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(
                             cre => _watcher.Created += cre,
                             cre => _watcher.Created -= cre);
 
-                    var mergedObservable = Observable.Merge(changedObservable, createdObservable);
+                    IObservable<System.Reactive.EventPattern<FileSystemEventArgs>>? mergedObservable = Observable.Merge(changedObservable, createdObservable);
 
                     mergedObservable.Throttle(TimeSpan.FromMilliseconds(25))
                         .SubscribeOn(TaskPoolScheduler.Default)
                         .Select(e => e.EventArgs)
                         .Subscribe(HandleAwakeConfigChange);
 
-                    TrayHelper.SetTray(FullAppName, new AwakeSettings());
+                    TrayHelper.SetTray(InternalConstants.FullAppName, new AwakeSettings());
 
                     // Initially the file might not be updated, so we need to start processing
                     // settings right away.
@@ -188,14 +226,14 @@ namespace Awake
                 }
                 catch (Exception ex)
                 {
-                    var errorString = $"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}";
+                    string? errorString = $"There was a problem with the configuration file. Make sure it exists.\n{ex.Message}";
                     _log.Info(errorString);
                     _log.Debug(errorString);
                 }
             }
             else
             {
-                var mode = timeLimit <= 0 ? AwakeMode.INDEFINITE : AwakeMode.TIMED;
+                AwakeMode mode = timeLimit <= 0 ? AwakeMode.INDEFINITE : AwakeMode.TIMED;
 
                 if (mode == AwakeMode.INDEFINITE)
                 {
@@ -207,22 +245,19 @@ namespace Awake
                 }
             }
 
-            var exitSignal = new ManualResetEvent(false);
             if (pid != 0)
             {
                 RunnerHelper.WaitForPowerToysRunner(pid, () =>
                 {
-                    exitSignal.Set();
-                    Environment.Exit(0);
+                    Exit("Terminating from PowerToys binding hook.", 0, true);
                 });
             }
 
-            exitSignal.WaitOne();
+            _exitSignal.WaitOne();
         }
 
         private static void SetupIndefiniteKeepAwake(bool displayOn)
         {
-            // Indefinite keep awake.
             APIHelper.SetIndefiniteKeepAwake(LogCompletedKeepAwakeThread, LogUnexpectedOrCancelledKeepAwakeThreadCompletion, displayOn);
         }
 
@@ -237,7 +272,7 @@ namespace Awake
         {
             try
             {
-                AwakeSettings settings = _settingsUtils.GetSettings<AwakeSettings>(AppName);
+                AwakeSettings settings = _settingsUtils.GetSettings<AwakeSettings>(InternalConstants.AppName);
 
                 if (settings != null)
                 {
@@ -251,14 +286,12 @@ namespace Awake
 
                         case AwakeMode.INDEFINITE:
                             {
-                                // Indefinite keep awake.
                                 SetupIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
                                 break;
                             }
 
                         case AwakeMode.TIMED:
                             {
-                                // Timed keep-awake.
                                 uint computedTime = (settings.Properties.Hours * 60 * 60) + (settings.Properties.Minutes * 60);
                                 SetupTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
 
@@ -267,25 +300,25 @@ namespace Awake
 
                         default:
                             {
-                                var errorMessage = "Unknown mode of operation. Check config file.";
+                                string? errorMessage = "Unknown mode of operation. Check config file.";
                                 _log.Info(errorMessage);
                                 _log.Debug(errorMessage);
                                 break;
                             }
                     }
 
-                    TrayHelper.SetTray(FullAppName, settings);
+                    TrayHelper.SetTray(InternalConstants.FullAppName, settings);
                 }
                 else
                 {
-                    var errorMessage = "Settings are null.";
+                    string? errorMessage = "Settings are null.";
                     _log.Info(errorMessage);
                     _log.Debug(errorMessage);
                 }
             }
             catch (Exception ex)
             {
-                var errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
+                string? errorMessage = $"There was a problem reading the configuration file. Error: {ex.GetType()} {ex.Message}";
                 _log.Info(errorMessage);
                 _log.Debug(errorMessage);
             }
@@ -307,7 +340,7 @@ namespace Awake
 
         private static void LogUnexpectedOrCancelledKeepAwakeThreadCompletion()
         {
-            var errorMessage = "The keep-awake thread was terminated early.";
+            string? errorMessage = "The keep-awake thread was terminated early.";
             _log.Info(errorMessage);
             _log.Debug(errorMessage);
         }

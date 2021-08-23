@@ -43,79 +43,82 @@ namespace UnitTestsVersionHelper
         }
         TEST_METHOD (stringConstructorShouldProperlyInitializationVersionNumbers)
         {
-            VersionHelper sut("v0.12.3");
-
-            Assert::AreEqual(0ull, sut.major);
-            Assert::AreEqual(12ull, sut.minor);
-            Assert::AreEqual(3ull, sut.revision);
+            auto sut = VersionHelper::fromString("v0.12.3");
+            Assert::IsTrue(sut.has_value());
+            Assert::AreEqual(0ull, sut->major);
+            Assert::AreEqual(12ull, sut->minor);
+            Assert::AreEqual(3ull, sut->revision);
         }
         TEST_METHOD (stringConstructorShouldProperlyInitializationWithDifferentVersionNumbers)
         {
-            VersionHelper sut("v2.25.1");
+            auto sut = VersionHelper::fromString(L"v2.25.1");
+            Assert::IsTrue(sut.has_value());
 
-            Assert::AreEqual(2ull, sut.major);
-            Assert::AreEqual(25ull, sut.minor);
-            Assert::AreEqual(1ull, sut.revision);
+            Assert::AreEqual(2ull, sut->major);
+            Assert::AreEqual(25ull, sut->minor);
+            Assert::AreEqual(1ull, sut->revision);
         }
         TEST_METHOD (emptyStringNotAccepted)
         {
-            Assert::ExpectException<std::logic_error>([] {
-                VersionHelper sut("");
-            });
+            auto sut = VersionHelper::fromString("");
+
+            Assert::IsFalse(sut.has_value());
         }
         TEST_METHOD (invalidStringNotAccepted1)
         {
-            Assert::ExpectException<std::logic_error>([] {
-                VersionHelper sut("v2a.");
-            });
+            auto sut = VersionHelper::fromString(L"v2a.");
+
+            Assert::IsFalse(sut.has_value());
         }
         TEST_METHOD (invalidStringNotAccepted2)
         {
-            Assert::ExpectException<std::logic_error>([] {
-                VersionHelper sut("12abc2vv.0");
-            });
+            auto sut = VersionHelper::fromString(L"12abc2vv.0");
+
+            Assert::IsFalse(sut.has_value());
         }
         TEST_METHOD (invalidStringNotAccepted3)
         {
-            Assert::ExpectException<std::logic_error>([] {
-                VersionHelper sut("123");
-            });
+            auto sut = VersionHelper::fromString("123");
+
+            Assert::IsFalse(sut.has_value());
         }
         TEST_METHOD (invalidStringNotAccepted4)
         {
-            Assert::ExpectException<std::logic_error>([] {
-                VersionHelper sut("v1v2v3");
-            });
+            auto sut = VersionHelper::fromString(L"v1v2v3");
+
+            Assert::IsFalse(sut.has_value());
         }
         TEST_METHOD (invalidStringNotAccepted5)
         {
-            Assert::ExpectException<std::logic_error>([] {
-                VersionHelper sut("v.1.2.3v");
-            });
+            auto sut = VersionHelper::fromString("v.1.2.3v");
+
+            Assert::IsFalse(sut.has_value());
         }
         TEST_METHOD (partialVersionStringNotAccepted1)
         {
-            Assert::ExpectException<std::logic_error>([] {
-                VersionHelper sut("v1.");
-            });
+            auto sut = VersionHelper::fromString(L"v1.");
+
+            Assert::IsFalse(sut.has_value());
         }
         TEST_METHOD (partialVersionStringNotAccepted2)
         {
-            Assert::ExpectException<std::logic_error>([] {
-                VersionHelper sut("v1.2");
-            });
+            auto sut = VersionHelper::fromString("v1.2");
+
+            Assert::IsFalse(sut.has_value());
         }
         TEST_METHOD (partialVersionStringNotAccepted3)
         {
-            Assert::ExpectException<std::logic_error>([] {
-                VersionHelper sut("v1.2.");
-            });
+            auto sut = VersionHelper::fromString(L"v1.2.");
+
+            Assert::IsFalse(sut.has_value());
         }
         TEST_METHOD (parsedWithoutLeadingV)
         {
             VersionHelper expected{ 12ull, 13ull, 111ull };
-            VersionHelper actual("12.13.111");
-            Assert::AreEqual(actual, expected);
+            auto actual = VersionHelper::fromString(L"12.13.111");
+
+            Assert::IsTrue(actual.has_value());
+            Assert::AreEqual(*actual, expected);
         }
         TEST_METHOD (whenMajorVersionIsGreaterComparisonOperatorShouldReturnProperValue)
         {

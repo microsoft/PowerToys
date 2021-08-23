@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:FancyZonesEditor"
              xmlns:ui="http://schemas.modernwpf.com/2019"
-             Startup="OnStartup">
+             Startup="OnStartup"
+             Exit="OnExit">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

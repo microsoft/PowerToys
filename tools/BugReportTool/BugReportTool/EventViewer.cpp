@@ -15,6 +15,7 @@ namespace
     std::vector<std::wstring> processes = 
     {
         L"PowerToys.exe",
+        L"PowerToys.Settings.exe",
         L"ColorPickerUI.exe",
         L"PowerToys.Awake.exe",
         L"FancyZonesEditor.exe",

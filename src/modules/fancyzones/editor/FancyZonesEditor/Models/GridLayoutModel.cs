@@ -146,8 +146,8 @@ namespace FancyZonesEditor.Models
             CellChildMap = cellChildMap;
         }
 
-        public GridLayoutModel(GridLayoutModel other)
-            : base(other)
+        public GridLayoutModel(GridLayoutModel other, bool enableQuickKeysPropertyChangedSubscribe = true)
+            : base(other, enableQuickKeysPropertyChangedSubscribe)
         {
             _rows = other._rows;
             _cols = other._cols;

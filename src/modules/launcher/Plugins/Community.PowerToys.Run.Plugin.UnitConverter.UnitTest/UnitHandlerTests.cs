@@ -1,13 +1,16 @@
-﻿using System.Globalization;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Linq;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
 {
-    [TestFixture]
+    [TestClass]
     public class UnitHandlerTests
     {
-        [Test]
+        [TestMethod]
         public void HandleTemperature()
         {
             var convertModel = new ConvertModel(1, "DegreeCelsius", "DegreeFahrenheit");
@@ -15,7 +18,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
             Assert.AreEqual(33.79999999999999d, result);
         }
 
-        [Test]
+        [TestMethod]
         public void HandleLength()
         {
             var convertModel = new ConvertModel(1, "meter", "centimeter");
@@ -23,7 +26,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
             Assert.AreEqual(100, result);
         }
 
-        [Test]
+        [TestMethod]
         public void HandlesByteCapitals()
         {
             var convertModel = new ConvertModel(1, "kB", "kb");
@@ -31,7 +34,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
             Assert.AreEqual(8, result);
         }
 
-        [Test]
+        [TestMethod]
         public void HandleInvalidModel()
         {
             var convertModel = new ConvertModel(1, "aa", "bb");

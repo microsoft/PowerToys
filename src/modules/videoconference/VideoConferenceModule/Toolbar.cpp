@@ -13,6 +13,7 @@ Toolbar* toolbar = nullptr;
 const int REFRESH_RATE = 100;
 const int OVERLAY_SHOW_TIME = 500;
 const int BORDER_OFFSET = 12;
+const int TOP_RIGHT_BORDER_OFFSET = 40;
 
 Toolbar::Toolbar()
 {
@@ -256,7 +257,7 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
         else //"Top right corner" or non-present
         {
             positionX = monitorInfo.right() - overlayWidth - BORDER_OFFSET;
-            positionY = monitorInfo.top() + BORDER_OFFSET;
+            positionY = monitorInfo.top() + TOP_RIGHT_BORDER_OFFSET;
         }
 
         HWND hwnd;

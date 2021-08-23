@@ -294,7 +294,7 @@ void Trace::VirtualDesktopChanged() noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::ZoneWindow::KeyUp(WPARAM wParam) noexcept
+void Trace::WorkArea::KeyUp(WPARAM wParam) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
@@ -304,7 +304,7 @@ void Trace::ZoneWindow::KeyUp(WPARAM wParam) noexcept
         TraceLoggingValue(wParam, KeyboardValueKey));
 }
 
-void Trace::ZoneWindow::MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
+void Trace::WorkArea::MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWrite(
@@ -317,7 +317,7 @@ void Trace::ZoneWindow::MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet)
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
 }
 
-void Trace::ZoneWindow::CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> activeSet, InputMode mode) noexcept
+void Trace::WorkArea::CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> activeSet, InputMode mode) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWrite(

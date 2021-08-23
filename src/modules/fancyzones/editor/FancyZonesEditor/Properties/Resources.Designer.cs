@@ -466,6 +466,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to custom layout was created successfully..
+        /// </summary>
+        public static string Layout_Creation_Announce {
+            get {
+                return ResourceManager.GetString("Layout_Creation_Announce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create layouts that are horizontally or vertically stacked.
         /// </summary>
         public static string Layout_Grid_Description {
@@ -525,6 +534,15 @@ namespace FancyZonesEditor.Properties {
         public static string Name {
             get {
                 return ResourceManager.GetString("Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New zone added.
+        /// </summary>
+        public static string New_zone_added {
+            get {
+                return ResourceManager.GetString("New_zone_added", resourceCulture);
             }
         }
         

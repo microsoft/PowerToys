@@ -120,6 +120,9 @@
   <data name="Add_zone" xml:space="preserve">
     <value>Add new zone</value>
   </data>
+  <data name="New_zone_added" xml:space="preserve">
+    <value>New zone added</value>
+  </data>
   <data name="Apply" xml:space="preserve">
     <value>Apply</value>
   </data>
@@ -359,5 +362,8 @@
   </data>
   <data name="Edit_Layout" xml:space="preserve">
     <value>Edit layout</value>
+  </data>
+    <data name="Layout_Creation_Announce" xml:space="preserve">
+    <value>custom layout was created successfully.</value>
   </data>
 </root>

@@ -105,7 +105,13 @@
     <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
       <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\SidePanel\SettingsPageControl.xaml.cs">
+      <DependentUpon>SettingsPageControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SidePanel\SidePanelLink.cs" />
     <Compile Include="Converters\AwakeModeToBoolConverter.cs" />
+    <Compile Include="Converters\ImageResizerFitToStringConverter.cs" />
+    <Compile Include="Converters\ImageResizerUnitToStringConverter.cs" />
     <Compile Include="Converters\ModuleEnabledToOpacityConverter.cs" />
     <Compile Include="Converters\UpdatingStateCannotDownloadToVisibilityConverter.cs" />
     <Compile Include="Converters\UpdatingStateReadyToDownloadToVisibilityConverter.cs" />
@@ -273,13 +279,10 @@
       <Version>6.1.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.5.0-prerelease.200923002</Version>
+      <Version>2.6.0-prerelease.210623001</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
       <Version>1.1.118</Version>
@@ -309,6 +312,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\ShortcutVisualControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\SidePanel\SettingsPageControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

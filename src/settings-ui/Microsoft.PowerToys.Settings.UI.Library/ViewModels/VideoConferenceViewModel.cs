@@ -8,7 +8,7 @@ using System.Linq;
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -28,10 +28,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
+        private Func<Task<string>> PickFileDialog { get; }
+
         private string _settingsConfigFileFolder = string.Empty;
 
-        public VideoConferenceViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public VideoConferenceViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<Task<string>> pickFileDialog, string configFileSubfolder = "")
         {
+            PickFileDialog = pickFileDialog;
+
             if (settingsRepository == null)
             {
                 throw new ArgumentNullException(nameof(settingsRepository));
@@ -161,21 +165,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             RaisePropertyChanged(nameof(CameraImageOverlayPath));
         }
 
-        private void SelectOverlayImageAction()
+        private async void SelectOverlayImageAction()
         {
             try
             {
-                string pickedImage = null;
-                using (OpenFileDialog openFileDialog = new OpenFileDialog())
-                {
-                    openFileDialog.Filter = "Image Files (*.jpeg;*.jpg;*.png)|*.jpeg;*.jpg;*.png";
-                    openFileDialog.RestoreDirectory = true;
-                    if (openFileDialog.ShowDialog() == DialogResult.OK)
-                    {
-                        pickedImage = openFileDialog.FileName;
-                    }
-                }
-
+                string pickedImage = await PickFileDialog().ConfigureAwait(true);
                 if (pickedImage != null)
                 {
                     CameraImageOverlayPath = pickedImage;
@@ -417,8 +411,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(propertyName);
             SndVideoConferenceSettings outsettings = new SndVideoConferenceSettings(Settings);
             SndModuleSettings<SndVideoConferenceSettings> ipcMessage = new SndModuleSettings<SndVideoConferenceSettings>(outsettings);
-
             SendConfigMSG(ipcMessage.ToJsonString());
+            _settingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
         }
     }
 

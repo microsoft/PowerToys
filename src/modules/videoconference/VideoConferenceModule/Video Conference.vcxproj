@@ -78,7 +78,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>mfplat.lib;mf.lib;mfreadwrite.lib;mfuuid.lib;shlwapi.lib;gdiplus.lib;dwmapi.lib;uxtheme.lib;shcore.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shlwapi.lib;gdiplus.lib;dwmapi.lib;uxtheme.lib;shcore.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /I  "$(ProjectDir)Icons\*" "$(OutDir)Icons"
@@ -101,7 +101,7 @@ xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>mfplat.lib;mf.lib;mfreadwrite.lib;mfuuid.lib;shlwapi.lib;gdiplus.lib;dwmapi.lib;uxtheme.lib;shcore.lib;Wtsapi32.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shlwapi.lib;gdiplus.lib;dwmapi.lib;uxtheme.lib;shcore.lib;Wtsapi32.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /I  "$(ProjectDir)Icons\*" "$(OutDir)Icons"

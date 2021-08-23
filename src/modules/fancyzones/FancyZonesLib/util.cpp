@@ -12,12 +12,14 @@
 #include <wil/Resource.h>
 
 #include <fancyzones/FancyZonesLib/FancyZonesDataTypes.h>
+#include <fancyzones/FancyZonesLib/FancyZonesWindowProperties.h>
 
 // Non-Localizable strings
 namespace NonLocalizable
 {
     const wchar_t PowerToysAppPowerLauncher[] = L"POWERLAUNCHER.EXE";
     const wchar_t PowerToysAppFZEditor[] = L"FANCYZONESEDITOR.EXE";
+    const wchar_t SplashClassName[] = L"MsoSplash";
 }
 
 bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what)
@@ -604,6 +606,17 @@ namespace FancyZonesUtils
         return SUCCEEDED(CLSIDFromString(str.c_str(), &id));
     }
 
+    std::optional<std::wstring> GuidToString(const GUID& guid) noexcept
+    {
+        wil::unique_cotaskmem_string guidString;
+        if (SUCCEEDED(StringFromCLSID(guid, &guidString)))
+        {
+            return guidString.get();
+        }
+
+        return std::nullopt;
+    }
+
     bool IsValidDeviceId(const std::wstring& str)
     {
         std::wstring monitorName;
@@ -860,6 +873,17 @@ namespace FancyZonesUtils
             }
         }
         return false;
+    }
+
+    bool IsSplashScreen(HWND window)
+    {
+        wchar_t className[MAX_PATH];
+        if (GetClassName(window, className, MAX_PATH) == 0)
+        {
+            return false;
+        }
+
+        return wcscmp(NonLocalizable::SplashClassName, className) == 0;
     }
 
 }

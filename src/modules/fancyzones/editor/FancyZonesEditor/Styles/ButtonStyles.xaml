@@ -1,8 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:ui="http://schemas.modernwpf.com/2019"
-                    xmlns:primitives="clr-namespace:ModernWpf.Controls.Primitives"
-                    xmlns:local="clr-namespace:FancyZonesEditor.Styles">
+                    xmlns:ui="http://schemas.modernwpf.com/2019">
     
     <Style x:Key="LayoutTypeRadioButtonStyle" TargetType="RadioButton">
         <Setter Property="OverridesDefaultStyle" Value="True" />
@@ -155,4 +153,5 @@
             </Setter.Value>
         </Setter>
     </Style>
+
 </ResourceDictionary>

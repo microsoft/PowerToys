@@ -10,6 +10,8 @@
 
 #include <windef.h>
 
+#include <FancyZonesLib/Zone.h>
+
 namespace FancyZonesDataTypes
 {
     enum class ZoneSetLayoutType : int
@@ -117,7 +119,7 @@ namespace FancyZonesDataTypes
 
         std::wstring zoneSetUuid;
         std::wstring deviceId;
-        std::vector<size_t> zoneIndexSet;
+        ZoneIndexSet zoneIndexSet;
     };
 
     struct DeviceIdData

@@ -5,7 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Forms.Automation;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
@@ -26,15 +29,31 @@ namespace FancyZonesEditor
         private LayoutModel _backup;
 
         private ContentDialog _openedDialog;
+        private TextBlock _createLayoutAnnounce;
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
         {
             InitializeComponent();
+            _createLayoutAnnounce = (TextBlock)FindName("LayoutCreationAnnounce");
             DataContext = _settings;
 
             KeyUp += MainWindow_KeyUp;
+
+            // Prevent closing the dialog with enter
+            PreviewKeyDown += (object sender, KeyEventArgs e) =>
+            {
+                if (e.Key == Key.Enter && _openedDialog != null && _openedDialog.IsVisible)
+                {
+                    var source = e.OriginalSource as RadioButton;
+                    if (source != null && source.IsChecked != true)
+                    {
+                        source.IsChecked = true;
+                        e.Handled = true;
+                    }
+                }
+            };
 
             if (spanZonesAcrossMonitors)
             {
@@ -190,6 +209,7 @@ namespace FancyZonesEditor
                 name = name.TrimEnd();
             }
 
+            AnnounceSuccessfulLayoutCreation(name);
             int maxCustomIndex = 0;
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
@@ -221,6 +241,16 @@ namespace FancyZonesEditor
             App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
+        private void AnnounceSuccessfulLayoutCreation(string name)
+        {
+            if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
+            {
+                var peer = UIElementAutomationPeer.FromElement(_createLayoutAnnounce);
+                AutomationProperties.SetName(_createLayoutAnnounce, name + " " + FancyZonesEditor.Properties.Resources.Layout_Creation_Announce);
+                peer?.RaiseAutomationEvent(AutomationEvents.MenuOpened);
+            }
+        }
+
         private void Apply()
         {
             var mainEditor = App.Overlay;
@@ -234,6 +264,8 @@ namespace FancyZonesEditor
 
         private void OnClosing(object sender, EventArgs e)
         {
+            CancelLayoutChanges();
+
             App.FancyZonesEditorIO.SerializeZoneSettings();
             App.Overlay.CloseLayoutWindow();
             App.Current.Shutdown();
@@ -247,16 +279,22 @@ namespace FancyZonesEditor
 
         private async void EditLayout_Click(object sender, RoutedEventArgs e)
         {
+            // Avoid trying to open the same dialog twice.
+            if (_openedDialog != null)
+            {
+                return;
+            }
+
             var dataContext = ((FrameworkElement)sender).DataContext;
             Select((LayoutModel)dataContext);
 
             if (_settings.SelectedModel is GridLayoutModel grid)
             {
-                _backup = new GridLayoutModel(grid);
+                _backup = new GridLayoutModel(grid, false);
             }
             else if (_settings.SelectedModel is CanvasLayoutModel canvas)
             {
-                _backup = new CanvasLayoutModel(canvas);
+                _backup = new CanvasLayoutModel(canvas, false);
             }
 
             await EditLayoutDialog.ShowAsync();
@@ -340,10 +378,7 @@ namespace FancyZonesEditor
         // EditLayout: Cancel changes
         private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            // restore model properties from settings
-            _settings.RestoreSelectedModel(_backup);
-            _backup = null;
-
+            CancelLayoutChanges();
             Select(_settings.AppliedModel);
         }
 
@@ -445,6 +480,31 @@ namespace FancyZonesEditor
                     selectedComboBox.IsDropDownOpen = true;
                 }
             }
+        }
+
+        private void TextBox_GotKeyboardFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            tb.SelectionStart = tb.Text.Length;
+        }
+
+        private void CancelLayoutChanges()
+        {
+            if (_backup != null)
+            {
+                _settings.RestoreSelectedModel(_backup);
+                _backup = null;
+            }
+        }
+
+        private void NumberBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            // The TextBox inside a NumberBox doesn't inherit the Automation Properties name, so we have to set it.
+            var numberBox = sender as NumberBox;
+            const string numberBoxTextBoxName = "InputBox"; // Text box template part name given by ModernWPF.
+            numberBox.ApplyTemplate(); // Apply template to be able to change child's property.
+            var numberBoxTextBox = numberBox.Template.FindName(numberBoxTextBoxName, numberBox) as TextBox;
+            numberBoxTextBox.SetValue(AutomationProperties.NameProperty, numberBox.GetValue(AutomationProperties.NameProperty));
         }
     }
 }

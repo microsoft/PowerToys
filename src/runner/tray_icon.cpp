@@ -9,6 +9,7 @@
 #include <common/utils/resources.h>
 #include <common/version/version.h>
 #include <common/logger/logger.h>
+#include <common/utils/elevation.h>
 
 namespace
 {
@@ -84,6 +85,7 @@ void handle_tray_command(HWND window, const WPARAM command_id)
         }
         break;
     case ID_REPORT_BUG_COMMAND:
+    {        
         std::wstring bug_report_path = get_module_folderpath();
         bug_report_path += L"\\Tools\\BugReportTool.exe";
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
@@ -99,6 +101,14 @@ void handle_tray_command(HWND window, const WPARAM command_id)
         }
 
         break;
+    }
+
+    case ID_DOCUMENTATION_MENU_COMMAND:
+    {
+        RunNonElevatedEx(L"https://aka.ms/PowerToysOverview", L"");
+        break;
+    }
+        
     }
 }
 
@@ -171,10 +181,12 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                     static std::wstring settings_menuitem_label = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT);
                     static std::wstring exit_menuitem_label = GET_RESOURCE_STRING(IDS_EXIT_MENU_TEXT);
                     static std::wstring submit_bug_menuitem_label = GET_RESOURCE_STRING(IDS_SUBMIT_BUG_TEXT);
+                    static std::wstring documentation_menuitem_label = GET_RESOURCE_STRING(IDS_DOCUMENTATION_MENU_TEXT);
                     
                     change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
                     change_menu_item_text(ID_EXIT_MENU_COMMAND, exit_menuitem_label.data());
                     change_menu_item_text(ID_REPORT_BUG_COMMAND, submit_bug_menuitem_label.data());
+                    change_menu_item_text(ID_DOCUMENTATION_MENU_COMMAND, documentation_menuitem_label.data());
                 }
                 if (!h_sub_menu)
                 {
@@ -243,9 +255,10 @@ void start_tray_icon()
         tray_icon_data.hWnd = hwnd;
         tray_icon_data.uID = id_tray_icon;
         tray_icon_data.uCallbackMessage = wm_icon_notify;
-        std::wstring about_msg_pt_version = L"PowerToys\n" + get_product_version();
+        std::wstring about_msg_pt_version = L"PowerToys " + get_product_version();
         wcscpy_s(tray_icon_data.szTip, sizeof(tray_icon_data.szTip) / sizeof(WCHAR), about_msg_pt_version.c_str());
         tray_icon_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+        ChangeWindowMessageFilterEx(hwnd, WM_COMMAND, MSGFLT_ALLOW, nullptr);
 
         tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
     }

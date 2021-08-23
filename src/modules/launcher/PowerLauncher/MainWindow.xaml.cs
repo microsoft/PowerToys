@@ -7,9 +7,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Timers;
 using System.Windows;
-using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
@@ -30,8 +30,10 @@ namespace PowerLauncher
         private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed;
+        private HwndSource _hwndSource;
         private Timer _firstDeleteTimer = new Timer();
         private bool _coldStateHotkeyPressed;
+        private bool _disposedValue;
 
         public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
             : this()
@@ -94,6 +96,12 @@ namespace PowerLauncher
             Activate();
         }
 
+        private void OnSourceInitialized(object sender, EventArgs e)
+        {
+            _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+            _hwndSource.AddHook(EnvironmentHelper.ProcessWindowMessages);
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             WindowsInteropHelper.DisableControlBox(this);
@@ -116,6 +124,8 @@ namespace PowerLauncher
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            _viewModel.MainWindowVisibility = Visibility.Collapsed;
+            _viewModel.LoadedAtLeastOnce = true;
 
             BringProcessToForeground();
         }
@@ -358,8 +368,6 @@ namespace PowerLauncher
             }
         }
 
-        private bool disposedValue;
-
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = (TextBox)sender;
@@ -450,7 +458,7 @@ namespace PowerLauncher
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -458,12 +466,14 @@ namespace PowerLauncher
                     {
                         _firstDeleteTimer.Dispose();
                     }
+
+                    _hwndSource?.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
                 _firstDeleteTimer = null;
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 

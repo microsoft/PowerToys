@@ -4,6 +4,7 @@
 #include <shlwapi.h>
 
 #include <string>
+#include <thread>
 
 // Get the executable path or module name for modern apps
 inline std::wstring get_process_path(DWORD pid) noexcept
@@ -28,37 +29,49 @@ inline std::wstring get_process_path(DWORD pid) noexcept
 inline std::wstring get_process_path(HWND window) noexcept
 {
     const static std::wstring app_frame_host = L"ApplicationFrameHost.exe";
+
     DWORD pid{};
     GetWindowThreadProcessId(window, &pid);
     auto name = get_process_path(pid);
+
     if (name.length() >= app_frame_host.length() &&
         name.compare(name.length() - app_frame_host.length(), app_frame_host.length(), app_frame_host) == 0)
     {
         // It is a UWP app. We will enumerate the windows and look for one created
         // by something with a different PID
+        // It might take a time to connect the process. That's the reason for the retry loop here
         DWORD new_pid = pid;
-        EnumChildWindows(
-            window, [](HWND hwnd, LPARAM param) -> BOOL {
-                auto new_pid_ptr = reinterpret_cast<DWORD*>(param);
-                DWORD pid;
-                GetWindowThreadProcessId(hwnd, &pid);
-                if (pid != *new_pid_ptr)
-                {
-                    *new_pid_ptr = pid;
-                    return FALSE;
-                }
-                else
-                {
-                    return TRUE;
-                }
-            },
-            reinterpret_cast<LPARAM>(&new_pid));
-        // If we have a new pid, get the new name.
-        if (new_pid != pid)
+
+        const int retryAttempts = 10;
+        for (int retry = 0; retry < retryAttempts && pid == new_pid; retry++)
         {
-            return get_process_path(new_pid);
+            EnumChildWindows(
+                window, [](HWND hwnd, LPARAM param) -> BOOL {
+                    auto new_pid_ptr = reinterpret_cast<DWORD*>(param);
+                    DWORD pid;
+                    GetWindowThreadProcessId(hwnd, &pid);
+                    if (pid != *new_pid_ptr)
+                    {
+                        *new_pid_ptr = pid;
+                        return FALSE;
+                    }
+                    else
+                    {
+                        return TRUE;
+                    }
+                },
+                reinterpret_cast<LPARAM>(&new_pid));
+
+            // If we have a new pid, get the new name.
+            if (new_pid != pid)
+            {
+                return get_process_path(new_pid);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
+
     return name;
 }
 

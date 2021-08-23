@@ -23,7 +23,7 @@ public:
     static void SettingsTelemetry(const Settings& settings) noexcept;
     static void VirtualDesktopChanged() noexcept;
 
-    class ZoneWindow
+    class WorkArea
     {
     public:
         enum class InputMode

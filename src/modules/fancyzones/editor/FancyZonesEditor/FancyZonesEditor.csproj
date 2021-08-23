@@ -81,6 +81,7 @@
     <Resource Include="images\FancyZonesEditor.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\interop\PowerToysInterop.vcxproj" />
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\..\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj" />
   </ItemGroup>

@@ -16,9 +16,7 @@ PowerPreviewModule::PowerPreviewModule() :
     m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
     app_key(powerpreviewConstants::ModuleKey)
 {
-    // Initialize the toggle states for each module
-    init_settings();
-
+    // Initialize the preview modules.
     m_fileExplorerModules.emplace_back(std::make_unique<PreviewHandlerSettings>(
         true,
         L"svg-previewer-toggle-setting",
@@ -43,6 +41,9 @@ PowerPreviewModule::PowerPreviewModule() :
         L"Svg Thumbnail Provider",
         std::make_unique<RegistryWrapper>(),
         L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}"));
+
+    // Initialize the toggle states for each module.
+    init_settings();
 
     // File Explorer might be disabled if user updated from old to new settings.
     // Initialize the registry state in the constructor as PowerPreviewModule::enable/disable will not be called on startup

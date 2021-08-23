@@ -11,6 +11,7 @@
 #include "Zone.h"
 #include "ZoneSet.h"
 #include "FancyZones.h"
+#include "ZoneColors.h"
 
 class ZoneWindowDrawing
 {
@@ -19,7 +20,7 @@ class ZoneWindowDrawing
         D2D1_RECT_F rect;
         D2D1_COLOR_F borderColor;
         D2D1_COLOR_F fillColor;
-        size_t id;
+        ZoneIndex id;
     };
 
     struct AnimationInfo
@@ -64,6 +65,6 @@ public:
     void Show();
     void Flash();
     void DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
-                           const std::vector<size_t>& highlightZones,
-                           winrt::com_ptr<IZoneWindowHost> host);
+                           const ZoneIndexSet& highlightZones,
+                           const ZoneColors& colors);
 };
