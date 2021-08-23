@@ -1355,7 +1355,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Enable Awake</value>
   </data>
   <data name="Awake_NoKeepAwakeContent.Text" xml:space="preserve">
-    <value>Off (Passive)</value>
+    <value>Inactive</value>
   </data>
   <data name="Awake_IndefiniteKeepAwakeContent.Text" xml:space="preserve">
     <value>Keep awake indefinitely</value>
