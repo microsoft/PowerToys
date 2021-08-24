@@ -72,7 +72,7 @@
 
     <controls:SettingsPageControl x:Uid="KeyboardManager"
                                   ModuleImageSource="ms-appx:///Assets/Modules/KBM.png"
-                                  ModuleImageLink="https://aka.ms/PowerToysOverview_KeyboardManage">
+                                  ModuleImageLink="https://aka.ms/PowerToysOverview_KeyboardManager">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
@@ -96,7 +96,7 @@
                     <Button x:Uid="KeyboardManager_RemapKeyboardButton_Accessible" Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=RemapKeyboardCommand}">
                         <controls:Setting x:Uid="KeyboardManager_RemapKeyboardButton" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xE92E;">
                             <controls:Setting.ActionContent>
-                                <FontIcon Glyph="&#xE2B4;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
+                                <FontIcon Glyph="&#xE8A7;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                             </controls:Setting.ActionContent>
                         </controls:Setting>
                     </Button>
@@ -154,7 +154,7 @@
                     <Button x:Uid="KeyboardManager_RemapShortcutsButton_Accessible" Style="{StaticResource SettingButtonStyle}" Command="{Binding Path=EditShortcutCommand}">
                         <controls:Setting x:Uid="KeyboardManager_RemapShortcutsButton" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xE92E;">
                             <controls:Setting.ActionContent>
-                                <FontIcon Glyph="&#xE2B4;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
+                                <FontIcon Glyph="&#xE8A7;" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                             </controls:Setting.ActionContent>
                         </controls:Setting>
                     </Button>
