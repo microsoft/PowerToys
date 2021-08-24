@@ -134,11 +134,19 @@ namespace FancyZonesEditor
 
         public void Show()
         {
+            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
+            if (_layoutPreview != null)
+            {
+                mainWindowSettings.PropertyChanged -= _layoutPreview.ZoneSettings_PropertyChanged;
+            }
+
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
                 Opacity = 1,
             };
+
+            mainWindowSettings.PropertyChanged += _layoutPreview.ZoneSettings_PropertyChanged;
 
             ShowLayout();
             OpenMainWindow();
@@ -218,12 +226,22 @@ namespace FancyZonesEditor
 
         public void CloseEditor()
         {
+            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
+
             _editorLayout = null;
+
+            if (_layoutPreview != null)
+            {
+                mainWindowSettings.PropertyChanged -= _layoutPreview.ZoneSettings_PropertyChanged;
+            }
+
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
                 Opacity = 1,
             };
+
+            mainWindowSettings.PropertyChanged += _layoutPreview.ZoneSettings_PropertyChanged;
 
             CurrentLayoutWindow.Content = _layoutPreview;
 
