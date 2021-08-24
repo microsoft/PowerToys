@@ -36,12 +36,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(ModuleImageSourceProperty, value);
         }
 
-        public Uri ModuleImageLink
-        {
-            get => (Uri)GetValue(ModuleImageLinkProperty);
-            set => SetValue(ModuleImageLinkProperty, value);
-        }
-
 #pragma warning disable CA2227 // Collection properties should be read only
         public ObservableCollection<PageLink> PrimaryLinks
 #pragma warning restore CA2227 // Collection properties should be read only
@@ -73,7 +67,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty ModuleTitleProperty = DependencyProperty.Register("ModuleTitle", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleDescriptionProperty = DependencyProperty.Register("ModuleDescription", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ModuleImageSourceProperty = DependencyProperty.Register("ModuleImageSource", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty ModuleImageLinkProperty = DependencyProperty.Register("ModuleImageLink", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty PrimaryLinksProperty = DependencyProperty.Register("PrimaryLinks", typeof(ObservableCollection<PageLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<PageLink>()));
         public static readonly DependencyProperty SecondaryLinksHeaderProperty = DependencyProperty.Register("SecondaryLinksHeader", typeof(string), typeof(SettingsPageControl), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty SecondaryLinksProperty = DependencyProperty.Register("SecondaryLinks", typeof(ObservableCollection<PageLink>), typeof(SettingsPageControl), new PropertyMetadata(new ObservableCollection<PageLink>()));

@@ -15,8 +15,7 @@
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="FileExplorerPreview"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/PowerPreview.png"
-                                  ModuleImageLink="https://aka.ms/PowerToysOverview_FileExplorerAddOns">
+                                  ModuleImageSource="ms-appx:///Assets/Modules/PowerPreview.png">
         <controls:SettingsPageControl.ModuleContent>
             
             
