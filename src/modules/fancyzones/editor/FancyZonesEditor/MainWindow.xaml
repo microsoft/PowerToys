@@ -232,16 +232,13 @@
                                 Margin="16,48,16,16">
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
-                            <Setter Property="Visibility"
-                                    Value="Collapsed" />
-                            <Style.Triggers>
-                                    <DataTrigger Binding="{Binding CustomModels.Count}"
-                                             Value="0">
-                                    <Setter Property="Visibility"
-                                            Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CustomModelsCount}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
                         </StackPanel.Style>
                         <controls:PathIcon
                             Foreground="{DynamicResource SecondaryForegroundBrush}"

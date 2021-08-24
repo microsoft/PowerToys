@@ -158,6 +158,14 @@ namespace FancyZonesEditor
 
         private static ObservableCollection<LayoutModel> _customModels = new ObservableCollection<LayoutModel>();
 
+        public static int CustomModelsCount
+        {
+            get
+            {
+                return _customModels.Count;
+            }
+        }
+
         public static QuickKeysModel QuickKeys { get; } = new QuickKeysModel();
 
         public LayoutModel SelectedModel
