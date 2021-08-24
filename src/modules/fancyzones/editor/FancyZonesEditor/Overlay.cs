@@ -168,7 +168,10 @@ namespace FancyZonesEditor
 
             for (int i = 0; i < DesktopsCount; i++)
             {
-                Monitors[i].Window.Show();
+                if (!Monitors[i].Window.IsVisible)
+                {
+                    Monitors[i].Window.Show();
+                }
             }
         }
 
