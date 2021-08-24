@@ -325,6 +325,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
     xamlContainer.Children().Append(header);
     xamlContainer.Children().Append(helperText);
     xamlContainer.Children().Append(scrollViewer);
+    xamlContainer.UpdateLayout();
 
     desktopSource.Content(xamlContainer);
 
