@@ -16,7 +16,7 @@
 
                 <controls:Setting x:Uid="VideoConference_Enable" IsEnabled="{ Binding Mode=OneWay, Path=IsElevated }">
                     <controls:Setting.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/VideoConference.png" ShowAsMonochrome="False" />
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConference.png" ShowAsMonochrome="False" />
                     </controls:Setting.Icon>
                     <controls:Setting.ActionContent>
                         <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=IsEnabled}" />
