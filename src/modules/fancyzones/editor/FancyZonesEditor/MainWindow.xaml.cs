@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
-using System.Windows.Forms.Automation;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
@@ -290,11 +289,11 @@ namespace FancyZonesEditor
 
             if (_settings.SelectedModel is GridLayoutModel grid)
             {
-                _backup = new GridLayoutModel(grid, false);
+                _backup = new GridLayoutModel(grid);
             }
             else if (_settings.SelectedModel is CanvasLayoutModel canvas)
             {
-                _backup = new CanvasLayoutModel(canvas, false);
+                _backup = new CanvasLayoutModel(canvas);
             }
 
             await EditLayoutDialog.ShowAsync();

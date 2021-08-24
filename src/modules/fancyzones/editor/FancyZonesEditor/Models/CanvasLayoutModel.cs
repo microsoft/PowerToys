@@ -52,8 +52,8 @@ namespace FancyZonesEditor.Models
         {
         }
 
-        public CanvasLayoutModel(CanvasLayoutModel other, bool enableQuickKeysPropertyChangedSubscribe = true)
-            : base(other, enableQuickKeysPropertyChangedSubscribe)
+        public CanvasLayoutModel(CanvasLayoutModel other)
+            : base(other)
         {
             CanvasRect = new Rect(other.CanvasRect.X, other.CanvasRect.Y, other.CanvasRect.Width, other.CanvasRect.Height);
 
