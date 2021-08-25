@@ -315,25 +315,37 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneW
 
 void FancyZones::WindowCreated(HWND window) noexcept
 {
-    auto desktopId = m_virtualDesktop.GetWindowDesktopId(window);
-    if (desktopId.has_value() && *desktopId != m_currentDesktopId)
+    if (!m_virtualDesktop.IsWindowOnCurrentDesktop(window))
     {
         // Switch between virtual desktops results with posting same windows messages that also indicate
         // creation of new window. We need to check if window being processed is on currently active desktop.
         return;
     }
 
-    const bool moveToAppLastZone = m_settings->GetSettings()->appLastZone_moveWindows;
-    const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
-    
     // Avoid processing splash screens, already stamped (zoned) windows, or those windows
     // that belong to excluded applications list.
     const bool isSplashScreen = FancyZonesUtils::IsSplashScreen(window);
-    const bool isZoned = reinterpret_cast<ZoneIndex>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0;
-    const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray);
-    const bool shouldProcessNewWindow = !isSplashScreen && !isZoned && isCandidateForLastKnownZone;
+    if (isSplashScreen)
+    {
+        return;
+    }
 
-    if ((moveToAppLastZone || openOnActiveMonitor) && shouldProcessNewWindow)
+    const bool isZoned = reinterpret_cast<ZoneIndex>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0;
+    if (isZoned)
+    {
+        return;
+    }
+
+    const bool isCandidateForLastKnownZone = FancyZonesUtils::IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray);
+    if (!isCandidateForLastKnownZone)
+    {
+        return;
+    }
+    
+    const bool moveToAppLastZone = m_settings->GetSettings()->appLastZone_moveWindows;
+    const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
+  
+    if (moveToAppLastZone || openOnActiveMonitor)
     {
         HMONITOR primary = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
         HMONITOR active = primary;
@@ -362,6 +374,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
             else
             {
                 Logger::warn(L"App zone history is empty for the processing window on a current virtual desktop");
+                return;
             }
         }
 
