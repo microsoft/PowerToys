@@ -13,7 +13,7 @@
                     xmlns:ui="http://schemas.modernwpf.com/2019"
                     ui:WindowHelper.UseModernWindowStyle="True"
                     ui:TitleBar.IsIconVisible="False"
-                    SizeToContent="Width"
+                    SizeToContent="WidthAndHeight"
                     Background="{DynamicResource PrimaryBackgroundBrush}"
                     ResizeMode="NoResize"
                     WindowStartupLocation="CenterOwner"
