@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
@@ -758,7 +759,7 @@ namespace FancyZonesEditor.Utils
                 return false;
             }
 
-            MainWindowSettingsModel.CustomModels.Clear();
+            ObservableCollection<LayoutModel> models = new ObservableCollection<LayoutModel>();
             bool result = true;
 
             foreach (var zoneSet in customLayouts)
@@ -793,8 +794,10 @@ namespace FancyZonesEditor.Utils
                     continue;
                 }
 
-                MainWindowSettingsModel.CustomModels.Add(layout);
+                models.Add(layout);
             }
+
+            MainWindowSettingsModel.CustomModels = models;
 
             return result;
         }
