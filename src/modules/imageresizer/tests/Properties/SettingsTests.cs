@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using ImageResizer.Models;
 using ImageResizer.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -345,6 +346,34 @@ namespace ImageResizer.Properties
             Assert.IsTrue(fallbackEncoderChanged);
             Assert.IsTrue(customSizeChanged);
             Assert.IsTrue(selectedSizeIndexChanged);
+        }
+
+        [TestMethod]
+        public void SystemTextJsonDeserializesCorrectly()
+        {
+            // Generated Settings file in 0.72
+            var defaultInput =
+                "{\r\n  \"properties\": {\r\n    \"imageresizer_selectedSizeIndex\": {\r\n      \"value\": 1\r\n    },\r\n    \"imageresizer_shrinkOnly\": {\r\n      \"value\": true\r\n    },\r\n    \"imageresizer_replace\": {\r\n      \"value\": true\r\n    },\r\n    \"imageresizer_ignoreOrientation\": {\r\n      \"value\": false\r\n    },\r\n    \"imageresizer_jpegQualityLevel\": {\r\n      \"value\": 91\r\n    },\r\n    \"imageresizer_pngInterlaceOption\": {\r\n      \"value\": 1\r\n    },\r\n    \"imageresizer_tiffCompressOption\": {\r\n      \"value\": 1\r\n    },\r\n    \"imageresizer_fileName\": {\r\n      \"value\": \"%1 %1 (%2)\"\r\n    },\r\n    \"imageresizer_sizes\": {\r\n      \"value\": [\r\n        {\r\n          \"Id\": 0,\r\n          \"ExtraBoxOpacity\": 100,\r\n          \"EnableEtraBoxes\": true,\r\n          \"name\": \"Small-NotDefault\",\r\n          \"fit\": 1,\r\n          \"width\": 854,\r\n          \"height\": 480,\r\n          \"unit\": 3\r\n        },\r\n        {\r\n          \"Id\": 3,\r\n          \"ExtraBoxOpacity\": 100,\r\n          \"EnableEtraBoxes\": true,\r\n          \"name\": \"Phone\",\r\n          \"fit\": 1,\r\n          \"width\": 320,\r\n          \"height\": 568,\r\n          \"unit\": 3\r\n        }\r\n      ]\r\n    },\r\n    \"imageresizer_keepDateModified\": {\r\n      \"value\": false\r\n    },\r\n    \"imageresizer_fallbackEncoder\": {\r\n      \"value\": \"19e4a5aa-5662-4fc5-a0c0-1758028e1057\"\r\n    },\r\n    \"imageresizer_customSize\": {\r\n      \"value\": {\r\n        \"Id\": 4,\r\n        \"ExtraBoxOpacity\": 100,\r\n        \"EnableEtraBoxes\": true,\r\n        \"name\": \"custom\",\r\n        \"fit\": 1,\r\n        \"width\": 1024,\r\n        \"height\": 640,\r\n        \"unit\": 3\r\n      }\r\n    }\r\n  },\r\n  \"name\": \"ImageResizer\",\r\n  \"version\": \"1\"\r\n}";
+
+            // Execute readFile/writefile twice and see if serialized string is still correct
+            var resultWrapper = JsonSerializer.Deserialize<SettingsWrapper>(defaultInput);
+            var serializedInput = JsonSerializer.Serialize(resultWrapper, new JsonSerializerOptions() { WriteIndented = true });
+            var resultWrapper2 = JsonSerializer.Deserialize<SettingsWrapper>(serializedInput);
+            var serializedInput2 = JsonSerializer.Serialize(resultWrapper2, new JsonSerializerOptions() { WriteIndented = true });
+
+            Assert.AreEqual(serializedInput, serializedInput2);
+            Assert.AreEqual("ImageResizer", resultWrapper2.Name);
+            Assert.AreEqual("1", resultWrapper2.Version);
+            Assert.IsNotNull(resultWrapper2.Properties);
+            Assert.IsTrue(resultWrapper2.Properties.ShrinkOnly);
+            Assert.IsTrue(resultWrapper2.Properties.Replace);
+            Assert.AreEqual(91, resultWrapper2.Properties.JpegQualityLevel);
+            Assert.AreEqual(1, (int)resultWrapper2.Properties.PngInterlaceOption);
+            Assert.AreEqual(1, (int)resultWrapper2.Properties.TiffCompressOption);
+            Assert.AreEqual("%1 %1 (%2)", resultWrapper2.Properties.FileName);
+            Assert.AreEqual(2, resultWrapper2.Properties.Sizes.Count);
+            Assert.IsFalse(resultWrapper2.Properties.KeepDateModified);
+            Assert.AreEqual("Small-NotDefault", resultWrapper2.Properties.Sizes[0].Name);
         }
 
         [ClassCleanup]

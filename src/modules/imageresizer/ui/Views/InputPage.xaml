@@ -185,7 +185,6 @@
         <CheckBox Margin="12,4,12,0"
                   Content="{x:Static p:Resources.Input_IgnoreOrientation}"
                   IsChecked="{Binding Settings.IgnoreOrientation}"/>
-        
         <Border Margin="0,24,0,0"
                 Background="{DynamicResource SecondaryBackgroundBrush}"
                 BorderBrush="{DynamicResource PrimaryBorderBrush}"
@@ -193,14 +192,24 @@
                 Padding="12">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
+                    <ColumnDefinition />
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
+                <TextBlock Grid.Column="0"
+                           FontWeight="Bold"
+                           Text="{x:Static p:Resources.Input_GifWarning}"
+                           TextWrapping="Wrap"
+                           MaxWidth="250"
+                           HorizontalAlignment="Left"
+                           TextAlignment="Left"
+                           Foreground="{ui:ThemeResource SystemControlErrorTextForegroundBrush}"
+                           Visibility="{Binding TryingToResizeGifFiles, Converter={StaticResource BoolValueConverter}}"
+                           />
                 <Button Grid.Column="1"
                         Style="{StaticResource AccentButtonStyle}"
                         MinWidth="76"
+                        Margin="12,0,0,0"
                         Command="{Binding ResizeCommand}"
                         AutomationProperties.Name="{x:Static p:Resources.Resize_Tooltip}"
                         Content="{x:Static p:Resources.Input_Resize}"

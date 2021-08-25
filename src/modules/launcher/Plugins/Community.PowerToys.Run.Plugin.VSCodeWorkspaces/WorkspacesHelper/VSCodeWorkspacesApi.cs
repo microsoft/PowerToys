@@ -67,12 +67,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                         try
                         {
-                            var options = new JsonSerializerOptions
-                            {
-                                PropertyNameCaseInsensitive = true,
-                            };
-
-                            VSCodeStorageFile vscodeStorageFile = JsonSerializer.Deserialize<VSCodeStorageFile>(fileContent, options);
+                            VSCodeStorageFile vscodeStorageFile = JsonSerializer.Deserialize<VSCodeStorageFile>(fileContent);
 
                             if (vscodeStorageFile != null)
                             {

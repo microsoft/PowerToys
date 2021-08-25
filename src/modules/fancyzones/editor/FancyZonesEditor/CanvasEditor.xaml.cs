@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -24,6 +23,7 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
             KeyDown += CanvasEditor_KeyDown;
         }
 
@@ -53,7 +53,15 @@ namespace FancyZonesEditor
                 _model = model;
                 UpdateZoneRects();
 
-                model.PropertyChanged += OnModelChanged;
+                _model.PropertyChanged += OnModelChanged;
+            }
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (_model != null)
+            {
+                _model.PropertyChanged -= OnModelChanged;
             }
         }
 

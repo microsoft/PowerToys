@@ -39,11 +39,12 @@ namespace FancyZonesEditor
             Loaded += GridEditor_Loaded;
             Unloaded += GridEditor_Unloaded;
             gridEditorUniqueId = ++gridEditorUniqueIdCounter;
-            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
         }
 
         private void GridEditor_Loaded(object sender, RoutedEventArgs e)
         {
+            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+
             GridLayoutModel model = (GridLayoutModel)DataContext;
             if (model == null)
             {
@@ -55,6 +56,18 @@ namespace FancyZonesEditor
             Model = model;
             Model.PropertyChanged += OnGridDimensionsChanged;
             SetupUI();
+        }
+
+        private void GridEditor_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ((App)Application.Current).MainWindowSettings.PropertyChanged -= ZoneSettings_PropertyChanged;
+
+            if (Model != null)
+            {
+                Model.PropertyChanged -= OnGridDimensionsChanged;
+            }
+
+            gridEditorUniqueId = -1;
         }
 
         private void PlaceResizer(GridResizer resizerThumb)
@@ -174,11 +187,6 @@ namespace FancyZonesEditor
             }
         }
 
-        private void GridEditor_Unloaded(object sender, RoutedEventArgs e)
-        {
-            gridEditorUniqueId = -1;
-        }
-
         private Size WorkAreaSize()
         {
             Rect workingArea = App.Overlay.WorkArea;
@@ -188,7 +196,7 @@ namespace FancyZonesEditor
         public GridLayoutModel Model
         {
             get { return (GridLayoutModel)GetValue(ModelProperty); }
-            set { SetValue(ModelProperty, value); }
+            private set { SetValue(ModelProperty, value); }
         }
 
         public Panel PreviewPanel

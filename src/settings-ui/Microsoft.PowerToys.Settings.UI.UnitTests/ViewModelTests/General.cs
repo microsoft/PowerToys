@@ -191,10 +191,10 @@ namespace ViewModelTests
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
                 GeneralSettingsFileName);
-            Assert.IsFalse(viewModel.IsLightThemeRadioButtonChecked);
+            Assert.AreNotEqual(1, viewModel.ThemeIndex);
 
             // act
-            viewModel.IsLightThemeRadioButtonChecked = true;
+            viewModel.ThemeIndex = 1;
         }
 
         [TestMethod]
@@ -222,10 +222,10 @@ namespace ViewModelTests
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
                 GeneralSettingsFileName);
-            Assert.IsFalse(viewModel.IsDarkThemeRadioButtonChecked);
+            Assert.AreNotEqual(0, viewModel.ThemeIndex);
 
             // act
-            viewModel.IsDarkThemeRadioButtonChecked = true;
+            viewModel.ThemeIndex = 0;
         }
 
         [TestMethod]

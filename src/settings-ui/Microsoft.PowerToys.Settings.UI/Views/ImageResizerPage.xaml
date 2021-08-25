@@ -10,64 +10,80 @@
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:toolkitconverters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main" x:Name="RootPage">
-
     <Page.Resources>
         <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
         <toolkitconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed" />
     </Page.Resources>
-    <controls:SettingsPageControl x:Uid="About_ImageResizer"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png"
-                                  ModuleImageLink="https://aka.ms/PowerToysOverview_ImageResizer">
+    <controls:SettingsPageControl x:Uid="ImageResizer"
+                                    
+                                  ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel>
 
-                <ToggleSwitch x:Uid="ImageResizer_EnableToggle"
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
+                <controls:Setting x:Uid="ImageResizer_EnableToggle">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsImageResizer.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
 
-                <TextBlock x:Uid="ImageResizer_CustomSizes"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
-                <ListView x:Name="ImagesSizesListView" 
+                <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Uid="ImageResizer_CustomSizes" Icon="&#xE2B2;">
+                        <controls:Setting.ActionContent>
+                            <Button x:Uid="ImageResizer_AddSizeButton" Click="AddSizeButton_Click" Style="{ThemeResource AccentButtonStyle}" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+
+                    <ListView x:Name="ImagesSizesListView" 
                       x:Uid="ImagesSizesListView"
                       ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
-                      Padding="-12,0,0,0"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       SelectionMode="None"
                       ScrollViewer.HorizontalScrollMode="Enabled"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
                       ScrollViewer.IsHorizontalRailEnabled="True"
                       ContainerContentChanging="ImagesSizesListView_ContainerContentChanging">
-
-                    <ListView.ItemTemplate>
+                        <ListView.ItemTemplate>
                         <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
-                            <Grid Padding="0,12,12,12" Width="420" AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
-                                <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="40" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="52" />
-                                    </Grid.ColumnDefinitions>
+                            <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                                  HorizontalAlignment="Stretch"
+                                  Background="{ThemeResource CardBackgroundBrush}"
+                                  BorderThickness="{ThemeResource CardBorderThickness}"
+                                  BorderBrush="{ThemeResource CardBorderBrush}"
+                                  CornerRadius="{ThemeResource ControlCornerRadius}"
+                                  Padding="0,0,16,0"
+                                  MinHeight="68">
 
-                                <FontIcon Glyph="&#xE73F;" FontSize="18" Margin="0,8,0,0" VerticalAlignment="Top" Grid.RowSpan="2" Foreground="{StaticResource SystemColorControlAccentBrush}" />
-                                <StackPanel Orientation="Vertical" Grid.Column="1" Margin="0,0,16,0">
-                                    <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="18" />
-                                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Margin="0,4,0,0" >
-                                        <TextBlock Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
-                                        <TextBlock Text="{x:Bind Width, Mode=OneWay}" FontWeight="SemiBold" Margin="0,0,4,0"/>
-                                        <TextBlock Text="&#xE947;" FontFamily="Segoe MDL2 Assets" FontSize="11" AutomationProperties.AccessibilityView="Raw" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,5,4,0"/>
-                                        <TextBlock Text="{x:Bind Height, Mode=OneWay}" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" FontWeight="SemiBold" Margin="0,0,4,0"/>
-                                        <TextBlock Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter},ConverterParameter=ToLower}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"/>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="56" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="52" />
+                                </Grid.ColumnDefinitions>
+                            
+                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" Grid.Column="1" Margin="0,0,16,0">
+                                        <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontWeight="SemiBold"
+                                       FontSize="16"/>
+                                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Margin="0,4,0,0">
+                                        <TextBlock Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" Style="{ThemeResource SecondaryTextStyle}" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{x:Bind Width, Mode=OneWay}" FontWeight="SemiBold" Margin="0,0,4,0"  Style="{ThemeResource SecondaryTextStyle}"/>
+                                        <TextBlock Text="&#xE947;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="10" AutomationProperties.AccessibilityView="Raw" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,5,4,0"  Style="{ThemeResource SecondaryTextStyle}"/>
+                                        <TextBlock Text="{x:Bind Height, Mode=OneWay}" Visibility="{x:Bind Path=EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" FontWeight="SemiBold" Margin="0,0,4,0"  Style="{ThemeResource SecondaryTextStyle}"/>
+                                        <TextBlock Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter},ConverterParameter=ToLower}" Foreground="{ThemeResource SystemBaseMediumColor}" Margin="0,0,4,0"  Style="{ThemeResource SecondaryTextStyle}"/>
                                     </StackPanel>
                                 </StackPanel>
-                                <StackPanel HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal">
+
+                                <StackPanel Spacing="8" HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal">
                                     <Button 
                                         x:Uid="EditButton"
                                         Background="Transparent"
                                         FontFamily="Segoe MDL2 Assets"
-                                        Width="36"
+                                        Width="40"
                                         Height="36"
                                         Content="&#xE70F;">
                                         <ToolTipService.ToolTip>
@@ -127,7 +143,7 @@
                                         x:Uid="RemoveButton"
                                         Background="Transparent"
                                         FontFamily="Segoe MDL2 Assets"
-                                        Width="36"
+                                        Width="40"
                                         Height="36"
                                         Content="&#xE74D;"
                                         Click="DeleteCustomSize"
@@ -143,143 +159,133 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+                </controls:SettingsGroup>
 
 
-                <StackPanel Orientation="Horizontal">
-                    <AppBarButton Icon="Add"
-                              x:Name="AddSizeButton"
-                              Style="{StaticResource AddItemAppBarButtonStyle}"
-                              IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" 
-                              x:Uid="ImageResizer_AddSizeButton"
-                              Click="AddSizeButton_Click"
-                              Margin="{StaticResource AddItemButtonMargin}"
-                              
-                          />
-                </StackPanel>
+                <controls:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Uid="ImageResizer_FallBackEncoderText">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}"
+                                      MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
+                                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
+                                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
+                                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_TIFF" />
+                                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_WMPhoto" />
+                                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-                <TextBlock x:Uid="Encoding"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-
-                <ComboBox x:Uid="ImageResizer_FallBackEncoderText"
-                          SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}"
-                          MinWidth="240"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
-                    <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
-                    <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
-                    <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_TIFF" />
-                    <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_WMPhoto" />
-                    <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
-                </ComboBox>
-
-                <muxc:NumberBox x:Uid="ImageResizer_Encoding"
+                    <controls:Setting x:Uid="ImageResizer_Encoding">
+                        <controls:Setting.ActionContent>
+                            <muxc:NumberBox
                             Minimum="0"
                             Maximum="100"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
-                            MinWidth="240"
-                            Margin="{StaticResource SmallTopMargin}"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Left"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=ImageResizer_Encoding}"
+                            HorizontalAlignment="Right"
                             />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-                <ComboBox x:Uid="ImageResizer_PNGInterlacing"
-                          SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}"
-                          MinWidth="240"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <ComboBoxItem x:Uid="Default"/>
-                    <ComboBoxItem x:Uid="On"/>
-                    <ComboBoxItem x:Uid="Off"/>
-                </ComboBox>
+                    <controls:Setting x:Uid="ImageResizer_PNGInterlacing">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="Default"/>
+                                <ComboBoxItem x:Uid="On"/>
+                                <ComboBoxItem x:Uid="Off"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-                <ComboBox x:Uid="ImageResizer_TIFFCompression"
-                          SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}"
-                          MinWidth="240"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default"/>
-                    <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None"/>
-                    <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3"/>
-                    <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT4"/>
-                    <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_LZW"/>
-                    <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_RLE"/>
-                    <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Zip"/>
-                </ComboBox>
+                    <controls:Setting x:Uid="ImageResizer_TIFFCompression">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default"/>
+                                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None"/>
+                                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3"/>
+                                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT4"/>
+                                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_LZW"/>
+                                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_RLE"/>
+                                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Zip"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-                <TextBlock x:Uid="File"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
+                </controls:SettingsGroup>
 
-                <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
-                      HorizontalAlignment="Left"
-                      MinWidth="240"
-                      x:Uid="ImageResizer_FilenameFormatPlaceholder"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      AutomationProperties.LabeledBy="{Binding ElementName=ImageResizer_FilenameFormatHeader}"
-                      AutomationProperties.HelpText="{Binding ElementName=FileFormatTextBlock, Path=Text}"
-                     >
-                    <TextBox.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Name="ImageResizer_FilenameFormatHeader"
-                            x:Uid="ImageResizer_FilenameFormatHeader"
-                            Margin="0,0,0,0"
-                            Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
-                            <TextBlock Text="&#xE946;" AutomationProperties.AccessibilityView="Raw"
-                           FontFamily="Segoe MDL2 Assets"
-                           Margin="4,4,0,0"/>
-                        </StackPanel>
-                    </TextBox.Header>
-                    <ToolTipService.ToolTip>
-                        <TextBlock x:Name="FileFormatTextBlock">
-                        <Run x:Uid="ImageResizer_FileFormatDescription"/>
-                        <LineBreak/>
-                        <LineBreak/>
-                        <Run Text="%1" FontWeight="Bold" />
-                        <Run Text=" - "/>
-                        <Run x:Uid="ImageResizer_Formatting_Filename" />
-                        <LineBreak/>
-                        <Run Text="%2" FontWeight="Bold" />
-                        <Run Text=" - "/>
-                        <Run x:Uid="ImageResizer_Formatting_Sizename"/>
-                        <LineBreak/>
-                        <Run Text="%3" FontWeight="Bold" />
-                        <Run Text=" - "/>
-                        <Run x:Uid="ImageResizer_Formatting_SelectedWidth"/>
-                        <LineBreak/>
-                        <Run Text="%4" FontWeight="Bold" />
-                        <Run Text=" - "/>
-                        <Run x:Uid="ImageResizer_Formatting_SelectedHeight"/>
-                        <LineBreak/>
-                        <Run Text="%5" FontWeight="Bold" />
-                        <Run Text=" - "/>
-                        <Run x:Uid="ImageResizer_Formatting_ActualWidth"/>
-                        <LineBreak/>
-                        <Run Text="%6" FontWeight="Bold" />
-                        <Run Text=" - "/>
-                        <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
-                        </TextBlock>
-                    </ToolTipService.ToolTip>
-                </TextBox>
 
-                <CheckBox x:Uid="ImageResizer_UseOriginalDate"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified}"/>
+                <controls:SettingsGroup x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="ImageResizer_FilenameFormatHeader" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <StackPanel Spacing="4" Orientation="Horizontal">
+                                        <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
+                                         HorizontalAlignment="Right"
+                                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                         x:Uid="ImageResizer_FilenameFormatPlaceholder"/>
+                                        <Button Content="&#xE946;" FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <TextBlock x:Name="FileFormatTextBlock">
+                                                <Run x:Uid="ImageResizer_FileFormatDescription"/>
+                                                <LineBreak/>
+                                                <LineBreak/>
+                                                <Run Text="%1" FontWeight="Bold" />
+                                                <Run Text=" - "/>
+                                                <Run x:Uid="ImageResizer_Formatting_Filename" />
+                                                <LineBreak/>
+                                                <Run Text="%2" FontWeight="Bold" />
+                                                <Run Text=" - "/>
+                                                <Run x:Uid="ImageResizer_Formatting_Sizename"/>
+                                                <LineBreak/>
+                                                <Run Text="%3" FontWeight="Bold" />
+                                                <Run Text=" - "/>
+                                                <Run x:Uid="ImageResizer_Formatting_SelectedWidth"/>
+                                                <LineBreak/>
+                                                <Run Text="%4" FontWeight="Bold" />
+                                                <Run Text=" - "/>
+                                                <Run x:Uid="ImageResizer_Formatting_SelectedHeight"/>
+                                                <LineBreak/>
+                                                <Run Text="%5" FontWeight="Bold" />
+                                                <Run Text=" - "/>
+                                                <Run x:Uid="ImageResizer_Formatting_ActualWidth"/>
+                                                <LineBreak/>
+                                                <Run Text="%6" FontWeight="Bold" />
+                                                <Run Text=" - "/>
+                                                <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
+                                                    </TextBlock>
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </StackPanel>
+
+                                </controls:Setting.ActionContent>
+
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+
+                            <CheckBox x:Uid="ImageResizer_UseOriginalDate"
+                                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified}"
+                                      Margin="16,8,0,8" />
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                </controls:SettingsGroup>
+
+
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.ModuleLinks>
-            <controls:SidePanelLink x:Uid="Learn_More" Link="https://aka.ms/PowerToysOverview_ImageResizer"/>
-            <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
-        </controls:SettingsPageControl.ModuleLinks>
-        <controls:SettingsPageControl.AttributionLinks>
-            <controls:SidePanelLink Label="Brice Lambson's ImageResizer" Link="https://github.com/bricelam/ImageResizer/"/>
-        </controls:SettingsPageControl.AttributionLinks>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_ImageResizer" Link="https://aka.ms/PowerToysOverview_ImageResizer"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Brice Lambson's ImageResizer" Link="https://github.com/bricelam/ImageResizer/"/>
+        </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

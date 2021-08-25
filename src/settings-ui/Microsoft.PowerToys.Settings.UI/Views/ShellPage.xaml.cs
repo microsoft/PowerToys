@@ -7,10 +7,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
-using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
+using WinUI = Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -158,10 +159,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             shellFrame.Navigate(typeof(GeneralPage));
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
-        private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        private void OobeButton_Click(object sender, RoutedEventArgs e)
         {
-            scrollViewer.ChangeView(null, 0, null, true);
+            OpenOobeWindowCallback();
         }
 
         private bool navigationViewInitialStateProcessed; // avoid announcing initial state of the navigation pane.
@@ -218,6 +218,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     "navigationMenuPaneClosed");
             }
         }
-#pragma warning restore CA1822 // Mark members as static
+
+        private void OOBEItem_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            OpenOobeWindowCallback();
+        }
+
+        private async void FeedbackItem_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
+        }
     }
 }
