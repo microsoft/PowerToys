@@ -5,7 +5,6 @@
 // We need both DLL and UI resource files for UWP UI.
 #include "../dll/Generated Files/PowerRenameExt.rc"
 #undef IDC_STATIC
-#include "../ui/Generated Files/PowerRenameUI.rc"
 
 2 VERSIONINFO
 FILEVERSION FILE_VERSION

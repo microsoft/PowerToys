@@ -6,6 +6,7 @@ abcdefgh
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 abgr
 ABlocked
+ABOUTBOX
 Abug
 accctrl
 Acceleratorkeys
@@ -51,6 +52,7 @@ AMPROPERTY
 AMPROPSETID
 anges
 angularsen
+animatedvisuals
 ansicolor
 ANull
 AOC
@@ -100,6 +102,7 @@ asdf
 AShortcut
 ASingle
 asm
+asmv
 asmx
 aspnet
 aspx
@@ -184,6 +187,7 @@ Browsable
 bsd
 bstr
 bti
+btn
 BTNFACE
 Bto
 buf
@@ -223,7 +227,9 @@ changecursor
 Changemove
 charconv
 charset
+chck
 chdir
+cheatsheet
 checkbox
 checkboxes
 CHECKCANCELED
@@ -360,6 +366,7 @@ CSY
 CTAB
 CTest
 ctime
+Ctl
 CTLCOLORSTATIC
 ctor
 CTriage
@@ -1037,6 +1044,7 @@ IWeb
 IWIC
 IWindows
 IWork
+IXaml
 IXml
 ixx
 IYUV
@@ -1146,6 +1154,7 @@ lmcons
 LMEM
 LMENU
 lnk
+LOADSTRING
 LOCALAPPDATA
 LOCALDISPLAY
 localhost
@@ -1167,6 +1176,7 @@ lowlevel
 LOWORD
 lparam
 LPBYTE
+LPCITEMIDLIST
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
 LPCTSTR
@@ -1213,6 +1223,7 @@ LVS
 LVSIL
 LWA
 lwin
+LZero
 lzw
 mailto
 MAINICON
@@ -1291,6 +1302,7 @@ mlcfg
 mmdeviceapi
 mmi
 mmsys
+mngr
 mockapi
 MODECHANGE
 moderncop
@@ -1357,6 +1369,7 @@ mvvm
 myfile
 MYICON
 NAMECHANGE
+Namehs
 nameof
 NAMEONLY
 namespace
@@ -1568,6 +1581,7 @@ phwnd
 pici
 pid
 pidl
+PIDLIST
 PINDIR
 pinfo
 pinvoke
@@ -1600,6 +1614,7 @@ powerlauncher
 powerpreview
 powerrename
 POWERRENAMETEST
+POWERRENAMEUIHOST
 powershell
 powertoy
 powertoysinterop
@@ -1769,6 +1784,7 @@ RESOURCEID
 RESTORESIZE
 RESTORETOMAXIMIZED
 restrictedcapabilities
+restrictederrorinfo
 resultlist
 resw
 resx
@@ -2108,6 +2124,7 @@ textbox
 TEXTINCLUDE
 textref
 tga
+tgl
 thead
 THEMECHANGED
 THICKFRAME
@@ -2121,6 +2138,7 @@ Timeline
 TIMERID
 timeunion
 timeutil
+titlebar
 titlecase
 TLayout
 tlb
@@ -2378,6 +2396,7 @@ winsdkver
 winspool
 winstore
 winui
+winuser
 winxamlmanager
 wistd
 withinrafael

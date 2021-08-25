@@ -170,6 +170,8 @@ build:
             - 'modules\launcher\Wox.Infrastructure.dll'
             - 'modules\launcher\Wox.Plugin.dll'
             - 'modules\PowerRename\PowerRenameExt.dll'
+            - 'modules\PowerRename\PowerRenameUI_new.dll'
+            - 'modules\PowerRename\PowerRenameUIHost.exe'
             - 'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
             - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
             # TODO(yuyoyuppe): uncomment when VCM should be enabled

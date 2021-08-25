@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly
+ xmlns="urn:schemas-microsoft-com:asm.v1"
+ xmlns:asmv3="urn:schemas-microsoft-com:asm.v3"
+ manifestVersion="1.0">
+  <asmv3:file name="PowerRenameUI_new.dll">
+    <activatableClass
+        name="PowerRenameUI_new.App"
+        threadingModel="both"
+        xmlns="urn:schemas-microsoft-com:winrt.v1" />
+    <activatableClass
+        name="PowerRenameUI_new.XamlMetadataProvider"
+        threadingModel="both"
+        xmlns="urn:schemas-microsoft-com:winrt.v1" />
+    <activatableClass
+        name="PowerRenameUI_new.MainWindow"
+        threadingModel="both"
+        xmlns="urn:schemas-microsoft-com:winrt.v1" />
+  </asmv3:file>
+</assembly>

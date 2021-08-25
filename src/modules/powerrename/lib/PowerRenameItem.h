@@ -14,9 +14,11 @@ public:
     IFACEMETHODIMP_(ULONG) Release();
 
     // IPowerRenameItem
+    IFACEMETHODIMP PutPath(_In_opt_ PCWSTR newPath);
     IFACEMETHODIMP GetPath(_Outptr_ PWSTR* path);
     IFACEMETHODIMP GetTime(_Outptr_ SYSTEMTIME* time);
     IFACEMETHODIMP GetShellItem(_Outptr_ IShellItem** ppsi);
+    IFACEMETHODIMP PutOriginalName(_In_opt_ PCWSTR originalName);
     IFACEMETHODIMP GetOriginalName(_Outptr_ PWSTR* originalName);
     IFACEMETHODIMP PutNewName(_In_opt_ PCWSTR newName);
     IFACEMETHODIMP GetNewName(_Outptr_ PWSTR* newName);
