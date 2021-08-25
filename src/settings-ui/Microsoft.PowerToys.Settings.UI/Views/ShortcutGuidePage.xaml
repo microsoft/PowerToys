@@ -15,8 +15,7 @@
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="ShortcutGuide"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/ShortcutGuide.png"
-                                  ModuleImageLink="https://aka.ms/PowerToysOverview_ShortcutGuide">
+                                  ModuleImageSource="ms-appx:///Assets/Modules/ShortcutGuide.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <controls:Setting x:Uid="ShortcutGuide_Enable">

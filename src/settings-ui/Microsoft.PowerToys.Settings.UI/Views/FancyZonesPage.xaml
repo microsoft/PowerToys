@@ -15,8 +15,7 @@
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="FancyZones"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/FancyZones.png"
-                                  ModuleImageLink="https://aka.ms/PowerToysOverview_FancyZones">
+                                  ModuleImageSource="ms-appx:///Assets/Modules/FancyZones.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 

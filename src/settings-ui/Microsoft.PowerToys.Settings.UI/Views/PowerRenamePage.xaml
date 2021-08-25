@@ -10,8 +10,7 @@
     AutomationProperties.LandmarkType="Main">
 
     <controls:SettingsPageControl x:Uid="PowerRename"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/PowerRename.png"
-                                  ModuleImageLink="https://aka.ms/PowerToysOverview_PowerRename">
+                                  ModuleImageSource="ms-appx:///Assets/Modules/PowerRename.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical"
                     x:Name="PowerRenameView"

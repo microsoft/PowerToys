@@ -19,8 +19,7 @@
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="PowerLauncher"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/PowerLauncher.png"
-                                  ModuleImageLink="https://aka.ms/PowerToysOverview_PowerToysRun">
+                                  ModuleImageSource="ms-appx:///Assets/Modules/PowerLauncher.png">
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel Orientation="Vertical">

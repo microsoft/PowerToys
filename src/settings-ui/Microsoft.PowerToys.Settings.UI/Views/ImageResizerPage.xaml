@@ -18,8 +18,7 @@
     </Page.Resources>
     <controls:SettingsPageControl x:Uid="ImageResizer"
                                     
-                                  ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png"
-                                  ModuleImageLink="https://aka.ms/PowerToysOverview_ImageResizer">
+                                  ModuleImageSource="ms-appx:///Assets/Modules/ImageResizer.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel>
 
