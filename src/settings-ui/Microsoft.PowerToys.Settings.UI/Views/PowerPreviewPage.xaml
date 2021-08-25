@@ -46,10 +46,16 @@
                                           IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF" Icon="&#xE8A5;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}"
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
-
                     <muxc:InfoBar Severity="Informational"
                                    x:Uid="FileExplorerPreview_RebootRequired"
                                    IsOpen="True"
@@ -61,34 +67,8 @@
                                           IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-
                 </controls:SettingsGroup>
                 
-                  <!--<ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=PDFRenderIsEnabled}"
-                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}" />
-
-            <TextBlock x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>-->
-
-                  <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
-
-                    <muxc:InfoBar Severity="Informational"
-                                   x:Uid="FileExplorerPreview_RebootRequired"
-                                   IsOpen="True"
-                                   IsClosable="False"
-                                   />
-                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail" Icon="&#xE91B;">
-                        <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFThumbnailIsEnabled}"
-                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
-
-
-                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
