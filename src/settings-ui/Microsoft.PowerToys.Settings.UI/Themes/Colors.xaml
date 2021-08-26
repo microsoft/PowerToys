@@ -7,6 +7,8 @@
             <StaticResource x:Key="CardBackgroundBrush" ResourceKey="CardBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="CardBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <StaticResource x:Key="CardPrimaryForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="#FF34424d"/>
+            <Color x:Key="InfoBarInformationalSeverityIconBackground">#FF5fb2f2</Color>
             <Thickness x:Key="CardBorderThickness">1</Thickness>
         </ResourceDictionary>
 
@@ -14,6 +16,8 @@
             <StaticResource x:Key="CardBackgroundBrush" ResourceKey="CardBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="CardBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <StaticResource x:Key="CardPrimaryForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="#FFd3e7f7"/>
+            <Color x:Key="InfoBarInformationalSeverityIconBackground">#FF0063b1</Color>
             <Thickness x:Key="CardBorderThickness">1</Thickness>
         </ResourceDictionary>
 
@@ -21,6 +25,8 @@
             <StaticResource x:Key="CardBackgroundBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="CardBorderBrush" ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="CardPrimaryForegroundBrush" ResourceKey="SystemColorButtonTextColorBrush" />
+            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="#FF34424d"/>
+            <Color x:Key="InfoBarInformationalSeverityIconBackground">#FF5fb2f2</Color>
             <Thickness x:Key="CardBorderThickness">2</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
