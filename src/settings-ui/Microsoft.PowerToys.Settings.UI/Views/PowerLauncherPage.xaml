@@ -197,23 +197,23 @@
                                                         Height="20" />
                                                 </controls:Setting.Icon>
                                                 <controls:Setting.ActionContent>
-                                                    <StackPanel Orientation="Horizontal">
+                                                    <StackPanel Orientation="Horizontal" Spacing="16">
                                                         <!-- To do: replace with InfoBadge once we move towards WinUI 2.7 -->
-                                                        <Grid x:Name="IconArea" Visibility="{x:Bind ShowNotAccessibleWarning}">
+                                                        <Grid VerticalAlignment="Center"
+                                                              AutomationProperties.AccessibilityView="Raw"
+                                                              Visibility="{x:Bind ShowNotAccessibleWarning}">
                                                             <TextBlock x:Name="IconBackground"
-                                                                       VerticalAlignment="Top"
-                                                                       Margin="{StaticResource InfoBarIconMargin}"
+                                                                        VerticalAlignment="Center"
                                                                        FontSize="{StaticResource InfoBarIconFontSize}"
                                                                        Text="{StaticResource InfoBarIconBackgroundGlyph}"
-                                                                       Foreground="{ThemeResource InfoBarWarningSeverityIconBackground}"
+                                                                       Foreground="{ThemeResource InfoBarErrorSeverityIconBackground}"
                                                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                                        AutomationProperties.AccessibilityView="Raw" />
                                                             
                                                             <TextBlock x:Name="StandardIcon"
-                                                                       Margin="{StaticResource InfoBarIconMargin}"
                                                                        FontSize="{StaticResource InfoBarIconFontSize}"
-                                                                       Text="{StaticResource InfoBarWarningIconGlyph}"
-                                                                       Foreground="{ThemeResource InfoBarWarningSeverityIconForeground}"
+                                                                       Text="{StaticResource InfoBarErrorIconGlyph}"
+                                                                       Foreground="{ThemeResource InfoBarErrorSeverityIconForeground}"
                                                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
                                                         </Grid>
 
@@ -232,7 +232,7 @@
                                                                  MinWidth="{StaticResource SettingActionControlMinWidth}" />
                                                     </controls:Setting.ActionContent>
                                                 </controls:Setting>
-                                                <muxc:InfoBar Severity="Warning" x:Uid="Run_NotAccessibleWarning"
+                                                <muxc:InfoBar Severity="Error" x:Uid="Run_NotAccessibleWarning"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"
                                                               IsClosable="False" />
                                                 <muxc:InfoBar Severity="Error"
