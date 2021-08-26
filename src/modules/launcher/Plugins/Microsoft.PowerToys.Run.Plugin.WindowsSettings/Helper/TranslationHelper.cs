@@ -39,6 +39,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                             continue;
                         }
 
+                        // ToDo: update json and resx to "Area_"
                         var translatedArea = Resources.ResourceManager.GetString($"Area{area}");
                         if (string.IsNullOrEmpty(translatedArea))
                         {

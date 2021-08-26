@@ -124,7 +124,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                 }
 
                 // ToDo: Fix area filter in result list
-
                 if (found.Area.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return true;
