@@ -6,12 +6,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+     xmlns:toolkitconverters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <local:VisibleIfNotEmpty x:Key="visibleIfNotEmptyConverter" />
+        <toolkitconverters:StringVisibilityConverter x:Key="collapsedIfStringIsEmptyConverter" EmptyValue="Collapsed" NotEmptyValue="Visible" />
         <Style TargetType="ListViewItem" x:Name="KeysListViewContainerStyle">
             <Setter Property="IsTabStop" Value="False"/>
         </Style>
@@ -122,7 +124,7 @@
                                                   IsTabStop="False">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="4"/>
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                     </ItemsControl>
@@ -138,7 +140,7 @@
                                                   IsTabStop="False">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="4"/>
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                     </ItemsControl>
@@ -201,9 +203,23 @@
                                         </ItemsControl.ItemsPanel>
                                     </ItemsControl>
 
-                                    <TextBlock Margin="8,0,0,0" Style="{StaticResource SecondaryTextStyle}" VerticalAlignment="Center">
-                                        <Run Text="{x:Bind TargetApp}" FontWeight="SemiBold"/>
-                                    </TextBlock>
+                                    <StackPanel Orientation="Horizontal" Visibility="{x:Bind TargetApp, Converter={StaticResource collapsedIfStringIsEmptyConverter}}">
+
+                                        <Border VerticalAlignment="Center"
+                                                Padding="12,4,12,6"
+                                                Margin="16,0,0,0"
+                                                CornerRadius="12">
+                                            <Border.Background>
+                                                <SolidColorBrush Color="{ThemeResource SystemAccentColorLight3}" Opacity="0.3"/>
+                                            </Border.Background>
+                                            <TextBlock Text="{x:Bind TargetApp}"
+                                                       Foreground="{ThemeResource SystemAccentColorDark1}" FontWeight="SemiBold" FontSize="12" />
+                                        </Border>
+
+                                    </StackPanel>
+                                  
+                                  
+
                                 </StackPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>
