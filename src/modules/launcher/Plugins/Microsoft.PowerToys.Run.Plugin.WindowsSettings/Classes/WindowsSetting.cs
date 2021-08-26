@@ -17,7 +17,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         public WindowsSetting()
         {
             Name = string.Empty;
-            Area = string.Empty;
             Command = string.Empty;
             Type = string.Empty;
         }
@@ -28,9 +27,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the area of this setting.
+        /// Gets or sets the areas of this setting. The order is fixed to the order in json.
         /// </summary>
-        public string Area { get; set; }
+        public IList<string>? Areas { get; set; }
 
         /// <summary>
         /// Gets or sets the command of this setting.
