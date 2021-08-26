@@ -880,7 +880,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the OS</comment>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Content" xml:space="preserve">
-    <value>Allow zones to span across monitors (all monitors must have the same DPI scaling)</value>
+    <value>Allow zones to span across monitors</value>
   </data>
   <data name="ImageResizer_Formatting_ActualHeight.Text" xml:space="preserve">
     <value>Actual height</value>
@@ -1572,5 +1572,14 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="RemoveTooltip.Text" xml:space="preserve">
     <value>Remove</value>
+  </data>
+  <data name="FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" xml:space="preserve">
+    <value>Prerequisites:</value>
+  </data>
+  <data name="FancyZones_SpanZonesAcrossMonitorsPrerequisites_dpi.Text" xml:space="preserve">
+    <value>All monitors should have the same DPI scaling.</value>
+  </data>
+  <data name="FancyZones_SpanZonesAcrossMonitorsPrerequisites_orientation.Text" xml:space="preserve">
+    <value>Consider that all connected monitors would be treated as one large combined rectangle.</value>
   </data>
 </root>
