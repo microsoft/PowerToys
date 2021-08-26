@@ -1527,6 +1527,7 @@ PCWSTR
 pdb
 pdbonly
 pdf
+pdfpreviewhandler
 pdo
 pdto
 pdtobj

@@ -58,7 +58,6 @@
                           Foreground="{ThemeResource CardPrimaryForegroundBrush}"
                           VerticalAlignment="Center"/>
 
-
                         <StackPanel
                             VerticalAlignment="Center"
                             Grid.Column="1"

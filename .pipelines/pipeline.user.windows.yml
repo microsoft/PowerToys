@@ -108,6 +108,8 @@ build:
             - 'modules\FileExplorerPreview\ManagedTelemetry.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll'
+            - 'modules\FileExplorerPreview\PdfPreviewHandler.dll'
+            - 'modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll'
             - 'modules\FileExplorerPreview\powerpreview.dll'
             - 'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
             - 'modules\FileExplorerPreview\SvgPreviewHandler.dll'

@@ -9,7 +9,7 @@ using Microsoft.PowerToys.STATestExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PreviewHandlerCommon;
 
-namespace PreviewPaneUnitTests
+namespace MarkdownPreviewHandlerUnitTests
 {
     [STATestClass]
     public class MarkdownPreviewHandlerTest

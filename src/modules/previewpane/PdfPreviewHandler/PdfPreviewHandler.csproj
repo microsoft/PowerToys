@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <Platforms>x64</Platforms>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyTitle>PdfPreviewHandler</AssemblyTitle>
+    <AssemblyDescription>PowerToys PdfPreviewHandler</AssemblyDescription>
+    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
+    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyProduct>PowerToys</AssemblyProduct>
+    <AssemblyTitle>PdfPreviewHandler</AssemblyTitle>
+    <Company>Microsoft Corp.</Company>
+    <Product>PowerToys</Product>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Description>PowerToys PdfPreviewHandler</Description>
+    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\PdfPreviewPaneDocumentation.xml</DocumentationFile>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FileExplorerPreview\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <ProjectGuid>{69E1EE8D-143A-4060-9129-4658ACF14AAF}</ProjectGuid>
+    <RootNamespace>Microsoft.PowerToys.PreviewHandler.Pdf</RootNamespace>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <EnableComHosting>true</EnableComHosting>
+    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
+  </PropertyGroup>
+  
+  <Import Project="..\..\..\Version.props" />
+  
+  <ItemGroup>
+    <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+    <Compile Update="PdfPreviewHandlerControl.cs" />
+    <Compile Update="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
+    <PackageReference Include="System.Runtime.WindowsRuntime" Version="4.7.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
+      <Link>StyleCop.json</Link>
+    </AdditionalFiles>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
+  </ItemGroup>
+   
+  <ItemGroup>
+    <Reference Include="Windows">
+      <HintPath>$(MSBuildProgramFiles32)\Windows Kits\10\UnionMetadata\10.0.17134.0\Windows.winmd</HintPath>
+      <IsWinMDFile>true</IsWinMDFile>
+    </Reference>
+  </ItemGroup>
+</Project>
