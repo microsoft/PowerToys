@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             var toolTipText = new StringBuilder();
 
             toolTipText.AppendLine($"{Resources.Application}: {entry.Type}");
-            toolTipText.AppendLine($"{Resources.Area}: {entry.Area}");
+            toolTipText.AppendLine($"{Resources.Area}: {AreaPathHelper.CreateAreaPathString(entry.Areas)}");
 
             if (entry.AltNames != null && entry.AltNames.Any())
             {
