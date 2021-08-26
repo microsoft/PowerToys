@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerToys.Common.UI;
@@ -16,6 +17,7 @@ using PowerLauncher.ViewModel;
 using Windows.UI.Notifications;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox
 {
@@ -37,7 +39,14 @@ namespace Wox
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
             DesktopNotificationManagerCompat.RegisterActivator<LauncherNotificationActivator>();
-            DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("PowerToysRun");
+            try
+            {
+                DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("PowerToysRun");
+            }
+            catch (System.UnauthorizedAccessException ex)
+            {
+                Log.Exception("Exception calling RegisterAumidAndComServer. Notifications not available.", ex, MethodBase.GetCurrentMethod().DeclaringType);
+            }
         }
 
         public void ChangeQuery(string query, bool requery = false)
