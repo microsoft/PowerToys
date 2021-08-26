@@ -16,6 +16,9 @@ public:
     std::optional<GUID> GetCurrentVirtualDesktopId() const;
     std::optional<std::vector<GUID>> GetVirtualDesktopIds() const;
 
+    bool IsWindowOnCurrentDesktop(HWND window) const;
+    std::optional<GUID> GetDesktopId(HWND window) const;
+
 private:
     std::function<void()> m_vdInitCallback;
     std::function<void()> m_vdUpdatedCallback;
