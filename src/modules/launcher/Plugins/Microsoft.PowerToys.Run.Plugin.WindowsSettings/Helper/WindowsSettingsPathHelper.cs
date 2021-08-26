@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             }
             else
             {
-                // If no areas are defined reutrn only the name of the app {WindowsSetting.type}.
+                // If no areas are defined return only the name of the app {WindowsSetting.type}.
                 return settingsApp;
             }
         }
