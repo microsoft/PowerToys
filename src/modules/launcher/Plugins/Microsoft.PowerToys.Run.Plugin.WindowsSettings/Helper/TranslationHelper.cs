@@ -28,14 +28,31 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
             foreach (var settings in settingsList)
             {
-                var area = Resources.ResourceManager.GetString($"Area{settings.Area}");
+                if (!(settings.Areas is null) && settings.Areas.Any())
+                {
+                    var translatedAreas = new List<string>();
+
+                    foreach (var area in settings.Areas)
+                    {
+                        if (string.IsNullOrWhiteSpace(area))
+                        {
+                            continue;
+                        }
+
+                        var translatedArea = Resources.ResourceManager.GetString($"Area{area}");
+                        if (string.IsNullOrEmpty(translatedArea))
+                        {
+                            Log.Warn($"Resource string for [Area{area}] not found", typeof(Main));
+                        }
+
+                        translatedAreas.Add(translatedArea ?? area);
+                    }
+
+                    settings.AltNames = translatedAreas;
+                }
+
                 var name = Resources.ResourceManager.GetString(settings.Name);
                 var type = Resources.ResourceManager.GetString(settings.Type);
-
-                if (string.IsNullOrEmpty(area))
-                {
-                    Log.Warn($"Resource string for [Area{settings.Area}] not found", typeof(Main));
-                }
 
                 if (string.IsNullOrEmpty(name))
                 {
@@ -47,7 +64,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     Log.Warn($"Resource string for [{settings.Name}] not found", typeof(Main));
                 }
 
-                settings.Area = area ?? settings.Area ?? string.Empty;
                 settings.Name = name ?? settings.Name ?? string.Empty;
                 settings.Type = type ?? settings.Type ?? string.Empty;
 
