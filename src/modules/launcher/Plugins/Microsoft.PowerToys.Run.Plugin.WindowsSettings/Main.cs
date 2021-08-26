@@ -114,12 +114,16 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                     return true;
                 }
 
+                // ToDo: Fix area filter in result list
+
                 // Search for Area only by key char
                 if (found.Area.Contains(query.Search.Replace(":", string.Empty), StringComparison.CurrentCultureIgnoreCase)
                 && query.Search.EndsWith(":"))
                 {
                     return true;
                 }
+
+                // ToDo: Fix area filter in result list
 
                 if (found.Area.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
                 {
