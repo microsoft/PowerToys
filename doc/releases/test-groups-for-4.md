@@ -17,7 +17,7 @@ All:
 ```
 
 ```
-Group 1: 
+Group 1:
 - Install
 - Functional
 - General
@@ -34,6 +34,7 @@ Group 2:
 - PowerRename
 - PowerToys Run
 - OOBE
+- Espresso
 ```
 ```
 Group 3:
@@ -43,6 +44,7 @@ Group 3:
 - FZ
 - File Explorer Add-ons
 - Keyboard Manager
+- Espresso
 ```
 ```
 Group 4:
