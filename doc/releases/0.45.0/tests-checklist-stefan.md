@@ -44,27 +44,27 @@
 - [X] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
 
 ## PowerRename
-- [ ] Check if disable and enable of the module works.
-- [ ] Check that with the `Show icon on context menu` icon is shown and vice versa.
-- [ ] Check if `Appear only in extended context menu` works.
-- [ ] Enable/disable autocomplete.
-- [ ] Enable/disable `Show values from last use`.
+- [X] Check if disable and enable of the module works.
+- [X] Check that with the `Show icon on context menu` icon is shown and vice versa.
+- [X] Check if `Appear only in extended context menu` works.
+- [X] Enable/disable autocomplete.
+- [X] Enable/disable `Show values from last use`.
 * Select several files and folders and check PowerRename options:
-    - [ ] Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
-    - [ ] Exclude Folders/Files/Subfolder Items (could be selected several)
-    - [ ] Item Name/Extension Only (one at the time)
-    - [ ] Enumerate Items
-    - [ ] Case Sensitive
-    - [ ] Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
+    - [X] Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
+    - [X] Exclude Folders/Files/Subfolder Items (could be selected several)
+    - [X] Item Name/Extension Only (one at the time)
+    - [X] Enumerate Items
+    - [X] Case Sensitive
+    - [X] Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
     * Use regular expressions
-        - [ ] Search with an expression (e.g. `(.*).png`)
-        - [ ] Replace with an expression (e.g. `foo_$1.png`)
-        - [ ] Replace using file creation date and time (e.g. `$hh-$mm-$ss-$fff` `$DD_$MMMM_$YYYY`)
-        - [ ] Turn on `Use Boost library` and test with Perl Regular Expression Syntax (e.g. `(?<=t)est`)
+        - [X] Search with an expression (e.g. `(.*).png`)
+        - [X] Replace with an expression (e.g. `foo_$1.png`)
+        - [X] Replace using file creation date and time (e.g. `$hh-$mm-$ss-$fff` `$DD_$MMMM_$YYYY`)
+        - [X] Turn on `Use Boost library` and test with Perl Regular Expression Syntax (e.g. `(?<=t)est`)
     * File list filters.
-        - [ ] In the `preview` window uncheck some items to exclude them from renaming.
-        - [ ] Click on the `Renamed` column to filter results.
-        - [ ] Click on the `Original` column to cycle between checked and unchecked items.
+        - [X] In the `preview` window uncheck some items to exclude them from renaming.
+        - [X] Click on the `Renamed` column to filter results.
+        - [x] Click on the `Original` column to cycle between checked and unchecked items.
 
 ## PowerToys Run
 
