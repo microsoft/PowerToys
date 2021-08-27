@@ -127,7 +127,7 @@
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                     </ItemsControl>
-                                    <TextBlock Text="{x:Bind KeyboardManager_ShortcutRemappedTo}"
+                                    <TextBlock Text="{x:Uid KeyboardManager_ShortcutRemappedTo}"
                                                Style="{StaticResource SecondaryTextStyle}"
                                                VerticalAlignment="Center" 
                                                Margin="8,0,8,0"/>
@@ -211,7 +211,7 @@
                                                 <SolidColorBrush Color="{ThemeResource SystemAccentColorLight3}"
                                                                  Opacity="0.3"/>
                                             </Border.Background>
-                                            <TextBlock Text="{x:Bind KeyboardManager_TargetApp}"
+                                            <TextBlock Text="{x:Bind TargetApp}"
                                                        Foreground="{ThemeResource SystemAccentColorDark1}"
                                                        FontWeight="SemiBold"
                                                        FontSize="12" />
