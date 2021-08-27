@@ -55,5 +55,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         /// Color presentation as natural color (hue, whiteness[0%..100%], blackness[0%..100%])
         /// </summary>
         NCol = 8,
+
+        /// <summary>
+        /// Color presentation as CIELAB color space, also referred to as L*a*b* (L[0..100], A[-128..127], B[-128..127])
+        /// </summary>
+        CIELAB = 9,
     }
 }

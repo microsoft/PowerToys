@@ -44,6 +44,7 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.HWB => ColorToHWB(color),
                 ColorRepresentationType.NCol => ColorToNCol(color),
                 ColorRepresentationType.RGB => ColorToRGB(color),
+                ColorRepresentationType.CIELAB => ColorToCIELAB(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),
@@ -191,11 +192,28 @@ namespace ColorPicker.Helpers
         /// <summary>
         /// Return a <see cref="string"/> representation of a RGB color
         /// </summary>
-        /// <param name="color">The see cref="Color"/> for the RGB color presentation</param>
+        /// <param name="color">The <see cref="Color"/> for the RGB color presentation</param>
         /// <returns>A <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToRGB(Color color)
             => $"rgb({color.R.ToString(CultureInfo.InvariantCulture)}"
              + $", {color.G.ToString(CultureInfo.InvariantCulture)}"
              + $", {color.B.ToString(CultureInfo.InvariantCulture)})";
+
+        /// <summary>
+        /// Returns a <see cref="string"/> representation of a CIE LAB color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the CIE LAB color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a CIE LAB color</returns>
+        private static string ColorToCIELAB(Color color)
+        {
+            var (lightness, chromaticityA, chromaticityB) = ColorHelper.ConvertToCIELABColor(color);
+            lightness = Math.Round(lightness);
+            chromaticityA = Math.Round(chromaticityA);
+            chromaticityB = Math.Round(chromaticityB);
+
+            return $"L*a*b*({lightness.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {chromaticityA.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {chromaticityB.ToString(CultureInfo.InvariantCulture)})";
+        }
     }
 }

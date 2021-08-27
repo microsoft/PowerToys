@@ -218,6 +218,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             var hsiFormatName = ColorRepresentationType.HSI.ToString();
             var hwbFormatName = ColorRepresentationType.HWB.ToString();
             var ncolFormatName = ColorRepresentationType.NCol.ToString();
+            var cielabFormatName = ColorRepresentationType.CIELAB.ToString();
 
             formatsUnordered.Add(new ColorFormatModel(hexFormatName, "#EF68FF", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName]));
             formatsUnordered.Add(new ColorFormatModel(rgbFormatName, "rgb(239, 104, 255)", visibleFormats.ContainsKey(rgbFormatName) && visibleFormats[rgbFormatName]));
@@ -228,6 +229,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             formatsUnordered.Add(new ColorFormatModel(hsiFormatName, "hsi(100, 50%, 75%)", visibleFormats.ContainsKey(hsiFormatName) && visibleFormats[hsiFormatName]));
             formatsUnordered.Add(new ColorFormatModel(hwbFormatName, "hwb(100, 50%, 75%)", visibleFormats.ContainsKey(hwbFormatName) && visibleFormats[hwbFormatName]));
             formatsUnordered.Add(new ColorFormatModel(ncolFormatName, "R10, 50%, 75%", visibleFormats.ContainsKey(ncolFormatName) && visibleFormats[ncolFormatName]));
+            formatsUnordered.Add(new ColorFormatModel(cielabFormatName, "66, 72, -52", visibleFormats.ContainsKey(cielabFormatName) && visibleFormats[cielabFormatName]));
 
             foreach (var storedColorFormat in _colorPickerSettings.Properties.VisibleColorFormats)
             {

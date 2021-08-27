@@ -197,6 +197,12 @@ namespace ColorPicker.ViewModels
                     FormatName = ColorRepresentationType.NCol.ToString(),
                     Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.NCol); },
                 });
+            _allColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = ColorRepresentationType.CIELAB.ToString(),
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIELAB); },
+                });
 
             _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;
 
