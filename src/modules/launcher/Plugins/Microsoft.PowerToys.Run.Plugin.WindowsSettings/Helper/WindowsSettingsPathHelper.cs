@@ -11,45 +11,57 @@ using Wox.Plugin.Logger;
 namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 {
     /// <summary>
-    /// Helper class to help with the settings path (app and area) and area path.
+    /// Helper class to help with the path of a <see cref="WindowsSetting"/>. The settings path shows where to find a setting within Windows' user interface.
     /// </summary>
     internal static class WindowsSettingsPathHelper
     {
         /// <summary>
-        /// Symbol to use between the parts of the path.
+        /// The name of the file that contains all settings for the query
         /// </summary>
-        internal static readonly string PathOrderSymbol = "\u25B9";
+        private const string _pathDelimiterSymbol = "\u25B9";
 
         /// <summary>
-        /// Return a string with the area path of a <see cref="WindowsSetting"/>. The result includes the delimiter sign.
+        /// Generates the values for <see cref="WindowsSetting.JoinedAreaPath"/> and <see cref="WindowsSetting.JoinedFullSettingsPath"/> on all settings of the given list with <see cref="WindowsSetting"/>.
         /// </summary>
-        /// <param name="areaList"> The list the ordered areas to combine.
-        internal static string ReturnAreaPath(in IList<string>? areaList)
+        /// <param name="settingsList">The list that contains <see cref="WindowsSetting"/> to translate.</param>
+        internal static void GenerateSettingsPathValues(in IEnumerable<WindowsSetting>? settingsList)
         {
-            if (areaList is null)
+            if (settingsList is null)
             {
-                return string.Empty;
+                return;
             }
 
-            return string.Join($" {WindowsSettingsPathHelper.PathOrderSymbol} ", areaList);
-        }
+            foreach (var settings in settingsList)
+            {
+                // Check if type value is filled. If not, then write log warning.
+                if (settings.Type is null)
+                {
+                    Log.Warn($"The type property is not set for setting [{settings.Name}] in json. Skipping generating of settings path.", typeof(Main));
+                }
 
-        /// <summary>
-        /// Return a string with the complete settings path (app and area) of a <see cref="WindowsSetting"/>. If areas are not defined then only the app is returned. The result includes the delimiter sign.
-        /// </summary>
-        /// <param name="settingsApp"> The type/app of the setting.
-        /// <param name="areaList"> The list the ordered areas to combine.
-        internal static string ReturnFullSettingsPath(in string settingsApp, in IList<string>? areaList)
-        {
-            if (areaList != null)
-            {
-                string areaString = string.Join($" {WindowsSettingsPathHelper.PathOrderSymbol} ", areaList);
-                return $"{settingsApp} {WindowsSettingsPathHelper.PathOrderSymbol} {areaString}";
-            }
-            else
-            {
-                // If no areas are defined return only the name of the app {WindowsSetting.type}.
-                return settingsApp;
+                // Check if "JoinedAreaPath" and "JoinedFullSettingsPath" are filled. Then log debug message.
+                if (!(settings.JoinedAreaPath == string.Empty && settings.JoinedAreaPath is null))
+                {
+                    Log.Debug($"The property [JoinedAreaPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(Main));
+                }
+
+                if (!(settings.JoinedFullSettingsPath == string.Empty && settings.JoinedFullSettingsPath is null))
+                {
+                    Log.Debug($"The property [JoinedFullSettingsPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(Main));
+                }
+
+                // Generating path values.
+                if (!(settings.Areas is null) && settings.Areas.Any())
+                {
+                    var areaValue = string.Join($" {WindowsSettingsPathHelper._pathDelimiterSymbol} ", settings.Areas);
+                    settings.JoinedAreaPath = areaValue;
+                    settings.JoinedFullSettingsPath = $"{settings.Type} {WindowsSettingsPathHelper._pathDelimiterSymbol} {areaValue}";
+                }
+                else
+                {
+                    settings.JoinedAreaPath = string.Empty;
+                    settings.JoinedFullSettingsPath = settings.Type;
+                }
             }
         }
     }
