@@ -40,16 +40,16 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                         }
 
                         // ToDo: update json and resx to "Area_"
-                        var translatedArea = Resources.ResourceManager.GetString($"Area{area}");
+                        var translatedArea = Resources.ResourceManager.GetString($"{area}");
                         if (string.IsNullOrEmpty(translatedArea))
                         {
-                            Log.Warn($"Resource string for [Area{area}] not found", typeof(Main));
+                            Log.Warn($"Resource string for [{area}] not found", typeof(Main));
                         }
 
                         translatedAreas.Add(translatedArea ?? area);
                     }
 
-                    settings.AltNames = translatedAreas;
+                    settings.Areas = translatedAreas;
                 }
 
                 var name = Resources.ResourceManager.GetString(settings.Name);
