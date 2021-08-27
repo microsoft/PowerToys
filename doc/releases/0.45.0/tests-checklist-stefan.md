@@ -15,11 +15,11 @@
 - [X] Try to copy color formats to the clipboard from the Editor
 - [X] Check `Show color name` and verify if color name is shown in the Color picker
 - [X] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
-- [ ] Select a color from the history in the Editor
-- [ ] Remove color from the history in the Editor
-- [ ] Open the Color Picker from the Editor
-- [ ] Open Adjust color from the Editor
-- [ ] Check Color Picker logs for errors
+- [X] Select a color from the history in the Editor
+- [X] Remove color from the history in the Editor
+- [X] Open the Color Picker from the Editor
+- [X] Open Adjust color from the Editor
+- [X] Check Color Picker logs for errors
 
 ## Image Resizer
 - [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
