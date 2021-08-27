@@ -116,11 +116,11 @@
 ### OOBE
  * Quit PowerToys
  * Delete %localappdata%\Microsoft\PowerToys
- - [ ] Start PowerToys and verify OOBE opens
+ - [X] Start PowerToys and verify OOBE opens
  * Visit each OOBE section and for each section:
-   - [ ] open the Settings for that module
-   - [ ] verify the Settings work as expected (toggle some controls on/off etc.)
-   - [ ] close the Settings
-   - [ ] if it's available, test the `Launch module name` button
+   - [X] open the Settings for that module
+   - [X] verify the Settings work as expected (toggle some controls on/off etc.)
+   - [X] close the Settings
+   - [X] if it's available, test the `Launch module name` button
  * Close OOBE
- - [ ] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
+ - [X] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
