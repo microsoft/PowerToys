@@ -167,6 +167,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     continue;
                 }
 
+                // ToDo: Fix area scoring
                 if (windowsSetting.Area.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
                 {
                     result.Score = lowScore--;
