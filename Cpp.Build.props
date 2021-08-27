@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Project configurations -->
   <ItemGroup Label="ProjectConfigurations">
@@ -12,7 +13,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  
+
   <!-- Props that should be disabled while building on CI server -->
   <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
     <ClCompile>
@@ -22,10 +23,15 @@
   </ItemDefinitionGroup>
 
   <!-- C++ source compile-specific things for all configurations -->
+  <PropertyGroup>
+    <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
+      <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ConformanceMode>false</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -34,10 +40,10 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-    </Link>    
+    </Link>
     <Lib>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
-    </Lib>    
+    </Lib>
   </ItemDefinitionGroup>
 
   <!-- C++ source compile-specific things for Debug/Release configurations -->
@@ -50,7 +56,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>    
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -60,12 +66,12 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-    </ClCompile>  
+    </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-    </Link>    
+    </Link>
   </ItemDefinitionGroup>
 
   <!-- Global props -->
@@ -75,7 +81,7 @@
 
   <!-- Props that are constant for both Debug and Release configurations -->
   <PropertyGroup Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset Condition="'$(OverridePlatformToolset)'!='True'">v142</PlatformToolset>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>Spectre</SpectreMitigation>
@@ -83,13 +89,13 @@
 
   <!-- Debug/Release props -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-      <UseDebugLibraries>true</UseDebugLibraries>
-      <LinkIncremental>true</LinkIncremental>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-      <UseDebugLibraries>false</UseDebugLibraries>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
-      <LinkIncremental>false</LinkIncremental>
-    </PropertyGroup>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
 
 </Project>

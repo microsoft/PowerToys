@@ -9,21 +9,20 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
-        private bool _isDarkThemeRadioButtonChecked;
-        private bool _isLightThemeRadioButtonChecked;
-        private bool _isSystemThemeRadioButtonChecked;
+        private int _themeIndex;
+        private int _monitorPositionIndex;
 
-        private bool _isCursorPositionRadioButtonChecked;
-        private bool _isPrimaryMonitorPositionRadioButtonChecked;
-        private bool _isFocusPositionRadioButtonChecked;
+        private string _searchText;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -71,27 +70,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             switch (settings.Properties.Theme)
             {
-                case Theme.Light:
-                    _isLightThemeRadioButtonChecked = true;
-                    break;
                 case Theme.Dark:
-                    _isDarkThemeRadioButtonChecked = true;
+                    _themeIndex = 0;
+                    break;
+                case Theme.Light:
+                    _themeIndex = 1;
                     break;
                 case Theme.System:
-                    _isSystemThemeRadioButtonChecked = true;
+                    _themeIndex = 2;
                     break;
             }
 
             switch (settings.Properties.Position)
             {
                 case StartupPosition.Cursor:
-                    _isCursorPositionRadioButtonChecked = true;
+                    _monitorPositionIndex = 0;
                     break;
                 case StartupPosition.PrimaryMonitor:
-                    _isPrimaryMonitorPositionRadioButtonChecked = true;
+                    _monitorPositionIndex = 1;
                     break;
                 case StartupPosition.Focus:
-                    _isFocusPositionRadioButtonChecked = true;
+                    _monitorPositionIndex = 2;
                     break;
             }
 
@@ -99,6 +98,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 plugin.PropertyChanged += OnPluginInfoChange;
             }
+
+            SearchPluginsCommand = new RelayCommand(SearchPlugins);
         }
 
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
@@ -193,116 +194,69 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool IsDarkThemeRadioButtonChecked
+        public int ThemeIndex
         {
             get
             {
-                return _isDarkThemeRadioButtonChecked;
+                return _themeIndex;
             }
 
             set
             {
-                if (value == true)
+                switch (value)
                 {
-                    settings.Properties.Theme = Theme.Dark;
-                    _isDarkThemeRadioButtonChecked = value;
+                    case 0: settings.Properties.Theme = Theme.Dark; break;
+                    case 1: settings.Properties.Theme = Theme.Light; break;
+                    case 2: settings.Properties.Theme = Theme.System; break;
+                }
 
+                _themeIndex = value;
+                UpdateSettings();
+            }
+        }
+
+        public int MonitorPositionIndex
+        {
+            get
+            {
+                return _monitorPositionIndex;
+            }
+
+            set
+            {
+                if (_monitorPositionIndex != value)
+                {
+                    switch (value)
+                    {
+                        case 0: settings.Properties.Position = StartupPosition.Cursor; break;
+                        case 1: settings.Properties.Position = StartupPosition.PrimaryMonitor; break;
+                        case 2: settings.Properties.Position = StartupPosition.Focus; break;
+                    }
+
+                    _monitorPositionIndex = value;
                     UpdateSettings();
                 }
             }
         }
 
-        public bool IsLightThemeRadioButtonChecked
+        public string SearchText
         {
             get
             {
-                return _isLightThemeRadioButtonChecked;
+                return _searchText;
             }
 
             set
             {
-                if (value == true)
+                if (_searchText != value)
                 {
-                    settings.Properties.Theme = Theme.Light;
-                    _isDarkThemeRadioButtonChecked = value;
-
-                    UpdateSettings();
+                    _searchText = value;
+                    OnPropertyChanged(nameof(SearchText));
                 }
             }
         }
 
-        public bool IsSystemThemeRadioButtonChecked
-        {
-            get
-            {
-                return _isSystemThemeRadioButtonChecked;
-            }
-
-            set
-            {
-                if (value == true)
-                {
-                    settings.Properties.Theme = Theme.System;
-                    _isDarkThemeRadioButtonChecked = value;
-
-                    UpdateSettings();
-                }
-            }
-        }
-
-        public bool IsCursorPositionRadioButtonChecked
-        {
-            get
-            {
-                return _isCursorPositionRadioButtonChecked;
-            }
-
-            set
-            {
-                if (value == true)
-                {
-                    settings.Properties.Position = StartupPosition.Cursor;
-                    _isCursorPositionRadioButtonChecked = value;
-                    UpdateSettings();
-                }
-            }
-        }
-
-        public bool IsPrimaryMonitorPositionRadioButtonChecked
-        {
-            get
-            {
-                return _isPrimaryMonitorPositionRadioButtonChecked;
-            }
-
-            set
-            {
-                if (value == true)
-                {
-                    settings.Properties.Position = StartupPosition.PrimaryMonitor;
-                    _isPrimaryMonitorPositionRadioButtonChecked = value;
-                    UpdateSettings();
-                }
-            }
-        }
-
-        public bool IsFocusPositionRadioButtonChecked
-        {
-            get
-            {
-                return _isFocusPositionRadioButtonChecked;
-            }
-
-            set
-            {
-                if (value == true)
-                {
-                    settings.Properties.Position = StartupPosition.Focus;
-                    _isFocusPositionRadioButtonChecked = value;
-                    UpdateSettings();
-                }
-            }
-        }
+        public ICommand SearchPluginsCommand { get; }
 
         public HotkeySettings OpenPowerLauncher
         {
@@ -451,6 +405,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public bool IsUpToDate(PowerLauncherSettings settings)
         {
             return this.settings.Equals(settings);
+        }
+
+        public void SearchPlugins()
+        {
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                var plugins = settings.Plugins.Where(p => p.Name.StartsWith(SearchText, StringComparison.OrdinalIgnoreCase) || p.Name.IndexOf($" {SearchText}", StringComparison.OrdinalIgnoreCase) > 0);
+                _plugins = new ObservableCollection<PowerLauncherPluginViewModel>(plugins.Select(x => new PowerLauncherPluginViewModel(x, isDark)));
+            }
+            else
+            {
+                _plugins = null;
+            }
+
+            OnPropertyChanged(nameof(Plugins));
         }
     }
 }

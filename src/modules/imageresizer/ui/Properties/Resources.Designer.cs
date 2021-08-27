@@ -59,7 +59,7 @@ namespace ImageResizer.Properties {
                 resourceCulture = value;
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to All Files.
         /// </summary>
@@ -77,7 +77,7 @@ namespace ImageResizer.Properties {
                 return ResourceManager.GetString("Cancel", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Height.
         /// </summary>
@@ -120,6 +120,15 @@ namespace ImageResizer.Properties {
         public static string Input_Custom {
             get {
                 return ResourceManager.GetString("Input_Custom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gif files with animations may not be correctly resized..
+        /// </summary>
+        public static string Input_GifWarning {
+            get {
+                return ResourceManager.GetString("Input_GifWarning", resourceCulture);
             }
         }
         

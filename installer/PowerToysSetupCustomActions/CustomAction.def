@@ -13,3 +13,7 @@ EXPORTS
 	TelemetryLogRepairCancelCA
 	TelemetryLogRepairFailCA
 	TerminateProcessesCA
+	TerminateProcessesCA
+	CertifyVirtualCameraDriverCA
+	InstallVirtualCameraDriverCA
+	UninstallVirtualCameraDriverCA

@@ -56,21 +56,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _opacity = Settings.Properties.OverlayOpacity.Value;
             _disabledApps = Settings.Properties.DisabledApps.Value;
 
-            string theme = Settings.Properties.Theme.Value;
-
-            if (theme == "dark")
+            switch (Settings.Properties.Theme.Value)
             {
-                _themeIndex = 0;
-            }
-
-            if (theme == "light")
-            {
-                _themeIndex = 1;
-            }
-
-            if (theme == "system")
-            {
-                _themeIndex = 2;
+                case "dark": _themeIndex = 0; break;
+                case "light": _themeIndex = 1; break;
+                case "system": _themeIndex = 2; break;
             }
         }
 
@@ -130,29 +120,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (_themeIndex != value)
                 {
-                    if (value == 0)
+                    switch (value)
                     {
-                        // set theme to dark.
-                        Settings.Properties.Theme.Value = "dark";
-                        _themeIndex = value;
-                        NotifyPropertyChanged();
+                        case 0: Settings.Properties.Theme.Value = "dark"; break;
+                        case 1: Settings.Properties.Theme.Value = "light"; break;
+                        case 2: Settings.Properties.Theme.Value = "system"; break;
                     }
 
-                    if (value == 1)
-                    {
-                        // set theme to light.
-                        Settings.Properties.Theme.Value = "light";
-                        _themeIndex = value;
-                        NotifyPropertyChanged();
-                    }
-
-                    if (value == 2)
-                    {
-                        // set theme to system default.
-                        Settings.Properties.Theme.Value = "system";
-                        _themeIndex = value;
-                        NotifyPropertyChanged();
-                    }
+                    _themeIndex = value;
+                    NotifyPropertyChanged();
                 }
             }
         }

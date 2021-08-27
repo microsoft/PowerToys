@@ -61,6 +61,11 @@ build:
             - 'x64/**/*.pdb'
           exclude:
             - 'x64/Release/obj/**/*.pdb'
+        # TODO(yuyoyuppe): uncomment when VCM should be enabled
+        #- from: 'x86/Release'
+        #  to: 'Build_Output'
+        #  include:
+        #    - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
@@ -93,13 +98,18 @@ build:
             - 'modules\FancyZones\fancyzones.dll'
             - 'modules\FancyZones\FancyZonesEditor.exe'
             - 'modules\FancyZones\FancyZonesEditor.dll'
+            - 'modules\FancyZones\FancyZonesModuleInterface.dll'
             - 'modules\FancyZones\ManagedCommon.dll'
             - 'modules\FancyZones\ManagedTelemetry.dll'
+            - 'modules\FancyZones\PowerToys.FancyZones.exe'
+            - 'modules\FancyZones\PowerToysInterop.dll'
             - 'modules\FancyZones\Telemetry.dll'
             - 'modules\FancyZones\Microsoft.PowerToys.Common.UI.dll'
             - 'modules\FileExplorerPreview\ManagedTelemetry.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll'
+            - 'modules\FileExplorerPreview\PdfPreviewHandler.dll'
+            - 'modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll'
             - 'modules\FileExplorerPreview\powerpreview.dll'
             - 'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
             - 'modules\FileExplorerPreview\SvgPreviewHandler.dll'
@@ -157,6 +167,9 @@ build:
             - 'modules\PowerRename\PowerRenameExt.dll'
             - 'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
             - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
+            # TODO(yuyoyuppe): uncomment when VCM should be enabled
+            #- 'modules\VideoConference\VideoConferenceModule.dll'
+            #- 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
             - 'Settings\ManagedTelemetry.dll'
             - 'Settings\Microsoft.PowerToys.Settings.UI.exe'
             - 'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
@@ -166,7 +179,7 @@ build:
             - 'Settings\Telemetry.dll'
             - 'Settings\ManagedCommon.dll'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
       name: 'Build Power Toys Tools'
       command: '.pipelines\build-tools.cmd'
@@ -175,8 +188,19 @@ build:
           to: 'Build_Output'
           include:
             - 'BugReportTool\BugReportTool.exe'
+            - 'WebcamReportTool\WebcamReportTool.exe'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
+    - !!buildcommand
+      name: 'Build Power Toys Installer Custom Action' # Need to do separately to sign dll before building installer
+      command: '.pipelines\build-installer-PTCustomActions.cmd'
+      artifacts:
+        - from: 'installer\PowerToysSetupCustomActions\x64\Release'
+          to: 'Build_Output'
+          include:
+            - 'PowerToysSetupCustomActions.dll'
+          signing_options:
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
       name: 'Build Power Toys Installer'
       command: '.pipelines\build-installer.cmd'
@@ -186,7 +210,7 @@ build:
           include:
             - 'PowerToysSetup-*.msi'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
       name: 'Build Power Toys Bootstrapper'
       command: '.pipelines\build-bootstrapper.cmd'
@@ -199,7 +223,7 @@ build:
           include:
             - 'PowerToysSetup-*.exe'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
 
 
 #package:
@@ -235,4 +259,3 @@ static_analysis_options:
     files_to_scan:
       - exclude:
         - '**/*.lcl'
-

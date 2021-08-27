@@ -4,57 +4,32 @@
       xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      mc:Ignorable="d"
-      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+      xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+      mc:Ignorable="d">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="280" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <controls:OOBEPageControl ModuleTitle="{x:Bind ViewModel.ModuleName}"
+                                  ModuleImageSource="{x:Bind ViewModel.PreviewImageSource}">
 
-        <Image Stretch="UniformToFill"
-               Source="{x:Bind ViewModel.PreviewImageSource}" />
+        <controls:OOBEPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+                <TextBlock Margin="0,4,0,8"
+                           x:Uid="Oobe_Overview_Description"
+                           TextWrapping="Wrap"/>
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.DescriptionLink}" Style="{StaticResource HyperlinkButtonStyle}">
+                    <TextBlock x:Uid="Oobe_Overview_DescriptionLinkText"
+                               TextWrapping="Wrap" />
+                </HyperlinkButton>
 
-        <ScrollViewer Grid.Row="1"
-                      VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical"
-                        Margin="{StaticResource OobePageContentMargin}"
-                        VerticalAlignment="Top">
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}" Style="{StaticResource HyperlinkButtonStyle}">
+                    <TextBlock x:Uid="Oobe_Overview_LatestVersionLink"
+                               TextWrapping="Wrap" />
+                </HyperlinkButton>
 
-                <TextBlock Text="{x:Bind ViewModel.ModuleName}"
-                           AutomationProperties.HeadingLevel="Level2"
-                           Style="{StaticResource PageTitleStyle}" />
-
-                <TextBlock Margin="0,4,0,0"
-                           TextWrapping="Wrap">
-                    <Run x:Uid="Oobe_Overview_Description" />
-                    <Hyperlink NavigateUri="{x:Bind ViewModel.DescriptionLink}">
-                        <Run x:Uid="Oobe_Overview_DescriptionLinkText" />
-                    </Hyperlink><Run Text="." />
-                </TextBlock>
-
-                <TextBlock Margin="0,32,0,0"
-                           TextWrapping="Wrap">
-                <Run x:Uid="Oobe_Overview_CheckoutLatestVersion" />
-                <Hyperlink NavigateUri="{x:Bind ViewModel.Link}">
-                    <Run x:Uid="Oobe_Overview_LatestVersionLink" />
-                </Hyperlink><Run Text="." />
-                </TextBlock>
-
-                <Button Click="SettingsLaunchButton_Click"
-                        AutomationProperties.LabeledBy="{Binding ElementName=SettingsLabel}"
-                        Margin="0,32,0,0">
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="8">
-                        <TextBlock Text="&#xE115;"
-                                   Margin="0,3,0,0"
-                                   FontFamily="Segoe MDL2 Assets" />
-                        <TextBlock x:Uid="OOBE_Settings"
-                                   Name="SettingsLabel" />
-                    </StackPanel>
-                </Button>
+                <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
+                    <Button x:Uid="OOBE_Settings"
+                            Click="SettingsLaunchButton_Click"/>
+                </StackPanel>
             </StackPanel>
-        </ScrollViewer>
-    </Grid>
+        </controls:OOBEPageControl.ModuleContent>
+    </controls:OOBEPageControl>
 </Page>

@@ -13,12 +13,17 @@
 // Therefore the simplest way is to compile these functions as native using the pragmas below.
 #pragma managed(push, off)
 #include "../utils/os-detect.h"
+// TODO: move to a separate library in common
+#include "../../modules/videoconference/VideoConferenceShared/MicrophoneDevice.h"
+#include "../../modules/videoconference/VideoConferenceShared/VideoCaptureDeviceList.h"
 #pragma managed(pop)
 
 #include <common/version/version.h>
 
+
 using namespace System;
 using namespace System::Runtime::InteropServices;
+using System::Collections::Generic::List;
 
 // https://docs.microsoft.com/en-us/cpp/dotnet/how-to-wrap-native-class-for-use-by-csharp?view=vs-2019
 namespace interop
@@ -122,6 +127,32 @@ public
         static String ^ GetProductVersion() {
             return gcnew String(get_product_version().c_str());
         }
+
+        static List<String ^> ^ GetAllActiveMicrophoneDeviceNames() {
+            auto names = gcnew List<String ^>();
+            for (const auto& device : MicrophoneDevice::getAllActive())
+            {
+                names->Add(gcnew String(device.name().data()));
+            }
+            return names;
+        }
+
+            static List<String ^> ^
+            GetAllVideoCaptureDeviceNames() {
+                auto names = gcnew List<String ^>();
+                VideoCaptureDeviceList vcdl;
+                vcdl.EnumerateDevices();
+
+                for (UINT32 i = 0; i < vcdl.Count(); ++i)
+                {
+                    auto name = gcnew String(vcdl.GetDeviceName(i).data());
+                    if (name != L"PowerToys VideoConference Mute")
+                    {
+                        names->Add(name);
+                    }
+                }
+                return names;
+            }
     };
 
 public
@@ -148,12 +179,20 @@ public
             return gcnew String(CommonSharedConstants::RUN_EXIT_EVENT);
         }
 
+        static String ^ FZEExitEvent() {
+            return gcnew String(CommonSharedConstants::FZE_EXIT_EVENT);
+        }
+
         static String ^ ColorPickerSendSettingsTelemetryEvent() {
             return gcnew String(CommonSharedConstants::COLOR_PICKER_SEND_SETTINGS_TELEMETRY_EVENT);
         }
 
         static String ^ ShowColorPickerSharedEvent() {
             return gcnew String(CommonSharedConstants::SHOW_COLOR_PICKER_SHARED_EVENT);
+        }
+
+        static String ^ AwakeExitEvent() {
+            return gcnew String(CommonSharedConstants::AWAKE_EXIT_EVENT);
         }
     };
 }

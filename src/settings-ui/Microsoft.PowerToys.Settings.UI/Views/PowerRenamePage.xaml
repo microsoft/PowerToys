@@ -4,154 +4,91 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
 
-    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="LayoutVisualStates">
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState x:Name="SmallLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="Auto"/>
-                        <Setter Target="PowerRenameView.(Grid.Row)" Value="1" />
-                        <Setter Target="PowerRenameView.Margin" Value="0" />
-                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
-                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
-                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
-                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <StackPanel Orientation="Vertical"
+    <controls:SettingsPageControl x:Uid="PowerRename"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/PowerRename.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical"
                     x:Name="PowerRenameView"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,48,0"
-                    MaxWidth="{StaticResource MaxContentWidth}">
+                    HorizontalAlignment="Stretch">
 
-            <ToggleSwitch x:Uid="PowerRename_Toggle_Enable"
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"                          
-                           />
+                <controls:Setting x:Uid="PowerRename_Toggle_Enable">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerRename.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" />
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
 
-            <TextBlock x:Uid="PowerRename_ShellIntegration"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                <controls:SettingsGroup x:Uid="PowerRename_ShellIntegration" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Uid="PowerRename_Toggle_EnableOnContextMenu">
+                                <controls:Setting.ActionContent>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextMenu}"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
 
-            <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
-                          Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextMenu}"
-                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                           />
+                    <controls:Setting x:Uid="PowerRename_Toggle_EnableOnExtendedContextMenu">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
 
-            <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnExtendedContextMenu"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu}"
-                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                           />
+                <controls:SettingsGroup x:Uid="PowerRename_AutoCompleteHeader" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="PowerRename_Toggle_AutoComplete" Style="{StaticResource ExpanderHeaderSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MRUEnabled}"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel HorizontalAlignment="Stretch">
+                                <controls:Setting x:Uid="PowerRename_Toggle_MaxDispListNum"
+                                                  Style="{StaticResource ExpanderContentSettingStyle}"
+                                                  IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.GlobalAndMruEnabled}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox SpinButtonPlacementMode="Compact"
+                                            HorizontalAlignment="Left"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaxDispListNum}"
+                                            Minimum="0"
+                                            Maximum="20"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>  
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                    <controls:Setting x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
+              
 
-            <TextBlock x:Uid="PowerRename_AutoCompleteHeader"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
-            <CheckBox x:Uid="PowerRename_Toggle_AutoComplete"
-                          Margin="{StaticResource SmallTopMargin}" 
-                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MRUEnabled}"
-                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                           />
-
-            <muxc:NumberBox x:Uid="PowerRename_Toggle_MaxDispListNum"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaxDispListNum}"
-                            Minimum="0"
-                            Width="240"
-                            Maximum="20"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.GlobalAndMruEnabled}"/>
-
-            <CheckBox x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
-                          Margin="0, 17, 0, 0" 
-                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}"
-                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-
-            <TextBlock x:Uid="PowerRename_BehaviorHeader"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
-            <CheckBox x:Uid="PowerRename_Toggle_UseBoostLib"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseBoostLib}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-        </StackPanel>
-
-
-        <RelativePanel x:Name="SidePanel" 
-                    HorizontalAlignment="Left"
-                    Width="{StaticResource SidePanelWidth}"
-                    Grid.Column="1">
-            <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="About_PowerRename" x:Name="AboutTitle" Grid.ColumnSpan="2"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
-                <TextBlock x:Uid="PowerRename_Description"
-                           TextWrapping="Wrap"
-                           Grid.Row="1" />
+                <controls:SettingsGroup x:Uid="PowerRename_BehaviorHeader" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Uid="PowerRename_Toggle_UseBoostLib">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.UseBoostLib}" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
             </StackPanel>
 
-            <Border x:Name="AboutImage"
-                    CornerRadius="4"
-                    Grid.Row="2"
-                    MaxWidth="240"
-                    HorizontalAlignment="Left"
-                    Margin="{StaticResource SmallTopBottomMargin}"
-                    RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="PowerRename_ImageHyperlinkToDocs">
-                    <Image x:Uid="PowerRename_Image" Source="ms-appx:///Assets/Modules/PowerRename.png" />
-                </HyperlinkButton>
-            </Border>
+        </controls:SettingsPageControl.ModuleContent>
 
-            <StackPanel x:Name="LinksPanel"
-                        Margin="0,1,0,0"
-                        RelativePanel.Below="AboutImage"
-                        Orientation="Vertical" >
-                <HyperlinkButton x:Uid="PowerRename_ImageHyperlinkToDocs">
-                    <TextBlock x:Uid="Module_overview" />
-                </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
-                    <TextBlock x:Uid="Give_Feedback" />
-                </HyperlinkButton>
-
-                <TextBlock 
-                x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}" 
-                Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
-
-                <HyperlinkButton NavigateUri="https://github.com/chrdavis/SmartRename" Margin="0,-3,0,0">
-                    <TextBlock Text="Chris Davis's SmartRenamer" TextWrapping="Wrap" />
-                </HyperlinkButton>
-
-            </StackPanel>
-        </RelativePanel>
-    </Grid>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_PowerRename" Link="https://aka.ms/PowerToysOverview_PowerRename"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Text="Chris Davis's SmartRenamer" Link="https://github.com/chrdavis/SmartRename"/>
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
 </Page>

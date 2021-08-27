@@ -2,6 +2,7 @@
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
+using System.Linq;
 using System.Windows.Input;
 using ImageResizer.Helpers;
 using ImageResizer.Models;
@@ -41,6 +42,15 @@ namespace ImageResizer.ViewModels
         public ICommand ResizeCommand { get; }
 
         public ICommand CancelCommand { get; }
+
+        public bool TryingToResizeGifFiles
+        {
+            get
+            {
+                // Any of the files is a gif.
+                return _batch.Files.Any(filename => filename.EndsWith(".gif", System.StringComparison.InvariantCultureIgnoreCase));
+            }
+        }
 
         public void Resize()
         {

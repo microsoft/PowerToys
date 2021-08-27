@@ -109,12 +109,15 @@
   <data name="SETTINGS_MENU_TEXT" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="DOCUMENTATION_MENU_TEXT" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
   <data name="EXIT_MENU_TEXT" xml:space="preserve">
     <value>Exit</value>
     <comment>Exit as a verb, as in Exit the application</comment>
   </data>
   <data name="SUBMIT_BUG_TEXT" xml:space="preserve">
-    <value>Report Bug</value>
+    <value>Report bug</value>
   </data>
   <data name="BUGREPORT_SUCCESS" xml:space="preserve">
     <value>Bug report .zip file has been created on your Desktop.</value>

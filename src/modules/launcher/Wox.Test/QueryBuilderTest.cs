@@ -5,13 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mono.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerLauncher.Plugin;
 using Wox.Plugin;
 
 namespace Wox.Test
 {
+    [TestClass]
     public class QueryBuilderTest
     {
         private static bool AreEqual(Query firstQuery, Query secondQuery)
@@ -22,7 +22,7 @@ namespace Wox.Test
                 && firstQuery.RawQuery.Equals(secondQuery.RawQuery, StringComparison.Ordinal);
         }
 
-        [Test]
+        [TestMethod]
         public void QueryBuilderShouldRemoveExtraSpacesForNonGlobalPlugin()
         {
             // Arrange
@@ -41,7 +41,7 @@ namespace Wox.Test
             Assert.AreEqual("> file.txt file2 file3", searchQuery);
         }
 
-        [Test]
+        [TestMethod]
         public void QueryBuilderShouldRemoveExtraSpacesForGlobalPlugin()
         {
             // Arrange
@@ -59,7 +59,7 @@ namespace Wox.Test
             Assert.AreEqual("file.txt file2 file3", searchQuery);
         }
 
-        [Test]
+        [TestMethod]
         public void QueryBuildShouldGenerateSameSearchQueryWithOrWithoutSpaceAfterActionKeyword()
         {
             // Arrange
@@ -85,7 +85,7 @@ namespace Wox.Test
             Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.Ordinal));
         }
 
-        [Test]
+        [TestMethod]
         public void QueryBuildShouldGenerateCorrectQueryForPluginsWhoseActionKeywordsHaveSamePrefix()
         {
             // Arrange
@@ -109,7 +109,7 @@ namespace Wox.Test
             Assert.IsTrue(AreEqual(secondQuery, new Query(searchQuery, secondPlugin.Metadata.ActionKeyword)));
         }
 
-        [Test]
+        [TestMethod]
         public void QueryBuilderShouldSetTermsCorrectlyWhenCalled()
         {
             // Arrange
@@ -134,7 +134,7 @@ namespace Wox.Test
             Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.Ordinal) && secondQuery.Terms.Count == 1);
         }
 
-        [Test]
+        [TestMethod]
         public void QueryBuilderShouldReturnAllPluginsWithTheActionWord()
         {
             // Arrange

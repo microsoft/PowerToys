@@ -8,9 +8,9 @@
              xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d"
              TabIndex="3"
+             AutomationProperties.Name="{x:Static p:Resources.Color_Palette}"
              FocusManager.IsFocusScope="True"
-             KeyboardNavigation.TabNavigation="Once"
-             >
+             KeyboardNavigation.TabNavigation="Once">
     <UserControl.Resources>
 
         <Style TargetType="Thumb"
@@ -252,7 +252,7 @@
                     ui:ControlHelper.CornerRadius="2,0,0,2"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
-                    AutomationProperties.Name="Color shade 1"
+                    AutomationProperties.Name="{x:Static p:Resources.Lightest_color}"
                     Style="{DynamicResource ColorShadeButtonStyle}"
                     ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
             <Button x:Name="colorVariation2Button"
@@ -260,7 +260,7 @@
                     ui:ControlHelper.CornerRadius="0"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
-                    AutomationProperties.Name="Color shade 2"
+                    AutomationProperties.Name="{x:Static p:Resources.Lighter_color}"
                     Style="{DynamicResource ColorShadeButtonStyle}"
                     ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
             <Button x:Name="colorVariation3Button"
@@ -268,7 +268,7 @@
                     ui:ControlHelper.CornerRadius="0"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
-                    AutomationProperties.Name="Color shade 3"
+                    AutomationProperties.Name="{x:Static p:Resources.Darker_color}"
                     Style="{DynamicResource ColorShadeButtonStyle}"
                     ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
             <Button x:Name="colorVariation4Button"
@@ -276,7 +276,7 @@
                     ui:ControlHelper.CornerRadius="0,2,2,0"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
-                    AutomationProperties.Name="Color shade 5"
+                    AutomationProperties.Name="{x:Static p:Resources.Darkest_color}"
                     Style="{DynamicResource ColorShadeButtonStyle}"
                     ToolTipService.ToolTip="{x:Static p:Resources.Select_color}" />
 
@@ -297,6 +297,7 @@
                 <ui:FlyoutService.Flyout>
                     <ui:Flyout x:Name="DetailsFlyout"
                                Placement="Bottom"
+                               Opened="DetailsFlyout_Opened"
                                Closed="DetailsFlyout_Closed">
                         <Grid Margin="0,4,0,12"
                               KeyboardNavigation.TabNavigation="Contained"

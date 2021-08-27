@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
     internal static class IIOProviderMocks
     {
         /// <summary>
-        /// This method mocks an IO provider to validate tests wich required saving to a file, and then reading the contents of that file, or verifying it exists
+        /// This method mocks an IO provider to validate tests which required saving to a file, and then reading the contents of that file, or verifying it exists
         /// </summary>
         /// <returns>Mocked IO Provider</returns>
         internal static Mock<IIOProvider> GetMockIOProviderForSaveLoadExists()

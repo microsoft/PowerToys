@@ -19,12 +19,14 @@ namespace
     { HKEY_CURRENT_USER, L"SOFTWARE\\Classes\\AppUserModelId\\PowerToysRun" },
     { HKEY_CLASSES_ROOT, L".svg\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
     { HKEY_CLASSES_ROOT, L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
-    { HKEY_CLASSES_ROOT, L".md\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" }
+    { HKEY_CLASSES_ROOT, L".md\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
+    { HKEY_CLASSES_ROOT, L".pdf\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" }
     };
 
     vector<tuple<HKEY, wstring, wstring>> registryValues = {
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{ddee2b8a-6807-48a6-bb20-2338174ff779}" },
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}" },
+        { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{07665729-6243-4746-95b7-79579308d1b2}" },
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"prevhost.exe" },
         { HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"dllhost.exe" }
     };
@@ -163,7 +165,8 @@ void ReportCompatibilityTab(HKEY key, wofstream& report)
         L"PowerToys.exe",
         L"ColorPickerUI.exe",
         L"FancyZonesEditor.exe",
-        L"PowerToys.KeyboardManagerEditor.exe",
+        L"PowerToys.FancyZones.exe",
+        L"PowerToys.KeyboardManagerEngine.exe",
         L"PowerToys.KeyboardManagerEditor.exe",
         L"PowerLauncher.exe",
         L"PowerToys.ShortcutGuide.exe"

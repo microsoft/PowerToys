@@ -59,8 +59,7 @@ private:
     // Load initial settings from the persisted values.
     void init_settings();
 
-    // Handle to launch and terminate the launcher
-    HANDLE m_hProcess = nullptr;
+    bool processStarted = false;
 
     //contains the name of the powerToys
     std::wstring app_name;
@@ -122,10 +121,6 @@ public:
     ~Microsoft_Launcher()
     {
         Logger::info("Launcher object is destroying");
-        if (m_enabled)
-        {
-            terminateProcess();
-        }
         m_enabled = false;
     }
 
@@ -225,8 +220,8 @@ public:
 
             if (ShellExecuteExW(&sei))
             {
-                m_hProcess = sei.hProcess;
-                Logger::trace("Started PowerToys Run. Handle {}", m_hProcess);
+                processStarted = true;
+                Logger::trace("Started PowerToys Run");
             }
             else
             {
@@ -236,55 +231,31 @@ public:
         else
         {
             Logger::trace("Starting PowerToys Run from elevated process");
-            std::wstring action_runner_path = get_module_folderpath();
-
+            std::wstring runExecutablePath = get_module_folderpath();
             std::wstring params;
-            params += L"-run-non-elevated ";
-            params += L"-target modules\\launcher\\PowerLauncher.exe ";
-            params += L"-pidFile ";
-            params += POWER_LAUNCHER_PID_SHARED_FILE;
             params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
             params += L"--centralized-kb-hook ";
-
-            action_runner_path += L"\\PowerToys.ActionRunner.exe";
-            // Set up the shared file from which to retrieve the PID of PowerLauncher
-            HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
-            if (!hMapFile)
+            runExecutablePath += L"\\modules\\launcher\\PowerLauncher.exe";
+            if (RunNonElevatedEx(runExecutablePath, params))
             {
-                auto err = get_last_error_message(GetLastError());
-                Logger::error(L"Failed to create FileMapping {}. {}", POWER_LAUNCHER_PID_SHARED_FILE, err.has_value() ? err.value() : L"");
-                return;
+                processStarted = true;
+                Logger::trace(L"The process started successfully");
             }
-
-            PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
-            if (pidBuffer)
+            else
             {
-                *pidBuffer = 0;
-                m_hProcess = NULL;
-
-                if (run_non_elevated(action_runner_path, params, pidBuffer))
+                Logger::warn(L"RunNonElevatedEx() failed. Trying fallback");
+                std::wstring action_runner_path = get_module_folderpath() + L"\\PowerToys.ActionRunner.exe";
+                std::wstring newParams = L"-run-non-elevated -target modules\\launcher\\PowerLauncher.exe " + params;
+                if (run_non_elevated(action_runner_path, newParams, nullptr))
                 {
+                    processStarted = true;
                     Logger::trace("Started PowerToys Run Process");
-                    const int maxRetries = 80;
-                    for (int retry = 0; retry < maxRetries; ++retry)
-                    {
-                        Sleep(50);
-                        DWORD pid = *pidBuffer;
-                        if (pid)
-                        {
-                            m_hProcess = OpenProcess(PROCESS_TERMINATE | PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, pid);
-                            Logger::trace("Opened PowerToys Run Process. Handle {}", m_hProcess);
-                            break;
-                        }
-                    }
                 }
                 else
                 {
-                    // We expect it to fail if the shell window is not available. It can happen on startup
                     Logger::warn("Failed to start PowerToys Run");
                 }
             }
-            CloseHandle(hMapFile);
         }
     }
 
@@ -294,9 +265,10 @@ public:
         Logger::info("Launcher is disabling");
         if (m_enabled)
         {
+            TerminateRunningInstance();
+            processStarted = false;
             ResetEvent(m_hEvent);
             ResetEvent(send_telemetry_event);
-            terminateProcess();
         }
 
         m_enabled = false;
@@ -332,17 +304,13 @@ public:
         // For now, hotkeyId will always be zero
         if (m_enabled)
         {
-            if (m_hProcess == nullptr)
+            if (!processStarted)
             {
                 Logger::warn("PowerToys Run hasn't been started. Starting PowerToys Run");
                 enable();
-            } else if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
-            {
-                Logger::warn("PowerToys Run has exited unexpectedly, restarting PowerToys Run.");
-                enable();
             }
 
-            Logger::trace("Set POWER_LAUNCHER_SHARED_EVENT. Handle {}", m_hProcess);
+            Logger::trace("Set POWER_LAUNCHER_SHARED_EVENT");
             SetEvent(m_hEvent);
             return true;
         }
@@ -360,34 +328,6 @@ public:
             ::PostMessage(nextWindow, WM_CLOSE, 0, 0);
 
         return true;
-    }
-
-    // Terminate process by sending WM_CLOSE signal and if it fails, force terminate.
-    void terminateProcess()
-    {
-        Logger::trace(L"Terminating PowerToys Run process. Handle {}.", m_hProcess);
-        if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
-        {
-            Logger::warn("PowerToys Run has exited unexpectedly, so there is no need to terminate it.");
-            return;
-        }
-
-        DWORD processID = GetProcessId(m_hProcess);
-        if (TerminateProcess(m_hProcess, 1) == 0)
-        {
-            auto err = get_last_error_message(GetLastError());
-            Logger::error(L"Launcher process was not terminated. {}", err.has_value() ? err.value() : L"");
-        }
-
-        // Temporarily disable sending a message to close
-        /*
-        EnumWindows(&requestMainWindowClose, processID);
-        const DWORD result = WaitForSingleObject(m_hProcess, MAX_WAIT_MILLISEC);
-        if (result == WAIT_TIMEOUT || result == WAIT_FAILED)
-        {
-            TerminateProcess(m_hProcess, 1);
-        }
-        */
     }
 
     virtual void send_settings_telemetry() override

@@ -47,6 +47,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <PreprocessorDefinitions>PowerToysInterop;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SolutionDir)src\common\interop;../../;../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitDefaultLibName>false</OmitDefaultLibName>
@@ -83,6 +84,8 @@
     <WriteLinesToFile File="Generated Files\AssemblyInfo.cpp" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
   </Target>
   <ItemGroup>
+    <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.h" />
+    <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.h" />
     <ClInclude Include="HotkeyManager.h" />
     <ClInclude Include="KeyboardHook.h" />
     <ClInclude Include="pch.h" />
@@ -90,6 +93,12 @@
     <ClInclude Include="shared_constants.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.cpp">
+      <CompileAsManaged>false</CompileAsManaged>
+    </ClCompile>    
+    <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.cpp">
+      <CompileAsManaged>false</CompileAsManaged>
+    </ClCompile>    
     <ClCompile Include="Generated Files\AssemblyInfo.cpp" />
     <ClCompile Include="HotkeyManager.cpp" />
     <ClCompile Include="interop.cpp" />
@@ -109,6 +118,12 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+  </ImportGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

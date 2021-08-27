@@ -4,16 +4,17 @@
 
 using System.Collections.Generic;
 using Microsoft.Plugin.Folder;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using NUnit.Framework;
 using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
-    internal class FolderPluginTest
+    [TestClass]
+    public class FolderPluginTest
     {
-        [Test]
-        public void ContextMenuLoader_ReturnContextMenuForFolderWithOpenInConsole_WhenLoadContextMenusIsCalled()
+        [TestMethod]
+        public void ContextMenuLoaderReturnContextMenuForFolderWithOpenInConsoleWhenLoadContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
@@ -31,8 +32,8 @@ namespace Wox.Test.Plugins
             Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console, contextMenuResults[1].Title);
         }
 
-        [Test]
-        public void ContextMenuLoader_ReturnContextMenuForFileWithOpenInConsole_WhenLoadContextMenusIsCalled()
+        [TestMethod]
+        public void ContextMenuLoaderReturnContextMenuForFileWithOpenInConsoleWhenLoadContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();

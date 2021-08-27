@@ -57,6 +57,8 @@ namespace FancyZonesEditor
 
         private ThemeManager _themeManager;
 
+        private EventWaitHandle _eventHandle;
+
         public static bool DebugMode
         {
             get
@@ -80,6 +82,15 @@ namespace FancyZonesEditor
             FancyZonesEditorIO = new FancyZonesEditorIO();
             Overlay = new Overlay();
             MainWindowSettings = new MainWindowSettingsModel();
+
+            new Thread(() =>
+            {
+                _eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, interop.Constants.FZEExitEvent());
+                if (_eventHandle.WaitOne())
+                {
+                    Environment.Exit(0);
+                }
+            }).Start();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
@@ -143,6 +154,14 @@ namespace FancyZonesEditor
             settings.UpdateSelectedLayoutModel();
 
             Overlay.Show();
+        }
+
+        private void OnExit(object sender, ExitEventArgs e)
+        {
+            if (_eventHandle != null)
+            {
+                _eventHandle.Set();
+            }
         }
 
         public void App_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)

@@ -21,24 +21,20 @@ namespace FancyZonesEditor.Utils
 
         public int Dpi { get; set; }
 
-        public bool Primary { get; private set; }
-
-        public Device(string id, int dpi, Rect bounds, Rect workArea, bool primary)
+        public Device(string id, int dpi, Rect bounds, Rect workArea)
         {
             Id = id;
             Dpi = dpi;
             WorkAreaRect = workArea;
             UnscaledBounds = bounds;
             ScaledBounds = bounds;
-            Primary = primary;
         }
 
-        public Device(Rect bounds, Rect workArea, bool primary)
+        public Device(Rect bounds, Rect workArea)
         {
             WorkAreaRect = workArea;
             UnscaledBounds = bounds;
             ScaledBounds = bounds;
-            Primary = primary;
         }
 
         public void Scale(double scaleFactor)
@@ -61,7 +57,6 @@ namespace FancyZonesEditor.Utils
 
             sb.AppendFormat(CultureInfo.InvariantCulture, "ID: {0}{1}", Id, Environment.NewLine);
             sb.AppendFormat(CultureInfo.InvariantCulture, "DPI: {0}{1}", Dpi, Environment.NewLine);
-            sb.AppendFormat(CultureInfo.InvariantCulture, "Is primary: {0}{1}", Primary, Environment.NewLine);
 
             string workArea = string.Format(CultureInfo.InvariantCulture, "({0}, {1}, {2}, {3})", WorkAreaRect.X, WorkAreaRect.Y, WorkAreaRect.Width, WorkAreaRect.Height);
             string bounds = string.Format(CultureInfo.InvariantCulture, "({0}, {1}, {2}, {3})", UnscaledBounds.X, UnscaledBounds.Y, UnscaledBounds.Width, UnscaledBounds.Height);

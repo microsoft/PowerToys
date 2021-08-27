@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
     {
         private static readonly Regex RegValidExpressChar = new Regex(
             @"^(" +
+            @"%|" +
             @"ceil\s*\(|floor\s*\(|exp\s*\(|max\s*\(|min\s*\(|abs\s*\(|log\s*\(|ln\s*\(|sqrt\s*\(|pow\s*\(|" +
             @"factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(|" +
             @"sin\s*\(|cos\s*\(|tan\s*\(|arcsin\s*\(|arccos\s*\(|arctan\s*\(|" +

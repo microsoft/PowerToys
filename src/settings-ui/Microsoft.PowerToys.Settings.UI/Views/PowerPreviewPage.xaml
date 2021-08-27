@@ -5,128 +5,75 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
     </Page.Resources>
 
-    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="LayoutVisualStates">
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState x:Name="SmallLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="Auto"/>
-                        <Setter Target="PowerPreviewView.(Grid.Row)" Value="1" />
-                        <Setter Target="PowerPreviewView.Margin" Value="0" />
-                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
-                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
-                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
-                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <controls:SettingsPageControl x:Uid="FileExplorerPreview"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/PowerPreview.png">
+        <controls:SettingsPageControl.ModuleContent>
+            
+            <StackPanel Orientation="Vertical">
 
-        <StackPanel Orientation="Vertical"
-                    x:Name="PowerPreviewView"
-                    HorizontalAlignment="Left"
-                    Margin="0,0,48,0"
-                    MaxWidth="{StaticResource MaxContentWidth}">
-            <TextBlock x:Uid="FileExplorerPreview_RunAsAdminRequired"
-                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                       Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"
-                       Margin="{StaticResource SmallBottomMargin}"
-                       TextWrapping="Wrap"/>
+                <muxc:InfoBar Severity="Warning"
+                                   x:Uid="FileExplorerPreview_RunAsAdminRequired"
+                                   IsOpen="True"
+                                   IsClosable="False"
+                                   Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-            <TextBlock x:Uid="FileExplorerPreview_AffectsAllUsers"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
-                       Margin="{StaticResource SmallBottomMargin}"
-                       TextWrapping="Wrap"/>
+                <muxc:InfoBar Severity="Informational"
+                                   x:Uid="FileExplorerPreview_AffectsAllUsers"
+                                   IsOpen="True"
+                                   IsClosable="False"
+                                   />
 
-            <TextBlock x:Uid="FileExplorerPreview_PreviewPane_GroupSettings"
-                       Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_PreviewPane_GroupSettings">
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG" Icon="&#xE91B;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGRenderIsEnabled}"
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}"                          
-                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD" Icon="&#xE943;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MDRenderIsEnabled}"
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}"
-                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF" Icon="&#xEA90;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}"
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
 
-            <TextBlock x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
-            <TextBlock x:Uid="FileExplorerPreview_RebootRequired"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
-                       Margin="{StaticResource SmallTopBottomMargin}"
-                       TextWrapping="Wrap"/>
-
-            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail"
-                          IsOn="{Binding Mode=TwoWay, Path=SVGThumbnailIsEnabled}"
-                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
-        </StackPanel>
-        <RelativePanel x:Name="SidePanel" 
-                    HorizontalAlignment="Left"
-                    Width="{StaticResource SidePanelWidth}"
-                    Grid.Column="1">
-            <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="About_FileExplorerPreview" x:Name="AboutTitle" Grid.ColumnSpan="2"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
-                <TextBlock x:Uid="FileExplorerPreview_Description"
-                           TextWrapping="Wrap"
-                           Grid.Row="1" />
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
+                    <muxc:InfoBar Severity="Informational"
+                                   x:Uid="FileExplorerPreview_RebootRequired"
+                                   IsOpen="True"
+                                   IsClosable="False"
+                                   />
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail" Icon="&#xE91B;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.SVGThumbnailIsEnabled}"
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
+                
             </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
 
-            <Border x:Name="AboutImage"
-                    CornerRadius="4"
-                    Grid.Row="2"
-                    MaxWidth="240"
-                    HorizontalAlignment="Left"
-                    Margin="{StaticResource SmallTopBottomMargin}"
-                    RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="FileExplorerPreview_ImageHyperlinkToDocs">
-                    <Image x:Uid="FileExplorerPreview_Image" Source="ms-appx:///Assets/Modules/PowerPreview.png" />
-                </HyperlinkButton>
-            </Border>
-
-            <StackPanel x:Name="LinksPanel"
-                        Margin="0,1,0,0"
-                        RelativePanel.Below="AboutImage"
-                        Orientation="Vertical" >
-                <HyperlinkButton x:Uid="FileExplorerPreview_ImageHyperlinkToDocs">
-                    <TextBlock x:Uid="Module_overview" />
-                </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
-                    <TextBlock x:Uid="Give_Feedback" />
-                </HyperlinkButton>
-            </StackPanel>
-        </RelativePanel>
-    </Grid>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns"/>
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
 </Page>

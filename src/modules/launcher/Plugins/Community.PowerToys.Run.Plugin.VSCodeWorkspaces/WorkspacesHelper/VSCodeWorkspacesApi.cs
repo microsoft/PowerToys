@@ -1,26 +1,40 @@
-using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
-using Newtonsoft.Json;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
     public class VSCodeWorkspacesApi
     {
-        public VSCodeWorkspacesApi() { }
-
-        private VSCodeWorkspace parseVSCodeUri(string uri, VSCodeInstance vscodeInstance)
+        public VSCodeWorkspacesApi()
         {
-            if (uri != null && uri is String)
+        }
+
+        private VSCodeWorkspace ParseVSCodeUri(string uri, VSCodeInstance vscodeInstance)
+        {
+            if (uri != null && uri is string)
             {
                 string unescapeUri = Uri.UnescapeDataString(uri);
-                var typeWorkspace = ParseVSCodeUri.GetTypeWorkspace(unescapeUri);
+                var typeWorkspace = WorkspacesHelper.ParseVSCodeUri.GetTypeWorkspace(unescapeUri);
                 if (typeWorkspace.TypeWorkspace.HasValue)
                 {
                     var folderName = Path.GetFileName(unescapeUri);
+
+                    // Check we haven't returned '' if we have a path like C:\
+                    if (string.IsNullOrEmpty(folderName))
+                    {
+                        DirectoryInfo dirInfo = new DirectoryInfo(unescapeUri);
+                        folderName = dirInfo.Name.TrimEnd(':');
+                    }
+
                     return new VSCodeWorkspace()
                     {
                         Path = uri,
@@ -28,7 +42,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                         FolderName = folderName,
                         ExtraInfo = typeWorkspace.MachineName,
                         TypeWorkspace = typeWorkspace.TypeWorkspace.Value,
-                        VSCodeInstance = vscodeInstance
+                        VSCodeInstance = vscodeInstance,
                     };
                 }
             }
@@ -40,10 +54,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
         {
             get
             {
-
                 var results = new List<VSCodeWorkspace>();
 
-                foreach (var vscodeInstance in VSCodeInstances.instances)
+                foreach (var vscodeInstance in VSCodeInstances.Instances)
                 {
                     // storage.json contains opened Workspaces
                     var vscode_storage = Path.Combine(vscodeInstance.AppData, "storage.json");
@@ -54,16 +67,16 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                         try
                         {
-                            VSCodeStorageFile vscodeStorageFile = JsonConvert.DeserializeObject<VSCodeStorageFile>(fileContent);
+                            VSCodeStorageFile vscodeStorageFile = JsonSerializer.Deserialize<VSCodeStorageFile>(fileContent);
 
                             if (vscodeStorageFile != null)
                             {
-                                //for previous versions of vscode
-                                if (vscodeStorageFile.openedPathsList.workspaces3 != null)
+                                // for previous versions of vscode
+                                if (vscodeStorageFile.OpenedPathsList.Workspaces3 != null)
                                 {
-                                    foreach (var workspaceUri in vscodeStorageFile.openedPathsList.workspaces3)
+                                    foreach (var workspaceUri in vscodeStorageFile.OpenedPathsList.Workspaces3)
                                     {
-                                        var uri = parseVSCodeUri(workspaceUri, vscodeInstance);
+                                        var uri = ParseVSCodeUri(workspaceUri, vscodeInstance);
                                         if (uri != null)
                                         {
                                             results.Add(uri);
@@ -71,19 +84,18 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                                     }
                                 }
 
-                                //vscode v1.55.0 or later
-                                if (vscodeStorageFile.openedPathsList.entries != null)
+                                // vscode v1.55.0 or later
+                                if (vscodeStorageFile.OpenedPathsList.Entries != null)
                                 {
-                                    foreach (var workspaceUri in vscodeStorageFile.openedPathsList.entries.Select(x => x.folderUri))
+                                    foreach (var workspaceUri in vscodeStorageFile.OpenedPathsList.Entries.Select(x => x.FolderUri))
                                     {
-                                        var uri = parseVSCodeUri(workspaceUri, vscodeInstance);
+                                        var uri = ParseVSCodeUri(workspaceUri, vscodeInstance);
                                         if (uri != null)
                                         {
                                             results.Add(uri);
                                         }
                                     }
                                 }
-
                             }
                         }
                         catch (Exception ex)
@@ -91,11 +103,8 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                             var message = $"Failed to deserialize ${vscode_storage}";
                             Log.Exception(message, ex, GetType());
                         }
-
                     }
-
                 }
-
 
                 return results;
             }

@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -39,6 +40,11 @@ namespace ColorPicker.Controls
             InitializeComponent();
 
             UpdateHueGradient(1, 1);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ColorPickerAutomationPeer(this);
         }
 
         public Color SelectedColor
@@ -242,12 +248,22 @@ namespace ColorPicker.Controls
 #pragma warning restore CA1801 // Review unused parameters
         {
             HideDetails();
+            AppStateHandler.BlockEscapeKeyClosingColorPickerEditor = false;
 
             // Revert to original color
             var originalColorBackground = new SolidColorBrush(_originalColor);
             CurrentColorButton.Background = originalColorBackground;
 
             HexCode.Text = ColorToHex(_originalColor);
+        }
+
+#pragma warning disable CA1822 // Mark members as static
+#pragma warning disable CA1801 // Review unused parameters
+        private void DetailsFlyout_Opened(object sender, object e)
+#pragma warning restore CA1801 // Review unused parameters
+#pragma warning restore CA1822 // Mark members as static
+        {
+            AppStateHandler.BlockEscapeKeyClosingColorPickerEditor = true;
         }
 
         private void ColorVariationButton_Click(object sender, RoutedEventArgs e)
@@ -360,6 +376,21 @@ namespace ColorPicker.Controls
         private void HexCode_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
             (sender as System.Windows.Controls.TextBox).SelectAll();
+        }
+    }
+
+#pragma warning disable SA1402 // File may only contain a single type
+    public class ColorPickerAutomationPeer : UserControlAutomationPeer
+#pragma warning restore SA1402 // File may only contain a single type
+    {
+        public ColorPickerAutomationPeer(ColorPickerControl owner)
+            : base(owner)
+        {
+        }
+
+        protected override string GetLocalizedControlTypeCore()
+        {
+            return ColorPicker.Properties.Resources.Color_Picker_Control;
         }
     }
 }

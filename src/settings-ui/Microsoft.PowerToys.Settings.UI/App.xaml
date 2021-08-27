@@ -2,28 +2,27 @@
     x:Class="Microsoft.PowerToys.Settings.UI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:xaml="using:Microsoft.Toolkit.Win32.UI.XamlHost"
-    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters">
+    xmlns:xaml="using:Microsoft.Toolkit.Win32.UI.XamlHost">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <XamlControlsResources  xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" ControlsResourcesVersion="Version2" />
                 <ResourceDictionary Source="/Controls/KeyVisual/KeyVisual.xaml" />
-                <ResourceDictionary Source="/Styles/_Colors.xaml" />
-                <ResourceDictionary Source="/Styles/_FontSizes.xaml" />
-                <ResourceDictionary Source="/Styles/_Thickness.xaml" />
-                <ResourceDictionary Source="/Styles/_Sizes.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
-                <ResourceDictionary Source="/Styles/Page.xaml"/>
                 <ResourceDictionary Source="/Styles/Button.xaml"/>
+                <ResourceDictionary Source="/Themes/Colors.xaml"/>
+                <ResourceDictionary Source="/Themes/SettingsExpanderStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <converters:ModuleEnabledToForegroundConverter x:Key="ModuleEnabledToForegroundConverter"/>
 
-            <SolidColorBrush x:Key="DarkForegroundDisabledBrush">#66FFFFFF</SolidColorBrush>
-            <SolidColorBrush x:Key="DarkForegroundBrush">#FFFFFFFF</SolidColorBrush>
+            <Thickness x:Key="InfoBarIconMargin">6,16,16,16</Thickness>
+            <Thickness x:Key="InfoBarContentRootPadding">16,0,0,0</Thickness>
+            <x:Double x:Key="SettingActionControlMinWidth">240</x:Double>
 
-            <SolidColorBrush x:Key="LightForegroundDisabledBrush">#66000000</SolidColorBrush>
-            <SolidColorBrush x:Key="LightForegroundBrush">#FF000000</SolidColorBrush>
+            <Style TargetType="ListViewItem" >
+                <Setter Property="Margin" Value="0,0,0,2" />
+                <Setter Property="Padding" Value="0,0,0,0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </xaml:XamlApplication>

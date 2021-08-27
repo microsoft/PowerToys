@@ -20,6 +20,7 @@
 #include <common/updating/updateState.h>
 #include <common/utils/appMutex.h>
 #include <common/utils/elevation.h>
+#include <common/utils/os-detect.h>
 #include <common/utils/processApi.h>
 #include <common/utils/resources.h>
 
@@ -43,6 +44,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
 #include <common/version/version.h>
+#include <gdiplus.h>
 
 namespace
 {
@@ -130,8 +132,8 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
         chdir_current_executable();
         // Load Powertoys DLLs
 
-        const std::array<std::wstring_view, 9> knownModules = {
-            L"modules/FancyZones/fancyzones.dll",
+        std::vector<std::wstring_view> knownModules = {
+            L"modules/FancyZones/FancyZonesModuleInterface.dll",
             L"modules/FileExplorerPreview/powerpreview.dll",
             L"modules/ImageResizer/ImageResizerExt.dll",
             L"modules/KeyboardManager/KeyboardManager.dll",
@@ -139,8 +141,16 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
             L"modules/ColorPicker/ColorPicker.dll",
-            L"modules/Awake/AwakeModuleInterface.dll",
+            L"modules/Awake/AwakeModuleInterface.dll"
+
         };
+        // TODO(yuyoyuppe): uncomment when VCM should be enabled
+        //const auto VCM_PATH = L"modules/VideoConference/VideoConferenceModule.dll";
+        //if (const auto mf = LoadLibraryA("mf.dll"))
+        //{
+        //    FreeLibrary(mf);
+        //    knownModules.emplace_back(VCM_PATH);
+        //}
 
         for (const auto& moduleSubdir : knownModules)
         {
@@ -264,6 +274,10 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+    Gdiplus::GdiplusStartupInput gpStartupInput;
+    ULONG_PTR gpToken;
+    GdiplusStartup(&gpToken, &gpStartupInput, NULL);
+
     winrt::init_apartment();
     const wchar_t* securityDescriptor =
         L"O:BA" // Owner: Builtin (local) administrator

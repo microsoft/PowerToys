@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -34,6 +36,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get { return isBackEnabled; }
             set { Set(ref isBackEnabled, value); }
+        }
+
+        public bool IsVideoConferenceBuild
+        {
+            get
+            {
+                var mfHandle = NativeMethods.LoadLibrary("mf.dll");
+                bool mfAvailable = mfHandle != null;
+                if (mfAvailable)
+                {
+                    NativeMethods.FreeLibrary(mfHandle);
+                }
+
+                return this != null && File.Exists("modules/VideoConference/VideoConferenceModule.dll") && mfAvailable;
+            }
         }
 
         public WinUI.NavigationViewItem Selected

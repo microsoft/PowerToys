@@ -25,6 +25,7 @@
                          Padding="0"
                          TabIndex="2"
                          Width="64"
+                         AutomationProperties.Name="{x:Static p:Resources.Color_History}"
                          HorizontalAlignment="Center"
                          ui:FocusVisualHelper.UseSystemFocusVisuals="True"
                          ItemsSource="{Binding ColorsHistory}"
@@ -96,13 +97,16 @@
             <Button Width="64"
                     Height="32"
                     TabIndex="0"
-                    Content="&#xEF3C;"
                     Command="{Binding OpenColorPickerCommand}"
                     Background="Transparent"
                     FontFamily="Segoe MDL2 Assets"
                     ui:FocusVisualHelper.FocusVisualMargin="-1"
                     ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}"
-                    AutomationProperties.Name="{x:Static p:Resources.Pick_color}"/>
+                    AutomationProperties.Name="{x:Static p:Resources.Pick_color}">
+                <Button.Content>
+                    <TextBlock Text="&#xEF3C;" AutomationProperties.Name="{x:Static p:Resources.Pick_color}" />
+                </Button.Content>
+            </Button>
         </Grid>
 
 
@@ -115,7 +119,7 @@
                     <ItemsControl IsTabStop="False"
                                   TabIndex="4"
                                   FocusManager.IsFocusScope="True"
-                                  KeyboardNavigation.TabNavigation="Once"   
+                                  KeyboardNavigation.TabNavigation="Continue"
                                   ItemsSource="{Binding ColorRepresentations}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -173,7 +177,9 @@
             <TextBlock FontSize="16"
                        Foreground="White"
                        HorizontalAlignment="Center"
-                       VerticalAlignment="Center" >
+                       VerticalAlignment="Center"
+                       AutomationProperties.LiveSetting="Assertive"
+                       AutomationProperties.Name="{x:Static p:Resources.Copied_to_clipboard}">
                 <Run Text="&#xE16F; " FontFamily="Segoe MDL2 Assets"/>
                 <Run Text="{x:Static p:Resources.Copied_to_clipboard}" FontWeight="SemiBold"/>
             </TextBlock>

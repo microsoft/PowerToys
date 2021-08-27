@@ -32,6 +32,7 @@ body:
     multiple: true
     options:
       - General
+      - Awake
       - ColorPicker
       - FancyZones
       - FancyZones Editor 

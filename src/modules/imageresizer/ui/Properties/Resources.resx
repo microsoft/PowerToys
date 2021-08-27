@@ -142,6 +142,9 @@
   <data name="Input_IgnoreOrientation" xml:space="preserve">
     <value>Ign_ore the orientation of pictures</value>
   </data>
+  <data name="Input_GifWarning" xml:space="preserve">
+    <value>Gif files with animations may not be correctly resized.</value>
+  </data>
   <data name="Input_Replace" xml:space="preserve">
     <value>R_esize the original pictures (don't create copies)</value>
   </data>
