@@ -133,7 +133,7 @@
                                                Margin="8,0,8,0"/>
 
                                     <ItemsControl Name="KeyboardManager_RemappedTo"
-                                                  x:Uid="KeyboardManager_RemappedTo"
+                                                  x:Uid="To"
                                                   ItemsSource="{x:Bind GetMappedNewRemapKeys()}"
                                                   ItemTemplate="{StaticResource RemappedKeyTemplate}"
                                                   IsTabStop="False">
