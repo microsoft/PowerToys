@@ -1,13 +1,13 @@
 ## Install tests
- [x] install a **previous version** on a clean machine (a clean machine doesn't have the `%localappdata%\Microsoft\PowerToys` folder)
- [x] open the Settings and for each module change at least one option
- [x] open the FancyZones editor and create two custom layouts:
-    [x] a canvas layout with 2 zones, use unicode chars in the layout's name
-    [x] one from grid template using 4 zones and splitting one zone
-    [x] apply the custom canvas layout to the primary desktop
-    [x] create a virtual desktop and apply the custom grid layout
-    [x] if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
- * install the new version (it will uninstall the old version and install the new version)
+ - [x] install a **previous version** on a clean machine (a clean machine doesn't have the `%localappdata%\Microsoft\PowerToys` folder)
+ - [x] open the Settings and for each module change at least one option
+ - [x] open the FancyZones editor and create two custom layouts:
+    - [x] a canvas layout with 2 zones, use unicode chars in the layout's name
+    - [x] one from grid template using 4 zones and splitting one zone
+    - [x] apply the custom canvas layout to the primary desktop
+    - [x] create a virtual desktop and apply the custom grid layout
+    - [x] if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
+ * [x] install the new version (it will uninstall the old version and install the new version)
  - [x] verify the settings are preserved and FancyZones configuration is still the same
 
 ## Functional tests
