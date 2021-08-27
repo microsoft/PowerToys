@@ -22,26 +22,26 @@
 - [X] Check Color Picker logs for errors
 
 ## Image Resizer
-- [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
-- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu
-- [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
-- [ ] Resize one image
-- [ ] Resize multiple images
+- [X] Disable the Image Resizer and check that `Resize images` is absent in the context menu
+- [X] Enable the Image Resizer and check that `Resize images` is present in the context menu
+- [X] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
+- [X] Resize one image
+- [X] Resize multiple images
 
-- [ ] Resize images with `Fill` option
-- [ ] Resize images with `Fit` option
-- [ ] Resize images with `Stretch` option
+- [X] Resize images with `Fill` option
+- [X] Resize images with `Fit` option
+- [X] Resize images with `Stretch` option
 
-- [ ] Resize images using dimension: Centimeters
-- [ ] Resize images using dimension: Inches
-- [ ] Resize images using dimension: Percents
-- [ ] Resize images using dimension: Pixels
+- [X] Resize images using dimension: Centimeters
+- [X] Resize images using dimension: Inches
+- [X] Resize images using dimension: Percents
+- [X] Resize images using dimension: Pixels
 
-- [ ] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
-- [ ] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
-- [ ] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
-- [ ] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
-- [ ] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
+- [X] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
+- [X] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
+- [X] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
+- [X] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
+- [X] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
 
 ## PowerRename
 - [ ] Check if disable and enable of the module works.
