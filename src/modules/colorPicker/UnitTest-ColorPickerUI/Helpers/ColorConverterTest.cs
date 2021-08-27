@@ -304,8 +304,6 @@ namespace Microsoft.ColorPicker.UnitTests
             Assert.AreEqual(result.blackness * 100d, blackness, 0.5d);
         }
 
-        // values taken from https://convertingcolors.com/named-colors.html
-        // and manual convert via https://convertingcolors.com/
         [TestMethod]
         [DataRow("FFFFFF", 100.00, 0.01, -0.01)] // white
         [DataRow("808080", 53.59, 0.00, -0.01)] // gray
