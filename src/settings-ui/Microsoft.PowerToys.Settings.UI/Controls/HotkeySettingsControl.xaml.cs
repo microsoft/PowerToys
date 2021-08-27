@@ -5,10 +5,12 @@
 using System;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Windows.System.Diagnostics;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
@@ -89,7 +91,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     hotkeySettings = value;
                     SetValue(HotkeySettingsProperty, value);
-                    HotkeyTextBox.Text = HotkeySettings.ToString();
+                    PreviewKeysControl.ItemsSource = HotkeySettings.GetKeyList();
+                    KeysControl.ItemsSource = HotkeySettings.GetKeyList();
                 }
             }
         }
@@ -99,9 +102,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             InitializeComponent();
             internalSettings = new HotkeySettings();
 
-            HotkeyTextBox.GettingFocus += HotkeyTextBox_GettingFocus;
-            HotkeyTextBox.LosingFocus += HotkeyTextBox_LosingFocus;
-            HotkeyTextBox.Unloaded += HotkeyTextBox_Unloaded;
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
         }
 
@@ -227,17 +227,42 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             return true;
         }
 
+        private bool HasSaveOrCancelButtonFocus()
+        {
+            var control = FocusManager.GetFocusedElement(LayoutRoot.XamlRoot);
+            if (control.GetType() == typeof(Button))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         private async void Hotkey_KeyDown(int key)
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 KeyEventHandler(key, true, key);
 
+                // if (HasSaveOrCancelButtonFocus())
                 // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
                 if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
                 {
-                    HotkeyTextBox.Text = internalSettings.ToString();
+                    KeysControl.ItemsSource = internalSettings.GetKeyList();
                     lastValidSettings = internalSettings.Clone();
+
+                    if (!ComboIsValid())
+                    {
+                        ShortcutDialog.IsPrimaryButtonEnabled = false;
+                        WarningMessage.IsOpen = true;
+                    }
+                    else
+                    {
+                        ShortcutDialog.IsPrimaryButtonEnabled = true;
+                        WarningMessage.IsOpen = false;
+                    }
                 }
             });
         }
@@ -255,7 +280,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             return _isActive;
         }
 
-        private void HotkeyTextBox_GettingFocus(object sender, RoutedEventArgs e)
+#pragma warning disable CA1801 // Review unused parameters
+        private void ShortcutDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+#pragma warning restore CA1801 // Review unused parameters
         {
             // Reset the status on entering the hotkey each time.
             _shiftKeyDownOnEntering = false;
@@ -270,30 +297,40 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _isActive = true;
         }
 
-        private void HotkeyTextBox_LosingFocus(object sender, RoutedEventArgs e)
+        private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            if (lastValidSettings != null && (lastValidSettings.IsValid() || lastValidSettings.IsEmpty()))
+            await ShortcutDialog.ShowAsync();
+        }
+
+#pragma warning disable CA1801 // Review unused parameters
+        private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+#pragma warning restore CA1801 // Review unused parameters
+        {
+            if (ComboIsValid())
             {
                 HotkeySettings = lastValidSettings.Clone();
             }
 
-            HotkeyTextBox.Text = hotkeySettings.ToString();
-            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            PreviewKeysControl.ItemsSource = hotkeySettings.GetKeyList();
+            ShortcutDialog.Hide();
+        }
+
+        private bool ComboIsValid()
+        {
+            if (lastValidSettings != null && (lastValidSettings.IsValid() || lastValidSettings.IsEmpty()))
             {
-                TextBoxAutomationPeer peer =
-                    FrameworkElementAutomationPeer.FromElement(HotkeyTextBox) as TextBoxAutomationPeer;
-                string textBoxChangeActivityId = "textBoxChangedOnLosingFocus";
-
-                if (peer != null)
-                {
-                    peer.RaiseNotificationEvent(
-                        AutomationNotificationKind.ActionCompleted,
-                        AutomationNotificationProcessing.ImportantMostRecent,
-                        HotkeyTextBox.Text,
-                        textBoxChangeActivityId);
-                }
+                return true;
             }
+            else
+            {
+                return false;
+            }
+        }
 
+#pragma warning disable CA1801 // Review unused parameters
+        private void ShortcutDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
+#pragma warning restore CA1801 // Review unused parameters
+        {
             _isActive = false;
         }
 
@@ -318,6 +355,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private void LayoutRoot_Unloaded(object sender, RoutedEventArgs e)
+        {
+            hook.Dispose();
         }
     }
 }

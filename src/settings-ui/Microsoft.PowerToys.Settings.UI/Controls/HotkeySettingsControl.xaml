@@ -5,11 +5,54 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-   
+   x:Name="LayoutRoot"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    Unloaded="LayoutRoot_Unloaded">
+
+    <Grid >
+        
+   
+    <StackPanel Orientation="Vertical">
+        
+   
     <TextBox x:Name="HotkeyTextBox"
              x:Uid="SettingsPage_SetShortcut"
+             Visibility="Collapsed"
              IsReadOnly="True"/>
+        <ItemsControl x:Name="PreviewKeysControl">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <local:KeyVisual Content="{Binding}" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Content="Open dialog" x:Name="OpenDialogButton" Click="OpenDialogButton_Click" />
+
+    </StackPanel>
+        <ContentDialog x:Name="ShortcutDialog" Title="Activation shortcut" Opened="ShortcutDialog_Opened" PrimaryButtonText="Update" PrimaryButtonStyle="{StaticResource AccentButtonStyle}" PrimaryButtonClick="ShortcutDialog_PrimaryButtonClick" Closing="ShortcutDialog_Closing" CloseButtonText="Cancel">
+            <StackPanel Orientation="Vertical">
+                <ItemsControl x:Name="KeysControl">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:KeyVisual AutomationProperties.AccessibilityView="Raw" IsTabStop="False" Content="{Binding}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <muxc:InfoBar x:Name="WarningMessage" Severity="Error" Title="This key combination is not allowed." Message="Only hotkeys with Win, Shift, Ctrl or ALt are allowed" IsOpen="False" IsClosable="False" />
+            </StackPanel>
+        </ContentDialog>
+    </Grid>
 </UserControl>

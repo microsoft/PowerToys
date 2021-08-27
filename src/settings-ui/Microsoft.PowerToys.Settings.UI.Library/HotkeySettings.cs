@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -98,6 +99,39 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
 
             return output.ToString();
+        }
+
+        public List<string> GetKeyList()
+        {
+            List<string> shortcutList = new List<string>();
+
+            if (Win)
+            {
+                shortcutList.Add("Win");
+            }
+
+            if (Ctrl)
+            {
+                shortcutList.Add("Ctrl");
+            }
+
+            if (Alt)
+            {
+                shortcutList.Add("Alt");
+            }
+
+            if (Shift)
+            {
+                shortcutList.Add("Shift");
+            }
+
+            if (Code > 0)
+            {
+                var localKey = Helper.GetKeyName((uint)Code);
+                shortcutList.Add(localKey);
+            }
+
+            return shortcutList;
         }
 
         public bool IsValid()
