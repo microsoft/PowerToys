@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
@@ -16,7 +14,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
     internal static class WindowsSettingsPathHelper
     {
         /// <summary>
-        /// The name of the file that contains all settings for the query
+        /// The symbol which is used as delimiter between the parts of the path.
         /// </summary>
         private const string _pathDelimiterSymbol = "\u25B9";
 
