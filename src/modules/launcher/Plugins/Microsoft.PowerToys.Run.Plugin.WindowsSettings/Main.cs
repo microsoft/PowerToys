@@ -86,6 +86,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
             _settingsList = UnsupportedSettingsHelper.FilterByBuild(_settingsList);
 
             TranslationHelper.TranslateAllSettings(_settingsList);
+            WindowsSettingsPathHelper.GenerateSettingsPathValues(_settingsList);
         }
 
         /// <summary>

@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 {
                     Action = (_) => DoOpenSettingsAction(entry),
                     IcoPath = iconPath,
-                    SubTitle = WindowsSettingsPathHelper.ReturnFullSettingsPath(entry.Type, entry.Areas),
+                    SubTitle = entry.JoinedFullSettingsPath,
                     Title = entry.Name,
                     ContextData = entry,
                 };
@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
             if (entry.Areas != null)
             {
-                toolTipText.AppendLine($"{Resources.Area}: {WindowsSettingsPathHelper.ReturnAreaPath(entry.Areas)}");
+                toolTipText.AppendLine($"{Resources.Area}: {entry.JoinedAreaPath}");
             }
 
             if (entry.AltNames != null && entry.AltNames.Any())
