@@ -18,6 +18,8 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// </summary>
         private const string _pathDelimiterSymbol = "\u25B9";
 
+        // ToDo: testing other sign like \u02C3 and adding spces here
+
         /// <summary>
         /// Generates the values for <see cref="WindowsSetting.JoinedAreaPath"/> and <see cref="WindowsSetting.JoinedFullSettingsPath"/> on all settings of the given list with <see cref="WindowsSetting"/>.
         /// </summary>
@@ -32,6 +34,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             foreach (var settings in settingsList)
             {
                 // Check if type value is filled. If not, then write log warning.
+                // ToDo: using string.nullorempty()
                 if (settings.Type is null)
                 {
                     Log.Warn($"The type property is not set for setting [{settings.Name}] in json. Skipping generating of settings path.", typeof(Main));
