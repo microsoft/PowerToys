@@ -159,20 +159,19 @@ namespace ColorPicker.Helpers
         /// <returns>The X [0..1], Y [0..1] and Z [0..1]</returns>
         internal static (double x, double y, double z) ConvertToCIEXYZColor(Color color)
         {
-            // normalize red, green, blue values
-            double rLinear = color.R / 255d;
-            double gLinear = color.G / 255d;
-            double bLinear = color.B / 255d;
+            double r = color.R / 255d;
+            double g = color.G / 255d;
+            double b = color.B / 255d;
 
-            // convert to a sRGB form
-            double r = (rLinear > 0.04045) ? Math.Pow((rLinear + 0.055) / 1.055, 2.4) : (rLinear / 12.92);
-            double g = (gLinear > 0.04045) ? Math.Pow((gLinear + 0.055) / 1.055, 2.4) : (gLinear / 12.92);
-            double b = (bLinear > 0.04045) ? Math.Pow((bLinear + 0.055) / 1.055, 2.4) : (bLinear / 12.92);
+            // inverse companding, gamma correction must be undone
+            double rLinear = (r > 0.04045) ? Math.Pow((r + 0.055) / 1.055, 2.4) : (r / 12.92);
+            double gLinear = (g > 0.04045) ? Math.Pow((g + 0.055) / 1.055, 2.4) : (g / 12.92);
+            double bLinear = (b > 0.04045) ? Math.Pow((b + 0.055) / 1.055, 2.4) : (b / 12.92);
 
             return (
-                (r * 0.4124) + (g * 0.3576) + (b * 0.1805),
-                (r * 0.2126) + (g * 0.7152) + (b * 0.0722),
-                (r * 0.0193) + (g * 0.1192) + (b * 0.9505)
+                (rLinear * 0.4124) + (gLinear * 0.3576) + (bLinear * 0.1805),
+                (rLinear * 0.2126) + (gLinear * 0.7152) + (bLinear * 0.0722),
+                (rLinear * 0.0193) + (gLinear * 0.1192) + (bLinear * 0.9505)
             );
         }
 
