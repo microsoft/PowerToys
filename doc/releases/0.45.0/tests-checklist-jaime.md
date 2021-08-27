@@ -145,4 +145,4 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
  - [x] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
 
 ## Espresso
- - [ ] Try out the features and see if they work, no list at this time.
+ - [x] Try out the features and see if they work, no list at this time.
