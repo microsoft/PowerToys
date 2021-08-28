@@ -253,9 +253,6 @@
   <data name="AreaClockAndRegion" xml:space="preserve">
     <value>Clock and Region</value>
   </data>
-  <data name="AreaControlPanel" xml:space="preserve">
-    <value>Control Panel</value>
-  </data>
   <data name="AreaCortana" xml:space="preserve">
     <value>Cortana</value>
   </data>

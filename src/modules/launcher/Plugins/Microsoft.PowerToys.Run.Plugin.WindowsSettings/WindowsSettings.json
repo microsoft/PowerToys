@@ -575,7 +575,6 @@
   },
   {
     "Name": "PersonalizationCategory",
-    "Areas": [ "AreaPersonalization" ],
     "Type": "AppSettingsApp",
     "Command": "ms-settings:personalization"
   },
@@ -716,7 +715,7 @@
     "Name": "General",
     "Areas": [ "AreaPrivacy" ],
     "Type": "AppSettingsApp",
-    "Command": "ms-settings:privacy or privacy-general"
+    "Command": "ms-settings:privacy-general"
   },
   {
     "Name": "InkingAndTyping",
@@ -1394,7 +1393,6 @@
   },
   {
     "Name": "GettingStarted",
-    "Areas": [ "AreaControlPanel" ],
     "Type": "ControlPanel",
     "Command": "control /name Microsoft.GettingStarted"
   },
@@ -1457,14 +1455,14 @@
   },
   {
     "Name": "OdbcDataSourceAdministrator32Bit",
-    "Areas": [ "AreaAdministrativeTools" ],
+    "Areas": [ "AreaSystemAndSecurity", "AreaAdministrativeTools" ],
     "Type": "ControlPanel",
     "AltNames": [ "odbccp32.cpl" ],
     "Command": "%windir%/syswow64/odbcad32.exe"
   },
   {
     "Name": "OdbcDataSourceAdministrator64Bit",
-    "Areas": [ "AreaAdministrativeTools" ],
+    "Areas": [ "AreaSystemAndSecurity", "AreaAdministrativeTools" ],
     "Type": "ControlPanel",
     "Command": "%windir%/system32/odbcad32.exe"
   },
