@@ -16,9 +16,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// <summary>
         /// The symbol which is used as delimiter between the parts of the path.
         /// </summary>
-        private const string _pathDelimiterSymbol = "\u25B9";
-
-        // ToDo: testing other sign like \u02C3 and adding spces here
+        private const string _pathDelimiterSequence = "\u0020\u0020\u02C3\u0020\u0020"; // = "<space><space><arrow><space><space>"
 
         /// <summary>
         /// Generates the values for <see cref="WindowsSetting.JoinedAreaPath"/> and <see cref="WindowsSetting.JoinedFullSettingsPath"/> on all settings of the given list with <see cref="WindowsSetting"/>.
@@ -34,7 +32,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             foreach (var settings in settingsList)
             {
                 // Check if type value is filled. If not, then write log warning.
-                // ToDo: using string.nullorempty()
                 if (string.IsNullOrEmpty(settings.Type))
                 {
                     Log.Warn($"The type property is not set for setting [{settings.Name}] in json. Skipping generating of settings path.", typeof(WindowsSettingsPathHelper));
@@ -55,9 +52,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 // Generating path values.
                 if (!(settings.Areas is null) && settings.Areas.Any())
                 {
-                    var areaValue = string.Join($" {WindowsSettingsPathHelper._pathDelimiterSymbol} ", settings.Areas);
+                    var areaValue = string.Join(WindowsSettingsPathHelper._pathDelimiterSequence, settings.Areas);
                     settings.JoinedAreaPath = areaValue;
-                    settings.JoinedFullSettingsPath = $"{settings.Type} {WindowsSettingsPathHelper._pathDelimiterSymbol} {areaValue}";
+                    settings.JoinedFullSettingsPath = $"{settings.Type}{WindowsSettingsPathHelper._pathDelimiterSequence}{areaValue}";
                 }
                 else
                 {
