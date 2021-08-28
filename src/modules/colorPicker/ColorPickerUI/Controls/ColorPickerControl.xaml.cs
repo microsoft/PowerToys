@@ -297,22 +297,6 @@ namespace ColorPicker.Controls
             _ignoreGradientsChanges = false;
         }
 
-        private static Point GetMousePositionWithinGrid(Border border)
-        {
-            var pos = System.Windows.Input.Mouse.GetPosition(border);
-            if (pos.X < 0)
-            {
-                pos.X = 0;
-            }
-
-            if (pos.X > border.Width)
-            {
-                pos.X = border.Width;
-            }
-
-            return pos;
-        }
-
         private void HexCode_TextChanged(object sender, TextChangedEventArgs e)
         {
             var newValue = (sender as TextBox).Text;
@@ -342,9 +326,9 @@ namespace ColorPicker.Controls
         {
             if (!_ignoreRGBChanges)
             {
-                var r = byte.Parse(RNumberBox.Text, CultureInfo.InvariantCulture);
-                var g = byte.Parse(GNumberBox.Text, CultureInfo.InvariantCulture);
-                var b = byte.Parse(BNumberBox.Text, CultureInfo.InvariantCulture);
+                var r = (byte)RNumberBox.Value;
+                var g = (byte)GNumberBox.Value;
+                var b = (byte)BNumberBox.Value;
                 _ignoreRGBChanges = true;
                 SetColorFromTextBoxes(System.Drawing.Color.FromArgb(r, g, b));
                 _ignoreRGBChanges = false;
