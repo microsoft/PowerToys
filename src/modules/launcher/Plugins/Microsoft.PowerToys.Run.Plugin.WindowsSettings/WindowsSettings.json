@@ -1,20 +1,20 @@
 [
   {
     "Name": "AccessWorkOrSchool",
-    "Areas": [ "AreaAreaAccounts" ],
+    "Areas": [ "AreaAccounts" ],
     "Type": "AppSettingsApp",
     "AltNames": [ "Workplace" ],
     "Command": "ms-settings:workplace"
   },
   {
     "Name": "EmailAndAppAccounts",
-    "Areas": [ "AreaAreaAccounts" ],
+    "Areas": [ "AreaAccounts" ],
     "Type": "AppSettingsApp",
     "Command": "ms-settings:emailandaccounts"
   },
   {
     "Name": "FamilyAndOtherPeople",
-    "Areas": [ "AreaAreaAccounts" ],
+    "Areas": [ "AreaAccounts" ],
     "Type": "AppSettingsApp",
     "AltNames": [ "OtherUsers" ],
     "Command": "ms-settings:otherusers"
