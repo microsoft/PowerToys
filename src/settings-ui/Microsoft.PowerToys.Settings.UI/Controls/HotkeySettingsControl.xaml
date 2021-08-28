@@ -9,10 +9,9 @@
     mc:Ignorable="d"
    x:Name="LayoutRoot"
     d:DesignHeight="300"
-    d:DesignWidth="400"
-    Unloaded="LayoutRoot_Unloaded">
+    d:DesignWidth="400">
 
-    <Grid >
+    <Grid>
         
    
     <StackPanel Orientation="Vertical">
@@ -30,16 +29,29 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <local:KeyVisual Content="{Binding}" />
+                    <local:KeyVisual Content="{Binding}" Height="36" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
         <Button Content="Open dialog" x:Name="OpenDialogButton" Click="OpenDialogButton_Click" />
 
     </StackPanel>
-        <ContentDialog x:Name="ShortcutDialog" Title="Activation shortcut" Opened="ShortcutDialog_Opened" PrimaryButtonText="Update" PrimaryButtonStyle="{StaticResource AccentButtonStyle}" PrimaryButtonClick="ShortcutDialog_PrimaryButtonClick" Closing="ShortcutDialog_Closing" CloseButtonText="Cancel">
-            <StackPanel Orientation="Vertical">
-                <ItemsControl x:Name="KeysControl">
+        <ContentDialog x:Name="ShortcutDialog"
+                       Title="Activation shortcut"
+                       PrimaryButtonText="Save"
+                       CloseButtonText="Cancel"
+                       HorizontalAlignment="Stretch"
+                       HorizontalContentAlignment="Stretch"
+                       PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+                       PrimaryButtonClick="ShortcutDialog_PrimaryButtonClick"
+                       Closing="ShortcutDialog_Closing"
+                       Opened="ShortcutDialog_Opened">
+            <StackPanel Orientation="Vertical" Spacing="12" Width="500" Height="200">
+                <TextBlock TextWrapping="WrapWholeWords">
+                        <Run Text="Only shortcuts with the with the following hotkeys are valid:"/><LineBreak/>
+                        <Run Text="Windows key, Ctrl, Alt and Shift"/>
+                </TextBlock>
+                <ItemsControl x:Name="KeysControl" HorizontalAlignment="Center" Margin="0,12,0,12">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" />
@@ -47,11 +59,11 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <local:KeyVisual AutomationProperties.AccessibilityView="Raw" IsTabStop="False" Content="{Binding}" />
+                            <local:KeyVisual AutomationProperties.AccessibilityView="Raw" Height="56" IsTabStop="False" Content="{Binding}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <muxc:InfoBar x:Name="WarningMessage" Severity="Error" Title="This key combination is not allowed." Message="Only hotkeys with Win, Shift, Ctrl or ALt are allowed" IsOpen="False" IsClosable="False" />
+                <muxc:InfoBar x:Name="WarningMessage" Severity="Error" Title="Only shortcuts with the with the following hotkeys are valid: Windows key, Ctrl, Alt and Shift." IsOpen="False" IsClosable="False" />
             </StackPanel>
         </ContentDialog>
     </Grid>

@@ -17,23 +17,22 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     public sealed partial class HotkeySettingsControl : UserControl, IDisposable
     {
         private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
-
         private bool _shiftKeyDownOnEntering;
-
         private bool _shiftToggled;
+        private bool _enabled;
+        private HotkeySettings hotkeySettings;
+        private HotkeySettings internalSettings;
+        private HotkeySettings lastValidSettings;
+        private HotkeySettingsControlHook hook;
+        private bool _isActive;
+        private bool disposedValue;
 
         public string Header { get; set; }
 
         public string Keys { get; set; }
 
-        public static readonly DependencyProperty IsActiveProperty =
-            DependencyProperty.Register(
-                "Enabled",
-                typeof(bool),
-                typeof(HotkeySettingsControl),
-                null);
-
-        private bool _enabled;
+        public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("Enabled", typeof(bool), typeof(HotkeySettingsControl), null);
+        public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register("HotkeySettings", typeof(HotkeySettings), typeof(HotkeySettingsControl), null);
 
         public bool Enabled
         {
@@ -64,20 +63,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
-        public static readonly DependencyProperty HotkeySettingsProperty =
-            DependencyProperty.Register(
-                "HotkeySettings",
-                typeof(HotkeySettings),
-                typeof(HotkeySettingsControl),
-                null);
-
-        private HotkeySettings hotkeySettings;
-        private HotkeySettings internalSettings;
-        private HotkeySettings lastValidSettings;
-        private HotkeySettingsControlHook hook;
-        private bool _isActive;
-        private bool disposedValue;
-
         public HotkeySettings HotkeySettings
         {
             get
@@ -91,8 +76,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     hotkeySettings = value;
                     SetValue(HotkeySettingsProperty, value);
-                    PreviewKeysControl.ItemsSource = HotkeySettings.GetKeyList();
-                    KeysControl.ItemsSource = HotkeySettings.GetKeyList();
+                    PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
+                    KeysControl.ItemsSource = HotkeySettings.GetKeysList();
                 }
             }
         }
@@ -102,10 +87,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             InitializeComponent();
             internalSettings = new HotkeySettings();
 
+            this.Unloaded += HotkeySettingsControl_Unloaded;
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
         }
 
-        private void HotkeyTextBox_Unloaded(object sender, RoutedEventArgs e)
+        private void HotkeySettingsControl_Unloaded(object sender, RoutedEventArgs e)
         {
             // Dispose the HotkeySettingsControlHook object to terminate the hook threads when the textbox is unloaded
             hook.Dispose();
@@ -224,20 +210,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 }
             }
 
-            return true;
-        }
-
-        private bool HasSaveOrCancelButtonFocus()
-        {
-            var control = FocusManager.GetFocusedElement(LayoutRoot.XamlRoot);
-            if (control.GetType() == typeof(Button))
-            {
-                return true;
-            }
-            else
+            // Either the cancel or save button has keyboard focus.
+            if (FocusManager.GetFocusedElement(LayoutRoot.XamlRoot).GetType() == typeof(Button))
             {
                 return false;
             }
+
+            return true;
         }
 
         private async void Hotkey_KeyDown(int key)
@@ -246,11 +225,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 KeyEventHandler(key, true, key);
 
-                // if (HasSaveOrCancelButtonFocus())
+                KeysControl.ItemsSource = internalSettings.GetKeysList();
+
                 // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
                 if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
                 {
-                    KeysControl.ItemsSource = internalSettings.GetKeyList();
                     lastValidSettings = internalSettings.Clone();
 
                     if (!ComboIsValid())
@@ -311,7 +290,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 HotkeySettings = lastValidSettings.Clone();
             }
 
-            PreviewKeysControl.ItemsSource = hotkeySettings.GetKeyList();
+            PreviewKeysControl.ItemsSource = hotkeySettings.GetKeysList();
             ShortcutDialog.Hide();
         }
 
@@ -355,11 +334,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
-        }
-
-        private void LayoutRoot_Unloaded(object sender, RoutedEventArgs e)
-        {
-            hook.Dispose();
         }
     }
 }

@@ -2,56 +2,40 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls">
 
-    <!-- This can be removed once we adopt WinUI 2.6 or higher -->
-    <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Default">
-            <Color x:Key="ControlStrokeColorDefault">#12FFFFFF</Color>
-            <Color x:Key="ControlStrokeColorSecondary">#18FFFFFF</Color>
-            <Color x:Key="ControlFillColorDefault">#0FFFFFFF</Color>
-            
-        </ResourceDictionary>
-        
-        <ResourceDictionary x:Key="Light">
-            <Color x:Key="ControlStrokeColorDefault">#0F000000</Color>
-            <Color x:Key="ControlStrokeColorSecondary">#29000000</Color>
-            <Color x:Key="ControlFillColorDefault">#B3FFFFFF</Color>
-            
-        </ResourceDictionary>
-        
-    </ResourceDictionary.ThemeDictionaries>
-    
-    <LinearGradientBrush x:Key="ControlElevationBorderBrush"
-                         MappingMode="Absolute"
-                         StartPoint="0,0"
-                         EndPoint="0,3">
-        <LinearGradientBrush.GradientStops>
-            <GradientStop Offset="0.33"
-                          Color="{ThemeResource ControlStrokeColorSecondary}" />
-            <GradientStop Offset="1.0"
-                          Color="{ThemeResource ControlStrokeColorDefault}" />
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
-    <!--- -->
-    
-    
-    <Style TargetType="local:KeyVisual">
+    <Style  x:Key="ShiftKeyStyle" TargetType="local:KeyVisual" BasedOn="{StaticResource StandardStyle}">
+        <Setter Property="Width" Value="120" />
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Right" />
+    </Style>
+
+    <Style TargetType="local:KeyVisual" x:Key="StandardStyle">
+        <Setter Property="MinWidth" Value="48" />
+        <Setter Property="Padding" Value="11,5,11,6" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:KeyVisual">
-                    <!-- Background="{ThemeResource ControlFillColorDefault}" -->
-                    <Border Background="LightGray"
-                            BorderThickness="1"
-                            BorderBrush="{ThemeResource ControlElevationBorderBrush}"
-                            CornerRadius="4"
-                            Padding="11,5,11,6"
-                            Height="32">
-                        <ContentPresenter Content="{TemplateBinding Content}"
-                                          FontWeight="SemiBold"
-                                          VerticalAlignment="Center" />
+                    <Border BorderThickness="1"
+                                x:Name="bborder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+                                CornerRadius="4"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                Width="{TemplateBinding Width}"
+                                Padding="{TemplateBinding Padding}">
+
+                        <ContentPresenter x:Name="KeyPresenter"
+                                                  FontWeight="SemiBold"
+                                                  FontSize="12"
+                                                  Margin="2"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="Center" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
+    <PathIcon x:Key="W11Logo" Foreground="Red" Data="M9,17V9h8v8ZM0,17V9H8v8ZM9,8V0h8V8ZM0,8V0H8V8Z" />
 </ResourceDictionary>
