@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ColorPicker.Helpers;
+using ModernWpf.Controls;
 using ModernWpf.Controls.Primitives;
 
 namespace ColorPicker.Controls
@@ -320,21 +321,6 @@ namespace ColorPicker.Controls
             }
         }
 
-#pragma warning disable CA1801 // Review unused parameters
-        private void RGBNumberBox_ValueChanged(ModernWpf.Controls.NumberBox sender, ModernWpf.Controls.NumberBoxValueChangedEventArgs args)
-#pragma warning restore CA1801 // Review unused parameters
-        {
-            if (!_ignoreRGBChanges)
-            {
-                var r = (byte)RNumberBox.Value;
-                var g = (byte)GNumberBox.Value;
-                var b = (byte)BNumberBox.Value;
-                _ignoreRGBChanges = true;
-                SetColorFromTextBoxes(System.Drawing.Color.FromArgb(r, g, b));
-                _ignoreRGBChanges = false;
-            }
-        }
-
         private void SetColorFromTextBoxes(System.Drawing.Color color)
         {
             if (!_ignoreGradientsChanges)
@@ -360,6 +346,65 @@ namespace ColorPicker.Controls
         private void HexCode_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
             (sender as System.Windows.Controls.TextBox).SelectAll();
+        }
+
+        private void RGBNumberBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!_ignoreRGBChanges)
+            {
+                var numberBox = sender as NumberBox;
+                var r = numberBox.Name == "RNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)RNumberBox.Value;
+                var g = numberBox.Name == "GNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)GNumberBox.Value;
+                var b = numberBox.Name == "BNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)BNumberBox.Value;
+                _ignoreRGBChanges = true;
+                SetColorFromTextBoxes(System.Drawing.Color.FromArgb(r, g, b));
+                _ignoreRGBChanges = false;
+            }
+        }
+
+        /// <summary>
+        /// NumberBox provides value only after it has been validated - happens after pressing enter or leaving this control.
+        /// However, we need to get value immediately after the underlying textbox value changes
+        /// </summary>
+        /// <param name="numberBox">numberBox control which value we want to get</param>
+        /// <returns>Validated value as per numberbox conditions, if content is invalid it returns previous value</returns>
+        private static byte GetValueFromNumberBox(NumberBox numberBox)
+        {
+            var internalTextBox = GetChildOfType<TextBox>(numberBox);
+            var parsedValue = numberBox.NumberFormatter.ParseDouble(internalTextBox.Text);
+            if (parsedValue != null)
+            {
+                var parsedValueByte = (byte)parsedValue;
+                if (parsedValueByte >= numberBox.Minimum && parsedValueByte <= numberBox.Maximum)
+                {
+                    return parsedValueByte;
+                }
+            }
+
+            // not valid input, return previous value
+            return (byte)numberBox.Value;
+        }
+
+        public static T GetChildOfType<T>(DependencyObject depObj)
+            where T : DependencyObject
+        {
+            if (depObj == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(depObj, i);
+
+                var result = (child as T) ?? GetChildOfType<T>(child);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
         }
     }
 
