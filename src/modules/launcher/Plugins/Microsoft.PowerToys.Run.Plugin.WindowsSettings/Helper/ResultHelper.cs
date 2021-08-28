@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
             toolTipText.AppendLine($"{Resources.Application}: {entry.Type}");
 
-            if (entry.Areas != null)
+            if (entry.Areas != null && entry.Areas.Any())
             {
                 toolTipText.AppendLine($"{Resources.Area}: {entry.JoinedAreaPath}");
             }

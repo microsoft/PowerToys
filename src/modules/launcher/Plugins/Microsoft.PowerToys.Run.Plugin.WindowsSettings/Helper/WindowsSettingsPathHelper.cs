@@ -35,20 +35,21 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             {
                 // Check if type value is filled. If not, then write log warning.
                 // ToDo: using string.nullorempty()
-                if (settings.Type is null)
+                if (string.IsNullOrEmpty(settings.Type))
                 {
-                    Log.Warn($"The type property is not set for setting [{settings.Name}] in json. Skipping generating of settings path.", typeof(Main));
+                    Log.Warn($"The type property is not set for setting [{settings.Name}] in json. Skipping generating of settings path.", typeof(WindowsSettingsPathHelper));
+                    continue;
                 }
 
                 // Check if "JoinedAreaPath" and "JoinedFullSettingsPath" are filled. Then log debug message.
-                if (!(settings.JoinedAreaPath == string.Empty && settings.JoinedAreaPath is null))
+                if (!string.IsNullOrEmpty(settings.JoinedAreaPath))
                 {
-                    Log.Debug($"The property [JoinedAreaPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(Main));
+                    Log.Debug($"The property [JoinedAreaPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(WindowsSettingsPathHelper));
                 }
 
-                if (!(settings.JoinedFullSettingsPath == string.Empty && settings.JoinedFullSettingsPath is null))
+                if (!string.IsNullOrEmpty(settings.JoinedFullSettingsPath))
                 {
-                    Log.Debug($"The property [JoinedFullSettingsPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(Main));
+                    Log.Debug($"The property [JoinedFullSettingsPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(WindowsSettingsPathHelper));
                 }
 
                 // Generating path values.

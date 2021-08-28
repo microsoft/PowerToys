@@ -28,22 +28,40 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
             foreach (var settings in settingsList)
             {
+                // Translate Name
+                var name = Resources.ResourceManager.GetString(settings.Name);
+                if (string.IsNullOrEmpty(name))
+                {
+                    Log.Warn($"Resource string for [{settings.Name}] not found", typeof(TranslationHelper));
+                }
+
+                settings.Name = name ?? settings.Name ?? string.Empty;
+
+                // Translate Type (App)
+                var type = Resources.ResourceManager.GetString(settings.Type);
+                if (string.IsNullOrEmpty(type))
+                {
+                    Log.Warn($"Resource string for [{settings.Type}] not found", typeof(TranslationHelper));
+                }
+
+                settings.Type = type ?? settings.Type ?? string.Empty;
+
+                // Translate Areas
                 if (!(settings.Areas is null) && settings.Areas.Any())
                 {
                     var translatedAreas = new List<string>();
 
                     foreach (var area in settings.Areas)
                     {
-                        if (string.IsNullOrWhiteSpace(area))
+                        if (string.IsNullOrEmpty(area))
                         {
                             continue;
                         }
 
-                        // ToDo: update json and resx to "Area_"
-                        var translatedArea = Resources.ResourceManager.GetString($"{area}");
+                        var translatedArea = Resources.ResourceManager.GetString(area);
                         if (string.IsNullOrEmpty(translatedArea))
                         {
-                            Log.Warn($"Resource string for [{area}] not found", typeof(Main));
+                            Log.Warn($"Resource string for [{area}] not found", typeof(TranslationHelper));
                         }
 
                         translatedAreas.Add(translatedArea ?? area);
@@ -52,40 +70,14 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     settings.Areas = translatedAreas;
                 }
 
-                var name = Resources.ResourceManager.GetString(settings.Name);
-                var type = Resources.ResourceManager.GetString(settings.Type);
-
-                if (string.IsNullOrEmpty(name))
-                {
-                    Log.Warn($"Resource string for [{settings.Name}] not found", typeof(Main));
-                }
-
-                if (string.IsNullOrEmpty(type))
-                {
-                    Log.Warn($"Resource string for [{settings.Name}] not found", typeof(Main));
-                }
-
-                settings.Name = name ?? settings.Name ?? string.Empty;
-                settings.Type = type ?? settings.Type ?? string.Empty;
-
-                if (!string.IsNullOrEmpty(settings.Note))
-                {
-                    var note = Resources.ResourceManager.GetString(settings.Note);
-                    if (string.IsNullOrEmpty(note))
-                    {
-                        Log.Warn($"Resource string for [{settings.Note}] not found", typeof(Main));
-                    }
-
-                    settings.Note = note ?? settings.Note ?? string.Empty;
-                }
-
+                // Translate Alternative names
                 if (!(settings.AltNames is null) && settings.AltNames.Any())
                 {
                     var translatedAltNames = new Collection<string>();
 
                     foreach (var altName in settings.AltNames)
                     {
-                        if (string.IsNullOrWhiteSpace(altName))
+                        if (string.IsNullOrEmpty(altName))
                         {
                             continue;
                         }
@@ -93,13 +85,25 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                         var translatedAltName = Resources.ResourceManager.GetString(altName);
                         if (string.IsNullOrEmpty(translatedAltName))
                         {
-                            Log.Warn($"Resource string for [{altName}] not found", typeof(Main));
+                            Log.Warn($"Resource string for [{altName}] not found", typeof(TranslationHelper));
                         }
 
                         translatedAltNames.Add(translatedAltName ?? altName);
                     }
 
                     settings.AltNames = translatedAltNames;
+                }
+
+                // Translate Note
+                if (!string.IsNullOrEmpty(settings.Note))
+                {
+                    var note = Resources.ResourceManager.GetString(settings.Note);
+                    if (string.IsNullOrEmpty(note))
+                    {
+                        Log.Warn($"Resource string for [{settings.Note}] not found", typeof(TranslationHelper));
+                    }
+
+                    settings.Note = note ?? settings.Note ?? string.Empty;
                 }
             }
         }

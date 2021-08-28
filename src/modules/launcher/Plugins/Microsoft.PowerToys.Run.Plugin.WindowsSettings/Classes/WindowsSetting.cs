@@ -19,8 +19,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
             Name = string.Empty;
             Command = string.Empty;
             Type = string.Empty;
-            JoinedAreaPath = string.Empty;
-            JoinedFullSettingsPath = string.Empty;
         }
 
         /// <summary>
