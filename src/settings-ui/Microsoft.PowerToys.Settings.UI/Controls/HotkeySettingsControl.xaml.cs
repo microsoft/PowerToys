@@ -48,17 +48,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                 if (value)
                 {
-                    HotkeyTextBox.IsEnabled = true;
-
-                    // TitleText.IsActive = "True";
-                    // TitleGlyph.IsActive = "True";
+                    EditButton.IsEnabled = true;
                 }
                 else
                 {
-                    HotkeyTextBox.IsEnabled = false;
-
-                    // TitleText.IsActive = "False";
-                    // TitleGlyph.IsActive = "False";
+                    EditButton.IsEnabled = false;
                 }
             }
         }
@@ -235,12 +229,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     if (!ComboIsValid())
                     {
                         ShortcutDialog.IsPrimaryButtonEnabled = false;
-                        WarningMessage.IsOpen = true;
+                        WarningLabel.Style = (Style)App.Current.Resources["SecondaryWarningTextStyle"];
                     }
                     else
                     {
                         ShortcutDialog.IsPrimaryButtonEnabled = true;
-                        WarningMessage.IsOpen = false;
+                        WarningLabel.Style = (Style)App.Current.Resources["SecondaryTextStyle"];
                     }
                 }
             });
@@ -278,6 +272,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
+            ShortcutDialog.Visibility = Visibility.Visible; // This property can be removed once https://github.com/microsoft/microsoft-ui-xaml/pull/5736 is merged and we can move to WinUI 2.7
             await ShortcutDialog.ShowAsync();
         }
 
@@ -292,6 +287,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             PreviewKeysControl.ItemsSource = hotkeySettings.GetKeysList();
             ShortcutDialog.Hide();
+            ShortcutDialog.Visibility = Visibility.Collapsed; // This property can be removed once https://github.com/microsoft/microsoft-ui-xaml/pull/5736 is merged and we can move to WinUI 2.7
         }
 
         private bool ComboIsValid()
