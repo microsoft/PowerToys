@@ -3274,15 +3274,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to in.
-        /// </summary>
-        internal static string SubtitlePreposition {
-            get {
-                return ResourceManager.GetString("SubtitlePreposition", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Sync center.
         /// </summary>
         internal static string SyncCenter {
