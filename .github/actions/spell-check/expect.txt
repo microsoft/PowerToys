@@ -12,10 +12,10 @@ Acceleratorkeys
 ACCEPTFILES
 accessibile
 accessibilityinsights
+Accessible
 Acl
 aclapi
 AColumn
-Accessible
 acos
 acrt
 Actioncenter
@@ -229,10 +229,13 @@ CHILDACTIVATE
 CHILDWINDOW
 chrdavis
 chrisharris
+chromaticities
 chrono
 Chrzan
 chrzan
 CHT
+cielab
+CIEXYZ
 CImage
 cinttypes
 cla
@@ -288,6 +291,7 @@ comhost
 cominterop
 commandline
 commctrl
+companding
 Compat
 COMPOSITIONFULL
 comsupp
@@ -402,6 +406,7 @@ ddd
 ddee
 ddf
 Deact
+debian
 DECLAR
 declspec
 decltype
@@ -1258,6 +1263,7 @@ mii
 MIIM
 millis
 mimetype
+mindaro
 Minimizeallwindows
 MINIMIZEBOX
 miniz
