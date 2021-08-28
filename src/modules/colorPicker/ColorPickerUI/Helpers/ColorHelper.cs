@@ -154,6 +154,8 @@ namespace ColorPicker.Helpers
 
         /// <summary>
         /// Convert a given <see cref="Color"/> to a CIE XYZ color (XYZ)
+        /// The constants of the formula used come from this wikipedia page:
+        /// https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation_(sRGB_to_CIE_XYZ)
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The X [0..1], Y [0..1] and Z [0..1]</returns>
@@ -177,6 +179,8 @@ namespace ColorPicker.Helpers
 
         /// <summary>
         /// Convert a CIE XYZ color <see cref="double"/> to a CIE LAB color (LAB)
+        /// The constants of the formula used come from this wikipedia page:
+        /// https://en.wikipedia.org/wiki/CIELAB_color_space#Converting_between_CIELAB_and_CIEXYZ_coordinates
         /// </summary>
         /// <param name="x">The <see cref="x"/> represents a mix of the three CIE RGB curves</param>
         /// <param name="y">The <see cref="y"/> represents the luminance</param>
