@@ -23,6 +23,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow(ColorRepresentationType.HWB, "hwb(0, 0%, 100%)")]
         [DataRow(ColorRepresentationType.RGB, "rgb(0, 0, 0)")]
         [DataRow(ColorRepresentationType.CIELAB, "L*a*b*(0, 0, 0)")]
+        [DataRow(ColorRepresentationType.CIEXYZ, "xyz(0, 0, 0)")]
 
         public void GetStringRepresentationTest(ColorRepresentationType type, string expected)
         {

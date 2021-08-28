@@ -60,5 +60,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         /// Color presentation as CIELAB color space, also referred to as L*a*b* (L[0..100], A[-128..127], B[-128..127])
         /// </summary>
         CIELAB = 9,
+
+        /// <summary>
+        /// Color presentation as CIEXYZ color space (X[0..100], Y[0..100], Z[0..100]
+        /// </summary>
+        CIEXYZ = 10,
     }
 }

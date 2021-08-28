@@ -45,6 +45,7 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.NCol => ColorToNCol(color),
                 ColorRepresentationType.RGB => ColorToRGB(color),
                 ColorRepresentationType.CIELAB => ColorToCIELAB(color),
+                ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),
@@ -214,6 +215,24 @@ namespace ColorPicker.Helpers
             return $"L*a*b*({lightness.ToString(CultureInfo.InvariantCulture)}" +
                    $", {chromaticityA.ToString(CultureInfo.InvariantCulture)}" +
                    $", {chromaticityB.ToString(CultureInfo.InvariantCulture)})";
+        }
+
+        /// <summary>
+        /// Returns a <see cref="string"/> representation of a CIE XYZ color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the CIE XYZ color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a CIE XYZ color</returns>
+        private static string ColorToCIEXYZ(Color color)
+        {
+            var (x, y, z) = ColorHelper.ConvertToCIEXYZColor(color);
+
+            x = Math.Round(x * 100);
+            y = Math.Round(y * 100);
+            z = Math.Round(z * 100);
+
+            return $"xyz({x.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {y.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {z.ToString(CultureInfo.InvariantCulture)})";
         }
     }
 }
