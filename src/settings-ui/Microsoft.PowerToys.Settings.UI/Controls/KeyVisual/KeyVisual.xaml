@@ -6,7 +6,7 @@
         <Setter Property="MinWidth" Value="56" />
         <Setter Property="MinHeight" Value="48" />
         <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ControlElevationBorderBrush}" />
         <Setter Property="Padding" Value="16,8,16,8" />
         <Setter Property="FontWeight" Value="SemiBold" />

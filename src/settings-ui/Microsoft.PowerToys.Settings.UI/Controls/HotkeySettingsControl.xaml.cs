@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 case Windows.System.VirtualKey.Escape:
                     internalSettings = new HotkeySettings();
                     ShortcutDialog.IsPrimaryButtonEnabled = false;
-                    return; 
+                    return;
                 default:
                     internalSettings.Code = matchValueCode;
                     break;
