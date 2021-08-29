@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+// TODO Add the toggle for Windows Search file content search
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
