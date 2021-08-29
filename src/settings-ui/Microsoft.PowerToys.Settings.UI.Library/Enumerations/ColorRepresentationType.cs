@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         CIELAB = 9,
 
         /// <summary>
-        /// Color presentation as CIEXYZ color space (X[0..100], Y[0..100], Z[0..100]
+        /// Color presentation as CIEXYZ color space (X[0..95], Y[0..100], Z[0..109]
         /// </summary>
         CIEXYZ = 10,
     }

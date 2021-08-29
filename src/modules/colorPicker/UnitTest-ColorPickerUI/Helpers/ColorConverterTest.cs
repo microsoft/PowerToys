@@ -408,13 +408,13 @@ namespace Microsoft.ColorPicker.UnitTests
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToCIEXYZColor(color);
 
-            // x[0..1]
+            // x[0..0.95047]
             Assert.AreEqual(Math.Round(result.x * 100, 4), x);
 
             // y[0..1]
             Assert.AreEqual(Math.Round(result.y * 100, 4), y);
 
-            // z[0..1]
+            // z[0..1.08883]
             Assert.AreEqual(Math.Round(result.z * 100, 4), z);
         }
 
