@@ -11,21 +11,38 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid HorizontalAlignment="Right">
         <StackPanel Orientation="Horizontal">
-            <ItemsControl x:Name="PreviewKeysControl" IsTabStop="False">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" Spacing="4" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <local:KeyVisual IsTabStop="False" RenderSmall="True" Content="{Binding}" Height="36" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <Button Content="Edit" x:Name="EditButton" Click="OpenDialogButton_Click" />
+            <Button x:Name="EditButton"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Click="OpenDialogButton_Click" >
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <ItemsControl x:Name="PreviewKeysControl"
+                                  IsEnabled="{Binding ElementName=EditButton, Path=IsEnabled}"
+                                  VerticalAlignment="Center"
+                                  IsTabStop="False">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <local:KeyVisual IsTabStop="False"
+                                                 AutomationProperties.AccessibilityView="Raw"
+                                                 RenderSmall="True"
+                                                 VerticalAlignment="Center"
+                                                 Content="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <FontIcon Glyph="&#xE104;"
+                              FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                              FontSize="14"
+                              Margin="0,0,4,0" />
+                </StackPanel>
+            </Button>
         </StackPanel>
        
 
@@ -41,9 +58,13 @@
                        Opened="ShortcutDialog_Opened"
                        Visibility="Collapsed">
             <!-- Visibility property can be removed once https://github.com/microsoft/microsoft-ui-xaml/pull/5736 is merged and we can move to WinUI 2.7 -->
-            <StackPanel Orientation="Vertical" Spacing="24" MinWidth="480">
+            <StackPanel Orientation="Vertical"
+                        Spacing="24"
+                        MinWidth="480">
                 <TextBlock Text="Press a combination of keys to change this shortcut" />
-                <ItemsControl x:Name="KeysControl" HorizontalAlignment="Center" Margin="0,12,0,12">
+                <ItemsControl x:Name="KeysControl"
+                              HorizontalAlignment="Center"
+                              Margin="0,12,0,12">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" Spacing="8"/>
@@ -51,12 +72,17 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <local:KeyVisual AutomationProperties.AccessibilityView="Raw" Height="56" IsTabStop="False" Content="{Binding}" />
+                            <local:KeyVisual AutomationProperties.AccessibilityView="Raw"
+                                             Height="56"
+                                             IsTabStop="False"
+                                             Content="{Binding}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <TextBlock TextWrapping="WrapWholeWords" x:Name="WarningLabel" Style="{StaticResource SecondaryTextStyle}" >
+                <TextBlock x:Name="WarningLabel" 
+                           TextWrapping="WrapWholeWords"
+                           Style="{StaticResource SecondaryTextStyle}" >
                         <Run Text="Only shortcuts with the with the following hotkeys are valid:"/><LineBreak/>
                         <Run Text="Windows key, Ctrl, Alt and Shift"/>
                 </TextBlock>

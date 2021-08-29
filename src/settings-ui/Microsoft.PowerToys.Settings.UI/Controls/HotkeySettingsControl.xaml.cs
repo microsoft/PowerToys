@@ -117,8 +117,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     break;
                 case Windows.System.VirtualKey.Escape:
                     internalSettings = new HotkeySettings();
-                    HotkeySettings = new HotkeySettings();
-                    return;
+                    ShortcutDialog.IsPrimaryButtonEnabled = false;
+                    return; 
                 default:
                     internalSettings.Code = matchValueCode;
                     break;
@@ -221,6 +221,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                 KeysControl.ItemsSource = internalSettings.GetKeysList();
 
+                if (internalSettings.GetKeysList().Count < 2)
+                {
+                    ShortcutDialog.IsPrimaryButtonEnabled = false;
+                }
+
                 // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
                 if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
                 {
@@ -272,6 +277,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
+            KeysControl.ItemsSource = null;
+            KeysControl.ItemsSource = HotkeySettings.GetKeysList();
             ShortcutDialog.Visibility = Visibility.Visible; // This property can be removed once https://github.com/microsoft/microsoft-ui-xaml/pull/5736 is merged and we can move to WinUI 2.7
             await ShortcutDialog.ShowAsync();
         }

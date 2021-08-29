@@ -2,16 +2,14 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls">
 
-    <x:Double x:Key="DefaultIconSize">48</x:Double>
-    <x:Double x:Key="SmallIconSize">10</x:Double>
-    
     <Style x:Key="DefaultTextKeyVisualStyle" TargetType="local:KeyVisual">
         <Setter Property="MinWidth" Value="56" />
         <Setter Property="MinHeight" Value="48" />
-        <Setter Property="Background" Value="{ThemeResource SystemAccentColorDark1}" />
+        <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderBrush" Value="{ThemeResource ControlElevationBorderBrush}" />
         <Setter Property="Padding" Value="16,8,16,8" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="FontSize" Value="18" />
@@ -41,8 +39,8 @@
     <Style x:Key="SmallTextKeyVisualStyle" TargetType="local:KeyVisual" BasedOn="{StaticResource DefaultTextKeyVisualStyle}">
         <Setter Property="MinWidth" Value="40" />
         <Setter Property="Height" Value="36" />
-        <Setter Property="FontFamily" Value="Regular" />
-        <Setter Property="Padding" Value="0,0,0,2" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="12,0,12,2" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
@@ -51,7 +49,6 @@
         <Setter Property="MinWidth" Value="56" />
         <Setter Property="MinHeight" Value="48" />
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-        <Setter Property="FontFamily" Value="SemiBold" />
         <Setter Property="Padding" Value="16,8,16,8" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -61,7 +58,7 @@
         <Setter Property="MinWidth" Value="40" />
         <Setter Property="Height" Value="36" />
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-     
+        <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="FontSize" Value="10" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />

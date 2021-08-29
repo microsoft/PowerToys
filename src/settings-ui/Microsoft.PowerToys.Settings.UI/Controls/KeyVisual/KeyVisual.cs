@@ -121,17 +121,5 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return (Style)App.Current.Resources["Default" + styleName];
             }
         }
-
-        public double GetIconSize()
-        {
-            if (RenderSmall)
-            {
-                return (double)App.Current.Resources["SmallIconSize"];
-            }
-            else
-            {
-                return (double)App.Current.Resources["DefaultIconSize"];
-            }
-        }
     }
 }
