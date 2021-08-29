@@ -122,7 +122,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             if (Shift)
             {
-                shortcutList.Add(16); // The Shift key or button.
+                shortcutList.Add("Shift");
+
+                // shortcutList.Add(16); // The Shift key or button.
             }
 
             if (Code > 0)
@@ -134,8 +136,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     case 40: // The Down Arrow key or button.
                     case 37: // The Left Arrow key or button.
                     case 39: // The Right Arrow key or button.
-                    case 8: // The Back key or button.
-                    case 13: // The Enter key or button.
+                    // case 8: // The Back key or button.
+                    // case 13: // The Enter key or button.
                         shortcutList.Add(Code);
                         break;
                     default:

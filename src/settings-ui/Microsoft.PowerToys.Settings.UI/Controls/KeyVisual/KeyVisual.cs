@@ -25,10 +25,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty ContentProperty = DependencyProperty.Register("Content", typeof(object), typeof(KeyVisual), new PropertyMetadata(default(string), OnContentChanged));
 
+        public bool RenderSmall
+        {
+            get => (bool)GetValue(RenderSmallStyleProperty);
+            set => SetValue(RenderSmallStyleProperty, value);
+        }
+
+        public static readonly DependencyProperty RenderSmallStyleProperty = DependencyProperty.Register("RenderSmall", typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnRenderSmallChanged));
+
         public KeyVisual()
         {
             this.DefaultStyleKey = typeof(KeyVisual);
-            this.Style = (Style)App.Current.Resources["DefaultKeyVisualStyle"];
+            this.Style = GetStyleSize("TextKeyVisualStyle");
         }
 
         protected override void OnApplyTemplate()
@@ -40,6 +48,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         private static void OnContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((KeyVisual)d).Update();
+        }
+
+        private static void OnRenderSmallChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((KeyVisual)d).Update();
         }
@@ -57,42 +70,67 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (_keyVisual.Content.GetType() == typeof(string))
                 {
-                    _keyVisual.Style = (Style)App.Current.Resources["DefaultKeyVisualStyle"];
+                    _keyVisual.Style = GetStyleSize("TextKeyVisualStyle");
                     _keyVisual._keyPresenter.Content = _keyVisual.Content;
                 }
                 else
                 {
-                    IconElement icon;
+                    _keyVisual.Style = GetStyleSize("IconKeyVisualStyle");
 
                     switch ((int)_keyVisual.Content)
                      {
+                        /* We can enable other glyphs in the future
                         case 13: // The Enter key or button.
-                            icon = new FontIcon() { Glyph = "\uE751" }; _keyVisual.Style = (Style)App.Current.Resources["WideIconKeyVisualStyle"]; break;
+                            _keyVisual._keyPresenter.Content = "\uE751"; break;
 
                         case 8: // The Back key or button.
-                            icon = new FontIcon() { Glyph = "\uE750" }; _keyVisual.Style = (Style)App.Current.Resources["WideIconKeyVisualStyle"]; break;
+                            _keyVisual._keyPresenter.Content = "\uE750"; break;
 
                         case 16: // The right Shift key or button.
                         case 160: // The left Shift key or button.
                         case 161: // The Shift key or button.
-                            icon = new FontIcon() { Glyph = "\uE752" }; _keyVisual.Style = (Style)App.Current.Resources["WideIconKeyVisualStyle"]; break;
+                            _keyVisual._keyPresenter.Content = "\uE752"; break; */
+
+                        case 38: _keyVisual._keyPresenter.Content = "\uE0E4"; break; // The Up Arrow key or button.
+                        case 40: _keyVisual._keyPresenter.Content = "\uE0E5"; break; // The Down Arrow key or button.
+                        case 37: _keyVisual._keyPresenter.Content = "\uE0E2"; break; // The Left Arrow key or button.
+                        case 39: _keyVisual._keyPresenter.Content = "\uE0E3"; break; // The Right Arrow key or button.
 
                         case 91: // The left Windows key
                         case 92: // The right Windows key
+                            PathIcon winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M9,17V9h8v8ZM0,17V9H8v8ZM9,8V0h8V8ZM0,8V0H8V8Z"" />") as PathIcon;
+                            winIcon.HorizontalAlignment = HorizontalAlignment.Center;
+                            winIcon.VerticalAlignment = VerticalAlignment.Center;
 
-                            icon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M9,17V9h8v8ZM0,17V9H8v8ZM9,8V0h8V8ZM0,8V0H8V8Z"" />") as PathIcon;
-                            _keyVisual.Style = (Style)App.Current.Resources["IconKeyVisualStyle"]; break;
-
-                        case 38: icon = new FontIcon() { Glyph = "\uE0E4" }; _keyVisual.Style = (Style)App.Current.Resources["IconKeyVisualStyle"]; break; // The Up Arrow key or button.
-                        case 40: icon = new FontIcon() { Glyph = "\uE0E5" }; _keyVisual.Style = (Style)App.Current.Resources["IconKeyVisualStyle"]; break; // The Down Arrow key or button.
-                        case 37: icon = new FontIcon() { Glyph = "\uE0E2" }; _keyVisual.Style = (Style)App.Current.Resources["IconKeyVisualStyle"]; break;  // The Left Arrow key or button.
-                        case 39: icon = new FontIcon() { Glyph = "\uE0E3" }; _keyVisual.Style = (Style)App.Current.Resources["IconKeyVisualStyle"]; break; // The Right Arrow key or button.
-
-                        default: icon = new FontIcon() { Glyph = ((VirtualKey)_keyVisual.Content).ToString() }; _keyVisual.Style = (Style)App.Current.Resources["DefaultKeyVisualStyle"]; break;
+                            _keyVisual._keyPresenter.Content = winIcon;
+                            break;
+                        default: _keyVisual._keyPresenter.Content = ((VirtualKey)_keyVisual.Content).ToString();  break;
                     }
-
-                    _keyVisual._keyPresenter.Content = icon;
                 }
+            }
+        }
+
+        public Style GetStyleSize(string styleName)
+        {
+            if (RenderSmall)
+            {
+                return (Style)App.Current.Resources["Small" + styleName];
+            }
+            else
+            {
+                return (Style)App.Current.Resources["Default" + styleName];
+            }
+        }
+
+        public double GetIconSize()
+        {
+            if (RenderSmall)
+            {
+                return (double)App.Current.Resources["SmallIconSize"];
+            }
+            else
+            {
+                return (double)App.Current.Resources["DefaultIconSize"];
             }
         }
     }

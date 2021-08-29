@@ -21,7 +21,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <local:KeyVisual Content="{Binding}" Height="36" />
+                        <local:KeyVisual IsTabStop="False" RenderSmall="True" Content="{Binding}" Height="36" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
