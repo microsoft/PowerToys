@@ -87,36 +87,15 @@
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" Margin="{StaticResource ExpanderSettingMargin}"  />
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <Grid Margin="{StaticResource ExpanderSettingMargin}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <CheckBox x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" />
-                                    <Button Content="&#xE946;" FontFamily="{ThemeResource SymbolThemeFontFamily}" HorizontalAlignment="Right">
-                                        <Button.Flyout>
-                                            <Flyout x:Name="SpanZonesAcrossMonitorsFlyout">
-                                                <Flyout.FlyoutPresenterStyle>
-                                                    <Style TargetType="FlyoutPresenter">
-                                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled"/>
-                                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
-                                                    </Style> 
-                                                </Flyout.FlyoutPresenterStyle>
-                                                <TextBlock x:Name="PrerequisitesTextBlock" TextWrapping="WrapWholeWords">
-                                                    <Run x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites" FontWeight="SemiBold" />
-                                                    <LineBreak/>
-                                                    <LineBreak/>
-                                                    <Run Text="&#xF13E;" FontWeight="SemiBold" FontFamily="Segoe MDL2 Assets"/>
-                                                    <Run x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites_dpi" />
-                                                    <LineBreak/>
-                                                    <Run Text="&#xF13E;" FontWeight="SemiBold" FontFamily="Segoe MDL2 Assets"/>
-                                                    <Run x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites_orientation"/>
-                                                </TextBlock>
-                                            </Flyout>
-                                        </Button.Flyout>
-                                    </Button>
-                                </Grid>
+                                <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" Margin="{StaticResource ExpanderSettingMargin}" >
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
+                                        <TextBlock x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites" 
+                                               FontSize="{StaticResource SecondaryTextFontSize}"
+                                               TextWrapping="WrapWholeWords"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                </CheckBox>
                             
                                 <controls:Setting  x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
