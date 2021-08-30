@@ -5,9 +5,9 @@
     <Style x:Key="DefaultTextKeyVisualStyle" TargetType="local:KeyVisual">
         <Setter Property="MinWidth" Value="56" />
         <Setter Property="MinHeight" Value="48" />
-        <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
-        <Setter Property="Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource ControlElevationBorderBrush}" />
+        <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
         <Setter Property="Padding" Value="16,8,16,8" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="HorizontalAlignment" Value="Center" />
@@ -16,21 +16,46 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:KeyVisual">
-                    <Border BorderThickness="1"
+                    <Grid>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentHolder.Background" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
+                                        <Setter Target="ContentHolder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="StateStates">
+                                <VisualState x:Name="Default"/>
+                                <VisualState x:Name="Error">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentHolder.Background" Value="Red" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
+                                        <Setter Target="ContentHolder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Border x:Name="ContentHolder"
+                                BorderThickness="1"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             CornerRadius="{ThemeResource ControlCornerRadius}"
                             Height="{TemplateBinding Height}"
                             MinWidth="{TemplateBinding MinWidth}"
                             Padding="{TemplateBinding Padding}">
-                        <ContentPresenter x:Name="KeyPresenter"
+                            <ContentPresenter x:Name="KeyPresenter"
                                           FontWeight="{TemplateBinding FontWeight}"
                                           Foreground="{TemplateBinding Foreground}"
                                           Content="{TemplateBinding Content}"
                                           FontSize="{TemplateBinding FontSize}"
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalAlignment="Center" />
-                    </Border>
+                        </Border>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

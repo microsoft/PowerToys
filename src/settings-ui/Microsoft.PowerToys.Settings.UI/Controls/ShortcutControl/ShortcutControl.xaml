@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="Microsoft.PowerToys.Settings.UI.Controls.HotkeySettingsControl"
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.ShortcutControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-   x:Name="LayoutRoot"
+    x:Name="LayoutRoot"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
@@ -31,7 +31,7 @@
                             <DataTemplate>
                                 <local:KeyVisual IsTabStop="False"
                                                  AutomationProperties.AccessibilityView="Raw"
-                                                 RenderSmall="True"
+                                                 Size="Small"
                                                  VerticalAlignment="Center"
                                                  Content="{Binding}" />
                             </DataTemplate>
@@ -44,20 +44,20 @@
                 </StackPanel>
             </Button>
         </StackPanel>
-       
 
-        <ContentDialog x:Name="ShortcutDialog"
+
+        <!--    <ContentDialog x:Name="ShortcutDialog"
                        Title="Activation shortcut"
                        PrimaryButtonText="Save"
                        CloseButtonText="Cancel"
                        HorizontalAlignment="Stretch"
                        HorizontalContentAlignment="Stretch"
-                       PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+                       PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
                        PrimaryButtonClick="ShortcutDialog_PrimaryButtonClick"
                        Closing="ShortcutDialog_Closing"
                        Opened="ShortcutDialog_Opened"
                        Visibility="Collapsed">
-            <!-- Visibility property can be removed once https://github.com/microsoft/microsoft-ui-xaml/pull/5736 is merged and we can move to WinUI 2.7 -->
+ 
             <StackPanel Orientation="Vertical"
                         Spacing="24"
                         MinWidth="480">
@@ -74,6 +74,7 @@
                         <DataTemplate>
                             <local:KeyVisual AutomationProperties.AccessibilityView="Raw"
                                              Height="56"
+                                             Size="Normal"
                                              IsTabStop="False"
                                              Content="{Binding}" />
                         </DataTemplate>
@@ -82,12 +83,12 @@
 
                 <TextBlock x:Name="WarningLabel" 
                            TextWrapping="WrapWholeWords"
-                           Style="{StaticResource SecondaryTextStyle}" >
+                           Style="{StaticResource SecondaryTextStyle}">
                         <Run Text="Only shortcuts with the with the following hotkeys are valid:"/><LineBreak/>
                         <Run Text="Windows key, Ctrl, Alt and Shift"/>
                 </TextBlock>
               
             </StackPanel>
-        </ContentDialog>
+        </ContentDialog> -->
     </Grid>
 </UserControl>

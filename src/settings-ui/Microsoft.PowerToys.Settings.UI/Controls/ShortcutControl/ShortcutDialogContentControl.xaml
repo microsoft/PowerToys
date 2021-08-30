@@ -1,0 +1,45 @@
+﻿<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.ShortcutDialogContentControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    mc:Ignorable="d"
+    x:Name="ShortcutContentControl">
+
+    <Grid>
+        <StackPanel Orientation="Vertical"
+                        Spacing="24"
+                        MinWidth="480">
+            <TextBlock x:Uid="Activation_Shortcut_Description" />
+            <ItemsControl x:Name="KeysControl"
+                          ItemsSource="{x:Bind Keys, Mode=OneWay}"
+                              HorizontalAlignment="Center"
+                              Margin="0,12,0,12">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="8"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <local:KeyVisual AutomationProperties.AccessibilityView="Raw"
+                                             Height="56"
+                                             Size="Normal"
+                                             IsError="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                                             IsTabStop="False"
+                                             Content="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <toolkitcontrols:MarkdownTextBlock x:Name="WarningLabel"
+                                        x:Uid="Activation_Shortcut_Warning"
+                                        TextWrapping="WrapWholeWords"
+                                        FontSize="12"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

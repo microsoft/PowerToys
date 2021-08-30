@@ -5,6 +5,7 @@
 using System;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Windows.ApplicationModel.Resources;
 using Windows.System.Diagnostics;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -14,7 +15,7 @@ using Windows.UI.Xaml.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public sealed partial class HotkeySettingsControl : UserControl, IDisposable
+    public sealed partial class ShortcutControl : UserControl, IDisposable
     {
         private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
         private bool _shiftKeyDownOnEntering;
@@ -31,8 +32,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public string Keys { get; set; }
 
-        public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("Enabled", typeof(bool), typeof(HotkeySettingsControl), null);
-        public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register("HotkeySettings", typeof(HotkeySettings), typeof(HotkeySettingsControl), null);
+        public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("Enabled", typeof(bool), typeof(ShortcutControl), null);
+        public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register("HotkeySettings", typeof(HotkeySettings), typeof(ShortcutControl), null);
+
+        private ShortcutDialogContentControl c = new ShortcutDialogContentControl();
+        private ContentDialog shortcutDialog;
 
         public bool Enabled
         {
@@ -71,22 +75,41 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     hotkeySettings = value;
                     SetValue(HotkeySettingsProperty, value);
                     PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
-                    KeysControl.ItemsSource = HotkeySettings.GetKeysList();
+                    c.Keys = HotkeySettings.GetKeysList();
                 }
             }
         }
 
-        public HotkeySettingsControl()
+        public ShortcutControl()
         {
             InitializeComponent();
             internalSettings = new HotkeySettings();
 
-            this.Unloaded += HotkeySettingsControl_Unloaded;
+            this.Unloaded += ShortcutControl_Unloaded;
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
+            ResourceLoader resourceLoader = ResourceLoader.GetForCurrentView();
+
+            // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
+            shortcutDialog = new ContentDialog
+            {
+                XamlRoot = this.XamlRoot,
+                Title = resourceLoader.GetString("Activation_Shortcut_Title"),
+                Content = c,
+                PrimaryButtonText = resourceLoader.GetString("Activation_Shortcut_Save"),
+                CloseButtonText = resourceLoader.GetString("Activation_Shortcut_Cancel"),
+                DefaultButton = ContentDialogButton.Primary,
+            };
+            shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
+            shortcutDialog.Opened += ShortcutDialog_Opened;
+            shortcutDialog.Closing += ShortcutDialog_Closing;
         }
 
-        private void HotkeySettingsControl_Unloaded(object sender, RoutedEventArgs e)
+        private void ShortcutControl_Unloaded(object sender, RoutedEventArgs e)
         {
+            shortcutDialog.PrimaryButtonClick -= ShortcutDialog_PrimaryButtonClick;
+            shortcutDialog.Opened -= ShortcutDialog_Opened;
+            shortcutDialog.Closing -= ShortcutDialog_Closing;
+
             // Dispose the HotkeySettingsControlHook object to terminate the hook threads when the textbox is unloaded
             hook.Dispose();
         }
@@ -117,7 +140,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     break;
                 case Windows.System.VirtualKey.Escape:
                     internalSettings = new HotkeySettings();
-                    ShortcutDialog.IsPrimaryButtonEnabled = false;
+                    shortcutDialog.IsPrimaryButtonEnabled = false;
                     return;
                 default:
                     internalSettings.Code = matchValueCode;
@@ -219,11 +242,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 KeyEventHandler(key, true, key);
 
-                KeysControl.ItemsSource = internalSettings.GetKeysList();
+                c.Keys = internalSettings.GetKeysList();
 
                 if (internalSettings.GetKeysList().Count < 2)
                 {
-                    ShortcutDialog.IsPrimaryButtonEnabled = false;
+                    shortcutDialog.IsPrimaryButtonEnabled = false;
+                    c.IsError = true;
                 }
 
                 // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
@@ -233,13 +257,17 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                     if (!ComboIsValid())
                     {
-                        ShortcutDialog.IsPrimaryButtonEnabled = false;
-                        WarningLabel.Style = (Style)App.Current.Resources["SecondaryWarningTextStyle"];
+                        shortcutDialog.IsPrimaryButtonEnabled = false;
+                        c.IsError = true;
+
+                        // WarningLabel.Style = (Style)App.Current.Resources["SecondaryWarningTextStyle"];
                     }
                     else
                     {
-                        ShortcutDialog.IsPrimaryButtonEnabled = true;
-                        WarningLabel.Style = (Style)App.Current.Resources["SecondaryTextStyle"];
+                        shortcutDialog.IsPrimaryButtonEnabled = true;
+                        c.IsError = false;
+
+                        // WarningLabel.Style = (Style)App.Current.Resources["SecondaryTextStyle"];
                     }
                 }
             });
@@ -277,10 +305,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            KeysControl.ItemsSource = null;
-            KeysControl.ItemsSource = HotkeySettings.GetKeysList();
-            ShortcutDialog.Visibility = Visibility.Visible; // This property can be removed once https://github.com/microsoft/microsoft-ui-xaml/pull/5736 is merged and we can move to WinUI 2.7
-            await ShortcutDialog.ShowAsync();
+            c.Keys = null;
+            c.Keys = HotkeySettings.GetKeysList();
+
+            shortcutDialog.XamlRoot = this.XamlRoot;
+            await shortcutDialog.ShowAsync();
         }
 
 #pragma warning disable CA1801 // Review unused parameters
@@ -293,8 +322,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             PreviewKeysControl.ItemsSource = hotkeySettings.GetKeysList();
-            ShortcutDialog.Hide();
-            ShortcutDialog.Visibility = Visibility.Collapsed; // This property can be removed once https://github.com/microsoft/microsoft-ui-xaml/pull/5736 is merged and we can move to WinUI 2.7
+            shortcutDialog.Hide();
         }
 
         private bool ComboIsValid()

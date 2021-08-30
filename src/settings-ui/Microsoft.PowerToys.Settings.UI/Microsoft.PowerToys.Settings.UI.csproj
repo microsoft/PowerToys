@@ -95,13 +95,16 @@
     </Compile>
     <Compile Include="Behaviors\NavigationViewHeaderBehavior.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderMode.cs" />
-    <Compile Include="Controls\HotkeySettingsControl.xaml.cs">
-      <DependentUpon>HotkeySettingsControl.xaml</DependentUpon>
+    <Compile Include="Controls\ShortcutControl\ShortcutControl.xaml.cs">
+      <DependentUpon>ShortcutControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\KeyVisual\KeyVisual.cs" />
     <Compile Include="Controls\SettingExpander\SettingExpander.cs" />
     <Compile Include="Controls\SettingsGroup\SettingsGroup.cs" />
     <Compile Include="Controls\Setting\Setting.cs" />
+    <Compile Include="Controls\ShortcutControl\ShortcutDialogContentControl.xaml.cs">
+      <DependentUpon>ShortcutDialogContentControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ShortcutTextControl.xaml.cs">
       <DependentUpon>ShortcutTextControl.xaml</DependentUpon>
     </Compile>
@@ -302,7 +305,7 @@
     <PRIResource Include="Strings\*\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Controls\HotkeySettingsControl.xaml">
+    <Page Include="Controls\ShortcutControl\ShortcutControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -315,6 +318,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\Setting\Setting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ShortcutControl\ShortcutDialogContentControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

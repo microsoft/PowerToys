@@ -20,9 +20,4 @@
         <Setter Property="FontSize" Value="{StaticResource SecondaryTextFontSize}"/>
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
     </Style>
-    
-    <Style x:Key="SecondaryWarningTextStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource SecondaryTextFontSize}"/>
-        <Setter Property="Foreground" Value="Red"/>
-    </Style>
 </ResourceDictionary>

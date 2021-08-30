@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -11,6 +10,10 @@ using Windows.UI.Xaml.Markup;
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     [TemplatePart(Name = KeyPresenter, Type = typeof(ContentPresenter))]
+    [TemplateVisualState(Name = "Normal", GroupName = "CommonStates")]
+    [TemplateVisualState(Name = "Disabled", GroupName = "CommonStates")]
+    [TemplateVisualState(Name = "Default", GroupName = "StateStates")]
+    [TemplateVisualState(Name = "Error", GroupName = "StateStates")]
     public sealed class KeyVisual : Control
     {
         private const string KeyPresenter = "KeyPresenter";
@@ -25,13 +28,21 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty ContentProperty = DependencyProperty.Register("Content", typeof(object), typeof(KeyVisual), new PropertyMetadata(default(string), OnContentChanged));
 
-        public bool RenderSmall
+        public Size Size
         {
-            get => (bool)GetValue(RenderSmallStyleProperty);
-            set => SetValue(RenderSmallStyleProperty, value);
+            get => (Size)GetValue(SizeProperty);
+            set => SetValue(SizeProperty, value);
         }
 
-        public static readonly DependencyProperty RenderSmallStyleProperty = DependencyProperty.Register("RenderSmall", typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnRenderSmallChanged));
+        public static readonly DependencyProperty SizeProperty = DependencyProperty.Register("Size", typeof(Size), typeof(KeyVisual), new PropertyMetadata(default(Size), OnSizeChanged));
+
+        public bool IsError
+        {
+            get => (bool)GetValue(IsErrorProperty);
+            set => SetValue(IsErrorProperty, value);
+        }
+
+        public static readonly DependencyProperty IsErrorProperty = DependencyProperty.Register("IsError", typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnIsErrorChanged));
 
         public KeyVisual()
         {
@@ -41,9 +52,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         protected override void OnApplyTemplate()
         {
+            IsEnabledChanged -= KeyVisual_IsEnabledChanged;
             _keyVisual = (KeyVisual)this;
             _keyPresenter = (ContentPresenter)_keyVisual.GetTemplateChild(KeyPresenter);
             Update();
+            SetEnabledState();
+            SetErrorState();
+            IsEnabledChanged += KeyVisual_IsEnabledChanged;
             base.OnApplyTemplate();
         }
 
@@ -52,9 +67,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             ((KeyVisual)d).Update();
         }
 
-        private static void OnRenderSmallChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((KeyVisual)d).Update();
+        }
+
+        private static void OnIsErrorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((KeyVisual)d).SetErrorState();
         }
 
         private void Update()
@@ -78,7 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     _keyVisual.Style = GetStyleSize("IconKeyVisualStyle");
 
                     switch ((int)_keyVisual.Content)
-                     {
+                    {
                         /* We can enable other glyphs in the future
                         case 13: // The Enter key or button.
                             _keyVisual._keyPresenter.Content = "\uE751"; break;
@@ -104,7 +124,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                             _keyVisual._keyPresenter.Content = winIcon;
                             break;
-                        default: _keyVisual._keyPresenter.Content = ((VirtualKey)_keyVisual.Content).ToString();  break;
+                        default: _keyVisual._keyPresenter.Content = ((VirtualKey)_keyVisual.Content).ToString(); break;
                     }
                 }
             }
@@ -112,7 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public Style GetStyleSize(string styleName)
         {
-            if (RenderSmall)
+            if (Size == Size.Small)
             {
                 return (Style)App.Current.Resources["Small" + styleName];
             }
@@ -121,5 +141,26 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return (Style)App.Current.Resources["Default" + styleName];
             }
         }
+
+        private void KeyVisual_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            SetEnabledState();
+        }
+
+        private void SetErrorState()
+        {
+            VisualStateManager.GoToState(this, IsError ? "Error" : "Default", true);
+        }
+
+        private void SetEnabledState()
+        {
+            VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
+        }
+    }
+
+    public enum Size
+    {
+        Small,
+        Normal,
     }
 }
