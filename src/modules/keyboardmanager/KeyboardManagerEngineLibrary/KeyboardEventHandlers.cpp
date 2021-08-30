@@ -578,25 +578,39 @@ namespace KeyboardEventHandlers
                                 ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
                             }
 
-                            Shortcut origin = it->first;
-                            origin.actionKey = data->lParam->vkCode;
-
                             size_t key_count;
                             LPINPUT keyEventList = nullptr;
-                            if (reMap.find(origin) != reMap.end())
+                            
+                            // Check if a new remapping should be applied
+                            Shortcut currentlyPressed = it->first;
+                            currentlyPressed.actionKey = data->lParam->vkCode;
+                            if (reMap.find(currentlyPressed) != reMap.end())
                             {
+                                auto& newRemapping = reMap[currentlyPressed];
                                 Shortcut from = std::get<Shortcut>(it->second.targetShortcut);
-                                Shortcut to = std::get<Shortcut>(reMap[origin].targetShortcut);
-                                key_count = from.Size() - 1 + to.Size() - 1 - from.GetCommonModifiersCount(to) + 1;
-                                keyEventList = new INPUT[key_count]();
-                                memset(keyEventList, 0, sizeof(keyEventList));
+                                if (newRemapping.RemapToKey())
+                                {
+                                    DWORD to = std::get<0>(newRemapping.targetShortcut);
+                                    key_count = from.Size() - 1 + 1;
+                                    keyEventList = new INPUT[key_count]();
+                                    memset(keyEventList, 0, sizeof(keyEventList));
+                                    int i = 0;
+                                    Helpers::SetModifierKeyEvents(from, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)to, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                }else
+                                {
+                                    Shortcut to = std::get<Shortcut>(newRemapping.targetShortcut);
+                                    key_count = from.Size() - 1 + to.Size() - 1 - from.GetCommonModifiersCount(to) + 1;
+                                    keyEventList = new INPUT[key_count]();
+                                    memset(keyEventList, 0, sizeof(keyEventList));
 
-                                int i = 0;
-                                Helpers::SetModifierKeyEvents(from, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, to);
-                                Helpers::SetModifierKeyEvents(to, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, from);
+                                    int i = 0;
+                                    Helpers::SetModifierKeyEvents(from, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, to);
+                                    Helpers::SetModifierKeyEvents(to, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, from);
 
-                                Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)to.actionKey, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                reMap[origin].isShortcutInvoked = true;
+                                    Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)to.actionKey, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    newRemapping.isShortcutInvoked = true;
+                                }
                             }
                             else
                             {
