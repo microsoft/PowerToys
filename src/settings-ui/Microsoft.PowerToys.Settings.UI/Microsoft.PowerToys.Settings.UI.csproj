@@ -105,11 +105,8 @@
     <Compile Include="Controls\ShortcutControl\ShortcutDialogContentControl.xaml.cs">
       <DependentUpon>ShortcutDialogContentControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ShortcutTextControl.xaml.cs">
-      <DependentUpon>ShortcutTextControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
-      <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
+ <Compile Include="Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml.cs">
+      <DependentUpon>ShortcutWithTextLabelControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\SettingsPageControl\SettingsPageControl.xaml.cs">
       <DependentUpon>SettingsPageControl.xaml</DependentUpon>
@@ -325,11 +322,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\ShortcutTextControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\ShortcutVisualControl.xaml">
+    <Page Include="Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

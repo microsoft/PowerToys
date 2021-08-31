@@ -5,8 +5,9 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-      mc:Ignorable="d">
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    mc:Ignorable="d">
 
     <controls:OOBEPageControl ModuleTitle="{x:Bind ViewModel.ModuleName}"
                                   ModuleImageSource="{x:Bind ViewModel.PreviewImageSource}"
@@ -17,12 +18,12 @@
                 <TextBlock x:Uid="Oobe_HowToLaunch"
                            Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <controls:ShortcutTextControl x:Uid="Oobe_ImageResizer_HowToLaunch" />
+                <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_ImageResizer_HowToLaunch" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            Style="{ThemeResource OobeSubtitleStyle}"/>
 
-                <controls:ShortcutTextControl x:Uid="Oobe_ImageResizer_TipsAndTricks" />
+                <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_ImageResizer_TipsAndTricks" />
 
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="OOBE_Settings"

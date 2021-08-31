@@ -28,7 +28,7 @@
                     <DataTemplate>
                         <local:KeyVisual AutomationProperties.AccessibilityView="Raw"
                                              Height="56"
-                                             Size="Normal"
+                                             VisualType="Large"
                                              IsError="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                                              IsTabStop="False"
                                              Content="{Binding}" />

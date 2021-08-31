@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel.Design;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -28,13 +29,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty ContentProperty = DependencyProperty.Register("Content", typeof(object), typeof(KeyVisual), new PropertyMetadata(default(string), OnContentChanged));
 
-        public Size Size
+        public VisualType VisualType
         {
-            get => (Size)GetValue(SizeProperty);
-            set => SetValue(SizeProperty, value);
+            get => (VisualType)GetValue(VisualTypeProperty);
+            set => SetValue(VisualTypeProperty, value);
         }
 
-        public static readonly DependencyProperty SizeProperty = DependencyProperty.Register("Size", typeof(Size), typeof(KeyVisual), new PropertyMetadata(default(Size), OnSizeChanged));
+        public static readonly DependencyProperty VisualTypeProperty = DependencyProperty.Register("VisualType", typeof(VisualType), typeof(KeyVisual), new PropertyMetadata(default(VisualType), OnSizeChanged));
 
         public bool IsError
         {
@@ -132,9 +133,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public Style GetStyleSize(string styleName)
         {
-            if (Size == Size.Small)
+            if (VisualType == VisualType.Small)
             {
                 return (Style)App.Current.Resources["Small" + styleName];
+            }
+            else if (VisualType == VisualType.SmallOutline)
+            {
+                return (Style)App.Current.Resources["SmallOutline" + styleName];
             }
             else
             {
@@ -158,9 +163,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
     }
 
-    public enum Size
+    public enum VisualType
     {
         Small,
-        Normal,
+        SmallOutline,
+        Large,
     }
 }

@@ -32,7 +32,7 @@
                             <DataTemplate>
                                 <local:KeyVisual IsTabStop="False"
                                                  AutomationProperties.AccessibilityView="Raw"
-                                                 Size="Small"
+                                                 VisualType="Small"
                                                  VerticalAlignment="Center"
                                                  Content="{Binding}" />
                             </DataTemplate>

@@ -71,6 +71,19 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
 
+    <Style x:Key="SmallOutlineTextKeyVisualStyle" TargetType="local:KeyVisual" BasedOn="{StaticResource DefaultTextKeyVisualStyle}">
+        <Setter Property="MinWidth" Value="40" />
+        <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="8,0,8,2" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+
     <Style x:Key="DefaultIconKeyVisualStyle" TargetType="local:KeyVisual" BasedOn="{StaticResource DefaultTextKeyVisualStyle}">
         <Setter Property="MinWidth" Value="56" />
         <Setter Property="MinHeight" Value="48" />
@@ -87,6 +100,19 @@
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="FontSize" Value="10" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="SmallOutlineIconKeyVisualStyle" TargetType="local:KeyVisual" BasedOn="{StaticResource DefaultTextKeyVisualStyle}">
+        <Setter Property="MinWidth" Value="40" />
+        <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FontSize" Value="9" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
 </ResourceDictionary>
