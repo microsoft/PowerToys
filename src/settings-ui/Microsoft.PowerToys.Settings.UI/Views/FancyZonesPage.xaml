@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.FancyZonesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -73,7 +73,7 @@
                 </controls:SettingsGroup>
 
 
-                <controls:SettingsGroup x:Uid="FancyZones_Zones" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <controls:SettingsGroup x:Uid="FancyZones_Zones" x:Name="ZonesSettingsGroup" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
                             <controls:Setting x:Uid="FancyZones_ZoneBehavior_GroupSettings" Icon="&#xE620;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
@@ -87,8 +87,19 @@
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" Margin="{StaticResource ExpanderSettingMargin}"  />
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <CheckBox x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" Margin="{StaticResource ExpanderSettingMargin}"  />
-                               
+                                <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" 
+                                          Margin="{StaticResource ExpanderSettingMargin}"
+                                          AutomationProperties.Name="{Binding ElementName=SpanZonesAcrossMonitorsPrerequisitesTitle, Path=Text}">
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock x:Name="SpanZonesAcrossMonitorsPrerequisitesTitle" x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
+                                        <controls:TextBlockControl x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites"
+                                            FontSize="{StaticResource SecondaryTextFontSize}"
+                                            EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            DisabledForeground="{ThemeResource TextFillColorDisabledBrush}"
+                                            IsEnabled="{Binding ElementName=ZonesSettingsGroup, Path=IsEnabled, Mode=OneWay}"/>
+                                    </StackPanel>
+                                </CheckBox>
+                            
                                 <controls:Setting  x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <ComboBox SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">

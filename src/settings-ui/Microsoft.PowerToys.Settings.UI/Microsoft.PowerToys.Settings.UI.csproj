@@ -115,6 +115,9 @@
       <DependentUpon>OOBEPageControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\SettingsPageControl\PageLink.cs" />
+    <Compile Include="Controls\TextBlockControl.xaml.cs">
+      <DependentUpon>TextBlockControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converters\AwakeModeToBoolConverter.cs" />
     <Compile Include="Converters\ImageResizerFitToStringConverter.cs" />
     <Compile Include="Converters\ImageResizerUnitToStringConverter.cs" />
@@ -331,6 +334,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\OOBEPageControl\OOBEPageControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TextBlockControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
