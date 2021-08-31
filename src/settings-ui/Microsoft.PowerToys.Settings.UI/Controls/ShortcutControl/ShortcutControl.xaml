@@ -17,7 +17,8 @@
                     Background="Transparent"
                     BorderBrush="Transparent"
                     Click="OpenDialogButton_Click" >
-                <StackPanel Orientation="Horizontal" Spacing="16">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="16">
                     <ItemsControl x:Name="PreviewKeysControl"
                                   IsEnabled="{Binding ElementName=EditButton, Path=IsEnabled}"
                                   VerticalAlignment="Center"
@@ -44,51 +45,5 @@
                 </StackPanel>
             </Button>
         </StackPanel>
-
-
-        <!--    <ContentDialog x:Name="ShortcutDialog"
-                       Title="Activation shortcut"
-                       PrimaryButtonText="Save"
-                       CloseButtonText="Cancel"
-                       HorizontalAlignment="Stretch"
-                       HorizontalContentAlignment="Stretch"
-                       PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
-                       PrimaryButtonClick="ShortcutDialog_PrimaryButtonClick"
-                       Closing="ShortcutDialog_Closing"
-                       Opened="ShortcutDialog_Opened"
-                       Visibility="Collapsed">
- 
-            <StackPanel Orientation="Vertical"
-                        Spacing="24"
-                        MinWidth="480">
-                <TextBlock Text="Press a combination of keys to change this shortcut" />
-                <ItemsControl x:Name="KeysControl"
-                              HorizontalAlignment="Center"
-                              Margin="0,12,0,12">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="8"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <local:KeyVisual AutomationProperties.AccessibilityView="Raw"
-                                             Height="56"
-                                             Size="Normal"
-                                             IsTabStop="False"
-                                             Content="{Binding}" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <TextBlock x:Name="WarningLabel" 
-                           TextWrapping="WrapWholeWords"
-                           Style="{StaticResource SecondaryTextStyle}">
-                        <Run Text="Only shortcuts with the with the following hotkeys are valid:"/><LineBreak/>
-                        <Run Text="Windows key, Ctrl, Alt and Shift"/>
-                </TextBlock>
-              
-            </StackPanel>
-        </ContentDialog> -->
     </Grid>
 </UserControl>

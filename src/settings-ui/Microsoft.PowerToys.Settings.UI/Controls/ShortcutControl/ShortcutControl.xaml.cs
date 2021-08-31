@@ -9,6 +9,7 @@ using Windows.ApplicationModel.Resources;
 using Windows.System.Diagnostics;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -75,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     hotkeySettings = value;
                     SetValue(HotkeySettingsProperty, value);
                     PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
+                    AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
                     c.Keys = HotkeySettings.GetKeysList();
                 }
             }
@@ -244,9 +246,25 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                 c.Keys = internalSettings.GetKeysList();
 
-                if (internalSettings.GetKeysList().Count < 2)
+                if (internalSettings.GetKeysList().Count == 0)
                 {
-                    DisableKeys();
+                    // Empty, disable save button
+                    shortcutDialog.IsPrimaryButtonEnabled = false;
+                }
+                else if (internalSettings.GetKeysList().Count == 1)
+                {
+                    // 1 key, disable save button
+                    shortcutDialog.IsPrimaryButtonEnabled = false;
+
+                    // Check if the one key is a hotkey
+                    if (internalSettings.Shift || internalSettings.Win || internalSettings.Alt || internalSettings.Ctrl)
+                    {
+                        c.IsError = false;
+                    }
+                    else
+                    {
+                        c.IsError = true;
+                    }
                 }
 
                 // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
@@ -340,6 +358,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             PreviewKeysControl.ItemsSource = hotkeySettings.GetKeysList();
+            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
             shortcutDialog.Hide();
         }
 
