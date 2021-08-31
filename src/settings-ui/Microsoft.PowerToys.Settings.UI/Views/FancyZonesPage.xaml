@@ -87,14 +87,16 @@
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" Margin="{StaticResource ExpanderSettingMargin}"  />
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" Margin="{StaticResource ExpanderSettingMargin}" >
+                                <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" 
+                                          Margin="{StaticResource ExpanderSettingMargin}"
+                                          AutomationProperties.Name="{Binding ElementName=SpanZonesAcrossMonitorsPrerequisitesTitle, Path=Text}">
                                     <StackPanel Orientation="Vertical">
-                                        <TextBlock x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
+                                        <TextBlock x:Name="SpanZonesAcrossMonitorsPrerequisitesTitle" x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
                                         <controls:TextBlockControl x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites"
-                                                FontSize="{StaticResource SecondaryTextFontSize}"
-                                                EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                DisabledForeground="{ThemeResource TextFillColorDisabledBrush}"
-                                                IsEnabled="{Binding ElementName=ZonesSettingsGroup, Path=IsEnabled, Mode=OneWay}"/>
+                                            FontSize="{StaticResource SecondaryTextFontSize}"
+                                            EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            DisabledForeground="{ThemeResource TextFillColorDisabledBrush}"
+                                            IsEnabled="{Binding ElementName=ZonesSettingsGroup, Path=IsEnabled, Mode=OneWay}"/>
                                     </StackPanel>
                                 </CheckBox>
                             
