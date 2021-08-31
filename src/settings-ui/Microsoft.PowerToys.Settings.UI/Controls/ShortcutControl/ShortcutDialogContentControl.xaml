@@ -14,7 +14,8 @@
                         Spacing="24"
                         MinWidth="480">
             <TextBlock x:Uid="Activation_Shortcut_Description" />
-            <ItemsControl x:Name="KeysControl"
+   
+                <ItemsControl x:Name="KeysControl"
                           ItemsSource="{x:Bind Keys, Mode=OneWay}"
                               HorizontalAlignment="Center"
                               Margin="0,12,0,12">
@@ -34,12 +35,13 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-
+          
             <toolkitcontrols:MarkdownTextBlock x:Name="WarningLabel"
-                                        x:Uid="Activation_Shortcut_Warning"
-                                        TextWrapping="WrapWholeWords"
-                                        FontSize="12"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                               x:Uid="Activation_Shortcut_Warning"
+                                               TextWrapping="WrapWholeWords"
+                                               FontSize="12"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               Background="Transparent"/>
         </StackPanel>
     </Grid>
 </UserControl>

@@ -246,8 +246,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                 if (internalSettings.GetKeysList().Count < 2)
                 {
-                    shortcutDialog.IsPrimaryButtonEnabled = false;
-                    c.IsError = true;
+                    DisableKeys();
                 }
 
                 // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
@@ -255,22 +254,32 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     lastValidSettings = internalSettings.Clone();
 
-                    if (!ComboIsValid())
+                    if (!ComboIsValid(lastValidSettings))
                     {
-                        shortcutDialog.IsPrimaryButtonEnabled = false;
-                        c.IsError = true;
-
-                        // WarningLabel.Style = (Style)App.Current.Resources["SecondaryWarningTextStyle"];
+                        DisableKeys();
                     }
                     else
                     {
-                        shortcutDialog.IsPrimaryButtonEnabled = true;
-                        c.IsError = false;
-
-                        // WarningLabel.Style = (Style)App.Current.Resources["SecondaryTextStyle"];
+                        EnableKeys();
                     }
                 }
             });
+        }
+
+        private void EnableKeys()
+        {
+            shortcutDialog.IsPrimaryButtonEnabled = true;
+            c.IsError = false;
+
+            // WarningLabel.Style = (Style)App.Current.Resources["SecondaryTextStyle"];
+        }
+
+        private void DisableKeys()
+        {
+            shortcutDialog.IsPrimaryButtonEnabled = false;
+            c.IsError = true;
+
+            // WarningLabel.Style = (Style)App.Current.Resources["SecondaryWarningTextStyle"];
         }
 
         private async void Hotkey_KeyUp(int key)
@@ -290,6 +299,15 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void ShortcutDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
 #pragma warning restore CA1801 // Review unused parameters
         {
+            if (!ComboIsValid(hotkeySettings))
+            {
+                DisableKeys();
+            }
+            else
+            {
+                EnableKeys();
+            }
+
             // Reset the status on entering the hotkey each time.
             _shiftKeyDownOnEntering = false;
             _shiftToggled = false;
@@ -316,7 +334,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
 #pragma warning restore CA1801 // Review unused parameters
         {
-            if (ComboIsValid())
+            if (ComboIsValid(lastValidSettings))
             {
                 HotkeySettings = lastValidSettings.Clone();
             }
@@ -325,9 +343,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.Hide();
         }
 
-        private bool ComboIsValid()
+        private static bool ComboIsValid(HotkeySettings settings)
         {
-            if (lastValidSettings != null && (lastValidSettings.IsValid() || lastValidSettings.IsEmpty()))
+            if (settings != null && (settings.IsValid() || settings.IsEmpty()))
             {
                 return true;
             }

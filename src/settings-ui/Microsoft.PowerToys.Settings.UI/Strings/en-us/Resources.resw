@@ -1589,6 +1589,6 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
     <value>Activation shortcut</value>
   </data>
   <data name="Activation_Shortcut_Warning.Text" xml:space="preserve">
-    <value>Only shortcuts with the with the following hotkeys are valid: **Windows key**, **Ctrl**, **Alt** and **Shift**</value>
+    <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
   </data>
 </root>

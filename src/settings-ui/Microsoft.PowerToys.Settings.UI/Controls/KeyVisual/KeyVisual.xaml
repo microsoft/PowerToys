@@ -8,6 +8,7 @@
         <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
         <Setter Property="Padding" Value="16,8,16,8" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="HorizontalAlignment" Value="Center" />
@@ -32,21 +33,21 @@
                                 <VisualState x:Name="Default"/>
                                 <VisualState x:Name="Error">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentHolder.Background" Value="Red" />
-                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
-                                        <Setter Target="ContentHolder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
+                                        <Setter Target="ContentHolder.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
+                                        <Setter Target="ContentHolder.BorderBrush" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Border x:Name="ContentHolder"
-                                BorderThickness="1"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            CornerRadius="{ThemeResource ControlCornerRadius}"
-                            Height="{TemplateBinding Height}"
-                            MinWidth="{TemplateBinding MinWidth}"
-                            Padding="{TemplateBinding Padding}">
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{ThemeResource ControlCornerRadius}"
+                                Height="{TemplateBinding Height}"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                Padding="{TemplateBinding Padding}">
                             <ContentPresenter x:Name="KeyPresenter"
                                           FontWeight="{TemplateBinding FontWeight}"
                                           Foreground="{TemplateBinding Foreground}"
