@@ -18,29 +18,8 @@
                 <TextBlock x:Uid="Oobe_HowToUse"
                            Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <StackPanel Orientation="Horizontal">
-                    <ItemsControl x:Name="PreviewKeysControl"
-                              AutomationProperties.AccessibilityView="Raw"
-                              VerticalAlignment="Center"
-                              IsTabStop="False">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <controls:KeyVisual IsTabStop="False"
-                                                 AutomationProperties.AccessibilityView="Raw"
-                                                  VisualType="SmallOutline"
-                                                 VerticalAlignment="Center"
-                                                 Content="{Binding}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock x:Uid="Oobe_ColorPicker_HowToUse" VerticalAlignment="Center" />
-                </StackPanel>
-               
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_ColorPicker_HowToUse" />
+              
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            Style="{ThemeResource OobeSubtitleStyle}"/>

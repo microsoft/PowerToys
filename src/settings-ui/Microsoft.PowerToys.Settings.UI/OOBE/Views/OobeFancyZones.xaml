@@ -18,7 +18,7 @@
                 <TextBlock x:Uid="Oobe_HowToUse"
                            Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_FancyZones_HowToUse" />
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_FancyZones_HowToUse" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            Style="{ThemeResource OobeSubtitleStyle}"/>

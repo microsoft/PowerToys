@@ -17,7 +17,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-namespace Microsoft.PowerToys.Settings.UI.Controls.ShortcutControl
+namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class ShortcutWithTextLabelControl : UserControl
     {

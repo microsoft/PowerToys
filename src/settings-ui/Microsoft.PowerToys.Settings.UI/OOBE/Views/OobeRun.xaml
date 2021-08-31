@@ -17,7 +17,7 @@
                 <TextBlock x:Uid="Oobe_HowToLaunch"
                            Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_Run_HowToLaunch" />
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_Run_HowToLaunch" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks"
                            Style="{ThemeResource OobeSubtitleStyle}"/>

@@ -1,8 +1,8 @@
 ﻿<UserControl
-    x:Class="Microsoft.PowerToys.Settings.UI.Controls.ShortcutControl.ShortcutWithTextLabelControl"
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.ShortcutWithTextLabelControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls.ShortcutControl"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
@@ -11,7 +11,7 @@
     d:DesignWidth="400">
 
     <Grid>
-        <StackPanel Orientation="Horizontal" Spacing="4">
+        <StackPanel Orientation="Horizontal">
             <ItemsControl AutomationProperties.AccessibilityView="Raw"
                           ItemsSource="{x:Bind Keys}"
                           VerticalAlignment="Center"
@@ -31,7 +31,7 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBlock Text="{x:Bind Text}" VerticalAlignment="Center" />
+            <TextBlock Text="{x:Bind Text}" Margin="8,0,0,0" VerticalAlignment="Center" />
         </StackPanel>
     </Grid>
 </UserControl>
