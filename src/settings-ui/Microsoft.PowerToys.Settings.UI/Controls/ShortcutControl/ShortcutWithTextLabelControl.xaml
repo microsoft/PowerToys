@@ -6,13 +6,17 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
     <Grid>
-        <StackPanel Orientation="Horizontal">
-            <ItemsControl AutomationProperties.AccessibilityView="Raw"
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ItemsControl AutomationProperties.AccessibilityView="Raw"
                           ItemsSource="{x:Bind Keys}"
                           VerticalAlignment="Center"
                           IsTabStop="False">
@@ -31,7 +35,10 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBlock Text="{x:Bind Text}" Margin="8,0,0,0" VerticalAlignment="Center" />
-        </StackPanel>
+        <toolkitcontrols:MarkdownTextBlock Background="Transparent"
+                                           Text="{x:Bind Text}"
+                                           Margin="8,0,0,0"
+                                           Grid.Column="1"
+                                           VerticalAlignment="Center" />
     </Grid>
 </UserControl>

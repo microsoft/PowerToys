@@ -18,6 +18,10 @@
                 <TextBlock x:Uid="Oobe_HowToLaunch"
                            Style="{ThemeResource OobeSubtitleStyle}" />
 
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyMicVidControl" x:Uid="Oobe_VideoConference_ToggleMicVid" />
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyMicControl" x:Uid="Oobe_VideoConference_ToggleMic" />
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyVidControl" x:Uid="Oobe_VideoConference_ToggleMic" />
+                
                 <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_VideoConference_HowToLaunch" />
 
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">

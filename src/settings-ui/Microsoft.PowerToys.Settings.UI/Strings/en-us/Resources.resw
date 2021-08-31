@@ -1238,7 +1238,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>To select a color with more precision, **scroll the mouse wheel** to zoom in.</value>
   </data>
   <data name="Oobe_FancyZones_HowToUse.Text" xml:space="preserve">
-    <value>**Shift** + **dragging the window** to snap a window to a zone, and release the window in the desired zone.to open the FancyZones editor.</value>
+    <value>**Shift** + **drag the window** to snap a window to a zone, and release the window in the desired zone.</value>
   </data>
   <data name="Oobe_FancyZones_HowToUse_Shortcut.Text" xml:space="preserve">
     <value>to open the FancyZones editor.</value>
@@ -1292,10 +1292,14 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
     <value>Tips &amp; tricks</value>
   </data>
-  <data name="Oobe_VideoConference_HowToLaunch.Text" xml:space="preserve">
-    <value>{Win} + {N} to toggle both your microphone and video
-{Win} + {Shift} + {A} to toggle your microphone 
-{Win} + {Shift} + {O} to toggle your video</value>
+  <data name="Oobe_VideoConference_ToggleMicVid.Text" xml:space="preserve">
+    <value>to toggle both your microphone and video</value>
+  </data>
+  <data name="Oobe_VideoConference_ToggleMic.Text" xml:space="preserve">
+    <value>to toggle your microphone</value>
+  </data>
+  <data name="Oobe_VideoConference_ToggleVid.Text" xml:space="preserve">
+    <value>to toggle your video</value>
   </data>
   <data name="Oobe_ColorPicker" xml:space="preserve">
     <value>Color Picker</value>
