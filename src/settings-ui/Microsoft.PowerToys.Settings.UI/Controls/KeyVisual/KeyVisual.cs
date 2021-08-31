@@ -85,8 +85,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine(_keyVisual.Style);
-
             if (_keyVisual.Content != null)
             {
                 if (_keyVisual.Content.GetType() == typeof(string))
