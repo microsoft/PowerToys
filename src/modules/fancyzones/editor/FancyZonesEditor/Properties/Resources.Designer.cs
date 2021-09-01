@@ -448,6 +448,29 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 
+        ///     - [Shift]+S to split currently focused zone.
+        ///     - Ctrl+Tab to focus zones/resizers.
+        ///     - Tab to cycle zones and resizers.
+        ///     - Delete to remove the focused resizer.
+        ///     - Arrows to move the focused resizer..
+        /// </summary>
+        public static string KeyboardControlsDescription {
+            get {
+                return ResourceManager.GetString("KeyboardControlsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keyboard Navigation:.
+        /// </summary>
+        public static string KeyboardControlsName {
+            get {
+                return ResourceManager.GetString("KeyboardControlsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create layouts that have overlapping zones.
         /// </summary>
         public static string Layout_Canvas_Description {

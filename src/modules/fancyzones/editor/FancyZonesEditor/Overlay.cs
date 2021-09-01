@@ -253,9 +253,18 @@ namespace FancyZonesEditor
 
         public void FocusEditor()
         {
-            if (_editorLayout != null && _editorLayout is CanvasEditor canvasEditor)
+            if (_editorLayout == null)
+            {
+                return;
+            }
+
+            if (_editorLayout is CanvasEditor canvasEditor)
             {
                 canvasEditor.FocusZone();
+            }
+            else if (_editorLayout is GridEditor gridEditor)
+            {
+                gridEditor.FocusZone();
             }
         }
 
