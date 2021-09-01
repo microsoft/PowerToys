@@ -173,7 +173,7 @@ An experimental version of PowerToys (v0.46) will be released the 2nd week of Se
 
 We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
-[@Aaron-Junker](https://github.com/Aaron-Junker), [@BenConstable9](https://github.com/BenConstable9), [@davidegiacometti](https://github.com/davidegiacometti), [@dchristensen](https://github.com/dchristensen), [@dend](https://github.com/dend), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@ianjoneill](https://github.com/ianjoneill), [@jakeoeding](https://github.com/jakeoeding), [@Jay-o-Way](https://github.com/Jay-o-Way), [@jsoref](https://github.com/jsoref), [@niels9001](https://github.com/niels9001) and [@royvou](https://github.com/royvou)
+[@Aaron-Junker](https://github.com/Aaron-Junker), [@BenConstable9](https://github.com/BenConstable9), [@davidegiacometti](https://github.com/davidegiacometti), [@dchristensen](https://github.com/dchristensen), [@dend](https://github.com/dend), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@ianjoneill](https://github.com/ianjoneill), [@jakeoeding](https://github.com/jakeoeding), [@Jay-o-Way](https://github.com/Jay-o-Way), [@jsoref](https://github.com/jsoref), [@martinchrzan](https://github.com/martinchrzan), [@niels9001](https://github.com/niels9001) and [@royvou](https://github.com/royvou)
 
 #### What is being planned for v0.47
 
