@@ -1595,8 +1595,8 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   <data name="InvalidShortcut.Title" xml:space="preserve">
     <value>Invalid shortcut</value>
   </data>
-  <data name="InvalidShortcut.Message" xml:space="preserve">
-    <value>Only shortcuts that start with Windows key, Ctrl, Alt or Shift are valid.</value>
+  <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
+    <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.</value>

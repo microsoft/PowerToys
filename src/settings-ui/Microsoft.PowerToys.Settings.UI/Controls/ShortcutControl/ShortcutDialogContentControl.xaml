@@ -42,12 +42,18 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        
+
+        <StackPanel Orientation="Vertical" Grid.Row="2" Spacing="8">
         <muxc:InfoBar x:Name="Warning"
                       x:Uid="InvalidShortcut"
-                      Grid.Row="2"
                       Severity="Error"
+                      Padding="0"
                       IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                       IsClosable="False"/>
+            <toolkitcontrols:MarkdownTextBlock x:Uid="InvalidShortcutWarningLabel"
+                                               FontSize="12"
+                                               Background="Transparent"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
     </Grid>
 </UserControl>
