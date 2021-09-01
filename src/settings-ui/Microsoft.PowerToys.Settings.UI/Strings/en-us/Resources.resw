@@ -556,16 +556,13 @@
     <value>Settings theme</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
-    <value>Show in default context menu's</value>
-  </data>
-  <data name="PowerRename_Toggle_EnableOnContextMenu.Description" xml:space="preserve">
-    <value>PowerRename appears in the default context menu whenever you right-click one or multiple files</value>
+    <value>Show icon on context menu</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
-    <value>Show in extended context menu's</value>
+    <value>Appear only in extended context menu</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Description" xml:space="preserve">
-    <value>PowerRename only appears in extended context menu's (press Shift + right-click)</value>
+    <value>Press Shift + right-click on files to open the extended menu</value>
   </data>
   <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
     <value>Maximum number of items</value>
@@ -879,8 +876,8 @@
 Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the OS</comment>
   </data>
-  <data name="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Content" xml:space="preserve">
-    <value>Allow zones to span across monitors (all monitors must have the same DPI scaling)</value>
+  <data name="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Text" xml:space="preserve">
+    <value>Allow zones to span across monitors</value>
   </data>
   <data name="ImageResizer_Formatting_ActualHeight.Text" xml:space="preserve">
     <value>Actual height</value>
@@ -1597,5 +1594,7 @@ From there, simply click on a Markdown file or SVG icon in the File Explorer and
   </data>
   <data name="Activation_Shortcut_Warning.Text" xml:space="preserve">
     <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
+  <data name="FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" xml:space="preserve">
+    <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.</value>
   </data>
 </root>
