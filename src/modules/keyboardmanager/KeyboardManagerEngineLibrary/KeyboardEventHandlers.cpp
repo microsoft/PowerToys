@@ -611,6 +611,16 @@ namespace KeyboardEventHandlers
                                     Helpers::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)to.actionKey, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                     newRemapping.isShortcutInvoked = true;
                                 }
+
+                                // Remember which win key was pressed initially
+                                if (ii.GetVirtualKeyState(VK_RWIN))
+                                {
+                                    newRemapping.winKeyInvoked = ModifierKey::Right;
+                                }
+                                else if (ii.GetVirtualKeyState(VK_LWIN))
+                                {
+                                    newRemapping.winKeyInvoked = ModifierKey::Left;
+                                }
                             }
                             else
                             {
