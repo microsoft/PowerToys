@@ -1445,6 +1445,7 @@ nuget
 null
 nullopt
 nullptr
+numberbox
 NUMLOCK
 NUMPAD
 nunit

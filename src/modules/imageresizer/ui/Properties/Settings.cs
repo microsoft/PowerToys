@@ -408,7 +408,14 @@ namespace ImageResizer.Properties
             }
 
             string jsonData = _fileSystem.File.ReadAllText(SettingsPath);
-            Settings jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData)?.Properties;
+            var jsonSettings = new Settings();
+            try
+            {
+                jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData)?.Properties;
+            }
+            catch (JsonException)
+            {
+            }
 
             // Needs to be called on the App UI thread as the properties are bound to the UI.
             App.Current.Dispatcher.Invoke(() =>
