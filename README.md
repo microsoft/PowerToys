@@ -87,7 +87,7 @@ An experimental version of PowerToys (v0.46) will be released the 2nd week of Se
 
 **General**
 
-- Settings and OOBE windows updated with Fluent UX! We hope you enjoy the new modern feel of the application menus as we align our product with upcoming Windows 11 interfaces. Special thanks to @niels9001 for driving the development of this UI, along with many thanks to the various community members who offered constant feedback and adjustments to make this a truely spectacular update!
+- Settings and OOBE windows updated with Fluent UX! We hope you enjoy the new modern feel of the application menus as we align our product with upcoming Windows 11 interfaces. Special thanks to @niels9001 for driving the development of this UI, along with many thanks to the various community members who offered constant feedback and adjustments to make this a truly spectacular update!
 - Added button to settings which displays version history. Thanks @niels9001!
 - Signed PowerToysSetupCustomActions.dll.
 - Improved Update available & Update ready message severity visual. Thanks @niels9001!
@@ -115,12 +115,9 @@ An experimental version of PowerToys (v0.46) will be released the 2nd week of Se
 - Fixed accessibility issue with screen reader not announcing when "Copied to Clipboard" is activated.
 - Fixed accessibility issue where user could not hover the content of the info icon using a mouse. Thanks @niels9001!
 - Fixed color picker format order not being accessible via keyboard. Thanks @niels9001!
-- Fixed accessibility issue where screen reader announces incorrect name for "Editor color format" button and not announcint "Toggle switch" button at all. Thanks @niels9001!
-
+- Fixed accessibility issue where screen reader announces incorrect name for "Editor color format" button and not announcing "Toggle switch" button at all. Thanks @niels9001!
 
 ### FancyZones
-
-FancyZones:
 
 - Adjusted "Save and apply" editor button to adjust with text size for localizations. Thanks @niels9001!
 - Fixed "Create new layout" button visibility when in high contrast mode. Thanks @niels9001!
@@ -149,18 +146,17 @@ FancyZones:
 - Updated old settings UI style on Keyboard Manager preview in OOBE. Thanks @niels9001!
 - Improved UI for KBM re-mappings list. Thanks @niels9001!
 
-
 ### PowerRename
 
 - Fixed bug where disabling the "Show in default context menu" setting only hides the icon but not the actual option to open PowerRename. Thanks @niels9001!
 - Expanding a plugin option in settings can now be toggled. Thanks @niels9001!
+- Fixed race condition causing PowerRename to crash File Explorer. Thanks @ianjoneill!
 
 ### PowerToys Run
 
 - Fixed lag caused from PowerToys running in background and invoking Alt-Tab.
 - Resolved file not found exception when loading "System.Windows.Controls.Ribbon".
 - Fixed null reference exception crash.
-- Fixed race condition causing PowerRename to crash File Explorer. Thanks @ianjoneill!
 - Fixed registry plugin load crash.
 - Fixed unauthorized access exception crash when setting registry keys for the utility.
 - Improved visibility of warnings when plugin properties are collapsed. Thanks @niels9001!
@@ -172,7 +168,7 @@ FancyZones:
 - Fixed toolbar top right vertical offset to allow users to close other app windows.
 - Fixed compatibility issues for certain systems when compiling from source.
 - Fixed toolbox from persisting on screen.
-- Fixed microphone unmuting when changing Video Conference Mute toolbar position.
+- Fixed microphone un-muting when changing Video Conference Mute toolbar position.
 - Added Video Conference Mute to OOBE.
 
 ## Community contributions
@@ -190,7 +186,7 @@ For [v0.47][github-next-release-work], we are planning to work on:
 - Preliminary UI/UX investigations to adopt WinUI and improve accessibility
 - Configuring Shortcut guide to re-enable long `Win` key press to activate
 - Testing PDF preview functionality for File Explorer add-ons
-- Prioritization planning for new utilities and enhancements
+- Planning for new utilities and enhancements
 
 ## PowerToys Community
 

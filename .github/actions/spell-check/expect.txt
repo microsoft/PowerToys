@@ -395,6 +395,7 @@ dbg
 Dbghelp
 DBLCLKS
 DBLEPSILON
+dchristensen
 DCOM
 dcomp
 DComposition
@@ -1026,6 +1027,7 @@ ixx
 IYUV
 IZone
 IZoom
+jakeoeding
 JArray
 jarro
 Jarryd
@@ -1050,6 +1052,7 @@ jyuwono
 kbd
 KBDLLHOOKSTRUCT
 kbm
+KERNELBASE
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
