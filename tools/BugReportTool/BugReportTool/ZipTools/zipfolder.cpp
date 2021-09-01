@@ -33,8 +33,15 @@ void ZipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
     }
 
     zip_close(zip);
-    std::filesystem::copy(tmpZipPath, zipPath);
+
     std::error_code err;
+    std::filesystem::copy(tmpZipPath, zipPath, err);
+    if (err.value() != 0)
+    {
+        wprintf_s(L"Failed to copy %s. Error code: %d\n", tmpZipPath.c_str(), err.value());
+    }
+
+    err = {};
     std::filesystem::remove_all(tmpZipPath, err);
     if (err.value() != 0)
     {
