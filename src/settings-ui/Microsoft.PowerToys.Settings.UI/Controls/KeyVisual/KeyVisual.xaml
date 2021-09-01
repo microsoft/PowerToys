@@ -23,9 +23,10 @@
                                 <VisualState x:Name="Normal"/>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentHolder.Background" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
+                                        <Setter Target="ContentHolder.Fill" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
-                                        <Setter Target="ContentHolder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
+                                        <Setter Target="ContentHolder.Stroke" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
+                                        <Setter Target="ContentHolder.StrokeThickness" Value="{TemplateBinding BorderThickness}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -33,29 +34,32 @@
                                 <VisualState x:Name="Default"/>
                                 <VisualState x:Name="Error">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentHolder.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
+                                        <Setter Target="ContentHolder.Fill" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
-                                        <Setter Target="ContentHolder.BorderBrush" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
+                                        <Setter Target="ContentHolder.Stroke" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
+                                        <Setter Target="ContentHolder.StrokeThickness" Value="2" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Border x:Name="ContentHolder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{ThemeResource ControlCornerRadius}"
+                        <Grid>
+                            <Rectangle x:Name="ContentHolder"
+                                Fill="{TemplateBinding Background}"
+                                Stroke="{TemplateBinding BorderBrush}"
+                                StrokeThickness="{TemplateBinding BorderThickness}"
+                                RadiusX="4"
+                                RadiusY="4"
                                 Height="{TemplateBinding Height}"
-                                MinWidth="{TemplateBinding MinWidth}"
-                                Padding="{TemplateBinding Padding}">
+                                MinWidth="{TemplateBinding MinWidth}"/>
                             <ContentPresenter x:Name="KeyPresenter"
                                           FontWeight="{TemplateBinding FontWeight}"
                                           Foreground="{TemplateBinding Foreground}"
                                           Content="{TemplateBinding Content}"
+                                          Margin="{TemplateBinding Padding}"
                                           FontSize="{TemplateBinding FontSize}"
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalAlignment="Center" />
-                        </Border>
+                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
