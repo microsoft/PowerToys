@@ -600,7 +600,7 @@ namespace KeyboardEventHandlers
                                 }else
                                 {
                                     Shortcut to = std::get<Shortcut>(newRemapping.targetShortcut);
-                                    key_count = from.Size() - 1 + to.Size() - 1 - from.GetCommonModifiersCount(to) + 1;
+                                    key_count = from.Size() - 1 + to.Size() - 1 - 2* from.GetCommonModifiersCount(to) + 1;
                                     keyEventList = new INPUT[key_count]();
                                     memset(keyEventList, 0, sizeof(keyEventList));
 
