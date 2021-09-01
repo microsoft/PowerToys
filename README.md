@@ -111,7 +111,7 @@ An experimental version of PowerToys (v0.46) will be released the 2nd week of Se
 
 ### Color Picker
 
-- Fixed bug where changing RGB values doesn't update color. Thanks @niels9001!
+- Fixed bug where changing RGB values doesn't update color's HEX value. Thanks @martinchrzan!
 - Fixed accessibility issue with screen reader not announcing when "Copied to Clipboard" is activated.
 - Fixed accessibility issue where user could not hover the content of the info icon using a mouse. Thanks @niels9001!
 - Fixed color picker format order not being accessible via keyboard. Thanks @niels9001!
@@ -143,12 +143,10 @@ An experimental version of PowerToys (v0.46) will be released the 2nd week of Se
 
 ### Keyboard Manager
 
-- Updated old settings UI style on Keyboard Manager preview in OOBE. Thanks @niels9001!
 - Improved UI for KBM re-mappings list. Thanks @niels9001!
 
 ### PowerRename
 
-- Fixed bug where disabling the "Show in default context menu" setting only hides the icon but not the actual option to open PowerRename. Thanks @niels9001!
 - Expanding a plugin option in settings can now be toggled. Thanks @niels9001!
 - Fixed race condition causing PowerRename to crash File Explorer. Thanks @ianjoneill!
 
