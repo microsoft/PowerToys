@@ -134,7 +134,7 @@ An experimental version of PowerToys (v0.46) will be released the 2nd week of Se
 
 ### File Explorer add-ons
 
-- Fixed issue where markdown files were still previewed even when "Enable Markdown" was unselected.
+- Fixed issue where markdown files were still previewed even when "Enable Markdown" was turned off.
 
 ### Image Resizer
 
