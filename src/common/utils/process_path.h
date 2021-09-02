@@ -39,7 +39,6 @@ inline std::wstring get_process_path(HWND window) noexcept
     {
         // It is a UWP app. We will enumerate the windows and look for one created
         // by something with a different PID
-        // It might take a time to connect the process. That's the reason for the retry loop here
         DWORD new_pid = pid;
 
         EnumChildWindows(
