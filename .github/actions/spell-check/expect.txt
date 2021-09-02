@@ -658,6 +658,7 @@ FRAMECHANGED
 FRAMEDOWNLOAD
 franky
 Froml
+fsscript
 fstream
 ftps
 FTYPE
@@ -698,6 +699,7 @@ gmx
 GNumber
 google
 GPTR
+graphql
 Grayscale
 gui
 guiddef
@@ -1029,6 +1031,7 @@ IZoom
 JArray
 jarro
 Jarryd
+Javascript
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
@@ -1120,6 +1123,7 @@ LINQTo
 Linux
 listbox
 listview
+litcoffee
 lld
 llkhf
 Llvm
@@ -1543,6 +1547,7 @@ pgp
 pguid
 phbm
 phbmp
+php
 phwnd
 pici
 pid
