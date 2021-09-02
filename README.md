@@ -106,7 +106,7 @@ An experimental version of PowerToys (v0.46) will be released the 2nd week of Se
  
 ### Awake
 
-- Added Awake as option in translation bug template. Thanks @Aaron-Junker!
+- Added PowerToys Awake as option in translation bug template. Thanks @Aaron-Junker!
 - Adjusted description of inactive setting to improve distinguishing between the utility being disabled vs inactive. Thanks @niels9001!
 
 ### Color Picker
