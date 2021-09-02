@@ -25,15 +25,15 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Requirements
 
-- Windows 10 v1903 (build 18362) or newer.
-   - ⚠️ PowerToys (v0.37.0 and newer) requires Windows 10 v1903 (18362) or newer.
+- ⚠️ PowerToys (v0.37.0 and newer) requires Windows 10 v1903 (18362) or newer.
+
 - Have [.NET Core 3.1.15 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.15-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
 
 #### Stable version
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.41.2-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.45.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -90,14 +90,13 @@ An experimental version of PowerToys (v0.46) will be released the 2nd week of Se
 - Settings and OOBE windows updated with Fluent UX! We hope you enjoy the new modern feel of the application menus as we align our product with upcoming Windows 11 interfaces. Special thanks to @niels9001 for driving the development of this UI, along with many thanks to the various community members who offered constant feedback and adjustments to make this a truly spectacular update!
 - Added button to settings which displays version history. Thanks @niels9001!
 - Signed PowerToysSetupCustomActions.dll.
-- Improved Update available & Update ready message severity visual. Thanks @niels9001!
 - Improved auto-update experience. Thanks @niels9001!
 - Aligned OOBE theme color with Settings theme color. Thanks @niels9001!
 - Adjusted labeling of "Restart as Administrator" button to "Restart PowerToys as Administrator" to avoid ambiguity in meaning. Thanks @niels9001!
 - Added colored icons to settings sidebar. Thanks @niels9001!
 - Fixed accessibility issue in OOBE where Microsoft Docs and PowerToys release notes links could not be navigated to via keyboard. Thanks @niels9001!
 - Fixed settings header alignment. Thanks @niels9001!
-- Fixed updates text next being visible when in light mode. Thanks @niels9001!
+- Fixed text under updates section to be visible when in light mode. Thanks @niels9001!
 - Updated "Learn More" text to be more descriptive. Thanks @niels9001!
 - Updated "Read more" text on updates to be more descriptive. Thanks @niels9001!
 - Added link to documentation in system tray. Thanks @BenConstable9!
@@ -139,7 +138,7 @@ An experimental version of PowerToys (v0.46) will be released the 2nd week of Se
 
 ### Image Resizer
 
-- Added warning that GIF files with animations may no correctly resize if the encoding used for the files is incompatible.
+- Added warning that GIF files with animations may not correctly resize if the encoding used for the files is incompatible.
 
 ### Keyboard Manager
 
@@ -157,7 +156,6 @@ An experimental version of PowerToys (v0.46) will be released the 2nd week of Se
 - Fixed null reference exception crash.
 - Fixed registry plugin load crash.
 - Fixed unauthorized access exception crash when setting registry keys for the utility.
-- Improved visibility of warnings when plugin properties are collapsed. Thanks @niels9001!
 - Added search for Plugin Manager. Thanks @davidegiacometti!
 - Fixed VSCode workspace plugin not working. Thanks @BenConstable9!
 
