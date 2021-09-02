@@ -3,6 +3,7 @@
 
 #include <common/interop/shared_constants.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <keyboardmanager/common/Helpers.h>
 
 #include "KeyboardManagerEditorStrings.h"
 #include "KeyDropDownControl.h"
@@ -23,8 +24,15 @@ namespace BufferValidationHelpers
             // Check if the value being set is the same as the other column
             if (remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].index() == 0)
             {
-                if (std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]) == selectedKeyCode)
+                DWORD otherColumnKeyCode = std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]);
+                if (otherColumnKeyCode == selectedKeyCode)
                 {
+                    errorType = ShortcutErrorType::MapToSameKey;
+                } else if (
+                    (otherColumnKeyCode == Helpers::GetCombinedKey(selectedKeyCode) || selectedKeyCode == Helpers::GetCombinedKey(selectedKeyCode)) &&
+                    Helpers::GetCombinedKey(otherColumnKeyCode) == Helpers::GetCombinedKey(selectedKeyCode)
+                ) {
+                    // Check if it's mapping a left or right key and its combined code.
                     errorType = ShortcutErrorType::MapToSameKey;
                 }
             }
@@ -251,8 +259,16 @@ namespace BufferValidationHelpers
                 // If key to key
                 if (remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].index() == 0)
                 {
-                    if (std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]) == std::get<DWORD>(tempShortcut) && std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]) != NULL && std::get<DWORD>(tempShortcut) != NULL)
+                    DWORD otherColumnKeyCode = std::get<DWORD>(remapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]);
+                    DWORD shortcutKeyCode = std::get<DWORD>(tempShortcut);
+                    if (otherColumnKeyCode == shortcutKeyCode && otherColumnKeyCode != NULL && shortcutKeyCode != NULL)
                     {
+                        errorType = ShortcutErrorType::MapToSameKey;
+                    } else if (
+                        (otherColumnKeyCode == Helpers::GetCombinedKey(shortcutKeyCode) || shortcutKeyCode == Helpers::GetCombinedKey(shortcutKeyCode)) &&
+                        Helpers::GetCombinedKey(otherColumnKeyCode) == Helpers::GetCombinedKey(shortcutKeyCode))
+                    {
+                        // Check if it's mapping a left or right key and its combined code.
                         errorType = ShortcutErrorType::MapToSameKey;
                     }
                 }

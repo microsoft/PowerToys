@@ -15,6 +15,27 @@ namespace Helpers
         return (GetKeyType(key) != KeyType::Action);
     }
 
+    // Function to get the combined key for modifier keys
+    DWORD GetCombinedKey(DWORD key)
+    {
+        switch (key) {
+        case VK_LWIN:
+        case VK_RWIN:
+            return CommonSharedConstants::VK_WIN_BOTH;
+        case VK_LCONTROL:
+        case VK_RCONTROL:
+            return VK_CONTROL;
+        case VK_LMENU:
+        case VK_RMENU:
+            return VK_MENU;
+        case VK_LSHIFT:
+        case VK_RSHIFT:
+            return VK_SHIFT;
+        default:
+            return key;
+        }
+    }
+
     // Function to get the type of the key
     KeyType GetKeyType(DWORD key)
     {
