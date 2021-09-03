@@ -2,6 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls">
 
+    <x:Double x:Key="DefaultIconSize">16</x:Double>
+    <x:Double x:Key="SmallIconSize">12</x:Double>
     <Style x:Key="DefaultTextKeyVisualStyle" TargetType="local:KeyVisual">
         <Setter Property="MinWidth" Value="56" />
         <Setter Property="MinHeight" Value="48" />
