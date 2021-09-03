@@ -376,7 +376,15 @@ void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring mess
 {
     currentDropDown.SelectedIndex(-1);
     warningMessage.as<TextBlock>().Text(message);
-    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>());
+    try
+    {
+        currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>());
+    }
+    catch (winrt::hresult_error const&)
+    {
+        // If it's loading and some remaps are invalid from previous configs, avoid crashing when flyouts can't be showed yet.
+        Logger::error(L"Failed to show dropdown error flyout: {}", message);
+    }
 }
 
 // Function to add a shortcut to the UI control as combo boxes
