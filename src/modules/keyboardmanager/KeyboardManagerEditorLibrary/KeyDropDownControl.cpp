@@ -386,6 +386,7 @@ void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring mess
     catch (winrt::hresult_error const&)
     {
         // If it's loading and some remaps are invalid from previous configs, avoid crashing when flyouts can't be showed yet.
+        Logger::error(L"Failed to show dropdown error flyout: {}", message);
     }
 }
 
