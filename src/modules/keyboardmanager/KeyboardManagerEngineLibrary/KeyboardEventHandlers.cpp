@@ -584,9 +584,10 @@ namespace KeyboardEventHandlers
                             // Check if a new remapping should be applied
                             Shortcut currentlyPressed = it->first;
                             currentlyPressed.actionKey = data->lParam->vkCode;
-                            if (reMap.find(currentlyPressed) != reMap.end())
+                            auto newRemapingIter = reMap.find(currentlyPressed);
+                            if (newRemapingIter != reMap.end())
                             {
-                                auto& newRemapping = reMap[currentlyPressed];
+                                auto& newRemapping = newRemapingIter->second;
                                 Shortcut from = std::get<Shortcut>(it->second.targetShortcut);
                                 if (newRemapping.RemapToKey())
                                 {
@@ -602,7 +603,6 @@ namespace KeyboardEventHandlers
                                     Shortcut to = std::get<Shortcut>(newRemapping.targetShortcut);
                                     key_count = from.Size() - 1 + to.Size() - 1 - 2* from.GetCommonModifiersCount(to) + 1;
                                     keyEventList = new INPUT[key_count]();
-                                    memset(keyEventList, 0, sizeof(keyEventList));
 
                                     int i = 0;
                                     Helpers::SetModifierKeyEvents(from, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, to);
