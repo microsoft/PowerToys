@@ -103,6 +103,7 @@ asm
 asmx
 aspnet
 aspx
+ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -844,6 +845,7 @@ IDirectory
 IDispatch
 IDisposable
 idl
+IDLIST
 IDOK
 IDOn
 IDR
@@ -1855,6 +1857,8 @@ sfgao
 SFGAOF
 SHAREIMAGELISTS
 sharpkeys
+SHCNE
+SHCNF
 shcore
 shellapi
 SHELLDLL
