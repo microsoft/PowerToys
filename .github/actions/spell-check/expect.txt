@@ -395,6 +395,7 @@ dbg
 Dbghelp
 DBLCLKS
 DBLEPSILON
+dchristensen
 DCOM
 dcomp
 DComposition
@@ -806,6 +807,7 @@ Hyperlink
 IAction
 IActivated
 IAnimatable
+ianjoneill
 IApp
 IApplication
 IAppx
@@ -1026,6 +1028,7 @@ ixx
 IYUV
 IZone
 IZoom
+jakeoeding
 JArray
 jarro
 Jarryd
@@ -1050,6 +1053,7 @@ jyuwono
 kbd
 KBDLLHOOKSTRUCT
 kbm
+KERNELBASE
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
