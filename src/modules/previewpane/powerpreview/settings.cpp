@@ -3,6 +3,8 @@
 #include "trace.h"
 #include <iostream>
 #include <atlstr.h>
+#include <powerpreview/thumbnail_provider.h>
+#include <ShlObj_core.h>
 
 using namespace std;
 
@@ -97,6 +99,11 @@ namespace PowerPreviewSettings
                             else
                             {
                                 Trace::PowerPreviewSettingsUpdateFailed(this->GetToggleSettingName().c_str(), lastState, newState, enabled);
+                            }
+
+                            if (dynamic_cast<ThumbnailProviderSettings*>(this))
+                            {
+                                SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
                             }
                         }
                         // If process is not elevated, return false as it is not possible to update the registry
