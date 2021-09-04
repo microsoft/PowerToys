@@ -28,6 +28,9 @@ const CLSID CLSID_SHIMActivateSvgThumbnailProvider = { 0x9C723B8C, 0x4F5C, 0x414
 // 36B27788-A8BB-4698-A756-DF9F11F64F84
 const CLSID CLSID_SvgThumbnailProvider = { 0x36B27788, 0xA8BB, 0x4698, { 0xA7, 0x56, 0xDF, 0x9F, 0x11, 0xF6, 0x4F, 0x84 } };
 
+// BCC13D15-9720-4CC4-8371-EA74A274741E
+const GUID CLSID_PdfThumbnailProvider = { 0xbcc13d15, 0x9720, 0x4cc4, { 0x83, 0x71, 0xea, 0x74, 0xa2, 0x74, 0x74, 0x1e } };
+ 
 // Pairs of NativeClsid vs ManagedClsid used for preview handlers.
 const std::vector<std::pair<CLSID, CLSID>> NativeToManagedClsid({ 
     { CLSID_SHIMActivateMdPreviewHandler, CLSID_MdPreviewHandler },

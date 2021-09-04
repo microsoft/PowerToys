@@ -363,6 +363,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceProxyFilter"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VideoConference", "VideoConference", "{470FBAF9-E1F8-4F3E-8786-198A1C81C8A8}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfThumbnailProvider", "src\modules\previewpane\PdfThumbnailProvider\PdfThumbnailProvider.csproj", "{11491FD8-F921-48BF-880C-7FEA185B80A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -949,6 +951,12 @@ Global
 		{AC2857B4-103D-4D6D-9740-926EBF785042}.Release|x64.Build.0 = Release|x64
 		{AC2857B4-103D-4D6D-9740-926EBF785042}.Release|x86.ActiveCfg = Release|Win32
 		{AC2857B4-103D-4D6D-9740-926EBF785042}.Release|x86.Build.0 = Release|Win32
+		{11491FD8-F921-48BF-880C-7FEA185B80A1}.Debug|x64.ActiveCfg = Debug|x64
+		{11491FD8-F921-48BF-880C-7FEA185B80A1}.Debug|x64.Build.0 = Debug|x64
+		{11491FD8-F921-48BF-880C-7FEA185B80A1}.Debug|x86.ActiveCfg = Debug|x64
+		{11491FD8-F921-48BF-880C-7FEA185B80A1}.Release|x64.ActiveCfg = Release|x64
+		{11491FD8-F921-48BF-880C-7FEA185B80A1}.Release|x64.Build.0 = Release|x64
+		{11491FD8-F921-48BF-880C-7FEA185B80A1}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1062,6 +1070,7 @@ Global
 		{5ABA70DE-3A3F-41F6-A1F5-D1F74F54F9BB} = {470FBAF9-E1F8-4F3E-8786-198A1C81C8A8}
 		{AC2857B4-103D-4D6D-9740-926EBF785042} = {470FBAF9-E1F8-4F3E-8786-198A1C81C8A8}
 		{470FBAF9-E1F8-4F3E-8786-198A1C81C8A8} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{11491FD8-F921-48BF-880C-7FEA185B80A1} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

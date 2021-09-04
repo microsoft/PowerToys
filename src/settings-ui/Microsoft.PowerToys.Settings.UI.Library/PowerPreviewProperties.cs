@@ -80,6 +80,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enablePdfThumbnail = true;
+
+        [JsonPropertyName("pdf-thumbnail-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnablePdfThumbnail
+        {
+            get => enablePdfThumbnail;
+            set
+            {
+                if (value != enablePdfThumbnail)
+                {
+                    LogTelemetryEvent(value);
+                    enablePdfThumbnail = value;
+                }
+            }
+        }
+
         public PowerPreviewProperties()
         {
         }
