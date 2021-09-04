@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
                     foreach (var area in settings.Areas)
                     {
-                        if (string.IsNullOrEmpty(area))
+                        if (string.IsNullOrWhiteSpace(area))
                         {
                             continue;
                         }
@@ -77,7 +77,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
 
                     foreach (var altName in settings.AltNames)
                     {
-                        if (string.IsNullOrEmpty(altName))
+                        if (string.IsNullOrWhiteSpace(altName))
                         {
                             continue;
                         }

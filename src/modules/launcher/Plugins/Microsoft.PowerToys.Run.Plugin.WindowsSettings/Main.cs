@@ -120,8 +120,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                     foreach (var area in found.Areas)
                     {
                         // Search for areas on normal queries.
-                        if (area.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)
-                        && (!query.Search.EndsWith(":")))
+                        if (area.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
                         {
                             return true;
                         }
