@@ -81,15 +81,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
         {
             Image imageOfPage;
 
-            using (var stream = new InMemoryRandomAccessStream())
-            {
-                page.RenderToStreamAsync(stream, new PdfPageRenderOptions()
-                {
-                    DestinationHeight = height,
-                }).GetAwaiter().GetResult();
+            using var stream = new InMemoryRandomAccessStream();
 
-                imageOfPage = Image.FromStream(stream.AsStream());
-            }
+            page.RenderToStreamAsync(stream, new PdfPageRenderOptions()
+            {
+                DestinationHeight = height,
+            }).GetAwaiter().GetResult();
+
+            imageOfPage = Image.FromStream(stream.AsStream());
 
             return imageOfPage;
         }
