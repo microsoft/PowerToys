@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FancyZonesEditor"
              mc:Ignorable="d" 
+             Focusable="True"
              d:DesignHeight="300" d:DesignWidth="300">
     <Thumb.Template>
         <ControlTemplate>
@@ -34,6 +35,10 @@
                     <Setter Property="Background"
                             TargetName="Body"
                             Value="{DynamicResource SystemAccentColorLight1Brush}"/>
+                </Trigger>
+                <Trigger Property="IsKeyboardFocused" Value="True">
+                    <Setter Property="Background" TargetName="Body"
+                            Value="{DynamicResource SystemAccentColorLight3Brush}" />
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>

@@ -18,7 +18,6 @@
                                   ModuleImageSource="ms-appx:///Assets/Modules/PowerPreview.png">
         <controls:SettingsPageControl.ModuleContent>
             
-            
             <StackPanel Orientation="Vertical">
 
                 <muxc:InfoBar Severity="Warning"
@@ -47,10 +46,16 @@
                                           IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF" Icon="&#xEA90;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFRenderIsEnabled}"
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings">
-
                     <muxc:InfoBar Severity="Informational"
                                    x:Uid="FileExplorerPreview_RebootRequired"
                                    IsOpen="True"
@@ -62,9 +67,8 @@
                                           IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-
-
                 </controls:SettingsGroup>
+                
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 

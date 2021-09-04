@@ -186,7 +186,6 @@ std::pair<ShortcutErrorType, int> KeyDropDownControl::ValidateShortcutSelection(
                 parent.Children().RemoveAtEnd();
                 keyDropDownControlObjects.erase(keyDropDownControlObjects.end() - 1);
             }
-            parent.UpdateLayout();
         }
 
         // If ignore key to shortcut warning flag is true and it is a hybrid control in SingleKeyRemapControl, then skip MapToSameKey error
@@ -215,7 +214,6 @@ std::pair<ShortcutErrorType, int> KeyDropDownControl::ValidateShortcutSelection(
             
             // delete drop down control object from the vector so that it can be destructed
             keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
-            parent.UpdateLayout();
         }
     }
 
@@ -325,7 +323,6 @@ void KeyDropDownControl::AddDropDown(StackPanel& table, StackPanel row, StackPan
     uint32_t index;
     bool found = table.Children().IndexOf(row, index);
     keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, row, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
-    parent.UpdateLayout();
 
     // Update accessible name
     SetAccessibleNameForComboBox(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox(), (int)keyDropDownControlObjects.size());
@@ -379,7 +376,15 @@ void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring mess
 {
     currentDropDown.SelectedIndex(-1);
     warningMessage.as<TextBlock>().Text(message);
-    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>());
+    try
+    {
+        currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>());
+    }
+    catch (winrt::hresult_error const&)
+    {
+        // If it's loading and some remaps are invalid from previous configs, avoid crashing when flyouts can't be showed yet.
+        Logger::error(L"Failed to show dropdown error flyout: {}", message);
+    }
 }
 
 // Function to add a shortcut to the UI control as combo boxes
@@ -413,8 +418,6 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
             }
         }
     }
-    
-    parent.UpdateLayout();
 }
 
 // Get number of selected keys. Do not count -1 and 0 values as they stand for Not selected and None

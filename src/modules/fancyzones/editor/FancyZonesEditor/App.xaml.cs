@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
 using Microsoft.PowerToys.Common.UI;
@@ -177,6 +178,11 @@ namespace FancyZonesEditor
             if (e.Key == System.Windows.Input.Key.LeftShift || e.Key == System.Windows.Input.Key.RightShift)
             {
                 MainWindowSettings.IsShiftKeyPressed = true;
+            }
+            else if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            {
+                e.Handled = true;
+                App.Overlay.FocusEditor();
             }
         }
 

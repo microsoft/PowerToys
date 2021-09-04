@@ -167,5 +167,11 @@
   </data>
   <data name="FileExplorer_Admin_Restart_Warning_Dont_Show_Again" xml:space="preserve">
     <value>Don't show again</value>
-  </data>  
+  </data>
+  <data name="Prevpane_Pdf_Settings_Description" xml:space="preserve">
+    <value>PDF Previewer</value>
+  </data>
+  <data name="Prevpane_Pdf_Settings_Displayname" xml:space="preserve">
+    <value>PDF Previewer</value>
+  </data>
 </root>

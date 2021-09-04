@@ -29,7 +29,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="ManipulationMode" Value="System,TranslateX" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <Setter Property="MinWidth" Value="{StaticResource ToggleSwitchThemeMinWidth}"/>
+       
         <Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />
 
         <Setter Property="Template">

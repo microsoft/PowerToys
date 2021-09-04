@@ -53,6 +53,14 @@
                         Text="{x:Static props:Resources.MergeName}" />
                     <Run Text="{x:Static props:Resources.MergeDescription}" />
                 </TextBlock>
+                <TextBlock 
+                    Margin="0,8,0,0"
+                    TextWrapping="Wrap">
+                    <Run 
+                        FontWeight="Bold" 
+                        Text="{x:Static props:Resources.KeyboardControlsName}" />
+                    <Run Text="{x:Static props:Resources.KeyboardControlsDescription}" />
+                </TextBlock>
             </StackPanel>
             <Grid Margin="0,24,0,-4">
                 <Grid.ColumnDefinitions>

@@ -2,6 +2,7 @@
 #include "LoadingAndSavingRemappingHelper.h"
 
 #include <set>
+#include <variant>
 #include <common/interop/shared_constants.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
@@ -88,6 +89,11 @@ namespace LoadingAndSavingRemappingHelper
             // If they are mapped to the same key, delete those entries and set the common version
             if (table[leftKey] == table[rightKey])
             {
+                if (std::holds_alternative<DWORD>(table[leftKey]) && std::get<DWORD>(table[leftKey]) == combinedKey)
+                {
+                    // Avoid mapping a key to itself when the combined key is equal to the resulting mapping.
+                    return;
+                }
                 table[combinedKey] = table[leftKey];
                 table.erase(leftKey);
                 table.erase(rightKey);

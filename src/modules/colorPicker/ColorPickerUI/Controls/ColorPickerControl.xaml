@@ -398,7 +398,7 @@
                                                   Width="72"
                                                   ui:ControlHelper.CornerRadius="2,0,0,2"
                                                   AutomationProperties.Name="{x:Static p:Resources.Red_value}"
-                                                  ValueChanged="RGBNumberBox_ValueChanged"
+                                                  TextBoxBase.TextChanged="RGBNumberBox_TextChanged"
                                                   Minimum="0"
                                                   Maximum="255" />
 
@@ -408,7 +408,7 @@
                                                   Width="72"
                                                   ui:ControlHelper.CornerRadius="0"
                                                   AutomationProperties.Name="{x:Static p:Resources.Green_value}"
-                                                  ValueChanged="RGBNumberBox_ValueChanged"
+                                                  TextBoxBase.TextChanged="RGBNumberBox_TextChanged"
                                                   Minimum="0"
                                                   Maximum="255" />
 
@@ -418,7 +418,7 @@
                                                   Margin="-1,0,0,0"
                                                   ui:ControlHelper.CornerRadius="0,2,2,0"
                                                   AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
-                                                  ValueChanged="RGBNumberBox_ValueChanged"
+                                                  TextBoxBase.TextChanged="RGBNumberBox_TextChanged"
                                                   Minimum="0"
                                                   Maximum="255" />
                                 </StackPanel>
