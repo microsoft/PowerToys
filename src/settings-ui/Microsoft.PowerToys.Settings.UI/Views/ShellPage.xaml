@@ -27,7 +27,6 @@
                              IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
                              SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
                              IsSettingsVisible="False"
-                             OpenPaneLength="288"
                              CompactModeThresholdWidth="1007"
                              ExpandedModeThresholdWidth="1007"
                              PaneOpened="NavigationView_PaneOpened"
