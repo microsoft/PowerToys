@@ -25,10 +25,10 @@
                                 <VisualState x:Name="Normal"/>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentHolder.Fill" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
+                                        <!--<Setter Target="ContentHolder.Fill" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
                                         <Setter Target="ContentHolder.Stroke" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
-                                        <Setter Target="ContentHolder.StrokeThickness" Value="{TemplateBinding BorderThickness}" />
+                                        <Setter Target="ContentHolder.StrokeThickness" Value="{TemplateBinding BorderThickness}" />-->
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -82,10 +82,10 @@
         <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
-        <Setter Property="Height" Value="30" />
+        <Setter Property="Height" Value="36" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Padding" Value="8,0,8,2" />
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
 
@@ -115,7 +115,7 @@
         <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-        <Setter Property="Height" Value="30" />
+        <Setter Property="Height" Value="36" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="FontSize" Value="9" />
