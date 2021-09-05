@@ -51,7 +51,7 @@
                     Grid.Row="2"
                     Spacing="8"
                     
-                    Margin="0,32,0,0"
+                    Margin="0,24,0,0"
                     VerticalAlignment="Top">
             <Grid Height="36">
                 
