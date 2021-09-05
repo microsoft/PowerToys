@@ -82,11 +82,9 @@
                                             <Setter Property="TextWrapping" Value="WrapWholeWords"/>
                                         </Style.Setters>
                                     </Style>
-                                    <Style TargetType="HyperlinkButton" BasedOn="{StaticResource TextBlockButtonStyle}">
+                                    <Style TargetType="HyperlinkButton" BasedOn="{StaticResource TextButtonStyle}">
                                         <Style.Setters>
-                                            <Setter Property="FontWeight" Value="SemiBold"/>
                                             <Setter Property="FontSize" Value="12"/>
-                                            <Setter Property="Margin" Value="0"/>
                                             <Setter Property="Padding" Value="0,0,0,0"/>
                                         </Style.Setters>
                                     </Style>
