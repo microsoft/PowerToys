@@ -13,10 +13,10 @@
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="boolToVisibilityConverter" FalseValue="Collapsed" TrueValue="Visible" />
     </UserControl.Resources>
-    <Grid MinWidth="498" MinHeight="240">
+    <Grid MinWidth="498" MinHeight="220">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition MinHeight="120"/>
+            <RowDefinition MinHeight="110"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -50,9 +50,10 @@
         <StackPanel Orientation="Vertical"
                     Grid.Row="2"
                     Spacing="8"
-                    Margin="0,64,0,0"
+                    
+                    Margin="0,32,0,0"
                     VerticalAlignment="Top">
-            <Grid Height="56" Background="Yellow">
+            <Grid Height="36">
                 
             <Border x:Name="WarningBanner"
                     Background="{ThemeResource InfoBarErrorSeverityBackgroundBrush}"
@@ -60,6 +61,7 @@
                     BorderBrush="{ThemeResource InfoBarBorderBrush}"
                     BorderThickness="{ThemeResource InfoBarBorderThickness}"
                     Padding="8"
+                    Margin="-2,0,0,0"
                     Visibility="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay, Converter={StaticResource boolToVisibilityConverter}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
