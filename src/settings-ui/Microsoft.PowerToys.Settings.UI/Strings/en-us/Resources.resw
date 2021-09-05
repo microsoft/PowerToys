@@ -1189,7 +1189,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Learn more about</value>
   </data>
   <data name="Oobe_ColorPicker_Description" xml:space="preserve">
-    <value>Color Picker is a system-wide color selection tool for Windows 10 that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.</value>
+    <value>Color Picker is a system-wide color selection tool for Windows that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.</value>
   </data>
   <data name="Oobe_FancyZones_Description" xml:space="preserve">
     <value>FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.</value>
@@ -1216,7 +1216,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
   </data>
   <data name="Oobe_Overview_Description.Text" xml:space="preserve">
-    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.
+    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
     
 Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
   </data>
