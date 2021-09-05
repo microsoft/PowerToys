@@ -75,7 +75,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
         /// Transform the PdfPage to an Image.
         /// </summary>
         /// <param name="page">The page to transform to an Image.</param>
-        /// <param name="height">The height of the pagee.</param>
+        /// <param name="height">The height of the page.</param>
         /// <returns>An object of type <see cref="Image"/></returns>
         private static Image PageToImage(PdfPage page, uint height)
         {
