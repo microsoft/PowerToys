@@ -275,5 +275,14 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
                 return ResourceManager.GetString("Microsoft_plugin_sys_sleep_description", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use localized system commands instead of english ones.
+        /// </summary>
+        internal static string Use_localized_system_commands {
+            get {
+                return ResourceManager.GetString("Use_localized_system_commands", resourceCulture);
+            }
+        }
     }
 }
