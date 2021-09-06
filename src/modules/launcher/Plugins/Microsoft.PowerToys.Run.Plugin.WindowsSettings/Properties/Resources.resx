@@ -201,6 +201,10 @@
   <data name="AppColor" xml:space="preserve">
     <value>App color</value>
   </data>
+  <data name="AppControlPanel" xml:space="preserve">
+    <value>Control Panel</value>
+    <comment>Type of the setting is a "(legacy) Control Panel setting"</comment>
+  </data>
   <data name="AppDiagnostics" xml:space="preserve">
     <value>App diagnostics</value>
     <comment>Area Privacy</comment>
@@ -463,10 +467,6 @@
   <data name="Contacts" xml:space="preserve">
     <value>Contacts</value>
     <comment>Area Privacy</comment>
-  </data>
-  <data name="ControlPanel" xml:space="preserve">
-    <value>Control Panel</value>
-    <comment>Type of the setting is a "(legacy) Control Panel setting"</comment>
   </data>
   <data name="CopyCommand" xml:space="preserve">
     <value>Copy command</value>

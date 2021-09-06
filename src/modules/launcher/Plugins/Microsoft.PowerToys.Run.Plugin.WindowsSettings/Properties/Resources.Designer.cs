@@ -259,6 +259,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Control Panel.
+        /// </summary>
+        internal static string AppControlPanel {
+            get {
+                return ResourceManager.GetString("AppControlPanel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to App diagnostics.
         /// </summary>
         internal static string AppDiagnostics {
@@ -912,15 +921,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Contacts {
             get {
                 return ResourceManager.GetString("Contacts", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Control Panel.
-        /// </summary>
-        internal static string ControlPanel {
-            get {
-                return ResourceManager.GetString("ControlPanel", resourceCulture);
             }
         }
         
