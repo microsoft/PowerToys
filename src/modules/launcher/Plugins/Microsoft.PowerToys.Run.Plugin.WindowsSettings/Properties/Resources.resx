@@ -253,9 +253,6 @@
   <data name="AreaClockAndRegion" xml:space="preserve">
     <value>Clock and Region</value>
   </data>
-  <data name="AreaControlPanel" xml:space="preserve">
-    <value>Control Panel</value>
-  </data>
   <data name="AreaCortana" xml:space="preserve">
     <value>Cortana</value>
   </data>
@@ -1448,10 +1445,6 @@
   <data name="StorageSense" xml:space="preserve">
     <value>Storage Sense</value>
     <comment>Area System</comment>
-  </data>
-  <data name="SubtitlePreposition" xml:space="preserve">
-    <value>in</value>
-    <comment>Example: Area "System" in System settings</comment>
   </data>
   <data name="SyncCenter" xml:space="preserve">
     <value>Sync center</value>

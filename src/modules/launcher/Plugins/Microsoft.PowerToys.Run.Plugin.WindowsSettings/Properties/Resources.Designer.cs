@@ -385,15 +385,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Control Panel.
-        /// </summary>
-        internal static string AreaControlPanel {
-            get {
-                return ResourceManager.GetString("AreaControlPanel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Cortana.
         /// </summary>
         internal static string AreaCortana {
@@ -3270,15 +3261,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string StorageSense {
             get {
                 return ResourceManager.GetString("StorageSense", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to in.
-        /// </summary>
-        internal static string SubtitlePreposition {
-            get {
-                return ResourceManager.GetString("SubtitlePreposition", resourceCulture);
             }
         }
         
