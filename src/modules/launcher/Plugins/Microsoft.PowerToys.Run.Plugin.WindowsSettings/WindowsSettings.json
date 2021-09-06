@@ -1251,486 +1251,486 @@
   {
     "Name": "AccessibilityOptions",
     "Areas": [ "AreaEaseOfAccess" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "access.cpl" ],
     "Command": "control access.cpl"
   },
   {
     "Name": "ActionCenter",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.ActionCenter"
   },
   {
     "Name": "AddHardware",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.AddHardware"
   },
   {
     "Name": "AddRemovePrograms",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "appwiz.cpl" ],
     "Command": "control appwiz.cpl"
   },
   {
     "Name": "AdministrativeTools",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.AdministrativeTools"
   },
   {
     "Name": "AutoPlay",
     "Areas": [ "AreaPrograms" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.AutoPlay"
   },
   {
     "Name": "BackupAndRestore",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.BackupAndRestore"
   },
   {
     "Name": "BiometricDevices",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.BiometricDevices"
   },
   {
     "Name": "BitLockerDriveEncryption",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.BitLockerDriveEncryption"
   },
   {
     "Name": "BluetoothDevices",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.BluetoothDevices"
   },
   {
     "Name": "ColorManagement",
     "Areas": [ "AreaAppearanceAndPersonalization" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.ColorManagement"
   },
   {
     "Name": "CredentialManager",
     "Areas": [ "AreaUserAccounts" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "Password" ],
     "Command": "control /name Microsoft.CredentialManager"
   },
   {
     "Name": "ClientServiceForNetWare",
     "Areas": [ "AreaPrograms" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "nwc.cpl" ],
     "Command": "control nwc.cpl"
   },
   {
     "Name": "DateAndTime",
     "Areas": [ "AreaClockAndRegion" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "timedate.cpl" ],
     "Command": "control /name Microsoft.DateAndTime"
   },
   {
     "Name": "DefaultLocation",
     "Areas": [ "AreaClockAndRegion" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.DefaultLocation"
   },
   {
     "Name": "DefaultPrograms",
     "Areas": [ "AreaPrograms" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.DefaultPrograms"
   },
   {
     "Name": "DeviceManager",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.DeviceManager"
   },
   {
     "Name": "DevicesAndPrinters",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.DevicesAndPrinters"
   },
   {
     "Name": "EaseOfAccessCenter",
     "Areas": [ "AreaEaseOfAccess" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.EaseOfAccessCenter"
   },
   {
     "Name": "FolderOptions",
     "Areas": [ "AreaAppearanceAndPersonalization" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.FolderOptions"
   },
   {
     "Name": "Fonts",
     "Areas": [ "AreaAppearanceAndPersonalization" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.Fonts"
   },
   {
     "Name": "GameControllers",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.GameControllers"
   },
   {
     "Name": "GetPrograms",
     "Areas": [ "AreaPrograms" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.GetPrograms"
   },
   {
     "Name": "GettingStarted",
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.GettingStarted"
   },
   {
     "Name": "HomeGroup",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.HomeGroup"
   },
   {
     "Name": "IndexingOptions",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.IndexingOptions"
   },
   {
     "Name": "Infrared",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.Infrared"
   },
   {
     "Name": "InternetOptions",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "inetcpl.cpl" ],
     "Command": "control /name Microsoft.InternetOptions"
   },
   {
     "Name": "MailMicrosoftExchangeOrWindowsMessaging",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "mlcfg32.cpl" ],
     "Command": "control mlcfg32.cpl"
   },
   {
     "Name": "Mouse",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.Mouse"
   },
   {
     "Name": "NetworkAndSharingCenter",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.NetworkAndSharingCenter"
   },
   {
     "Name": "NetworkConnection",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control netconnections"
   },
   {
     "Name": "NetworkSetupWizard",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "netsetup.cpl" ],
     "Command": "control netsetup.cpl"
   },
   {
     "Name": "OdbcDataSourceAdministrator32Bit",
     "Areas": [ "AreaSystemAndSecurity", "AreaAdministrativeTools" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "odbccp32.cpl" ],
     "Command": "%windir%/syswow64/odbcad32.exe"
   },
   {
     "Name": "OdbcDataSourceAdministrator64Bit",
     "Areas": [ "AreaSystemAndSecurity", "AreaAdministrativeTools" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "%windir%/system32/odbcad32.exe"
   },
   {
     "Name": "OfflineFiles",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.OfflineFiles"
   },
   {
     "Name": "ParentalControls",
     "Areas": [ "AreaUserAccounts" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.ParentalControls"
   },
   {
     "Name": "PenAndInputDevices",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.PenAndInputDevices"
   },
   {
     "Name": "PenAndTouch",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.PenAndTouch"
   },
   {
     "Name": "PeopleNearMe",
     "Areas": [ "AreaUserAccounts" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.PeopleNearMe"
   },
   {
     "Name": "PerformanceInformationAndTools",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.PerformanceInformationAndTools"
   },
   {
     "Name": "PhoneAndModemOptions",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.PhoneAndModemOptions"
   },
   {
     "Name": "PhoneAndModem",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "modem.cpl" ],
     "Command": "control /name Microsoft.PhoneAndModem"
   },
   {
     "Name": "PowerOptions",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "powercfg.cpl" ],
     "Command": "control /name Microsoft.PowerOptions"
   },
   {
     "Name": "Printers",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.Printers"
   },
   {
     "Name": "ProblemReportsAndSolutions",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.ProblemReportsAndSolutions"
   },
   {
     "Name": "ProgramsAndFeatures",
     "Areas": [ "AreaPrograms" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.ProgramsAndFeatures"
   },
   {
     "Name": "Recovery",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.Recovery"
   },
   {
     "Name": "RegionAndLanguage",
     "Areas": [ "AreaClockAndRegion" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.RegionAndLanguage"
   },
   {
     "Name": "RemoteAppAndDesktopConnections",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.RemoteAppAndDesktopConnections"
   },
   {
     "Name": "ScannersAndCameras",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "sticpl.cpl" ],
     "Command": "control /name Microsoft.ScannersAndCameras"
   },
   {
     "Name": "ScheduledTasks",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "schedtasks" ],
     "Command": "control schedtasks"
   },
   {
     "Name": "SecurityCenter",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.SecurityCenter"
   },
   {
     "Name": "Sound",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.Sound"
   },
   {
     "Name": "SpeechRecognition",
     "Areas": [ "AreaEaseOfAccess" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.SpeechRecognition"
   },
   {
     "Name": "SyncCenter",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.SyncCenter"
   },
   {
     "Name": "System",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "sysdm.cpl" ],
     "Command": "control sysdm.cpl"
   },
   {
     "Name": "TabletPcSettings",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.TabletPCSettings"
   },
   {
     "Name": "TextToSpeech",
     "Areas": [ "AreaEaseOfAccess" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.TextToSpeech"
   },
   {
     "Name": "UserAccounts",
     "Areas": [ "AreaUserAccounts" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.UserAccounts"
   },
   {
     "Name": "WelcomeCenter",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.WelcomeCenter"
   },
   {
     "Name": "WindowsAnytimeUpgrade",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.WindowsAnytimeUpgrade"
   },
   {
     "Name": "WindowsCardSpace",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.CardSpace"
   },
   {
     "Name": "WindowsDefender",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.WindowsDefender"
   },
   {
     "Name": "WindowsFirewall",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.WindowsFirewall"
   },
   {
     "Name": "WindowsMobilityCenter",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "Command": "control /name Microsoft.MobilityCenter"
   },
   {
     "Name": "DisplayProperties",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "desk.cpl" ],
     "Command": "control Desk.cpl"
   },
   {
     "Name": "FindFast",
     "Areas": [ "AreaSystemAndSecurity" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "findfast.cpl" ],
     "Command": "control FindFast.cpl"
   },
   {
     "Name": "RegionalSettingsProperties",
     "Areas": [ "AreaEaseOfAccess" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "intl.cpl" ],
     "Command": "control Intl.cpl"
   },
   {
     "Name": "JoystickProperties",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "joy.cpl" ],
     "Command": "control Joy.cpl"
   },
   {
     "Name": "MouseFontsKeyboardAndPrintersProperties",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "main.cpl" ],
     "Command": "control Main.cpl"
   },
   {
     "Name": "MultimediaProperties",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "mmsys.cpl" ],
     "Command": "control Mmsys.cpl"
   },
   {
     "Name": "NetworkProperties",
     "Areas": [ "AreaNetworkAndInternet" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "netcpl.cpl" ],
     "Command": "control Netcpl.cpl"
   },
   {
     "Name": "PasswordProperties",
     "Areas": [ "AreaUserAccounts" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "password.cpl" ],
     "Command": "control Password.cpl"
   },
   {
     "Name": "SystemPropertiesAndAddNewHardwareWizard",
     "Areas": [ "AreaHardwareAndSound" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "sysdm.cpl" ],
     "Command": "control Sysdm.cpl"
   },
   {
     "Name": "DesktopThemes",
     "Areas": [ "AreaAppearanceAndPersonalization" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "themes.cpl" ],
     "Command": "control Themes.cpl"
   },
   {
     "Name": "MicrosoftMailPostOffice",
     "Areas": [ "AreaPrograms" ],
-    "Type": "ControlPanel",
+    "Type": "AppControlPanel",
     "AltNames": [ "wgpocpl.cpl" ],
     "Command": "control Wgpocpl.cpl"
   }

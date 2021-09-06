@@ -29,22 +29,28 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             foreach (var settings in settingsList)
             {
                 // Translate Name
-                var name = Resources.ResourceManager.GetString(settings.Name);
-                if (string.IsNullOrEmpty(name))
+                if (!string.IsNullOrWhiteSpace(settings.Name))
                 {
-                    Log.Warn($"Resource string for [{settings.Name}] not found", typeof(TranslationHelper));
-                }
+                    var name = Resources.ResourceManager.GetString(settings.Name);
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        Log.Warn($"Resource string for [{settings.Name}] not found", typeof(TranslationHelper));
+                    }
 
-                settings.Name = name ?? settings.Name ?? string.Empty;
+                    settings.Name = name ?? settings.Name ?? string.Empty;
+                }
 
                 // Translate Type (App)
-                var type = Resources.ResourceManager.GetString(settings.Type);
-                if (string.IsNullOrEmpty(type))
+                if (!string.IsNullOrWhiteSpace(settings.Type))
                 {
-                    Log.Warn($"Resource string for [{settings.Type}] not found", typeof(TranslationHelper));
-                }
+                    var type = Resources.ResourceManager.GetString(settings.Type);
+                    if (string.IsNullOrEmpty(type))
+                    {
+                        Log.Warn($"Resource string for [{settings.Type}] not found", typeof(TranslationHelper));
+                    }
 
-                settings.Type = type ?? settings.Type ?? string.Empty;
+                    settings.Type = type ?? settings.Type ?? string.Empty;
+                }
 
                 // Translate Areas
                 if (!(settings.Areas is null) && settings.Areas.Any())
@@ -95,7 +101,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 }
 
                 // Translate Note
-                if (!string.IsNullOrEmpty(settings.Note))
+                if (!string.IsNullOrWhiteSpace(settings.Note))
                 {
                     var note = Resources.ResourceManager.GetString(settings.Note);
                     if (string.IsNullOrEmpty(note))
