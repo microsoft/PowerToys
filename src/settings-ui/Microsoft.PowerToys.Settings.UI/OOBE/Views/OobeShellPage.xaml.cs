@@ -233,9 +233,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public void UpdateUITheme()
         {
-            var settingsUtils = new SettingsUtils();
-            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
-            switch (generalSettings.SettingsConfig.Theme.ToUpperInvariant())
+            switch (SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Theme.ToUpperInvariant())
             {
                 case "LIGHT":
                     this.RequestedTheme = ElementTheme.Light;

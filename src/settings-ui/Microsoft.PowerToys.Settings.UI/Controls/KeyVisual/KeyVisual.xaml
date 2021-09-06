@@ -2,56 +2,123 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls">
 
-    <!-- This can be removed once we adopt WinUI 2.6 or higher -->
-    <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Default">
-            <Color x:Key="ControlStrokeColorDefault">#12FFFFFF</Color>
-            <Color x:Key="ControlStrokeColorSecondary">#18FFFFFF</Color>
-            <Color x:Key="ControlFillColorDefault">#0FFFFFFF</Color>
-            
-        </ResourceDictionary>
-        
-        <ResourceDictionary x:Key="Light">
-            <Color x:Key="ControlStrokeColorDefault">#0F000000</Color>
-            <Color x:Key="ControlStrokeColorSecondary">#29000000</Color>
-            <Color x:Key="ControlFillColorDefault">#B3FFFFFF</Color>
-            
-        </ResourceDictionary>
-        
-    </ResourceDictionary.ThemeDictionaries>
-    
-    <LinearGradientBrush x:Key="ControlElevationBorderBrush"
-                         MappingMode="Absolute"
-                         StartPoint="0,0"
-                         EndPoint="0,3">
-        <LinearGradientBrush.GradientStops>
-            <GradientStop Offset="0.33"
-                          Color="{ThemeResource ControlStrokeColorSecondary}" />
-            <GradientStop Offset="1.0"
-                          Color="{ThemeResource ControlStrokeColorDefault}" />
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
-    <!--- -->
-    
-    
-    <Style TargetType="local:KeyVisual">
+    <x:Double x:Key="DefaultIconSize">16</x:Double>
+    <x:Double x:Key="SmallIconSize">12</x:Double>
+    <Style x:Key="DefaultTextKeyVisualStyle" TargetType="local:KeyVisual">
+        <Setter Property="MinWidth" Value="56" />
+        <Setter Property="MinHeight" Value="48" />
+        <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
+        <Setter Property="Padding" Value="16,8,16,8" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="18" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:KeyVisual">
-                    <!-- Background="{ThemeResource ControlFillColorDefault}" -->
-                    <Border Background="LightGray"
-                            BorderThickness="1"
-                            BorderBrush="{ThemeResource ControlElevationBorderBrush}"
-                            CornerRadius="4"
-                            Padding="11,5,11,6"
-                            Height="32">
-                        <ContentPresenter Content="{TemplateBinding Content}"
-                                          FontWeight="SemiBold"
+                    <Grid>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <!--<Setter Target="ContentHolder.Fill" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
+                                        <Setter Target="ContentHolder.Stroke" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
+                                        <Setter Target="ContentHolder.StrokeThickness" Value="{TemplateBinding BorderThickness}" />-->
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="StateStates">
+                                <VisualState x:Name="Default"/>
+                                <VisualState x:Name="Error">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentHolder.Fill" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
+                                        <Setter Target="ContentHolder.Stroke" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
+                                        <Setter Target="ContentHolder.StrokeThickness" Value="2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid>
+                            <Rectangle x:Name="ContentHolder"
+                                Fill="{TemplateBinding Background}"
+                                Stroke="{TemplateBinding BorderBrush}"
+                                StrokeThickness="{TemplateBinding BorderThickness}"
+                                RadiusX="4"
+                                RadiusY="4"
+                                Height="{TemplateBinding Height}"
+                                MinWidth="{TemplateBinding MinWidth}"/>
+                            <ContentPresenter x:Name="KeyPresenter"
+                                          FontWeight="{TemplateBinding FontWeight}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          Content="{TemplateBinding Content}"
+                                          Margin="{TemplateBinding Padding}"
+                                          FontSize="{TemplateBinding FontSize}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalAlignment="Center" />
-                    </Border>
+                        </Grid>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
+    <Style x:Key="SmallTextKeyVisualStyle" TargetType="local:KeyVisual" BasedOn="{StaticResource DefaultTextKeyVisualStyle}">
+        <Setter Property="MinWidth" Value="40" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="12,0,12,2" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="SmallOutlineTextKeyVisualStyle" TargetType="local:KeyVisual" BasedOn="{StaticResource DefaultTextKeyVisualStyle}">
+        <Setter Property="MinWidth" Value="40" />
+        <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="8,0,8,2" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+
+    <Style x:Key="DefaultIconKeyVisualStyle" TargetType="local:KeyVisual" BasedOn="{StaticResource DefaultTextKeyVisualStyle}">
+        <Setter Property="MinWidth" Value="56" />
+        <Setter Property="MinHeight" Value="48" />
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+        <Setter Property="Padding" Value="16,8,16,8" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="SmallIconKeyVisualStyle" TargetType="local:KeyVisual" BasedOn="{StaticResource DefaultTextKeyVisualStyle}">
+        <Setter Property="MinWidth" Value="40" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="SmallOutlineIconKeyVisualStyle" TargetType="local:KeyVisual" BasedOn="{StaticResource DefaultTextKeyVisualStyle}">
+        <Setter Property="MinWidth" Value="40" />
+        <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FontSize" Value="9" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
 </ResourceDictionary>

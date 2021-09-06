@@ -7,6 +7,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     mc:Ignorable="d"
+    x:Name="RootPage"
     AutomationProperties.LandmarkType="Main">
 
     <controls:SettingsPageControl x:Uid="ColorPicker"
@@ -27,14 +28,9 @@
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;">
-                        <controls:Setting.Description>
-                            <TextBlock>
-                            <Run x:Uid="ShortcutWarningLabel"/>
-                            <Run Text="Win, Ctrl, Alt, Shift"/>
-                            </TextBlock>
-                        </controls:Setting.Description>
                         <controls:Setting.ActionContent>
-                            <controls:HotkeySettingsControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" Keys="Win, Ctrl, Alt, Shift"/>
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                      HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
