@@ -128,7 +128,7 @@ namespace PowerLauncher
             _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
             _hwndSource.AddHook(ProcessWindowMessages);
 
-            // Call RegistHotKey only after a window handle can be used, so that a global hotkey can be registered.
+            // Call RegisterHotKey only after a window handle can be used, so that a global hotkey can be registered.
             _viewModel.RegisterHotkey(_hwndSource.Handle);
         }
 
