@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using Wox.Plugin.Logger;
@@ -17,32 +16,11 @@ namespace PowerLauncher.Helper
 {
     public static class EnvironmentHelper
     {
-        private const string EnvironmentChangeType = "Environment";
         private const string Username = "USERNAME";
         private const string ProcessorArchitecture = "PROCESSOR_ARCHITECTURE";
         private const string Path = "PATH";
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for delegate signature requirements.")]
-        public static IntPtr ProcessWindowMessages(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
-        {
-            switch ((WM)msg)
-            {
-                case WM.SETTINGCHANGE:
-                    string changeType = Marshal.PtrToStringUni(lparam);
-                    if (changeType == EnvironmentChangeType)
-                    {
-                        Log.Info("Reload environment", typeof(EnvironmentHelper));
-                        UpdateEnvironment();
-                        handled = true;
-                    }
-
-                    break;
-            }
-
-            return IntPtr.Zero;
-        }
-
-        private static void UpdateEnvironment()
+        internal static void UpdateEnvironment()
         {
             // Username and process architecture are set by the machine vars, this
             // may lead to incorrect values so save off the current values to restore.

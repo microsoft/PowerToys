@@ -31,6 +31,18 @@ namespace PowerLauncher.Helper
         [DllImport("user32.dll")]
         internal static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
+        [DllImport("user32")]
+        internal static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+        [DllImport("user32")]
+        internal static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
@@ -84,6 +96,34 @@ namespace PowerLauncher.Helper
                 // Assert.AreEqual(IntPtr.Zero, p);
             }
         }
+    }
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerhotkey
+    internal enum HOTKEY_MODIFIERS : uint
+    {
+        ALT = 0x0001,
+        CONTROL = 0x0002,
+        SHIFT = 0x0004,
+        WIN = 0x0008,
+        NOREPEAT = 0x4000,
+        CHECK_FLAGS = 0x000F, // modifiers to compare between keys.
+    }
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
+    internal enum SW : int
+    {
+        HIDE = 0x0000,
+        SHOWNORMAL = 0x0001,
+        SHOWMINIMIZED = 0x0002,
+        SHOWMAXIMIZED = 0x0003,
+        SHOWNOACTIVATE = 0x0004,
+        SHOW = 0x0005,
+        MINIMIZE = 0x0006,
+        SHOWMINNOACTIVE = 0x0007,
+        SHOWNA = 0x0008,
+        RESTORE = 0x0009,
+        SHOWDEFAULT = 0x000A,
+        FORCEMINIMIZE = 0x000B,
     }
 
     internal enum WM
@@ -184,6 +224,8 @@ namespace PowerLauncher.Helper
         IME_KEYUP = 0x0291,
 
         NCMOUSELEAVE = 0x02A2,
+
+        HOTKEY = 0x0312,
 
         DWMCOMPOSITIONCHANGED = 0x031E,
         DWMNCRENDERINGCHANGED = 0x031F,
