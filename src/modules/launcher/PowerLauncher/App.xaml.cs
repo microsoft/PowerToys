@@ -138,7 +138,6 @@ namespace PowerLauncher
                 bootTime.Stop();
 
                 Log.Info(textToLog.ToString(), GetType());
-                _mainVM.RegisterHotkey();
                 PowerToysTelemetry.Log.WriteEvent(new LauncherBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
 
                 // [Conditional("RELEASE")]
