@@ -127,7 +127,7 @@ Autorun
 AUTOSIZECOLUMNS
 AUTOUPDATE
 AValid
-avialable
+available
 awakeversion
 AWAYMODE
 AYUV
