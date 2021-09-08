@@ -51,6 +51,7 @@ namespace PowerLauncher.ViewModel
         private ushort _hotkeyHandle;
 
         private const int _globalHotKeyId = 0x0001;
+        private IntPtr _globalHotKeyHwnd;
         private uint _globalHotKeyVK;
         private uint _globalHotKeyFSModifiers;
         private bool _usingGlobalHotKey;
@@ -93,7 +94,7 @@ namespace PowerLauncher.ViewModel
                         {
                             if (_usingGlobalHotKey)
                             {
-                                NativeMethods.UnregisterHotKey(hwnd, _globalHotKeyId);
+                                NativeMethods.UnregisterHotKey(_globalHotKeyHwnd, _globalHotKeyId);
                                 _usingGlobalHotKey = false;
                                 Log.Info("Unregistering previous global hotkey", GetType());
                             }
@@ -724,7 +725,7 @@ namespace PowerLauncher.ViewModel
 
                 if (_usingGlobalHotKey)
                 {
-                    NativeMethods.UnregisterHotKey(hwnd, _globalHotKeyId);
+                    NativeMethods.UnregisterHotKey(_globalHotKeyHwnd, _globalHotKeyId);
                     _usingGlobalHotKey = false;
                     Log.Info("Unregistering previous global hotkey", GetType());
                 }
@@ -741,6 +742,7 @@ namespace PowerLauncher.ViewModel
                 if (NativeMethods.RegisterHotKey(hwnd, _globalHotKeyId, _globalHotKeyFSModifiers, _globalHotKeyVK))
                 {
                     // Using global hotkey registered through the native RegisterHotKey method.
+                    _globalHotKeyHwnd = hwnd;
                     _usingGlobalHotKey = true;
                     Log.Info("Registered global hotkey", GetType());
                     return;
@@ -1034,6 +1036,12 @@ namespace PowerLauncher.ViewModel
             {
                 if (disposing)
                 {
+                    if (_usingGlobalHotKey)
+                    {
+                        NativeMethods.UnregisterHotKey(_globalHotKeyHwnd, _globalHotKeyId);
+                        _usingGlobalHotKey = false;
+                    }
+
                     if (_hotkeyHandle != 0)
                     {
                         HotkeyManager?.UnregisterHotkey(_hotkeyHandle);
