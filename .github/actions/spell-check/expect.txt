@@ -375,7 +375,6 @@ CXSMICON
 CXVIRTUALSCREEN
 cxx
 cxxopts
-CYMK
 CYSMICON
 cziplib
 Dac
