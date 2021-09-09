@@ -65,10 +65,10 @@ The SCOOBE dialog builds off the currently implemented OOBE dialog originally dr
 | **No.** | **Requirement** | **Pri** |
 | --- | --- | --- |
 |1. | The SCOOBE dialog should display the version of PowerToys the user has installed, as shown in figures 5.1.1. | P0 |
-|2. | The SCOOBE dialog information should be grouped into two sections: &quot;New Features &amp; Improvements&quot; and &quot;Bugfixes Highlights&quot;. | P0 |
+|2. | The SCOOBE dialog information should be grouped into two sections: &quot;New Features &amp; Improvements&quot; and &quot;Bug fixes Highlights&quot;. | P0 |
 |3. | The &quot;New Features &amp; Improvements&quot; section should contain information related to end user functionality that has been added or updated. | P0 |
 |4. | The &quot;New Features &amp; Improvements&quot; section should be subdivided by the relevant utilities updated (i.e. Color Picker, FancyZones, etc.). See figure 5.1.1 and section 5.1.3 for examples. | P1 |
-|5. | The &quot;Bugfixes Highlights&quot; section should contain information related to noteworthy issues/errors that were corrected. | P0 |
+|5. | The &quot;Bug fixes Highlights&quot; section should contain information related to noteworthy issues/errors that were corrected. | P0 |
 |6. | If there are relevant visuals, they should be included with the information text. See figure 5.1.1. | P1 |
 |8. | The SCOOBE dialog should be scrollable if needed to fit all the content. | P0 |
 |10. | The bottom of the SCOOBE dialog should include a link to the PowerToys releases page for a complete list of versions and their release notes ([Releases · microsoft/PowerToys (github.com)](https://github.com/microsoft/PowerToys/releases)). | P1 |
@@ -112,7 +112,7 @@ The SCOOBE dialog builds off the currently implemented OOBE dialog originally dr
     - Service management plugin (Start, stop, …)
     - Registry key plugin
     - System action plugin (Reboot, lock, ...)
-- Bugfixes Highlights
+- Bug fixes Highlights
   - Fixed OneDrive SVG Bug (#9999)
   - SVG are scaled appropriately when view box is provided (#9999)
 
@@ -127,7 +127,7 @@ The SCOOBE dialog builds off the currently implemented OOBE dialog originally dr
     - Plugin Manager now is in settings. You can directly turn on / off, include items in general search, and change the action key
     - Improved support for additional window managers by abstracting out shell process calls
     - ~ will now act as the user home directory in Folder plugin
-- Bugfixes Highlights
+- Bug fixes Highlights
   - Fix for PT Run registering the hotkey on non-supported OS versions (#9999)
 
 **v0.33 -> v0.35:**
@@ -141,6 +141,6 @@ The SCOOBE dialog builds off the currently implemented OOBE dialog originally dr
     - Users can specify where to show the launcher window
     - New plugin added to support opening previously used Visual Studio Code workspaces, remote machines (SSH or Codespaces), and containers! When enabled, use { to query for available workspaces. Please note, this plugin is off by default.
     - Shell history now saves the raw command instead of the resolved command. A command like %appdata% would now save in the Shell history as is instead of C:\Users\YourUserName\AppData\Roaming.
-- Bugfixes Highlights
+- Bug fixes Highlights
   - PowerToys will start requiring Windows 10 v1903 or greater after 0.35.x release. (#9999)
   - Fixed FancyZones placement algorithm for when the Taskbar is vertical (#9999)
