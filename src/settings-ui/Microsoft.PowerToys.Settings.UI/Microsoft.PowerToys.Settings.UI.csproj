@@ -105,7 +105,7 @@
     <Compile Include="Controls\ShortcutControl\ShortcutDialogContentControl.xaml.cs">
       <DependentUpon>ShortcutDialogContentControl.xaml</DependentUpon>
     </Compile>
- <Compile Include="Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml.cs">
+    <Compile Include="Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml.cs">
       <DependentUpon>ShortcutWithTextLabelControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\SettingsPageControl\SettingsPageControl.xaml.cs">
@@ -285,7 +285,7 @@
       <Version>6.1.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.6.0-prerelease.210623001</Version>
+      <Version>2.6.2-prerelease.210818003</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
