@@ -50,10 +50,10 @@ namespace ColorPicker.Helpers
             };
 
         /// <summary>
-        /// Return a <see cref="string"/> representation of a CYMK color
+        /// Return a <see cref="string"/> representation of a CMYK color
         /// </summary>
-        /// <param name="color">The <see cref="Color"/> for the CYMK color presentation</param>
-        /// <returns>A <see cref="string"/> representation of a CYMK color</returns>
+        /// <param name="color">The <see cref="Color"/> for the CMYK color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a CMYK color</returns>
         private static string ColorToCMYK(Color color)
         {
             var (cyan, magenta, yellow, blackKey) = ColorHelper.ConvertToCMYKColor(color);
