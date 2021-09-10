@@ -145,6 +145,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                     }
                 }
 
+                // Search by key char '>' for app name and settings path
+                if (query.Search.Contains('>'))
+                {
+                    return ResultHelper.FilterBySettingsPath(found, query.Search);
+                }
+
                 return false;
             }
         }
