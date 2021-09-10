@@ -180,6 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Link = "https://aka.ms/PowerToysOverview_ShortcutGuide",
             });
 
+            // TODO(yuyoyuppe): uncomment when VCM should be enabled
             /* Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_VideoConference"),
