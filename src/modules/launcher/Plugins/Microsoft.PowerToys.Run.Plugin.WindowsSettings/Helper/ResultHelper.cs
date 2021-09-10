@@ -188,5 +188,52 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 result.Score = lowScore--;
             }
         }
+
+        /// <summary>
+        /// Checks if a setting <see cref="WindowsSetting"/> matches the search string <see cref="Query.Search"/> to filter settings by settings path.
+        /// This method is called from the filter function <see cref="Main.Query(Query)"/> if the search string <see cref="Query.Search"/> contains the character ">".
+        /// </summary>
+        /// <param name="found">The WindowsSetting taht should be checked.</param>
+        /// <param name="searchString">The searchString entered by the user <see cref="Query.Search"/>s.</param>
+        internal static bool FilterBySettingsPath(in WindowsSetting found, in string searchString)
+        {
+            if (!searchString.Contains('>'))
+            {
+                return false;
+            }
+
+            var pathElements = searchString.Split('>');
+
+            // check app name of the WindowsSetting
+            if (!found.Type.StartsWith(pathElements[0]))
+            {
+                return false;
+            }
+
+            // Check area path of the WindowsSetting.
+            // If "pathElements.Length" is higher than one the "searchString" contains at least one area name.
+            // Because the area names in pathElements array start at index 1 sometimes <pathElements.Length - 1> or <index - 1> is used.
+            if (pathElements.Length > 1 & !(found.Areas is null))
+            {
+                if ((pathElements.Length - 1) > found.Areas.Count())
+                {
+                    // The user entered more area names (pathElements[1] -> pathElements[n]) than defined for this WindowsSetting.
+                    return false;
+                }
+
+                for (int i = 1; i <= pathElements.Length; i++)
+                {
+#pragma warning disable CS8602 // Do not catch exception "Possible null reference". The compiler thinks that Areas could be null which is not possible because of the parental if condition.
+                    if (!found.Areas[i - 1].StartsWith(pathElements[i]))
+                    {
+                        // The user has entered an area name that not matches.
+                        return false;
+                    }
+                }
+            }
+
+            // Return "true" if WindowsSetting "WindowsSetting" matches "searchString".
+            return true;
+        }
     }
 }
