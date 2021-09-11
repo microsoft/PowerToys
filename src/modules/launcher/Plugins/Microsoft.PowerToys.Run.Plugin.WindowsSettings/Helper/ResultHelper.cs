@@ -167,6 +167,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     continue;
                 }
 
+                if (windowsSetting.Areas is null)
+                {
+                    result.Score = lowScore--;
+                    continue;
+                }
+
                 if (windowsSetting.Areas.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
                 {
                     result.Score = lowScore--;
