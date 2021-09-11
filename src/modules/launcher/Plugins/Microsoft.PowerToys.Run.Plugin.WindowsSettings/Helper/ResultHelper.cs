@@ -199,7 +199,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// Checks if a setting <see cref="WindowsSetting"/> matches the search string <see cref="Query.Search"/> to filter settings by settings path.
         /// This method is called from the <see cref="Predicate{T}"/> method in <see cref="Main.Query(Query)"/> if the search string <see cref="Query.Search"/> contains the character ">".
         /// </summary>
-        /// <param name="found">The WindowsSetting taht should be checked.</param>
+        /// <param name="found">The WindowsSetting's result that should be checked.</param>
         /// <param name="queryString">The searchString entered by the user <see cref="Query.Search"/>s.</param>
         internal static bool FilterBySettingsPath(in WindowsSetting found, in string queryString)
         {
@@ -217,26 +217,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             }
 
             // Check area path of the WindowsSetting.
-            // If "pathElements.Length" is higher than one the "searchString" contains at least one area name.
-            // Because the area names in pathElements array start at index 1 sometimes <pathElements.Length - 1> or <index - 1> is used.
             if (!string.IsNullOrEmpty(queryElements[1]))
             {
                 if (found.Areas is null)
                 {
-                    // The user entered at least one area name (pathElements[1] -> pathElements[n]). But the WindowsSetting nas no defined areas.
+                    // The user entered at least one area name (queryElements[1]). But the WindowsSetting has no defined areas.
                     return false;
                 }
 
                 if ((queryElements.Length - 1) > found.Areas.Count())
                 {
-                    // The user entered more area names (pathElements[1] -> pathElements[n]) than defined for this WindowsSetting.
+                    // The user entered more area names (queryElements[1] -> queryElements[n]) than defined for this WindowsSetting.
                     return false;
                 }
 
                 int areaCounter = 0;
-                foreach (var qEelement in queryElements.Skip(1))
+                foreach (var qElement in queryElements.Skip(1))
                 {
-                    if (!found.Areas[areaCounter].StartsWith(qEelement, StringComparison.CurrentCultureIgnoreCase))
+                    if (!found.Areas[areaCounter].StartsWith(qElement, StringComparison.CurrentCultureIgnoreCase))
                     {
                         // The user has entered an area name that not matches.
                         return false;
@@ -246,7 +244,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 }
             }
 
-            // Return "true" if WindowsSetting "WindowsSetting" matches "searchString".
+            // Return "true" if <found> matches <queryString>.
             return true;
         }
     }
