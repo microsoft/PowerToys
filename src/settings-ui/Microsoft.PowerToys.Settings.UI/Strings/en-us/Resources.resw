@@ -605,7 +605,7 @@
     <value>Zone inactive color</value>
   </data>
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
-    <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
+    <value>Shows a help overlay with Windows shortcuts.</value>
   </data>
   <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
     <value>Press duration before showing (ms)</value>
