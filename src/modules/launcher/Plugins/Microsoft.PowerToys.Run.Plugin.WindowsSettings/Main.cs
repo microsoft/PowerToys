@@ -110,6 +110,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
 
             bool Predicate(WindowsSetting found)
             {
+                if (string.IsNullOrWhiteSpace(query.Search))
+                {
+                    // If no search string is entered skip query comparsion.
+                    return true;
+                }
+
                 if (found.Name.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return true;

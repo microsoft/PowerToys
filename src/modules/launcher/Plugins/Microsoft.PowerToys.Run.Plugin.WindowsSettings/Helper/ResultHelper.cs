@@ -154,41 +154,44 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     continue;
                 }
 
-                if (windowsSetting.Name.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(query))
                 {
-                    result.Score = highScore--;
-                    continue;
-                }
+                    if (windowsSetting.Name.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        result.Score = highScore--;
+                        continue;
+                    }
 
-                // If query starts with second or next word of name, set score.
-                if (windowsSetting.Name.Contains($" {query}", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    result.Score = mediumScore--;
-                    continue;
-                }
+                    // If query starts with second or next word of name, set score.
+                    if (windowsSetting.Name.Contains($" {query}", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        result.Score = mediumScore--;
+                        continue;
+                    }
 
-                if (windowsSetting.Areas is null)
-                {
-                    result.Score = lowScore--;
-                    continue;
-                }
+                    if (windowsSetting.Areas is null)
+                    {
+                        result.Score = lowScore--;
+                        continue;
+                    }
 
-                if (windowsSetting.Areas.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
-                {
-                    result.Score = lowScore--;
-                    continue;
-                }
+                    if (windowsSetting.Areas.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        result.Score = lowScore--;
+                        continue;
+                    }
 
-                if (windowsSetting.AltNames is null)
-                {
-                    result.Score = lowScore--;
-                    continue;
-                }
+                    if (windowsSetting.AltNames is null)
+                    {
+                        result.Score = lowScore--;
+                        continue;
+                    }
 
-                if (windowsSetting.AltNames.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
-                {
-                    result.Score = mediumScore--;
-                    continue;
+                    if (windowsSetting.AltNames.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        result.Score = mediumScore--;
+                        continue;
+                    }
                 }
 
                 result.Score = lowScore--;
