@@ -856,11 +856,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
+          <Val><![CDATA[Allow zones to span across monitors]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zones over meerdere schermen toestaan (alle schermen moeten dezelfde DPI-schaal hebben)]]></Val>
+            <Val><![CDATA[Toestaan dat zones worden overspannen tussen monitors]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Alle monitors moeten dezelfde DPI-schaalaanpassing hebben en worden behandeld als één grote gecombineerde rechthoek die alle monitors bevat.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3274,8 +3283,8 @@
       <Item ItemId=";PowerRename_Toggle_EnableOnExtendedContextMenu.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press Shift + right-click on files to open the extended menu]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[PowerRename wordt alleen weergegeven in uitgebreide contextmenu's (druk op Shift + klikken met de rechtermuisknop)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gebruik Shift + rechtermuisknop in bestanden om het uitgebreide menu te openen]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[PowerRename only appears in extended context menu's (press Shift + right-click)]]></Val>
@@ -3286,8 +3295,8 @@
       <Item ItemId=";PowerRename_Toggle_EnableOnExtendedContextMenu.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Appear only in extended context menu]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Weergeven in uitgebreide contextmenu's]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Alleen weergeven in uitgebreide contextmenu's]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Show in extended context menu's]]></Val>

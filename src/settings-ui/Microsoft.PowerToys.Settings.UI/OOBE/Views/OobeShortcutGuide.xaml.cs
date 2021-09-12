@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -54,6 +55,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
+
+            HotkeyControl.Keys = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -10,9 +11,6 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class OobeFancyZones : Page
     {
         public OobePowerToysModule ViewModel { get; set; }
@@ -37,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
+            HotkeyControl.Keys = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.GetKeysList();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

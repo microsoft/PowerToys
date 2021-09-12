@@ -5,6 +5,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -96,10 +97,39 @@ namespace PowerLauncher
             Activate();
         }
 
+        private const string EnvironmentChangeType = "Environment";
+
+#pragma warning disable CA1801 // Review unused parameters
+        public IntPtr ProcessWindowMessages(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
+#pragma warning restore CA1801 // Review unused parameters
+        {
+            switch ((WM)msg)
+            {
+                case WM.SETTINGCHANGE:
+                    string changeType = Marshal.PtrToStringUni(lparam);
+                    if (changeType == EnvironmentChangeType)
+                    {
+                        Log.Info("Reload environment", typeof(EnvironmentHelper));
+                        EnvironmentHelper.UpdateEnvironment();
+                        handled = true;
+                    }
+
+                    break;
+                case WM.HOTKEY:
+                    handled = _viewModel.ProcessHotKeyMessages(wparam, lparam);
+                    break;
+            }
+
+            return IntPtr.Zero;
+        }
+
         private void OnSourceInitialized(object sender, EventArgs e)
         {
             _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
-            _hwndSource.AddHook(EnvironmentHelper.ProcessWindowMessages);
+            _hwndSource.AddHook(ProcessWindowMessages);
+
+            // Call RegisterHotKey only after a window handle can be used, so that a global hotkey can be registered.
+            _viewModel.RegisterHotkey(_hwndSource.Handle);
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -488,6 +518,12 @@ namespace PowerLauncher
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private void OnClosed(object sender, EventArgs e)
+        {
+            _hwndSource.RemoveHook(ProcessWindowMessages);
+            _hwndSource = null;
         }
     }
 }

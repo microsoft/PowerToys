@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -98,6 +99,55 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
 
             return output.ToString();
+        }
+
+        public List<object> GetKeysList()
+        {
+            List<object> shortcutList = new List<object>();
+
+            if (Win)
+            {
+                shortcutList.Add(92); // The Windows key or button.
+            }
+
+            if (Ctrl)
+            {
+                shortcutList.Add("Ctrl");
+            }
+
+            if (Alt)
+            {
+                shortcutList.Add("Alt");
+            }
+
+            if (Shift)
+            {
+                shortcutList.Add("Shift");
+
+                // shortcutList.Add(16); // The Shift key or button.
+            }
+
+            if (Code > 0)
+            {
+                switch (Code)
+                {
+                    // https://docs.microsoft.com/en-us/uwp/api/windows.system.virtualkey?view=winrt-20348
+                    case 38: // The Up Arrow key or button.
+                    case 40: // The Down Arrow key or button.
+                    case 37: // The Left Arrow key or button.
+                    case 39: // The Right Arrow key or button.
+                    // case 8: // The Back key or button.
+                    // case 13: // The Enter key or button.
+                        shortcutList.Add(Code);
+                        break;
+                    default:
+                        var localKey = Helper.GetKeyName((uint)Code);
+                        shortcutList.Add(localKey);
+                        break;
+                }
+            }
+
+            return shortcutList;
         }
 
         public bool IsValid()

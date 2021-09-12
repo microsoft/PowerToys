@@ -19,37 +19,11 @@
 
 
         <DataTemplate x:Key="OriginalKeyTemplate" x:DataType="x:String">
-            <Border Background="{ThemeResource ButtonBackground}"
-                    BorderBrush="{ThemeResource ButtonBorderBrush}"
-                    BorderThickness="{ThemeResource ButtonBorderThemeThickness}"
-                    CornerRadius="{ThemeResource ControlCornerRadius}"
-                    Padding="{ThemeResource ButtonPadding}"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Left">
-                <TextBlock FontWeight="SemiBold"
-                           Foreground="{ThemeResource ButtonForeground}"
-                           VerticalAlignment="Center"
-                           TextAlignment="Center"
-                           FontSize="12"
-                           Text="{Binding}" />
-            </Border>
+            <controls:KeyVisual Content="{Binding}" VisualType="SmallOutline" />
         </DataTemplate>
 
         <DataTemplate x:Key="RemappedKeyTemplate" x:DataType="x:String">
-            <Border Background="{ThemeResource ButtonBackground}"
-                    BorderBrush="{ThemeResource AccentButtonBackground}"
-                    BorderThickness="{ThemeResource ButtonBorderThemeThickness}"
-                    CornerRadius="{ThemeResource ControlCornerRadius}"
-                    Padding="{ThemeResource ButtonPadding}"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Left">
-                <TextBlock FontWeight="SemiBold"
-                           Foreground="{ThemeResource AccentButtonBackground}"
-                           VerticalAlignment="Center"
-                           TextAlignment="Center"
-                           FontSize="12"
-                           Text="{Binding}" />
-            </Border>
+            <controls:KeyVisual Content="{Binding}" VisualType="Small" />
         </DataTemplate>
 
         <!--<DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">

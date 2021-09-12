@@ -86,6 +86,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
             _settingsList = UnsupportedSettingsHelper.FilterByBuild(_settingsList);
 
             TranslationHelper.TranslateAllSettings(_settingsList);
+            WindowsSettingsPathHelper.GenerateSettingsPathValues(_settingsList);
         }
 
         /// <summary>
@@ -114,16 +115,23 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                     return true;
                 }
 
-                // Search for Area only by key char
-                if (found.Area.Contains(query.Search.Replace(":", string.Empty), StringComparison.CurrentCultureIgnoreCase)
-                && query.Search.EndsWith(":"))
+                if (!(found.Areas is null))
                 {
-                    return true;
-                }
+                    foreach (var area in found.Areas)
+                    {
+                        // Search for areas on normal queries.
+                        if (area.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            return true;
+                        }
 
-                if (found.Area.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    return true;
+                        // Search for Area only on queries with action char.
+                        if (area.Contains(query.Search.Replace(":", string.Empty), StringComparison.CurrentCultureIgnoreCase)
+                        && query.Search.EndsWith(":"))
+                        {
+                            return true;
+                        }
+                    }
                 }
 
                 if (!(found.AltNames is null))

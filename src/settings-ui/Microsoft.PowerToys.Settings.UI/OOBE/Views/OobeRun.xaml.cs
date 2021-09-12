@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -51,6 +52,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
+
+            HotkeyControl.Keys = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.GetKeysList();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

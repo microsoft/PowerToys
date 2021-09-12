@@ -19,6 +19,7 @@
         SourceInitialized="OnSourceInitialized"
         Loaded="OnLoaded"
         Closing="OnClosing"
+        Closed="OnClosed"
         Background="Transparent"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"

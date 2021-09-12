@@ -878,10 +878,10 @@
         <?endforeach?>
       </Component>
     </DirectoryRef>
-    <DirectoryRef Id="SettingsV2ControlsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Controls">
+    <DirectoryRef Id="SettingsV2ControlsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Controls\ShortcutControl">
       <Component Id="SettingsV2Controls" Guid="05C55C88-B59A-4450-A07C-EB7626E0781A" Win64="yes">
-        <?foreach File in HotkeySettingsControl.xbf?>
-          <File Id="SettingsV2_Controls_$(var.File)" Source="$(var.BinX64Dir)Settings\Controls\$(var.File)" />
+        <?foreach File in ShortcutControl.xbf?>
+          <File Id="SettingsV2_Controls_$(var.File)" Source="$(var.BinX64Dir)Settings\Controls\ShortcutControl\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>

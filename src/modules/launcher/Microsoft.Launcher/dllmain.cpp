@@ -310,9 +310,13 @@ public:
                 enable();
             }
 
+            /* Before we used the central keyboard hook to trigger PowerToys Run.
+             * Now, PowerToys Run uses a global hotkey so that it can get focus.
+             * This means we can't return true so that the hotkey can propagate to PowerToys Run.
             Logger::trace("Set POWER_LAUNCHER_SHARED_EVENT");
             SetEvent(m_hEvent);
             return true;
+            */
         }
 
         return false;
