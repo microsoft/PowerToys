@@ -208,39 +208,36 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 return false;
             }
 
+            // Init vars
             var queryElements = queryString.Split('>');
 
-            // check app name of the WindowsSetting
-            if (!found.Type.StartsWith(queryElements[0], StringComparison.CurrentCultureIgnoreCase))
+            List<string> settingsPath = new List<string>();
+            settingsPath.Add(found.Type);
+            if (!(found.Areas is null))
             {
-                return false;
+                settingsPath.AddRange(found.Areas);
             }
 
-            // Check area path of the WindowsSetting.
-            if (!string.IsNullOrEmpty(queryElements[1]))
+            // Compare query and settings path
+            for (int i = 0; i < queryElements.Length; i++)
             {
-                if (found.Areas is null)
+                if (string.IsNullOrWhiteSpace(queryElements[i]))
                 {
-                    // The user entered at least one area name (queryElements[1]). But the WindowsSetting has no defined areas.
-                    return false;
+                    // The queryEelent is an WhiteSpace. Nothing to compare.
+                    break;
                 }
 
-                if ((queryElements.Length - 1) > found.Areas.Count())
+                if (i < settingsPath.Count)
                 {
-                    // The user entered more area names (queryElements[1] -> queryElements[n]) than defined for this WindowsSetting.
-                    return false;
-                }
-
-                int areaCounter = 0;
-                foreach (var qElement in queryElements.Skip(1))
-                {
-                    if (!found.Areas[areaCounter].StartsWith(qElement, StringComparison.CurrentCultureIgnoreCase))
+                    if (!settingsPath[i].StartsWith(queryElements[i], StringComparison.CurrentCultureIgnoreCase))
                     {
-                        // The user has entered an area name that not matches.
                         return false;
                     }
-
-                    areaCounter++;
+                }
+                else
+                {
+                    // The user has entered more query parts than existing elements in settings path.
+                    return false;
                 }
             }
 
