@@ -112,7 +112,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
             {
                 if (string.IsNullOrWhiteSpace(query.Search))
                 {
-                    // If no search string is entered skip query comparsion.
+                    // If no search string is entered skip query comparison.
                     return true;
                 }
 

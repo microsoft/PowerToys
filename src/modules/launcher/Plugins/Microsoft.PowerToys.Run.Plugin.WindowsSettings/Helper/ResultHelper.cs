@@ -226,7 +226,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             {
                 if (string.IsNullOrWhiteSpace(queryElements[i]))
                 {
-                    // The queryEelent is an WhiteSpace. Nothing to compare.
+                    // The queryElement is an WhiteSpace. Nothing to compare.
                     break;
                 }
 
