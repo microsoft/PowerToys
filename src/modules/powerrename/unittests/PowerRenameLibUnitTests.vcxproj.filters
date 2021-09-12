@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="MockPowerRenameItem.cpp" />
+    <ClCompile Include="MockPowerRenameManagerEvents.cpp" />
+    <ClCompile Include="MockPowerRenameRegExEvents.cpp" />
+    <ClCompile Include="PowerRenameManagerTests.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="PowerRenameRegExTests.cpp" />
+    <ClCompile Include="TestFileHelper.cpp" />
+    <ClCompile Include="PowerRenameRegExBoostTests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MockPowerRenameItem.h" />
+    <ClInclude Include="MockPowerRenameManagerEvents.h" />
+    <ClInclude Include="MockPowerRenameRegExEvents.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="TestFileHelper.h" />
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{d3bb184f-a1c9-40f6-a6e5-0b4c879fe4a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{d34a343a-52ef-4296-83c9-a94fa62062ff}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PowerRenameUnitTests.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

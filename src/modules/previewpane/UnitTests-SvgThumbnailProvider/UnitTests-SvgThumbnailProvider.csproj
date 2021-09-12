@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Platforms>x64</Platforms>
+    <AssemblyTitle>UnitTests-SvgThumbnailProvider</AssemblyTitle>
+    <AssemblyDescription>PowerToys UnitTests-SvgThumbnailProvider</AssemblyDescription>
+    <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
+    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyProduct>PowerToys</AssemblyProduct>
+    <AssemblyTitle>UnitTests-SvgThumbnailProvider</AssemblyTitle>
+    <Company>Microsoft Corporation</Company>
+    <Product>PowerToys</Product>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Description>PowerToys UnitTests-SvgThumbnailProvider</Description>
+    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <ProjectGuid>{1EF1EEF0-10F0-4F2E-8550-39B6D8044D3E}</ProjectGuid>
+    <RootNamespace>SvgThumbnailProviderUnitTests</RootNamespace>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+  </PropertyGroup>
+   
+  <Import Project="..\..\..\Version.props" />
+  
+  <ItemGroup>
+    <PackageReference Include="Castle.Core" Version="4.4.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.VersionCheckAnalyzer" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeQuality.Analyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NetFramework.Analyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Moq" Version="4.16.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
+    <ProjectReference Include="..\SvgThumbnailProvider\SvgThumbnailProvider.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
+    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
+    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
+      <Link>StyleCop.json</Link>
+    </AdditionalFiles>
+  </ItemGroup>
+</Project>

@@ -1,12 +1,13 @@
-#include "stdafx.h"
-#include "resource.h"
+#include "pch.h"
+#include "Generated Files/resource.h"
 #include "ImageResizerExt_i.h"
 #include "dllmain.h"
 #include <interface/powertoy_module_interface.h>
-#include <common/settings_objects.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/resources.h>
 #include "Settings.h"
 #include "trace.h"
-#include <common/common.h>
+#include <imageresizer/dll/ImageResizerConstants.h>
 
 CImageResizerExtModule _AtlModule;
 HINSTANCE g_hInst_imageResizer = 0;
@@ -32,13 +33,16 @@ private:
     // Enabled by default
     bool m_enabled = true;
     std::wstring app_name;
+    //contains the non localized key of the powertoy
+    std::wstring app_key;
 
 public:
     // Constructor
     ImageResizerModule()
     {
-        m_enabled = CSettings::GetEnabled();
+        m_enabled = CSettingsInstance().GetEnabled();
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
+        app_key = ImageResizerConstants::ModuleKey;
     };
 
     // Destroy the powertoy and free memory
@@ -47,19 +51,16 @@ public:
         delete this;
     }
 
-    // Return the display name of the powertoy, this will be cached by the runner
+    // Return the localized display name of the powertoy
     virtual const wchar_t* get_name() override
     {
         return app_name.c_str();
     }
 
-    // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be retured for empty
-    // list.
-    virtual const wchar_t** get_events() override
+    // Return the non localized key of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_key() override
     {
-        static const wchar_t* events[] = { nullptr };
-        return events;
+        return app_key.c_str();
     }
 
     // Return JSON with the configuration options.
@@ -70,7 +71,7 @@ public:
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(GET_RESOURCE_STRING(IDS_SETTINGS_DESCRIPTION));
-        settings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/imageresizer/README.md");
+        settings.set_overview_link(L"https://aka.ms/PowerToysOverview_ImageResizer");
         settings.set_icon_key(L"pt-image-resizer");
         settings.add_header_szLarge(L"imageresizer_settingsheader", GET_RESOURCE_STRING(IDS_SETTINGS_HEADER_DESCRIPTION), GET_RESOURCE_STRING(IDS_SETTINGS_HEADER));
         return settings.serialize_to_buffer(buffer, buffer_size);
@@ -87,7 +88,7 @@ public:
     virtual void enable()
     {
         m_enabled = true;
-        CSettings::SetEnabled(m_enabled);
+        CSettingsInstance().SetEnabled(m_enabled);
         Trace::EnableImageResizer(m_enabled);
     }
 
@@ -95,7 +96,7 @@ public:
     virtual void disable()
     {
         m_enabled = false;
-        CSettings::SetEnabled(m_enabled);
+        CSettingsInstance().SetEnabled(m_enabled);
         Trace::EnableImageResizer(m_enabled);
     }
 
@@ -104,15 +105,6 @@ public:
     {
         return m_enabled;
     }
-
-    // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        return 0;
-    }
-
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
-    virtual void signal_system_menu_action(const wchar_t* name) override {}
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

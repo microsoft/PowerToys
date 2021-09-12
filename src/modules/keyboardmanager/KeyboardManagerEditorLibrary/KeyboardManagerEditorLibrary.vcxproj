@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{23d2070d-e4ad-4add-85a7-083d9c76ad49}</ProjectGuid>
+    <RootNamespace>KeyboardManagerEditorLibrary</RootNamespace>
+    <OverrideWindowsTargetPlatformVersion>true</OverrideWindowsTargetPlatformVersion>
+    <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\KeyboardManager\</OutDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="BufferValidationHelpers.h" />
+    <ClInclude Include="Dialog.h" />
+    <ClInclude Include="EditKeyboardWindow.h" />
+    <ClInclude Include="EditorConstants.h" />
+    <ClInclude Include="EditorHelpers.h" />
+    <ClInclude Include="EditShortcutsWindow.h" />
+    <ClInclude Include="KeyboardManagerEditorStrings.h" />
+    <ClInclude Include="KeyboardManagerState.h" />
+    <ClInclude Include="KeyDelay.h" />
+    <ClInclude Include="KeyDropDownControl.h" />
+    <ClInclude Include="LoadingAndSavingRemappingHelper.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="ShortcutControl.h" />
+    <ClInclude Include="ShortcutErrorType.h" />
+    <ClInclude Include="SingleKeyRemapControl.h" />
+    <ClInclude Include="Styles.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="trace.h" />
+    <ClInclude Include="UIHelpers.h" />
+    <ClInclude Include="XamlBridge.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BufferValidationHelpers.cpp" />
+    <ClCompile Include="Dialog.cpp" />
+    <ClCompile Include="EditKeyboardWindow.cpp" />
+    <ClCompile Include="EditorHelpers.cpp" />
+    <ClCompile Include="EditShortcutsWindow.cpp" />
+    <ClCompile Include="KeyboardManagerEditorStrings.cpp" />
+    <ClCompile Include="KeyboardManagerState.cpp" />
+    <ClCompile Include="KeyDelay.cpp" />
+    <ClCompile Include="KeyDropDownControl.cpp" />
+    <ClCompile Include="LoadingAndSavingRemappingHelper.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ShortcutControl.cpp" />
+    <ClCompile Include="SingleKeyRemapControl.cpp" />
+    <ClCompile Include="Styles.cpp" />
+    <ClCompile Include="trace.cpp" />
+    <ClCompile Include="UIHelpers.cpp" />
+    <ClCompile Include="XamlBridge.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
+      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
+      <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
+      <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">
+      <Project>{8affa899-0b73-49ec-8c50-0fadda57b2fc}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
+  <Import Project="..\..\..\..\deps\spdlog.props" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory)\..\KeyboardManagerEditor\ resource.base.h resource.h KeyboardManagerEditor.base.rc KeyboardManagerEditor.rc" />
+  </Target>
+</Project>

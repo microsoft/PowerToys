@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
 using ImageResizer.Properties;
@@ -14,6 +15,8 @@ namespace ImageResizer.Models
 {
     public class ResizeBatch
     {
+        private readonly IFileSystem _fileSystem = new FileSystem();
+
         public string DestinationDirectory { get; set; }
 
         public ICollection<string> Files { get; } = new List<string>();
@@ -24,12 +27,15 @@ namespace ImageResizer.Models
 
             // NB: We read these from stdin since there are limits on the number of args you can have
             string file;
-            while ((file = standardInput.ReadLine()) != null)
+            if (standardInput != null)
             {
-                batch.Files.Add(file);
+                while ((file = standardInput.ReadLine()) != null)
+                {
+                    batch.Files.Add(file);
+                }
             }
 
-            for (var i = 0; i < args.Length; i++)
+            for (var i = 0; i < args?.Length; i++)
             {
                 if (args[i] == "/d")
                 {
@@ -43,9 +49,7 @@ namespace ImageResizer.Models
             return batch;
         }
 
-        public IEnumerable<ResizeError> Process(
-            CancellationToken cancellationToken,
-            Action<int, double> reportProgress)
+        public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, CancellationToken cancellationToken)
         {
             double total = Files.Count;
             var completed = 0;
@@ -66,9 +70,11 @@ namespace ImageResizer.Models
                     {
                         Execute(file);
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        errors.Add(new ResizeError { File = Path.GetFileName(file), Error = ex.Message });
+                        errors.Add(new ResizeError { File = _fileSystem.Path.GetFileName(file), Error = ex.Message });
                     }
 
                     Interlocked.Increment(ref completed);

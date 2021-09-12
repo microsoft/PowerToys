@@ -20,6 +20,7 @@ public:
     void SetItemCount(_In_ UINT itemCount);
     void OnKeyDown(_In_ IPowerRenameManager* psrm, _In_ LV_KEYDOWN* lvKeyDown);
     void OnClickList(_In_ IPowerRenameManager* psrm, NM_LISTVIEW* pnmListView);
+    void OnColumnClick(_In_ IPowerRenameManager* psrm, _In_ int pnmListView);
     void GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout_ LV_DISPINFO* plvdi);
     void OnSize();
     HWND GetHWND() { return m_hwndLV; }
@@ -28,8 +29,47 @@ private:
     void _UpdateColumns();
     void _UpdateColumnSizes();
     void _UpdateHeaderCheckState(_In_ bool check);
+    void _UpdateHeaderFilterState(_In_ DWORD filter);
 
+    UINT m_itemCount = 0;
     HWND m_hwndLV = nullptr;
+};
+
+class CPowerRenameProgressUI :
+    public IUnknown
+{
+public:
+    CPowerRenameProgressUI() :
+        m_refCount(1)
+    {
+    }
+
+    ~CPowerRenameProgressUI() = default;
+
+    // IUnknown
+    IFACEMETHODIMP QueryInterface(__in REFIID riid, __deref_out void** ppv);
+    IFACEMETHODIMP_(ULONG)
+    AddRef();
+    IFACEMETHODIMP_(ULONG)
+    Release();
+
+    HRESULT Start();
+    HRESULT Stop();
+    bool IsCanceled() { return m_canceled; }
+
+private:
+    static LRESULT CALLBACK s_msgWndProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
+    LRESULT _WndProc(_In_ HWND hwnd, _In_ UINT msg, _In_ WPARAM wParam, _In_ LPARAM lParam);
+
+    static DWORD WINAPI s_workerThread(_In_ void* pv);
+
+    void _UpdateCancelState();
+    void _Cleanup();
+
+    long m_refCount = 0;
+    bool m_canceled = false;
+    HANDLE m_workerThreadHandle = nullptr;
+    CComPtr<IProgressDialog> m_sppd;
 };
 
 class CPowerRenameUI :
@@ -51,8 +91,8 @@ public:
     IFACEMETHODIMP Show(_In_opt_ HWND hwndParent);
     IFACEMETHODIMP Close();
     IFACEMETHODIMP Update();
-    IFACEMETHODIMP get_hwnd(_Out_ HWND* hwnd);
-    IFACEMETHODIMP get_showUI(_Out_ bool* showUI);
+    IFACEMETHODIMP GetHwnd(_Out_ HWND* hwnd);
+    IFACEMETHODIMP GetShowUI(_Out_ bool* showUI);
 
     // IPowerRenameManagerEvents
     IFACEMETHODIMP OnItemAdded(_In_ IPowerRenameItem* renameItem);
@@ -80,7 +120,8 @@ private:
         int searchReplaceWidthDiff;
         int listPreviewWidthDiff;
         int listPreviewHeightDiff;
-        int statusMessageYDiff;
+        int statusMessageSelectedYDiff;
+        int statusMessageRenamingYDiff;
         int renameButtonXDiff;
         int renameButtonYDiff;
         int helpButtonXDiff;
@@ -122,6 +163,7 @@ private:
     void _OnSize(_In_ WPARAM wParam);
     void _OnGetMinMaxInfo(_In_ LPARAM lParam);
     void _OnInitDlg();
+    void _InitDlgText();
     void _OnRename();
     void _OnAbout();
     void _OnCloseDlg();
@@ -136,7 +178,7 @@ private:
     void _SetCheckboxesFromFlags(_In_ DWORD flags);
     void _ValidateFlagCheckbox(_In_ DWORD checkBoxId);
 
-    void _EnumerateItems(_In_ IUnknown* pdtobj);
+    HRESULT _EnumerateItems(_In_ IUnknown* pdtobj);
     void _UpdateCounts();
 
     void _CollectItemPosition(_In_ DWORD id);
@@ -159,8 +201,10 @@ private:
     int m_initialHeight = 0;
     int m_lastWidth = 0;
     int m_lastHeight = 0;
+    CPowerRenameProgressUI m_prpui;
     CComPtr<IPowerRenameManager> m_spsrm;
     CComPtr<IUnknown> m_dataSource;
+    CComPtr<IPowerRenameEnum> m_sppre;
     CComPtr<IDropTargetHelper> m_spdth;
     CComPtr<IAutoComplete2> m_spSearchAC;
     CComPtr<IUnknown> m_spSearchACL;

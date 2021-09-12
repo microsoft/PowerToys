@@ -19,17 +19,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ImageResizerExt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ImageResizerExt_i.c">
-      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="ContextMenuHandler.cpp">
       <Filter>Source Files</Filter>
@@ -46,22 +40,19 @@
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="ImageResizerExt_i.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dllmain.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ImageResizerExt_i.h">
-      <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="ContextMenuHandler.h">
       <Filter>Header Files</Filter>
@@ -72,11 +63,18 @@
     <ClInclude Include="Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="ImageResizerExt.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ClInclude Include="ImageResizerExt_i.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files/resource.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageResizerConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ImageResizerExt.rgs">
@@ -88,6 +86,21 @@
     <None Include="ContextMenuHandler.rgs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
+    <None Include="ImageResizerExt.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Resources.resx">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\ui\Resources\ImageResizer.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ImageResizerExt.idl">
@@ -95,8 +108,8 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\ui\Resources\ImageResizer.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
+    <ResourceCompile Include="Generated Files/ImageResizerExt.rc">
+      <Filter>Generated Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

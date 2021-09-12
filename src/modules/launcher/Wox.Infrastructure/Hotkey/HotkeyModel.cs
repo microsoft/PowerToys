@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
@@ -8,16 +12,19 @@ namespace Wox.Infrastructure.Hotkey
     public class HotkeyModel
     {
         public bool Alt { get; set; }
+
         public bool Shift { get; set; }
+
         public bool Win { get; set; }
+
         public bool Ctrl { get; set; }
+
         public Key CharKey { get; set; }
 
-
-        Dictionary<Key, string> specialSymbolDictionary = new Dictionary<Key, string>
+        private readonly Dictionary<Key, string> _specialSymbolDictionary = new Dictionary<Key, string>
         {
-            {Key.Space, "Space"},
-            {Key.Oem3, "~"}
+            { Key.Space, "Space" },
+            { Key.Oem3, "~" },
         };
 
         public ModifierKeys ModifierKeys
@@ -25,24 +32,33 @@ namespace Wox.Infrastructure.Hotkey
             get
             {
                 ModifierKeys modifierKeys = ModifierKeys.None;
+
                 if (Alt)
                 {
                     modifierKeys = ModifierKeys.Alt;
                 }
+
                 if (Shift)
                 {
-                    modifierKeys = modifierKeys | ModifierKeys.Shift;
+                    modifierKeys |= ModifierKeys.Shift;
                 }
+
                 if (Win)
                 {
-                    modifierKeys = modifierKeys | ModifierKeys.Windows;
+                    modifierKeys |= ModifierKeys.Windows;
                 }
+
                 if (Ctrl)
                 {
-                    modifierKeys = modifierKeys | ModifierKeys.Control;
+                    modifierKeys |= ModifierKeys.Control;
                 }
+
                 return modifierKeys;
             }
+        }
+
+        public HotkeyModel()
+        {
         }
 
         public HotkeyModel(string hotkeyString)
@@ -65,31 +81,37 @@ namespace Wox.Infrastructure.Hotkey
             {
                 return;
             }
-            List<string> keys = hotkeyString.Replace(" ", "").Split('+').ToList();
+
+            // Using InvariantCulture since this is internal and involves key codes
+            List<string> keys = hotkeyString.Replace(" ", string.Empty, StringComparison.InvariantCulture).Split('+').ToList();
             if (keys.Contains("Alt"))
             {
                 Alt = true;
                 keys.Remove("Alt");
             }
+
             if (keys.Contains("Shift"))
             {
                 Shift = true;
                 keys.Remove("Shift");
             }
+
             if (keys.Contains("Win"))
             {
                 Win = true;
                 keys.Remove("Win");
             }
+
             if (keys.Contains("Ctrl"))
             {
                 Ctrl = true;
                 keys.Remove("Ctrl");
             }
+
             if (keys.Count > 0)
             {
                 string charKey = keys[0];
-                KeyValuePair<Key, string>? specialSymbolPair = specialSymbolDictionary.FirstOrDefault(pair => pair.Value == charKey);
+                KeyValuePair<Key, string>? specialSymbolPair = _specialSymbolDictionary.FirstOrDefault(pair => pair.Value == charKey);
                 if (specialSymbolPair.Value.Value != null)
                 {
                     CharKey = specialSymbolPair.Value.Key;
@@ -98,11 +120,10 @@ namespace Wox.Infrastructure.Hotkey
                 {
                     try
                     {
-                        CharKey = (Key) Enum.Parse(typeof (Key), charKey);
+                        CharKey = (Key)Enum.Parse(typeof(Key), charKey);
                     }
                     catch (ArgumentException)
                     {
-
                     }
                 }
             }
@@ -115,14 +136,17 @@ namespace Wox.Infrastructure.Hotkey
             {
                 text += "Ctrl + ";
             }
+
             if (Alt)
             {
                 text += "Alt + ";
             }
+
             if (Shift)
             {
                 text += "Shift + ";
             }
+
             if (Win)
             {
                 text += "Win + ";
@@ -130,8 +154,8 @@ namespace Wox.Infrastructure.Hotkey
 
             if (CharKey != Key.None)
             {
-                text += specialSymbolDictionary.ContainsKey(CharKey)
-                    ? specialSymbolDictionary[CharKey]
+                text += _specialSymbolDictionary.ContainsKey(CharKey)
+                    ? _specialSymbolDictionary[CharKey]
                     : CharKey.ToString();
             }
             else if (!string.IsNullOrEmpty(text))

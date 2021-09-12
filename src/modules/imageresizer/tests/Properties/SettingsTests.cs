@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using ImageResizer.Models;
 using ImageResizer.Test;
 using Xunit;
@@ -16,28 +17,23 @@ namespace ImageResizer.Properties
 {
     public class SettingsTests : IClassFixture<AppFixture>, IDisposable
     {
+        private bool disposedValue;
+
         public SettingsTests()
         {
             // Change settings.json path to a temp file
             Settings.SettingsPath = ".\\test_settings.json";
         }
 
-        public void Dispose()
-        {
-            if (System.IO.File.Exists(Settings.SettingsPath))
-            {
-                System.IO.File.Delete(Settings.SettingsPath);
-            }
-        }
-
         [Fact]
-        public void AllSizes_propagates_Sizes_collection_events()
+        public void AllSizesPropagatesSizesCollectionEvents()
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
+
+            settings.Sizes.Clear();
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
 
             var result = AssertEx.Raises<NotifyCollectionChangedEventArgs>(
@@ -49,14 +45,14 @@ namespace ImageResizer.Properties
         }
 
         [Fact]
-        public void AllSizes_propagates_Sizes_property_events()
+        public void AllSizesPropagatesSizesPropertyEvents()
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
 
+            settings.Sizes.Clear();
             Assert.PropertyChanged(
                 (INotifyPropertyChanged)settings.AllSizes,
                 "Item[]",
@@ -64,38 +60,39 @@ namespace ImageResizer.Properties
         }
 
         [Fact]
-        public void AllSizes_contains_Sizes()
+        public void AllSizesContainsSizes()
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize> { new ResizeSize() },
                 CustomSize = new CustomSize(),
             };
 
+            settings.Sizes.Add(new ResizeSize());
             Assert.Contains(settings.Sizes[0], settings.AllSizes);
         }
 
         [Fact]
-        public void AllSizes_contains_CustomSize()
+        public void AllSizesContainsCustomSize()
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
+            settings.Sizes.Clear();
 
             Assert.Contains(settings.CustomSize, settings.AllSizes);
         }
 
         [Fact]
-        public void AllSizes_handles_property_events_for_CustomSize()
+        public void AllSizesHandlesPropertyEventsForCustomSize()
         {
             var originalCustomSize = new CustomSize();
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = originalCustomSize,
             };
+
+            settings.Sizes.Clear();
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
 
             var result = AssertEx.Raises<NotifyCollectionChangedEventArgs>(
@@ -113,7 +110,7 @@ namespace ImageResizer.Properties
         }
 
         [Fact]
-        public void FileNameFormat_works()
+        public void FileNameFormatWorks()
         {
             var settings = new Settings { FileName = "{T}%1e%2s%3t%4%5%6%7" };
 
@@ -126,14 +123,14 @@ namespace ImageResizer.Properties
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(2)]
-        public void SelectedSize_returns_CustomSize_when_out_of_range(int index)
+        public void SelectedSizeReturnsCustomSizeWhenOutOfRange(int index)
         {
             var settings = new Settings
             {
                 SelectedSizeIndex = index,
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
+            settings.Sizes.Clear();
 
             var result = settings.SelectedSize;
 
@@ -141,24 +138,21 @@ namespace ImageResizer.Properties
         }
 
         [Fact]
-        public void SelectedSize_returns_Size_when_in_range()
+        public void SelectedSizeReturnsSizeWhenInRange()
         {
             var settings = new Settings
             {
                 SelectedSizeIndex = 0,
-                Sizes = new ObservableCollection<ResizeSize>
-                {
-                    new ResizeSize(),
-                },
             };
 
+            settings.Sizes.Add(new ResizeSize());
             var result = settings.SelectedSize;
 
             Assert.Same(settings.Sizes[0], result);
         }
 
         [Fact]
-        public void IDataErrorInfo_Error_returns_empty()
+        public void IDataErrorInfoErrorReturnsEmpty()
         {
             var settings = new Settings();
 
@@ -170,21 +164,22 @@ namespace ImageResizer.Properties
         [Theory]
         [InlineData(0)]
         [InlineData(101)]
-        public void IDataErrorInfo_Item_JpegQualityLevel_returns_error_when_out_of_range(int value)
+        public void IDataErrorInfoItemJpegQualityLevelReturnsErrorWhenOutOfRange(int value)
         {
             var settings = new Settings { JpegQualityLevel = value };
 
             var result = ((IDataErrorInfo)settings)["JpegQualityLevel"];
 
+            // Using InvariantCulture since this is used internally
             Assert.Equal(
-                string.Format(Resources.ValueMustBeBetween, 1, 100),
+                string.Format(CultureInfo.InvariantCulture, Resources.ValueMustBeBetween, 1, 100),
                 result);
         }
 
         [Theory]
         [InlineData(1)]
         [InlineData(100)]
-        public void IDataErrorInfo_Item_JpegQualityLevel_returns_empty_when_in_range(int value)
+        public void IDataErrorInfoItemJpegQualityLevelReturnsEmptyWhenInRange(int value)
         {
             var settings = new Settings { JpegQualityLevel = value };
 
@@ -194,7 +189,7 @@ namespace ImageResizer.Properties
         }
 
         [Fact]
-        public void IDataErrorInfo_Item_returns_empty_when_not_JpegQualityLevel()
+        public void IDataErrorInfoItemReturnsEmptyWhenNotJpegQualityLevel()
         {
             var settings = new Settings();
 
@@ -204,7 +199,7 @@ namespace ImageResizer.Properties
         }
 
         [Fact]
-        public void Reload_createsFile_when_FileNotFound()
+        public void ReloadCreatesFileWhenFileNotFound()
         {
             // Arrange
             var settings = new Settings();
@@ -220,7 +215,7 @@ namespace ImageResizer.Properties
         }
 
         [Fact]
-        public void Save_creates_file()
+        public void SaveCreatesFile()
         {
             // Arrange
             var settings = new Settings();
@@ -236,7 +231,7 @@ namespace ImageResizer.Properties
         }
 
         [Fact]
-        public void Save_json_is_readable_by_Reload()
+        public void SaveJsonIsReadableByReload()
         {
             // Arrange
             var settings = new Settings();
@@ -253,7 +248,7 @@ namespace ImageResizer.Properties
         }
 
         [Fact]
-        public void Reload_raises_PropertyChanged_()
+        public void ReloadRaisesPropertyChanged()
         {
             // Arrange
             var settings = new Settings();
@@ -270,11 +265,35 @@ namespace ImageResizer.Properties
             Assert.PropertyChanged(settings, "PngInterlaceOption", action);
             Assert.PropertyChanged(settings, "TiffCompressOption", action);
             Assert.PropertyChanged(settings, "FileName", action);
-            Assert.PropertyChanged(settings, "Sizes", action);
             Assert.PropertyChanged(settings, "KeepDateModified", action);
             Assert.PropertyChanged(settings, "FallbackEncoder", action);
             Assert.PropertyChanged(settings, "CustomSize", action);
             Assert.PropertyChanged(settings, "SelectedSizeIndex", action);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (System.IO.File.Exists(Settings.SettingsPath))
+                    {
+                        System.IO.File.Delete(Settings.SettingsPath);
+                    }
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

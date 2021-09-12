@@ -86,7 +86,7 @@ For a detailed reference of how the settings are implemented in the runner and i
 </td></tr></table>
 
 ```c++
-settings.add_bool_toogle(name, description, value) 
+settings.add_bool_toggle(name, description, value) 
 ```
 A simple on-off toggle. Parameters:
   * `name` - Key for the element in the JSON.
@@ -284,4 +284,4 @@ Contains the main executable code, initializing and managing the Window containi
 Defines a class implementing `IUriToStreamResolver`. Allows the WebView to navigate to filesystem files in this Win32 project.
 
 ### [settings-html/](/src/settings/settings-html/)
-Contains the assets file from building the [Web project for the Settings UI](/src/settings./settings-web). It will be loaded by the WebView.
+Contains the assets file from building the [Web project for the Settings UI](/src/settings/settings-html). It will be loaded by the WebView.

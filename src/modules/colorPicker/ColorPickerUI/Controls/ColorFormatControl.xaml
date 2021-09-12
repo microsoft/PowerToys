@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="ColorPicker.Controls.ColorFormatControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:p="clr-namespace:ColorPicker.Properties"
+             mc:Ignorable="d">
+
+    <Border x:Name="MainBorder"
+            Margin="12,16,12,0"
+            Width="308"
+            Height="36"
+            CornerRadius="2"
+            HorizontalAlignment="Stretch"
+            Background="{DynamicResource ColorControlBackgroundBrush}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="64"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="36"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="FormatNameTextBlock"
+                       Opacity="0.4"
+                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                       Margin="8"
+                       FontWeight="SemiBold"
+                       FontSize="12"
+                       VerticalAlignment="Center"/>
+
+            <TextBox x:Name="ColorTextRepresentationTextBlock"
+                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                       FontFamily="Consolas"
+                       Grid.Column="1"
+                       FontSize="14"
+                       IsTabStop="False"
+                       Background="Transparent"
+                       BorderThickness="0"
+                       IsReadOnly="True"
+                       VerticalAlignment="Center"
+                       Padding="8"
+                     AutomationProperties.LabeledBy="{Binding ElementName=FormatNameTextBlock, Path=Text}"
+                     />
+
+            <Button x:Name="CopyToClipboardButton"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}"
+                    Background="{DynamicResource ColorControlBackgroundBrush}"
+                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                    Height="36"
+                    Width="36"
+                    Grid.Column="2"
+                    AutomationProperties.HelpText="{Binding ElementName=FormatNameTextBlock, Path=Text}"
+                    AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
+                    FontSize="12"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    FontFamily="Segoe MDL2 Assets"
+                    Content="&#xE16F;" />       
+        </Grid>
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="6" Opacity="0.24" ShadowDepth="1" />
+        </Border.Effect>
+    </Border>
+</UserControl>

@@ -10,79 +10,86 @@ namespace Common.ComInterlop
     /// Defines the attributes of a font.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Interop")]
     public struct LOGFONT
     {
         /// <summary>
-        /// Value of type INT that specifies the height, in logical units, of the font's character cell or character.
+        /// Gets or sets value of type INT that specifies the height, in logical units, of the font's character cell or character.
         /// </summary>
-        public int LfHeight;
+        public int LfHeight { get; set; }
 
         /// <summary>
-        /// Value of type INT that specifies the width, in logical units, of characters in the font.
+        /// Gets or sets value of type INT that specifies the width, in logical units, of characters in the font.
         /// </summary>
-        public int LfWidth;
+        public int LfWidth { get; set; }
 
         /// <summary>
-        /// Value of type INT that contains the angle, in tenths of degrees, between the escapement vector and the x-axis of the device. The escapement
+        /// Gets or sets value of type INT that contains the angle, in tenths of degrees, between the escapement vector and the x-axis of the device. The escapement
         /// vector is parallel to the base line of a row of text.
         /// </summary>
-        public int LfEscapement;
+        public int LfEscapement { get; set; }
 
         /// <summary>
-        /// Value of type INT that specifies the angle, in tenths of degrees, between each character's base line and the x-axis of the device.
+        /// Gets or sets value of type INT that specifies the angle, in tenths of degrees, between each character's base line and the x-axis of the device.
         /// </summary>
-        public int LfOrientation;
+        public int LfOrientation { get; set; }
 
         /// <summary>
-        /// Value of type INT that specifies the weight of the font in the range from 0 through 1000.
+        /// Gets or sets value of type INT that specifies the weight of the font in the range from 0 through 1000.
         /// </summary>
-        public int LfWeight;
+        public int LfWeight { get; set; }
 
         /// <summary>
-        /// Value of type BYTE that specifies an italic font if set to TRUE.
+        /// Gets or sets value of type BYTE that specifies an italic font if set to TRUE.
         /// </summary>
-        public byte LfItalic;
+        public byte LfItalic { get; set; }
 
         /// <summary>
-        /// Value of type BYTE that specifies an underlined font if set to TRUE.
+        /// Gets or sets value of type BYTE that specifies an underlined font if set to TRUE.
         /// </summary>
-        public byte LfUnderline;
+        public byte LfUnderline { get; set; }
 
         /// <summary>
-        /// Value of type BYTE that specifies a strikeout font if set to TRUE.
+        /// Gets or sets value of type BYTE that specifies a strikeout font if set to TRUE.
         /// </summary>
-        public byte LfStrikeOut;
+        public byte LfStrikeOut { get; set; }
 
         /// <summary>
-        /// Value of type BYTE that specifies the character set.
+        /// Gets or sets value of type BYTE that specifies the character set.
         /// </summary>
-        public byte LfCharSet;
+        public byte LfCharSet { get; set; }
 
         /// <summary>
-        /// Value of type BYTE that specifies the output precision. The output precision defines how closely the output must match the requested
+        /// Gets or sets value of type BYTE that specifies the output precision. The output precision defines how closely the output must match the requested
         /// font's height, width, character orientation, escapement, pitch, and font type.
         /// </summary>
-        public byte LfOutPrecision;
+        public byte LfOutPrecision { get; set; }
 
         /// <summary>
-        /// Value of type BYTE that specifies the clipping precision. The clipping precision defines how to clip characters that are partially outside the clipping region.
+        /// Gets or sets value of type BYTE that specifies the clipping precision. The clipping precision defines how to clip characters that are partially outside the clipping region.
         /// </summary>
-        public byte LfClipPrecision;
+        public byte LfClipPrecision { get; set; }
 
         /// <summary>
-        /// Value of type BYTE that specifies the output quality. The output quality defines how carefully the GDI must attempt to match the logical-font attributes to those of an actual physical font.
+        /// Gets or sets value of type BYTE that specifies the output quality. The output quality defines how carefully the GDI must attempt to match the logical-font attributes to those of an actual physical font.
         /// </summary>
-        public byte LfQuality;
+        public byte LfQuality { get; set; }
 
         /// <summary>
-        /// Value of type BYTE that specifies the pitch and family of the font.
+        /// Gets or sets value of type BYTE that specifies the pitch and family of the font.
         /// </summary>
-        public byte LfPitchAndFamily;
+        public byte LfPitchAndFamily { get; set; }
 
         /// <summary>
-        /// Array of wide characters that contains a null-terminated string that specifies the typeface name of the font. The length of the string must not exceed 32 characters, including the NULL terminator.
+        /// Gets or sets array of wide characters that contains a null-terminated string that specifies the typeface name of the font. The length of the string must not exceed 32 characters, including the NULL terminator.
         /// </summary>
+        public string LfFaceName
+        {
+            get { return _lfFaceName; }
+            set { _lfFaceName = value; }
+        }
+
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string LfFaceName;
+        private string _lfFaceName;
     }
 }

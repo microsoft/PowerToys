@@ -1,22 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-  
+  <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <StartupObject>PowerLauncher.App</StartupObject>
-    <ApplicationIcon>Resources\placeholderLauncher.ico</ApplicationIcon>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Images\RunResource.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>    
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>x64</Platforms>
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
+    <Version>$(Version).0</Version>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
+    <Description>PowerToys PowerLauncher</Description>
+    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <PackageTags>PowerToys</PackageTags>
+    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\..\x64\Debug\modules\launcher\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -25,11 +35,12 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\..\x64\Release\modules\launcher\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\launcher\</OutputPath>
     <DefineConstants>TRACE;RELEASE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -38,62 +49,90 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
     <ApplicationDefinition Remove="App.xaml" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="app.png" />
+    <None Remove="Images\app.dark.png" />
+    <None Remove="Images\app.light.png" />
+    <None Remove="Images\app.light1.png" />
+    <None Remove="Images\app_error.dark.png" />
+    <None Remove="Images\app_error.light.png" />
+    <None Remove="Images\RunResource.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="app.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\app.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\app.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\app_error.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\app_error.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   
   <ItemGroup>
     <Page Include="App.xaml" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Page Remove="Themes\ThemeBuilder\Template.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="6.1.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="InputSimulator" Version="1.0.4" />
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
-    <PackageReference Include="Mages" Version="1.6.0" />
-    <PackageReference Include="Microsoft.Toolkit.UI.XamlHost" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Toolkit.Uwp.UI" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Toolkit.Wpf.UI.XamlHost" Version="6.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NHotkey.Wpf" Version="2.0.1" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.2" />
-    <PackageReference Include="NuGet.CommandLine" Version="5.5.1">
+    <PackageReference Include="Mages" Version="1.6.0">
+       <NoWarn>NU1701</NoWarn>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody" Version="3.2.8" />
-    <PackageReference Include="System.Data.SQLite" Version="1.0.112" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.112.1" />
-    <PackageReference Include="System.Runtime" Version="4.3.1" />
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="6.1.1" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NuGet.CommandLine" Version="5.7.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SharpZipLib" Version="1.2.0" />
+    <PackageReference Include="System.Runtime" Version="4.3.1" />    
+    <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
+    <PackageReference Include="System.Data.OleDb" Version="4.7.1" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.7.0" />
+    <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0">
+      <NoWarn>NU1701</NoWarn>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PowerLauncher.UI\PowerLauncher.UI.csproj" />
-    <ProjectReference Include="..\Wox.Core\Wox.Core.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToysInterop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\PowerLauncher.Telemetry\PowerLauncher.Telemetry.csproj" />
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
-    <ProjectReference Include="..\Wox\Wox.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Images\app.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Resource Include="Images\app.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <None Update="Images\app_error.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Images\Browser.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -163,6 +202,9 @@
     <None Update="Images\restart.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Images\RunAsset.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Images\search.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -191,6 +233,48 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="Microsoft.VCRTForwarders.140" Version="1.0.6" />
+    <Page Update="Themes\HighContrastBlack.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\HighContrastWhite.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\HighContrast2.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\HighContrast1.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Dark.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Light.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
+    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
+      <Link>StyleCop.json</Link>
+    </AdditionalFiles>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers">
+      <Version>1.1.118</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\RunResource.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

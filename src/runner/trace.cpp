@@ -55,6 +55,7 @@ void Trace::SettingsChanged(const GeneralSettings& settings)
         TraceLoggingWideString(settings.startupDisabledReason.c_str(), "StartupDisabledReason"),
         TraceLoggingWideString(enabledModules.c_str(), "ModulesEnabled"),
         TraceLoggingBoolean(settings.isRunElevated, "AlwaysRunElevated"),
+        TraceLoggingBoolean(settings.downloadUpdatesAutomatically, "DownloadUpdatesAutomatically"),
         TraceLoggingWideString(settings.theme.c_str(), "Theme"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),

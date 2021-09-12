@@ -4,7 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Window1" Height="450" Width="800"
+        Title="Window1" Height="450"
+        Width="800"
         WindowState="Maximized"
         ShowInTaskbar="False"
         ResizeMode="NoResize"
@@ -16,7 +17,7 @@
 
 
     <Grid x:Name="Body">
-        <Rectangle Fill="White" Opacity="0.5"/>
+        <Rectangle Fill="White" Opacity="1"/>
         
         <Grid x:Name="Window1" >
             <Border BorderThickness="2" BorderBrush="Black">
@@ -25,7 +26,7 @@
                     <Thumb Background="Red" Height="36" VerticalAlignment="Top"/>
                     <Button Height="36" Width="36" VerticalAlignment="Top" Background="Red" FontFamily="Segoe UI Symbol" FontSize="16" Content="✖" HorizontalAlignment="Right"/>
 -->
-                    <Rectangle Fill="Black" Opacity="0.2"/>
+                    <Rectangle Fill="Black" Opacity="1"/>
 <!--                    
                     <Grid Width="24" Height="24" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,0,0">
                         <Grid.ColumnDefinitions>

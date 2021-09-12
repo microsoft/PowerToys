@@ -1,0 +1,22 @@
+﻿<Window x:Class="ColorPicker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
+        WindowStyle="None"
+        Opacity="0.01"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Topmost="True"
+        Background="Transparent"
+        SizeToContent="WidthAndHeight"
+        AllowsTransparency="True">
+    <e:Interaction.Behaviors>
+        <behaviors:ChangeWindowPositionBehavior/>
+        <behaviors:AppearAnimationBehavior/>
+    </e:Interaction.Behaviors>
+    <ContentControl x:Name="MainView" Content="{Binding MainViewModel}"/>
+</Window>

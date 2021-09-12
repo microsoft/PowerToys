@@ -1,4 +1,4 @@
-#include <pch.h>
+#include "pch.h"
 #include "registry_wrapper.h"
 
 namespace PowerPreviewSettings
@@ -23,7 +23,7 @@ namespace PowerPreviewSettings
         return err;
     }
 
-    LONG RegistryWrapper::GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData)
+    LONG RegistryWrapper::GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData)
     {
         HKEY OpenResult;
         LONG err = RegOpenKeyExW(keyScope, subKey, 0, KEY_READ, &OpenResult);
@@ -61,4 +61,3 @@ namespace PowerPreviewSettings
         return err;
     }
 }
-    

@@ -2,20 +2,26 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:props="clr-namespace:FancyZonesEditor.Properties"
              xmlns:local="clr-namespace:FancyZonesEditor"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
+             KeyDown="Border_KeyDown"
              Background="Transparent"
              d:DesignHeight="450" d:DesignWidth="800">
-
     <UserControl.Resources>
         <Style x:Key="CanvasZoneThumbStyle" TargetType="{x:Type Thumb}">
             <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Thumb}">
-                        <Border x:Name="ThumbBorder" Opacity="0" BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                        <Border x:Name="ThumbBorder"
+                                Opacity="0"
+                                CornerRadius="0"
+                                BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="{TemplateBinding Background}">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates" >
                                     <VisualStateGroup.Transitions>
@@ -39,26 +45,52 @@
             </Setter>
         </Style>
 
-        <Style x:Key="CloseButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="1"/>
+        <Style x:Key="CloseButtonStyle"
+               TargetType="{x:Type Button}">
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Center" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource PrimaryForegroundBrush}" />
+            <Setter Property="Padding"
+                    Value="1" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
-                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        <Border x:Name="border"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="{TemplateBinding Background}"
+                                SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter"
+                                              Focusable="False"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"
+                                              RecognizesAccessKey="True"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsDefaulted" Value="true">
-                                <Setter Property="BorderBrush" TargetName="border" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/>
+                            <Trigger Property="IsDefaulted"
+                                     Value="true">
+                                <Setter Property="BorderBrush"
+                                        TargetName="border"
+                                        Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
                             </Trigger>
-                            <Trigger Property="IsMouseOver" Value="true">
-                                <Setter Property="Opacity" TargetName="contentPresenter" Value="0.6"/>
+                            <Trigger Property="IsMouseOver"
+                                     Value="true">
+                                <Setter Property="Opacity"
+                                        TargetName="contentPresenter"
+                                        Value="0.6" />
                             </Trigger>
-                            <Trigger Property="IsPressed" Value="true">
-                                <Setter Property="Opacity" TargetName="contentPresenter" Value="0.4"/>
+                            <Trigger Property="IsPressed"
+                                     Value="true">
+                                <Setter Property="Opacity"
+                                        TargetName="contentPresenter"
+                                        Value="0.4" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -67,7 +99,29 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" Background="{StaticResource CanvasZoneBackgroundBrush}" BorderThickness="1">
+    <Border CornerRadius="0"
+            Focusable="True"
+            x:Name="RootBorder"
+            PreviewMouseDown="Border_PreviewMouseDown">
+        <Border.Style>
+            <Style>
+                <Setter Property="Border.Background"
+                        Value="{DynamicResource CanvasZoneBackgroundBrush}" />
+                <Setter Property="Border.BorderBrush"
+                        Value="{DynamicResource CanvasZoneBorderBrush}" />
+                <Setter Property="Border.BorderThickness"
+                        Value="1"/>
+                <Style.Triggers>
+                    <Trigger Property="Border.IsKeyboardFocused"
+                             Value="true">
+                        <Setter Property="Border.BorderThickness"
+                                Value="4" />
+                        <Setter Property="Border.BorderBrush"
+                                Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
                 <RowDefinition Height="8"/>
@@ -84,34 +138,62 @@
                 <ColumnDefinition Width="8"/>
             </Grid.ColumnDefinitions>
 
-            <Label Name="LabelID"
-               Content="ID"
-               Canvas.Left="10"
-               Canvas.Bottom="10"
-               FontSize="64"
-               FontFamily="Segoe UI Light"
-               Foreground="White"
-               Grid.Column="2"
-               Grid.Row="2"
-               VerticalContentAlignment="Center"
-               HorizontalContentAlignment="Center" />
-            
-            <Thumb x:Name="Caption" Cursor="SizeAll" Background="Transparent" BorderThickness="3" Padding="4" Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="Caption_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <DockPanel HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Grid.Column="2"
+                       Grid.Row="2">
+                <Label
+                    Name="LabelID"
+                    DockPanel.Dock="Top"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Content="ID"
+                    FontWeight="SemiBold"
+                    FontSize="64"
+                    Foreground="{Binding ElementName=RootBorder, Path=BorderBrush}" />
+                <TextBlock FontSize="16"
+                           Foreground="{Binding ElementName=RootBorder, Path=BorderBrush}"
+                           Opacity="0.6"
+                           DockPanel.Dock="Bottom"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+                     <Run x:Name="WidthLabel" />
+                     <Run Text="&#xE106;"
+                          FontSize="10"
+                          FontFamily="Segoe MDL2 Assets" />
+                    <Run x:Name="HeightLabel" />
+                </TextBlock>
+            </DockPanel>
 
-            <Thumb x:Name="NResize" Cursor="SizeNS" BorderThickness="0,3,0,0" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="NResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="SResize" Cursor="SizeNS" BorderThickness="0,0,0,3" Grid.Row="4" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="SResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="WResize" Cursor="SizeWE" BorderThickness="3,0,0,0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="WResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="EResize" Cursor="SizeWE" BorderThickness="0,0,3,0" Grid.Column="4" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="EResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="Caption" Cursor="SizeAll" Background="Transparent" BorderThickness="3" Padding="4" Grid.Column="0" Grid.ColumnSpan="5" Margin="-1" Grid.Row="0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="Caption_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
 
-            <Thumb x:Name="NWResize" Cursor="SizeNWSE" BorderThickness="3,3,0,0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="NWResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="NEResize" Cursor="SizeNESW" BorderThickness="0,3,3,0" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="NEResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="SWResize" Cursor="SizeNESW" BorderThickness="3,0,0,3" Grid.Row="3" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="SWResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
-            <Thumb x:Name="SEResize" Cursor="SizeNWSE" BorderThickness="0,0,3,3" Grid.Row="3" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="SEResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="NResize" Cursor="SizeNS" BorderThickness="0,2,0,0" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="NResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="SResize" Cursor="SizeNS" BorderThickness="0,0,0,2" Grid.Row="4" Grid.ColumnSpan="5" DragDelta="UniversalDragDelta" DragStarted="SResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="WResize" Cursor="SizeWE" BorderThickness="2,0,0,0" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="WResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="EResize" Cursor="SizeWE" BorderThickness="0,0,2,0" Grid.Column="4" Grid.RowSpan="5" DragDelta="UniversalDragDelta" DragStarted="EResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
 
-            <Button Content="&#xE894;" BorderThickness="0" ToolTip="Delete zone" Background="Transparent" Foreground="White" FontSize="16" Padding="4" Click="OnClose" Grid.Row="2" Grid.Column="2" FontFamily="Segoe MDL2 Assets" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{DynamicResource CloseButtonStyle}"/>
+            <Thumb x:Name="NWResize" Cursor="SizeNWSE" BorderThickness="2,2,0,0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="NWResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="NEResize" Cursor="SizeNESW" BorderThickness="0,2,2,0" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="NEResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="SWResize" Cursor="SizeNESW" BorderThickness="2,0,0,2" Grid.Row="3" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="SWResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+            <Thumb x:Name="SEResize" Cursor="SizeNWSE" BorderThickness="0,0,2,2" Grid.Row="3" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2" DragDelta="UniversalDragDelta" DragStarted="SEResize_DragStarted" Style="{DynamicResource CanvasZoneThumbStyle}"/>
+
+            <Button Content="&#xE894;"
+                    BorderThickness="0"
+                    ToolTip="{x:Static props:Resources.Delete_Zone}"
+                    Background="Transparent"
+                    FontSize="16"
+                    Padding="4"
+                    Click="OnClose"
+                    IsTabStop="False"
+                    Focusable="False"
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    FontFamily="Segoe MDL2 Assets"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top" Style="{DynamicResource CloseButtonStyle}"/>
 
             <Canvas x:Name="Body" />
-
         </Grid>
     </Border>
 </UserControl>

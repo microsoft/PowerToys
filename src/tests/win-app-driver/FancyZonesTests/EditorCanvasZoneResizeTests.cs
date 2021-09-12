@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using System.Windows.Forms;
@@ -12,7 +13,7 @@ namespace PowerToysTests
         {
             int shiftX = shiftLeft ? -(corner.Rect.Width / 2) + 1 : (corner.Rect.Width / 2) - 1;
             int shiftY = shiftUp ? -(corner.Rect.Height / 2) + 1 : (corner.Rect.Height / 2) - 1;
-            
+
             new Actions(session).MoveToElement(corner)
                 .MoveByOffset(shiftX, shiftY)
                 .ClickAndHold().MoveByOffset(xOffset, yOffset).Release().Perform();
@@ -83,7 +84,7 @@ namespace PowerToysTests
             Assert.IsTrue(leftBorder.Rect.X <= rightBorder.Rect.X);
             Assert.IsTrue(width > rightBorder.Rect.X - leftBorder.Rect.X);
         }
-        
+
         [TestMethod]
         public void MoveRightBorder()
         {
@@ -205,7 +206,7 @@ namespace PowerToysTests
             Assert.IsTrue(bottomLeftCorner.Rect.X <= rightBorder.Rect.X);
             Assert.IsTrue(actualHeight < expectedHeight);
             Assert.IsTrue(actualWidth < expectedWidth);
-            
+
             expectedHeight = actualHeight;
             expectedWidth = actualWidth;
 
@@ -223,6 +224,9 @@ namespace PowerToysTests
         [TestMethod]
         public void MoveBottomRightCorner()
         {
+            WindowsElement zone = session.FindElementByAccessibilityId("Caption");
+            Assert.IsNotNull(zone, "Unable to move zone");
+            new Actions(session).MoveToElement(zone).ClickAndHold().MoveByOffset(creatorWindow.Rect.Width / 2, 0).Release().Perform();
             WindowsElement bottomRightCorner = session.FindElementByAccessibilityId("SEResize");
             WindowsElement topBorder = session.FindElementByAccessibilityId("NResize");
             WindowsElement leftBorder = session.FindElementByAccessibilityId("WResize");
@@ -260,21 +264,21 @@ namespace PowerToysTests
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            Setup(context, false);
+            Setup(context);
+            Assert.IsNotNull(session);
+
+            EnableModules(false, true, false, false, false, false, false, false);
             ResetSettings();
 
-            if (!isPowerToysLaunched)
-            {
-                LaunchPowerToys();
-            }
-            OpenEditor();
-            OpenCustomLayouts();            
+            Assert.IsTrue(OpenEditor());
+            OpenCustomLayouts();
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
             CloseEditor();
+            ExitPowerToys();
             TearDown();
         }
 
@@ -282,14 +286,16 @@ namespace PowerToysTests
         public void TestInitialize()
         {
             //create canvas zone
-            OpenCreatorWindow("Create new custom", "Custom layout creator");
-            session.FindElementByAccessibilityId("newZoneButton").Click();
+            OpenCreatorWindow("Create new custom");
+            creatorWindow.FindElementByAccessibilityId("newZoneButton").Click();
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
+            AppiumWebElement cancelButton = creatorWindow.FindElementByName("Cancel");
+            Assert.IsNotNull(cancelButton);
+            new Actions(session).MoveToElement(cancelButton).Click().Perform();
         }
     }
 }

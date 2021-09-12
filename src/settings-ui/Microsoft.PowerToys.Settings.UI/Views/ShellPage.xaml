@@ -1,0 +1,122 @@
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:behaviors="using:Microsoft.PowerToys.Settings.UI.Behaviors"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    mc:Ignorable="d">
+
+    <i:Interaction.Behaviors>
+        <ic:EventTriggerBehavior EventName="Loaded">
+            <ic:InvokeCommandAction Command="{x:Bind ViewModel.LoadedCommand}" />
+        </ic:EventTriggerBehavior>
+    </i:Interaction.Behaviors>
+
+    <Grid>
+        <winui:NavigationView
+        x:Name="navigationView"
+        IsBackButtonVisible="Collapsed"
+        IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+        SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+        IsSettingsVisible="False"
+        OpenPaneLength="296"
+        CompactModeThresholdWidth="0"
+        Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
+        SelectionChanged="NavigationView_SelectionChanged">
+            <winui:NavigationView.MenuItems>
+                <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE713;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem x:Uid="Shell_ColorPicker" helpers:NavHelper.NavigateTo="views:ColorPickerPage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEF3C;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem x:Uid="Shell_Espresso" helpers:NavHelper.NavigateTo="views:EspressoPage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEC32;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem x:Uid="Shell_FancyZones" helpers:NavHelper.NavigateTo="views:FancyZonesPage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem x:Uid="Shell_PowerPreview" helpers:NavHelper.NavigateTo="views:PowerPreviewPage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEC50;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <PathIcon Data="M0 768h1408v1152H0V768zm128 1024h870l-582-581-288 288v293zm1152 0v-102l-224-223-101 101 223 224h102zM128 896v421l288-287 448 447 192-191 224 224V896H128zm832 256q-26 0-45-19t-19-45q0-26 19-45t45-19q26 0 45 19t19 45q0 26-19 45t-45 19zm960-512V347l-339 338-90-90 338-339h-293V128h512v512h-128zm-768-512h256v128h-256V128zm-128 128H768V128h256v128zm-384 0H384V128h256v128zm-384 0H0V128h256v128zM128 640H0V384h128v256zm1920 128v256h-128V768h128zm-128 384h128v256h-128v-256zm0 384h128v256h-128v-256zm-384 256h256v128h-256v-128z"></PathIcon>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem x:Uid="Shell_KeyboardManager" helpers:NavHelper.NavigateTo="views:KeyboardManagerPage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE765;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8AC;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE773;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem x:Uid="Shell_ShortcutGuide" helpers:NavHelper.NavigateTo="views:ShortcutGuidePage" AutomationProperties.HeadingLevel="Level1">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEDA7;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+            </winui:NavigationView.MenuItems>
+            <i:Interaction.Behaviors>
+                <behaviors:NavigationViewHeaderBehavior
+                DefaultHeader="{x:Bind ViewModel.Selected.Content, Mode=OneWay}">
+                    <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0, -2, 0, 6">
+                                <TextBlock
+                                Text="{Binding}"
+                                FontWeight="Bold"
+                                Style="{ThemeResource TitleTextBlockStyle}"
+                                Margin="{StaticResource SmallLeftRightMargin}"
+                                AutomationProperties.HeadingLevel="Level1" />
+                        </Grid>
+                    </DataTemplate>
+                </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
+            </behaviors:NavigationViewHeaderBehavior>
+            <ic:EventTriggerBehavior EventName="ItemInvoked">
+                <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
+            </ic:EventTriggerBehavior>
+        </i:Interaction.Behaviors>
+        <ScrollViewer x:Name="scrollViewer"
+                      VerticalScrollBarVisibility="Auto"
+                      Grid.Column="0">
+                <Grid Margin="{StaticResource MediumLeftRightBottomMargin}">
+                    <Frame x:Name="shellFrame" />
+                </Grid>
+        </ScrollViewer>
+    </winui:NavigationView>
+    </Grid>
+</UserControl>

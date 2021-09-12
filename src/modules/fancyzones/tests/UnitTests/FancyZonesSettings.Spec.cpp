@@ -4,7 +4,7 @@
 
 #include <lib/Settings.h>
 #include <lib/FancyZones.h>
-#include <common/settings_helpers.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -27,18 +27,23 @@ namespace FancyZonesUnitTests
     void compareSettings(const Settings& expected, const Settings& actual)
     {
         Assert::AreEqual(expected.shiftDrag, actual.shiftDrag);
+        Assert::AreEqual(expected.mouseSwitch, actual.mouseSwitch);
         Assert::AreEqual(expected.displayChange_moveWindows, actual.displayChange_moveWindows);
-        Assert::AreEqual(expected.virtualDesktopChange_moveWindows, actual.virtualDesktopChange_moveWindows);
         Assert::AreEqual(expected.zoneSetChange_flashZones, actual.zoneSetChange_flashZones);
         Assert::AreEqual(expected.zoneSetChange_moveWindows, actual.zoneSetChange_moveWindows);
         Assert::AreEqual(expected.overrideSnapHotkeys, actual.overrideSnapHotkeys);
+        Assert::AreEqual(expected.moveWindowAcrossMonitors, actual.moveWindowAcrossMonitors);
+        Assert::AreEqual(expected.moveWindowsBasedOnPosition, actual.moveWindowsBasedOnPosition);
         Assert::AreEqual(expected.appLastZone_moveWindows, actual.appLastZone_moveWindows);
+        Assert::AreEqual(expected.openWindowOnActiveMonitor, actual.openWindowOnActiveMonitor);
+        Assert::AreEqual(expected.restoreSize, actual.restoreSize);
         Assert::AreEqual(expected.use_cursorpos_editor_startupscreen, actual.use_cursorpos_editor_startupscreen);
         Assert::AreEqual(expected.showZonesOnAllMonitors, actual.showZonesOnAllMonitors);
+        Assert::AreEqual(expected.spanZonesAcrossMonitors, actual.spanZonesAcrossMonitors);
         Assert::AreEqual(expected.makeDraggedWindowTransparent, actual.makeDraggedWindowTransparent);
         Assert::AreEqual(expected.zoneColor.c_str(), actual.zoneColor.c_str());
         Assert::AreEqual(expected.zoneBorderColor.c_str(), actual.zoneBorderColor.c_str());
-        Assert::AreEqual(expected.zoneHightlightColor.c_str(), actual.zoneHightlightColor.c_str());
+        Assert::AreEqual(expected.zoneHighlightColor.c_str(), actual.zoneHighlightColor.c_str());
         Assert::AreEqual(expected.zoneHighlightOpacity, actual.zoneHighlightOpacity);
         Assert::AreEqual(expected.excludedApps.c_str(), actual.excludedApps.c_str());
         Assert::AreEqual(expected.excludedAppsArray.size(), actual.excludedAppsArray.size());
@@ -53,7 +58,8 @@ namespace FancyZonesUnitTests
     TEST_CLASS (FancyZonesSettingsCreationUnitTest)
     {
         HINSTANCE m_hInst;
-        PCWSTR m_moduleName = L"FancyZonesTest";
+        PCWSTR m_moduleName = L"FancyZonesUnitTests";
+        PCWSTR m_moduleKey = L"FancyZonesUnitTests";
         std::wstring m_tmpName;
 
         const PowerToysSettings::HotkeyObject m_defaultHotkeyObject = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
@@ -66,13 +72,12 @@ namespace FancyZonesUnitTests
             }
             TEST_METHOD_CLEANUP(Cleanup)
                 {
-                    std::filesystem::remove(m_tmpName);
-                    std::filesystem::remove(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
+                    std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
                 }
 
                 TEST_METHOD (CreateWithHinstanceDefault)
                 {
-                    auto actual = MakeFancyZonesSettings({}, m_moduleName);
+                    auto actual = MakeFancyZonesSettings({}, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -81,7 +86,7 @@ namespace FancyZonesUnitTests
 
                 TEST_METHOD (CreateWithHinstanceNullptr)
                 {
-                    auto actual = MakeFancyZonesSettings(nullptr, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(nullptr, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -90,7 +95,7 @@ namespace FancyZonesUnitTests
 
                 TEST_METHOD (CreateWithNameEmpty)
                 {
-                    auto actual = MakeFancyZonesSettings(m_hInst, L"");
+                    auto actual = MakeFancyZonesSettings(m_hInst, L"", m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -102,27 +107,32 @@ namespace FancyZonesUnitTests
                     //prepare data
                     const Settings expected;
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
-                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
+                    values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
+                    values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -137,27 +147,32 @@ namespace FancyZonesUnitTests
                         .excludedAppsArray = { L"APP", L"APP1", L"APP2", L"ANOTHER APP" },
                     };
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
-                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
+                    values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
+                    values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -168,35 +183,40 @@ namespace FancyZonesUnitTests
                 {
                     const Settings expected{
                         .shiftDrag = m_defaultSettings.shiftDrag,
+                        .mouseSwitch = m_defaultSettings.mouseSwitch,
                         .displayChange_moveWindows = m_defaultSettings.displayChange_moveWindows,
-                        .virtualDesktopChange_moveWindows = m_defaultSettings.virtualDesktopChange_moveWindows,
                         .zoneSetChange_flashZones = m_defaultSettings.zoneSetChange_flashZones,
                         .zoneSetChange_moveWindows = m_defaultSettings.zoneSetChange_moveWindows,
                         .overrideSnapHotkeys = m_defaultSettings.overrideSnapHotkeys,
+                        .moveWindowAcrossMonitors = m_defaultSettings.moveWindowAcrossMonitors,
+                        .moveWindowsBasedOnPosition = m_defaultSettings.moveWindowsBasedOnPosition,
                         .appLastZone_moveWindows = m_defaultSettings.appLastZone_moveWindows,
+                        .openWindowOnActiveMonitor = m_defaultSettings.openWindowOnActiveMonitor,
+                        .restoreSize = m_defaultSettings.restoreSize,
                         .use_cursorpos_editor_startupscreen = m_defaultSettings.use_cursorpos_editor_startupscreen,
                         .showZonesOnAllMonitors = m_defaultSettings.showZonesOnAllMonitors,
+                        .spanZonesAcrossMonitors = m_defaultSettings.spanZonesAcrossMonitors,
                         .makeDraggedWindowTransparent = m_defaultSettings.makeDraggedWindowTransparent,
                         .zoneColor = L"FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
-                        .zoneHightlightColor = L"#00FFD7",
+                        .zoneHighlightColor = L"#00FFD7",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
                         .excludedApps = L"app",
                         .excludedAppsArray = { L"APP" },
                     };
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -208,16 +228,21 @@ namespace FancyZonesUnitTests
                     //prepare data
                     const Settings expected;
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
-                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
+                    values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
+                    values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
@@ -225,7 +250,7 @@ namespace FancyZonesUnitTests
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -237,25 +262,30 @@ namespace FancyZonesUnitTests
                     //prepare data
                     const Settings expected;
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
-                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
+                    values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
+                    values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -267,26 +297,31 @@ namespace FancyZonesUnitTests
                     //prepare data
                     const Settings expected;
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
-                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
+                    values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
+                    values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -298,26 +333,31 @@ namespace FancyZonesUnitTests
                     //prepare data
                     const Settings expected;
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
-                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
+                    values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
+                    values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -327,7 +367,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CreateWithEmptyJson)
                 {
                     json::to_file(m_tmpName, json::JsonObject());
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -338,7 +378,7 @@ namespace FancyZonesUnitTests
                 {
                     std::wofstream{ m_tmpName.data(), std::ios::binary } << L"{ \"version\": \"1.0\", \"name\": \"";
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
 
                     Assert::IsTrue(actual != nullptr);
                     auto actualSettings = actual->GetSettings();
@@ -348,7 +388,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CreateWithCyrillicSymbolsInJson)
                 {
                     std::wofstream{ m_tmpName.data(), std::ios::binary } << L"{ \"version\": \"1.0\", \"name\": \"ФансиЗонс\"}";
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -359,7 +399,8 @@ namespace FancyZonesUnitTests
     TEST_CLASS (FancyZonesSettingsCallbackUnitTests)
     {
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
-        PCWSTR m_moduleName = L"FancyZonesTest";
+        PCWSTR m_moduleName = L"FancyZonesUnitTests";
+        PCWSTR m_moduleKey = L"FancyZonesUnitTests";
 
         struct FZCallback : public winrt::implements<FZCallback, IFancyZonesCallback>
         {
@@ -378,6 +419,8 @@ namespace FancyZonesUnitTests
             MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept {}
             IFACEMETHODIMP_(void)
             MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept {}
+            IFACEMETHODIMP_(void)
+            HandleWinHookEvent(const WinHookEvent* data) noexcept {}
             IFACEMETHODIMP_(void)
             VirtualDesktopChanged() noexcept {}
             IFACEMETHODIMP_(void)
@@ -410,63 +453,72 @@ namespace FancyZonesUnitTests
                 HINSTANCE hInst = (HINSTANCE)GetModuleHandleW(nullptr);
                 const Settings expected{
                     .shiftDrag = false,
+                    .mouseSwitch = false,
                     .displayChange_moveWindows = true,
-                    .virtualDesktopChange_moveWindows = true,
                     .zoneSetChange_flashZones = true,
                     .zoneSetChange_moveWindows = true,
                     .overrideSnapHotkeys = false,
+                    .moveWindowAcrossMonitors = false,
+                    .moveWindowsBasedOnPosition = false,
                     .appLastZone_moveWindows = false,
+                    .openWindowOnActiveMonitor = false,
+                    .restoreSize = false,
                     .use_cursorpos_editor_startupscreen = true,
                     .showZonesOnAllMonitors = false,
+                    .spanZonesAcrossMonitors = false,
                     .makeDraggedWindowTransparent = true,
                     .zoneColor = L"FAFAFA",
                     .zoneBorderColor = L"CCDDEE",
-                    .zoneHightlightColor = L"#00FFD7",
+                    .zoneHighlightColor = L"#00FFD7",
                     .zoneHighlightOpacity = 45,
                     .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
                     .excludedApps = L"app",
                     .excludedAppsArray = { L"APP" },
                 };
 
-                PowerToysSettings::PowerToyValues values(m_moduleName);
+                PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                 values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                 values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
-                values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                 values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                 values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                 values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                 values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
+                values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
+                values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                 values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                 values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                 values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                 values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                 values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                 values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                 values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                 values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                 values.save_to_settings_file();
 
-                m_settings = MakeFancyZonesSettings(hInst, m_moduleName);
+                m_settings = MakeFancyZonesSettings(hInst, m_moduleName, m_moduleKey);
                 Assert::IsTrue(m_settings != nullptr);
             }
 
             TEST_METHOD_CLEANUP(Cleanup)
                 {
-                    const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
-                    std::filesystem::remove(settingsFile);
+                    std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
                 }
 
                 TEST_METHOD (CallbackSetConfig)
                 {
                     bool flag = false;
-                    FZCallback callback(&flag);
+                    winrt::com_ptr<FZCallback> callback = winrt::make_self<FZCallback>(&flag);
 
                     json::JsonObject json{};
                     json.SetNamedValue(L"name", json::JsonValue::CreateStringValue(L"name"));
 
-                    m_settings->SetCallback(&callback);
+                    m_settings->SetCallback(callback.get());
                     m_settings->SetConfig(json.Stringify().c_str());
 
                     Assert::IsTrue(flag);
@@ -475,12 +527,12 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CallbackCallCustomAction)
                 {
                     bool flag = false;
-                    FZCallback callback(&flag);
+                    winrt::com_ptr<FZCallback> callback = winrt::make_self<FZCallback>(&flag);
 
                     json::JsonObject action{};
                     action.SetNamedValue(L"action_name", json::JsonValue::CreateStringValue(L"ToggledFZEditor"));
 
-                    m_settings->SetCallback(&callback);
+                    m_settings->SetCallback(callback.get());
                     m_settings->CallCustomAction(action.Stringify().c_str());
 
                     Assert::IsTrue(flag);
@@ -489,12 +541,12 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CallbackCallCustomActionNotToggle)
                 {
                     bool flag = false;
-                    FZCallback callback(&flag);
+                    winrt::com_ptr<FZCallback> callback = winrt::make_self<FZCallback>(&flag);
 
                     json::JsonObject action{};
                     action.SetNamedValue(L"action_name", json::JsonValue::CreateStringValue(L"NOT_ToggledFZEditor"));
 
-                    m_settings->SetCallback(&callback);
+                    m_settings->SetCallback(callback.get());
                     m_settings->CallCustomAction(action.Stringify().c_str());
 
                     Assert::IsFalse(flag);
@@ -503,12 +555,13 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CallbackGetConfig)
                 {
                     bool flag = false;
-                    FZCallback callback(&flag);
+                    winrt::com_ptr<FZCallback> callback = winrt::make_self<FZCallback>(&flag);
 
-                    m_settings->SetCallback(&callback);
+                    m_settings->SetCallback(callback.get());
 
-                    int bufSize = 0;
-                    m_settings->GetConfig(L"", &bufSize);
+                    int bufSize = 1;
+                    wchar_t buffer{};
+                    m_settings->GetConfig(&buffer, &bufSize);
 
                     Assert::IsFalse(flag);
                 }
@@ -516,9 +569,9 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CallbackGetSettings)
                 {
                     bool flag = false;
-                    FZCallback callback(&flag);
+                    winrt::com_ptr<FZCallback> callback = winrt::make_self<FZCallback>(&flag);
 
-                    m_settings->SetCallback(&callback);
+                    m_settings->SetCallback(callback.get());
                     m_settings->GetSettings();
 
                     Assert::IsFalse(flag);
@@ -528,15 +581,15 @@ namespace FancyZonesUnitTests
     TEST_CLASS (FancyZonesSettingsUnitTests)
     {
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
-        PowerToysSettings::Settings* m_ptSettings = nullptr;
-        PCWSTR m_moduleName = L"FancyZonesTest";
+        PCWSTR m_moduleName = L"FancyZonesUnitTests";
+        PCWSTR m_moduleKey = L"FancyZonesUnitTests";
 
         std::wstring serializedPowerToySettings(const Settings& settings)
         {
             PowerToysSettings::Settings ptSettings(HINSTANCE{}, m_moduleName);
             ptSettings.set_description(IDS_SETTING_DESCRIPTION);
             ptSettings.set_icon_key(L"pt-fancy-zones");
-            ptSettings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md");
+            ptSettings.set_overview_link(L"https://aka.ms/PowerToysOverview_FancyZones");
             ptSettings.set_video_link(L"https://youtu.be/rTtGzZYAXgY");
 
             ptSettings.add_custom_action(
@@ -545,21 +598,26 @@ namespace FancyZonesUnitTests
                 IDS_SETTING_LAUNCH_EDITOR_BUTTON,
                 IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION);
             ptSettings.add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, settings.editorHotkey);
-            ptSettings.add_bool_toogle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, settings.shiftDrag);
-            ptSettings.add_bool_toogle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
-            ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
-            ptSettings.add_bool_toogle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
-            ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
-            ptSettings.add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, settings.virtualDesktopChange_moveWindows);
-            ptSettings.add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
-            ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
-            ptSettings.add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
-            ptSettings.add_bool_toogle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, settings.makeDraggedWindowTransparent);
+            ptSettings.add_bool_toggle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, settings.shiftDrag);
+            ptSettings.add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
+            ptSettings.add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
+            ptSettings.add_bool_toggle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, settings.moveWindowAcrossMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_moveWindowsBasedOnPosition", IDS_SETTING_DESCRIPTION_MOVE_WINDOWS_BASED_ON_POSITION, settings.moveWindowsBasedOnPosition);
+            ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
+            ptSettings.add_bool_toggle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
+            ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
+            ptSettings.add_bool_toggle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
+            ptSettings.add_bool_toggle(L"fancyzones_openWindowOnActiveMonitor", IDS_SETTING_DESCRIPTION_OPEN_WINDOW_ON_ACTIVE_MONITOR, settings.openWindowOnActiveMonitor);
+            ptSettings.add_bool_toggle(L"fancyzones_restoreSize", IDS_SETTING_DESCRIPTION_RESTORESIZE, settings.restoreSize);
+            ptSettings.add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
+            ptSettings.add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_multi_monitor_mode", IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS, settings.spanZonesAcrossMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, settings.makeDraggedWindowTransparent);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
             ptSettings.add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, settings.zoneBorderColor);
-            ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHightlightColor);
-            ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, settings.excludedApps);
+            ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHighlightColor);
+            ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, settings.excludedApps);
 
             return ptSettings.serialize();
         }
@@ -568,98 +626,46 @@ namespace FancyZonesUnitTests
             {
                 HINSTANCE hInst = (HINSTANCE)GetModuleHandleW(nullptr);
 
-                //init m_settings
-                const Settings expected;
-
-                PowerToysSettings::PowerToyValues values(m_moduleName);
-                values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
-                values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
-                values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
-                //values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
-                values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
-                values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
-                values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
-                values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
-                values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
-                values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
-                values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
-                values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
-                values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
-                values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
-
-                values.save_to_settings_file();
-
-                m_settings = MakeFancyZonesSettings(hInst, m_moduleName);
+                m_settings = MakeFancyZonesSettings(hInst, m_moduleName, m_moduleKey);
                 Assert::IsTrue(m_settings != nullptr);
-
-                //init m_ptSettings
-                m_ptSettings = new PowerToysSettings::Settings(hInst, m_moduleName);
-                m_ptSettings->set_description(IDS_SETTING_DESCRIPTION);
-                m_ptSettings->set_icon_key(L"pt-fancy-zones");
-                m_ptSettings->set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md");
-                m_ptSettings->set_video_link(L"https://youtu.be/rTtGzZYAXgY");
-
-                m_ptSettings->add_custom_action(
-                    L"ToggledFZEditor", // action name.
-                    IDS_SETTING_LAUNCH_EDITOR_LABEL,
-                    IDS_SETTING_LAUNCH_EDITOR_BUTTON,
-                    IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION);
-                m_ptSettings->add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, expected.editorHotkey);
-                m_ptSettings->add_bool_toogle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, expected.shiftDrag);
-                m_ptSettings->add_bool_toogle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, expected.overrideSnapHotkeys);
-                //m_ptSettings->add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, expected.zoneSetChange_flashZones);
-                m_ptSettings->add_bool_toogle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, expected.displayChange_moveWindows);
-                m_ptSettings->add_bool_toogle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, expected.zoneSetChange_moveWindows);
-                m_ptSettings->add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, expected.virtualDesktopChange_moveWindows);
-                m_ptSettings->add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, expected.appLastZone_moveWindows);
-                m_ptSettings->add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, expected.use_cursorpos_editor_startupscreen);
-                m_ptSettings->add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, expected.showZonesOnAllMonitors);
-                m_ptSettings->add_bool_toogle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, expected.makeDraggedWindowTransparent);
-                m_ptSettings->add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, expected.zoneHightlightColor);
-                m_ptSettings->add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, expected.zoneColor);
-                m_ptSettings->add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, expected.zoneBorderColor);
-                m_ptSettings->add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, expected.zoneHighlightOpacity, 0, 100, 1);
-                m_ptSettings->add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, expected.excludedApps);
             }
 
             TEST_METHOD_CLEANUP(Cleanup)
                 {
-                    const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
-                    std::filesystem::remove(settingsFile);
+                    std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
                 }
 
                 TEST_METHOD (GetConfig)
                 {
-                    const int expectedSize = static_cast<int>(m_ptSettings->serialize().size()) + 1;
+                    int expectedSize = 0;
+                    m_settings->GetConfig(nullptr, &expectedSize);
+                    Assert::AreNotEqual(0, expectedSize);
 
                     int actualBufferSize = expectedSize;
                     PWSTR actualBuffer = new wchar_t[actualBufferSize];
 
                     Assert::IsTrue(m_settings->GetConfig(actualBuffer, &actualBufferSize));
                     Assert::AreEqual(expectedSize, actualBufferSize);
-
-                    Assert::AreEqual(m_ptSettings->serialize().c_str(), actualBuffer);
                 }
 
                 TEST_METHOD (GetConfigSmallBuffer)
                 {
-                    const auto serialized = m_ptSettings->serialize();
-                    const int size = static_cast<int>(serialized.size());
-                    const int expectedSize = size + 1;
+                    int size = 0;
+                    m_settings->GetConfig(nullptr, &size);
+                    Assert::AreNotEqual(0, size);
 
                     int actualBufferSize = size - 1;
                     PWSTR actualBuffer = new wchar_t[actualBufferSize];
 
                     Assert::IsFalse(m_settings->GetConfig(actualBuffer, &actualBufferSize));
-                    Assert::AreEqual(expectedSize, actualBufferSize);
-                    Assert::AreNotEqual(serialized.c_str(), actualBuffer);
+                    Assert::AreEqual(size, actualBufferSize);
                 }
 
                 TEST_METHOD (GetConfigNullBuffer)
                 {
-                    const auto serialized = m_ptSettings->serialize();
-                    const int expectedSize = static_cast<int>(serialized.size()) + 1;
+                    int expectedSize = 0;
+                    m_settings->GetConfig(nullptr, &expectedSize);
+                    Assert::AreNotEqual(0, expectedSize);
 
                     int actualBufferSize = 0;
 
@@ -675,18 +681,22 @@ namespace FancyZonesUnitTests
 
                     const Settings expected{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
+                        .moveWindowAcrossMonitors = false,
                         .appLastZone_moveWindows = true,
+                        .openWindowOnActiveMonitor = false,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .spanZonesAcrossMonitors = false,
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
-                        .zoneHightlightColor = L"#00AABB",
+                        .zoneHighlightColor = L"#00AABB",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
                         .excludedApps = L"app\r\napp2",

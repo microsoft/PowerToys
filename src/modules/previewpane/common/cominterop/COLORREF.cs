@@ -11,12 +11,13 @@ namespace Common.ComInterlop
     /// The COLORREF value is used to specify an RGB color.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Interop")]
     public struct COLORREF
     {
         /// <summary>
-        /// Stores an RGB color value in a 32 bit integer.
+        /// Gets or sets stores an RGB color value in a 32 bit integer.
         /// </summary>
-        public uint Dword;
+        public uint Dword { get; set; }
 
         /// <summary>
         /// Gets RGB value stored in <see cref="Dword"/> in <see cref="Color"/> structure.
@@ -26,9 +27,9 @@ namespace Common.ComInterlop
             get
             {
                 return Color.FromArgb(
-                    (int)(0x000000FFU & this.Dword),
-                    (int)(0x0000FF00U & this.Dword) >> 8,
-                    (int)(0x00FF0000U & this.Dword) >> 16);
+                    (int)(0x000000FFU & Dword),
+                    (int)(0x0000FF00U & Dword) >> 8,
+                    (int)(0x00FF0000U & Dword) >> 16);
             }
         }
     }

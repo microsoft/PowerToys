@@ -117,83 +117,24 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Advanced_About" xml:space="preserve">
-    <value>About</value>
-  </data>
-  <data name="Advanced_CreateSize" xml:space="preserve">
-    <value>Create a new size</value>
-  </data>
-  <data name="Advanced_DeleteSize" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="Advanced_Encoding" xml:space="preserve">
-    <value>Encoding</value>
-  </data>
-  <data name="Advanced_FallbackEncoder" xml:space="preserve">
-    <value>_Fallback encoder:</value>
-  </data>
-  <data name="Advanced_File" xml:space="preserve">
-    <value>File</value>
-  </data>
-  <data name="Advanced_FileName" xml:space="preserve">
-    <value>_Filename:</value>
-  </data>
-  <data name="Advanced_FileNameToken1" xml:space="preserve">
-    <value>Original filename</value>
-  </data>
-  <data name="Advanced_FileNameToken2" xml:space="preserve">
-    <value>Size name</value>
-  </data>
-  <data name="Advanced_FileNameToken3" xml:space="preserve">
-    <value>Selected width</value>
-  </data>
-  <data name="Advanced_FileNameToken4" xml:space="preserve">
-    <value>Selected height</value>
-  </data>
-  <data name="Advanced_FileNameToken5" xml:space="preserve">
-    <value>Actual width (pixels)</value>
-  </data>
-  <data name="Advanced_FileNameToken6" xml:space="preserve">
-    <value>Actual height (pixels)</value>
-  </data>
-  <data name="Advanced_FileNameTokens" xml:space="preserve">
-    <value>The following parameters can be used.</value>
-  </data>
-  <data name="Advanced_JpegQualityLevel" xml:space="preserve">
-    <value>_JPEG quality level:</value>
-  </data>
-  <data name="Advanced_KeepDateModified" xml:space="preserve">
-    <value>_Use original date modified</value>
-  </data>
-  <data name="Advanced_PngInterlaceOption" xml:space="preserve">
-    <value>_PNG interlacing:</value>
-  </data>
-  <data name="Advanced_Sizes" xml:space="preserve">
-    <value>Sizes</value>
-  </data>
-  <data name="Advanced_TiffCompressOption" xml:space="preserve">
-    <value>_TIFF compression:</value>
-  </data>
-  <data name="Advanced_Title" xml:space="preserve">
-    <value>Settings</value>
-  </data>
   <data name="AllFilesFilter" xml:space="preserve">
     <value>All Files</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="Copyright" xml:space="preserve">
-    <value>© 2019 Brice Lambson. All rights reserved.</value>
+  <data name="Height" xml:space="preserve">
+    <value>Height</value>
   </data>
   <data name="ImageResizer" xml:space="preserve">
     <value>Image Resizer</value>
+    <comment>Product name, do not loc</comment>
   </data>
   <data name="Input_Auto" xml:space="preserve">
     <value>(auto)</value>
   </data>
   <data name="Input_Content" xml:space="preserve">
-    <value>_Select a size.</value>
+    <value>_Select a size</value>
   </data>
   <data name="Input_Custom" xml:space="preserve">
     <value>Custom</value>
@@ -201,17 +142,11 @@
   <data name="Input_IgnoreOrientation" xml:space="preserve">
     <value>Ign_ore the orientation of pictures</value>
   </data>
-  <data name="Input_MainInstruction" xml:space="preserve">
-    <value>Resize your pictures</value>
-  </data>
   <data name="Input_Replace" xml:space="preserve">
     <value>R_esize the original pictures (don't create copies)</value>
   </data>
   <data name="Input_Resize" xml:space="preserve">
-    <value>_Resize</value>
-  </data>
-  <data name="Input_ShowAdvanced" xml:space="preserve">
-    <value>Settings</value>
+    <value>Resize</value>
   </data>
   <data name="Input_ShrinkOnly" xml:space="preserve">
     <value>_Make pictures smaller but not larger</value>
@@ -224,6 +159,9 @@
   </data>
   <data name="OK" xml:space="preserve">
     <value>OK</value>
+  </data>
+  <data name="OK_Tooltip" xml:space="preserve">
+    <value>Apply settings</value>
   </data>
   <data name="Phone" xml:space="preserve">
     <value>Phone</value>
@@ -306,6 +244,12 @@
   <data name="ResizeUnit_Pixel" xml:space="preserve">
     <value>Pixels</value>
   </data>
+  <data name="Resize_Tooltip" xml:space="preserve">
+    <value>Resize pictures</value>
+  </data>
+  <data name="Resize_Type" xml:space="preserve">
+    <value>Resize type</value>
+  </data>
   <data name="Results_Close" xml:space="preserve">
     <value>Close</value>
   </data>
@@ -315,31 +259,19 @@
   <data name="Small" xml:space="preserve">
     <value>Small</value>
   </data>
-  <data name="TiffCompressOption_Ccitt3" xml:space="preserve">
-    <value>CCITT3</value>
+  <data name="Times_Symbol" xml:space="preserve">
+    <value>Times Symbol</value>
   </data>
-  <data name="TiffCompressOption_Ccitt4" xml:space="preserve">
-    <value>CCITT4</value>
-  </data>
-  <data name="TiffCompressOption_Default" xml:space="preserve">
-    <value>(Default)</value>
-  </data>
-  <data name="TiffCompressOption_Lzw" xml:space="preserve">
-    <value>LZW</value>
-  </data>
-  <data name="TiffCompressOption_None" xml:space="preserve">
-    <value>None</value>
-  </data>
-  <data name="TiffCompressOption_Rle" xml:space="preserve">
-    <value>RLE</value>
-  </data>
-  <data name="TiffCompressOption_Zip" xml:space="preserve">
-    <value>Zip</value>
+  <data name="Unit" xml:space="preserve">
+    <value>Unit</value>
   </data>
   <data name="ValueMustBeBetween" xml:space="preserve">
     <value>Value must be between '{0}' and '{1}'.</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Version</value>
+  </data>
+  <data name="Width" xml:space="preserve">
+    <value>Width</value>
   </data>
 </root>

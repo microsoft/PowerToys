@@ -2,24 +2,22 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Castle.Core.Logging;
-using Common.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System;
 using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using Common.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
-namespace UnitTests_PreviewHandlerCommon
+namespace PreviewHandlerCommonUnitTests
 {
     [TestClass]
     public class StreamWrapperTests
     {
         [TestMethod]
-        public void StreamWrapper_ShouldThrow_IfInitializeWithNullStream() 
+        public void StreamWrapperShouldThrowIfInitializeWithNullStream()
         {
             // Arrange
             IStream stream = null;
@@ -28,9 +26,12 @@ namespace UnitTests_PreviewHandlerCommon
             // Act
             try
             {
-                var streamWrapper = new StreamWrapper(stream);
+                using (var streamWrapper = new ReadonlyStream(stream))
+                {
+                    // do work
+                }
             }
-            catch (ArgumentNullException ex) 
+            catch (ArgumentNullException ex)
             {
                 exception = ex;
             }
@@ -40,118 +41,127 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void StreamWrapper_ShouldReturnCanReadTrue()
+        public void StreamWrapperShouldReturnCanReadTrue()
         {
             // Arrange
             var streamMock = new Mock<IStream>();
 
             // Act
-            var streamWrapper = new StreamWrapper(streamMock.Object);
-
-            // Assert
-            Assert.AreEqual(streamWrapper.CanRead, true);
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
+            {
+                // Assert
+                Assert.AreEqual(true, streamWrapper.CanRead);
+            }
         }
 
         [TestMethod]
-        public void StreamWrapper_ShouldReturnCanSeekTrue()
+        public void StreamWrapperShouldReturnCanSeekTrue()
         {
             // Arrange
             var streamMock = new Mock<IStream>();
 
             // Act
-            var streamWrapper = new StreamWrapper(streamMock.Object);
-
-            // Assert
-            Assert.AreEqual(streamWrapper.CanSeek, true);
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
+            {
+                // Assert
+                Assert.AreEqual(true, streamWrapper.CanSeek);
+            }
         }
 
         [TestMethod]
-        public void StreamWrapper_ShouldReturnCanWriteFalse()
+        public void StreamWrapperShouldReturnCanWriteFalse()
         {
             // Arrange
             var streamMock = new Mock<IStream>();
 
             // Act
-            var streamWrapper = new StreamWrapper(streamMock.Object);
-
-            // Assert
-            Assert.AreEqual(streamWrapper.CanWrite, false);
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
+            {
+                // Assert
+                Assert.AreEqual(false, streamWrapper.CanWrite);
+            }
         }
 
         [TestMethod]
-        public void StreamWrapper_ShouldReturnValidLength()
+        public void StreamWrapperShouldReturnValidLength()
         {
             // Arrange
             long streamLength = 5;
-            var stremMock = new Mock<IStream>();
-            var stat = new System.Runtime.InteropServices.ComTypes.STATSTG();
-            stat.cbSize = streamLength;
+            var streamMock = new Mock<IStream>();
+            var stat = new System.Runtime.InteropServices.ComTypes.STATSTG
+            {
+                cbSize = streamLength,
+            };
 
-            stremMock
-                .Setup(x => x.Stat(out stat, It.IsAny<int>()));
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            streamMock.Setup(x => x.Stat(out stat, It.IsAny<int>()));
 
-            // Act
-            var actualLength = streamWrapper.Length;
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
+            {
+                // Act
+                var actualLength = streamWrapper.Length;
 
-            // Assert
-            Assert.AreEqual(actualLength, streamLength);
+                // Assert
+                Assert.AreEqual(streamLength, actualLength);
+            }
         }
 
         [TestMethod]
-        public void StreamWrapper_ShouldReturnValidPosition()
+        public void StreamWrapperShouldReturnValidPosition()
         {
             // Arrange
             int expectedDwOrigin = 1; // STREAM_SEEK_CUR
             long expectedOffset = 0;
             long currPosition = 5;
-            var stremMock = new Mock<IStream>();
+            var streamMock = new Mock<IStream>();
 
-            stremMock
+            streamMock
                 .Setup(x => x.Seek(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
                 .Callback<long, int, IntPtr>((dlibMove, dwOrigin, plibNewPosition) =>
                 {
                     Marshal.WriteInt64(plibNewPosition, currPosition);
                 });
-            var streamWrapper = new StreamWrapper(stremMock.Object);
 
-            // Act
-            var actualPosition = streamWrapper.Position;
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
+            {
+                // Act
+                var actualPosition = streamWrapper.Position;
 
-            // Assert
-            Assert.AreEqual(actualPosition, currPosition);
-            stremMock.Verify(_ => _.Seek(It.Is<long>(offset => offset == expectedOffset), It.Is<int>(dworigin => dworigin == expectedDwOrigin), It.IsAny<IntPtr>()), Times.Once);
+                // Assert
+                Assert.AreEqual(currPosition, actualPosition);
+                streamMock.Verify(_ => _.Seek(It.Is<long>(offset => offset == expectedOffset), It.Is<int>(dworigin => dworigin == expectedDwOrigin), It.IsAny<IntPtr>()), Times.Once);
+            }
         }
 
         [TestMethod]
-        public void StreamWrapper_ShouldCallIStreamSeek_WhenSetPosition()
+        public void StreamWrapperShouldCallIStreamSeekWhenSetPosition()
         {
             // Arrange
             long positionToSet = 5;
             int expectedDwOrigin = 0; // STREAM_SEEK_SET
-            var stremMock = new Mock<IStream>();
+            var streamMock = new Mock<IStream>();
 
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
+            {
+                // Act
+                streamWrapper.Position = positionToSet;
 
-            // Act
-            streamWrapper.Position = positionToSet;
-
-            // Assert
-            stremMock.Verify(_ => _.Seek(It.Is<long>(offset => offset == positionToSet), It.Is<int>(dworigin => dworigin == expectedDwOrigin), It.IsAny<IntPtr>()), Times.Once);
+                // Assert
+                streamMock.Verify(_ => _.Seek(It.Is<long>(offset => offset == positionToSet), It.Is<int>(dworigin => dworigin == expectedDwOrigin), It.IsAny<IntPtr>()), Times.Once);
+            }
         }
 
         [DataTestMethod]
-        [DataRow((long)0, SeekOrigin.Begin)]
-        [DataRow((long)5, SeekOrigin.Begin)]
-        [DataRow((long)0, SeekOrigin.Current)]
-        [DataRow((long)5, SeekOrigin.Current)]
-        [DataRow((long)0, SeekOrigin.End)]
-        [DataRow((long)5, SeekOrigin.End)]
-        public void StreamWrapper_ShouldCallIStreamSeekWithValidArguments_WhenSeekCalled(long offset, SeekOrigin origin)
+        [DataRow(0L, SeekOrigin.Begin)]
+        [DataRow(5L, SeekOrigin.Begin)]
+        [DataRow(0L, SeekOrigin.Current)]
+        [DataRow(5L, SeekOrigin.Current)]
+        [DataRow(0L, SeekOrigin.End)]
+        [DataRow(5L, SeekOrigin.End)]
+        public void StreamWrapperShouldCallIStreamSeekWithValidArgumentsWhenSeekCalled(long offset, SeekOrigin origin)
         {
             // Arrange
             int expectedDwOrigin = 0;
-            switch (origin) 
+            switch (origin)
             {
                 case SeekOrigin.Begin:
                     expectedDwOrigin = 0;
@@ -166,37 +176,39 @@ namespace UnitTests_PreviewHandlerCommon
                     break;
             }
 
-            var stremMock = new Mock<IStream>();
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            var streamMock = new Mock<IStream>();
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
+            {
+                // Act
+                streamWrapper.Seek(offset, origin);
 
-            // Act
-            streamWrapper.Seek(offset, origin);
-
-            // Assert
-            stremMock.Verify(_ => _.Seek(It.Is<long>(actualOffset => actualOffset == offset), It.Is<int>(actualDwOrigin => actualDwOrigin == expectedDwOrigin), It.IsAny<IntPtr>()), Times.Once);
+                // Assert
+                streamMock.Verify(_ => _.Seek(It.Is<long>(actualOffset => actualOffset == offset), It.Is<int>(actualDwOrigin => actualDwOrigin == expectedDwOrigin), It.IsAny<IntPtr>()), Times.Once);
+            }
         }
 
         [TestMethod]
-        public void StreamWrapper_ShouldReturnValidPosition_WhenSeekCalled()
+        public void StreamWrapperShouldReturnValidPositionWhenSeekCalled()
         {
             // Arrange
             long position = 5;
-            var stremMock = new Mock<IStream>();
+            var streamMock = new Mock<IStream>();
 
-            stremMock
+            streamMock
                 .Setup(x => x.Seek(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
                 .Callback<long, int, IntPtr>((dlibMove, dwOrigin, plibNewPosition) =>
                 {
                     Marshal.WriteInt64(plibNewPosition, position);
                 });
 
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
+            {
+                // Act
+                var actualPosition = streamWrapper.Seek(0, SeekOrigin.Begin);
 
-            // Act
-            var actualPosition = streamWrapper.Seek(0, SeekOrigin.Begin);
-
-            // Assert
-            Assert.AreEqual(position, actualPosition);
+                // Assert
+                Assert.AreEqual(actualPosition, position);
+            }
         }
 
         [DataTestMethod]
@@ -204,129 +216,135 @@ namespace UnitTests_PreviewHandlerCommon
         [DataRow(10, 0, -5)]
         [DataRow(10, 0, 11)]
         [DataRow(10, 5, 6)]
-        public void StreamWrapper_ShouldThrow_WhenReadCalledWithOutOfRangeArguments(int bufferLength, int offSet, int bytesToRead)
+        public void StreamWrapperShouldThrowWhenReadCalledWithOutOfRangeArguments(int bufferLength, int offSet, int bytesToRead)
         {
             // Arrange
             var buffer = new byte[bufferLength];
-            var stremMock = new Mock<IStream>();
+            var streamMock = new Mock<IStream>();
             ArgumentOutOfRangeException exception = null;
 
-            var streamWrapper = new StreamWrapper(stremMock.Object);
-
-            // Act
-            try
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
-                streamWrapper.Read(buffer, offSet, bytesToRead);
-            }
-            catch (ArgumentOutOfRangeException ex) 
-            {
-                exception = ex;
-            }
+                // Act
+                try
+                {
+                    streamWrapper.Read(buffer, offSet, bytesToRead);
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    exception = ex;
+                }
 
-            // Assert
-            Assert.IsNotNull(exception);
+                // Assert
+                Assert.IsNotNull(exception);
+            }
         }
 
         [DataTestMethod]
         [DataRow(5, 0)]
         [DataRow(5, 5)]
         [DataRow(0, 5)]
-        public void StreamWrapper_ShouldSetValidBuffer_WhenReadCalled(int count, int offset)
+        public void StreamWrapperShouldSetValidBufferWhenReadCalled(int count, int offset)
         {
             // Arrange
             var inputBuffer = new byte[1024];
             var streamBytes = new byte[count];
-            for (int i = 0; i < count; i++) 
+            for (int i = 0; i < count; i++)
             {
                 streamBytes[i] = (byte)i;
             }
 
-            var stremMock = new Mock<IStream>();
+            var streamMock = new Mock<IStream>();
 
-            stremMock
-                .Setup(x => x.Read(It.IsAny<byte []>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
-                .Callback<byte [], int, IntPtr>((buffer, countToRead , bytesReadPtr) =>
+            streamMock
+                .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
+                .Callback<byte[], int, IntPtr>((buffer, countToRead, bytesReadPtr) =>
+               {
+                   Array.Copy(streamBytes, 0, buffer, 0, streamBytes.Length);
+                   Marshal.WriteInt32(bytesReadPtr, count);
+               });
+
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
+            {
+                // Act
+                var bytesRead = streamWrapper.Read(inputBuffer, offset, count);
+
+                // Assert
+                CollectionAssert.AreEqual(streamBytes, inputBuffer.Skip(offset).Take(count).ToArray());
+                Assert.AreEqual(count, bytesRead);
+            }
+        }
+
+        [TestMethod]
+        public void StreamWrapperShouldThrowNotImplementedExceptionWhenFlushCalled()
+        {
+            // Arrange
+            var streamMock = new Mock<IStream>();
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
+            {
+                NotImplementedException exception = null;
+
+                // Act
+                try
                 {
-                    Array.Copy(streamBytes, 0, buffer, 0, streamBytes.Length);
-                    Marshal.WriteInt32(bytesReadPtr, count);
-                });
+                    streamWrapper.Flush();
+                }
+                catch (NotImplementedException ex)
+                {
+                    exception = ex;
+                }
 
-            var streamWrapper = new StreamWrapper(stremMock.Object);
-
-            // Act
-            var bytesRead = streamWrapper.Read(inputBuffer, offset, count);
-
-            // Assert
-            CollectionAssert.AreEqual(streamBytes, inputBuffer.Skip(offset).Take(count).ToArray());
-            Assert.AreEqual(count, bytesRead);
+                // Assert
+                Assert.IsNotNull(exception);
+            }
         }
 
         [TestMethod]
-        public void StreamWrapper_ShouldThrowNotImplementedException_WhenFlushCalled()
+        public void StreamWrapperShouldThrowNotImplementedExceptionWhenSetLengthCalled()
         {
             // Arrange
-            var stremMock = new Mock<IStream>();
-            var streamWrapper = new StreamWrapper(stremMock.Object);
-            NotImplementedException exception = null;
-
-            // Act
-            try
+            var streamMock = new Mock<IStream>();
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
-                streamWrapper.Flush();
-            }
-            catch (NotImplementedException ex) 
-            {
-                exception = ex;
-            }
+                NotImplementedException exception = null;
 
-            // Assert
-            Assert.IsNotNull(exception);
+                // Act
+                try
+                {
+                    streamWrapper.SetLength(5);
+                }
+                catch (NotImplementedException ex)
+                {
+                    exception = ex;
+                }
+
+                // Assert
+                Assert.IsNotNull(exception);
+            }
         }
 
         [TestMethod]
-        public void StreamWrapper_ShouldThrowNotImplementedException_WhenSetLengthCalled()
+        public void StreamWrapperShouldThrowNotImplementedExceptionWhenWriteCalled()
         {
             // Arrange
-            var stremMock = new Mock<IStream>();
-            var streamWrapper = new StreamWrapper(stremMock.Object);
-            NotImplementedException exception = null;
-
-            // Act
-            try
+            var streamMock = new Mock<IStream>();
+            using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
-                streamWrapper.SetLength(5);
-            }
-            catch (NotImplementedException ex)
-            {
-                exception = ex;
-            }
+                NotImplementedException exception = null;
 
-            // Assert
-            Assert.IsNotNull(exception);
+                // Act
+                try
+                {
+                    streamWrapper.Write(new byte[5], 0, 0);
+                }
+                catch (NotImplementedException ex)
+                {
+                    exception = ex;
+                }
+
+                // Assert
+                Assert.IsNotNull(exception);
+            }
         }
-
-        [TestMethod]
-        public void StreamWrapper_ShouldThrowNotImplementedException_WhenWriteCalled()
-        {
-            // Arrange
-            var stremMock = new Mock<IStream>();
-            var streamWrapper = new StreamWrapper(stremMock.Object);
-            NotImplementedException exception = null;
-
-            // Act
-            try
-            {
-                streamWrapper.Write(new byte[5], 0, 0);
-            }
-            catch (NotImplementedException ex)
-            {
-                exception = ex;
-            }
-
-            // Assert
-            Assert.IsNotNull(exception);
-        }
-
-
     }
 }

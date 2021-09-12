@@ -1,0 +1,10 @@
+namespace BackgroundActivator
+{
+    [version(1)]
+    runtimeclass BackgroundHandler
+    {
+        BackgroundHandler();
+    
+        void Run(Windows.ApplicationModel.Background.IBackgroundTaskInstance taskInstance);
+    }
+}

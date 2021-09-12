@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 namespace Wox.Infrastructure.Hotkey
 {
     public enum KeyEvent
@@ -5,21 +9,21 @@ namespace Wox.Infrastructure.Hotkey
         /// <summary>
         /// Key down
         /// </summary>
-        WM_KEYDOWN = 256,
+        WMKEYDOWN = 256,
 
         /// <summary>
         /// Key up
         /// </summary>
-        WM_KEYUP = 257,
+        WMKEYUP = 257,
 
         /// <summary>
         /// System key up
         /// </summary>
-        WM_SYSKEYUP = 261,
+        WMSYSKEYUP = 261,
 
         /// <summary>
         /// System key down
         /// </summary>
-        WM_SYSKEYDOWN = 260
+        WMSYSKEYDOWN = 260,
     }
 }

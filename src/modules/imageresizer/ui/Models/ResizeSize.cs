@@ -1,19 +1,25 @@
-﻿// Copyright (c) Brice Lambson
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using GalaSoft.MvvmLight;
+using ImageResizer.Helpers;
 using ImageResizer.Properties;
 using Newtonsoft.Json;
 
 namespace ImageResizer.Models
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class ResizeSize : ObservableObject
+    public class ResizeSize : Observable
     {
-        private static readonly IDictionary<string, string> _tokens;
+        private static readonly IDictionary<string, string> _tokens = new Dictionary<string, string>
+        {
+            ["$small$"] = Resources.Small,
+            ["$medium$"] = Resources.Medium,
+            ["$large$"] = Resources.Large,
+            ["$phone$"] = Resources.Phone,
+        };
 
         private string _name;
         private ResizeFit _fit = ResizeFit.Fit;
@@ -21,15 +27,6 @@ namespace ImageResizer.Models
         private double _height;
         private bool _showHeight = true;
         private ResizeUnit _unit = ResizeUnit.Pixel;
-
-        static ResizeSize()
-            => _tokens = new Dictionary<string, string>
-            {
-                ["$small$"] = Resources.Small,
-                ["$medium$"] = Resources.Medium,
-                ["$large$"] = Resources.Large,
-                ["$phone$"] = Resources.Phone,
-            };
 
         public ResizeSize(string name, ResizeFit fit, double width, double height, ResizeUnit unit)
         {
@@ -48,7 +45,7 @@ namespace ImageResizer.Models
         public virtual string Name
         {
             get => _name;
-            set => Set(nameof(Name), ref _name, ReplaceTokens(value));
+            set => Set(ref _name, ReplaceTokens(value));
         }
 
         [JsonProperty(PropertyName = "fit")]
@@ -57,7 +54,9 @@ namespace ImageResizer.Models
             get => _fit;
             set
             {
-                if (Set(nameof(Fit), ref _fit, value))
+                var previousFit = _fit;
+                Set(ref _fit, value);
+                if (!Equals(previousFit, value))
                 {
                     UpdateShowHeight();
                 }
@@ -68,18 +67,21 @@ namespace ImageResizer.Models
         public double Width
         {
             get => _width;
-            set => Set(nameof(Width), ref _width, value);
+            set => Set(ref _width, value);
         }
 
         [JsonProperty(PropertyName = "height")]
         public double Height
         {
             get => _height;
-            set => Set(nameof(Height), ref _height, value);
+            set => Set(ref _height, value);
         }
 
         public bool ShowHeight
-            => _showHeight;
+        {
+            get => _showHeight;
+            set => Set(ref _showHeight, value);
+        }
 
         public bool HasAuto
             => Width == 0 || Height == 0;
@@ -90,7 +92,9 @@ namespace ImageResizer.Models
             get => _unit;
             set
             {
-                if (Set(nameof(Unit), ref _unit, value))
+                var previousUnit = _unit;
+                Set(ref _unit, value);
+                if (!Equals(previousUnit, value))
                 {
                     UpdateShowHeight();
                 }
@@ -115,10 +119,9 @@ namespace ImageResizer.Models
                 : text;
 
         private void UpdateShowHeight()
-            => Set(
-                nameof(ShowHeight),
-                ref _showHeight,
-                Fit == ResizeFit.Stretch || Unit != ResizeUnit.Percent);
+        {
+            ShowHeight = Fit == ResizeFit.Stretch || Unit != ResizeUnit.Percent;
+        }
 
         private double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)
         {

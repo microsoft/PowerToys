@@ -44,7 +44,7 @@ void Trace::PowerPreviewSettingsUpdated(LPCWSTR SettingsName, bool oldState, boo
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerPreview_TweakUISettings_SuccesfullyUpdatedSettings",
+        "PowerPreview_TweakUISettings_SuccessfullyUpdatedSettings",
         TraceLoggingWideString(SettingsName, "Previewer_Settings_Name"),
         TraceLoggingBoolean(oldState, "Old_Settings_State"),
         TraceLoggingBoolean(newState, "New_Settings_State"),

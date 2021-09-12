@@ -86,6 +86,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
     if (RegisterDLLWindowClass((LPCWSTR)creator->getWindowClassName().c_str(), creator) != 0)
     {
         auto hWnd = CreateWindowEx(0, (LPCWSTR)creator->getWindowClassName().c_str(), (LPCWSTR)creator->getTitle().c_str(), WS_EX_APPWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, nullptr, nullptr, creator->getHInstance(), NULL);
+        SetWindowPos(hWnd, HWND_TOPMOST, 10, 10, 100, 100, SWP_SHOWWINDOW);
         creator->setHwnd(hWnd);
         creator->setCondition(true);
 
@@ -170,4 +171,15 @@ std::wstring Helpers::CreateGuidString()
     }
 
     return L"";
+}
+
+std::optional<GUID> Helpers::StringToGuid(const std::wstring& str)
+{
+    GUID guid;
+    if (CLSIDFromString(str.c_str(), &guid) == S_OK)
+    {
+        return guid;
+    }
+
+    return std::nullopt;
 }

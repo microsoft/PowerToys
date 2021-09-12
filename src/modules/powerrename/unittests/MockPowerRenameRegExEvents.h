@@ -18,6 +18,7 @@ public:
     IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm);
     IFACEMETHODIMP OnReplaceTermChanged(_In_ PCWSTR replaceTerm);
     IFACEMETHODIMP OnFlagsChanged(_In_ DWORD flags);
+    IFACEMETHODIMP OnFileTimeChanged(_In_ SYSTEMTIME fileTime);
 
     static HRESULT s_CreateInstance(_Outptr_ IPowerRenameRegExEvents** ppsrree);
 
@@ -35,5 +36,6 @@ public:
     PWSTR m_searchTerm = nullptr;
     PWSTR m_replaceTerm = nullptr;
     DWORD m_flags = 0;
+    SYSTEMTIME m_fileTime = { 0 };
     long m_refCount;
 };

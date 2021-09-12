@@ -12,7 +12,7 @@ using Microsoft.Win32;
 namespace Common
 {
     /// <summary>
-    /// Preview Handler base class implmenenting interfaces required by Preview Handler.
+    /// Preview Handler base class implementing interfaces required by Preview Handler.
     /// </summary>
     public abstract class PreviewHandlerBase : IPreviewHandler, IOleWindow, IObjectWithSite, IPreviewHandlerVisuals
     {
@@ -46,7 +46,14 @@ namespace Common
         /// </summary>
         public PreviewHandlerBase()
         {
-            this.previewControl = this.CreatePreviewHandlerControl();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PreviewHandlerBase"/> class.
+        /// </summary>
+        public void Initialize()
+        {
+            previewControl = CreatePreviewHandlerControl();
         }
 
         /// <inheritdoc />
@@ -107,7 +114,7 @@ namespace Common
         /// <inheritdoc />
         public void GetWindow(out IntPtr phwnd)
         {
-            phwnd = this.previewControl.GetHandle();
+            phwnd = this.previewControl.GetWindowHandle();
         }
 
         /// <inheritdoc />
@@ -150,7 +157,7 @@ namespace Common
         }
 
         /// <summary>
-        /// Provide instance of the implementation of <see cref="IPreviewHandlerControl"/>. Should be overide by the implementation class with control object to be used.
+        /// Provide instance of the implementation of <see cref="IPreviewHandlerControl"/>. Should be overridden by the implementation class with a control object to be used.
         /// </summary>
         /// <returns>Instance of the <see cref="IPreviewHandlerControl"/>.</returns>
         protected abstract IPreviewHandlerControl CreatePreviewHandlerControl();

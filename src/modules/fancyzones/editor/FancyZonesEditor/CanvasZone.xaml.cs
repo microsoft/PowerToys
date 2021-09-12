@@ -4,26 +4,37 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
     /// <summary>
-    /// Once you've "Committ"ed the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them
+    /// Once you've "Commit"ted the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them
     /// using splitters
     /// </summary>
     public partial class CanvasZone : UserControl
     {
+        private readonly int defaultMoveAmount = 10;
+        private readonly int smallMoveAmount = 1;
+
         public CanvasZone()
         {
             InitializeComponent();
             Canvas.SetZIndex(this, zIndex++);
+            SizeChanged += CanvasZone_SizeChanged;
         }
 
-        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+        private void CanvasZone_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // using current culture as this is end user facing
+            WidthLabel.Text = Width.ToString(CultureInfo.CurrentCulture);
+            HeightLabel.Text = Height.ToString(CultureInfo.CurrentCulture);
+        }
 
         private CanvasLayoutModel model;
 
@@ -62,8 +73,9 @@ namespace FancyZonesEditor
             /// <param name="zoneIndex">The index of the zone to track</param>
             /// <param name="isX"> Whether this is the X or Y SnappyHelper</param>
             /// <param name="mode"> One of the three modes of operation (for example: tracking left/right/both edges)</param>
+            /// <param name="screenAxisOrigin"> The origin (left/top) of the screen in this (X or Y) dimension</param>
             /// <param name="screenAxisSize"> The size of the screen in this (X or Y) dimension</param>
-            public SnappyHelperBase(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisSize)
+            public SnappyHelperBase(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisOrigin, int screenAxisSize)
             {
                 int zonePosition = isX ? zones[zoneIndex].X : zones[zoneIndex].Y;
                 int zoneAxisSize = isX ? zones[zoneIndex].Width : zones[zoneIndex].Height;
@@ -82,6 +94,19 @@ namespace FancyZonesEditor
                             keyPositions.Add(ithZonePosition - zoneAxisSize);
                             keyPositions.Add(ithZonePosition + ithZoneAxisSize - zoneAxisSize);
                         }
+                    }
+                }
+
+                foreach (Rect singleMonitor in App.Overlay.WorkAreas)
+                {
+                    int monitorPositionLow = (int)(isX ? singleMonitor.Left : singleMonitor.Top);
+                    int monitorPositionHigh = (int)(isX ? singleMonitor.Right : singleMonitor.Bottom);
+                    keyPositions.Add(monitorPositionLow - screenAxisOrigin);
+                    keyPositions.Add(monitorPositionHigh - screenAxisOrigin);
+                    if (mode == ResizeMode.BothEdges)
+                    {
+                        keyPositions.Add(monitorPositionLow - screenAxisOrigin - zoneAxisSize);
+                        keyPositions.Add(monitorPositionHigh - screenAxisOrigin - zoneAxisSize);
                     }
                 }
 
@@ -145,8 +170,8 @@ namespace FancyZonesEditor
                 get => (int)(0.08 * ScreenW);
             }
 
-            public SnappyHelperMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisSize)
-                : base(zones, zoneIndex, isX, mode, screenAxisSize)
+            public SnappyHelperMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisOrigin, int screenAxisSize)
+                : base(zones, zoneIndex, isX, mode, screenAxisOrigin, screenAxisSize)
             {
                 freePosition = Position;
                 magnetZoneSizes = new List<int>();
@@ -196,12 +221,37 @@ namespace FancyZonesEditor
             }
         }
 
+        private class SnappyHelperNonMagnetic : SnappyHelperBase
+        {
+            public SnappyHelperNonMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisOrigin, int screenAxisSize)
+                : base(zones, zoneIndex, isX, mode, screenAxisOrigin, screenAxisSize)
+            {
+            }
+
+            public override void Move(int delta)
+            {
+                var pos = Position + delta;
+                Position = Math.Max(Math.Min(MaxValue, pos), MinValue);
+            }
+        }
+
         private SnappyHelperBase snappyX;
         private SnappyHelperBase snappyY;
 
-        private SnappyHelperBase NewDefaultSnappyHelper(bool isX, ResizeMode mode, int screenAxisSize)
+        private SnappyHelperBase NewMagneticSnapper(bool isX, ResizeMode mode)
         {
-            return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisSize);
+            Rect workingArea = App.Overlay.WorkArea;
+            int screenAxisOrigin = (int)(isX ? workingArea.Left : workingArea.Top);
+            int screenAxisSize = (int)(isX ? workingArea.Width : workingArea.Height);
+            return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisOrigin, screenAxisSize);
+        }
+
+        private SnappyHelperBase NewNonMagneticSnapper(bool isX, ResizeMode mode)
+        {
+            Rect workingArea = App.Overlay.WorkArea;
+            int screenAxisOrigin = (int)(isX ? workingArea.Left : workingArea.Top);
+            int screenAxisSize = (int)(isX ? workingArea.Width : workingArea.Height);
+            return new SnappyHelperNonMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisOrigin, screenAxisSize);
         }
 
         private void UpdateFromSnappyHelpers()
@@ -255,7 +305,7 @@ namespace FancyZonesEditor
             Model.Zones[ZoneIndex] = rect;
         }
 
-        private static int zIndex = 0;
+        private static int zIndex;
         private const int MinZoneWidth = 64;
         private const int MinZoneHeight = 72;
 
@@ -280,70 +330,207 @@ namespace FancyZonesEditor
             UpdateFromSnappyHelpers();
         }
 
-        private void OnClose(object sender, RoutedEventArgs e)
-        {
-            ((Panel)Parent).Children.Remove(this);
-            Model.RemoveZoneAt(ZoneIndex);
-        }
-
         // Corner dragging
         private void Caption_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BothEdges, (int)_settings.WorkArea.Width);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BothEdges, (int)_settings.WorkArea.Height);
+            snappyX = NewMagneticSnapper(true, ResizeMode.BothEdges);
+            snappyY = NewMagneticSnapper(false, ResizeMode.BothEdges);
         }
 
         public CanvasLayoutModel Model { get => model; set => model = value; }
 
         public int ZoneIndex { get => zoneIndex; set => zoneIndex = value; }
 
+        public void FocusZone()
+        {
+            Keyboard.Focus(RootBorder);
+        }
+
         private void NWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge, (int)_settings.WorkArea.Width);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge, (int)_settings.WorkArea.Height);
+            snappyX = NewMagneticSnapper(true, ResizeMode.BottomEdge);
+            snappyY = NewMagneticSnapper(false, ResizeMode.BottomEdge);
         }
 
         private void NEResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge, (int)_settings.WorkArea.Width);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge, (int)_settings.WorkArea.Height);
+            snappyX = NewMagneticSnapper(true, ResizeMode.TopEdge);
+            snappyY = NewMagneticSnapper(false, ResizeMode.BottomEdge);
         }
 
         private void SWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge, (int)_settings.WorkArea.Width);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge, (int)_settings.WorkArea.Height);
+            snappyX = NewMagneticSnapper(true, ResizeMode.BottomEdge);
+            snappyY = NewMagneticSnapper(false, ResizeMode.TopEdge);
         }
 
         private void SEResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge, (int)_settings.WorkArea.Width);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge, (int)_settings.WorkArea.Height);
+            snappyX = NewMagneticSnapper(true, ResizeMode.TopEdge);
+            snappyY = NewMagneticSnapper(false, ResizeMode.TopEdge);
         }
 
         // Edge dragging
         private void NResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             snappyX = null;
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge, (int)_settings.WorkArea.Height);
+            snappyY = NewMagneticSnapper(false, ResizeMode.BottomEdge);
         }
 
         private void SResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             snappyX = null;
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge, (int)_settings.WorkArea.Height);
+            snappyY = NewMagneticSnapper(false, ResizeMode.TopEdge);
         }
 
         private void WResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge, (int)_settings.WorkArea.Width);
+            snappyX = NewMagneticSnapper(true, ResizeMode.BottomEdge);
             snappyY = null;
         }
 
         private void EResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge, (int)_settings.WorkArea.Width);
+            snappyX = NewMagneticSnapper(true, ResizeMode.TopEdge);
             snappyY = null;
+        }
+
+        private void OnClose(object sender, RoutedEventArgs e)
+        {
+            RemoveZone();
+        }
+
+        private void RemoveZone()
+        {
+            ((Panel)Parent).Children.Remove(this);
+            Model.RemoveZoneAt(ZoneIndex);
+        }
+
+        private void Border_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab)
+            {
+                return;
+            }
+
+            e.Handled = true;
+
+            if (e.Key == Key.Delete)
+            {
+                RemoveZone();
+                return;
+            }
+
+            var moveValue = IsCtrlKeyDown() ? smallMoveAmount : defaultMoveAmount;
+            if (IsShiftKeyDown())
+            {
+                moveValue = Math.Max(1, moveValue / 2);
+            }
+
+            if (e.Key == Key.Right)
+            {
+                if (IsShiftKeyDown())
+                {
+                    // Make the zone larger (width)
+                    MoveZoneX(moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneX(-moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                }
+                else
+                {
+                    // Move zone right
+                    MoveZoneX(moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                }
+            }
+            else if (e.Key == Key.Left)
+            {
+                if (IsShiftKeyDown())
+                {
+                    // Make the zone smaller (width)
+                    MoveZoneX(-moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneX(moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                }
+                else
+                {
+                    // Move zone left
+                    MoveZoneX(-moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                }
+            }
+            else if (e.Key == Key.Up)
+            {
+                if (IsShiftKeyDown())
+                {
+                    // Make the zone larger (height)
+                    MoveZoneY(moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneY(-moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                }
+                else
+                {
+                    // Move zone up
+                    MoveZoneY(-moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                }
+            }
+            else if (e.Key == Key.Down)
+            {
+                if (IsShiftKeyDown())
+                {
+                    // Make the zone smaller (height)
+                    MoveZoneY(-moveValue, ResizeMode.TopEdge, ResizeMode.BottomEdge);
+                    MoveZoneY(moveValue, ResizeMode.BottomEdge, ResizeMode.BottomEdge);
+                }
+                else
+                {
+                    // Move zone down
+                    MoveZoneY(moveValue, ResizeMode.BothEdges, ResizeMode.BothEdges);
+                }
+            }
+        }
+
+        private void MoveZoneX(int value, ResizeMode top, ResizeMode bottom)
+        {
+            snappyX = NewNonMagneticSnapper(true, top);
+            snappyY = NewNonMagneticSnapper(false, bottom);
+            snappyX.Move(value);
+            UpdateFromSnappyHelpers();
+        }
+
+        private void MoveZoneY(int value, ResizeMode top, ResizeMode bottom)
+        {
+            snappyX = NewNonMagneticSnapper(true, bottom);
+            snappyY = NewNonMagneticSnapper(false, top);
+            snappyY.Move(value);
+            UpdateFromSnappyHelpers();
+        }
+
+        private bool IsShiftKeyDown()
+        {
+            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool IsCtrlKeyDown()
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private void Border_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            // Set (keyboard)focus on this zone when click
+            Border selectedBorder = sender as Border;
+            selectedBorder.Focus();
+            Keyboard.Focus(selectedBorder);
         }
     }
 }

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "trace.h"
 #include "Settings.h"
 
@@ -85,5 +85,6 @@ void Trace::SettingsChanged() noexcept
         TraceLoggingBoolean(CSettingsInstance().GetPersistState(), "PersistState"),
         TraceLoggingBoolean(CSettingsInstance().GetMRUEnabled(), "IsMRUEnabled"),
         TraceLoggingUInt64(CSettingsInstance().GetMaxMRUSize(), "MaxMRUSize"),
+        TraceLoggingBoolean(CSettingsInstance().GetUseBoostLib(), "UseBoostLib"),
         TraceLoggingUInt64(CSettingsInstance().GetFlags(), "Flags"));
 }

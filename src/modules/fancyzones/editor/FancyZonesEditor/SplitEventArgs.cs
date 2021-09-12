@@ -13,18 +13,15 @@ namespace FancyZonesEditor
         {
         }
 
-        public SplitEventArgs(Orientation orientation, double offset, double thickness)
+        public SplitEventArgs(Orientation orientation, int offset)
         {
             Orientation = orientation;
             Offset = offset;
-            Space = thickness;
         }
 
         public Orientation Orientation { get; }
 
-        public double Offset { get; }
-
-        public double Space { get; }
+        public int Offset { get; }
     }
 
     public delegate void SplitEventHandler(object sender, SplitEventArgs args);

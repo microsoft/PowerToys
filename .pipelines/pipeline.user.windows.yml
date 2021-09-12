@@ -5,7 +5,8 @@ environment:
     version: '2019'
   runtime:
     provider: 'appcontainer'
-    image: 'cdpxwinrs5.azurecr.io/global/vse2019:16.4.3'
+    # we will want to shift this to latest in the near future but this unblocks us
+    image: 'cdpxwin1809.azurecr.io/global/vse2019@sha256:44a8af0de5efa68829dbdfc3ecef3864d9770f1fc426b897fc37888032c9f60c'
     source_mode: 'map'
 
 version:
@@ -19,45 +20,164 @@ signing_options:
 package_sources:
   nuget:
     feeds:
-      'Nuget': 'https://api.nuget.org/v3/index.json'
-      'PipelineBuildSupplement': 'https://msazure.pkgs.visualstudio.com/_packaging/PipelineBuildSupplement/nuget/v3/index.json'
-
+      'PowerToysCDPX_Feed': 'https://github-private.pkgs.visualstudio.com/microsoft/_packaging/PowerToysCDPX_Feed/nuget/v3/index.json'
 restore:
   commands:
     - !!defaultcommand
       name: 'Restore Power Toys Telemetry'
-      command: '.pipelines\restore-telemetry.cmd'  
+      command: '.pipelines\restore-telemetry.cmd'
     - !!defaultcommand
       name: 'Restore Power Toys'
       command: '.pipelines\restore.cmd'
     - !!defaultcommand
       name: 'Restore Installer'
       command: '.pipelines\restore-installer.cmd'
+    - !!defaultcommand
+      name: 'Restore Localization packages'
+      command: '.pipelines\restore-localization.cmd'
+    - !!defaultcommand
+      name: 'Restore Tools packages'
+      command: '.pipelines\restore-tools.cmd'
+
 
 
 build:
   commands:
+      # Localize the files before the Build PowerToys step to generate translated resx files from the lcl files
+    - !!buildcommand
+      name: 'Localize Power Toys'
+      command: '.pipelines\build-localization.cmd'
+      artifacts:
+        - from: 'out\loc'
+          to: 'loc'
+          include:
+            - '**/*'
     - !!buildcommand
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
       artifacts:
+        - to: 'Symbols'
+          include:
+            - 'x64/**/*.pdb'
+          exclude:
+            - 'x64/Release/obj/**/*.pdb'
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
+            - 'PowerToys.ActionRunner.exe'
+            - 'BugReportTool\BugReportTool.exe'
+            - 'modules\ColorPicker\ColorPicker.dll'
+            - 'modules\ColorPicker\ColorPickerUI.dll'
+            - 'modules\ColorPicker\ColorPickerUI.exe'
+            - 'modules\ColorPicker\ManagedCommon.dll'
+            - 'modules\ColorPicker\Microsoft.PowerToys.Common.UI.dll'
+            - 'modules\ColorPicker\Microsoft.PowerToys.Settings.UI.Lib.dll'
+            - 'modules\ColorPicker\PowerToysInterop.dll'
+            - 'modules\ColorPicker\Telemetry.dll'
+            - '**\*.resources.dll'
+            - 'modules\Espresso\EspressoModuleInterface.dll'
+            - 'modules\Espresso\ManagedCommon.dll'
+            - 'modules\Espresso\ManagedTelemetry.dll'
+            - 'modules\Espresso\Microsoft.PowerToys.Settings.UI.Lib.dll'
+            - 'modules\Espresso\PowerToys.Espresso.exe'
+            - 'modules\Espresso\PowerToys.Espresso.dll'
+            - 'modules\Espresso\PowerToysInterop.dll'
+            - 'modules\FancyZones\fancyzones.dll'
+            - 'modules\FancyZones\FancyZonesEditor.exe'
+            - 'modules\FancyZones\FancyZonesEditor.dll'
+            - 'modules\FancyZones\ManagedCommon.dll'
+            - 'modules\FancyZones\Telemetry.dll'
+            - 'modules\FancyZones\Microsoft.PowerToys.Common.UI.dll'
+            - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
+            - 'modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll'
+            - 'modules\FileExplorerPreview\powerpreview.dll'
+            - 'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
+            - 'modules\FileExplorerPreview\SvgPreviewHandler.dll'
+            - 'modules\FileExplorerPreview\SvgPreviewHandler.comhost.dll'
+            - 'modules\FileExplorerPreview\SvgThumbnailProvider.dll'
+            - 'modules\FileExplorerPreview\SvgThumbnailProvider.comhost.dll'
+            - 'modules\FileExplorerPreview\Telemetry.dll'
+            - 'modules\ImageResizer\ImageResizer.exe'
+            - 'modules\ImageResizer\ImageResizer.dll'
+            - 'modules\ImageResizer\ImageResizerExt.dll'
+            - 'modules\ImageResizer\PowerToysInterop.dll'
+            - 'modules\ImageResizer\ManagedCommon.dll'
+            - 'modules\ImageResizer\ManagedTelemetry.dll'
+            - 'modules\ImageResizer\Microsoft.PowerToys.Common.UI.dll'
+            - 'modules\KeyboardManager\KeyboardManager.dll'
+            - 'modules\KeyboardManager\KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe'
+            - 'modules\KeyboardManager\KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe'
+            - 'modules\launcher\Microsoft.PowerToys.Settings.UI.Lib.dll'
+            - 'modules\launcher\ManagedCommon.dll'
+            - 'modules\launcher\ManagedTelemetry.dll'
+            - 'modules\launcher\Microsoft.PowerToys.Common.UI.dll'
+            - 'modules\launcher\Microsoft.Launcher.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Wox.Infrastructure.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Wox.Plugin.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Telemetry.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\Wox.Infrastructure.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\Wox.Plugin.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\Telemetry.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Indexer\Wox.Infrastructure.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Indexer\Telemetry.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Program\Microsoft.Plugin.Program.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Program\Wox.Infrastructure.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Program\Wox.Plugin.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Program\Telemetry.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Microsoft.PowerToys.Run.Plugin.Registry.dll'
+            - 'modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\ManagedTelemetry.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Microsoft.Plugin.Shell.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Wox.Infrastructure.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Wox.Plugin.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Telemetry.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Uri\Microsoft.Plugin.Uri.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Uri\Wox.Infrastructure.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Uri\Wox.Plugin.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Uri\Telemetry.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Microsoft.Plugin.WindowWalker.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Infrastructure.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Plugin.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Telemetry.dll'
+            - 'modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll'
+            - 'modules\launcher\Plugins\Service\Microsoft.PowerToys.Run.Plugin.Service.dll'
+            - 'modules\launcher\Plugins\System\Microsoft.PowerToys.Run.Plugin.System.dll'
+            - 'modules\launcher\PowerLauncher.dll'
+            - 'modules\launcher\PowerLauncher.exe'
+            - 'modules\launcher\PowerLauncher.Telemetry.dll'
+            - 'modules\launcher\PowerLauncher.UI.exe'
+            - 'modules\launcher\PowerToysInterop.dll'
+            - 'modules\launcher\Telemetry.dll'
+            - 'modules\launcher\Wox.dll'
+            - 'modules\launcher\Wox.Infrastructure.dll'
+            - 'modules\launcher\Wox.Plugin.dll'
+            - 'modules\Microsoft.Launcher.dll'
+            - 'modules\PowerRename\PowerRenameExt.dll'
+            - 'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
+            - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
+            - 'Notifications.dll'
+            - 'os-detection.dll'
             - 'PowerToys.exe'
-            - 'PowerToysSettings.exe'
-            - 'modules\FancyZonesEditor.exe'
-            - 'modules\fancyzones.dll'
-            - 'modules\shortcut_guide.dll'
-            - 'modules\PowerRenameExt.dll'
-            - 'modules\WindowWalker.exe'
-            - 'modules\WindowWalker.dll'
-            - 'modules\ImageResizerExt.dll'
-            - 'modules\ImageResizer.exe'
-            - 'modules\powerpreview.dll'
-            - 'modules\PreviewHandlerCommon.dll'
-            - 'modules\MarkdownPreviewHandler.dll'
-            - 'modules\SvgPreviewHandler.dll'
+            - 'PowerToysInterop.dll'
+            - 'Settings\Microsoft.PowerToys.Settings.UI.exe'
+            - 'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
+            - 'Settings\PowerToys.Settings.dll'
+            - 'Settings\PowerToys.Settings.exe'
+            - 'Settings\PowerToysInterop.dll'
+            - 'Settings\Telemetry.dll'
+            - 'Settings\ManagedCommon.dll'
+          signing_options:
+            sign_inline: true  # This does signing a soon as this command completes
+    - !!buildcommand
+      name: 'Build Power Toys Tools'
+      command: '.pipelines\build-tools.cmd'
+      artifacts:
+        - from: 'x64\Release'
+          to: 'Build_Output'
+          include:
+            - 'BugReportTool\BugReportTool.exe'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand
@@ -70,48 +190,52 @@ build:
             - 'PowerToysSetup-*.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
-#    - !!buildcommand
-#      name: 'Archive symbols to Symbol Server'
-#      artifacts:
-#        - to: 'x64 Symbols'
-#          include:
-#            - 'x64/Release/action_runner.pdb'
-#            - 'x64/Release/Notifications.pdb'
-#            - 'x64/Release/PowerRenameUWPUI.pdb'
-#            - 'x64/Release/PowerToys.pdb'
-#            - 'x64/Release/PowerToysSettings.pdb'
-#            - 'x64/Release/modules/fancyzones.pdb'
-#            - 'x64/Release/modules/FancyZonesEditor.pdb'
-#            - 'x64/Release/modules/PowerRenameExt.pdb'
-#            - 'x64/Release/modules/shortcut_guide.pdb'
-
-package:
-  commands:
     - !!buildcommand
-      name: 'Build MSIX package'
-      command: 'installer\msix\build_msix_cdpx.cmd'
+      name: 'Build Power Toys Bootstrapper'
+      command: '.pipelines\build-bootstrapper.cmd'
       artifacts:
-        - from: 'installer\msix\bin'
-          to: 'Build_MSIX_Package_Output'
+        - to: 'Symbols'
           include:
-            - '*.msix'
-            - '*.msixbundle'
+            - 'installer\PowerToysBootstrapper\x64\Release\PowerToysSetup-*.pdb'
+        - from: 'installer\PowerToysBootstrapper\x64\Release'
+          to: 'Build_Installer_Output'
+          include:
+            - 'PowerToysSetup-*.exe'
           signing_options:
-            profile: '400'
+            sign_inline: true  # This does signing a soon as this command completes
 
-static_analysis_options:                             
-  binskim_options:  
+
+#package:
+#  commands:
+#    - !!buildcommand
+#      name: 'Build MSIX package'
+#      command: 'installer\msix\build_msix_cdpx.cmd'
+#      artifacts:
+#        - from: 'installer\msix\bin'
+#          to: 'Build_MSIX_Package_Output'
+#          include:
+#            - '*.msix'
+#            - '*.msixbundle'
+#          signing_options:
+#            profile: '400'
+
+static_analysis_options:
+  binskim_options:
     files_to_scan:
       - from: 'installer/packages'
         exclude:
           - 'WiX.*/**/*.dll'
           - 'Wix.*/**/*.exe'
-  moderncop_options:           
+  moderncop_options:
     files_to_scan:
-      - from: 'src'          
-        exclude:                           
+      - from: 'src'
+        exclude:
           - '**/just.config.js'
           - '**/webpack.config.js'
           - '**/webpack.serve.config.js'
-          - '**/dist/bundle.js' 
-        
+          - '**/dist/bundle.js'
+  policheck_options:
+    files_to_scan:
+      - exclude:
+        - '**/*.lcl'
+

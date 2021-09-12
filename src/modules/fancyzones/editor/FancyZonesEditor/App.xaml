@@ -2,20 +2,17 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:FancyZonesEditor"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              Startup="OnStartup">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                <!-- Accent and AppTheme setting -->
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />
+                <ui:ThemeResources />
+                <ui:XamlControlsResources />
+                <ResourceDictionary Source="pack://application:,,,/Styles/ButtonStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Styles/GridViewStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Styles/LayoutPreviewStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
-            <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF333333"/>
-            <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1a1a1a"/>
-            
         </ResourceDictionary>
     </Application.Resources>
 </Application>

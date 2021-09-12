@@ -1,8 +1,15 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
-using static Wox.Infrastructure.StringMatcher;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.System.UnitTests")]
 
 namespace Wox.Infrastructure
 {
@@ -11,13 +18,6 @@ namespace Wox.Infrastructure
         private readonly MatchOption _defaultMatchOption = new MatchOption();
 
         public SearchPrecisionScore UserSettingSearchPrecision { get; set; }
-
-        private readonly IAlphabet _alphabet;
-
-        public StringMatcher(IAlphabet alphabet = null)
-        {
-            _alphabet = alphabet;
-        }
 
         public static StringMatcher Instance { get; internal set; }
 
@@ -56,20 +56,22 @@ namespace Wox.Infrastructure
         /// </summary>
         public MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption opt)
         {
-            if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrEmpty(query)) return new MatchResult (false, UserSettingSearchPrecision);
-            
-            query = query.Trim();
-
-            if (_alphabet != null)
+            if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrEmpty(query))
             {
-                query = _alphabet.Translate(query);
-                stringToCompare = _alphabet.Translate(stringToCompare);
+                return new MatchResult(false, UserSettingSearchPrecision);
             }
 
-            var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
+            if (opt == null)
+            {
+                throw new ArgumentNullException(nameof(opt));
+            }
 
-            var queryWithoutCase = opt.IgnoreCase ? query.ToLower() : query;
-                        
+            query = query.Trim();
+
+            // Using InvariantCulture since this is internal
+            var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;
+            var queryWithoutCase = opt.IgnoreCase ? query.ToUpper(CultureInfo.InvariantCulture) : query;
+
             var querySubstrings = queryWithoutCase.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             int currentQuerySubstringIndex = 0;
             var currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
@@ -83,10 +85,30 @@ namespace Wox.Infrastructure
             bool allSubstringsContainedInCompareString = true;
 
             var indexList = new List<int>();
+            List<int> spaceIndices = new List<int>();
 
             for (var compareStringIndex = 0; compareStringIndex < fullStringToCompareWithoutCase.Length; compareStringIndex++)
             {
-                if (fullStringToCompareWithoutCase[compareStringIndex] != currentQuerySubstring[currentQuerySubstringCharacterIndex])
+                // To maintain a list of indices which correspond to spaces in the string to compare
+                // To populate the list only for the first query substring
+                if (fullStringToCompareWithoutCase[compareStringIndex].Equals(' ') && currentQuerySubstringIndex == 0)
+                {
+                    spaceIndices.Add(compareStringIndex);
+                }
+
+                bool compareResult;
+                if (opt.IgnoreCase)
+                {
+                    var fullStringToCompare = fullStringToCompareWithoutCase[compareStringIndex].ToString();
+                    var querySubstring = currentQuerySubstring[currentQuerySubstringCharacterIndex].ToString();
+                    compareResult = string.Compare(fullStringToCompare, querySubstring, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) != 0;
+                }
+                else
+                {
+                    compareResult = fullStringToCompareWithoutCase[compareStringIndex] != currentQuerySubstring[currentQuerySubstringCharacterIndex];
+                }
+
+                if (compareResult)
                 {
                     matchFoundInPreviousLoop = false;
                     continue;
@@ -136,27 +158,44 @@ namespace Wox.Infrastructure
 
                     allQuerySubstringsMatched = AllQuerySubstringsMatched(currentQuerySubstringIndex, querySubstrings.Length);
                     if (allQuerySubstringsMatched)
+                    {
                         break;
+                    }
 
                     // otherwise move to the next query substring
                     currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
                     currentQuerySubstringCharacterIndex = 0;
                 }
             }
-            
+
             // proceed to calculate score if every char or substring without whitespaces matched
             if (allQuerySubstringsMatched)
             {
-                var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex, lastMatchIndex - firstMatchIndex, allSubstringsContainedInCompareString);
+                var nearestSpaceIndex = CalculateClosestSpaceIndex(spaceIndices, firstMatchIndex);
+                var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex - nearestSpaceIndex - 1, lastMatchIndex - firstMatchIndex, allSubstringsContainedInCompareString);
 
                 return new MatchResult(true, UserSettingSearchPrecision, indexList, score);
             }
 
-            return new MatchResult (false, UserSettingSearchPrecision);
+            return new MatchResult(false, UserSettingSearchPrecision);
         }
 
-        private static bool AllPreviousCharsMatched(int startIndexToVerify, int currentQuerySubstringCharacterIndex, 
-                                                        string fullStringToCompareWithoutCase, string currentQuerySubstring)
+        // To get the index of the closest space which precedes the first matching index
+        private static int CalculateClosestSpaceIndex(List<int> spaceIndices, int firstMatchIndex)
+        {
+            if (spaceIndices.Count == 0)
+            {
+                return -1;
+            }
+            else
+            {
+                int? ind = spaceIndices.OrderBy(item => (firstMatchIndex - item)).Where(item => firstMatchIndex > item).FirstOrDefault();
+                int closestSpaceIndex = ind ?? -1;
+                return closestSpaceIndex;
+            }
+        }
+
+        private static bool AllPreviousCharsMatched(int startIndexToVerify, int currentQuerySubstringCharacterIndex, string fullStringToCompareWithoutCase, string currentQuerySubstring)
         {
             var allMatch = true;
             for (int indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
@@ -170,7 +209,7 @@ namespace Wox.Infrastructure
 
             return allMatch;
         }
-        
+
         private static List<int> GetUpdatedIndexList(int startIndexToVerify, int currentQuerySubstringCharacterIndex, int firstMatchIndexInWord, List<int> indexList)
         {
             var updatedList = new List<int>();
@@ -195,7 +234,7 @@ namespace Wox.Infrastructure
         private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen, bool allSubstringsContainedInCompareString)
         {
             // A match found near the beginning of a string is scored more than a match found near the end
-            // A match is scored more if the characters in the patterns are closer to each other, 
+            // A match is scored more if the characters in the patterns are closer to each other,
             // while the score is lower if they are more spread out
             var score = 100 * (query.Length + 1) / ((1 + firstIndex) + (matchLen + 1));
 
@@ -213,14 +252,21 @@ namespace Wox.Infrastructure
             {
                 int count = query.Count(c => !char.IsWhiteSpace(c));
                 int threshold = 4;
-                if(count <= threshold)
+                if (count <= threshold)
                 {
                     score += count * 10;
                 }
                 else
                 {
-                    score += threshold * 10 + (count - threshold) * 5;
+                    score += (threshold * 10) + ((count - threshold) * 5);
                 }
+            }
+
+            // Using CurrentCultureIgnoreCase since this relates to queries input by user
+            if (string.Equals(query, stringToCompare, StringComparison.CurrentCultureIgnoreCase))
+            {
+                var bonusForExactMatch = 10;
+                score += bonusForExactMatch;
             }
 
             return score;
@@ -230,85 +276,7 @@ namespace Wox.Infrastructure
         {
             Regular = 50,
             Low = 20,
-            None = 0
+            None = 0,
         }
-    }
-
-    public class MatchResult
-    {
-        public MatchResult(bool success, SearchPrecisionScore searchPrecision)
-        {
-            Success = success;
-            SearchPrecision = searchPrecision;
-        }
-
-        public MatchResult(bool success, SearchPrecisionScore searchPrecision, List<int> matchData, int rawScore)
-        {
-            Success = success;
-            SearchPrecision = searchPrecision;
-            MatchData = matchData;
-            RawScore = rawScore;
-        }
-
-        public bool Success { get; set; }
-
-        /// <summary>
-        /// The final score of the match result with search precision filters applied.
-        /// </summary>
-        public int Score { get; private set; }
-
-        /// <summary>
-        /// The raw calculated search score without any search precision filtering applied.
-        /// </summary>
-        private int _rawScore;
-
-        public int RawScore
-        {
-            get { return _rawScore; }
-            set
-            {
-                _rawScore = value;
-                Score = ScoreAfterSearchPrecisionFilter(_rawScore);
-            }
-        }
-
-        /// <summary>
-        /// Matched data to highlight.
-        /// </summary>
-        public List<int> MatchData { get; set; }
-
-        public SearchPrecisionScore SearchPrecision { get; set; }
-
-        public bool IsSearchPrecisionScoreMet()
-        {
-            return IsSearchPrecisionScoreMet(_rawScore);
-        }
-
-        private bool IsSearchPrecisionScoreMet(int rawScore)
-        {
-            return rawScore >= (int)SearchPrecision;
-        }
-
-        private int ScoreAfterSearchPrecisionFilter(int rawScore)
-        {
-            return IsSearchPrecisionScoreMet(rawScore) ? rawScore : 0;
-        }
-    }
-
-    public class MatchOption
-    {
-        /// <summary>
-        /// prefix of match char, use for hightlight
-        /// </summary>
-        [Obsolete("this is never used")]
-        public string Prefix { get; set; } = "";
-
-        /// <summary>
-        /// suffix of match char, use for hightlight
-        /// </summary>
-        [Obsolete("this is never used")]
-        public string Suffix { get; set; } = "";
-
-        public bool IgnoreCase { get; set; } = true;
     }
 }

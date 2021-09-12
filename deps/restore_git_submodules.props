@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <RestoreGitSubmodulesImported>true</RestoreGitSubmodulesImported>
+  </PropertyGroup>
+  <Target Name="RestoreGitSubmodules" BeforeTargets="PrepareForBuild">
+      <Exec IgnoreExitCode="true"
+            EchoOff="true"
+            StandardOutputImportance="low"
+            StandardErrorImportance="low"
+            Command="git submodule update --init" />
+  </Target>	
+</Project>

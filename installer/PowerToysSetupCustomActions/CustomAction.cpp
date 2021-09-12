@@ -1,18 +1,9 @@
 #include "stdafx.h"
 
-#define SECURITY_WIN32
-#include <Security.h>
-#pragma comment(lib, "Secur32.lib")
-#include <Lmcons.h>
-
-#include <comdef.h>
-#include <taskschd.h>
-#pragma comment(lib, "taskschd.lib")
-#pragma comment(lib, "comsupp.lib")
-
-#include <iostream>
-#include <strutil.h>
 #include <ProjectTelemetry.h>
+
+#include "../../src/common/updating/installer.h"
+#include "../../src/common/version/version.h"
 
 using namespace std;
 
@@ -25,6 +16,8 @@ TRACELOGGING_DEFINE_PROVIDER(
 
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
 const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
+
+static const wchar_t* POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
 
 // Creates a Scheduled Task to run at logon for the current user.
 // The path of the executable to run should be passed as the CustomActionData (Value).
@@ -40,13 +33,21 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
 
     std::wstring wstrTaskName;
 
-    ITaskService* pService = NULL;
-    ITaskFolder* pTaskFolder = NULL;
-    ITaskDefinition* pTask = NULL;
-    IRegistrationInfo* pRegInfo = NULL;
-    ITaskSettings* pSettings = NULL;
-    ITriggerCollection* pTriggerCollection = NULL;
-    IRegisteredTask* pRegisteredTask = NULL;
+    ITaskService* pService = nullptr;
+    ITaskFolder* pTaskFolder = nullptr;
+    ITaskDefinition* pTask = nullptr;
+    IRegistrationInfo* pRegInfo = nullptr;
+    ITaskSettings* pSettings = nullptr;
+    ITriggerCollection* pTriggerCollection = nullptr;
+    IRegisteredTask* pRegisteredTask = nullptr;
+    IPrincipal * pPrincipal = nullptr;
+    ITrigger * pTrigger = nullptr;
+    ILogonTrigger * pLogonTrigger = nullptr;
+    IAction * pAction = nullptr;
+    IActionCollection * pActionCollection = nullptr;
+    IExecAction * pExecAction = nullptr;
+
+    LPWSTR wszExecutablePath = nullptr;
 
     hr = WcaInitialize(hInstall, "CreateScheduledTaskCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -77,7 +78,6 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     wstrTaskName += username;
 
     // Get the executable path passed to the custom action.
-    LPWSTR wszExecutablePath = NULL;
     hr = WcaGetProperty(L"CustomActionData", &wszExecutablePath);
     ExitOnFailure(hr, "Failed to get the executable path from CustomActionData.");
 
@@ -86,7 +86,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     // ------------------------------------------------------
     // Create an instance of the Task Service.
     hr = CoCreateInstance(CLSID_TaskScheduler,
-                          NULL,
+                          nullptr,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
                           (void**)&pService);
@@ -102,7 +102,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     if (FAILED(hr))
     {
         // Folder doesn't exist. Get the Root folder and create the PowerToys subfolder.
-        ITaskFolder* pRootFolder = NULL;
+        ITaskFolder* pRootFolder = nullptr;
         hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
         ExitOnFailure(hr, "Cannot get Root Folder pointer: %x", hr);
         hr = pRootFolder->CreateFolder(_bstr_t(L"\\PowerToys"), _variant_t(L""), &pTaskFolder);
@@ -148,11 +148,9 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Cannot get trigger collection: %x", hr);
 
     // Add the logon trigger to the task.
-    ITrigger* pTrigger = NULL;
     hr = pTriggerCollection->Create(TASK_TRIGGER_LOGON, &pTrigger);
     ExitOnFailure(hr, "Cannot create the trigger: %x", hr);
 
-    ILogonTrigger* pLogonTrigger = NULL;
     hr = pTrigger->QueryInterface(
         IID_ILogonTrigger, (void**)&pLogonTrigger);
     pTrigger->Release();
@@ -180,19 +178,17 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
 
     // ------------------------------------------------------
     // Add an Action to the task. This task will execute the path passed to this custom action.
-    IActionCollection* pActionCollection = NULL;
 
     // Get the task action collection pointer.
     hr = pTask->get_Actions(&pActionCollection);
     ExitOnFailure(hr, "Cannot get Task collection pointer: %x", hr);
 
     // Create the action, specifying that it is an executable action.
-    IAction* pAction = NULL;
     hr = pActionCollection->Create(TASK_ACTION_EXEC, &pAction);
     pActionCollection->Release();
     ExitOnFailure(hr, "Cannot create the action: %x", hr);
 
-    IExecAction* pExecAction = NULL;
+
     // QI for the executable task pointer.
     hr = pAction->QueryInterface(
         IID_IExecAction, (void**)&pExecAction);
@@ -206,7 +202,6 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
 
     // ------------------------------------------------------
     // Create the principal for the task
-    IPrincipal* pPrincipal = NULL;
     hr = pTask->get_Principal(&pPrincipal);
     ExitOnFailure(hr, "Cannot get principal pointer: %x", hr);
 
@@ -302,9 +297,11 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
 
-    ITaskService* pService = NULL;
-    ITaskFolder* pTaskFolder = NULL;
-    IRegisteredTaskCollection* pTaskCollection = NULL;
+    ITaskService* pService = nullptr;
+    ITaskFolder* pTaskFolder = nullptr;
+    IRegisteredTaskCollection* pTaskCollection = nullptr;
+    ITaskFolder * pRootFolder = nullptr;
+    LONG numTasks = 0;
 
     hr = WcaInitialize(hInstall, "RemoveScheduledTasksCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -316,7 +313,7 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     // ------------------------------------------------------
     // Create an instance of the Task Service.
     hr = CoCreateInstance(CLSID_TaskScheduler,
-                          NULL,
+                          nullptr,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
                           (void**)&pService);
@@ -342,21 +339,20 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     hr = pTaskFolder->GetTasks(TASK_ENUM_HIDDEN, &pTaskCollection);
     ExitOnFailure(hr, "Cannot get the registered tasks: %x", hr);
 
-    LONG numTasks = 0;
     hr = pTaskCollection->get_Count(&numTasks);
     for (LONG i = 0; i < numTasks; i++)
     {
         // Delete all the tasks found.
         // If some tasks can't be deleted, the folder won't be deleted later and the user will still be notified.
-        IRegisteredTask* pRegisteredTask = NULL;
+        IRegisteredTask* pRegisteredTask = nullptr;
         hr = pTaskCollection->get_Item(_variant_t(i + 1), &pRegisteredTask);
         if (SUCCEEDED(hr))
         {
-            BSTR taskName = NULL;
+            BSTR taskName = nullptr;
             hr = pRegisteredTask->get_Name(&taskName);
             if (SUCCEEDED(hr))
             {
-                hr = pTaskFolder->DeleteTask(taskName, NULL);
+                hr = pTaskFolder->DeleteTask(taskName, 0);
                 if (FAILED(hr))
                 {
                     WcaLogError(hr, "Cannot delete the '%S' task: %x", taskName, hr);
@@ -377,10 +373,9 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
 
     // ------------------------------------------------------
     // Get the pointer to the root task folder and delete the PowerToys subfolder.
-    ITaskFolder* pRootFolder = NULL;
     hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
     ExitOnFailure(hr, "Cannot get Root Folder pointer: %x", hr);
-    hr = pRootFolder->DeleteFolder(_bstr_t(L"PowerToys"), NULL);
+    hr = pRootFolder->DeleteFolder(_bstr_t(L"PowerToys"), 0);
     pRootFolder->Release();
     ExitOnFailure(hr, "Cannot delete the PowerToys folder: %x", hr);
 
@@ -422,6 +417,7 @@ UINT __stdcall TelemetryLogInstallSuccessCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "Install_Success",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -442,6 +438,7 @@ UINT __stdcall TelemetryLogInstallCancelCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "Install_Cancel",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -462,6 +459,7 @@ UINT __stdcall TelemetryLogInstallFailCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "Install_Fail",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -482,6 +480,7 @@ UINT __stdcall TelemetryLogUninstallSuccessCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "UnInstall_Success",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -502,6 +501,7 @@ UINT __stdcall TelemetryLogUninstallCancelCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "UnInstall_Cancel",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -522,6 +522,7 @@ UINT __stdcall TelemetryLogUninstallFailCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "UnInstall_Fail",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -542,6 +543,7 @@ UINT __stdcall TelemetryLogRepairCancelCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "Repair_Cancel",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -562,6 +564,7 @@ UINT __stdcall TelemetryLogRepairFailCA(MSIHANDLE hInstall)
     TraceLoggingWrite(
         g_hProvider,
         "Repair_Fail",
+        TraceLoggingWideString(get_product_version().c_str(), "Version"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
@@ -570,6 +573,105 @@ LExit:
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
+
+UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "DetectPrevInstallPathCA");
+
+    try
+    {
+        if (auto install_path = updating::get_msi_package_installed_path())
+        {
+            MsiSetPropertyW(hInstall, L"INSTALLFOLDER", install_path->data());
+        }
+    }
+    catch(...)
+    {
+
+    }
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+
+UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "TerminateProcessesCA");
+
+    std::vector<DWORD> processes;
+    const size_t maxProcesses = 4096;
+    DWORD bytes = maxProcesses * sizeof(processes[0]);
+    processes.resize(maxProcesses);
+
+    if (!EnumProcesses(processes.data(), bytes, &bytes))
+    {
+        return 1;
+    }
+    processes.resize(bytes / sizeof(processes[0]));
+
+    std::array<std::wstring_view, 4> processesToTerminate = {
+        L"PowerLauncher.exe",
+        L"PowerToys.Settings.exe",
+        L"Microsoft.PowerToys.Settings.UI.exe",
+        L"PowerToys.exe"
+    };
+
+    for (const auto procID : processes)
+    {
+        if (!procID)
+        {
+            continue;
+        }
+        wchar_t processName[MAX_PATH] = L"<unknown>";
+
+        HANDLE hProcess{OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_TERMINATE, FALSE, procID)};
+        if (!hProcess)
+        {
+            continue;
+        }
+        HMODULE hMod;
+        DWORD cbNeeded;
+
+        if (!EnumProcessModules(hProcess, &hMod, sizeof(hMod), &cbNeeded))
+        {
+            CloseHandle(hProcess);
+            continue;
+        }
+        GetModuleBaseNameW(hProcess, hMod, processName, sizeof(processName) / sizeof(wchar_t));
+
+        for (const auto processToTerminate : processesToTerminate)
+        {
+            if (processName == processToTerminate)
+            {
+                const DWORD timeout = 500;
+                auto windowEnumerator = [](HWND hwnd, LPARAM procIDPtr) -> BOOL {
+                    auto targetProcID = *reinterpret_cast<const DWORD*>(procIDPtr);
+                    DWORD windowProcID = 0;
+                    GetWindowThreadProcessId(hwnd, &windowProcID);
+                    if (windowProcID == targetProcID)
+                    {
+                        DWORD_PTR _ {};
+                        SendMessageTimeoutA(hwnd, WM_CLOSE, 0, 0, SMTO_BLOCK, timeout, &_);
+                    }
+                    return TRUE;
+                };
+                EnumWindows(windowEnumerator, reinterpret_cast<LPARAM>(&procID));
+                Sleep(timeout);
+                TerminateProcess(hProcess, 0);
+                break;
+            }
+        }
+        CloseHandle(hProcess);
+    }
+
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 
 // DllMain - Initialize and cleanup WiX custom action utils.
 extern "C" BOOL WINAPI DllMain(__in HINSTANCE hInst, __in ULONG ulReason, __in LPVOID)

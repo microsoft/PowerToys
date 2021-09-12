@@ -1,10 +1,13 @@
 // ContextMenuHandler.cpp : Implementation of CContextMenuHandler
 
-#include "stdafx.h"
+#include "pch.h"
 #include "ContextMenuHandler.h"
 #include "HDropIterator.h"
 #include "Settings.h"
-#include "common/icon_helpers.h"
+#include <common/themes/icon_helpers.h>
+#include <common/utils/process_path.h>
+#include <common/utils/resources.h>
+
 #include "trace.h"
 
 extern HINSTANCE g_hInst_imageResizer;
@@ -37,7 +40,7 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
 {
     Uninitialize();
 
-    if (!CSettings::GetEnabled())
+    if (!CSettingsInstance().GetEnabled())
     {
         return E_FAIL;
     }
@@ -62,7 +65,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return S_OK;
     }
-    if (!CSettings::GetEnabled())
+    if (!CSettingsInstance().GetEnabled())
     {
         return E_FAIL;
     }
@@ -354,7 +357,7 @@ HRESULT __stdcall CContextMenuHandler::GetCanonicalName(GUID* pguidCommandName)
 
 HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
 {
-    if (!CSettings::GetEnabled())
+    if (!CSettingsInstance().GetEnabled())
     {
         *pCmdState = ECS_HIDDEN;
         return S_OK;

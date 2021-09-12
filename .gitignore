@@ -337,3 +337,10 @@ src/settings/settings-html/404.html
 
 # Temp telemetry files.
 src/common/Telemetry/*.etl
+
+# Don't ignore MergeModules
+!**/MergeModules/Release/
+!**/MergeModules/Debug/
+/src/modules/previewpane/SvgThumbnailProvider/$(SolutionDir)$(Platform)/$(Configuration)/modules/FileExplorerPreview/SvgThumbnailProvider.xml
+/src/modules/powerrename/ui/RCa24464
+/src/modules/powerrename/ui/RCb24464

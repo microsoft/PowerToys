@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZones_DrawLayoutTest", "FancyZones_DrawLayoutTest.vcxproj", "{AB0F7153-208E-433D-A14F-311E09FDC0A0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB0F7153-208E-433D-A14F-311E09FDC0A0}.Debug|x64.ActiveCfg = Debug|x64
+		{AB0F7153-208E-433D-A14F-311E09FDC0A0}.Debug|x64.Build.0 = Debug|x64
+		{AB0F7153-208E-433D-A14F-311E09FDC0A0}.Debug|x86.ActiveCfg = Debug|Win32
+		{AB0F7153-208E-433D-A14F-311E09FDC0A0}.Debug|x86.Build.0 = Debug|Win32
+		{AB0F7153-208E-433D-A14F-311E09FDC0A0}.Release|x64.ActiveCfg = Release|x64
+		{AB0F7153-208E-433D-A14F-311E09FDC0A0}.Release|x64.Build.0 = Release|x64
+		{AB0F7153-208E-433D-A14F-311E09FDC0A0}.Release|x86.ActiveCfg = Release|Win32
+		{AB0F7153-208E-433D-A14F-311E09FDC0A0}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B8997617-5BA5-4762-9DD0-E133E4138D08}
+	EndGlobalSection
+EndGlobal

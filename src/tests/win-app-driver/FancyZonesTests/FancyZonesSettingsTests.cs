@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,9 +12,14 @@ using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
+    [Ignore]
     [TestClass]
     public class FancyZonesSettingsTests : PowerToysSession
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
+
+
         private JObject _initialSettingsJson;
 
         private static WindowsElement _saveButton;
@@ -39,7 +44,7 @@ namespace PowerToysTests
         {
             try
             {
-                JObject settings = JObject.Parse(File.ReadAllText(_settingsPath));
+                JObject settings = JObject.Parse(File.ReadAllText(_fancyZonesSettingsPath));
                 return settings["properties"].ToObject<JObject>();
             }
             catch (Newtonsoft.Json.JsonReaderException)
@@ -58,7 +63,7 @@ namespace PowerToysTests
         {
             return properties[propertyName].ToObject<JObject>()["value"].Value<T>();
         }
-        
+
         private void ScrollDown(int count)
         {
             Actions scroll = new Actions(session);
@@ -115,7 +120,7 @@ namespace PowerToysTests
             colorInput.SendKeys("0");
             colorInput.SendKeys(OpenQA.Selenium.Keys.Enter);
             Assert.AreEqual("0\r\n", colorInput.Text);
-            
+
             string invalidSymbols = "qwertyuiopasdfghjklzxcvbnm,./';][{}:`~!@#$%^&*()_-+=\"\'\\";
             foreach (char symbol in invalidSymbols)
             {
@@ -148,7 +153,7 @@ namespace PowerToysTests
             //too big value
             colorInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
             colorInput.SendKeys("555");
-                        
+
             Actions action = new Actions(session); //reset focus from input
             action.MoveToElement(colorInput).MoveByOffset(0, colorInput.Rect.Height).Click().Perform();
 
@@ -290,7 +295,7 @@ namespace PowerToysTests
             foreach (WindowsElement toggle in toggles)
             {
                 Assert.IsNotNull(toggle);
-                
+
                 bool isOn = toggle.GetAttribute("Toggle.ToggleState") == "1";
                 toggleValues.Add(isOn);
 
@@ -304,14 +309,18 @@ namespace PowerToysTests
             //check saved settings
             JObject savedProps = GetProperties();
             Assert.AreNotEqual(toggleValues[0], GetPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
-            Assert.AreNotEqual(toggleValues[1], GetPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
-            Assert.AreNotEqual(toggleValues[2], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
-            Assert.AreNotEqual(toggleValues[3], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
-            Assert.AreNotEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_virtualDesktopChange_moveWindows"));
-            Assert.AreNotEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
-            Assert.AreNotEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
-            Assert.AreNotEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
-            Assert.AreNotEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
+            Assert.AreNotEqual(toggleValues[1], GetPropertyValue<bool>(savedProps, "fancyzones_mouseSwitch"));
+            Assert.AreNotEqual(toggleValues[2], GetPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
+            Assert.AreNotEqual(toggleValues[3], GetPropertyValue<bool>(savedProps, "fancyzones_moveWindowAcrossMonitors"));
+            Assert.AreNotEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_moveWindowsBasedOnPosition"));
+            Assert.AreNotEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
+            Assert.AreNotEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
+            Assert.AreNotEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreNotEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "fancyzones_restoreSize"));
+            Assert.AreNotEqual(toggleValues[9], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
+            Assert.AreNotEqual(toggleValues[10], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
+            Assert.AreNotEqual(toggleValues[11], GetPropertyValue<bool>(savedProps, "fancyzones_multi_monitor_mode"));
+            Assert.AreNotEqual(toggleValues[12], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
         }
 
         /*
@@ -329,27 +338,31 @@ namespace PowerToysTests
             foreach (WindowsElement toggle in toggles)
             {
                 Assert.IsNotNull(toggle);
-                
+
                 bool isOn = toggle.GetAttribute("Toggle.ToggleState") == "1";
                 toggleValues.Add(isOn);
 
                 toggle.Click();
                 toggle.Click();
             }
-            
+
             SaveChanges();
             WaitSeconds(1);
 
             JObject savedProps = GetProperties();
             Assert.AreEqual(toggleValues[0], GetPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
-            Assert.AreEqual(toggleValues[1], GetPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
-            Assert.AreEqual(toggleValues[2], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
-            Assert.AreEqual(toggleValues[3], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
-            Assert.AreEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_virtualDesktopChange_moveWindows"));
-            Assert.AreEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
-            Assert.AreEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
-            Assert.AreEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
-            Assert.AreEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
+            Assert.AreEqual(toggleValues[1], GetPropertyValue<bool>(savedProps, "fancyzones_mouseSwitch"));
+            Assert.AreEqual(toggleValues[2], GetPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
+            Assert.AreEqual(toggleValues[3], GetPropertyValue<bool>(savedProps, "fancyzones_moveWindowAcrossMonitors"));
+            Assert.AreEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_moveWindowsBasedOnPosition"));
+            Assert.AreEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
+            Assert.AreEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
+            Assert.AreEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "fancyzones_restoreSize"));
+            Assert.AreEqual(toggleValues[9], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
+            Assert.AreEqual(toggleValues[10], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
+            Assert.AreEqual(toggleValues[11], GetPropertyValue<bool>(savedProps, "fancyzones_span_zones_across_monitors"));
+            Assert.AreEqual(toggleValues[12], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
         }
 
         [TestMethod]
@@ -368,12 +381,12 @@ namespace PowerToysTests
             SaveAndCheckOpacitySettings(editor, 100);
 
             //for invalid input values previously saved value expected
-            SetOpacity(editor, "asdf"); 
-            SaveAndCheckOpacitySettings(editor, 100); 
-            
+            SetOpacity(editor, "asdf");
+            SaveAndCheckOpacitySettings(editor, 100);
+
             SetOpacity(editor, "*");
-            SaveAndCheckOpacitySettings(editor, 100); 
-            
+            SaveAndCheckOpacitySettings(editor, 100);
+
             SetOpacity(editor, OpenQA.Selenium.Keys.Return);
             SaveAndCheckOpacitySettings(editor, 100);
 
@@ -392,7 +405,7 @@ namespace PowerToysTests
             SaveAndCheckOpacitySettings(editor, 99);
 
             System.Drawing.Rectangle editorRect = editor.Rect;
-            
+
             Actions action = new Actions(session);
             action.MoveToElement(editor).MoveByOffset(editorRect.Width / 2 + 10, -editorRect.Height / 4).Perform();
             WaitSeconds(1);
@@ -409,7 +422,7 @@ namespace PowerToysTests
         [TestMethod]
         public void HighlightOpacityDecreaseValue()
         {
-            
+
             WindowsElement editor = session.FindElementByName("Zone opacity (%)");
             Assert.IsNotNull(editor);
 
@@ -441,7 +454,7 @@ namespace PowerToysTests
             editor.Click(); //activate
             AppiumWebElement clearButton = editor.FindElementByName("Clear value");
             Assert.IsNotNull(clearButton);
-            
+
             /*element is not pointer- or keyboard interactable.*/
             Actions action = new Actions(session);
             action.MoveToElement(clearButton).Click().Perform();
@@ -471,7 +484,7 @@ namespace PowerToysTests
                 .Click().SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown).SendKeys(OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp).Perform();
             TestColorSliders(saturationAndBrightness[0], hue[0], hex[0], red[0], green[0], blue[0], "fancyzones_zoneHighlightColor");
         }
-        
+
         [TestMethod]
         public void HighlightColorTest()
         {
@@ -504,7 +517,7 @@ namespace PowerToysTests
 
             TestRgbInput("Red");
             TestRgbInput("Green");
-            TestRgbInput("Blue"); 
+            TestRgbInput("Blue");
         }
 
         [TestMethod]
@@ -514,9 +527,9 @@ namespace PowerToysTests
 
             WindowsElement hexInput = session.FindElementByXPath("//Edit[@Name=\"Hex\"]");
             Assert.IsNotNull(hexInput);
-            
+
             hexInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
-            
+
             string invalidSymbols = "qwrtyuiopsghjklzxvnm,./';][{}:`~!#@$%^&*()_-+=\"\'\\";
             foreach (char symbol in invalidSymbols)
             {
@@ -531,7 +544,7 @@ namespace PowerToysTests
                 Assert.AreEqual(symbol.ToString(), hexInput.Text.Trim());
                 hexInput.SendKeys(OpenQA.Selenium.Keys.Backspace);
             }
-            
+
             //too many symbols
             hexInput.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.Backspace);
             hexInput.SendKeys("000000");
@@ -600,7 +613,7 @@ namespace PowerToysTests
         [TestMethod]
         public void ExitDialogSave()
         {
-            WindowsElement toggle = session.FindElementByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]");          
+            WindowsElement toggle = session.FindElementByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]");
             Assert.IsNotNull(toggle);
 
             bool initialToggleValue = toggle.GetAttribute("Toggle.ToggleState") == "1";
@@ -614,15 +627,15 @@ namespace PowerToysTests
 
             //check if window still opened
             WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
-            Assert.IsNotNull(powerToysWindow); 
+            Assert.IsNotNull(powerToysWindow);
 
             //check settings change
             JObject savedProps = GetProperties();
-            
+
             Assert.AreNotEqual(initialToggleValue, GetPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
-            
+
             //return initial app state
-            toggle.Click(); 
+            toggle.Click();
         }
 
         [TestMethod]
@@ -632,7 +645,7 @@ namespace PowerToysTests
             Assert.IsNotNull(toggle);
 
             bool initialToggleValue = toggle.GetAttribute("Toggle.ToggleState") == "1";
-            
+
             toggle.Click();
             CloseSettings();
 
@@ -642,12 +655,12 @@ namespace PowerToysTests
             exitDialog.FindElementByName("Exit").Click();
 
             //check if window still opened
-            try 
+            try
             {
                 WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
                 Assert.IsNull(powerToysWindow);
             }
-            catch(OpenQA.Selenium.WebDriverException)
+            catch (OpenQA.Selenium.WebDriverException)
             {
                 //window is no longer available, which is expected
             }
@@ -711,6 +724,8 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
+            Assert.IsNotNull(session);
+
             Init();
         }
 
@@ -727,20 +742,24 @@ namespace PowerToysTests
                     exitDialogButton.Click();
                 }
             }
-            catch(OpenQA.Selenium.WebDriverException)
+            catch (OpenQA.Selenium.WebDriverException)
             {
                 //element couldn't be located
             }
 
+            ExitPowerToys();
             TearDown();
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
+            if (session == null)
+                return;
+
             try
             {
-                _initialSettingsJson = JObject.Parse(_initialSettings);
+                _initialSettingsJson = JObject.Parse(_initialFancyZonesSettings);
             }
             catch (Newtonsoft.Json.JsonReaderException)
             {
@@ -751,7 +770,7 @@ namespace PowerToysTests
         [TestCleanup]
         public void TestCleanup()
         {
-            ScrollUp();           
+            ScrollUp();
         }
     }
 }

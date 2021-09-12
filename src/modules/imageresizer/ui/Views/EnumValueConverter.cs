@@ -15,12 +15,12 @@ namespace ImageResizer.Views
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var type = value.GetType();
+            var type = value?.GetType();
             var builder = new StringBuilder();
 
             builder
                 .Append(type.Name)
-                .Append("_")
+                .Append('_')
                 .Append(Enum.GetName(type, value));
 
             var toLower = false;
@@ -31,15 +31,15 @@ namespace ImageResizer.Views
             else if (parameter != null)
             {
                 builder
-                    .Append("_")
+                    .Append('_')
                     .Append(parameter);
             }
 
-            var targetValue = Resources.ResourceManager.GetString(builder.ToString());
+            var targetValue = Resources.ResourceManager.GetString(builder.ToString(), culture);
 
             if (toLower)
             {
-                targetValue = targetValue.ToLower();
+                targetValue = targetValue.ToLower(culture);
             }
 
             return targetValue;

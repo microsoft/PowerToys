@@ -2,17 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SvgPreviewHandler.Utilities;
 using System.Text;
+using Microsoft.PowerToys.PreviewHandler.Svg.Utilities;
+using Microsoft.PowerToys.STATestExtension;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTests_SvgPreviewHandler
+namespace SvgPreviewHandlerUnitTests
 {
-    [TestClass]
+    [STATestClass]
     public class SvgPreviewHandlerHelperTests
     {
         [TestMethod]
-        public void CheckBlockedElements_ShoudReturnTrue_IfABlockedElementIsPresent()
+        public void CheckBlockedElementsShouldReturnTrueIfABlockedElementIsPresent()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -29,7 +30,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void CheckBlockedElements_ShoudReturnTrue_IfBlockedElementsIsPresentInNestedLevel()
+        public void CheckBlockedElementsShouldReturnTrueIfBlockedElementsIsPresentInNestedLevel()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -48,7 +49,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void CheckBlockedElements_ShoudReturnTrue_IfMultipleBlockedElementsArePresent()
+        public void CheckBlockedElementsShouldReturnTrueIfMultipleBlockedElementsArePresent()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -66,7 +67,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void CheckBlockedElements_ShoudReturnFalse_IfNoBlockedElementsArePresent()
+        public void CheckBlockedElementsShouldReturnFalseIfNoBlockedElementsArePresent()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -87,7 +88,7 @@ namespace UnitTests_SvgPreviewHandler
         [DataRow("")]
         [DataRow("  ")]
         [DataRow(null)]
-        public void CheckBlockedElements_ShoudReturnFalse_IfSvgDataIsNullOrWhiteSpaces(string svgData)
+        public void CheckBlockedElementsShouldReturnFalseIfSvgDataIsNullOrWhiteSpaces(string svgData)
         {
             // Arrange
             bool foundFilteredElement;

@@ -1,0 +1,92 @@
+﻿<UserControl x:Class="ColorPicker.Views.MainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ColorPicker.Views"
+             xmlns:viewModel="clr-namespace:ColorPicker.ViewModels"
+             mc:Ignorable="d" d:DesignHeight="64" 
+             d:DataContext="{d:DesignInstance viewModel:MainViewModel, IsDesignTimeCreatable=True}">
+    <Grid Background="Transparent">
+
+        <Border BorderBrush="{DynamicResource WindowBorderBrush}"
+                Margin="12"
+                BorderThickness="1"
+                Background="{DynamicResource PrimaryBackgroundBrush}"
+                CornerRadius="4">
+            <!-- Disabled due to the poor performance of drawing shadows in WPF -->
+            <!--<Border.Effect>
+                <DropShadowEffect
+                    BlurRadius="16"
+                    Opacity="0.28"
+                    ShadowDepth="1" />
+            </Border.Effect>-->
+
+            <Grid>
+                <!--only color format - one line -->
+                <Grid Margin="2" Visibility="{Binding ShowColorName, Converter={StaticResource bool2InvertedVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="36"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Background="{Binding ColorBrush}"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    BorderBrush="{DynamicResource WindowBorderBrush}"
+                    BorderThickness="1"
+                    x:Name="ColorBorderSmall"
+                    CornerRadius="4"/>
+
+                    <TextBlock Margin="8,5,8,8"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                       Grid.Column="1"
+                       Text="{Binding ColorText}"/>
+                </Grid>
+
+                <!--color format and color name - two lines-->
+                <Grid Margin="2" Visibility="{Binding ShowColorName, Converter={StaticResource bool2VisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="26"/>
+                        <RowDefinition Height="26"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="52"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Background="{Binding ColorBrush}"
+                        HorizontalAlignment="Stretch"
+                        Grid.RowSpan="2"
+                        VerticalAlignment="Stretch"
+                        BorderBrush="{DynamicResource WindowBorderBrush}"
+                        BorderThickness="1"
+                        Margin="1"
+                        x:Name="ColorBorderBig"
+                        CornerRadius="4"/>
+
+                    <TextBlock Margin="8,5,6,0"
+                           FontSize="16"
+                           Grid.Row="0"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}"
+                           Grid.Column="1"
+                           Text="{Binding ColorText}"/>
+
+                    <TextBlock Margin="8,0,8,2"
+                           Height="26"
+                           Grid.Row="1"
+                           Grid.Column="1"
+                           Grid.ColumnSpan="2"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}"
+                           Opacity="0.6"
+                           Text="{Binding ColorName}"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

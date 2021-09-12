@@ -1,0 +1,13 @@
+{
+  "ID": "CEA0FDFC6D3B4085823D60DC76F28855",
+  "ActionKeyword": "=",
+  "IsGlobal": true,
+  "Name": "Calculator",
+  "Author": "cxfksword",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://aka.ms/powertoys",
+  "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Calculator.dll",
+  "IcoPathDark": "Images\\calculator.dark.png",
+  "IcoPathLight": "Images\\calculator.light.png"
+}

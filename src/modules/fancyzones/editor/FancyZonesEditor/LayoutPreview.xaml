@@ -6,8 +6,12 @@
              xmlns:local="clr-namespace:FancyZonesEditor"
              mc:Ignorable="d" 
              Loaded="OnLoaded"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid x:Name="Body">
-            
+             d:DesignHeight="450"
+             d:DesignWidth="800">
+    <Grid>
+        <Border CornerRadius="4"
+                Background="{DynamicResource LayoutPreviewBackgroundBrush}" />
+        <Grid x:Name="Body"
+              Background="Transparent" />
     </Grid>
 </UserControl>

@@ -1,0 +1,77 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeColorPicker"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+      xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="280" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Image Stretch="UniformToFill"
+               Source="{x:Bind ViewModel.PreviewImageSource}" />
+
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Orientation="Vertical"
+                        Margin="{StaticResource OobePageContentMargin}"
+                        VerticalAlignment="Top">
+                
+                <TextBlock Text="{x:Bind ViewModel.ModuleName}"
+                           AutomationProperties.HeadingLevel="Level2"
+                           Style="{StaticResource PageTitleStyle}" />
+                
+                <TextBlock TextWrapping="Wrap"
+                           Margin="0,4,0,0"
+                           Text="{x:Bind ViewModel.Description}" />
+
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}" Margin="0,0,0,4">
+                    <TextBlock>
+                                <Run x:Uid="Oobe_LearnMore" />
+                                <Run Text="{x:Bind ViewModel.ModuleName}" />
+                    </TextBlock>
+                </HyperlinkButton>
+
+                <TextBlock x:Uid="Oobe_HowToUse"
+                           AutomationProperties.HeadingLevel="Level3"
+                           Style="{StaticResource OobeSubtitleStyle}" />
+
+                <controls:ShortcutTextControl x:Uid="Oobe_ColorPicker_HowToUse" />
+              
+                <TextBlock x:Uid="Oobe_TipsAndTricks"
+                           AutomationProperties.HeadingLevel="Level3"
+                           Style="{StaticResource OobeSubtitleStyle}"/>
+
+                <controls:ShortcutTextControl x:Uid="Oobe_ColorPicker_TipsAndTricks" />
+            
+            <StackPanel Orientation="Horizontal"
+                        Spacing="4"
+                        Margin="0,32,0,0">
+                <Button Style="{StaticResource AccentButtonStyle}" Click="Start_ColorPicker_Click">
+                    <TextBlock>
+                        <Run x:Uid="Oobe_Launch"/>
+                        <Run Text="{x:Bind ViewModel.ModuleName}"/>
+                    </TextBlock>
+                </Button>
+                    <Button Click="SettingsLaunchButton_Click"
+                            AutomationProperties.LabeledBy="{Binding ElementName=SettingsLabel}">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="8">
+                            <TextBlock Text="&#xE115;"
+                                       Margin="0,3,0,0"
+                                       FontFamily="Segoe MDL2 Assets" />
+                            <TextBlock x:Uid="OOBE_Settings" Name="SettingsLabel" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+        </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

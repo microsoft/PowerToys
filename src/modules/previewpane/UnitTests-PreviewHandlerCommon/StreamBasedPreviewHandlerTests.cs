@@ -8,12 +8,12 @@ using Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace UnitTests_PreviewHandlerCommon
+namespace PreviewHandlerCommonUnitTests
 {
     [TestClass]
     public class StreamBasedPreviewHandlerTests
     {
-        public class TestStreamBasedPreviewHandler : StreamBasedPreviewHandler
+        internal class TestStreamBasedPreviewHandler : StreamBasedPreviewHandler
         {
             public override void DoPreview()
             {
@@ -27,9 +27,9 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [DataTestMethod]
-        [DataRow((uint)0)]
-        [DataRow((uint)1)]
-        public void StreamBasedPreviewHandler_ShouldSetStream_WhenInitializeCalled(uint grfMode)
+        [DataRow(0U)]
+        [DataRow(1U)]
+        public void StreamBasedPreviewHandlerShouldSetStreamWhenInitializeCalled(uint grfMode)
         {
             // Arrange
             var streamBasedPreviewHandler = new TestStreamBasedPreviewHandler();
@@ -39,7 +39,7 @@ namespace UnitTests_PreviewHandlerCommon
             streamBasedPreviewHandler.Initialize(stream, grfMode);
 
             // Assert
-            Assert.AreEqual(streamBasedPreviewHandler.Stream, stream);
+            Assert.AreEqual(stream, streamBasedPreviewHandler.Stream);
         }
     }
 }

@@ -24,6 +24,7 @@
         <File DestinationPath="modules\GalaSoft.MvvmLight.Extras.dll" SourcePath="..\..\x64\Release\modules\GalaSoft.MvvmLight.Extras.dll"/>
         <File DestinationPath="modules\System.Windows.Interactivity.dll" SourcePath="..\..\x64\Release\modules\System.Windows.Interactivity.dll"/>
         <File DestinationPath="modules\Newtonsoft.Json.dll" SourcePath="..\..\x64\Release\modules\Newtonsoft.Json.dll"/>
+        <File DestinationPath="modules\PowerKeys.dll" SourcePath="..\..\x64\Release\modules\PowerKeys.dll"/>
         <File DestinationPath="modules\System.Text.Json.dll" SourcePath="..\..\x64\Release\modules\System.Text.Json.dll"/>
         <File DestinationPath="modules\System.Memory.dll" SourcePath="..\..\x64\Release\modules\System.Memory.dll"/>
         <File DestinationPath="modules\System.Buffers.dll" SourcePath="..\..\x64\Release\modules\System.Buffers.dll"/>

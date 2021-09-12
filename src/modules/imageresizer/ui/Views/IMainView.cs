@@ -11,8 +11,6 @@ namespace ImageResizer.Views
     {
         void Close();
 
-        void ShowAdvanced(AdvancedViewModel viewModel);
-
         IEnumerable<string> OpenPictureFiles();
     }
 }

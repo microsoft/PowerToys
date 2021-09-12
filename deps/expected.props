@@ -1,0 +1,8 @@
+<Project>
+	<Import Project="restore_git_submodules.props" Condition="'$(RestoreGitSubmodulesImported)' == ''" />
+	<ItemDefinitionGroup>
+		<ClCompile>
+			<AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)expected-lite\include\nonstd\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+		</ClCompile>
+	</ItemDefinitionGroup>
+</Project>

@@ -1,8 +1,6 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
-#include <common/settings_objects.h>
+#include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -68,27 +66,16 @@ public:
         delete this;
     }
 
-    // Return the display name of the powertoy, this will be cached by the runner
+    // Return the localized display name of the powertoy
     virtual const wchar_t* get_name() override
     {
         return MODULE_NAME;
     }
 
-    // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be retured for empty
-    // list.
-    virtual const wchar_t** get_events() override
+    // Return the non localized key of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_key() override
     {
-        static const wchar_t* events[] = { nullptr };
-        // Available events:
-        // - ll_keyboard
-        // - win_hook_event
-        //
-        // static const wchar_t* events[] = { ll_keyboard,
-        //                                   win_hook_event,
-        //                                   nullptr };
-
-        return events;
+        return MODULE_NAME;
     }
 
     // Return JSON with the configuration options.
@@ -107,7 +94,7 @@ public:
         //settings.set_video_link(L"https://");
 
         // A bool property with a toggle editor.
-        //settings.add_bool_toogle(
+        //settings.add_bool_toggle(
         //  L"bool_toggle_1", // property name.
         //  L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
         //  g_settings.bool_prop // property value.
@@ -138,7 +125,7 @@ public:
         //);
 
         // A custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-        // method should be overriden as well.
+        // method should be overridden as well.
         //settings.add_custom_action(
         //  L"custom_action_id", // action name.
         //  L"This is what a CustomAction property looks like", // label above the field.
@@ -177,7 +164,7 @@ public:
         {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             // Update a bool property.
             //if (auto v = values.get_bool_value(L"bool_toggle_1")) {
@@ -228,34 +215,6 @@ public:
     {
         return m_enabled;
     }
-
-    // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        if (wcscmp(name, ll_keyboard) == 0)
-        {
-            auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-            // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-            // otherwise return 0.
-            return 0;
-        }
-        else if (wcscmp(name, win_hook_event) == 0)
-        {
-            auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-            // Return value is ignored
-            return 0;
-        }
-        return 0;
-    }
-
-    // This methods are part of an experimental features not fully supported yet
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override
-    {
-    }
-
-    virtual void signal_system_menu_action(const wchar_t* name) override
-    {
-    }
 };
 
 // Load the settings file.
@@ -265,7 +224,7 @@ void $safeprojectname$::init_settings()
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_key());
 
         // Load a bool property.
         //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {

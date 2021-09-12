@@ -1,0 +1,16 @@
+# Table of Contents
+1. [Architecture](/doc/devdocs/modules/launcher/architecture.md)
+2. [Debugging](/doc/devdocs/modules/launcher/debugging.md)
+3. [Project Structure](/doc/devdocs/modules/launcher/project_structure.md)
+4. [Telemetry](/doc/devdocs/modules/launcher/telemetry.md)
+5. Plugins
+    - [Overview](/doc/devdocs/modules/launcher/plugins/overview.md)
+    - [Calculator](/doc/devdocs/modules/launcher/plugins/calculator.md)
+    - [Folder](/doc/devdocs/modules/launcher/plugins/folder.md)
+    - [Indexer](/doc/devdocs/modules/launcher/plugins/indexer.md)
+    - [Program](/doc/devdocs/modules/launcher/plugins/program.md)
+    - [Registry](/doc/devdocs/modules/launcher/plugins/registry.md)
+    - [Shell](/doc/devdocs/modules/launcher/plugins/shell.md)
+    - [Sys](/doc/devdocs/modules/launcher/plugins/sys.md)
+    - [Uri](/doc/devdocs/modules/launcher/plugins/uri.md)
+    - [Window Walker](/doc/devdocs/modules/launcher/plugins/windowwalker.md)

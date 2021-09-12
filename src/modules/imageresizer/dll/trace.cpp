@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "trace.h"
 
 TRACELOGGING_DEFINE_PROVIDER(

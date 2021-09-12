@@ -16,6 +16,7 @@ namespace ImageResizer
     public class TestDirectory : IDisposable
     {
         private readonly string _path;
+        private bool disposedValue;
 
         public TestDirectory()
         {
@@ -34,24 +35,50 @@ namespace ImageResizer
         public string File()
             => Assert.Single(Files);
 
-        public void Dispose()
+        public static implicit operator string(TestDirectory directory)
         {
-            var stopwatch = Stopwatch.StartNew();
-            while (stopwatch.ElapsedMilliseconds < 30000)
+            return directory?._path;
+        }
+
+        public override string ToString()
+        {
+            return _path;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
             {
-                try
+                if (disposing)
                 {
-                    Directory.Delete(_path, recursive: true);
-                    break;
+                    var stopwatch = Stopwatch.StartNew();
+                    while (stopwatch.ElapsedMilliseconds < 30000)
+                    {
+                        try
+                        {
+                            Directory.Delete(_path, recursive: true);
+                            break;
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch
+#pragma warning restore CA1031 // Do not catch general exception types
+                        {
+                            Thread.Sleep(150);
+                        }
+                    }
                 }
-                catch
-                {
-                    Thread.Sleep(150);
-                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
             }
         }
 
-        public static implicit operator string(TestDirectory directory)
-            => directory._path;
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

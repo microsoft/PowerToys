@@ -2,21 +2,23 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:p="clr-namespace:ImageResizer.Properties"
-             MinWidth="350">
+             MinWidth="350"
+             Background="{DynamicResource PrimaryBackgroundBrush}">
 
     <StackPanel>
-        <TextBlock Margin="11,11,11,0"
-                   Style="{StaticResource MainInstructionTextBlockStyle}"
+        <TextBlock Margin="12,12,12,0"
+                   FontSize="16"
+                   Foreground="{DynamicResource PrimaryForegroundBrush}"
                    Text="{x:Static p:Resources.Results_MainInstruction}"/>
         <ScrollViewer MaxWidth="363"
                       MaxHeight="350"
                       HorizontalAlignment="Stretch"
                       VerticalScrollBarVisibility="Auto">
-            <ItemsControl Margin="11,4,11,0" ItemsSource="{Binding Errors}">
+            <ItemsControl Margin="12,4,12,0" ItemsSource="{Binding Errors}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="ResizeError">
                         <StackPanel>
-                            <TextBlock Margin="0,7,0,0"
+                            <TextBlock Margin="0,8,0,0"
                                        FontWeight="Bold"
                                        Text="{Binding File}"/>
                             <TextBlock Text="{Binding Error}" TextWrapping="Wrap"/>
@@ -25,14 +27,13 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-        <Border Margin="0,11,0,0"
-                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
-                BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
+        <Border Margin="0,12,0,0"
+                Background="{DynamicResource SecondaryBackgroundBrush}"
+                BorderBrush="{DynamicResource PrimaryBorderBrush}"
                 BorderThickness="0,1,0,0"
-                Padding="11,11">
+                Padding="12,12">
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                <Button Height="23"
-                        MinWidth="75"
+                <Button MinWidth="76"
                         Command="{Binding CloseCommand}"
                         Content="{x:Static p:Resources.Results_Close}"
                         IsCancel="True"
@@ -40,5 +41,4 @@
             </StackPanel>
         </Border>
     </StackPanel>
-
 </UserControl>

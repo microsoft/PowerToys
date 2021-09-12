@@ -1,14 +1,13 @@
 // PowerRenameTest.cpp : Defines the entry point for the application.
 //
 
-#include "stdafx.h"
+#include "pch.h"
 #include "PowerRenameTest.h"
 #include <PowerRenameInterfaces.h>
 #include <PowerRenameItem.h>
 #include <PowerRenameUI.h>
 #include <PowerRenameManager.h>
 #include <Shobjidl.h>
-#include <common.h>
 
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
@@ -43,7 +42,7 @@ int APIENTRY wWinMain(
             if (SUCCEEDED(CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&spsrif))))
             {
                 // Pass the factory to the manager
-                if (SUCCEEDED(spsrm->put_renameItemFactory(spsrif)))
+                if (SUCCEEDED(spsrm->PutRenameItemFactory(spsrif)))
                 {
                     // Create the rename UI instance and pass the manager
                     CComPtr<IPowerRenameUI> spsrui;

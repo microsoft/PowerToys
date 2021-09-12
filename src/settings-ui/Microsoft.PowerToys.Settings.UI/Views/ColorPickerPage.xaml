@@ -1,0 +1,322 @@
+<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.ColorPickerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:Custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:Color="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels" xmlns:Interactivity="using:Microsoft.Xaml.Interactivity" xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400" 
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
+
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="ColorPickerView.(Grid.Row)" Value="1" />
+                        <Setter Target="ColorPickerView.Margin" Value="0" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage" />
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage" />
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0" />
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical"
+                    x:Name="ColorPickerView"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,48,0"
+                    MaxWidth="{StaticResource MaxContentWidth}">
+            <ToggleSwitch x:Uid="ColorPicker_EnableColorPicker" 
+                          IsOn="{Binding IsEnabled, Mode=TwoWay}"/>
+
+            <TextBlock x:Uid="Shortcuts"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
+            <Custom:HotkeySettingsControl x:Uid="ColorPicker_ActivationShortcut"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
+                                          Keys="Win, Ctrl, Alt, Shift"
+                                          Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                                          HorizontalAlignment="Left"
+                                          MinWidth="240"
+                                          />
+
+            <TextBlock x:Uid="ColorPicker_ActivationAction"
+                       Margin="{StaticResource MediumTopMargin}"
+                       x:Name="ColorPicker_ActivationAction" 
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ColorPicker_ActivationAction}" Margin="0,-4,0,0">
+                <RadioButton
+                         IsChecked="{Binding ActivationOpensColorPickerAndEditor, Mode=TwoWay}"
+                         Margin="{StaticResource SmallTopMargin}" 
+                         IsEnabled="{Binding IsEnabled}"
+                         GroupName="ColorPickerActivationAction">
+                    <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="ColorPickerFirst"/>
+                        <LineBreak/>
+                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                             x:Uid="ColorPickerFirst_Description"/>
+                        </TextBlock>
+                    </RadioButton.Content>
+                </RadioButton>
+                
+                <RadioButton IsChecked="{Binding ActivationOpensEditor, Mode=TwoWay}"
+                         Margin="{StaticResource SmallTopMargin}" 
+                         IsEnabled="{Binding IsEnabled}"
+                         GroupName="ColorPickerActivationAction">
+                    <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="EditorFirst"/>
+                        <LineBreak/>
+                        <Run Foreground="{ThemeResource SystemBaseMediumColor}" x:Uid="EditorFirst_Description"/>
+                        </TextBlock>
+                    </RadioButton.Content>
+                </RadioButton>
+
+                <RadioButton IsChecked="{Binding ActivationOpensColorPickerOnly, Mode=TwoWay}"
+                         Margin="{StaticResource SmallTopMargin}" 
+                         IsEnabled="{Binding IsEnabled}"
+                         GroupName="ColorPickerActivationAction">
+                    <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="ColorPickerOnly"/>
+                        <LineBreak/>
+                        <Run x:Uid="ColorPickerOnly_Description" Foreground="{ThemeResource SystemBaseMediumColor}"/>
+                        </TextBlock>
+                    </RadioButton.Content>
+                </RadioButton>
+            </StackPanel>
+
+            <TextBlock x:Uid="ColorFormats"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
+            <ComboBox x:Name="ColorPicker_ComboBox"
+                      x:Uid="ColorPicker_CopiedColorRepresentation"
+                      MinWidth="240"
+                      Margin="{StaticResource SmallTopMargin}"
+                      HorizontalAlignment="Left"
+                      DisplayMemberPath="Value"
+                      IsEnabled="{Binding IsEnabled}"
+                      ItemsSource="{Binding SelectableColorRepresentations}"
+                      Loaded="ColorPicker_ComboBox_Loaded"
+                      SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
+                      SelectedValuePath="Key" />
+            
+            <CheckBox x:Uid="ColorPicker_ShowColorName"
+                      IsChecked="{Binding ShowColorName, Mode=TwoWay}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{Binding IsEnabled}"/>
+
+            <TextBlock x:Uid="ColorPicker_Editor"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+            
+            <TextBlock x:Name="ColorFormatsListViewLabel"
+                       TextWrapping="WrapWholeWords"
+                       x:Uid="ColorPicker_ColorFormatsDescription"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Margin="{StaticResource SmallTopMargin}"/>
+            
+            <!-- Disabled reordering by dragging -->
+            <!-- CanReorderItems="True" AllowDrop="True" -->
+            <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
+                      MaxWidth="466"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                      AutomationProperties.LabeledBy="{Binding ElementName=ColorFormatsListViewLabel}"
+                      HorizontalAlignment="Left"
+                      Margin="-12,6,0,0">
+                <ItemsControl.ItemContainerTransitions>
+                    <TransitionCollection/>
+                </ItemsControl.ItemContainerTransitions>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Width="466" Background="Transparent">
+                            <!-- Disabled reordering by dragging
+                            
+                            <Interactivity:Interaction.Behaviors>
+                                <Core:EventTriggerBehavior EventName="PointerEntered">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=GripperIcon}" PropertyName="Visibility" Value="Visible" />
+                                </Core:EventTriggerBehavior>
+                                <Core:EventTriggerBehavior EventName="PointerExited">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=GripperIcon}" PropertyName="Visibility" Value="Collapsed" />
+                                </Core:EventTriggerBehavior>
+                            </Interactivity:Interaction.Behaviors> -->
+
+                            <Interactivity:Interaction.Behaviors>
+                                <Core:EventTriggerBehavior EventName="PointerEntered">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonUp}" PropertyName="Visibility" Value="Visible" />
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonDown}" PropertyName="Visibility" Value="Visible" />
+                                </Core:EventTriggerBehavior>
+                                <Core:EventTriggerBehavior EventName="PointerExited">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonUp}" PropertyName="Visibility" Value="Collapsed" />
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonDown}" PropertyName="Visibility" Value="Collapsed" />
+                                </Core:EventTriggerBehavior>
+                            </Interactivity:Interaction.Behaviors>
+                            
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock FontWeight="SemiBold"
+                                       FontSize="16"
+                                       Margin="0,8,0,0"
+                                       Text="{Binding Name}"/>
+                            <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}"
+                                       Text="{Binding Example}"
+                                       Grid.Row="1"
+                                       Margin="0,0,0,8"/>
+                            <ToggleSwitch IsOn="{Binding IsShown, Mode=TwoWay}"
+                                          OnContent=""
+                                          OffContent=""
+                                          Grid.RowSpan="2"
+                                          HorizontalAlignment="Right"
+                                          Margin="0,0,-36,0"/>
+                            <!-- Disabled reordering by dragging
+                            
+                            <TextBlock Text="&#xE76F;"
+                                       Visibility="Collapsed"
+                                       x:Name="GripperIcon"
+                                       VerticalAlignment="Center"
+                                       Grid.RowSpan="2"
+                                       FontSize="16"
+                                       HorizontalAlignment="Right"
+                                       Margin="0,0,36,0"
+                                       FontFamily="Segoe MDL2 Assets" /> -->
+
+                            <Button x:Uid="ColorPicker_ButtonUp"
+                                    x:Name="ButtonUp"
+                                    Content="&#xE74A;"
+                                    IsEnabled="{Binding CanMoveUp}"
+                                    Grid.Row="0"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,24,0"
+                                    Background="Transparent"
+                                    Visibility="Collapsed"
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Click="ReorderButtonUp_Click">
+                                <Interactivity:Interaction.Behaviors>
+                                    <Core:EventTriggerBehavior EventName="Click">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonUp}" PropertyName="Visibility" Value="Collapsed" />
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonDown}" PropertyName="Visibility" Value="Collapsed" />
+                                </Core:EventTriggerBehavior>
+                                </Interactivity:Interaction.Behaviors>
+                            </Button>
+                            <Button x:Uid="ColorPicker_ButtonDown"
+                                    x:Name="ButtonDown"
+                                    Content="&#xE74B;"
+                                    IsEnabled="{Binding CanMoveDown}"
+                                    Grid.Row="1"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,24,0"
+                                    Background="Transparent"
+                                    Visibility="Collapsed"
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Click="ReorderButtonDown_Click" >
+                                <Interactivity:Interaction.Behaviors>
+                                    <Core:EventTriggerBehavior EventName="Click">
+                                        <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonUp}" PropertyName="Visibility" Value="Collapsed" />
+                                        <Core:ChangePropertyAction TargetObject="{Binding ElementName=ButtonDown}" PropertyName="Visibility" Value="Collapsed" />
+                                    </Core:EventTriggerBehavior>
+                                </Interactivity:Interaction.Behaviors>
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            
+            <!--
+            Disabling this until we have a safer way to reset cursor as 
+            we can hit a state where the cursor doesn't reset
+           
+            <CheckBox x:Uid="ColorPicker_ChangeCursor" 
+                          IsChecked="{Binding ChangeCursor, Mode=TwoWay}"
+                          Margin="{StaticResource SmallTopMargin}"
+                          IsEnabled="{Binding IsEnabled}"/>
+                          -->
+        </StackPanel>
+
+        <RelativePanel x:Name="SidePanel" 
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_ColorPicker"
+                           x:Name="AboutTitle"
+                           Grid.ColumnSpan="2"
+                           Style="{StaticResource SettingsGroupTitleStyle}"
+                           Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="ColorPicker_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
+
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <HyperlinkButton x:Uid="ColorPicker_ImageHyperlinkToDocs">
+                    <Image x:Uid="ColorPicker_Image" Source="ms-appx:///Assets/Modules/ColorPicker.png" />
+                </HyperlinkButton>
+            </Border>
+            <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton x:Uid="ColorPicker_ImageHyperlinkToDocs">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
+
+                <TextBlock 
+                x:Uid="AttributionTitle"
+                Style="{StaticResource SettingsGroupTitleStyle}" />
+
+                <HyperlinkButton Margin="0,-3,0,0"
+                                NavigateUri="https://github.com/martinchrzan/ColorPicker/">
+                    <TextBlock Text="Martin Chrzan's Color Picker" TextWrapping="Wrap" />
+                </HyperlinkButton>
+
+                <HyperlinkButton Margin="0,-3,0,0"
+                                NavigateUri="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c">
+                    <TextBlock Text="Niels Laute's UX concept" TextWrapping="Wrap" />
+                </HyperlinkButton>
+                
+            </StackPanel>
+        </RelativePanel>
+    </Grid>
+</Page>

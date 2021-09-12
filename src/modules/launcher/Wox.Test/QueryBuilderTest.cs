@@ -1,51 +1,157 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Mono.Collections.Generic;
 using NUnit.Framework;
-using Wox.Core.Plugin;
+using PowerLauncher.Plugin;
 using Wox.Plugin;
 
 namespace Wox.Test
 {
     public class QueryBuilderTest
     {
-        [Test]
-        public void ExclusivePluginQueryTest()
+        private static bool AreEqual(Query firstQuery, Query secondQuery)
         {
-            var nonGlobalPlugins = new Dictionary<string, PluginPair>
-            {
-                {">", new PluginPair {Metadata = new PluginMetadata {ActionKeywords = new List<string> {">"}}}}
-            };
-
-            Query q = QueryBuilder.Build(">   file.txt    file2 file3", nonGlobalPlugins);
-
-            Assert.AreEqual("file.txt file2 file3", q.Search);
-            Assert.AreEqual(">", q.ActionKeyword);
+            // Using Ordinal since this is used internally
+            return firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.Ordinal)
+                && firstQuery.Search.Equals(secondQuery.Search, StringComparison.Ordinal)
+                && firstQuery.RawQuery.Equals(secondQuery.RawQuery, StringComparison.Ordinal);
         }
 
         [Test]
-        public void ExclusivePluginQueryIgnoreDisabledTest()
+        public void QueryBuilderShouldRemoveExtraSpacesForNonGlobalPlugin()
         {
-            var nonGlobalPlugins = new Dictionary<string, PluginPair>
+            // Arrange
+            PluginManager.SetAllPlugins(new List<PluginPair>()
             {
-                {">", new PluginPair {Metadata = new PluginMetadata {ActionKeywords = new List<string> {">"}, Disabled = true}}}
-            };
+                new PluginPair(new PluginMetadata() { ActionKeyword = ">" }),
+            });
 
-            Query q = QueryBuilder.Build(">   file.txt    file2 file3", nonGlobalPlugins);
+            string searchQuery = ">   file.txt    file2 file3";
 
-            Assert.AreEqual("> file.txt file2 file3", q.Search);
+            // Act
+            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
+            searchQuery = pluginQueryPairs.Values.First().RawQuery;
+
+            // Assert
+            Assert.AreEqual("> file.txt file2 file3", searchQuery);
         }
 
         [Test]
-        public void GenericPluginQueryTest()
+        public void QueryBuilderShouldRemoveExtraSpacesForGlobalPlugin()
         {
-            Query q = QueryBuilder.Build("file.txt file2 file3", new Dictionary<string, PluginPair>());
+            // Arrange
+            string searchQuery = "file.txt  file2  file3";
+            PluginManager.SetAllPlugins(new List<PluginPair>()
+            {
+                new PluginPair(new PluginMetadata() { Disabled = false, IsGlobal = true }),
+            });
 
-            Assert.AreEqual("file.txt file2 file3", q.Search);
-            Assert.AreEqual("", q.ActionKeyword);
+            // Act
+            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
+            searchQuery = pluginQueryPairs.Values.First().RawQuery;
 
-            Assert.AreEqual("file.txt", q.FirstSearch);
-            Assert.AreEqual("file2", q.SecondSearch);
-            Assert.AreEqual("file3", q.ThirdSearch);
-            Assert.AreEqual("file2 file3", q.SecondToEndSearch);
+            // Assert
+            Assert.AreEqual("file.txt file2 file3", searchQuery);
+        }
+
+        [Test]
+        public void QueryBuildShouldGenerateSameSearchQueryWithOrWithoutSpaceAfterActionKeyword()
+        {
+            // Arrange
+            var plugin = new PluginPair(new PluginMetadata() { ActionKeyword = "a" });
+            PluginManager.SetAllPlugins(new List<PluginPair>()
+            {
+                plugin,
+            });
+
+            var firstQueryText = "asearch";
+            var secondQueryText = "a search";
+
+            // Act
+            var firstPluginQueryPair = QueryBuilder.Build(firstQueryText);
+            var firstQuery = firstPluginQueryPair.GetValueOrDefault(plugin);
+
+            var secondPluginQueryPairs = QueryBuilder.Build(secondQueryText);
+            var secondQuery = secondPluginQueryPairs.GetValueOrDefault(plugin);
+
+            // Assert
+            // Using Ordinal since this is used internally
+            Assert.IsTrue(firstQuery.Search.Equals(secondQuery.Search, StringComparison.Ordinal));
+            Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.Ordinal));
+        }
+
+        [Test]
+        public void QueryBuildShouldGenerateCorrectQueryForPluginsWhoseActionKeywordsHaveSamePrefix()
+        {
+            // Arrange
+            string searchQuery = "abcdefgh";
+            var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" });
+            var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" });
+            PluginManager.SetAllPlugins(new List<PluginPair>()
+            {
+                firstPlugin,
+                secondPlugin,
+            });
+
+            // Act
+            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
+
+            var firstQuery = pluginQueryPairs.GetValueOrDefault(firstPlugin);
+            var secondQuery = pluginQueryPairs.GetValueOrDefault(secondPlugin);
+
+            // Assert
+            Assert.IsTrue(AreEqual(firstQuery, new Query(searchQuery, firstPlugin.Metadata.ActionKeyword)));
+            Assert.IsTrue(AreEqual(secondQuery, new Query(searchQuery, secondPlugin.Metadata.ActionKeyword)));
+        }
+
+        [Test]
+        public void QueryBuilderShouldSetTermsCorrectlyWhenCalled()
+        {
+            // Arrange
+            string searchQuery = "abcd efgh";
+            var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" });
+            var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" });
+            PluginManager.SetAllPlugins(new List<PluginPair>()
+            {
+                firstPlugin,
+                secondPlugin,
+            });
+
+            // Act
+            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
+
+            var firstQuery = pluginQueryPairs.GetValueOrDefault(firstPlugin);
+            var secondQuery = pluginQueryPairs.GetValueOrDefault(secondPlugin);
+
+            // Assert
+            // Using Ordinal since this is used internally
+            Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.Ordinal) && firstQuery.Terms[1].Equals("efgh", StringComparison.Ordinal) && firstQuery.Terms.Count == 2);
+            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.Ordinal) && secondQuery.Terms.Count == 1);
+        }
+
+        [Test]
+        public void QueryBuilderShouldReturnAllPluginsWithTheActionWord()
+        {
+            // Arrange
+            string searchQuery = "!efgh";
+            var firstPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "!", ID = "plugin1" });
+            var secondPlugin = new PluginPair(new PluginMetadata { ActionKeyword = "!", ID = "plugin2" });
+            PluginManager.SetAllPlugins(new List<PluginPair>()
+            {
+                firstPlugin,
+                secondPlugin,
+            });
+
+            // Act
+            var pluginQueryPairs = QueryBuilder.Build(searchQuery);
+
+            // Assert
+            Assert.AreEqual(2, pluginQueryPairs.Count);
         }
     }
 }

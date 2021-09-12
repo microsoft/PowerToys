@@ -1,0 +1,182 @@
+﻿<UserControl x:Class="ColorPicker.Views.ColorEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:p="clr-namespace:ColorPicker.Properties"
+             mc:Ignorable="d"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:controls="clr-namespace:ColorPicker.Controls"
+             xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
+             WindowChrome.IsHitTestVisibleInChrome="True"
+             x:Name="colorEditorControl">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="64"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Side bar -->
+        <Grid Background="{DynamicResource SecondaryBackgroundBrush}">
+            <ui:ListView x:Name="HistoryColors" 
+                         Margin="0,48,0,0"
+                         Grid.Row="1"
+                         Padding="0"
+                         TabIndex="2"
+                         Width="64"
+                         HorizontalAlignment="Center"
+                         ui:FocusVisualHelper.UseSystemFocusVisuals="True"
+                         ItemsSource="{Binding ColorsHistory}"
+                         SelectedIndex="{Binding SelectedColorIndex}"
+                         ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}"
+                         IsItemClickEnabled="True"
+                         ItemClick="HistoryColors_ItemClick">
+                <ui:ListView.ContextMenu>
+                    <ContextMenu Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
+                        <MenuItem Header="{x:Static p:Resources.Remove}"
+                                  Command="{Binding RemoveColorCommand}">
+                            <MenuItem.Icon>
+                                <ui:FontIcon Glyph="&#xE107;" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </ui:ListView.ContextMenu>
+                <ui:ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Width="64" Height="48">
+                            <Border
+                                Width="26"
+                                Height="26"
+                                CornerRadius="4"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Background="{Binding Path=., Converter={StaticResource colorToBrushConverter}}">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                                </Border.Effect>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ui:ListView.ItemTemplate>
+            </ui:ListView>
+        </Grid>
+
+        <!-- Title bar -->
+        <Grid Grid.ColumnSpan="2"
+              Height="32"
+              Background="Transparent"
+              VerticalAlignment="Top"
+              IsHitTestVisible="True">
+            <e:Interaction.Behaviors>
+                <behaviors:DragWindowBehavior/>
+            </e:Interaction.Behaviors>
+            <Border
+                Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
+                Grid.ColumnSpan="2"
+                Width="30"
+                Height="3"
+                CornerRadius="1.5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Margin="0,1,0,0" />
+
+            <!-- Enable once we have settings linking available -->
+            <!--<Button Width="46"
+                    Height="32"
+                    Content="&#xE115;"
+                    TabIndex="2"
+                    Background="Transparent"
+                    FontFamily="Segoe MDL2 Assets"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,46,0"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
+                    AutomationProperties.Name="{x:Static p:Resources.Open_settings}" />-->
+
+            <Button Width="64"
+                    Height="32"
+                    TabIndex="0"
+                    Content="&#xEF3C;"
+                    Command="{Binding OpenColorPickerCommand}"
+                    Background="Transparent"
+                    FontFamily="Segoe MDL2 Assets"
+                    ui:FocusVisualHelper.FocusVisualMargin="-1"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}"
+                    AutomationProperties.Name="{x:Static p:Resources.Pick_color}"/>
+        </Grid>
+
+
+        <!-- Main grid -->
+        <Grid Grid.Column="1"
+              Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
+            <ScrollViewer IsTabStop="False"
+                          Margin="0,90,0,0">
+                <StackPanel>
+                    <ItemsControl IsTabStop="False"
+                                  TabIndex="4"
+                                  FocusManager.IsFocusScope="True"
+                                  KeyboardNavigation.TabNavigation="Once"   
+                                  ItemsSource="{Binding ColorRepresentations}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:ColorFormatControl
+                                ColorFormatModel="{Binding }"
+                                SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}"
+                                ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel
+                                Orientation="Vertical"
+                                Margin="0,16,0,16"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <controls:ColorPickerControl HorizontalAlignment="Left"
+                                         Margin="0,44,0,0"
+                                         Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}"
+                                         IsTabStop="True"
+                                         TabIndex="2"
+                                         SelectedColor="{Binding SelectedColor}"
+                                         SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
+                                         Grid.Column="1"
+                                         VerticalAlignment="Top" />
+        </Grid>
+
+        <!-- Empty history -->
+        <StackPanel Grid.Column="1" Margin="24, 12" VerticalAlignment="Center" Orientation="Vertical" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
+            <TextBlock Text="&#xEF3C;"
+                       FontFamily="Segoe MDL2 Assets"
+                       FontSize="44"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+            <TextBlock Margin="0,16,0,0"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                       Text="{x:Static p:Resources.No_colors_yet}"/>
+        </StackPanel>
+
+        <Border x:Name="CopiedBorderIndicator"
+                Opacity="0"
+                Grid.ColumnSpan="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Bottom"
+                Height="0"
+                Background="{DynamicResource SystemControlBackgroundAccentBrush}">
+
+            <TextBlock FontSize="16"
+                       Foreground="White"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" >
+                <Run Text="&#xE16F; " FontFamily="Segoe MDL2 Assets"/>
+                <Run Text="{x:Static p:Resources.Copied_to_clipboard}" FontWeight="SemiBold"/>
+            </TextBlock>
+        </Border>
+    </Grid>
+</UserControl>

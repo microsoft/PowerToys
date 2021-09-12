@@ -1,0 +1,66 @@
+# See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-patterns
+https?://(?:(?:www\.|)youtube\.com|youtu.be)/[-a-zA-Z0-9?&=]*
+# GitHub SHAs
+\bapi.github\.com/repos/[^/]+/[^/]+/[^/]+/[0-9a-f]+\b
+://github\.(?:com|blog)/[^\w")]+
+(?:\[[0-9a-f]+\]\(https:/|)/github\.com/[^/]+/[^/]+/[^/]+/[0-9a-f]+(?:[-0-9a-zA-Z/#.]*|)\b
+# githubusercontent
+://githubusercontent\.com/[^\w")]+
+# gist github
+/gist\.github\.com/[^/]+/[0-9a-f]+
+
+# msdn
+\b(?:download\.visualstudio|docs|msdn)\.microsoft\.com/[-_a-zA-Z0-9()=./]*
+
+data:[a-zA-Z=;,/0-9+-]+
+0x[0-9a-fA-F](?:\.[0-9a-fA-F]*|)[pP]
+(?:0[Xx]|U\+|#)[a-f0-9A-FGgRr]{2,}[Uu]?[Ll]{0,2}\b
+# uuid:
+[-<({"'>][0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[<'"})>]
+
+# ignore long runs of a single character:
+\b([A-Za-z])\g{-1}{3,}\b
+(?:L"[abAB]+", ){3}L"[abAB]+"
+"Lorem[^"]+?\."
+TestCase\("[^"]+"
+
+# Test line with hexadecimal colors
+\[DataRow\("[0-9A-F]{6}", \d{3}, \d{3}, \d{3}\)\]
+\[DataRow\("[0-9A-F]{6}", \d{3}.\d{1}, \d{3}.\d{1}, \d{3}.\d{1}\)\]
+\[DataRow\("[0-9A-F]{6}", "[BCGMRY]\d\d?", \d{3}, \d{3}\)\]
+
+# Windows paths
+\\native
+\\netcoreapp
+\\netstandard
+\\notifications
+\\recyclebin
+\\reinstall
+\\Resize
+\\resource
+\\Resources
+\\restart
+\\restore
+\\result
+\\runner
+\\runtimes
+\\Telemetry
+\\telemetry
+\\testapp
+\\tests
+\\tools
+
+# plugin.json
+^  "ID": "[0-9A-F]{32}",$
+
+# UnitTests
+\[DataRow\(.*\)\]
+
+# Id info inside markdown file (registry.md) 
+^\|\s+ID\s+\|\s*\`[0-9A-F]{32}\`
+
+# marker for ignoring a comment to the end of the line
+^.*/\* #no-spell-check-line \*/.*$
+// #no-spell-check.*$
+
+http://tes/

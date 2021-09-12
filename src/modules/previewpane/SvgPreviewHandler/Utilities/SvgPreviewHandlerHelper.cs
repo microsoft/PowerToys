@@ -4,15 +4,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace SvgPreviewHandler.Utilities
+namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
 {
     /// <summary>
     /// Helper utilities for Svg Preview Handler.
     /// </summary>
-    public class SvgPreviewHandlerHelper
+    public static class SvgPreviewHandlerHelper
     {
         /// <summary>
         /// Dictionary of elements in lower case that are blocked from Svg for preview pane.
@@ -46,7 +47,10 @@ namespace SvgPreviewHandler.Utilities
                 var elements = doc.Descendants().ToList();
                 foreach (XElement element in elements)
                 {
-                    var elementName = element?.Name?.LocalName?.ToLower();
+                    // Using Invariant since we are doing an exact match for HTML tags and we want it to behave the same in every culture
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                    var elementName = element?.Name?.LocalName?.ToLowerInvariant();
+#pragma warning restore CA1308 // Normalize strings to uppercase
                     if (elementName != null && blockedElementsName.ContainsKey(elementName))
                     {
                         foundBlockedElement = true;
@@ -56,11 +60,108 @@ namespace SvgPreviewHandler.Utilities
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
             }
 
             return foundBlockedElement;
+        }
+
+        /// <summary>
+        /// Add proper
+        /// </summary>
+        /// <param name="stringSvgData">Input Svg</param>
+        /// <returns>Returns modified svgData with added style</returns>
+        public static string AddStyleSVG(string stringSvgData)
+        {
+            XElement svgData = XElement.Parse(stringSvgData);
+
+            var attributes = svgData.Attributes();
+            string width = string.Empty;
+            string height = string.Empty;
+            string widthR = string.Empty;
+            string heightR = string.Empty;
+            string oldStyle = string.Empty;
+
+            // Get width and height of element and remove it afterwards because it will be added inside style attribute
+            for (int i = 0; i < attributes.Count(); i++)
+            {
+                if (attributes.ElementAt(i).Name == "height")
+                {
+                    height = attributes.ElementAt(i).Value;
+                    attributes.ElementAt(i).Remove();
+                    i--;
+                }
+                else if (attributes.ElementAt(i).Name == "width")
+                {
+                    width = attributes.ElementAt(i).Value;
+                    attributes.ElementAt(i).Remove();
+                    i--;
+                }
+                else if (attributes.ElementAt(i).Name == "style")
+                {
+                    oldStyle = attributes.ElementAt(i).Value;
+                    attributes.ElementAt(i).Remove();
+                    i--;
+                }
+            }
+
+            svgData.ReplaceAttributes(attributes);
+
+            height = CheckUnit(height);
+            width = CheckUnit(width);
+            heightR = RemoveUnit(height);
+            widthR = RemoveUnit(width);
+
+            string centering = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);";
+
+            // Because WebBrowser class is based on IE version that do not support max-width and max-height extra CSS is needed for it to work.
+            string scaling = $"max-width: {width} ; max-height: {height} ;";
+            scaling += $"  _height:expression(this.scrollHeight > {heightR} ? \" {height}\" : \"auto\"); _width:expression(this.scrollWidth > {widthR} ? \"{width}\" : \"auto\");";
+
+            svgData.Add(new XAttribute("style", scaling + centering + oldStyle));
+            return svgData.ToString();
+        }
+
+        /// <summary>
+        /// If there is a CSS unit at the end return the same string, else return the string with a px unit at the end
+        /// </summary>
+        /// <param name="length">CSS length</param>
+        /// <returns>Returns modified length</returns>
+        private static string CheckUnit(string length)
+        {
+            string[] cssUnits = { "cm", "mm", "in", "px", "pt", "pc", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "%" };
+            foreach (var unit in cssUnits)
+            {
+                if (length.EndsWith(unit, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return length;
+                }
+            }
+
+            return length + "px";
+        }
+
+        /// <summary>
+        /// Remove a CSS unit from the end of the string
+        /// </summary>
+        /// <param name="length">CSS length</param>
+        /// <returns>Returns modified length</returns>
+        private static string RemoveUnit(string length)
+        {
+            string[] cssUnits = { "cm", "mm", "in", "px", "pt", "pc", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "%" };
+            foreach (var unit in cssUnits)
+            {
+                if (length.EndsWith(unit, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    length = length.Remove(length.Length - unit.Length);
+                    return length;
+                }
+            }
+
+            return length;
         }
     }
 }

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 
 namespace Wox.Infrastructure
 {
@@ -16,11 +20,21 @@ namespace Wox.Infrastructure
 
         public static FuzzyMatcher Create(string query)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return new FuzzyMatcher(query, new MatchOption());
         }
 
         public static FuzzyMatcher Create(string query, MatchOption opt)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return new FuzzyMatcher(query, opt);
         }
 

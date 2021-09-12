@@ -1,22 +1,8 @@
 # File Explorer
 
-File Explorer add-ons, right now are just limited to Preview Pane additions for File Explorer.
+## End user facing:
 
-## Preview Pane
-
-Preview Pane is an existing feature in the File Explorer which shows a lightweight, rich, read-only preview of the file's contents in the view's reading pane. To enable it, you just click the View tab in the ribbon and then click `Preview Pane`. Below is an example of Markdown and Svg files previews in File Explorer with PowerToys.
-
-![PowerToys Preview Pane Demo](../../../doc/images/preview_pane/demo.gif)
-
-> Adding Custom Preview Handlers to Windows File Explorer Preview Pane.
-
-[**Overview**](#overview) · 
-[**Developing**](#Developing) · 
-[**Installation**](#Installation) ·
-
-## Overview
-
-Preview handlers are called when an item is selected to show a lightweight, rich, read-only preview of the file's contents in the view's reading pane. This is done without launching the file's associated application. Please follow this [documentation](https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers) to start developing a preview handler, when done, continue with this documentation to learn how to integrate a preview handler into PowerToys.
+[Please visit our overview](https://aka.ms/PowerToysOverview_FileExplorerAddOns)
 
 ## Developing
 
@@ -81,7 +67,6 @@ namespace XYZPreviewHandler
 }
 ```
 
-
 #### Integrate the Preview Handler into PowerToys Settings:
 
 Navigate to the [powerpreview](../previewpane/powerpreview/powerpreview.h) project and edit the `powerpreview.h` file. Add the following Settings Object instance to `m_previewHandlers` settings objects array in the constructor initialization:
@@ -98,7 +83,7 @@ FileExplorerPreviewSettings(
 
 ## Installation
 
-### MSI
+### MSI (Recommended)
 
 To add a new Previewer update the `Product.wxs` file in `PowerToysSetup` similar to existing Previewer to register the Preview Handler. More details about registration of Preview Handlers can be [found here.](https://docs.microsoft.com/en-us/windows/win32/shell/how-to-register-a-preview-handler)
 
@@ -138,61 +123,40 @@ To add a new Previewer update the `Product.wxs` file in `PowerToysSetup` similar
       </Component>
 ```
 
-### MSIX
-
-Warning: There are known issues([Issue - 1446](https://github.com/microsoft/PowerToys/issues/1446), [Issue - 1545](https://github.com/microsoft/PowerToys/issues/1545)) with MSIX Installation of Preview Handlers and it's not fully supported.
- 
-To add a new Previewer with MSIX update the `appxmanifest.xml` file to add file type association for preview handler and add `SurrogateServer` element with class registration. MSIX currently doesn't support .Net Assembly activation with `SurrogateServer` the logic used is shim the activation by using native dll. `dllmain.cpp` in `powerpreview` project expose the `DLLGetClassObject` method which is used to activate .net Assembly by using `CoGetClassObject`.
-
-Changes required in `appxmanifest.xml`:
-
-```xml
-        <!-- File Type Association for new Preview Handler -->
-        <!-- More details: https://docs.microsoft.com/en-us/uwp/schemas/appxpackage/uapmanifestschema/element-desktop2-desktoppreviewhandler -->
-        <uap:Extension Category="windows.fileTypeAssociation">
-          <uap3:FileTypeAssociation Name="xyzpreviewhandler" desktop2:AllowSilentDefaultTakeOver="true">
-            <uap:SupportedFileTypes>
-              <uap:FileType>.xyz</uap:FileType>
-            </uap:SupportedFileTypes>
-            <desktop2:DesktopPreviewHandler Clsid="74619BDA-A66B-451D-864C-A7726F5FE650"/>
-          </uap3:FileTypeAssociation>
-        </uap:Extension>
-        <com:Extension Category="windows.comServer">
-          <com:ComServer>
-            <com:SurrogateServer DisplayName="Preview Handler" AppId="E39A92FE-D89A-417B-9B9D-F0B6BD564B36" SystemSurrogate="PreviewHost">
-              <com:Class Id="Shim-Activator-Clsid-Guid" Path="modules\powerpreview.dll" ThreadingModel="Both"/>
-            </com:SurrogateServer>
-          </com:ComServer>
-        </com:Extension>
+### Directly registering/unregistering DLL's
+**[Important] This method of registering Preview Handler DLL's is not recommended. It could lead to registry corruption.**
+#### Registering Preview Handler
+1. Restart Visual studio as administrator. 
+2. Sign `XYZPreviewHandler` and it's dependencies. To sign an assembly in VS, follow steps given [here](https://docs.microsoft.com/en-us/dotnet/standard/assembly/sign-strong-name#create-and-sign-an-assembly-with-a-strong-name-by-using-visual-studio).
+3. Build `XYZPreviewHandler` project.
+4. Open developer command prompt from `Tools > Command Line > Developer Command Prompt`.
+5. Run following command for each nuget and project dependency to add them to Global Assembly Cache(GAC). 
 ```
-Update the `PackagingLayout.xml` to include dll's required by the new Preview Handler.
+gacutil -i <path to dependency>
+```
+6. Run following commands to register preview handler.
+```
+cd C:\Windows\Microsoft.NET\Framework64\4.0.x.x
+gacutil -i <path to XYZPreviewHandler.dll>
+RegAsm.exe /codebase <path to XYZPreviewHandler.dll>
+```
+7. Restart Windows Explorer process.
 
-```xml
-        <File DestinationPath="modules\XYZPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\XYZPreviewHandler.dll"/>
-        <File DestinationPath="modules\XYZDependency.dll" SourcePath="..\..\x64\Release\modules\XYZDependency.dll"/>
+#### Unregistering Preview Handler
+1. Run following commands in elevated developer command prompt to unregister preview handler. 
+```
+cd C:\Windows\Microsoft.NET\Framework64\4.0.x.x
+RegAsm.exe /unregister <path to XYZPreviewHandler.dll>
+gacutil -u XYZPreviewHandler
 ```
 
-Add the actual Clsid of the new preview handler in `CLSID.h` in `powerpreview` project and class registration registry changes in `registry.dat` similar to existing preview handler. To update the `registry.dat` mount the registry hive on a empty key in registry by using `reggedit.exe` and add registry key for class registartion for the new preview handler similar to MSI class registration and existing preview handlers. And export the updated `registry.dat` hive also export the `registry.reg` file for making the contents in `registy.dat` visible in source code.
-
-```cpp
-// CLSID used in manifest file for Preview Handler.
-const CLSID CLSID_SHIMActivateXYZPreviewHandler = { valid - guid };
-
-// Actual Clsid Guid.
-const CLSID CLSID_XYZPreviewHandler = { valid - guid };
-
-// Pairs of NativeClsid vs ManagedClsid used for preview handlers.
-const std::vector<std::pair<CLSID, CLSID>> NativeToManagedClsid({
-    { CLSID_SHIMActivateXYZPreviewHandler, CLSID_XYZPreviewHandler }
-});
-```
+## Debugging
+Since in-process preview handlers run under a surrogate hosting process (prevhost.exe by default), to debug a preview handler, you need to attach the debugger to the host process. 
+1. Click on a file with registered extension to start host process.
+2. Attach debugger in Visual studio from `Debug->Attach to Process` and select `prevhost.exe` with type `Managed(version), x64`.
 
 ## Managing Preview Handlers
 
-After successful integration, your preview handler should appear in the PowerToys settings UI under the `File Explorer Preview` Tab. In here you should be able to enable and disable your preview handler.
+After successful integration, your preview handler should appear in the PowerToys settings UI under the `File Explorer Preview` Tab. In here you should be able to enable and disable all the preview handles.
 
-<img src="../../../doc/images/preview_pane/settings-ui.png" alt="Settings UI - File Explorer Preview Tab" >
-
-In the general settings of the Settings UI, you should be able to disable and enable all the preview handlers all at once.
-
-<img src="../../../doc/images/preview_pane/general-settings.png" alt="Settings UI - General Settings Tab" >
+<img src="../../../doc/images/settingsv2/file-explorer.png" alt="Settings UI - File Explorer Preview Tab" >

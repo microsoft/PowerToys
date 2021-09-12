@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>spdlog</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(ProjectDir)..\..\deps\spdlog.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;SPDLOG_COMPILED_LIB;SPDLOG_WCHAR_FILENAMES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+    </ClCompile>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="$(ProjectDir)..\..\deps\spdlog\src\spdlog.cpp" />
+    <ClCompile Include="$(ProjectDir)..\..\deps\spdlog\src\stdout_sinks.cpp" />
+    <ClCompile Include="$(ProjectDir)..\..\deps\spdlog\src\color_sinks.cpp" />
+    <ClCompile Include="$(ProjectDir)..\..\deps\spdlog\src\file_sinks.cpp" />
+    <ClCompile Include="$(ProjectDir)..\..\deps\spdlog\src\async.cpp" />
+    <ClCompile Include="$(ProjectDir)..\..\deps\spdlog\src\cfg.cpp" />
+    <ClCompile Include="$(ProjectDir)..\..\deps\spdlog\src\fmt.cpp" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\async.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\async_logger-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\async_logger.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\common-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\common.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\formatter.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fwd.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\logger-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\logger.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\pattern_formatter-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\pattern_formatter.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\spdlog-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\spdlog.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\stopwatch.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\tweakme.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\version.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\backtracer-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\backtracer.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\circular_q.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\console_globals.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\file_helper-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\file_helper.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\fmt_helper.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\log_msg-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\log_msg.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\log_msg_buffer-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\log_msg_buffer.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\mpmc_blocking_q.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\null_mutex.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\os-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\os.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\periodic_worker-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\periodic_worker.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\registry-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\registry.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\synchronous_factory.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\tcp_client-windows.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\tcp_client.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\thread_pool-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\thread_pool.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\details\windows_include.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\android_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\ansicolor_sink-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\ansicolor_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\base_sink-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\base_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\basic_file_sink-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\basic_file_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\daily_file_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\dist_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\dup_filter_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\msvc_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\null_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\ostream_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\ringbuffer_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\rotating_file_sink-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\rotating_file_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\sink-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\stdout_color_sinks-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\stdout_color_sinks.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\stdout_sinks-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\stdout_sinks.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\syslog_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\systemd_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\tcp_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\win_eventlog_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\wincolor_sink-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\sinks\wincolor_sink.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bin_to_hex.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\chrono.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\fmt.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\ostr.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\chrono.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\color.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\compile.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\core.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\format-inl.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\format.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\locale.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\os.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\ostream.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\posix.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\printf.h" />
+    <ClInclude Include="$(ProjectDir)..\..\deps\spdlog\include\spdlog\fmt\bundled\ranges.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

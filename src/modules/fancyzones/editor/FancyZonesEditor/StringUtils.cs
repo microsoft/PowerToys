@@ -16,7 +16,7 @@ namespace FancyZonesEditor.Utils
                 return str;
             }
 
-            return string.Concat(str.Select((x, i) => i > 0 && char.IsUpper(x) ? "-" + x.ToString() : x.ToString())).ToLower();
+            return string.Concat(str.Select((x, i) => i > 0 && char.IsUpper(x) ? "-" + x.ToString() : x.ToString())).ToLowerInvariant();
         }
     }
 }

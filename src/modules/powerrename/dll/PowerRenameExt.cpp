@@ -1,14 +1,16 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "PowerRenameExt.h"
 #include <PowerRenameUI.h>
 #include <PowerRenameItem.h>
 #include <PowerRenameManager.h>
 #include <trace.h>
-#include <common.h>
 #include <Helpers.h>
-#include <icon_helpers.h>
+#include <common/themes/icon_helpers.h>
 #include <Settings.h>
-#include "resource.h"
+#include "Generated Files/resource.h"
+
+#include <common/utils/resources.h>
+#include <common/utils/process_path.h>
 
 extern HINSTANCE g_hInst;
 
@@ -67,6 +69,10 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
     if (CSettingsInstance().GetExtendedContextMenuOnly() && (!(uFlags & CMF_EXTENDEDVERBS)))
         return E_FAIL;
 
+    // Check if at least one of the selected items is actually renamable.
+    if (!DataObjectContainsRenamableItem(m_spdo))
+        return E_FAIL;
+
     HRESULT hr = E_UNEXPECTED;
     if (m_spdo && !(uFlags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE)))
     {
@@ -119,8 +125,8 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
     {
         Trace::Invoked();
         InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
-        hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
-        if (SUCCEEDED(hr))
+        hr = E_OUTOFMEMORY;
+        if (pInvokeData)
         {
             pInvokeData->hwndParent = pici->hwnd;
             hr = CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &(pInvokeData->pstrm));
@@ -162,7 +168,7 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
             if (SUCCEEDED(hr))
             {
                 // Pass the factory to the manager
-                hr = spsrm->put_renameItemFactory(spsrif);
+                hr = spsrm->PutRenameItemFactory(spsrif);
                 if (SUCCEEDED(hr))
                 {
                     // Create the rename UI instance and pass the rename manager
@@ -244,8 +250,8 @@ HRESULT __stdcall CPowerRenameMenu::Invoke(IShellItemArray* psiItemArray, IBindC
 #endif
     Trace::Invoked();
     InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
-    HRESULT hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (pInvokeData)
     {
         pInvokeData->hwndParent = nullptr;
         hr = CoMarshalInterThreadInterfaceInStream(__uuidof(psiItemArray), psiItemArray, &(pInvokeData->pstrm));

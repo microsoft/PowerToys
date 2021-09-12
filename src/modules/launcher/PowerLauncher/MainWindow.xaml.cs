@@ -1,53 +1,78 @@
-﻿using System;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media.Animation;
-using Wox.Core.Plugin;
-using Wox.Core.Resource;
-using Wox.Helper;
-using Wox.Infrastructure.UserSettings;
-using Wox.ViewModel;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
-using Screen = System.Windows.Forms.Screen;
-using DataFormats = System.Windows.DataFormats;
-using DragEventArgs = System.Windows.DragEventArgs;
+using System;
+using System.ComponentModel;
+using System.Linq;
+using System.Timers;
+using System.Windows;
+using System.Windows.Automation.Peers;
+using System.Windows.Controls;
+using System.Windows.Input;
+using interop;
+using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Telemetry;
+using PowerLauncher.Helper;
+using PowerLauncher.Plugin;
+using PowerLauncher.Telemetry.Events;
+using PowerLauncher.ViewModel;
+using Wox.Infrastructure.UserSettings;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using MessageBox = System.Windows.MessageBox;
-using Microsoft.Toolkit.Wpf.UI.XamlHost;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.System;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Core;
-using System.Windows.Media;
+using Log = Wox.Plugin.Logger.Log;
+using Screen = System.Windows.Forms.Screen;
 
 namespace PowerLauncher
 {
-    public partial class MainWindow
+    public partial class MainWindow : IDisposable
     {
+        private readonly PowerToysRunSettings _settings;
+        private readonly MainViewModel _viewModel;
+        private bool _isTextSetProgrammatically;
+        private bool _deletePressed;
+        private Timer _firstDeleteTimer = new Timer();
+        private bool _coldStateHotkeyPressed;
 
-        #region Private Fields
-
-        private readonly Storyboard _progressBarStoryboard = new Storyboard();
-        private Settings _settings;
-        private MainViewModel _viewModel;
-
-        const int ROW_COUNT = 4;
-        const int ROW_HEIGHT = 75;
-        const int MAX_LIST_HEIGHT = 300;
-
-        #endregion
-
-        public MainWindow(Settings settings, MainViewModel mainVM)
+        public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
+            : this()
         {
             DataContext = mainVM;
             _viewModel = mainVM;
             _settings = settings;
+
             InitializeComponent();
 
+            _firstDeleteTimer.Elapsed += CheckForFirstDelete;
+            _firstDeleteTimer.Interval = 1000;
+            NativeEventWaiter.WaitForEventLoop(Constants.RunSendSettingsTelemetryEvent(), SendSettingsTelemetry);
         }
+
+        private void SendSettingsTelemetry()
+        {
+            Log.Info("Send Run settings telemetry", this.GetType());
+            var plugins = PluginManager.AllPlugins.ToDictionary(x => x.Metadata.Name, x => new PluginModel()
+            {
+                Disabled = x.Metadata.Disabled,
+                ActionKeyword = x.Metadata.ActionKeyword,
+                IsGlobal = x.Metadata.IsGlobal,
+            });
+
+            var telemetryEvent = new RunPluginsSettingsEvent(plugins);
+            PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+        }
+
+        private void CheckForFirstDelete(object sender, ElapsedEventArgs e)
+        {
+            if (_firstDeleteTimer != null)
+            {
+                _firstDeleteTimer.Stop();
+                if (_deletePressed)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherFirstDeleteEvent());
+                }
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -58,56 +83,109 @@ namespace PowerLauncher
             _viewModel.Save();
         }
 
-        private void OnInitialized(object sender, EventArgs e)
+        private void BringProcessToForeground()
         {
+            // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
+            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { Type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, Data = { } };
+            WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
+
+            // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
+            _ = NativeMethods.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
+            Activate();
         }
 
-        private void OnLoaded(object sender, System.Windows.RoutedEventArgs _)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            WindowsInteropHelper.DisableControlBox(this);
             InitializePosition();
+
+            SearchBox.QueryTextBox.DataContext = _viewModel;
+            SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
+            SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
+
+            // Set initial language flow direction
+            SearchBox_UpdateFlowDirection();
+
+            // Register language changed event
+            InputLanguageManager.Current.InputLanguageChanged += SearchBox_InputLanguageChanged;
+
+            SearchBox.QueryTextBox.Focus();
+            SearchBox.QueryTextBox.ControlledElements.Add(ListBox.SuggestionsList);
+
+            ListBox.DataContext = _viewModel;
+            ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
+            ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            BringProcessToForeground();
         }
 
-        private void InitializePosition()
+        private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            //Top = WindowTop();
-            Left = WindowLeft();
-            //_settings.WindowTop = Top;
-            _settings.WindowLeft = Left;
+            var result = ((FrameworkElement)e.OriginalSource).DataContext;
+            if (result != null)
+            {
+                // This may be null if the tapped item was one of the context buttons (run as admin etc).
+                if (result is ResultViewModel resultVM)
+                {
+                    _viewModel.Results.SelectedItem = resultVM;
+                    _viewModel.OpenResultWithMouseCommand.Execute(null);
+                }
+            }
+        }
+
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
+            {
+                if (Visibility == System.Windows.Visibility.Visible && _viewModel.MainWindowVisibility != Visibility.Hidden)
+                {
+                    // Not called on first launch
+                    // Called when window is made visible by hotkey. Not called when the window is deactivated by clicking away
+                    UpdatePosition();
+                    BringProcessToForeground();
+
+                    if (!_viewModel.LastQuerySelected)
+                    {
+                        _viewModel.LastQuerySelected = true;
+                    }
+                }
+            }
+            else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
+            {
+                _isTextSetProgrammatically = true;
+                if (_viewModel.Results != null)
+                {
+                    SearchBox.QueryTextBox.Text = MainViewModel.GetSearchText(
+                        _viewModel.Results.SelectedIndex,
+                        _viewModel.SystemQueryText,
+                        _viewModel.QueryText);
+                }
+            }
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left) DragMove();
-        }
-
-        private void OnDrop(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.ChangedButton == MouseButton.Left)
             {
-                // Note that you can have more than one file.
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (files[0].ToLower().EndsWith(".wox"))
-                {
-                    PluginManager.InstallPlugin(files[0]);
-                }
-                else
-                {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidWoxPluginFileFormat"));
-                }
+                DragMove();
             }
-            e.Handled = false;
         }
 
-        private void OnPreviewDragOver(object sender, DragEventArgs e)
+        private void InitializePosition()
         {
-            e.Handled = true;
+            Top = WindowTop();
+            Left = WindowLeft();
+            _settings.WindowTop = Top;
+            _settings.WindowLeft = Left;
         }
 
         private void OnDeactivated(object sender, EventArgs e)
         {
-            if (_settings.HideWhenDeactive)
+            if (_settings.HideWhenDeactivated)
             {
-                Hide();
+                // (this.FindResource("OutroStoryboard") as Storyboard).Begin();
+                _viewModel.Hide();
             }
         }
 
@@ -120,8 +198,8 @@ namespace PowerLauncher
             }
             else
             {
+                Top = WindowTop();
                 Left = WindowLeft();
-                //Top = WindowTop();
             }
         }
 
@@ -134,266 +212,272 @@ namespace PowerLauncher
             }
         }
 
+        /// <summary>
+        /// Calculates X co-ordinate of main window top left corner.
+        /// </summary>
+        /// <returns>X co-ordinate of main window top left corner</returns>
         private double WindowLeft()
         {
-            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            var screen = GetScreen();
             var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = (dip2.X - ActualWidth) / 2 + dip1.X;
+            var left = ((dip2.X - ActualWidth) / 2) + dip1.X;
             return left;
         }
 
-
-        private PowerLauncher.UI.LauncherControl _launcher = null;
-        private void WindowsXamlHostTextBox_ChildChanged(object sender, EventArgs ev)
+        private double WindowTop()
         {
-            if (sender == null) return;
-
-            var host = (WindowsXamlHost)sender;
-            _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
-            _launcher.DataContext = _viewModel;
-            _launcher.KeyDown += _launcher_KeyDown;
-            _launcher.TextBox.TextChanged += QueryTextBox_TextChanged;
-            _launcher.TextBox.Loaded += TextBox_Loaded;
-            _launcher.PropertyChanged += UserControl_PropertyChanged;
-            _viewModel.PropertyChanged += (o, e) =>
-            {
-                if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
-                {
-                    if (Visibility == System.Windows.Visibility.Visible)
-                    {
-                        Activate();
-                        UpdatePosition();
-                        _settings.ActivateTimes++;
-                        if (!_viewModel.LastQuerySelected)
-                        {
-                            _viewModel.LastQuerySelected = true;
-                        }          
-                        
-                        // to select the text so that the user can continue to type
-                        if(!String.IsNullOrEmpty(_launcher.TextBox.Text))
-                        {
-                            _launcher.TextBox.SelectAll();
-                        }
-                    }
-                }
-            };           
+            var screen = GetScreen();
+            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
+            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
+            var top = ((dip2.Y - SearchBox.ActualHeight) / 4) + dip1.Y;
+            return top;
         }
 
-        private void UserControl_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private Screen GetScreen()
         {
-            if (e.PropertyName == "SolidBorderBrush")
+            ManagedCommon.StartupPosition position = _settings.StartupPosition;
+            switch (position)
             {
-                if (_launcher != null)
-                {
-                    Windows.UI.Xaml.Media.SolidColorBrush uwpBrush = _launcher.SolidBorderBrush as Windows.UI.Xaml.Media.SolidColorBrush;
-                    System.Windows.Media.Color borderColor = System.Windows.Media.Color.FromArgb(uwpBrush.Color.A, uwpBrush.Color.R, uwpBrush.Color.G, uwpBrush.Color.B);
-                    this.SearchBoxBorder.BorderBrush = new SolidColorBrush(borderColor);
-                    this.ListBoxBorder.BorderBrush = new SolidColorBrush(borderColor);
-                }
+                case ManagedCommon.StartupPosition.PrimaryMonitor:
+                    return Screen.PrimaryScreen;
+                case ManagedCommon.StartupPosition.Focus:
+                    IntPtr foregroundWindowHandle = NativeMethods.GetForegroundWindow();
+                    Screen activeScreen = Screen.FromHandle(foregroundWindowHandle);
+                    return activeScreen;
+                case ManagedCommon.StartupPosition.Cursor:
+                default:
+                    return Screen.FromPoint(System.Windows.Forms.Cursor.Position);
             }
         }
 
-        private void TextBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void Launcher_KeyDown(object sender, KeyEventArgs e)
         {
-            TextBox tb = (TextBox)sender;
-            tb.Focus(FocusState.Programmatic);
-            _viewModel.MainWindowVisibility = System.Windows.Visibility.Collapsed;
-        }
-
-        private UI.ResultList _resultList = null;
-        private void WindowsXamlHostListView_ChildChanged(object sender, EventArgs ev)
-        {
-            if (sender == null) return; 
-
-            var host = (WindowsXamlHost)sender;
-            _resultList = (UI.ResultList)host.Child;
-            _resultList.DataContext = _viewModel;
-            _resultList.Tapped += SuggestionsList_Tapped;
-            _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
-            _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
-        }
-
-        private bool IsKeyDown(VirtualKey key)
-        {
-            var keyState = CoreWindow.GetForCurrentThread().GetKeyState(key);
-            return (keyState & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
-        }
-
-        private void _launcher_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == VirtualKey.Tab && IsKeyDown(VirtualKey.Shift))
+            if (e.Key == Key.Tab && Keyboard.IsKeyDown(Key.LeftShift))
             {
                 _viewModel.SelectPrevTabItemCommand.Execute(null);
+                UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
-            else if (e.Key == VirtualKey.Tab)
+            else if (e.Key == Key.Tab)
             {
-                    _viewModel.SelectNextTabItemCommand.Execute(null);
+                _viewModel.SelectNextTabItemCommand.Execute(null);
+                UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
-            else if (e.Key == VirtualKey.Down)
+            else if (e.Key == Key.Down)
             {
                 _viewModel.SelectNextItemCommand.Execute(null);
+                UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
-            else if (e.Key == VirtualKey.Up)
+            else if (e.Key == Key.Up)
             {
                 _viewModel.SelectPrevItemCommand.Execute(null);
+                UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
-            else if (e.Key == VirtualKey.PageDown)
+            else if (e.Key == Key.Right)
+            {
+                if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                {
+                    _viewModel.SelectNextContextMenuItemCommand.Execute(null);
+                    e.Handled = true;
+                }
+            }
+            else if (e.Key == Key.Left)
+            {
+                if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                {
+                    if (_viewModel.Results != null && _viewModel.Results.IsContextMenuItemSelected())
+                    {
+                        _viewModel.SelectPreviousContextMenuItemCommand.Execute(null);
+                        e.Handled = true;
+                    }
+                }
+            }
+            else if (e.Key == Key.PageDown)
             {
                 _viewModel.SelectNextPageCommand.Execute(null);
                 e.Handled = true;
             }
-            else if (e.Key == VirtualKey.PageUp)
+            else if (e.Key == Key.PageUp)
             {
                 _viewModel.SelectPrevPageCommand.Execute(null);
                 e.Handled = true;
             }
-        }
-
-        private void SuggestionsList_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            var result = ((Windows.UI.Xaml.FrameworkElement)e.OriginalSource).DataContext;
-            if (result != null)
+            else if (e.Key == Key.Back)
             {
-                var resultVM = result as ResultViewModel;
-
-                //This may be null if the tapped item was one of the context buttons (run as admin etc).
-                if (resultVM != null)
-                {
-                    _viewModel.Results.SelectedItem = resultVM;
-                    _viewModel.OpenResultCommand.Execute(null);
-                }
+                _deletePressed = true;
+            }
+            else
+            {
+                _viewModel.HandleContextMenu(e.Key, Keyboard.Modifiers);
             }
         }
 
-        /* Note: This function has been added because a white-background was observed when the list resized,
-         * when the number of elements were lesser than the maximum capacity of the list (ie. 4).
-         * Binding Height/MaxHeight Properties did not solve this issue.
-         */
-        private void SuggestionList_UpdateListSize(object sender, ContainerContentChangingEventArgs e)
+        private void UpdateTextBoxToSelectedItem()
         {
-            int count = _viewModel?.Results?.Results.Count ?? 0;
-            int maxHeight = count < ROW_COUNT ? count * ROW_HEIGHT : MAX_LIST_HEIGHT;
-            _resultList.Height = maxHeight;
+            var itemText = _viewModel?.Results?.SelectedItem?.SearchBoxDisplayText() ?? null;
+            if (!string.IsNullOrEmpty(itemText))
+            {
+                _viewModel.ChangeQueryText(itemText);
+            }
         }
 
-        private void SuggestionsList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
+        private void SuggestionsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Windows.UI.Xaml.Controls.ListView listview = (Windows.UI.Xaml.Controls.ListView)sender;
-            _viewModel.Results.SelectedItem = (ResultViewModel) listview.SelectedItem;
+            ListView listview = (ListView)sender;
+            _viewModel.Results.SelectedItem = (ResultViewModel)listview.SelectedItem;
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
-                listview.ScrollIntoView(e.AddedItems[0]);
+                try
+                {
+                    listview.ScrollIntoView(e.AddedItems[0]);
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    // Due to virtualization being enabled for the listview, the layout system updates elements in a deferred manner using an algorithm that balances performance and concurrency.
+                    // Hence, there can be a situation where the element index that we want to scroll into view is out of range for it's parent control.
+                    // To mitigate this we use the UpdateLayout function, which forces layout update to ensure that the parent element contains the latest properties.
+                    // However, it has a performance impact and is therefore not called each time.
+                    Log.Exception("The parent element layout is not updated yet", ex, GetType());
+                    listview.UpdateLayout();
+                    listview.ScrollIntoView(e.AddedItems[0]);
+                }
             }
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
-            _launcher.AutoCompleteTextBox.PlaceholderText = ListView_FirstItem(_viewModel.QueryText);
-
-        }
-
-        private void ResultsList_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            ResultViewModel result = e?.ClickedItem as ResultViewModel;
-            if(result != null)
+            if (_viewModel.Results != null)
             {
-                _viewModel.Results.SelectedItem = result;
-                _viewModel.OpenResultCommand.Execute(null);
+                SearchBox.AutoCompleteTextBlock.Text = MainViewModel.GetAutoCompleteText(
+                    _viewModel.Results.SelectedIndex,
+                    _viewModel.Results.SelectedItem?.SearchBoxDisplayText(),
+                    _viewModel.QueryText);
             }
         }
 
-        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        private bool disposedValue;
+
+        private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (args != null && args.ChosenSuggestion != null)
+            var textBox = (TextBox)sender;
+            var text = textBox.Text;
+            var autoCompleteText = SearchBox.AutoCompleteTextBlock.Text;
+
+            if (MainViewModel.ShouldAutoCompleteTextBeEmpty(text, autoCompleteText))
             {
-                ResultViewModel result = (ResultViewModel)args.ChosenSuggestion;
-                if (result != null)
+                SearchBox.AutoCompleteTextBlock.Text = string.Empty;
+            }
+
+            if (_isTextSetProgrammatically)
+            {
+                textBox.SelectionStart = textBox.Text.Length;
+                _isTextSetProgrammatically = false;
+            }
+            else
+            {
+                _viewModel.QueryText = text;
+                _viewModel.Query();
+            }
+        }
+
+        private void ListBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Right)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void OnVisibilityChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (Visibility == Visibility.Visible)
+            {
+                _deletePressed = false;
+                if (_firstDeleteTimer != null)
                 {
-                    _viewModel.Results.SelectedItem = result;
-                    _viewModel.OpenResultCommand.Execute(null);
+                    _firstDeleteTimer.Start();
+                }
+
+                // (this.FindResource("IntroStoryboard") as Storyboard).Begin();
+                SearchBox.QueryTextBox.Focus();
+                Keyboard.Focus(SearchBox.QueryTextBox);
+
+                _settings.ActivateTimes++;
+
+                if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+                {
+                    SearchBox.QueryTextBox.SelectAll();
+                }
+
+                // Log the time taken from pressing the hotkey till launcher is visible as separate events depending on if it's the first hotkey invoke or second
+                if (!_coldStateHotkeyPressed)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherColdStateHotkeyEvent() { HotkeyToVisibleTimeMs = _viewModel.GetHotkeyEventTimeMs() });
+                    _coldStateHotkeyPressed = true;
+                }
+                else
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherWarmStateHotkeyEvent() { HotkeyToVisibleTimeMs = _viewModel.GetHotkeyEventTimeMs() });
+                }
+            }
+            else
+            {
+                if (_firstDeleteTimer != null)
+                {
+                    _firstDeleteTimer.Stop();
                 }
             }
         }
 
-        private const int millisecondsToWait = 200;
-        private static DateTime s_lastTimeOfTyping;
-
-        private string ListView_FirstItem(String input)
+        private void OutroStoryboard_Completed(object sender, EventArgs e)
         {
-            string s = input;
-            if (s.Length > 0)
+            Hide();
+        }
+
+        private void SearchBox_UpdateFlowDirection()
+        {
+            SearchBox.QueryTextBox.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+            SearchBox.AutoCompleteTextBlock.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+        }
+
+        private void SearchBox_InputLanguageChanged(object sender, InputLanguageEventArgs e)
+        {
+            SearchBox_UpdateFlowDirection();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
             {
-                String selectedItem = _viewModel.Results?.SelectedItem?.ToString();
-                int selectedIndex = _viewModel.Results.SelectedIndex;
-                if (selectedItem != null && selectedIndex == 0)
+                if (disposing)
                 {
-                    if (selectedItem.IndexOf(input) == 0)
+                    if (_firstDeleteTimer != null)
                     {
-                        return selectedItem;
+                        _firstDeleteTimer.Dispose();
                     }
                 }
-            }
 
-            return String.Empty;
-        }
-
-
-        private void QueryTextBox_TextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
-        {
-            var latestTimeOfTyping = DateTime.Now;
-            var text = ((Windows.UI.Xaml.Controls.TextBox)sender).Text;
-            Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
-            s_lastTimeOfTyping = latestTimeOfTyping;
-
-            //To clear the auto-suggest immediately instead of waiting for selection changed
-            if(text == String.Empty)
-            {
-                _launcher.AutoCompleteTextBox.PlaceholderText = String.Empty;
-            }
-
-            if (_viewModel.QueryTextCursorMovedToEnd)
-            {
-                _launcher.TextBox.SelectionStart = _launcher.TextBox.Text.Length;
-                _viewModel.QueryTextCursorMovedToEnd = false;
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                _firstDeleteTimer = null;
+                disposedValue = true;
             }
         }
 
-        private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~MainWindow()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+        public void Dispose()
         {
-            await Task.Delay(millisecondsToWait);
-            if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
-            {
-                await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                 {
-                     _viewModel.QueryText = text;
-                 }));               
-            }
-        }
-
-        private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            //    if (sender != null && e.OriginalSource != null)
-            //    {
-            //        //var r = (ResultListBox)sender;
-            //        //var d = (DependencyObject)e.OriginalSource;
-            //        //var item = ItemsControl.ContainerFromElement(r, d) as ListBoxItem;
-            //        //var result = (ResultViewModel)item?.DataContext;
-            //        //if (result != null)
-            //        //{
-            //        //    if (e.ChangedButton == MouseButton.Left)
-            //        //    {
-            //        //        _viewModel.OpenResultCommand.Execute(null);
-            //        //    }
-            //        //    else if (e.ChangedButton == MouseButton.Right)
-            //        //    {
-            //        //        _viewModel.LoadContextMenuCommand.Execute(null);
-            //        //    }
-            //        //}
-            //    }
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
- }
+}

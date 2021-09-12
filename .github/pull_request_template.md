@@ -1,19 +1,23 @@
-<!-- Enter a brief description/summary of your PR here. What does it fix/what does it change/how was it tested (even manually, if necessary)? -->
 ## Summary of the Pull Request
 
-<!-- Other than the issue solved, is this relevant to any other issues/existing PRs? --> 
-## References
+**What is this about:**
 
-<!-- Please review the items on the PR checklist before submitting-->
-## PR Checklist
-* [] Applies to #xxx
-* [] CLA signed. If not, go over [here](https://cla.opensource.microsoft.com/microsoft/PowerToys) and sign the CLA
-* [] Tests added/passed
-* [] Requires documentation to be updated
-* [] I've discussed this with core contributors already. If not checked, I'm ready to accept this work might be rejected in favor of a different grand plan. Issue number where discussion took place: #xxx
+**What is include in the PR:** 
 
-<!-- Provide a more detailed description of the PR, other things fixed or any additional comments/features here -->
-## Detailed Description of the Pull Request / Additional comments
+**How does someone test / validate:** 
 
-<!-- Describe how you validated the behavior. Add automated tests wherever possible, but list manual validation steps taken as well -->
-## Validation Steps Performed
+## Quality Checklist
+
+- [ ] **Linked issue:** #xxx
+- [ ] **Communication:** I've discussed this with core contributors in the issue. 
+- [ ] **Tests:** Added/updated and all pass
+- [ ] **Installer:** Added/updated and all pass
+- [ ] **Localization:** All end user facing strings can be localized
+- [ ] **Docs:** Added/ updated
+- [ ] **Binaries:** Any new files are added to WXS / YML
+   - [ ] No new binaries
+   - [ ] [YML for signing](https://github.com/microsoft/PowerToys/blob/master/.pipelines/pipeline.user.windows.yml#L68) for new binaries
+   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/master/installer/PowerToysSetup/Product.wxs) for new binaries
+
+## Contributor License Agreement (CLA)
+A CLA must be signed. If not, go over [here](https://cla.opensource.microsoft.com/microsoft/PowerToys) and sign the CLA.

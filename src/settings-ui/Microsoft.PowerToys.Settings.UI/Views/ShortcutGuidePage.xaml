@@ -1,0 +1,173 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.ShortcutGuidePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
+
+    <Page.Resources>
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+    </Page.Resources>
+
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="Auto"/>
+                        <Setter Target="ShortcutGuideView.(Grid.Row)" Value="1" />
+                        <Setter Target="ShortcutGuideView.Margin" Value="0" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical"
+                    x:Name="ShortcutGuideView"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,48,0"
+                    MaxWidth="{StaticResource MaxContentWidth}">
+            <ToggleSwitch x:Uid="ShortcutGuide_Enable"
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
+
+            <TextBlock x:Uid="Shortcuts"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
+            <CustomControls:HotkeySettingsControl x:Uid="ShortcutGuide_OpenShortcutGuide"
+                                                  HorizontalAlignment="Left"
+                                                  MinWidth="240"
+                                                  Margin="{StaticResource SmallTopMargin}"
+                                                  HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}"
+                                                  Keys="Win, Ctrl, Alt, Shift"
+                                                  Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <StackPanel Orientation="Horizontal" Margin="{StaticResource MediumTopMargin}" Spacing="12">
+                <Slider x:Uid="ShortcutGuide_OverlayOpacity"
+                    Minimum="0"
+                    Maximum="100"
+                    Width="240"
+                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.OverlayOpacity}"
+                    IsThumbToolTipEnabled="False"
+                    HorizontalAlignment="Left"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+                <TextBlock
+                    Text="{x:Bind Mode=OneWay, Path=ViewModel.OverlayOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Margin="0,16,0,0"
+                    Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            </StackPanel>
+
+            <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
+            The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
+            Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
+            <TextBlock Name="ShortcutGuide_Theme"
+                x:Uid="ColorModeHeader"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                               SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
+                               Margin="{StaticResource XXSmallTopMargin}"
+                               AutomationProperties.LabeledBy="{Binding ElementName=ShortcutGuide_Theme}">
+                <RadioButton x:Uid="Radio_Theme_Dark" />
+                <RadioButton x:Uid="Radio_Theme_Light" />
+                <RadioButton x:Uid="Radio_Theme_Default"/>
+            </muxc:RadioButtons>
+            <HyperlinkButton Click="OpenColorsSettings_Click"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                <TextBlock x:Uid="Windows_Color_Settings" />
+            </HyperlinkButton>
+            
+            <TextBlock x:Uid="ShortcutGuide_DisabledApps"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
+            <TextBox x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
+                     Margin="{StaticResource SmallTopMargin}"
+                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.DisabledApps}"
+                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                     ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                     ScrollViewer.VerticalScrollMode="Enabled"
+                     ScrollViewer.IsVerticalRailEnabled="True"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     HorizontalAlignment="Left"
+                     MinWidth="240"
+                     MinHeight="160" />
+        </StackPanel>
+
+        <RelativePanel x:Name="SidePanel" 
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_ShortcutGuide"
+                           x:Name="AboutTitle"
+                           Grid.ColumnSpan="2"
+                           Style="{StaticResource SettingsGroupTitleStyle}"
+                           Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="ShortcutGuide_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
+
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <HyperlinkButton x:Uid="ShortcutGuide_ImageHyperlinkToDocs">
+                    <Image x:Uid="Shortcut_Guide_Image" Source="ms-appx:///Assets/Modules/ShortcutGuide.png" />
+                </HyperlinkButton>
+            </Border>
+
+            <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton x:Uid="ShortcutGuide_ImageHyperlinkToDocs">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
+            </StackPanel>
+        </RelativePanel>
+    </Grid>
+</Page>

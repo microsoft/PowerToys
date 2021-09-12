@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MarkdownPreviewHandler.Properties {
+namespace Microsoft.PowerToys.PreviewHandler.Markdown.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace MarkdownPreviewHandler.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MarkdownPreviewHandler.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.PowerToys.PreviewHandler.Markdown.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

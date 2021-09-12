@@ -1,0 +1,27 @@
+﻿<Window x:Class="ColorPicker.ColorEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        xmlns:p="clr-namespace:ColorPicker.Properties"
+        mc:Ignorable="d"
+        AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
+        xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
+        ui:TitleBar.ExtendViewIntoTitleBar="True"
+        ui:TitleBar.ButtonStyle="{DynamicResource AppTitleBarButtonStyle}"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        BorderBrush="{DynamicResource WindowBorderBrush}"
+        Background="{DynamicResource PrimaryBackgroundBrush}" 
+        BorderThickness="1"
+        Title="Color Picker"
+        Height="380"
+        Width="400"
+        ResizeMode="NoResize"
+        Topmost="True"
+        WindowStartupLocation="CenterScreen">
+    <e:Interaction.Behaviors>
+        <behaviors:CloseZoomWindowBehavior/>
+    </e:Interaction.Behaviors>
+</Window>

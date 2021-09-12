@@ -1,0 +1,63 @@
+﻿<UserControl x:Class="ColorPicker.Views.ZoomView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             xmlns:shaders="clr-namespace:ColorPicker.Shaders"
+             xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
+             Background="Transparent"
+             Focusable="False">
+
+    <Border x:Name="WindowBorder"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            BorderBrush="{DynamicResource WindowBorderBrush}"
+            Margin="12"
+            BorderThickness="1"
+            Background="{DynamicResource PrimaryBackgroundBrush}"
+            CornerRadius="4">
+        <!-- Disabled due to the poor performance of drawing shadows in WPF -->
+        <!--<Border.Effect>
+            <DropShadowEffect BlurRadius="16" Opacity="0.28" ShadowDepth="1" />
+        </Border.Effect>-->
+        <Grid>
+            <Image Margin="3" Source="{Binding ZoomArea}"
+                   RenderOptions.BitmapScalingMode="NearestNeighbor"
+                   Stretch="Fill"
+                   Width="{Binding Width, Mode=TwoWay}"
+                   Height="{Binding Height, Mode=TwoWay}">
+                <e:Interaction.Behaviors>
+                    <behaviors:ResizeBehavior Width="{Binding DesiredWidth}" Height="{Binding DesiredHeight}"/>
+                    <behaviors:GridEffectBehavior Effect="{Binding ElementName=gridEffect}" ZoomFactor="{Binding ZoomFactor}"/>
+                </e:Interaction.Behaviors>
+                <Image.Effect>
+                    <shaders:GridShaderEffect x:Name="gridEffect"/>
+                </Image.Effect>
+            </Image>
+            
+            <!-- Non-functional close button -->
+            <Border HorizontalAlignment="Right"
+                    Visibility="Collapsed"
+                    VerticalAlignment="Top"
+                    CornerRadius="0,4,0,4"
+                    Background="{DynamicResource PrimaryBackgroundBrush}">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsMouseOver, ElementName=WindowBorder}" Value="False">
+                                <Setter Property="Opacity" Value="0"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Button Height="40"
+                        Width="40"
+                        Content="&#xE10A;"
+                        FontFamily="Segoe MDL2 Assets"
+                        Background="Transparent"/>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

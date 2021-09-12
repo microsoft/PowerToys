@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,31 +13,37 @@ using System.Windows.Shapes;
 namespace FancyZonesEditor
 {
     /// <summary>
-    /// Once you've "Committ"ed the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them
+    /// Once you've "Commit"ted the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them
     /// using splitters
     /// </summary>
     public partial class GridZone : UserControl
     {
-        public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register("IsSelected", typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
+        // Non-localizable strings
+        private const string ObjectDependencyID = "IsSelected";
+        private const string GridZoneBackgroundBrushID = "GridZoneBackgroundBrush";
+        private const string SecondaryForegroundBrushID = "SecondaryForegroundBrush";
+        private const string AccentColorBrushID = "SystemControlBackgroundAccentBrush";
+
+        public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
 
         public event SplitEventHandler Split;
-
-        public event SplitEventHandler FullSplit;
 
         public event MouseEventHandler MergeDrag;
 
         public event MouseButtonEventHandler MergeComplete;
 
-        public double[] VerticalSnapPoints { get; set; }
-
-        public double[] HorizontalSnapPoints { get; set; }
-
         private readonly Rectangle _splitter;
-        private bool _switchOrientation = false;
+        private bool _switchOrientation;
         private Point _lastPos = new Point(-1, -1);
+        private int _snappedPositionX;
+        private int _snappedPositionY;
         private Point _mouseDownPos = new Point(-1, -1);
-        private bool _inMergeDrag = false;
-        private Orientation _splitOrientation;
+        private bool _inMergeDrag;
+        private MagneticSnap _snapX;
+        private MagneticSnap _snapY;
+        private Func<Orientation, int, bool> _canSplit;
+        private bool _hovering;
+        private GridData.Zone _zone;
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -45,7 +52,7 @@ namespace FancyZonesEditor
 
         private void OnSelectionChanged()
         {
-            Background = IsSelected ? SystemParameters.WindowGlassBrush : App.Current.Resources["GridZoneBackgroundBrush"] as SolidColorBrush;
+            Background = IsSelected ? Application.Current.Resources[AccentColorBrushID] as SolidColorBrush : Application.Current.Resources[GridZoneBackgroundBrushID] as SolidColorBrush;
         }
 
         public bool IsSelected
@@ -54,114 +61,103 @@ namespace FancyZonesEditor
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        public GridZone()
+        public GridZone(int spacing, MagneticSnap snapX, MagneticSnap snapY, Func<Orientation, int, bool> canSplit, GridData.Zone zone)
         {
             InitializeComponent();
             OnSelectionChanged();
             _splitter = new Rectangle
             {
-                Fill = SystemParameters.WindowGlassBrush,
+                Fill = Application.Current.Resources[AccentColorBrushID] as SolidColorBrush,
             };
             Body.Children.Add(_splitter);
 
-            ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+            SplitterThickness = Math.Max(spacing, 1);
+
+            SizeChanged += GridZone_SizeChanged;
+
+            _snapX = snapX;
+            _snapY = snapY;
+            _canSplit = canSplit;
+            _zone = zone;
         }
 
-        private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void GridZone_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (e.PropertyName == "IsShiftKeyPressed")
+            // using current culture as this is end user facing
+            WidthLabel.Text = Math.Round(ActualWidth).ToString(CultureInfo.CurrentCulture);
+            HeightLabel.Text = Math.Round(ActualHeight).ToString(CultureInfo.CurrentCulture);
+        }
+
+        public void UpdateShiftState(bool shiftState)
+        {
+            _switchOrientation = shiftState;
+
+            if (_lastPos.X != -1)
             {
-                _switchOrientation = ((App)Application.Current).ZoneSettings.IsShiftKeyPressed;
-                if (_lastPos.X != -1)
-                {
-                    UpdateSplitter();
-                }
+                UpdateSplitter();
             }
-        }
-
-        protected override Size ArrangeOverride(Size size)
-        {
-            _splitOrientation = (size.Width > size.Height) ? Orientation.Vertical : Orientation.Horizontal;
-            return base.ArrangeOverride(size);
         }
 
         private bool IsVerticalSplit
         {
-            get
-            {
-                bool isVertical = _splitOrientation == Orientation.Vertical;
-                if (_switchOrientation)
-                {
-                    isVertical = !isVertical;
-                }
-
-                return isVertical;
-            }
+            get => (ActualWidth > ActualHeight) ^ _switchOrientation;
         }
 
-        private int SplitterThickness
-        {
-            get
-            {
-                Settings settings = ((App)Application.Current).ZoneSettings;
-                if (!settings.ShowSpacing)
-                {
-                    return 1;
-                }
-
-                return Math.Max(settings.Spacing, 1);
-            }
-        }
+        private int SplitterThickness { get; set; }
 
         private void UpdateSplitter()
         {
+            if (!_hovering)
+            {
+                _splitter.Fill = Brushes.Transparent;
+                return;
+            }
+
+            bool enabled;
+
             if (IsVerticalSplit)
             {
                 double bodyWidth = Body.ActualWidth;
-                double pos = _lastPos.X - (SplitterThickness / 2);
-                if (pos < 0)
-                {
-                    pos = 0;
-                }
-                else if (pos > (bodyWidth - SplitterThickness))
-                {
-                    pos = bodyWidth - SplitterThickness;
-                }
+                double pos = _snapX.DataToPixelWithoutSnapping(_snappedPositionX) - Canvas.GetLeft(this) - (SplitterThickness / 2);
+                pos = Math.Clamp(pos, 0, bodyWidth - SplitterThickness);
 
                 Canvas.SetLeft(_splitter, pos);
                 Canvas.SetTop(_splitter, 0);
                 _splitter.MinWidth = SplitterThickness;
                 _splitter.MinHeight = Body.ActualHeight;
+
+                enabled = _canSplit(Orientation.Vertical, _snappedPositionX);
             }
             else
             {
                 double bodyHeight = Body.ActualHeight;
-                double pos = _lastPos.Y - (SplitterThickness / 2);
-                if (pos < 0)
-                {
-                    pos = 0;
-                }
-                else if (pos > (bodyHeight - SplitterThickness))
-                {
-                    pos = bodyHeight - SplitterThickness;
-                }
+                double pos = _snapY.DataToPixelWithoutSnapping(_snappedPositionY) - Canvas.GetTop(this) - (SplitterThickness / 2);
+                pos = Math.Clamp(pos, 0, bodyHeight - SplitterThickness);
 
                 Canvas.SetLeft(_splitter, 0);
                 Canvas.SetTop(_splitter, pos);
                 _splitter.MinWidth = Body.ActualWidth;
                 _splitter.MinHeight = SplitterThickness;
+
+                enabled = _canSplit(Orientation.Horizontal, _snappedPositionY);
             }
+
+            Brush disabledBrush = Application.Current.Resources[SecondaryForegroundBrushID] as SolidColorBrush;
+            Brush enabledBrush = Application.Current.Resources[AccentColorBrushID] as SolidColorBrush;
+            _splitter.Fill = enabled ? enabledBrush : disabledBrush;
         }
 
         protected override void OnMouseEnter(MouseEventArgs e)
         {
-            _splitter.Fill = SystemParameters.WindowGlassBrush; // Active Accent color
-            base.OnMouseEnter(e);
+            _hovering = true;
+            UpdateSplitter();
+            _splitter.Fill = Application.Current.Resources[AccentColorBrushID] as SolidColorBrush;
         }
 
         protected override void OnMouseLeave(MouseEventArgs e)
         {
-            _splitter.Fill = Brushes.Transparent;
+            _hovering = false;
+            UpdateSplitter();
             base.OnMouseLeave(e);
         }
 
@@ -180,38 +176,8 @@ namespace FancyZonesEditor
             else
             {
                 _lastPos = e.GetPosition(Body);
-
-                if (IsVerticalSplit)
-                {
-                    if (VerticalSnapPoints != null)
-                    {
-                        int thickness = SplitterThickness;
-                        foreach (double snapPoint in VerticalSnapPoints)
-                        {
-                            if (Math.Abs(_lastPos.X - snapPoint) <= (thickness * 2))
-                            {
-                                _lastPos.X = snapPoint;
-                                break;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // horizontal split
-                    if (HorizontalSnapPoints != null)
-                    {
-                        int thickness = SplitterThickness;
-                        foreach (double snapPoint in HorizontalSnapPoints)
-                        {
-                            if (Math.Abs(_lastPos.Y - snapPoint) <= (thickness * 2))
-                            {
-                                _lastPos.Y = snapPoint;
-                                break;
-                            }
-                        }
-                    }
-                }
+                _snappedPositionX = _snapX.PixelToDataWithSnapping(e.GetPosition(Parent as GridEditor).X, _zone.Left, _zone.Right);
+                _snappedPositionY = _snapY.PixelToDataWithSnapping(e.GetPosition(Parent as GridEditor).Y, _zone.Top, _zone.Bottom);
 
                 if (_mouseDownPos.X == -1)
                 {
@@ -252,11 +218,11 @@ namespace FancyZonesEditor
                 {
                     if (IsVerticalSplit)
                     {
-                        DoSplit(Orientation.Vertical, _lastPos.X - (thickness / 2));
+                        DoSplit(Orientation.Vertical, _snappedPositionX);
                     }
                     else
                     {
-                        DoSplit(Orientation.Horizontal, _lastPos.Y - (thickness / 2));
+                        DoSplit(Orientation.Horizontal, _snappedPositionY);
                     }
                 }
             }
@@ -275,26 +241,9 @@ namespace FancyZonesEditor
             MergeComplete?.Invoke(this, e);
         }
 
-        private void DoSplit(Orientation orientation, double offset)
+        private void DoSplit(Orientation orientation, int offset)
         {
-            int spacing = 0;
-            Settings settings = ((App)Application.Current).ZoneSettings;
-            if (settings.ShowSpacing)
-            {
-                spacing = settings.Spacing;
-            }
-
-            Split?.Invoke(this, new SplitEventArgs(orientation, offset, spacing));
-        }
-
-        private void FullSplit_Click(object sender, RoutedEventArgs e)
-        {
-            DoFullSplit();
-        }
-
-        private void DoFullSplit()
-        {
-            FullSplit?.Invoke(this, new SplitEventArgs());
+            Split?.Invoke(this, new SplitEventArgs(orientation, offset));
         }
     }
 }

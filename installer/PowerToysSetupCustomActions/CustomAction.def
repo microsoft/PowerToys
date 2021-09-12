@@ -2,6 +2,7 @@ LIBRARY "PowerToysSetupCustomActions"
 
 EXPORTS
 	CreateScheduledTaskCA
+	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA
 	TelemetryLogInstallSuccessCA
 	TelemetryLogInstallCancelCA
@@ -11,3 +12,4 @@ EXPORTS
 	TelemetryLogUninstallFailCA
 	TelemetryLogRepairCancelCA
 	TelemetryLogRepairFailCA
+	TerminateProcessesCA

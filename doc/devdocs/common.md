@@ -9,15 +9,6 @@ Header-only asynchronous message queue. Used by `TwoWayPipeMessageIPC`.
 #### class TwoWayPipeMessageIPC: [header](/src/common/two_way_pipe_message_ipc.h)
 Header-only asynchronous IPC messaging class. Used by the runner to communicate with the settings window.
 
-#### class D2DSVG: [header](/src/common/d2d_svg.h) [source](/src/common/d2d_svg.cpp)
-Class for loading, rendering and for some basic modifications of SVG graphics.
-
-#### class D2DText: [header](/src/common/d2d_text.h) [source](/src/common/d2d_text.cpp)
-Class for rendering text using DirectX.
-
-#### class D2DWindow: [header](/src/common/d2d_window.h) [source](/src/common/d2d_window.cpp)
-Base class for creating borderless windows, with DirectX enabled rendering pipeline.
-
 #### class DPIAware: [header](/src/common/dpi_aware.h) [source](/src/common/dpi_aware.cpp)
 Helper class for creating DPI-aware applications.
 
