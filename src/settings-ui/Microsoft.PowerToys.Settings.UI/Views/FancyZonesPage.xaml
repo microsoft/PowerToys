@@ -91,7 +91,9 @@
                                           Margin="{StaticResource ExpanderSettingMargin}"
                                           AutomationProperties.Name="{Binding ElementName=SpanZonesAcrossMonitorsPrerequisitesTitle, Path=Text}">
                                     <StackPanel Orientation="Vertical">
-                                        <TextBlock x:Name="SpanZonesAcrossMonitorsPrerequisitesTitle" x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
+                                        <TextBlock x:Name="SpanZonesAcrossMonitorsPrerequisitesTitle"
+                                                   Margin="0,10,0,0"
+                                                   x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
                                         <controls:TextBlockControl x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites"
                                             FontSize="{StaticResource SecondaryTextFontSize}"
                                             EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -100,7 +102,7 @@
                                     </StackPanel>
                                 </CheckBox>
                             
-                                <controls:Setting  x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <ComboBox SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                             <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />

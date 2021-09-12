@@ -240,10 +240,21 @@
                                                               IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
+                                                <CheckBox 
+                                                           AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
                                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"
-                                                          Margin="{StaticResource ExpanderSettingMargin}"/>
+                                                          Margin="{StaticResource ExpanderSettingMargin}">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock x:Name="IncludeInGlobalResultTitle"
+                                                                   Margin="0,10,0,0"
+                                                                   x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
+                                                        <controls:TextBlockControl x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
+                                                                                   FontSize="{StaticResource SecondaryTextFontSize}" 
+                                                                                   EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                                                                   DisabledForeground="{ThemeResource TextFillColorDisabledBrush}" />
+                                                    </StackPanel>
+                                                </CheckBox>
                                                
                                                 <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
                                                           SelectionMode="None"
