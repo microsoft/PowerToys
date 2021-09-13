@@ -856,11 +856,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
+          <Val><![CDATA[Allow zones to span across monitors]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[允许区域跨监视器(所有监视器都必须有相同的 DPI 缩放) ]]></Val>
+            <Val><![CDATA[允许区域跨监视器]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[所有监视器必须具有相同的 DPI 缩放比例，并且将被视为一个包含所有监视器的大的组合式矩形。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -856,11 +856,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
+          <Val><![CDATA[Allow zones to span across monitors]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zezwalaj na rozciąganie stref między monitorami (wszystkie monitory muszą mieć to samo skalowanie DPI)]]></Val>
+            <Val><![CDATA[Zezwalaj na obejmowanie strefami wielu monitorów]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wszystkie monitory muszą mieć to samo skalowanie DPI i będą traktowane jak jeden duży połączony prostokąt zawierający wszystkie monitory.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3274,8 +3283,8 @@
       <Item ItemId=";PowerRename_Toggle_EnableOnExtendedContextMenu.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press Shift + right-click on files to open the extended menu]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Narzędzie PowerRename pojawia się tylko w rozszerzonym menu kontekstowym (naciśnij klawisz Shift + kliknięcie prawym przyciskiem myszy)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Naciśnij klawisz Shift i kliknij prawym przyciskiem myszy pliki, aby otworzyć menu rozszerzone]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[PowerRename only appears in extended context menu's (press Shift + right-click)]]></Val>
@@ -3286,8 +3295,8 @@
       <Item ItemId=";PowerRename_Toggle_EnableOnExtendedContextMenu.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Appear only in extended context menu]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Wyświetlanie w rozszerzonym menu kontekstowym]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wyświetlanie tylko w rozszerzonym menu kontekstowym]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Show in extended context menu's]]></Val>

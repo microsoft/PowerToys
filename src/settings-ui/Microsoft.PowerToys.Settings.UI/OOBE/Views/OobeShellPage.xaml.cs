@@ -180,6 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Link = "https://aka.ms/PowerToysOverview_ShortcutGuide",
             });
 
+            // TODO(yuyoyuppe): uncomment when VCM should be enabled
             /* Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_VideoConference"),
@@ -233,9 +234,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public void UpdateUITheme()
         {
-            var settingsUtils = new SettingsUtils();
-            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
-            switch (generalSettings.SettingsConfig.Theme.ToUpperInvariant())
+            switch (SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Theme.ToUpperInvariant())
             {
                 case "LIGHT":
                     this.RequestedTheme = ElementTheme.Light;

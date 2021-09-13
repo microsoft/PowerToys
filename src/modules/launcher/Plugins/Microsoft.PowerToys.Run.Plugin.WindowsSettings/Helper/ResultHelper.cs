@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 {
                     Action = (_) => DoOpenSettingsAction(entry),
                     IcoPath = iconPath,
-                    SubTitle = $"{Resources.Area} \"{entry.Area}\" {Resources.SubtitlePreposition} {entry.Type}",
+                    SubTitle = entry.JoinedFullSettingsPath,
                     Title = entry.Name,
                     ContextData = entry,
                 };
@@ -62,7 +62,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             var toolTipText = new StringBuilder();
 
             toolTipText.AppendLine($"{Resources.Application}: {entry.Type}");
-            toolTipText.AppendLine($"{Resources.Area}: {entry.Area}");
+
+            if (entry.Areas != null && entry.Areas.Any())
+            {
+                toolTipText.AppendLine($"{Resources.Area}: {entry.JoinedAreaPath}");
+            }
 
             if (entry.AltNames != null && entry.AltNames.Any())
             {
@@ -163,7 +167,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                     continue;
                 }
 
-                if (windowsSetting.Area.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
+                if (windowsSetting.Areas.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
                 {
                     result.Score = lowScore--;
                     continue;

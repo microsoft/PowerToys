@@ -5,8 +5,9 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-      mc:Ignorable="d">
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    mc:Ignorable="d">
     <controls:OOBEPageControl ModuleTitle="{x:Bind ViewModel.ModuleName}"
                                   ModuleImageSource="{x:Bind ViewModel.PreviewImageSource}"
                                   ModuleDescription="{x:Bind ViewModel.Description}">
@@ -16,7 +17,7 @@
                 <TextBlock x:Uid="Oobe_HowToLaunch"
                            Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <controls:ShortcutTextControl x:Uid="Oobe_ShortcutGuide_HowToLaunch" />
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_ShortcutGuide_HowToLaunch" />
 
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="Launch_ShortcutGuide" Style="{StaticResource AccentButtonStyle}" Click="Start_ShortcutGuide_Click"/>

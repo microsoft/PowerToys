@@ -856,11 +856,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
+          <Val><![CDATA[Allow zones to span across monitors]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーンが複数のモニターにまたがることを許可する (すべてのモニターは同じ DPI スケールである必要があります)]]></Val>
+            <Val><![CDATA[複数のモニターにまたがるゾーンを許可する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[すべてのモニターは、同じ DPI スケールにする必要があります。すべてのモニターを含む、結合された 1 つの大きな四角形として扱われます。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

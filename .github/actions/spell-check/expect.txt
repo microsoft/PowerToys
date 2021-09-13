@@ -127,7 +127,7 @@ Autorun
 AUTOSIZECOLUMNS
 AUTOUPDATE
 AValid
-avialable
+available
 awakeversion
 AWAYMODE
 AYUV
@@ -375,7 +375,6 @@ CXSMICON
 CXVIRTUALSCREEN
 cxx
 cxxopts
-CYMK
 CYSMICON
 cziplib
 Dac
@@ -652,6 +651,7 @@ FOF
 FOFX
 FOLDERID
 folderpath
+FORCEMINIMIZE
 FORCEOFFLINE
 foreach
 formatetc
@@ -1891,7 +1891,9 @@ SHOWDEFAULT
 SHOWELEVATIONPROMPT
 SHOWMAXIMIZED
 SHOWMINIMIZED
+SHOWMINNOACTIVE
 SHOWNA
+SHOWNOACTIVATE
 SHOWNORMAL
 SHOWWINDOW
 shtypes
@@ -2113,6 +2115,7 @@ todo
 toggleswitch
 toolbar
 Toolchain
+toolkitcontrols
 toolkitconverters
 toolset
 toolstrip

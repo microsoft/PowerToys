@@ -5,33 +5,39 @@
 using System;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Windows.ApplicationModel.Resources;
+using Windows.System.Diagnostics;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public sealed partial class HotkeySettingsControl : UserControl, IDisposable
+    public sealed partial class ShortcutControl : UserControl, IDisposable
     {
         private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
-
         private bool _shiftKeyDownOnEntering;
-
         private bool _shiftToggled;
+        private bool _enabled;
+        private HotkeySettings hotkeySettings;
+        private HotkeySettings internalSettings;
+        private HotkeySettings lastValidSettings;
+        private HotkeySettingsControlHook hook;
+        private bool _isActive;
+        private bool disposedValue;
 
         public string Header { get; set; }
 
         public string Keys { get; set; }
 
-        public static readonly DependencyProperty IsActiveProperty =
-            DependencyProperty.Register(
-                "Enabled",
-                typeof(bool),
-                typeof(HotkeySettingsControl),
-                null);
+        public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("Enabled", typeof(bool), typeof(ShortcutControl), null);
+        public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register("HotkeySettings", typeof(HotkeySettings), typeof(ShortcutControl), null);
 
-        private bool _enabled;
+        private ShortcutDialogContentControl c = new ShortcutDialogContentControl();
+        private ContentDialog shortcutDialog;
 
         public bool Enabled
         {
@@ -47,34 +53,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                 if (value)
                 {
-                    HotkeyTextBox.IsEnabled = true;
-
-                    // TitleText.IsActive = "True";
-                    // TitleGlyph.IsActive = "True";
+                    EditButton.IsEnabled = true;
                 }
                 else
                 {
-                    HotkeyTextBox.IsEnabled = false;
-
-                    // TitleText.IsActive = "False";
-                    // TitleGlyph.IsActive = "False";
+                    EditButton.IsEnabled = false;
                 }
             }
         }
-
-        public static readonly DependencyProperty HotkeySettingsProperty =
-            DependencyProperty.Register(
-                "HotkeySettings",
-                typeof(HotkeySettings),
-                typeof(HotkeySettingsControl),
-                null);
-
-        private HotkeySettings hotkeySettings;
-        private HotkeySettings internalSettings;
-        private HotkeySettings lastValidSettings;
-        private HotkeySettingsControlHook hook;
-        private bool _isActive;
-        private bool disposedValue;
 
         public HotkeySettings HotkeySettings
         {
@@ -89,24 +75,43 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     hotkeySettings = value;
                     SetValue(HotkeySettingsProperty, value);
-                    HotkeyTextBox.Text = HotkeySettings.ToString();
+                    PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
+                    AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+                    c.Keys = HotkeySettings.GetKeysList();
                 }
             }
         }
 
-        public HotkeySettingsControl()
+        public ShortcutControl()
         {
             InitializeComponent();
             internalSettings = new HotkeySettings();
 
-            HotkeyTextBox.GettingFocus += HotkeyTextBox_GettingFocus;
-            HotkeyTextBox.LosingFocus += HotkeyTextBox_LosingFocus;
-            HotkeyTextBox.Unloaded += HotkeyTextBox_Unloaded;
+            this.Unloaded += ShortcutControl_Unloaded;
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
+            ResourceLoader resourceLoader = ResourceLoader.GetForCurrentView();
+
+            // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
+            shortcutDialog = new ContentDialog
+            {
+                XamlRoot = this.XamlRoot,
+                Title = resourceLoader.GetString("Activation_Shortcut_Title"),
+                Content = c,
+                PrimaryButtonText = resourceLoader.GetString("Activation_Shortcut_Save"),
+                CloseButtonText = resourceLoader.GetString("Activation_Shortcut_Cancel"),
+                DefaultButton = ContentDialogButton.Primary,
+            };
+            shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
+            shortcutDialog.Opened += ShortcutDialog_Opened;
+            shortcutDialog.Closing += ShortcutDialog_Closing;
         }
 
-        private void HotkeyTextBox_Unloaded(object sender, RoutedEventArgs e)
+        private void ShortcutControl_Unloaded(object sender, RoutedEventArgs e)
         {
+            shortcutDialog.PrimaryButtonClick -= ShortcutDialog_PrimaryButtonClick;
+            shortcutDialog.Opened -= ShortcutDialog_Opened;
+            shortcutDialog.Closing -= ShortcutDialog_Closing;
+
             // Dispose the HotkeySettingsControlHook object to terminate the hook threads when the textbox is unloaded
             hook.Dispose();
         }
@@ -137,7 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     break;
                 case Windows.System.VirtualKey.Escape:
                     internalSettings = new HotkeySettings();
-                    HotkeySettings = new HotkeySettings();
+                    shortcutDialog.IsPrimaryButtonEnabled = false;
                     return;
                 default:
                     internalSettings.Code = matchValueCode;
@@ -224,6 +229,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 }
             }
 
+            // Either the cancel or save button has keyboard focus.
+            if (FocusManager.GetFocusedElement(LayoutRoot.XamlRoot).GetType() == typeof(Button))
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -233,13 +244,60 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 KeyEventHandler(key, true, key);
 
+                c.Keys = internalSettings.GetKeysList();
+
+                if (internalSettings.GetKeysList().Count == 0)
+                {
+                    // Empty, disable save button
+                    shortcutDialog.IsPrimaryButtonEnabled = false;
+                }
+                else if (internalSettings.GetKeysList().Count == 1)
+                {
+                    // 1 key, disable save button
+                    shortcutDialog.IsPrimaryButtonEnabled = false;
+
+                    // Check if the one key is a hotkey
+                    if (internalSettings.Shift || internalSettings.Win || internalSettings.Alt || internalSettings.Ctrl)
+                    {
+                        c.IsError = false;
+                    }
+                    else
+                    {
+                        c.IsError = true;
+                    }
+                }
+
                 // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
                 if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
                 {
-                    HotkeyTextBox.Text = internalSettings.ToString();
                     lastValidSettings = internalSettings.Clone();
+
+                    if (!ComboIsValid(lastValidSettings))
+                    {
+                        DisableKeys();
+                    }
+                    else
+                    {
+                        EnableKeys();
+                    }
                 }
             });
+        }
+
+        private void EnableKeys()
+        {
+            shortcutDialog.IsPrimaryButtonEnabled = true;
+            c.IsError = false;
+
+            // WarningLabel.Style = (Style)App.Current.Resources["SecondaryTextStyle"];
+        }
+
+        private void DisableKeys()
+        {
+            shortcutDialog.IsPrimaryButtonEnabled = false;
+            c.IsError = true;
+
+            // WarningLabel.Style = (Style)App.Current.Resources["SecondaryWarningTextStyle"];
         }
 
         private async void Hotkey_KeyUp(int key)
@@ -255,8 +313,19 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             return _isActive;
         }
 
-        private void HotkeyTextBox_GettingFocus(object sender, RoutedEventArgs e)
+#pragma warning disable CA1801 // Review unused parameters
+        private void ShortcutDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+#pragma warning restore CA1801 // Review unused parameters
         {
+            if (!ComboIsValid(hotkeySettings))
+            {
+                DisableKeys();
+            }
+            else
+            {
+                EnableKeys();
+            }
+
             // Reset the status on entering the hotkey each time.
             _shiftKeyDownOnEntering = false;
             _shiftToggled = false;
@@ -270,30 +339,45 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _isActive = true;
         }
 
-        private void HotkeyTextBox_LosingFocus(object sender, RoutedEventArgs e)
+        private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            if (lastValidSettings != null && (lastValidSettings.IsValid() || lastValidSettings.IsEmpty()))
+            c.Keys = null;
+            c.Keys = HotkeySettings.GetKeysList();
+
+            shortcutDialog.XamlRoot = this.XamlRoot;
+            await shortcutDialog.ShowAsync();
+        }
+
+#pragma warning disable CA1801 // Review unused parameters
+        private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+#pragma warning restore CA1801 // Review unused parameters
+        {
+            if (ComboIsValid(lastValidSettings))
             {
                 HotkeySettings = lastValidSettings.Clone();
             }
 
-            HotkeyTextBox.Text = hotkeySettings.ToString();
-            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            PreviewKeysControl.ItemsSource = hotkeySettings.GetKeysList();
+            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            shortcutDialog.Hide();
+        }
+
+        private static bool ComboIsValid(HotkeySettings settings)
+        {
+            if (settings != null && (settings.IsValid() || settings.IsEmpty()))
             {
-                TextBoxAutomationPeer peer =
-                    FrameworkElementAutomationPeer.FromElement(HotkeyTextBox) as TextBoxAutomationPeer;
-                string textBoxChangeActivityId = "textBoxChangedOnLosingFocus";
-
-                if (peer != null)
-                {
-                    peer.RaiseNotificationEvent(
-                        AutomationNotificationKind.ActionCompleted,
-                        AutomationNotificationProcessing.ImportantMostRecent,
-                        HotkeyTextBox.Text,
-                        textBoxChangeActivityId);
-                }
+                return true;
             }
+            else
+            {
+                return false;
+            }
+        }
 
+#pragma warning disable CA1801 // Review unused parameters
+        private void ShortcutDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
+#pragma warning restore CA1801 // Review unused parameters
+        {
             _isActive = false;
         }
 
