@@ -10,11 +10,56 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId=";Activation_Shortcut.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Customize the keyboard shortcut to activate this module]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이 모듈을 활성화하려면 키보드 바로 가기를 사용자 지정하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Activation_Shortcut.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Activation shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[활성화 바로 가기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Activation_Shortcut_Cancel" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cancel]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[취소]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Activation_Shortcut_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Press a combination of keys to change this shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이 바로 가기를 변경하려면 키 조합을 누르세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Activation_Shortcut_Save" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Save]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[저장]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Activation_Shortcut_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Activation shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[바로 가기 활성화]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1987,6 +2032,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";InvalidShortcut.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[잘못된 바로 가기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";InvalidShortcutWarningLabel.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[**Windows 키**, **Ctrl**, **Alt** 또는 **Shift**로 시작하는 바로 가기만 유효합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";KBM_KeysCannotBeRemapped.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn more about remapping limitations]]></Val>
@@ -2439,24 +2502,24 @@
       </Item>
       <Item ItemId=";Oobe_ColorPicker_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {Shift} + {C} to open Color Picker.]]></Val>
+          <Val><![CDATA[to open Color Picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{Win} + {Shift} + {C}를 눌러 색 편집기를 엽니다.]]></Val>
+            <Val><![CDATA[Color Picker를 엽니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[{Win} + {Ctrl} + {C} to open Color Picker.]]></Val>
+            <Val><![CDATA[{Win} + {Shift} + {C} to open Color Picker.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_ColorPicker_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[To select a color with more precision, {scroll the mouse wheel} to zoom in.]]></Val>
+          <Val><![CDATA[To select a color with more precision, **scroll the mouse wheel** to zoom in.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[더 정밀하게 색을 선택하려면 {마우스 휠을 스크롤}하여 확대합니다.]]></Val>
+            <Val><![CDATA[더 정밀하게 색을 선택하려면 **마우스 휠을 스크롤**하여 확대합니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[To select a color with more precision, scroll the mouse wheel to zoom in.]]></Val>
+            <Val><![CDATA[To select a color with more precision, {scroll the mouse wheel} to zoom in.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2481,24 +2544,33 @@
       </Item>
       <Item ItemId=";Oobe_FancyZones_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {Shift} + {`} to open the FancyZones editor.]]></Val>
+          <Val><![CDATA[**Shift** + **drag the window** to snap a window to a zone, and release the window in the desired zone.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{Shift} 키를 누른 채 {dragging the window}를 통해 창을 영역에 맞추고 원하는 영역에서 창을 놓습니다. {Win} + {Shift} + {`}를 눌러 FancyZones 편집기를 엽니다.]]></Val>
+            <Val><![CDATA[**Shift** + **창을 드래그**하여 창을 영역에 맞추고 원하는 영역에서 창을 놓습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {`} to open the FancyZones editor.]]></Val>
+            <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {Shift} + {`} to open the FancyZones editor.]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_FancyZones_HowToUse_Shortcut.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[to open the FancyZones editor.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[FancyZones 편집기를 엽니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_FancyZones_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Snap a window to multiple zones by holding the {Ctrl} key (while also holding {Shift}) when dragging a window.]]></Val>
+          <Val><![CDATA[Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{Ctrl} 키를 누른 채({Shift} 키도 누른 채) 창을 끌어 창을 여러 영역에 맞춥니다.]]></Val>
+            <Val><![CDATA[**Ctrl** 키를 누른 상태에서(**Shift** 키도 누른 상태에서) 창을 끌어 창을 여러 영역에 맞춥니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Snap a window to multiple zones by holding the Ctrl key (while also holding Shift) when dragging a window.]]></Val>
+            <Val><![CDATA[Snap a window to multiple zones by holding the {Ctrl} key (while also holding {Shift}) when dragging a window.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2523,12 +2595,12 @@
       </Item>
       <Item ItemId=";Oobe_FileExplorer_HowToEnable.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open File Explorer, {select the View tab} in the File Explorer ribbon, then {select Preview Pane}. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+          <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[파일 탐색기를 열고 파일 탐색기 리본에서 {[보기]5D; 탭을 선택}한 다음, {[미리 보기]5D; 창을 선택}합니다. ]D;]A;파일 탐색기에서 Markdown 파일 또는 SVG 아이콘을 클릭하고 미리 보기 창에서 콘텐츠를 확인하기만 하면 됩니다.]]></Val>
+            <Val><![CDATA[파일 탐색기를 열고 파일 탐색기 리본에서 **보기 탭을 선택**한 다음, **미리 보기 창을 선택**합니다. ]D;]A;파일 탐색기에서 Markdown 파일 또는 SVG 아이콘을 클릭하고 미리 보기 창에서 콘텐츠를 확인하기만 하면 됩니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Open Windows File Explorer, select the View tab in the File Explorer ribbon, then select Preview Pane. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+            <Val><![CDATA[Open File Explorer, {select the View tab} in the File Explorer ribbon, then {select Preview Pane}. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2610,12 +2682,12 @@
       </Item>
       <Item ItemId=";Oobe_ImageResizer_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[In File Explorer, {right-clicking one or more image files} and {clicking on Resize pictures} from the context menu.]]></Val>
+          <Val><![CDATA[In File Explorer, **right-clicking one or more image files** and **clicking on Resize pictures** from the context menu.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[파일 탐색기에서 {하나 이상의 이미지 파일을 마우스 오른쪽 단추로 클릭}하고 상황에 맞는 메뉴에서 {[그림 크기 조정]5D;을 클릭}합니다.]]></Val>
+            <Val><![CDATA[파일 탐색기에서 **하나 이상의 이미지 파일을 마우스 오른쪽 단추로 클릭**하고 상황에 맞는 메뉴에서 **그림 크기 조정을 클릭**합니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[In File Explorer, right-clicking one or more image files and clicking on Resize pictures from the context menu.]]></Val>
+            <Val><![CDATA[In File Explorer, {right-clicking one or more image files} and {clicking on Resize pictures} from the context menu.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2649,12 +2721,12 @@
       </Item>
       <Item ItemId=";Oobe_KBM_HowToCreateMappings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Launch {PowerToys settings}, navigate to the Keyboard Manager menu, and select either {Remap a key} or {Remap a shortcut}.]]></Val>
+          <Val><![CDATA[Launch **PowerToys settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{PowerToys 설정}을 시작하고 Keyboard Manager 메뉴로 이동하고 {[키 다시 매핑]5D;} 또는 {[바로 가기 다시 매핑]5D;}을 선택합니다.]]></Val>
+            <Val><![CDATA[**PowerToys 설정**을 시작하고 Keyboard Manager 메뉴로 이동하고 **키 다시 매핑** 또는 **바로 가기 다시 매핑**을 선택합니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Launch PowerToys settings, navigate to the Keyboard Manager menu, and select either Remap a key or Remap a shortcut.]]></Val>
+            <Val><![CDATA[Launch {PowerToys settings}, navigate to the Keyboard Manager menu, and select either {Remap a key} or {Remap a shortcut}.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2760,12 +2832,12 @@
       </Item>
       <Item ItemId=";Oobe_PowerRename_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[In File Explorer, {right-clicking one or more selected files} and {clicking on PowerRename} from the context menu.]]></Val>
+          <Val><![CDATA[In File Explorer, **right-clicking one or more selected files** and **clicking on PowerRename** from the context menu.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[파일 탐색기에서 {하나 이상의 선택한 파일을 마우스 오른쪽 단추로 클릭}하고 상황에 맞는 메뉴에서 {[PowerRename]5D;을 클릭}합니다.]]></Val>
+            <Val><![CDATA[파일 탐색기에서 **하나 이상의 선택한 파일을 마우스 오른쪽 단추로 클릭**하고 상황에 맞는 메뉴에서 **PowerRename을 클릭**합니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[In File Explorer, right-clicking one or more selected files and clicking on PowerRename from the context menu.]]></Val>
+            <Val><![CDATA[In File Explorer, {right-clicking one or more selected files} and {clicking on PowerRename} from the context menu.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2808,24 +2880,24 @@
       </Item>
       <Item ItemId=";Oobe_Run_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Alt} + {Space} to open Run and just start typing.]]></Val>
+          <Val><![CDATA[to open Run and just start typing.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{Alt}+{Space} 를 눌러 실행을 열고 입력을 시작합니다.]]></Val>
+            <Val><![CDATA[실행을 열고 입력을 시작하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Alt + Space to open PowerToys and just start typing.]]></Val>
+            <Val><![CDATA[{Alt} + {Space} to open Run and just start typing.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_Run_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing {<} searches for running processes only, {?} will search only for file, or {.} for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
+          <Val><![CDATA[PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing **<** searches for running processes only, **?** will search only for file, or **.** for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys Run은 검색 쿼리로 특정한 검색 하위 집합을 도출하는 다양한 동작 키를 지원합니다. {<}를 입력하여 실행 중인 프로세스만 검색하거나, {?}를 입력하여 파일만 검색하거나, {.}를 입력하여 설치된 애플리케이션을 검색합니다. 사용 가능한 전체 '동작 키' 세트는 PowerToys 설명서를 참조하세요.]]></Val>
+            <Val><![CDATA[PowerToys Run은 검색 쿼리로 특정한 검색 하위 집합을 도출하는 다양한 동작 키를 지원합니다. **<**를 입력하여 실행 중인 프로세스만 검색하거나, **?**를 입력하여 파일만 검색하거나, **.**를 입력하여 설치된 애플리케이션을 검색합니다. 사용 가능한 전체 '동작 키' 세트는 PowerToys 설명서를 참조하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[PowerToys runs supports various action keys to funnel search queries for a specific subset of results. Typing < searches for running processes only, ? will search only for file, or . for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
+            <Val><![CDATA[PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing {<} searches for running processes only, {?} will search only for file, or {.} for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2850,12 +2922,12 @@
       </Item>
       <Item ItemId=";Oobe_ShortcutGuide_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
+          <Val><![CDATA[to open Shortcut Guide, press it again to close or press **Esc**.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{Win}+{?} 를 눌러 Shortcut Guide를 열거나, 다시 눌러 닫거나, {Esc} 키를 누릅니다. {Win} 키를 1초 동안 눌러 시작할 수도 있습니다.]]></Val>
+            <Val><![CDATA[Shortcut Guide를 열고 다시 닫으려면 한 번 더 누르거나 Esc**를 누릅니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[{Shift} + {Win} + {/} to open Shortcut Guide, press it again to close or press {Esc}.]]></Val>
+            <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2890,15 +2962,30 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Oobe_VideoConference_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Oobe_VideoConference_ToggleMic.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {N} to toggle both your microphone and video]D;]A;{Win} + {Shift} + {A} to toggle your microphone ]D;]A;{Win} + {Shift} + {O} to toggle your video]]></Val>
+          <Val><![CDATA[to toggle your microphone]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{Win}+{N} 을 눌러 마이크와 비디오를 둘 다 토글]D;]A;{Win}+{Shift}+{A} 를 눌러 마이크 토글]D;]A;{Win}+{Shift}+{O} 를 눌러 비디오 토글]]></Val>
+            <Val><![CDATA[마이크를 전환하려면]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Win + N to toggle both your microphone and video ]D;]A;Win + Shift + A to toggle your microphone ]D;]A;Win + Shift + O to toggle your video]]></Val>
-          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_VideoConference_ToggleMicVid.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[to toggle both your microphone and video]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[마이크와 비디오를 모두 전환하려면]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_VideoConference_ToggleVid.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[to toggle your video]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[비디오를 전환하려면]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3801,15 +3888,6 @@
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[표시하기 전 누르기 지속 시간(ms)]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ShortcutWarningLabel.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Only shortcuts with the following hotkeys are valid:]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[다음 핫키를 사용하는 바로 가기만 유효합니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -10,7 +10,52 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId=";Activation_Shortcut.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Customize the keyboard shortcut to activate this module]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Personalice el método abreviado de teclado para activar este módulo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Activation_Shortcut.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Activation shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Acceso directo de activación]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Activation_Shortcut_Cancel" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cancel]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Cancelar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Activation_Shortcut_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Press a combination of keys to change this shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Presione una combinación de teclas para cambiar este método abreviado]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Activation_Shortcut_Save" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Save]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Guardar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Activation_Shortcut_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Activation shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1987,6 +2032,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";InvalidShortcut.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Acceso directo no válido]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";InvalidShortcutWarningLabel.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Solo son válidos los accesos directos que empiecen con la **tecla Windows**, **Ctrl**, **Alt** o **Mayús**.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";KBM_KeysCannotBeRemapped.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn more about remapping limitations]]></Val>
@@ -2439,24 +2502,24 @@
       </Item>
       <Item ItemId=";Oobe_ColorPicker_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {Shift} + {C} to open Color Picker.]]></Val>
+          <Val><![CDATA[to open Color Picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Presione {Win} + {Shift} + {C} para abrir el Selector de colores.]]></Val>
+            <Val><![CDATA[para abrir Selector de colores.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[{Win} + {Ctrl} + {C} to open Color Picker.]]></Val>
+            <Val><![CDATA[{Win} + {Shift} + {C} to open Color Picker.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_ColorPicker_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[To select a color with more precision, {scroll the mouse wheel} to zoom in.]]></Val>
+          <Val><![CDATA[To select a color with more precision, **scroll the mouse wheel** to zoom in.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Para seleccionar un color con más precisión, {scroll the mouse wheel} para ampliar.]]></Val>
+            <Val><![CDATA[Para seleccionar un color con más precisión, **use la rueda del ratón** para acercarse.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[To select a color with more precision, scroll the mouse wheel to zoom in.]]></Val>
+            <Val><![CDATA[To select a color with more precision, {scroll the mouse wheel} to zoom in.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2481,24 +2544,33 @@
       </Item>
       <Item ItemId=";Oobe_FancyZones_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {Shift} + {`} to open the FancyZones editor.]]></Val>
+          <Val><![CDATA[**Shift** + **drag the window** to snap a window to a zone, and release the window in the desired zone.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Presione {Shift} + {arrastrando la ventana} para acoplar una ventana a una zona y suelte dicha ventana en la zona que quiera. Presione {Win} + {Shift} + {`} para abrir el editor de FancyZones.]]></Val>
+            <Val><![CDATA[**Mayús** + **arrastre la ventana** para ajustar una ventana a una zona y suelte la ventana en la zona deseada.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {`} to open the FancyZones editor.]]></Val>
+            <Val><![CDATA[{Shift} + {dragging the window} to snap a window to a zone, and release the window in the desired zone. {Win} + {Shift} + {`} to open the FancyZones editor.]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_FancyZones_HowToUse_Shortcut.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[to open the FancyZones editor.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[para abrir el editor de FancyZones.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_FancyZones_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Snap a window to multiple zones by holding the {Ctrl} key (while also holding {Shift}) when dragging a window.]]></Val>
+          <Val><![CDATA[Snap a window to multiple zones by holding the **Ctrl** key (while also holding **Shift**) when dragging a window.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Para acoplar una ventana a varias zonas, mantenga presionada la tecla {Ctrl} (a la vez que mantiene presionada la tecla {Shift}) cuando arrastre una ventana.]]></Val>
+            <Val><![CDATA[Para acoplar una ventana a varias zonas, mantenga presionadas las teclas **Ctrl** y **Mayús** cuando arrastre una ventana.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Snap a window to multiple zones by holding the Ctrl key (while also holding Shift) when dragging a window.]]></Val>
+            <Val><![CDATA[Snap a window to multiple zones by holding the {Ctrl} key (while also holding {Shift}) when dragging a window.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2523,12 +2595,12 @@
       </Item>
       <Item ItemId=";Oobe_FileExplorer_HowToEnable.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open File Explorer, {select the View tab} in the File Explorer ribbon, then {select Preview Pane}. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+          <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abra el Explorador de archivos, {select the View tab} en la cinta de dicho explorador y, a continuación, {select Preview Pane}. ]D;]A;Desde aquí, simplemente haga clic en un icono SVG o en un archivo de Markdown del Explorador de archivos y observe el contenido en el panel de vista previa.]]></Val>
+            <Val><![CDATA[Abra el Explorador de archivos, **seleccione la pestaña Vista** en la cinta de dicho explorador y, a continuación, **seleccione el panel de vista previa**. ]D;]A;Desde aquí, simplemente haga clic en un icono SVG o en un archivo de Markdown del Explorador de archivos y observe el contenido en el panel de vista previa.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Open Windows File Explorer, select the View tab in the File Explorer ribbon, then select Preview Pane. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+            <Val><![CDATA[Open File Explorer, {select the View tab} in the File Explorer ribbon, then {select Preview Pane}. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2610,12 +2682,12 @@
       </Item>
       <Item ItemId=";Oobe_ImageResizer_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[In File Explorer, {right-clicking one or more image files} and {clicking on Resize pictures} from the context menu.]]></Val>
+          <Val><![CDATA[In File Explorer, **right-clicking one or more image files** and **clicking on Resize pictures** from the context menu.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[En el Explorador de archivos, {right-clicking one or more image files} y, a continuación, en el menú contextual, {clicking on Resize pictures}.]]></Val>
+            <Val><![CDATA[En el Explorador de archivos, **haga clic con el botón derecho en una o más imágenes** y, a continuación, en el menú contextual, **haga clic en cambiar tamaño de imágenes**.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[In File Explorer, right-clicking one or more image files and clicking on Resize pictures from the context menu.]]></Val>
+            <Val><![CDATA[In File Explorer, {right-clicking one or more image files} and {clicking on Resize pictures} from the context menu.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2649,12 +2721,12 @@
       </Item>
       <Item ItemId=";Oobe_KBM_HowToCreateMappings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Launch {PowerToys settings}, navigate to the Keyboard Manager menu, and select either {Remap a key} or {Remap a shortcut}.]]></Val>
+          <Val><![CDATA[Launch **PowerToys settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inicie {PowerToys settings}, vaya al menú del Administrador de teclado y seleccione {Remap a key} o {Remap a shortcut}.]]></Val>
+            <Val><![CDATA[Inicie **la configuración de PowerToys**, vaya al menú del Administrador de teclado y seleccione **Reasignar una clave** o **Reasignar una combinación de teclas**.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Launch PowerToys settings, navigate to the Keyboard Manager menu, and select either Remap a key or Remap a shortcut.]]></Val>
+            <Val><![CDATA[Launch {PowerToys settings}, navigate to the Keyboard Manager menu, and select either {Remap a key} or {Remap a shortcut}.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2760,12 +2832,12 @@
       </Item>
       <Item ItemId=";Oobe_PowerRename_HowToUse.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[In File Explorer, {right-clicking one or more selected files} and {clicking on PowerRename} from the context menu.]]></Val>
+          <Val><![CDATA[In File Explorer, **right-clicking one or more selected files** and **clicking on PowerRename** from the context menu.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[En el Explorador de archivos, {right-clicking one or more selected files} y, a continuación, en el menú contextual, {clicking on PowerRename}.]]></Val>
+            <Val><![CDATA[En el Explorador de archivos, **haga clic con el botón derecho en uno o más de los archivos seleccionados** y, a continuación, en el menú contextual, **haga clic en PowerRename**.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[In File Explorer, right-clicking one or more selected files and clicking on PowerRename from the context menu.]]></Val>
+            <Val><![CDATA[In File Explorer, {right-clicking one or more selected files} and {clicking on PowerRename} from the context menu.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2808,24 +2880,24 @@
       </Item>
       <Item ItemId=";Oobe_Run_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Alt} + {Space} to open Run and just start typing.]]></Val>
+          <Val><![CDATA[to open Run and just start typing.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Presione {Alt} + {Space} para abrir la opción Ejecutar y empiece a escribir.]]></Val>
+            <Val><![CDATA[para abrir la opción Ejecutar y empiece a escribir.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Alt + Space to open PowerToys and just start typing.]]></Val>
+            <Val><![CDATA[{Alt} + {Space} to open Run and just start typing.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_Run_TipsAndTricks.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing {<} searches for running processes only, {?} will search only for file, or {.} for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
+          <Val><![CDATA[PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing **<** searches for running processes only, **?** will search only for file, or **.** for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys Run admite varias teclas de acción para limitar las consultas de búsqueda a un subconjunto de resultados específico. Al escribir {<}, solo se buscan procesos; si se escribe {?}, solo se buscan archivos y, si se usa {.}, solo se buscan aplicaciones instaladas. Consulte la documentación de PowerToys para obtener el conjunto completo de "teclas de acción" disponibles.]]></Val>
+            <Val><![CDATA[PowerToys Run admite varias teclas de acción para limitar las consultas de búsqueda a un subconjunto de resultados específico. Al escribir **<**, solo se buscan procesos; si se escribe **?**, solo se buscan archivos y, si se usa **.**, solo se buscan aplicaciones instaladas. Consulte la documentación de PowerToys para obtener el conjunto completo de "Teclas de acción" disponibles.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[PowerToys runs supports various action keys to funnel search queries for a specific subset of results. Typing < searches for running processes only, ? will search only for file, or . for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
+            <Val><![CDATA[PowerToys Run supports various action keys to funnel search queries for a specific subset of results. Typing {<} searches for running processes only, {?} will search only for file, or {.} for installed applications! See PowerToys documentation for the complete set of 'Action Keys' available.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2850,12 +2922,12 @@
       </Item>
       <Item ItemId=";Oobe_ShortcutGuide_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
+          <Val><![CDATA[to open Shortcut Guide, press it again to close or press **Esc**.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Presione {Win} + {?} para abrir la Guía de métodos abreviados de teclado. Para cerrarla, presione de nuevo esta combinación de teclas o {Esc}. También puede iniciarla si mantiene presionada la tecla {Win} durante un segundo.]]></Val>
+            <Val><![CDATA[para abrir la Guía de métodos abreviados de teclado, pulse de nuevo para salir o pulsa **Esc**.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[{Shift} + {Win} + {/} to open Shortcut Guide, press it again to close or press {Esc}.]]></Val>
+            <Val><![CDATA[{Win} + {?} to open Shortcut Guide, press it again to close or press {Esc}. You can also launch it by holding the {Win} key for one second!]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2890,15 +2962,30 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Oobe_VideoConference_HowToLaunch.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Oobe_VideoConference_ToggleMic.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[{Win} + {N} to toggle both your microphone and video]D;]A;{Win} + {Shift} + {A} to toggle your microphone ]D;]A;{Win} + {Shift} + {O} to toggle your video]]></Val>
+          <Val><![CDATA[to toggle your microphone]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Presione {Win} + {N} para activar o desactivar el micrófono y el vídeo.]D;]A;Presione {Win} + {Shift} + {A} para activar o desactivar el micrófono. ]D;]A;Presione {Win} + {Shift} + {O} para activar o desactivar el vídeo.]]></Val>
+            <Val><![CDATA[para alternar el micrófono]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Win + N to toggle both your microphone and video ]D;]A;Win + Shift + A to toggle your microphone ]D;]A;Win + Shift + O to toggle your video]]></Val>
-          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_VideoConference_ToggleMicVid.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[to toggle both your microphone and video]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[para alternar el micrófono y el vídeo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Oobe_VideoConference_ToggleVid.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[to toggle your video]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[para alternar el vídeo]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3801,15 +3888,6 @@
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Tiempo que se debe mantener presionado para que se muestre (ms)]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ShortcutWarningLabel.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Only shortcuts with the following hotkeys are valid:]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Solo son válidos los accesos directos con las siguientes teclas de acceso rápido:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

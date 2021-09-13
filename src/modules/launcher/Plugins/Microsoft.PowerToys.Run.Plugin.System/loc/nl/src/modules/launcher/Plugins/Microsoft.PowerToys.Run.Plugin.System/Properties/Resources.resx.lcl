@@ -219,6 +219,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Use_localized_system_commands" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use localized system commands instead of english ones]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gelokaliseerde systeemopdrachten gebruiken in plaats van Engels]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";confirm_system_commands" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Show a dialog to confirm system commands]]></Val>
