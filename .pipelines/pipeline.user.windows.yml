@@ -33,6 +33,9 @@ restore:
       name: 'Restore Installer'
       command: '.pipelines\restore-installer.cmd'
     - !!defaultcommand
+      name: 'Restore Installer BootStrapper'
+      command: '.pipelines\restore-bootstrapper.cmd'
+    - !!defaultcommand
       name: 'Restore Localization packages'
       command: '.pipelines\restore-localization.cmd'
     - !!defaultcommand
