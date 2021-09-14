@@ -755,7 +755,14 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         changeType == DisplayChangeType::Initialization)
     {
         m_previousDesktopId = m_currentDesktopId;
-        auto currentVirtualDesktopId = m_virtualDesktop.GetCurrentVirtualDesktopId();
+
+        auto currentVirtualDesktopId = m_virtualDesktop.GetCurrentVirtualDesktopIdFromRegistry();
+        if (!currentVirtualDesktopId.has_value())
+        {
+            Logger::info("Virtual Desktop id from top level window");
+            currentVirtualDesktopId = m_virtualDesktop.GetDesktopIdByTopLevelWindows();
+        }
+
         if (currentVirtualDesktopId.has_value())
         {
             m_currentDesktopId = *currentVirtualDesktopId;
@@ -874,22 +881,15 @@ void FancyZones::UpdateZoneWindows() noexcept
 
 void FancyZones::UpdateWindowsPositions() noexcept
 {
-    auto callback = [](HWND window, LPARAM data) -> BOOL {
+    for (const auto [window, desktopId] : m_virtualDesktop.GetWindowsRelatedToDesktops())
+    {
         auto zoneIndexSet = GetZoneIndexSet(window);
-        auto strongThis = reinterpret_cast<FancyZones*>(data);
-        auto desktopId = strongThis->m_virtualDesktop.GetWindowDesktopId(window);
-        if (desktopId.has_value())
+        auto zoneWindow = m_workAreaHandler.GetWorkArea(window, desktopId);
+        if (zoneWindow)
         {
-            auto zoneWindow = strongThis->m_workAreaHandler.GetWorkArea(window, *desktopId);
-            if (zoneWindow)
-            {
-                strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
-            }
+            m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
         }
-
-        return TRUE;
-    };
-    EnumWindows(callback, reinterpret_cast<LPARAM>(this));
+    }
 }
 
 bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept
@@ -1107,7 +1107,7 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
 {
     _TRACER_;
 
-    auto guids = m_virtualDesktop.GetVirtualDesktopIds();
+    auto guids = m_virtualDesktop.GetVirtualDesktopIdsFromRegistry();
     std::vector<std::wstring> guidStrings{};
     if (guids.has_value())
     {
