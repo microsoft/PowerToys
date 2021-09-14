@@ -81,7 +81,7 @@ Our goals for the [v0.45 release cycle](https://github.com/microsoft/PowerToys/i
 
 We also worked extensively with the community to build an updated settings menu UI. This UI update takes advantage of the latest styling elements to provide users with a refreshed, modern experience navigating the various utilities and their settings.
 
-An experimental version of PowerToys (v0.46) will be released the 2nd week of September and will include an updated version of Video Conference Mute.
+An experimental version of [PowerToys (v0.46)](https://github.com/microsoft/PowerToys/releases/tag/v0.46.0) was released the week of September 13th. Download and install it to try out the latest improvements to our Video Conference Mute utility! All updates from the v0.45.0 release will still apply in v0.46.0.
 
 #### Highlights from v0.45
 
