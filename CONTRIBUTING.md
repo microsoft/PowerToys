@@ -49,7 +49,7 @@ Once the team has approved an issue/spec approach to solving, development can pr
 
 ## Development
 
-Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/readme.md).
+Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/readme.md).
 
 ### Naming of features and functionality
 
