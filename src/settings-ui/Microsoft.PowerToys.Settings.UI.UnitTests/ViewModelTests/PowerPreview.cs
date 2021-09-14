@@ -60,6 +60,7 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.EnablePdfPreview, viewModel.PDFRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgPreview, viewModel.SVGRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgThumbnail, viewModel.SVGThumbnailIsEnabled);
+            Assert.AreEqual(originalSettings.Properties.EnablePdfThumbnail, viewModel.PDFThumbnailIsEnabled);
 
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
@@ -100,6 +101,24 @@ namespace ViewModelTests
 
             // act
             viewModel.SVGThumbnailIsEnabled = true;
+        }
+
+        [TestMethod]
+        public void PDFThumbnailIsEnabledShouldPrevHandlerWhenSuccessful()
+        {
+            // Assert
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
+                Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnablePdfThumbnail);
+                return 0;
+            };
+
+            // arrange
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
+
+            // act
+            viewModel.PDFThumbnailIsEnabled = true;
         }
 
         [TestMethod]

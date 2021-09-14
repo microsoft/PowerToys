@@ -13,7 +13,7 @@ namespace ColorPicker.Helpers
     internal static class ColorHelper
     {
         /// <summary>
-        /// Convert a given <see cref="Color"/> to a CYMK color (cyan, magenta, yellow, black key)
+        /// Convert a given <see cref="Color"/> to a CMYK color (cyan, magenta, yellow, black key)
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
         /// <returns>The cyan[0..1], magenta[0..1], yellow[0..1] and black key[0..1] of the converted color</returns>

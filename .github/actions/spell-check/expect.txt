@@ -103,6 +103,7 @@ asm
 asmx
 aspnet
 aspx
+ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -126,7 +127,7 @@ Autorun
 AUTOSIZECOLUMNS
 AUTOUPDATE
 AValid
-avialable
+available
 awakeversion
 AWAYMODE
 AYUV
@@ -374,7 +375,6 @@ CXSMICON
 CXVIRTUALSCREEN
 cxx
 cxxopts
-CYMK
 CYSMICON
 cziplib
 Dac
@@ -395,6 +395,7 @@ dbg
 Dbghelp
 DBLCLKS
 DBLEPSILON
+dchristensen
 DCOM
 dcomp
 DComposition
@@ -650,6 +651,7 @@ FOF
 FOFX
 FOLDERID
 folderpath
+FORCEMINIMIZE
 FORCEOFFLINE
 foreach
 formatetc
@@ -806,6 +808,7 @@ Hyperlink
 IAction
 IActivated
 IAnimatable
+ianjoneill
 IApp
 IApplication
 IAppx
@@ -842,6 +845,7 @@ IDirectory
 IDispatch
 IDisposable
 idl
+IDLIST
 IDOK
 IDOn
 IDR
@@ -1026,6 +1030,7 @@ ixx
 IYUV
 IZone
 IZoom
+jakeoeding
 JArray
 jarro
 Jarryd
@@ -1050,6 +1055,7 @@ jyuwono
 kbd
 KBDLLHOOKSTRUCT
 kbm
+KERNELBASE
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
@@ -1851,6 +1857,8 @@ sfgao
 SFGAOF
 SHAREIMAGELISTS
 sharpkeys
+SHCNE
+SHCNF
 shcore
 shellapi
 SHELLDLL
@@ -1883,7 +1891,9 @@ SHOWDEFAULT
 SHOWELEVATIONPROMPT
 SHOWMAXIMIZED
 SHOWMINIMIZED
+SHOWMINNOACTIVE
 SHOWNA
+SHOWNOACTIVATE
 SHOWNORMAL
 SHOWWINDOW
 shtypes
@@ -2105,6 +2115,7 @@ todo
 toggleswitch
 toolbar
 Toolchain
+toolkitcontrols
 toolkitconverters
 toolset
 toolstrip

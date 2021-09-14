@@ -30,15 +30,8 @@
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
                     <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                        <controls:Setting.Description>
-                            <TextBlock>
-                                <Run x:Uid="ShortcutWarningLabel"/>
-                                <Run Text="Win, Ctrl, Alt, Shift"/>
-                            </TextBlock>
-                        </controls:Setting.Description>
                         <controls:Setting.ActionContent>
-                            <controls:HotkeySettingsControl HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}"
-                                                            Keys="Win, Ctrl, Alt, Shift"
+                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}"
                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>

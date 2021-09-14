@@ -95,18 +95,18 @@
     </Compile>
     <Compile Include="Behaviors\NavigationViewHeaderBehavior.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderMode.cs" />
-    <Compile Include="Controls\HotkeySettingsControl.xaml.cs">
-      <DependentUpon>HotkeySettingsControl.xaml</DependentUpon>
+    <Compile Include="Controls\ShortcutControl\ShortcutControl.xaml.cs">
+      <DependentUpon>ShortcutControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\KeyVisual\KeyVisual.cs" />
     <Compile Include="Controls\SettingExpander\SettingExpander.cs" />
     <Compile Include="Controls\SettingsGroup\SettingsGroup.cs" />
     <Compile Include="Controls\Setting\Setting.cs" />
-    <Compile Include="Controls\ShortcutTextControl.xaml.cs">
-      <DependentUpon>ShortcutTextControl.xaml</DependentUpon>
+    <Compile Include="Controls\ShortcutControl\ShortcutDialogContentControl.xaml.cs">
+      <DependentUpon>ShortcutDialogContentControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ShortcutVisualControl.xaml.cs">
-      <DependentUpon>ShortcutVisualControl.xaml</DependentUpon>
+ <Compile Include="Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml.cs">
+      <DependentUpon>ShortcutWithTextLabelControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\SettingsPageControl\SettingsPageControl.xaml.cs">
       <DependentUpon>SettingsPageControl.xaml</DependentUpon>
@@ -305,7 +305,7 @@
     <PRIResource Include="Strings\*\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Controls\HotkeySettingsControl.xaml">
+    <Page Include="Controls\ShortcutControl\ShortcutControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -321,11 +321,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\ShortcutTextControl.xaml">
+    <Page Include="Controls\ShortcutControl\ShortcutDialogContentControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\ShortcutVisualControl.xaml">
+    <Page Include="Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

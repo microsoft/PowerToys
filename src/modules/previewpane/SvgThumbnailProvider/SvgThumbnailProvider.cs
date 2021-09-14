@@ -12,7 +12,6 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
 using Common.ComInterlop;
 using Common.Utilities;
-using Microsoft.PowerToys.Telemetry;
 using PreviewHandlerCommon;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Svg

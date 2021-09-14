@@ -65,7 +65,7 @@
    
   <ItemGroup>
     <Reference Include="Windows">
-      <HintPath>$(MSBuildProgramFiles32)\Windows Kits\10\UnionMetadata\10.0.17134.0\Windows.winmd</HintPath>
+      <HintPath>$(MSBuildProgramFiles32)\Windows Kits\10\UnionMetadata\10.0.18362.0\Windows.winmd</HintPath>
       <IsWinMDFile>true</IsWinMDFile>
     </Reference>
   </ItemGroup>

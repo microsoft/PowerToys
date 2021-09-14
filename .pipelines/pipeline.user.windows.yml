@@ -33,13 +33,14 @@ restore:
       name: 'Restore Installer'
       command: '.pipelines\restore-installer.cmd'
     - !!defaultcommand
+      name: 'Restore Installer BootStrapper'
+      command: '.pipelines\restore-bootstrapper.cmd'
+    - !!defaultcommand
       name: 'Restore Localization packages'
       command: '.pipelines\restore-localization.cmd'
     - !!defaultcommand
       name: 'Restore Tools packages'
       command: '.pipelines\restore-tools.cmd'
-
-
 
 build:
   commands:
@@ -110,6 +111,8 @@ build:
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll'
             - 'modules\FileExplorerPreview\PdfPreviewHandler.dll'
             - 'modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll'
+            - 'modules\FileExplorerPreview\PdfThumbnailProvider.dll'
+            - 'modules\FileExplorerPreview\PdfThumbnailProvider.comhost.dll'
             - 'modules\FileExplorerPreview\powerpreview.dll'
             - 'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
             - 'modules\FileExplorerPreview\SvgPreviewHandler.dll'
@@ -170,6 +173,7 @@ build:
             # TODO(yuyoyuppe): uncomment when VCM should be enabled
             #- 'modules\VideoConference\VideoConferenceModule.dll'
             #- 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
+            #- 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
             - 'Settings\ManagedTelemetry.dll'
             - 'Settings\Microsoft.PowerToys.Settings.UI.exe'
             - 'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
@@ -224,7 +228,6 @@ build:
             - 'PowerToysSetup-*.exe'
           signing_options:
             sign_inline: true  # This does signing as soon as this command completes
-
 
 #package:
 #  commands:

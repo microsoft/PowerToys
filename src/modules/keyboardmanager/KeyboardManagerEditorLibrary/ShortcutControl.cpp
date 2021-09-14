@@ -225,7 +225,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         }
 
         children.RemoveAt(rowIndex);
-        parent.UpdateLayout();
         shortcutRemapBuffer.erase(shortcutRemapBuffer.begin() + rowIndex);
         // delete the SingleKeyRemapControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + rowIndex);
@@ -244,7 +243,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     deleteShortcutContainer.Orientation(Orientation::Vertical);
     deleteShortcutContainer.VerticalAlignment(VerticalAlignment::Center);
     row.Children().Append(deleteShortcutContainer);
-    parent.UpdateLayout();
 
     // Set accessible names
     UpdateAccessibleNames(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->GetShortcutControl(), keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->GetShortcutControl(), targetAppTextBox, deleteShortcut, (int)keyboardRemapControlObjects.size());

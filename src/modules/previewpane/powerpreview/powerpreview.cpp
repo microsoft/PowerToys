@@ -50,6 +50,16 @@ PowerPreviewModule::PowerPreviewModule() :
         std::make_unique<RegistryWrapper>(),
         L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}"));
 
+    // PDF
+    m_fileExplorerModules.emplace_back(std::make_unique<ThumbnailProviderSettings>(
+        true,
+        L"pdf-thumbnail-toggle-setting",
+        GET_RESOURCE_STRING(IDS_PDF_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
+        L"{BCC13D15-9720-4CC4-8371-EA74A274741E}",
+        L"Pdf Thumbnail Provider",
+        std::make_unique<RegistryWrapper>(),
+        L".pdf\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}"));
+
     // Initialize the toggle states for each module.
     init_settings();
 

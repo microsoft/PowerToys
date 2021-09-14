@@ -32,8 +32,8 @@
     </ClInclude>
     <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.h">
       <Filter>Header Files</Filter>
-    </ClInclude>    
-    <ClInclude Include="shared_constants.h">   
+    </ClInclude>
+    <ClInclude Include="shared_constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -67,5 +67,8 @@
     <ResourceCompile Include="interop.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
