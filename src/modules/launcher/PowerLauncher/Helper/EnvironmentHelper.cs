@@ -51,7 +51,24 @@ namespace PowerLauncher.Helper
 
             foreach (KeyValuePair<string, string> kv in environment)
             {
-                Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
+                // The name of environment variables must not be null, empty or have a length of zore.
+                // But if the vaule of the environment variable is null or empty the the variable is explicity defined for deletion. => Here we don't need to check anything.
+                if (!string.IsNullOrEmpty(kv.Key) & kv.Key.Length > 0)
+                {
+                    try
+                    {
+                        Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        // The dotnet method <see cref="System.Environment.SetEnvironmentVariable"/> has it's own internal method to check the input parameters. Here we catch the exception and log it to avoid crashes of PT Run.
+                        Log.Exception($"Unexpected exception while updating the environment variable [{kv.Key}] for the PT Run process. The variable value has a length of [{kv.Value.Length}].", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
+                    }
+                }
+                else
+                {
+                    Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. The variable value has a length of [{kv.Value.Length}].", typeof(PowerLauncher.Helper.EnvironmentHelper));
+                }
             }
         }
 
