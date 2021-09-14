@@ -55,8 +55,8 @@ namespace PowerLauncher.Helper
                 int varNameLength = kv.Key == null ? 0 : kv.Key.Length;
                 int varValueLength = kv.Value == null ? 0 : kv.Value.Length;
 
-                // The name of environment variables must not be null, empty or have a length of zore.
-                // But if the vaule of the environment variable is null or empty then the variable is explicity defined for deletion. => Here we don't need to check anything.
+                // The name of environment variables must not be null, empty or have a length of zero.
+                // But if the value of the environment variable is null or empty then the variable is explicit defined for deletion. => Here we don't need to check anything.
                 if (!string.IsNullOrEmpty(kv.Key) & varNameLength > 0)
                 {
                     try
