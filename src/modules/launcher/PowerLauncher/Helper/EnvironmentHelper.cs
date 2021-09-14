@@ -51,9 +51,13 @@ namespace PowerLauncher.Helper
 
             foreach (KeyValuePair<string, string> kv in environment)
             {
+                // Init var for length of env var value. Using this vars prevent us from null value exception.
+                int varNameLength = kv.Key == null ? 0 : kv.Key.Length;
+                int varValueLength = kv.Value == null ? 0 : kv.Value.Length;
+
                 // The name of environment variables must not be null, empty or have a length of zore.
-                // But if the vaule of the environment variable is null or empty the the variable is explicity defined for deletion. => Here we don't need to check anything.
-                if (!string.IsNullOrEmpty(kv.Key) & kv.Key.Length > 0)
+                // But if the vaule of the environment variable is null or empty then the variable is explicity defined for deletion. => Here we don't need to check anything.
+                if (!string.IsNullOrEmpty(kv.Key) & varNameLength > 0)
                 {
                     try
                     {
@@ -61,13 +65,13 @@ namespace PowerLauncher.Helper
                     }
                     catch (ArgumentException ex)
                     {
-                        // The dotnet method <see cref="System.Environment.SetEnvironmentVariable"/> has it's own internal method to check the input parameters. Here we catch the exception and log it to avoid crashes of PT Run.
-                        Log.Exception($"Unexpected exception while updating the environment variable [{kv.Key}] for the PT Run process. The variable value has a length of [{kv.Value.Length}].", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
+                        // The dotnet method <see cref="System.Environment.SetEnvironmentVariable"/> has it's own internal method to check the input parameters. Here we catch the exceptions that we don't check before updating the environment variable and log it to avoid crashes of PT Run.
+                        Log.Exception($"Unexpected exception while updating the environment variable [{kv.Key}] for the PT Run process. (The variable value has a length of [{varValueLength}].)", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
                     }
                 }
                 else
                 {
-                    Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. The variable value has a length of [{kv.Value.Length}].", typeof(PowerLauncher.Helper.EnvironmentHelper));
+                    Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. Their name is null or empty. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
                 }
             }
         }
