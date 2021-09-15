@@ -44,14 +44,13 @@ class FancyZonesData
 public:
     FancyZonesData();
 
-    std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
+    void SetVirtualDesktopCheckCallback(std::function<bool(std::wstring)> callback);
 
+    std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
     std::optional<FancyZonesDataTypes::CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
 
     const JSONHelpers::TDeviceInfoMap& GetDeviceInfoMap() const;
-
     const JSONHelpers::TCustomZoneSetsMap& GetCustomZoneSetsMap() const;
-
     const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const;
 
     inline const JSONHelpers::TLayoutQuickKeysMap& GetLayoutQuickKeys() const
@@ -145,6 +144,8 @@ private:
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;
     std::wstring editorParametersFileName;
+
+    std::function<bool(std::wstring)> m_virtualDesktopCheckCallback;
 
     mutable std::recursive_mutex dataLock;
 };

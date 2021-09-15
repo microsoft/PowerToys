@@ -157,6 +157,11 @@ FancyZonesData::FancyZonesData()
     editorParametersFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesEditorParametersFile);
 }
 
+void FancyZonesData::SetVirtualDesktopCheckCallback(std::function<bool(std::wstring)> callback)
+{
+    m_virtualDesktopCheckCallback = callback;
+}
+
 const JSONHelpers::TDeviceInfoMap& FancyZonesData::GetDeviceInfoMap() const
 {
     std::scoped_lock lock{ dataLock };
@@ -576,14 +581,67 @@ void FancyZonesData::SaveZoneSettings() const
 {
     _TRACER_;
     std::scoped_lock lock{ dataLock };
-    JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap, quickKeysMap);
+
+    bool dirtyFlag = false;
+    JSONHelpers::TDeviceInfoMap updatedDeviceInfoMap;
+    if (m_virtualDesktopCheckCallback)
+    {
+        for (const auto& [id, data] : deviceInfoMap)
+        {
+            auto updatedId = id;
+            if (!m_virtualDesktopCheckCallback(id.substr(id.rfind('_') + 1)))
+            {
+                updatedId = id.substr(0, id.rfind('_') + 1) + L"{00000000-0000-0000-0000-000000000000}";
+                dirtyFlag = true;
+            }
+
+            updatedDeviceInfoMap.insert({ updatedId, data });
+        }
+    }
+    
+    if (dirtyFlag)
+    {
+        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, updatedDeviceInfoMap, customZoneSetsMap, quickKeysMap);
+    }
+    else
+    {
+        JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap, quickKeysMap);
+    }
 }
 
 void FancyZonesData::SaveAppZoneHistory() const
 {
     _TRACER_;
     std::scoped_lock lock{ dataLock };
-    JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
+
+    bool dirtyFlag = false;
+    std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> updatedHistory;
+    if (m_virtualDesktopCheckCallback)
+    {
+        for (const auto& [path, dataVector] : appZoneHistoryMap)
+        {
+            auto updatedVector = dataVector;
+            for (auto& data : updatedVector)
+            {
+                if (!m_virtualDesktopCheckCallback(data.deviceId.substr(data.deviceId.rfind('_') + 1)))
+                {
+                    data.deviceId = data.deviceId.substr(0, data.deviceId.rfind('_') + 1) + L"{00000000-0000-0000-0000-000000000000}";
+                    dirtyFlag = true;
+                }
+            }
+
+            updatedHistory.insert(std::make_pair(path, updatedVector));
+        }
+    }
+
+    if (dirtyFlag)
+    {
+        JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, updatedHistory);
+    }
+    else
+    {
+        JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
+    }    
 }
 
 void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor, const std::vector<std::pair<HMONITOR, MONITORINFOEX>>& allMonitors) const

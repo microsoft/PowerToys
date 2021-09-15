@@ -9,6 +9,31 @@ public:
     VirtualDesktop(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback);
     ~VirtualDesktop() = default;
 
+    inline bool IsVirtualDesktopIdSavedInRegistry(const std::wstring& id) const
+    {
+        GUID vdId;
+        if (CLSIDFromString(id.c_str(), &vdId) != S_OK)
+        {
+            return false;
+        }
+
+        auto ids = GetVirtualDesktopIdsFromRegistry();
+        if (!ids.has_value())
+        {
+            return false;
+        }
+
+        for (const auto& regId : *ids)
+        {
+            if (regId == vdId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void Init();
     void UnInit();
 

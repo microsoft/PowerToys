@@ -241,6 +241,8 @@ FancyZones::Run() noexcept
             PostMessage(m_window, WM_HOTKEY, 1, 0);
         }
     });
+
+    FancyZonesDataInstance().SetVirtualDesktopCheckCallback(std::bind(&VirtualDesktop::IsVirtualDesktopIdSavedInRegistry, &m_virtualDesktop, std::placeholders::_1));
 }
 
 // IFancyZones
@@ -1122,13 +1124,12 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
             }
         }
 
-        if (!guidStrings.empty())
-        {
-            FancyZonesDataInstance().UpdatePrimaryDesktopData(guidStrings[0]);
-        }
-
         FancyZonesDataInstance().RemoveDeletedDesktops(guidStrings);
     }
+
+    wil::unique_cotaskmem_string virtualDesktopId;
+    StringFromCLSID(m_currentDesktopId, &virtualDesktopId);
+    FancyZonesDataInstance().UpdatePrimaryDesktopData(virtualDesktopId.get());
 }
 
 void FancyZones::OnSettingsChanged() noexcept
@@ -1163,6 +1164,11 @@ void FancyZones::OnEditorExitEvent() noexcept
 {
     // Collect information about changes in zone layout after editor exited.
     FancyZonesDataInstance().LoadFancyZonesData();
+
+    wil::unique_cotaskmem_string virtualDesktopId;
+    StringFromCLSID(m_currentDesktopId, &virtualDesktopId);
+    FancyZonesDataInstance().UpdatePrimaryDesktopData(virtualDesktopId.get());
+
     UpdateZoneSets();
 }
 
