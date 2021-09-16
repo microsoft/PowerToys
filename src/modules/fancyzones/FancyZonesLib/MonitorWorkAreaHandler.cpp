@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "MonitorWorkAreaHandler.h"
 #include "VirtualDesktop.h"
+#include "util.h"
 
 winrt::com_ptr<IWorkArea> MonitorWorkAreaHandler::GetWorkArea(const GUID& desktopId, HMONITOR monitor)
 {
