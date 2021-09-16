@@ -71,7 +71,7 @@ namespace PowerLauncher.Helper
                 }
                 else
                 {
-                    // Logg the error when variable value is null, empty or has a legnth of zero.
+                    // Log the error when variable value is null, empty or has a length of zero.
                     Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. Their name is null or empty. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
                 }
             }
