@@ -174,4 +174,7 @@
   <data name="Prevpane_Pdf_Settings_Displayname" xml:space="preserve">
     <value>PDF Previewer</value>
   </data>
+  <data name="Pdf_Thumbnail_Provider_Settings_Description" xml:space="preserve">
+    <value>Pdf Thumbnail Provider</value>
+  </data>
 </root>

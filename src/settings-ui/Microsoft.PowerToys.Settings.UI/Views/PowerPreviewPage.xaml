@@ -67,6 +67,13 @@
                                           IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+
+                    <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_PDF_Thumbnail" Icon="&#xEA90;">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.PDFThumbnailIsEnabled}"
+                                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                 </controls:SettingsGroup>
                 
             </StackPanel>

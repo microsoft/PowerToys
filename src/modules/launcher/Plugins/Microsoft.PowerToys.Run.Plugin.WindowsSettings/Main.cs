@@ -110,6 +110,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
 
             bool Predicate(WindowsSetting found)
             {
+                if (string.IsNullOrWhiteSpace(query.Search))
+                {
+                    // If no search string is entered skip query comparison.
+                    return true;
+                }
+
                 if (found.Name.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return true;
@@ -143,6 +149,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                             return true;
                         }
                     }
+                }
+
+                // Search by key char '>' for app name and settings path
+                if (query.Search.Contains('>'))
+                {
+                    return ResultHelper.FilterBySettingsPath(found, query.Search);
                 }
 
                 return false;

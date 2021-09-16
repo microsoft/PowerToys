@@ -511,6 +511,19 @@
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="PdfPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Pdf.PdfPreviewHandler" />
         </RegistryKey>
+        <!-- Registry Key for Class Registration of Pdf Thumbnail Provider -->
+        <RegistryKey Root="HKCR" Key="CLSID\{BCC13D15-9720-4CC4-8371-EA74A274741E}">
+          <RegistryValue Type="string" Value="Microsoft.PowerToys.ThumbnailHandler.Pdf.PdfThumbnailProvider" />
+          <RegistryValue Type="string" Name="DisplayName" Value="Pdf Thumbnail Provider" />
+          <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
+          <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
+          <RegistryValue Type="string" Key="InprocServer32" Value="[FileExplorerPreviewInstallFolder]PdfThumbnailProvider.comhost.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="PdfThumbnailProvider, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.ThumbnailHandler.Pdf.PdfThumbnailProvider" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="PdfThumbnailProvider, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.ThumbnailHandler.Pdf.PdfThumbnailProvider" />
+        </RegistryKey>
         <!-- Registry Key for AppID registration -->
         <RegistryKey Root="HKCR" Key="AppID\{CF142243-F059-45AF-8842-DBBE9783DB14}">
           <RegistryValue Type="expandable" Name="DllSurrogate" Value="%SystemRoot%\system32\prevhost.exe" />
@@ -542,6 +555,10 @@
         <!-- Add file type association for Pdf Preview Handler -->
         <RegistryKey Root="HKCR" Key=".pdf\shellex">
           <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{07665729-6243-4746-95b7-79579308d1b2}" />
+        </RegistryKey>
+        <!-- Add file type association for Pdf Thumbnail Provider -->
+        <RegistryKey Root="HKCR" Key=".pdf\shellex">
+          <RegistryValue Type="string" Key="{E357FCCD-A995-4576-B01F-234630154E96}" Value="{BCC13D15-9720-4CC4-8371-EA74A274741E}" />
         </RegistryKey>
         <!-- Update Key to use IE11 for prevhost.exe -->
         <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
@@ -791,7 +808,7 @@
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.comhost.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.runtimeconfig.json" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.deps.json" />
-        <!-- File to include dll for Svg Preview Handler -->
+        <!-- File to include dll for Svg Thumbnail Provider -->
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.comhost.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.runtimeconfig.json" />
@@ -809,6 +826,11 @@
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.runtimeconfig.json" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfPreviewHandler.deps.json" />
+        <!-- File to include dll for Pdf Thumbnail Provider -->
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.comhost.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PdfThumbnailProvider.deps.json" />
       </Component>
     </DirectoryRef>
 
