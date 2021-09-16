@@ -736,6 +736,7 @@ HDN
 hdrop
 HDS
 HEB
+Heiko
 helptext
 HEVC
 hfile
@@ -2133,6 +2134,7 @@ traies
 transcoded
 transparrent
 TRAYMOUSEMESSAGE
+triaging
 TRK
 trl
 trunc
