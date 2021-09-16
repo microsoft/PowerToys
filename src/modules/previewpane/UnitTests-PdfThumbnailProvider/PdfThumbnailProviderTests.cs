@@ -70,16 +70,18 @@ namespace PdfThumbnailProviderUnitTests
         private static IStream GetMockStream(byte[] sourceArray)
         {
             var streamMock = new Mock<IStream>();
-            var firstCall = true;
+            int bytesRead = 0;
+
             streamMock
                 .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
                 .Callback<byte[], int, IntPtr>((buffer, countToRead, bytesReadPtr) =>
                 {
-                    if (firstCall)
+                    int actualCountToRead = Math.Min(sourceArray.Length - bytesRead, countToRead);
+                    if (actualCountToRead > 0)
                     {
-                        Array.Copy(sourceArray, 0, buffer, 0, sourceArray.Length);
-                        Marshal.WriteInt32(bytesReadPtr, sourceArray.Length);
-                        firstCall = false;
+                        Array.Copy(sourceArray, bytesRead, buffer, 0, actualCountToRead);
+                        Marshal.WriteInt32(bytesReadPtr, actualCountToRead);
+                        bytesRead += actualCountToRead;
                     }
                     else
                     {
