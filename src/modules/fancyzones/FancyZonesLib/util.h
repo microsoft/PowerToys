@@ -207,10 +207,7 @@ namespace FancyZonesUtils
 
     std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const std::wstring& virtualDesktopId);
     std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId);
-
     std::wstring TrimDeviceId(const std::wstring& deviceId);
-    std::optional<FancyZonesDataTypes::DeviceIdData> ParseDeviceId(const std::wstring& deviceId);
-    bool IsValidDeviceId(const std::wstring& str);
 
     RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept;
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
