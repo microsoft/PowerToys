@@ -51,7 +51,7 @@ namespace PowerLauncher.Helper
 
             foreach (KeyValuePair<string, string> kv in environment)
             {
-                // Init var for length of env var value. Using this vars prevent us from null value exception.
+                // Initialize variables for length of environment variable name and value. Using this variables prevent us from null value exceptions.
                 int varNameLength = kv.Key == null ? 0 : kv.Key.Length;
                 int varValueLength = kv.Value == null ? 0 : kv.Value.Length;
 
@@ -71,6 +71,7 @@ namespace PowerLauncher.Helper
                 }
                 else
                 {
+                    // Logg the error when variable value is null, empty or has a legnth of zero.
                     Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. Their name is null or empty. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
                 }
             }
