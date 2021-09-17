@@ -286,7 +286,7 @@ void FancyZonesData::UpdatePrimaryDesktopData(GUID desktopId)
     // TODO: when updating the primary desktop GUID, the app zone history also needs to be updated 
     if (dirtyFlag)
     {
-        SaveZoneSettings();
+        SaveAppZoneHistoryAndZoneSettings();
     }
 }
 
