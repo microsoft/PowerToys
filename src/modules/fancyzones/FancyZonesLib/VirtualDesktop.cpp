@@ -81,14 +81,6 @@ std::optional<GUID> GetDesktopIdFromCurrentSession()
     return std::nullopt;
 }
 
-bool GetZoneWindowDesktopId(IWorkArea* zoneWindow, GUID* desktopId)
-{
-    // Format: <device-id>_<resolution>_<virtual-desktop-id>
-    std::wstring uniqueId = zoneWindow->UniqueId();
-    std::wstring virtualDesktopId = uniqueId.substr(uniqueId.rfind('_') + 1);
-    return SUCCEEDED(CLSIDFromString(virtualDesktopId.c_str(), desktopId));
-}
-
 HKEY OpenVirtualDesktopsRegKey()
 {
     HKEY hKey{ nullptr };
