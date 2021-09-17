@@ -33,7 +33,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 #### Stable version
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.45.0-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft Store's PowerToys page][microsoft-store-link] or use [Microsoft PowerToys GitHub releases page][github-release-link]. For GitHub, click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.45.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -199,7 +199,8 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
 [community-link]: COMMUNITY.md
-[github-release-link]: https://github.com/microsoft/PowerToys/releases/
+[github-release-link]: https://aka.ms/installPowerToys
+[microsoft-store-link]: https://aka.ms/getPowertoys
 [roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
 [privacy-link]: http://go.microsoft.com/fwlink/?LinkId=521839
 [vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
