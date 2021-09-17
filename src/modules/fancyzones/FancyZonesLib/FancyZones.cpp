@@ -801,33 +801,43 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) n
     _TRACER_;
     if (m_workAreaHandler.IsNewWorkArea(m_currentDesktopId, monitor))
     {
-        wil::unique_cotaskmem_string virtualDesktopId;
-        if (SUCCEEDED(StringFromCLSID(m_currentDesktopId, &virtualDesktopId)))
+        FancyZonesDataTypes::DeviceIdData uniqueId;
+        uniqueId.virtualDesktopId = m_currentDesktopId;
+
+        if (monitor)
         {
-            std::wstring uniqueId;
+            uniqueId.deviceName = FancyZonesUtils::TrimDeviceId(deviceId);
 
-            if (monitor)
+            MONITORINFOEXW mi;
+            mi.cbSize = sizeof(mi);
+            if (GetMonitorInfo(monitor, &mi))
             {
-                uniqueId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
+                const FancyZonesUtils::Rect monitorRect(mi.rcMonitor);
+                uniqueId.width = monitorRect.width();
+                uniqueId.height = monitorRect.height();
             }
-            else
-            {
-                uniqueId = FancyZonesUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId.get());
-            }
+        }
+        else
+        {
+            uniqueId.deviceName = ZonedWindowProperties::MultiMonitorDeviceID;
+            
+            RECT combinedResolution = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
+            uniqueId.width = combinedResolution.right - combinedResolution.left;
+            uniqueId.height = combinedResolution.bottom - combinedResolution.top;
+        }
 
-            std::wstring parentId{};
-            auto parentArea = m_workAreaHandler.GetWorkArea(m_previousDesktopId, monitor);
-            if (parentArea)
-            {
-                parentId = parentArea->UniqueId();
-            }
+        FancyZonesDataTypes::DeviceIdData parentId{};
+        auto parentArea = m_workAreaHandler.GetWorkArea(m_previousDesktopId, monitor);
+        if (parentArea)
+        {
+            parentId = parentArea->UniqueId();
+        }
 
-            auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), m_settings->GetSettings()->overlappingZonesAlgorithm);
-            if (workArea)
-            {
-                m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
-                FancyZonesDataInstance().SaveZoneSettings();
-            }
+        auto workArea = MakeWorkArea(m_hinstance, monitor, uniqueId, parentId, GetZoneColors(), m_settings->GetSettings()->overlappingZonesAlgorithm);
+        if (workArea)
+        {
+            m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
+            FancyZonesDataInstance().SaveZoneSettings();
         }
     }
 }
@@ -1110,26 +1120,13 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
     _TRACER_;
 
     auto guids = m_virtualDesktop.GetVirtualDesktopIdsFromRegistry();
-    std::vector<std::wstring> guidStrings{};
     if (guids.has_value())
     {
         m_workAreaHandler.RegisterUpdates(*guids);
-
-        for (auto& guid : *guids)
-        {
-            auto guidString = FancyZonesUtils::GuidToString(guid);
-            if (guidString.has_value())
-            {
-                guidStrings.push_back(*guidString);
-            }
-        }
-
-        FancyZonesDataInstance().RemoveDeletedDesktops(guidStrings);
+        FancyZonesDataInstance().RemoveDeletedDesktops(*guids);
     }
 
-    wil::unique_cotaskmem_string virtualDesktopId;
-    StringFromCLSID(m_currentDesktopId, &virtualDesktopId);
-    FancyZonesDataInstance().UpdatePrimaryDesktopData(virtualDesktopId.get());
+    FancyZonesDataInstance().UpdatePrimaryDesktopData(m_currentDesktopId);
 }
 
 void FancyZones::OnSettingsChanged() noexcept
@@ -1164,11 +1161,7 @@ void FancyZones::OnEditorExitEvent() noexcept
 {
     // Collect information about changes in zone layout after editor exited.
     FancyZonesDataInstance().LoadFancyZonesData();
-
-    wil::unique_cotaskmem_string virtualDesktopId;
-    StringFromCLSID(m_currentDesktopId, &virtualDesktopId);
-    FancyZonesDataInstance().UpdatePrimaryDesktopData(virtualDesktopId.get());
-
+    FancyZonesDataInstance().UpdatePrimaryDesktopData(m_currentDesktopId);
     UpdateZoneSets();
 }
 

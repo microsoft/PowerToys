@@ -48,7 +48,7 @@ namespace JSONHelpers
 
     struct DeviceInfoJSON
     {
-        std::wstring deviceId;
+        FancyZonesDataTypes::DeviceIdData deviceId;
         FancyZonesDataTypes::DeviceInfoData data;
 
         static json::JsonObject ToJson(const DeviceInfoJSON& device);
@@ -65,7 +65,7 @@ namespace JSONHelpers
     };
 
     using TAppZoneHistoryMap = std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>;
-    using TDeviceInfoMap = std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData>;
+    using TDeviceInfoMap = std::unordered_map<FancyZonesDataTypes::DeviceIdData, FancyZonesDataTypes::DeviceInfoData>;
     using TCustomZoneSetsMap = std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData>;
     using TLayoutQuickKeysMap = std::unordered_map<std::wstring, int>;
 

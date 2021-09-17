@@ -2,6 +2,7 @@
 #include "FancyZones.h"
 #include "FancyZonesLib/ZoneSet.h"
 #include "FancyZonesLib/ZoneColors.h"
+#include "FancyZonesLib/FancyZonesDataTypes.h"
 
 /**
  * Class representing single work area, which is defined by monitor and virtual desktop.
@@ -97,7 +98,7 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
     /**
      * @returns Unique work area identifier. Format: <device-id>_<resolution>_<virtual-desktop-id>
      */
-    IFACEMETHOD_(std::wstring, UniqueId)() const = 0;
+    IFACEMETHOD_(FancyZonesDataTypes::DeviceIdData, UniqueId)() const = 0;
     /**
      * @returns Active zone layout for this work area.
      */
@@ -130,4 +131,4 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
     IFACEMETHOD_(void, SetOverlappingZonesAlgorithm)(OverlappingZonesAlgorithm overlappingAlgorithm) = 0;
 };
 
-winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
+winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
