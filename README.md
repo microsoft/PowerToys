@@ -209,4 +209,4 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F21
-[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.36.0
+[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.46.0
