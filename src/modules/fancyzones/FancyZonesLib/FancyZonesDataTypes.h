@@ -115,7 +115,7 @@ namespace FancyZonesDataTypes
 
     struct DeviceIdData
     {
-        std::wstring deviceName;
+        std::wstring deviceName = L"FallbackDevice";
         int width;
         int height;
         GUID virtualDesktopId;
