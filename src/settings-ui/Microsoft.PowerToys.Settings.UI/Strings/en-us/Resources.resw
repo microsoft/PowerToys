@@ -645,7 +645,7 @@
     <value>Manage preset sizes that can be used in the editor</value>
   </data>
   <data name="ImageResizer_FilenameFormatHeader.Description" xml:space="preserve">
-    <value>This format is used for the resized images</value>
+    <value>This format is used as the filename for resized images</value>
   </data>
   <data name="ImageResizer.ModuleDescription" xml:space="preserve">
     <value>Lets you resize images by right-clicking.</value>
