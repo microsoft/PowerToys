@@ -38,7 +38,7 @@ Install from the [Microsoft Store's PowerToys page][microsoft-store-link] or use
 This is our preferred method.
 
 #### Experimental version
-To install the Video Conference mute, please use the [v0.36 experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.35 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
+To install the Video Conference mute, please use the [v0.46 experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.45 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
 ### Via WinGet (Preview)
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). To install PowerToys, run the following command from the command line / PowerShell:
@@ -81,7 +81,7 @@ Our goals for the [v0.45 release cycle](https://github.com/microsoft/PowerToys/i
 
 We also worked extensively with the community to build an updated settings menu UI. This UI update takes advantage of the latest styling elements to provide users with a refreshed, modern experience navigating the various utilities and their settings.
 
-An experimental version of [PowerToys (v0.46)](https://github.com/microsoft/PowerToys/releases/tag/v0.46.0) was released the week of September 13th. Download and install it to try out the latest improvements to our Video Conference Mute utility! All updates from the v0.45.0 release will still apply in v0.46.0.
+An experimental version of [PowerToys (v0.46)][github-prerelease-link] was released the week of September 13th. Download and install it to try out the latest improvements to our Video Conference Mute utility! All updates from the v0.45.0 release will still apply in v0.46.0.
 
 #### Highlights from v0.45
 
