@@ -331,7 +331,7 @@ bool FancyZonesData::IsAnotherWindowOfApplicationInstanceZoned(HWND window, cons
             auto& perDesktopData = history->second;
             for (auto& data : perDesktopData)
             {
-                if (data.deviceId == deviceId)
+                if (data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
                 {
                     DWORD processId = 0;
                     GetWindowThreadProcessId(window, &processId);
@@ -366,7 +366,7 @@ void FancyZonesData::UpdateProcessIdToHandleMap(HWND window, const FancyZonesDat
             auto& perDesktopData = history->second;
             for (auto& data : perDesktopData)
             {
-                if (data.deviceId == deviceId)
+                if (data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
                 {
                     DWORD processId = 0;
                     GetWindowThreadProcessId(window, &processId);
@@ -390,7 +390,7 @@ ZoneIndexSet FancyZonesData::GetAppLastZoneIndexSet(HWND window, const FancyZone
             const auto& perDesktopData = history->second;
             for (const auto& data : perDesktopData)
             {
-                if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
+                if (data.zoneSetUuid == zoneSetId && data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
                 {
                     return data.zoneIndexSet;
                 }
@@ -414,7 +414,7 @@ bool FancyZonesData::RemoveAppLastZone(HWND window, const FancyZonesDataTypes::D
             auto& perDesktopData = history->second;
             for (auto data = std::begin(perDesktopData); data != std::end(perDesktopData);)
             {
-                if (data->deviceId == deviceId && data->zoneSetUuid == zoneSetId)
+                if (data->deviceId.isEqualWithNullVirtualDesktopId(deviceId) && data->zoneSetUuid == zoneSetId)
                 {
                     if (!IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
                     {
@@ -479,7 +479,7 @@ bool FancyZonesData::SetAppLastZones(HWND window, const FancyZonesDataTypes::Dev
         auto& perDesktopData = history->second;
         for (auto& data : perDesktopData)
         {
-            if (data.deviceId == deviceId)
+            if (data.deviceId.isEqualWithNullVirtualDesktopId(deviceId))
             {
                 // application already has history on this work area, update it with new window position
                 data.processIdToHandleMap[processId] = window;
