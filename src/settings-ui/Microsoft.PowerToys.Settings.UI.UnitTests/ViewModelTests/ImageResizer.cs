@@ -227,17 +227,17 @@ namespace ViewModelTests
             Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
             int sizeOfOriginalArray = viewModel.Sizes.Count;
-            int newSizeItemNumber = sizeOfOriginalArray + 1;
 
             // act
             viewModel.AddRow("New size");
 
             // Assert
-            Assert.AreEqual(viewModel.Sizes[newSizeItemNumber].Name, "New size");
-            Assert.AreEqual(viewModel.Sizes[newSizeItemNumber].Fit, ResizeFit.Fit);
-            Assert.AreEqual(viewModel.Sizes[newSizeItemNumber].Width, 854);
-            Assert.AreEqual(viewModel.Sizes[newSizeItemNumber].Height, 480);
-            Assert.AreEqual(viewModel.Sizes[newSizeItemNumber].Unit, ResizeUnit.Pixel);
+            ImageSize newTestSize = viewModel.Sizes.Where<ImageSize>(x => x.Id == 0).First();
+            Assert.AreEqual(newTestSize.Name, "New size");
+            Assert.AreEqual(newTestSize.Fit, (int)ResizeFit.Fit);
+            Assert.AreEqual(newTestSize.Width, 854);
+            Assert.AreEqual(newTestSize.Height, 480);
+            Assert.AreEqual(newTestSize.Unit, (int)ResizeUnit.Pixel);
         }
 
         [TestMethod]
