@@ -204,7 +204,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void AddRowShouldAddEmptyImageSizeWhenSuccessful()
+        public void AddRowShouldAddNewImageSizeWhenSuccessful()
         {
             // arrange
             var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
@@ -217,6 +217,27 @@ namespace ViewModelTests
 
             // Assert
             Assert.AreEqual(sizeOfOriginalArray + 1, viewModel.Sizes.Count);
+        }
+
+        [TestMethod]
+        public void NewImageSizeHasCorrectValues()
+        {
+            // arrange
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
+            int sizeOfOriginalArray = viewModel.Sizes.Count;
+            int newSizeItemNumber = sizeOfOriginalArray + 1;
+
+            // act
+            viewModel.AddRow("New size");
+
+            // Assert
+            Assert.AreEqual(viewModel.Sizes[newSizeItemNumber].Name, "New size");
+            Assert.AreEqual(viewModel.Sizes[newSizeItemNumber].Fit, ResizeFit.Fit);
+            Assert.AreEqual(viewModel.Sizes[newSizeItemNumber].Width, 854);
+            Assert.AreEqual(viewModel.Sizes[newSizeItemNumber].Height, 480);
+            Assert.AreEqual(viewModel.Sizes[newSizeItemNumber].Unit, ResizeUnit.Pixel);
         }
 
         [TestMethod]
