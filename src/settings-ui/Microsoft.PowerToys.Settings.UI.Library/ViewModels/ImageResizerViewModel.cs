@@ -250,11 +250,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public void AddRow()
+        public void AddRow(string sizeName)
         {
             ObservableCollection<ImageSize> imageSizes = Sizes;
             int maxId = imageSizes.Count > 0 ? imageSizes.OrderBy(x => x.Id).Last().Id : -1;
-            ImageSize newSize = new ImageSize(maxId + 1);
+            ImageSize newSize = new ImageSize(maxId + 1, sizeName, ResizeFit.Fit, 854, 480, ResizeUnit.Pixel);
             newSize.PropertyChanged += SizePropertyChanged;
             imageSizes.Add(newSize);
             _advancedSizes = imageSizes;

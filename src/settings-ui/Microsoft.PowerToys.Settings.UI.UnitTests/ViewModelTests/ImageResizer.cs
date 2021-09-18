@@ -213,7 +213,7 @@ namespace ViewModelTests
             int sizeOfOriginalArray = viewModel.Sizes.Count;
 
             // act
-            viewModel.AddRow();
+            viewModel.AddRow("New size");
 
             // Assert
             Assert.AreEqual(sizeOfOriginalArray + 1, viewModel.Sizes.Count);

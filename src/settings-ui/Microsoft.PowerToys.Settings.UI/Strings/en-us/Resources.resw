@@ -1605,4 +1605,8 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.</value>
   </data>
+  <data name="ImageResizer_DefaultSize_New" xml:space="preserve">
+    <value>New size</value>
+    <comment>Default name of the new size taht can be added in settings ui.</comment>
+  </data>
 </root>
