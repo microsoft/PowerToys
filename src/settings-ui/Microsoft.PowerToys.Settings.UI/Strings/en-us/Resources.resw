@@ -1607,6 +1607,6 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="ImageResizer_DefaultSize_New" xml:space="preserve">
     <value>New size</value>
-    <comment>Default name of the new size taht can be added in settings ui.</comment>
+    <comment>Default name of the new size that can be added in settings ui.</comment>
   </data>
 </root>
