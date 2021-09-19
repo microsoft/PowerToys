@@ -15,12 +15,12 @@
                 <TextBlock Margin="0,4,0,8"
                            x:Uid="Oobe_Overview_Description"
                            TextWrapping="Wrap"/>
-                <HyperlinkButton NavigateUri="{x:Bind ViewModel.DescriptionLink}" Style="{StaticResource HyperlinkButtonStyle}">
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.DescriptionLink}" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="Oobe_Overview_DescriptionLinkText"
                                TextWrapping="Wrap" />
                 </HyperlinkButton>
 
-                <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}" Style="{StaticResource HyperlinkButtonStyle}">
+                <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}" Style="{StaticResource TextButtonStyle}">
                     <TextBlock x:Uid="Oobe_Overview_LatestVersionLink"
                                TextWrapping="Wrap" />
                 </HyperlinkButton>

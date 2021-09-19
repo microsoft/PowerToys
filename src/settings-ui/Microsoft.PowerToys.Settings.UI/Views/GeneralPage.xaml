@@ -91,7 +91,7 @@
                         </muxc:InfoBar.Content>
                         <muxc:InfoBar.ActionButton>
                             <HyperlinkButton x:Uid="SeeWhatsNew"
-                                             Style="{StaticResource HyperlinkButtonStyle}"
+                                             Style="{StaticResource TextButtonStyle}"
                                              NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
                                              HorizontalAlignment="Right" />
                         </muxc:InfoBar.ActionButton>
@@ -114,7 +114,7 @@
                         </muxc:InfoBar.Content>
                         <muxc:InfoBar.ActionButton>
                             <HyperlinkButton x:Uid="SeeWhatsNew"
-                                             Style="{StaticResource HyperlinkButtonStyle}"
+                                             Style="{StaticResource TextButtonStyle}"
                                              NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
                                              HorizontalAlignment="Right" />
                         </muxc:InfoBar.ActionButton>
@@ -152,7 +152,7 @@
                             <HyperlinkButton x:Uid="SeeWhatsNew"
                                                  NavigateUri="{Binding PowerToysNewAvailableVersionLink}"
                                                  HorizontalAlignment="Right"
-                                             Style="{StaticResource HyperlinkButtonStyle}"/>
+                                             Style="{StaticResource TextButtonStyle}"/>
                         </muxc:InfoBar.ActionButton>
                     </muxc:InfoBar>
 
@@ -202,7 +202,7 @@
 
 
                 <controls:SettingsGroup IsEnabled="True" x:Uid="ShortcutGuide_Appearance_Behavior">
-                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;">
+                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE790;">
                                 <controls:Setting.Description>
                                     <HyperlinkButton Click="OpenColorsSettings_Click"
                                                      x:Uid="Windows_Color_Settings"/>
