@@ -136,7 +136,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;">
+                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE790;">
                         <controls:Setting.Description>
                             <HyperlinkButton Click="OpenColorsSettings_Click"
                                              x:Uid="Windows_Color_Settings"/>

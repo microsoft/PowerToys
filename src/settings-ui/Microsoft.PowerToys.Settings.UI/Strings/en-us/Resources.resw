@@ -875,6 +875,9 @@
   <data name="ImageResizer_UseOriginalDate.Header" xml:space="preserve">
     <value>Use original date modified</value>
   </data>
+    <data name="ImageResizer_UseOriginalDate.Description" xml:space="preserve">
+    <value>Keep the original modified date of the file (instead of the resize date)</value>
+  </data>
   <data name="Encoding.Header" xml:space="preserve">
     <value>Encoding</value>
   </data>
@@ -943,7 +946,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Example: %1 (%2)</value>
   </data>
   <data name="ColorModeHeader.Header" xml:space="preserve">
-    <value>Choose a mode</value>
+    <value>App theme</value>
   </data>
   <data name="Radio_Theme_Dark.Content" xml:space="preserve">
     <value>Dark</value>

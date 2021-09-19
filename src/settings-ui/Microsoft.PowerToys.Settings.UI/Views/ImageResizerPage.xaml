@@ -180,12 +180,12 @@
                     <controls:Setting x:Uid="ImageResizer_Encoding">
                         <controls:Setting.ActionContent>
                             <muxc:NumberBox
-                            Minimum="0"
-                            Maximum="100"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Right"
+                                Minimum="0"
+                                Maximum="100"
+                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                SpinButtonPlacementMode="Compact"
+                                HorizontalAlignment="Right"
                             />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
