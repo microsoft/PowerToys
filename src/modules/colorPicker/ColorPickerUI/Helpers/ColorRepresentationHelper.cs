@@ -212,7 +212,7 @@ namespace ColorPicker.Helpers
             chromaticityA = Math.Round(chromaticityA);
             chromaticityB = Math.Round(chromaticityB);
 
-            return $"L*a*b*({lightness.ToString(CultureInfo.InvariantCulture)}" +
+            return $"CIELab({lightness.ToString(CultureInfo.InvariantCulture)}" +
                    $", {chromaticityA.ToString(CultureInfo.InvariantCulture)}" +
                    $", {chromaticityB.ToString(CultureInfo.InvariantCulture)})";
         }

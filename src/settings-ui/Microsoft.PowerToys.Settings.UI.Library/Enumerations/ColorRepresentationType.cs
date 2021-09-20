@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         NCol = 8,
 
         /// <summary>
-        /// Color presentation as CIELAB color space, also referred to as L*a*b* (L[0..100], A[-128..127], B[-128..127])
+        /// Color presentation as CIELAB color space, also referred to as CIELAB(L[0..100], A[-128..127], B[-128..127])
         /// </summary>
         CIELAB = 9,
 

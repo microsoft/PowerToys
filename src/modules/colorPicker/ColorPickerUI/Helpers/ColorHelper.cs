@@ -194,7 +194,7 @@ namespace ColorPicker.Helpers
             y = y * 100 / 100.0;
             z = z * 100 / 108.8840;
 
-            // XYZ to L*a*b* transformation
+            // XYZ to CIELab transformation
             double fx = (x > .008856) ? Math.Pow(x, 1.0 / 3.0) : (x * 7.787) + (16.0 / 116.0);
             double fy = (y > .008856) ? Math.Pow(y, 1.0 / 3.0) : (y * 7.787) + (16.0 / 116.0);
             double fz = (z > .008856) ? Math.Pow(z, 1.0 / 3.0) : (z * 7.787) + (16.0 / 116.0);
