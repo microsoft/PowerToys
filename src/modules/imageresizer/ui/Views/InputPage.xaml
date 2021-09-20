@@ -56,11 +56,11 @@
                         <StackPanel Orientation="Horizontal"
                                     Grid.Row="1"
                                     VerticalAlignment="Top">
-                            <TextBlock Text="{Binding Fit,Converter={StaticResource EnumValueConverter},ConverterParameter=ThirdPersonSingular}" FontSize="12" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                            <TextBlock Text="{Binding Width,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" FontWeight="SemiBold" FontSize="12" Margin="3,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                            <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,4,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                            <TextBlock Text="{Binding Height,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" FontSize="12" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" FontWeight="SemiBold" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                            <TextBlock Text="{Binding Unit,Converter={StaticResource EnumValueConverter},ConverterParameter=ToLower}" FontSize="12"
+                            <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" FontSize="12" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBlock Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" FontWeight="SemiBold" FontSize="12" Margin="3,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10" Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" Margin="4,4,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBlock Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" FontSize="12" Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" FontWeight="SemiBold" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBlock Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" FontSize="12"
                                        Margin="4,0,0,0"
                                        Foreground="{DynamicResource SecondaryForegroundBrush}" />
                         </StackPanel>
@@ -87,8 +87,8 @@
             <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,-8,0,0">
 
                 <ComboBox Margin="0,0,0,0"
-                    DataContext="{Binding ElementName=SizeComboBox, Path=SelectedItem}" 
-                                  ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
+  
+                                  ItemsSource="{Binding ElementName=SizeComboBox, Path=SelectedItem.ResizeFitValues}"
                                   Style="{StaticResource DisabledWhenUnselectedComboBoxStyle}"
                                   AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
                                   SelectedItem="{Binding Fit}">
@@ -98,7 +98,7 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <ui:NumberBox SpinButtonPlacementMode="Compact"
+            <!--<ui:NumberBox SpinButtonPlacementMode="Compact"
                                           Minimum="0"
                                           Width="102"
                                           DataContext="{Binding ElementName=SizeComboBox, Path=SelectedItem}" 
@@ -145,7 +145,7 @@
                         <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
-            </ComboBox>
+            </ComboBox>-->
             </StackPanel>
          
         
