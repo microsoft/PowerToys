@@ -477,7 +477,7 @@ void WorkArea::InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& paren
     
     bool deviceAdded = FancyZonesDataInstance().AddDevice(m_uniqueId);
     // If the device has been added, check if it should inherit the parent's layout
-    if (deviceAdded && !parentUniqueId.deviceName.empty())
+    if (deviceAdded && parentUniqueId.virtualDesktopId != GUID_NULL)
     {
         FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
     }
