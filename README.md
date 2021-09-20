@@ -36,7 +36,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 Install from the [Microsoft Store's PowerToys page][microsoft-store-link] or use [Microsoft PowerToys GitHub releases page][github-release-link]. 
 
 - For GitHub, click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.45.0-x64.exe` to download the PowerToys installer.
-- For Microsoft Store, it must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which will be available for both Windows 11 and Windows 10.
+- For Microsoft Store, you must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which will be available for both Windows 11 and Windows 10.
 
 This is our preferred method.
 
