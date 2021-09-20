@@ -469,6 +469,12 @@ WorkArea::SetOverlappingZonesAlgorithm(OverlappingZonesAlgorithm overlappingAlgo
 
 void WorkArea::InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept
 {
+    wil::unique_cotaskmem_string virtualDesktopId;
+    if (SUCCEEDED(StringFromCLSID(m_uniqueId.virtualDesktopId, &virtualDesktopId)))
+    {
+        Logger::debug(L"Initialize zone sets on the virtual desktop {}", virtualDesktopId.get());
+    }
+    
     bool deviceAdded = FancyZonesDataInstance().AddDevice(m_uniqueId);
     // If the device has been added, check if it should inherit the parent's layout
     if (deviceAdded && !parentUniqueId.deviceName.empty())

@@ -202,6 +202,12 @@ bool FancyZonesData::AddDevice(const FancyZonesDataTypes::DeviceIdData& deviceId
     std::scoped_lock lock{ dataLock };
     if (!deviceInfoMap.contains(deviceId))
     {
+        wil::unique_cotaskmem_string virtualDesktopId;
+        if (SUCCEEDED(StringFromCLSID(deviceId.virtualDesktopId, &virtualDesktopId)))
+        {
+            Logger::info(L"Create new device on virtual desktop {}", virtualDesktopId.get());
+        }
+        
         // Creates default entry in map when WorkArea is created
         GUID guid;
         auto result{ CoCreateGuid(&guid) };

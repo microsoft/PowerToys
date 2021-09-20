@@ -801,6 +801,12 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) n
     _TRACER_;
     if (m_workAreaHandler.IsNewWorkArea(m_currentDesktopId, monitor))
     {
+        wil::unique_cotaskmem_string virtualDesktopIdStr;
+        if (!SUCCEEDED(StringFromCLSID(m_currentDesktopId, &virtualDesktopIdStr)))
+        {
+            Logger::debug(L"Add new work area on virtual desktop {}", virtualDesktopIdStr.get());
+        }
+        
         FancyZonesDataTypes::DeviceIdData uniqueId;
         uniqueId.virtualDesktopId = m_currentDesktopId;
 
