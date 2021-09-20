@@ -311,19 +311,19 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("FF0000", 53.23, 80.11, 67.22)] // red
         [DataRow("008000", 46.23, -51.70, 49.90)] // green
         [DataRow("80FFFF", 93.16, -35.22, -10.88)] // cyan
-        [DataRow("8080FF", 59.20, 33.11, -63.47)] // blue
+        [DataRow("8080FF", 59.20, 33.1, -63.47)] // blue
         [DataRow("BF40BF", 50.10, 65.51, -41.49)] // magenta
         [DataRow("BFBF00", 75.04, -17.35, 76.03)] // yellow
         [DataRow("008000", 46.23, -51.70, 49.90)] // green
         [DataRow("80FFFF", 93.16, -35.22, -10.88)] // cyan
-        [DataRow("8080FF", 59.20, 33.11, -63.47)] // blue
+        [DataRow("8080FF", 59.20, 33.1, -63.47)] // blue
         [DataRow("BF40BF", 50.10, 65.51, -41.49)] // magenta
         [DataRow("0048BA", 34.35, 27.94, -64.81)] // absolute zero
         [DataRow("B0BF1A", 73.91, -23.38, 71.15)] // acid green
-        [DataRow("D0FF14", 93.87, -40.20, 88.97)] // arctic lime
+        [DataRow("D0FF14", 93.87, -40.21, 88.97)] // arctic lime
         [DataRow("1B4D3E", 29.13, -20.96, 3.95)] // brunswick green
         [DataRow("FFEF00", 93.01, -13.86, 91.48)] // canary yellow
-        [DataRow("FFA600", 75.16, 23.41, 79.10)] // cheese
+        [DataRow("FFA600", 75.16, 23.41, 79.11)] // cheese
         [DataRow("1A2421", 13.18, -5.23, 0.56)] // dark jungle green
         [DataRow("003399", 25.77, 28.89, -59.10)] // dark powder blue
         [DataRow("D70A53", 46.03, 71.91, 18.02)] // debian red
