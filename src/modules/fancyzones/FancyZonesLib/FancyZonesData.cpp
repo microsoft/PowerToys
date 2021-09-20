@@ -240,7 +240,7 @@ void FancyZonesData::CloneDeviceInfo(const FancyZonesDataTypes::DeviceIdData& so
     deviceInfoMap[destination] = deviceInfoMap[source];
 }
 
-void FancyZonesData::UpdatePrimaryDesktopData(GUID desktopId)
+void FancyZonesData::SyncVirtualDesktops(GUID currentVirtualDesktopId)
 {
     _TRACER_;
     // Explorer persists current virtual desktop identifier to registry on a per session basis,

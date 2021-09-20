@@ -71,7 +71,7 @@ public:
 
     bool AddDevice(const FancyZonesDataTypes::DeviceIdData& deviceId);
     void CloneDeviceInfo(const FancyZonesDataTypes::DeviceIdData& source, const FancyZonesDataTypes::DeviceIdData& destination);
-    void UpdatePrimaryDesktopData(GUID desktopId);
+    void SyncVirtualDesktops(GUID desktopId);
     void RemoveDeletedDesktops(const std::vector<GUID>& activeDesktops);
 
     bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId) const;
