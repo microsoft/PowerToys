@@ -283,9 +283,14 @@ void FancyZonesData::SyncVirtualDesktops(GUID currentVirtualDesktopId)
         deviceInfoMap.insert(std::move(mapEntry));
     }
     
-    // TODO: when updating the primary desktop GUID, the app zone history also needs to be updated 
     if (dirtyFlag)
     {
+        wil::unique_cotaskmem_string virtualDesktopIdStr;
+        if (SUCCEEDED(StringFromCLSID(currentVirtualDesktopId, &virtualDesktopIdStr)))
+        {
+            Logger::info(L"Update Virtual Desktop id to {}", virtualDesktopIdStr.get()); 
+        }
+
         SaveAppZoneHistoryAndZoneSettings();
     }
 }
@@ -299,11 +304,18 @@ void FancyZonesData::RemoveDeletedDesktops(const std::vector<GUID>& activeDeskto
     for (auto it = std::begin(deviceInfoMap); it != std::end(deviceInfoMap);)
     {
         GUID desktopId = it->first.virtualDesktopId;
+
         if (desktopId != GUID_NULL)
         {
             auto foundId = active.find(desktopId);
             if (foundId == std::end(active))
             {
+                wil::unique_cotaskmem_string virtualDesktopIdStr;
+                if (SUCCEEDED(StringFromCLSID(desktopId, &virtualDesktopIdStr)))
+                {
+                    Logger::info(L"Remove Virtual Desktop id {}", virtualDesktopIdStr.get());
+                }
+
                 RemoveDesktopAppZoneHistory(desktopId);
                 it = deviceInfoMap.erase(it);
                 dirtyFlag = true;
