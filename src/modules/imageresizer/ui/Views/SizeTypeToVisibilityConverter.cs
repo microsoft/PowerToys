@@ -37,34 +37,4 @@ namespace ImageResizer.Views
              return (Visibility)value == Visibility.Visible;
         }
     }
-
-    [ValueConversion(typeof(bool), typeof(ResizeSize))]
-#pragma warning disable SA1402 // File may only contain a single type
-    internal class SizeTypeToBoolConverter : IValueConverter
-#pragma warning restore SA1402 // File may only contain a single type
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value != null)
-            {
-                if (value.GetType() == typeof(CustomSize))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return false;
-        }
-    }
 }
