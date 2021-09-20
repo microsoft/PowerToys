@@ -29,6 +29,9 @@
                 </ObjectDataProvider.MethodParameters>
             </ObjectDataProvider>
             
+            <v:SizeTypeToVisibilityConverter x:Key="SizeTypeToVisibilityConverter"/>
+            <v:SizeTypeToBoolConverter x:Key="SizeTypeToBoolConverter"/>
+            
             <v:EnumValueConverter x:Key="EnumValueConverter"/>
             <v:AutoDoubleConverter x:Key="AutoDoubleConverter"/>
             <v:BoolValueConverter x:Key="BoolValueConverter"/>
