@@ -190,9 +190,9 @@ namespace ColorPicker.Helpers
             GetCIELABColorFromCIEXYZ(double x, double y, double z)
         {
             // These values are based on the D65 Illuminant
-            x = x * 100 / 95.0470;
+            x = x * 100 / 95.0489;
             y = y * 100 / 100.0;
-            z = z * 100 / 108.883;
+            z = z * 100 / 108.8840;
 
             // XYZ to L*a*b* transformation
             double fx = (x > .008856) ? Math.Pow(x, 1.0 / 3.0) : (x * 7.787) + (16.0 / 116.0);
