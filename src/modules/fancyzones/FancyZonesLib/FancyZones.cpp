@@ -685,7 +685,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_VD_UPDATE)
         {
-            RegisterVirtualDesktopUpdates();
+            OnDisplayChange(DisplayChangeType::Initialization);
         }
         else if (message == WM_PRIV_EDITOR)
         {
