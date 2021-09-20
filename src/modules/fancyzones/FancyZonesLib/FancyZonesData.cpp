@@ -259,27 +259,51 @@ void FancyZonesData::SyncVirtualDesktops(GUID currentVirtualDesktopId)
         {
             if (data.deviceId.virtualDesktopId == GUID_NULL)
             {
-                data.deviceId.virtualDesktopId = desktopId;
+                data.deviceId.virtualDesktopId = currentVirtualDesktopId;
+                dirtyFlag = true;
+            }
+            else
+            {
+                if (m_virtualDesktopCheckCallback && !m_virtualDesktopCheckCallback(data.deviceId.virtualDesktopId))
+                {
+                    data.deviceId.virtualDesktopId = GUID_NULL;
+                    dirtyFlag = true;
+                }
+            }
+        }
+    }
+    
+    std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithCurrentId{};
+    std::vector<FancyZonesDataTypes::DeviceIdData> replaceWithNullId{};
+
+    for (const auto& [desktopId, data] : deviceInfoMap)
+    {
+        if (desktopId.virtualDesktopId == GUID_NULL)
+        {
+            replaceWithCurrentId.push_back(desktopId);
+            dirtyFlag = true;
+        }
+        else
+        {
+            if (m_virtualDesktopCheckCallback && !m_virtualDesktopCheckCallback(desktopId.virtualDesktopId))
+            {
+                replaceWithNullId.push_back(desktopId);
                 dirtyFlag = true;
             }
         }
     }
     
-    std::vector<FancyZonesDataTypes::DeviceIdData> toReplace{};
-    
-    for (const auto& [desktopId, data] : deviceInfoMap)
-    {
-        if (desktopId.virtualDesktopId == GUID_NULL)
-        {
-            toReplace.push_back(desktopId);
-            dirtyFlag = true;
-        }
-    }
-    
-    for (const auto& id : toReplace)
+    for (const auto& id : replaceWithCurrentId)
     {
         auto mapEntry = deviceInfoMap.extract(id);
-        mapEntry.key().virtualDesktopId = desktopId;
+        mapEntry.key().virtualDesktopId = currentVirtualDesktopId;
+        deviceInfoMap.insert(std::move(mapEntry));
+    }
+
+    for (const auto& id : replaceWithNullId)
+    {
+        auto mapEntry = deviceInfoMap.extract(id);
+        mapEntry.key().virtualDesktopId = GUID_NULL;
         deviceInfoMap.insert(std::move(mapEntry));
     }
     
