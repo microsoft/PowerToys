@@ -864,34 +864,34 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
 
 void FancyZones::UpdateZoneWindows() noexcept
 {
-    // Mapping between display device name and device index (operating system identifies each display device with an index value).
-    std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
-    struct capture
-    {
-        FancyZones* fancyZones;
-        std::unordered_map<std::wstring, DWORD>* displayDeviceIdx;
-    };
-
-    auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
-        capture* params = reinterpret_cast<capture*>(data);
-        MONITORINFOEX mi{ { .cbSize = sizeof(mi) } };
-        if (GetMonitorInfoW(monitor, &mi))
-        {
-            auto& displayDeviceIdxMap = *(params->displayDeviceIdx);
-            FancyZones* fancyZones = params->fancyZones;
-
-            std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(mi.szDevice, displayDeviceIdxMap);
-            fancyZones->AddZoneWindow(monitor, deviceId);
-        }
-        return TRUE;
-    };
-
     if (m_settings->GetSettings()->spanZonesAcrossMonitors)
     {
         AddZoneWindow(nullptr, {});
     }
     else
     {
+        // Mapping between display device name and device index (operating system identifies each display device with an index value).
+        std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
+        struct capture
+        {
+            FancyZones* fancyZones;
+            std::unordered_map<std::wstring, DWORD>* displayDeviceIdx;
+        };
+
+        auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
+            capture* params = reinterpret_cast<capture*>(data);
+            MONITORINFOEX mi{ { .cbSize = sizeof(mi) } };
+            if (GetMonitorInfoW(monitor, &mi))
+            {
+                auto& displayDeviceIdxMap = *(params->displayDeviceIdx);
+                FancyZones* fancyZones = params->fancyZones;
+
+                std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(mi.szDevice, displayDeviceIdxMap);
+                fancyZones->AddZoneWindow(monitor, deviceId);
+            }
+            return TRUE;
+        };
+
         capture capture{ this, &displayDeviceIdxMap };
         EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(&capture));
     }
