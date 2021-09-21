@@ -220,7 +220,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void NewImageSizeHasCorrectValues()
+        public void NewlyAddedImageSizeHasCorrectValues()
         {
             // arrange
             var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
@@ -232,7 +232,7 @@ namespace ViewModelTests
 
             // Assert
             ImageSize newTestSize = viewModel.Sizes.Where<ImageSize>(x => x.Id == 0).First();
-            Assert.AreEqual(newTestSize.Name, "New size");
+            Assert.AreEqual(newTestSize.Name, "New size 1");
             Assert.AreEqual(newTestSize.Fit, (int)ResizeFit.Fit);
             Assert.AreEqual(newTestSize.Width, 854);
             Assert.AreEqual(newTestSize.Height, 480);
@@ -256,6 +256,27 @@ namespace ViewModelTests
             // Assert
             Assert.AreEqual(sizeOfOriginalArray - 1, viewModel.Sizes.Count);
             Assert.IsFalse(viewModel.Sizes.Contains(deleteCandidate));
+        }
+
+        [TestMethod]
+        public void NameOfNewImageSizesIsIncrementedCorrectly()
+        {
+            // arrange
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
+
+            // act
+            viewModel.AddRow("New size"); // Add: "New size 1"
+            viewModel.AddRow("New size"); // Add: "New size 2"
+            viewModel.AddRow("New size"); // Add: "New size 3"
+            viewModel.DeleteImageSize(1); // Delete: "New size 2"
+            viewModel.AddRow("New size"); // Add: "New Size 4"
+
+            // Assert
+            Assert.AreEqual(viewModel.Sizes[0].Name, "New size 1");
+            Assert.AreEqual(viewModel.Sizes[1].Name, "New size 3");
+            Assert.AreEqual(viewModel.Sizes[2].Name, "New size 4");
         }
 
         [TestMethod]
