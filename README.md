@@ -33,12 +33,15 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 #### Stable version
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.45.0-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft Store's PowerToys page][microsoft-store-link] or use [Microsoft PowerToys GitHub releases page][github-release-link]. 
+
+- For GitHub, click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.45.0-x64.exe` to download the PowerToys installer.
+- For Microsoft Store, you must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which will be available for both Windows 11 and Windows 10.
 
 This is our preferred method.
 
 #### Experimental version
-To install the Video Conference mute, please use the [v0.36 experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.35 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
+To install the Video Conference mute, please use the [v0.46 experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.45 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
 ### Via WinGet (Preview)
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). To install PowerToys, run the following command from the command line / PowerShell:
@@ -81,7 +84,7 @@ Our goals for the [v0.45 release cycle](https://github.com/microsoft/PowerToys/i
 
 We also worked extensively with the community to build an updated settings menu UI. This UI update takes advantage of the latest styling elements to provide users with a refreshed, modern experience navigating the various utilities and their settings.
 
-An experimental version of [PowerToys (v0.46)](https://github.com/microsoft/PowerToys/releases/tag/v0.46.0) was released the week of September 13th. Download and install it to try out the latest improvements to our Video Conference Mute utility! All updates from the v0.45.0 release will still apply in v0.46.0.
+An experimental version of [PowerToys (v0.46)][github-prerelease-link] was released the week of September 13th. Download and install it to try out the latest improvements to our Video Conference Mute utility! All updates from the v0.45.0 release will still apply in v0.46.0.
 
 #### Highlights from v0.45
 
@@ -199,7 +202,8 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
 [community-link]: COMMUNITY.md
-[github-release-link]: https://github.com/microsoft/PowerToys/releases/
+[github-release-link]: https://aka.ms/installPowerToys
+[microsoft-store-link]: https://aka.ms/getPowertoys
 [roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
 [privacy-link]: http://go.microsoft.com/fwlink/?LinkId=521839
 [vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
@@ -208,4 +212,4 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F21
-[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.36.0
+[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.46.0
