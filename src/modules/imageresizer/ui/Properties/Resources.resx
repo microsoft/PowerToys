@@ -134,7 +134,7 @@
     <value>(auto)</value>
   </data>
   <data name="Input_Content" xml:space="preserve">
-    <value>_Select a size</value>
+    <value>Select a size</value>
   </data>
   <data name="Input_Custom" xml:space="preserve">
     <value>Custom</value>

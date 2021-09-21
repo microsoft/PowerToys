@@ -106,7 +106,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _Select a size.
+        ///   Looks up a localized string similar to Select a size.
         /// </summary>
         public static string Input_Content {
             get {
