@@ -119,7 +119,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="progressbar_window.cpp" />
-    <ClCompile Include="RcResource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DotnetInstallation.h" />

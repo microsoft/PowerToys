@@ -12,10 +12,10 @@ Acceleratorkeys
 ACCEPTFILES
 accessibile
 accessibilityinsights
+Accessible
 Acl
 aclapi
 AColumn
-Accessible
 acos
 acrt
 Actioncenter
@@ -126,8 +126,8 @@ AUTOMATIONPROPERTIES
 Autorun
 AUTOSIZECOLUMNS
 AUTOUPDATE
-AValid
 available
+AValid
 awakeversion
 AWAYMODE
 AYUV
@@ -1321,6 +1321,7 @@ msiquery
 MSIRESTARTMANAGERCONTROL
 msix
 msixbundle
+MSIXCA
 MSIXVERSION
 MSLLHOOKSTRUCT
 Mso

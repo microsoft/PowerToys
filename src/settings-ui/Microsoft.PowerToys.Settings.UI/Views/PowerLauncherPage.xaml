@@ -136,7 +136,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;">
+                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE790;">
                         <controls:Setting.Description>
                             <HyperlinkButton Click="OpenColorsSettings_Click"
                                              x:Uid="Windows_Color_Settings"/>
@@ -191,25 +191,11 @@
                                                 </controls:Setting.Icon>
                                                 <controls:Setting.ActionContent>
                                                     <StackPanel Orientation="Horizontal" Spacing="16">
-                                                        <!-- To do: replace with InfoBadge once we move towards WinUI 2.7 -->
-                                                        <Grid VerticalAlignment="Center"
-                                                              AutomationProperties.AccessibilityView="Raw"
-                                                              Visibility="{x:Bind ShowNotAccessibleWarning}">
-                                                            <TextBlock x:Name="IconBackground"
-                                                                        VerticalAlignment="Center"
-                                                                       FontSize="{StaticResource InfoBarIconFontSize}"
-                                                                       Text="{StaticResource InfoBarIconBackgroundGlyph}"
-                                                                       Foreground="{ThemeResource InfoBarErrorSeverityIconBackground}"
-                                                                       FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                                       AutomationProperties.AccessibilityView="Raw" />
-                                                            
-                                                            <TextBlock x:Name="StandardIcon"
-                                                                       FontSize="{StaticResource InfoBarIconFontSize}"
-                                                                       Text="{StaticResource InfoBarErrorIconGlyph}"
-                                                                       Foreground="{ThemeResource InfoBarErrorSeverityIconForeground}"
-                                                                       FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
-                                                        </Grid>
 
+                                                        <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
+                                                                        Visibility="{x:Bind ShowNotAccessibleWarning}"
+                                                                        Style="{StaticResource CriticalIconInfoBadgeStyle}" />
+                                                     
                                                         <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
                                                                       IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"/>
                                                     </StackPanel>
@@ -233,10 +219,21 @@
                                                               IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
+                                                <CheckBox 
+                                                           AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
                                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"
-                                                          Margin="{StaticResource ExpanderSettingMargin}"/>
+                                                            Margin="56, 0, 40, 16">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock x:Name="IncludeInGlobalResultTitle"
+                                                                   Margin="0,10,0,0"
+                                                                   x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
+                                                        <controls:TextBlockControl x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
+                                                                                   FontSize="{StaticResource SecondaryTextFontSize}" 
+                                                                                   EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                                                                   DisabledForeground="{ThemeResource TextFillColorDisabledBrush}" />
+                                                    </StackPanel>
+                                                </CheckBox>
                                                
                                                 <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
                                                           SelectionMode="None"

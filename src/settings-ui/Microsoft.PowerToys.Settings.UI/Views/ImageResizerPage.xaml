@@ -33,7 +33,7 @@
 
 
                 <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="ImageResizer_CustomSizes" Icon="&#xE2B2;">
+                    <controls:Setting x:Uid="ImageResizer_Presets" Icon="&#xE2B2;">
                         <controls:Setting.ActionContent>
                             <Button x:Uid="ImageResizer_AddSizeButton" Click="AddSizeButton_Click" Style="{ThemeResource AccentButtonStyle}" />
                         </controls:Setting.ActionContent>
@@ -180,12 +180,12 @@
                     <controls:Setting x:Uid="ImageResizer_Encoding">
                         <controls:Setting.ActionContent>
                             <muxc:NumberBox
-                            Minimum="0"
-                            Maximum="100"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Right"
+                                Minimum="0"
+                                Maximum="100"
+                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                SpinButtonPlacementMode="Compact"
+                                HorizontalAlignment="Right"
                             />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
@@ -218,19 +218,18 @@
 
 
                 <controls:SettingsGroup x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingExpander IsExpanded="True">
-                        <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ImageResizer_FilenameFormatHeader" Style="{StaticResource ExpanderHeaderSettingStyle}">
-                                <controls:Setting.ActionContent>
-                                    <StackPanel Spacing="4" Orientation="Horizontal">
-                                        <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
+
+                    <controls:Setting x:Uid="ImageResizer_FilenameFormatHeader">
+                        <controls:Setting.ActionContent>
+                            <StackPanel Spacing="4" Orientation="Horizontal">
+                                <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
                                          HorizontalAlignment="Right"
                                          MinWidth="{StaticResource SettingActionControlMinWidth}"
                                          x:Uid="ImageResizer_FilenameFormatPlaceholder"/>
-                                        <Button Content="&#xE946;" FontFamily="{ThemeResource SymbolThemeFontFamily}">
-                                            <Button.Flyout>
-                                                <Flyout>
-                                                    <TextBlock x:Name="FileFormatTextBlock">
+                                <Button Content="&#xE946;" Height="32" FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                    <Button.Flyout>
+                                        <Flyout>
+                                            <TextBlock x:Name="FileFormatTextBlock">
                                                 <Run x:Uid="ImageResizer_FileFormatDescription"/>
                                                 <LineBreak/>
                                                 <LineBreak/>
@@ -257,26 +256,20 @@
                                                 <Run Text="%6" FontWeight="Bold" />
                                                 <Run Text=" - "/>
                                                 <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
-                                                    </TextBlock>
-                                                </Flyout>
-                                            </Button.Flyout>
-                                        </Button>
-                                    </StackPanel>
+                                            </TextBlock>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </StackPanel>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-                                </controls:Setting.ActionContent>
-
-                            </controls:Setting>
-                        </controls:SettingExpander.Header>
-                        <controls:SettingExpander.Content>
-
-                            <CheckBox x:Uid="ImageResizer_UseOriginalDate"
-                                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified}"
-                                      Margin="16,8,0,8" />
-                        </controls:SettingExpander.Content>
-                    </controls:SettingExpander>
+                    <controls:Setting x:Uid="ImageResizer_UseOriginalDate">
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified}" />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                 </controls:SettingsGroup>
-
-
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>

@@ -31,7 +31,7 @@
 
                 <controls:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <Button Style="{StaticResource SettingButtonStyle}" x:Uid="FancyZones_LaunchEditorButton_Accessible" Command="{x:Bind ViewModel.LaunchEditorEventHandler}">
-                        <controls:Setting x:Uid="FancyZones_LaunchEditorButtonControl" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xF246;">
+                        <controls:Setting x:Uid="FancyZones_LaunchEditorButtonControl" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xEB3C;">
                             <!--<controls:Setting.Icon>
                                 <PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>
                             </controls:Setting.Icon>-->
@@ -81,19 +81,20 @@
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" Margin="{StaticResource ExpanderSettingMargin}"  />
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" 
-                                          Margin="{StaticResource ExpanderSettingMargin}"
+                                          Margin="56, 0, 40, 16"
                                           AutomationProperties.Name="{Binding ElementName=SpanZonesAcrossMonitorsPrerequisitesTitle, Path=Text}">
                                     <StackPanel Orientation="Vertical">
-                                        <TextBlock x:Name="SpanZonesAcrossMonitorsPrerequisitesTitle" x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
+                                        <TextBlock x:Name="SpanZonesAcrossMonitorsPrerequisitesTitle"
+                                                   Margin="0,10,0,0"
+                                                   x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
                                         <controls:TextBlockControl x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites"
                                             FontSize="{StaticResource SecondaryTextFontSize}"
                                             EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            DisabledForeground="{ThemeResource TextFillColorDisabledBrush}"
-                                            IsEnabled="{Binding ElementName=ZonesSettingsGroup, Path=IsEnabled, Mode=OneWay}"/>
+                                            DisabledForeground="{ThemeResource TextFillColorDisabledBrush}"/>
                                     </StackPanel>
                                 </CheckBox>
                             
-                                <controls:Setting  x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <ComboBox SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                             <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />
@@ -271,7 +272,7 @@
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_ExcludeApps" Icon="&#xE103;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
+                            <controls:Setting x:Uid="FancyZones_ExcludeApps" Icon="&#xECE4;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"

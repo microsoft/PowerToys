@@ -94,13 +94,20 @@
       </Custom>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
+      <!-- TODO: Use to activate embedded MSIX -->
+      <!--<Custom Action="InstallEmbeddedMSIXTask" After="InstallFinalize">
+        NOT Installed
+      </Custom>-->
       <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize">
         NOT Installed
       </Custom>
       <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize">
         Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
-
+      <!-- TODO: Use to activate embedded MSIX -->
+      <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
+        Installed AND (REMOVE="ALL")
+      </Custom>-->
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
 
     </InstallExecuteSequence>
@@ -133,7 +140,21 @@
                   DllEntry="RemoveScheduledTasksCA"
                    />
 
-    <CustomAction Id="TelemetryLogInstallSuccess"
+    <CustomAction Id="InstallEmbeddedMSIXTask"
+                  Return="ignore"
+                  Impersonate="yes"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="InstallEmbeddedMSIXCA"
+                   />
+
+    <CustomAction Id="UninstallEmbeddedMSIXTask"
+                  Return="ignore"
+                  Impersonate="yes"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="UninstallEmbeddedMSIXCA"
+                   />
+
+        <CustomAction Id="TelemetryLogInstallSuccess"
                   Return="ignore"
                   Impersonate="yes"
                   BinaryKey="PTCustomActions"

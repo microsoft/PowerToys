@@ -16,4 +16,6 @@ EXPORTS
 	TerminateProcessesCA
 	CertifyVirtualCameraDriverCA
 	InstallVirtualCameraDriverCA
+	InstallEmbeddedMSIXCA
 	UninstallVirtualCameraDriverCA
+	UninstallEmbeddedMSIXCA

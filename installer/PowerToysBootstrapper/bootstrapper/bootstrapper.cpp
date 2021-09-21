@@ -392,7 +392,7 @@ int Bootstrapper(HINSTANCE hInstance)
 
     if (!package_path.empty() && !uninstall_msi_version(package_path))
     {
-        spdlog::error("Couldn't install the existing MSI package ({})", GetLastError());
+        spdlog::error("Couldn't uninstall the existing MSI package ({})", GetLastError());
         ShowMessageBoxError(IDS_UNINSTALL_PREVIOUS_VERSION_ERROR);
         return 1;
     }

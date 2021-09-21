@@ -10,12 +10,6 @@
 
     <UserControl.Resources>
         <converters:DoubleToVisibilityConverter x:Name="doubleToVisibilityConverter" GreaterThan="0" TrueValue="Visible" FalseValue="Collapsed" />
-        <Style TargetType="HyperlinkButton" BasedOn="{StaticResource TextBlockButtonStyle}">
-            <Style.Setters>
-                <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Margin" Value="0,0,16,0"/>
-            </Style.Setters>
-        </Style>
     </UserControl.Resources>
 
     <Grid RowSpacing="24" Padding="20,0,0,0">
@@ -67,14 +61,14 @@
                         <ItemsControl ItemsSource="{x:Bind PrimaryLinks}" Margin="0,8,0,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="local:PageLink">
-                                    <HyperlinkButton NavigateUri="{x:Bind Link}">
+                                    <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
                                         <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                     </HyperlinkButton>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <controls:WrapPanel Orientation="Horizontal" HorizontalSpacing="8"/>
+                                    <controls:WrapPanel Orientation="Horizontal" HorizontalSpacing="24"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
@@ -103,14 +97,14 @@
                     <ItemsControl x:Name="SecondaryLinksItemControl" Margin="2,0,0,0" ItemsSource="{x:Bind SecondaryLinks}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:PageLink">
-                                <HyperlinkButton NavigateUri="{x:Bind Link}">
+                                <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
                                     <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
                                 </HyperlinkButton>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <controls:WrapPanel Orientation="Horizontal" HorizontalSpacing="8"/>
+                                <controls:WrapPanel Orientation="Horizontal" HorizontalSpacing="24"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
