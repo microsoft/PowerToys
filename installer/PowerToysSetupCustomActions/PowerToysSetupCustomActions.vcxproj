@@ -15,7 +15,7 @@
     <ProjectGuid>{32f3882b-f2d6-4586-b5ed-11e39e522bd3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PowerToysSetupCustomActions</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -53,10 +53,11 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>inc;..\..\src\;telemetry;$(WIX)sdk\$(WixPlatformToolset)\inc;$(SolutionDir)\packages\WiX.3.11.2\tools\sdk\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/await /Zc:twoPhase- /Wv:18 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(WIX)sdk\$(WixPlatformToolset)\lib\x64;$(SolutionDir)\packages\WiX.3.11.2\tools\sdk\vs2017\lib\x64;..\..\$(PlatformShortName)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Newdev.lib;Crypt32.lib;msi.lib;wcautil.lib;Psapi.lib;Pathcch.lib;comsupp.lib;taskschd.lib;Secur32.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;ApplicationUpdate.lib;Notifications.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;Newdev.lib;Crypt32.lib;msi.lib;wcautil.lib;Psapi.lib;Pathcch.lib;comsupp.lib;taskschd.lib;Secur32.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;ApplicationUpdate.lib;Notifications.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -112,9 +113,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\PowerToysBootstrapper\bootstrapper\RcResource.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Telemetry\ProjectTelemetry.h" />
     <ClInclude Include="Telemetry\TraceLoggingDefines.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
