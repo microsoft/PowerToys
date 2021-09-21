@@ -615,6 +615,15 @@
     <value>Press duration before showing (ms)</value>
     <comment>pressing a key in milliseconds</comment>
   </data>
+  <data name="ShortcutGuide_PressTime.Description" xml:space="preserve">
+    <value>How long to press the Windows key to activate the module</value>
+  </data>
+  <data name="ShortcutGuide_UseLegacyPressWinKeyBehavior.Header" xml:space="preserve">
+    <value>Press the Windows key to activate the module</value>
+  </data>
+  <data name="ShortcutGuide_UseLegacyPressWinKeyBehavior.Description" xml:space="preserve">
+    <value>Press the Windows key for some time instead of using the activation shortcut</value>
+  </data>
   <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
