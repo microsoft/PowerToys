@@ -30,7 +30,7 @@ namespace CentralizedKeyboardHook
         std::wstring moduleName;
         std::function<bool()> action;
         UINT_PTR idTimer; // Timer ID for calling SET_TIMER with.
-        UINT milliSecondsToPress; // How much time the key must be pressed.
+        UINT millisecondsToPress; // How much time the key must be pressed.
         bool operator<(const PressedKeyDescriptor& other) const
         {
             // We'll use the virtual key as the real key, since looking for a hit with the key is done in the more time sensitive path (low level keyboard hook).
@@ -103,7 +103,7 @@ namespace CentralizedKeyboardHook
                     auto it = pressedKeyDescriptors.find(dummy);
                     while (it != pressedKeyDescriptors.end())
                     {
-                        SetTimer(runnerWindow, it->idTimer, it->milliSecondsToPress, PressedKeyTimerProc);
+                        SetTimer(runnerWindow, it->idTimer, it->millisecondsToPress, PressedKeyTimerProc);
                         ++it;
                     }
                 }
@@ -193,7 +193,7 @@ namespace CentralizedKeyboardHook
         const UINT upperId = hash & 0xFFFF;
         const UINT lowerId = vk & 0xFFFF; // The key to press can be the lower ID.
         const UINT timerId = upperId << 16 | lowerId;
-        pressedKeyDescriptors.insert({ .virtualKey = vk, .moduleName = moduleName, .action = std::move(action), .idTimer = timerId, .milliSecondsToPress = milliseconds });
+        pressedKeyDescriptors.insert({ .virtualKey = vk, .moduleName = moduleName, .action = std::move(action), .idTimer = timerId, .millisecondsToPress = milliseconds });
     }
 
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept
