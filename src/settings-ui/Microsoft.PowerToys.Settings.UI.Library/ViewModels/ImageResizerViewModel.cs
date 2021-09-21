@@ -252,7 +252,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         public void AddRow(string sizeNamePrefix)
         {
-            // Without validation we get warning CA1062
+            // Without validation we get warning CA1062 when unsing the parameter variable sizeNamePrefix
             string prefixString = string.IsNullOrEmpty(sizeNamePrefix) ? "New Size" : sizeNamePrefix;
 
             ObservableCollection<ImageSize> imageSizes = Sizes;
