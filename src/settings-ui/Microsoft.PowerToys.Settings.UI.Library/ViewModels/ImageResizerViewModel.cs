@@ -253,8 +253,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         public void AddRow(string sizeNamePrefix)
         {
             /// This is a fallback validation to eliminate the warning "CA1062:Validate arguments of public methods" when using the parameter (variable) "sizeNamePrefix" in the code.
-            /// (Normally the parameter "sizeNamePrefix" can't be null or empty because it is filled with a localized string when we call this method from <see cref="UI.Views.ImageResizerPage.AddSizeButton_Click"/>.
-            /// If the parameter is unexpectedly empty or null we fill the parameter with a non-localized string.
+            /// If the parameter is unexpectedly empty or null, we fill the parameter with a non-localized string.
+            /// (Normally the parameter "sizeNamePrefix" can't be null or empty because it is filled with a localized string when we call this method from <see cref="UI.Views.ImageResizerPage.AddSizeButton_Click"/>.)
             sizeNamePrefix = string.IsNullOrEmpty(sizeNamePrefix) ? "New Size" : sizeNamePrefix;
 
             ObservableCollection<ImageSize> imageSizes = Sizes;
