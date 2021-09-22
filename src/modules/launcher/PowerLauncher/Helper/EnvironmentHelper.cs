@@ -5,8 +5,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Security.Principal;
 using Wox.Plugin.Logger;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
@@ -15,41 +13,15 @@ namespace PowerLauncher.Helper
 {
     public static class EnvironmentHelper
     {
-        //private const string Username = "USERNAME";
-        //private const string ProcessorArchitecture = "PROCESSOR_ARCHITECTURE";
-        private const string Path = "PATH";
+        private const string PathVariable = "PATH";
         private static HashSet<string> protectedProcessVariables;
 
         internal static void UpdateEnvironment()
         {
-            // Username and process architecture are set by the machine vars, this
-            // may lead to incorrect values so save off the current values to restore.
-            // string originalUsername = Environment.GetEnvironmentVariable(Username, EnvironmentVariableTarget.Process);
-            // string originalArch = Environment.GetEnvironmentVariable(ProcessorArchitecture, EnvironmentVariableTarget.Process);
+            var newEnvironment = new Dictionary<string, string>();
+            // ToDo: method call
 
-            var environment = new Dictionary<string, string>();
-            MergeTargetEnvironmentVariables(environment, EnvironmentVariableTarget.Process);
-            MergeTargetEnvironmentVariables(environment, EnvironmentVariableTarget.Machine);
-
-            if (!IsRunningAsSystem())
-            {
-                MergeTargetEnvironmentVariables(environment, EnvironmentVariableTarget.User);
-
-                // Special handling for PATH - merge Machine & User instead of override
-                var pathTargets = new[] { EnvironmentVariableTarget.Machine, EnvironmentVariableTarget.User };
-                var paths = pathTargets
-                    .Select(t => Environment.GetEnvironmentVariable(Path, t))
-                    .Where(e => e != null)
-                    .SelectMany(e => e.Split(';', StringSplitOptions.RemoveEmptyEntries))
-                    .Distinct();
-
-                environment[Path] = string.Join(';', paths);
-            }
-
-            environment[Username] = originalUsername;
-            environment[ProcessorArchitecture] = originalArch;
-
-            foreach (KeyValuePair<string, string> kv in environment)
+            foreach (KeyValuePair<string, string> kv in newEnvironment)
             {
                 // Initialize variables for length of environment variable name and value. Using this variables prevent us from null value exceptions.
                 int varNameLength = kv.Key == null ? 0 : kv.Key.Length;
@@ -77,13 +49,36 @@ namespace PowerLauncher.Helper
             }
         }
 
-        private static void GetMergedMachineAndUserEnvVariables(
-            Dictionary<string, string> environment, EnvironmentVariableTarget target)
+        /// <summary>
+        /// This method returns a Dictionary with a merged set of machine and user environment variables. If we run as "system" only machine variables are returned.
+        /// </summary>
+        private static void GetMachineAndUserEnvVariables(Dictionary<string, string> environment)
         {
-            IDictionary variables = Environment.GetEnvironmentVariables(target);
-            foreach (DictionaryEntry entry in variables)
+            // Getting machine variables
+            IDictionary mV = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+            foreach (DictionaryEntry entry in mV)
             {
                 environment[(string)entry.Key] = (string)entry.Value;
+            }
+
+            // Getting user variables and merge it
+            if (!IsRunningAsSystem())
+            {
+                IDictionary uV = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+                foreach (DictionaryEntry entry in uV)
+                {
+                    if (!(entry.Key.ToString() == PathVariable))
+                    {
+                        environment[(string)entry.Key] = (string)entry.Value;
+                    }
+                    else
+                    {
+                        // When we merging the PATH variable we can't simply override machine layer's value. The path variable must be joined by appending the user value to the machine value.
+                        // This is the official behavior and checked by trying it out the physical machine.
+                        string newPathValue = environment[PathVariable].EndsWith(";", StringComparison.InvariantCulture) ? environment[PathVariable] + (string)entry.Value : environment[PathVariable] + ";" + (string)entry.Value;
+                        environment[PathVariable] = newPathValue;
+                    }
+                }
             }
         }
 
@@ -106,7 +101,7 @@ namespace PowerLauncher.Helper
 
                 // Getting environment variables
                 processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
-                machineAndUserVars = GetMergedMachineAndUserEnvVariables;
+                GetMachineAndUserEnvVariables(machineAndUserVars);
 
                 // Adding variable names that 
             });
