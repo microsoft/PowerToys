@@ -62,6 +62,13 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
+                    <muxc:InfoBar
+                        x:Uid="ShortcutGuide_PressWinKeyWarning"
+                        Severity="Warning"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior}"
+                        IsClosable="False"
+                    />
+
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ShortcutGuide_Appearance_Behavior" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
