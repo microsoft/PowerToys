@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "powertoy_module.h"
 #include "centralized_kb_hook.h"
-#include "CentralizedHotkeys.h"
+#include "centralized_hotkeys.h"
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
 

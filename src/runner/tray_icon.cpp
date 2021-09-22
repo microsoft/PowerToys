@@ -2,7 +2,7 @@
 #include "Generated files/resource.h"
 #include "settings_window.h"
 #include "tray_icon.h"
-#include "CentralizedHotkeys.h"
+#include "centralized_hotkeys.h"
 #include "centralized_kb_hook.h"
 #include <Windows.h>
 
