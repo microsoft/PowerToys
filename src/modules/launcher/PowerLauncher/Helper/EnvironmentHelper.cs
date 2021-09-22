@@ -19,7 +19,8 @@ namespace PowerLauncher.Helper
         internal static void UpdateEnvironment()
         {
             var newEnvironment = new Dictionary<string, string>();
-            // ToDo: method call
+            GetMachineAndUserEnvVariables(newEnvironment);
+            MarkRemovedEnvVariablesForDeletion(newEnvironment);
 
             foreach (KeyValuePair<string, string> kv in newEnvironment)
             {
@@ -33,7 +34,11 @@ namespace PowerLauncher.Helper
                 {
                     try
                     {
-                        Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
+                        if (!protectedProcessVariables.Contains(kv.Key))
+                        {
+                            /// If the variable is not listed as protected/don't override on process level, then update it (<see cref="GetProtectedEnvVariables"/>).
+                            Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
+                        }
                     }
                     catch (ArgumentException ex)
                     {
@@ -50,8 +55,27 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
+        /// This method gets all deleted environment variables and adds them to a dictionary.
+        /// To delete variables with <see cref="Environment.SetEnvironmentVariable(string, string?)"/> the second parameter (value) must be null or empty (<see href="https://docs.microsoft.com/en-us/dotnet/api/system.environment.setenvironmentvariable"/>).
+        /// </summary>
+        /// <param name="environment">The dictionary of variable whre the deleted variables should be listed/added.</param>
+        private static void MarkRemovedEnvVariablesForDeletion(Dictionary<string, string> environment)
+        {
+            IDictionary processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+
+            foreach (DictionaryEntry pVar in processVars)
+            {
+                if (!environment.ContainsKey((string)pVar.Key))
+                {
+                    environment.Add((string)pVar.Key, null);
+                }
+            }
+        }
+
+        /// <summary>
         /// This method returns a Dictionary with a merged set of machine and user environment variables. If we run as "system" only machine variables are returned.
         /// </summary>
+        /// <param name="environment">The dictionary that should be filled with the merged variables.</param>
         private static void GetMachineAndUserEnvVariables(Dictionary<string, string> environment)
         {
             // Getting machine variables
@@ -103,7 +127,23 @@ namespace PowerLauncher.Helper
                 processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
                 GetMachineAndUserEnvVariables(machineAndUserVars);
 
-                // Adding variable names that 
+                // Adding names of variables that are different on process level or existing only on process level
+                foreach (DictionaryEntry pVar in processVars)
+                {
+                    if (machineAndUserVars.ContainsKey(pVar.Key.ToString()))
+                    {
+                        if (machineAndUserVars[(string)pVar.Key] != pVar.Value.ToString())
+                        {
+                            // Varibale valu for this process differes form merged machine/user value.
+                            protectedProcessVariables.Add((string)pVar.Key);
+                        }
+                    }
+                    else
+                    {
+                        // Variable exists only for this process
+                        protectedProcessVariables.Add((string)pVar.Key);
+                    }
+                }
             });
         }
 
