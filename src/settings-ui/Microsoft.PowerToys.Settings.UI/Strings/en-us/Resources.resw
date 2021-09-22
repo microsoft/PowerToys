@@ -624,8 +624,8 @@
   <data name="ShortcutGuide_ActivationMethod.Description" xml:space="preserve">
     <value>Whether to use a shortcut or press the Windows key for some time to activate</value>
   </data>
-  <data name="Radio_ShortcutGuide_ActivationMethod_CostumizedShortcut.Content" xml:space="preserve">
-    <value>Use costumized shortcut</value>
+  <data name="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
+    <value>Use customized shortcut</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" xml:space="preserve">
     <value>Long-press Windows key</value>

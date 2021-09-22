@@ -35,7 +35,7 @@
                     <controls:Setting x:Uid="ShortcutGuide_ActivationMethod">
                         <controls:Setting.ActionContent>
                             <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
-                                <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CostumizedShortcut"/>
+                                <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut"/>
                                 <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey"/>
                             </ComboBox>
                         </controls:Setting.ActionContent>
