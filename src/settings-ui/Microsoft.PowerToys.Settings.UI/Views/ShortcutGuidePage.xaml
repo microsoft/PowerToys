@@ -12,7 +12,9 @@
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
-        <converters:BoolNegationConverter x:Key="BoolNegationConverter"/>
+        <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
+        <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+        <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="ShortcutGuide"
@@ -30,20 +32,23 @@
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
-                    <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolNegationConverter}}">
+                    <controls:Setting x:Uid="ShortcutGuide_ActivationMethod">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CostumizedShortcut"/>
+                                <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource FalseToVisibleConverter}}">
                         <controls:Setting.ActionContent>
                             <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}"
                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="ShortcutGuide_UseLegacyPressWinKeyBehavior">
-                        <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.UseLegacyPressWinKeyBehavior}"/>
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
-
-                    <controls:Setting x:Uid="ShortcutGuide_PressTime" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior}">
+                    <controls:Setting x:Uid="ShortcutGuide_PressTime" Icon="&#xF0E2;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource TrueToVisibleConverter}}">
                         <controls:Setting.ActionContent>
                             <muxc:NumberBox
                                 Minimum="100"
