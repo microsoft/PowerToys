@@ -1,4 +1,4 @@
-<local:EditorWindow x:Class="FancyZonesEditor.GridEditorWindow"
+﻿<local:EditorWindow x:Class="FancyZonesEditor.GridEditorWindow"
                     AutomationProperties.Name="{x:Static props:Resources.Grid_Layout_Editor}"
                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,19 +8,18 @@
                     xmlns:props="clr-namespace:FancyZonesEditor.Properties"
                     mc:Ignorable="d"
                     Title=""
-                    Height="300"
                     MinWidth="360"
                     BorderThickness="0"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
                     ui:WindowHelper.UseModernWindowStyle="True"
                     ui:TitleBar.IsIconVisible="False"
-                    SizeToContent="Width"
+                    SizeToContent="WidthAndHeight"
                     Background="{DynamicResource PrimaryBackgroundBrush}"
                     ResizeMode="NoResize"
                     WindowStartupLocation="CenterOwner"
                     ContentRendered="EditorWindow_ContentRendered"
                     Closed="OnClosed">
-    <Grid Height="280">
+    <Grid>
         <Grid
             Height="36"
             Background="{DynamicResource SecondaryBackgroundBrush}"
@@ -62,7 +61,7 @@
                     <Run Text="{x:Static props:Resources.KeyboardControlsDescription}" />
                 </TextBlock>
             </StackPanel>
-            <Grid Margin="0,24,0,-4">
+            <Grid Margin="0,24,0,-36">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="8"/>
