@@ -19,6 +19,7 @@ namespace PowerLauncher.Helper
         private const string Username = "USERNAME";
         private const string ProcessorArchitecture = "PROCESSOR_ARCHITECTURE";
         private const string Path = "PATH";
+        private static HashSet<string> protectedProcessVariables;
 
         internal static void UpdateEnvironment()
         {
@@ -93,6 +94,11 @@ namespace PowerLauncher.Helper
             {
                 return identity.IsSystem;
             }
+        }
+
+        public static void GetProtectedEnvironmentVariables()
+        {
+            // ToDo: Write Code
         }
     }
 }
