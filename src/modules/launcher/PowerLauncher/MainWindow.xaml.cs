@@ -125,8 +125,8 @@ namespace PowerLauncher
 
         private void OnSourceInitialized(object sender, EventArgs e)
         {
-            // Initialize protected environment variables before regitering the WindowMessage
-            EnvironmentHelper.GetProtectedEnvVariables();
+            // Initialize protected environment variables before register the WindowMessage
+            EnvironmentHelper.GetProtectedEnvironmentVariables();
 
             _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
             _hwndSource.AddHook(ProcessWindowMessages);

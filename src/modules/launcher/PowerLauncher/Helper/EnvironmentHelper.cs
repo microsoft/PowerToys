@@ -16,11 +16,55 @@ namespace PowerLauncher.Helper
         private const string PathVariable = "PATH";
         private static HashSet<string> protectedProcessVariables;
 
+        /// <summary>
+        /// This method is called from <see cref="MainWindow.OnSourceInitialized"/> to initialize a list of protected environment variables after process initialization.
+        /// Protected variables are environment variables that must not be changed on process level when updating the environment variables with changes on machine and/or user level.
+        /// This method is used to fill the private variable <see cref="protectedProcessVariables"/>.
+        /// </summary>
+        public static void GetProtectedEnvironmentVariables()
+        {
+            IDictionary processVars;
+            var machineAndUserVars = new Dictionary<string, string>();
+
+            Stopwatch.Normal("EnvironmentHelper.GetProtectedEnvironmentVariables - Duration cost", () =>
+            {
+                // Adding some well known variables that must kept unchanged on process level.
+                // Changes of this variables may lead to incorrect values
+                protectedProcessVariables.Add("USERNAME");
+                protectedProcessVariables.Add("PROCESSOR_ARCHITECTURE");
+
+                // Getting environment variables
+                processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+                GetMachineAndUserVariables(machineAndUserVars);
+
+                // Adding names of variables that are different on process level or existing only on process level
+                foreach (DictionaryEntry pVar in processVars)
+                {
+                    if (machineAndUserVars.ContainsKey(pVar.Key.ToString()))
+                    {
+                        if (machineAndUserVars[(string)pVar.Key] != pVar.Value.ToString())
+                        {
+                            // Variable value for this process differs form merged machine/user value.
+                            protectedProcessVariables.Add((string)pVar.Key);
+                        }
+                    }
+                    else
+                    {
+                        // Variable exists only for this process
+                        protectedProcessVariables.Add((string)pVar.Key);
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// This method updates the environment of PT Run's process when called. It is called when we receive a special WindowMessage.
+        /// </summary>
         internal static void UpdateEnvironment()
         {
             var newEnvironment = new Dictionary<string, string>();
-            GetMachineAndUserEnvVariables(newEnvironment);
-            MarkRemovedEnvVariablesForDeletion(newEnvironment);
+            GetMachineAndUserVariables(newEnvironment);
+            MarkRemovedVariablesForDeletion(newEnvironment);
 
             foreach (KeyValuePair<string, string> kv in newEnvironment)
             {
@@ -36,7 +80,7 @@ namespace PowerLauncher.Helper
                     {
                         if (!protectedProcessVariables.Contains(kv.Key))
                         {
-                            /// If the variable is not listed as protected/don't override on process level, then update it (<see cref="GetProtectedEnvVariables"/>).
+                            /// If the variable is not listed as protected/don't override on process level, then update it (<see cref="GetProtectedEnvironmentVariables"/>).
                             Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
                         }
                     }
@@ -58,8 +102,8 @@ namespace PowerLauncher.Helper
         /// This method gets all deleted environment variables and adds them to a dictionary.
         /// To delete variables with <see cref="Environment.SetEnvironmentVariable(string, string?)"/> the second parameter (value) must be null or empty (<see href="https://docs.microsoft.com/en-us/dotnet/api/system.environment.setenvironmentvariable"/>).
         /// </summary>
-        /// <param name="environment">The dictionary of variable whre the deleted variables should be listed/added.</param>
-        private static void MarkRemovedEnvVariablesForDeletion(Dictionary<string, string> environment)
+        /// <param name="environment">The dictionary of variable on which the deleted variables should be listed/added.</param>
+        private static void MarkRemovedVariablesForDeletion(Dictionary<string, string> environment)
         {
             IDictionary processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
 
@@ -76,7 +120,7 @@ namespace PowerLauncher.Helper
         /// This method returns a Dictionary with a merged set of machine and user environment variables. If we run as "system" only machine variables are returned.
         /// </summary>
         /// <param name="environment">The dictionary that should be filled with the merged variables.</param>
-        private static void GetMachineAndUserEnvVariables(Dictionary<string, string> environment)
+        private static void GetMachineAndUserVariables(Dictionary<string, string> environment)
         {
             // Getting machine variables
             IDictionary mV = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
@@ -104,47 +148,6 @@ namespace PowerLauncher.Helper
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// This method is called from <see cref="MainWindow.OnSourceInitialized"/> to initialize a list of protected environment variables after process initialization.
-        /// Protected variables are environment variables that must not be changed on process level when updating the environment variables with changes on machine and/or user level.
-        /// This method is used to fill the private variable <see cref="protectedProcessVariables"/>.
-        /// </summary>
-        public static void GetProtectedEnvVariables()
-        {
-            IDictionary processVars;
-            var machineAndUserVars = new Dictionary<string, string>();
-
-            Stopwatch.Normal("EnvironmentHelper.GetProtectedEnvironmentVariables - Duration cost", () =>
-            {
-                // Adding some well known variables that must kept unchanged on process level.
-                // Changes of this variables may lead to incorrect values
-                protectedProcessVariables.Add("USERNAME");
-                protectedProcessVariables.Add("PROCESSOR_ARCHITECTURE");
-
-                // Getting environment variables
-                processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
-                GetMachineAndUserEnvVariables(machineAndUserVars);
-
-                // Adding names of variables that are different on process level or existing only on process level
-                foreach (DictionaryEntry pVar in processVars)
-                {
-                    if (machineAndUserVars.ContainsKey(pVar.Key.ToString()))
-                    {
-                        if (machineAndUserVars[(string)pVar.Key] != pVar.Value.ToString())
-                        {
-                            // Varibale valu for this process differes form merged machine/user value.
-                            protectedProcessVariables.Add((string)pVar.Key);
-                        }
-                    }
-                    else
-                    {
-                        // Variable exists only for this process
-                        protectedProcessVariables.Add((string)pVar.Key);
-                    }
-                }
-            });
         }
 
         private static bool IsRunningAsSystem()
