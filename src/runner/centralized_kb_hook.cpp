@@ -100,11 +100,10 @@ namespace CentralizedKeyboardHook
                     // If no key was pressed before, let's start a timer to take into account this new key.
                     std::unique_lock lock{ pressedKeyMutex };
                     PressedKeyDescriptor dummy{ .virtualKey = keyPressInfo.vkCode };
-                    auto it = pressedKeyDescriptors.find(dummy);
-                    while (it != pressedKeyDescriptors.end())
+                    auto [it, last] = pressedKeyDescriptors.equal_range(dummy);
+                    for (; it != last; ++it)
                     {
                         SetTimer(runnerWindow, it->idTimer, it->millisecondsToPress, PressedKeyTimerProc);
-                        ++it;
                     }
                 }
                 else if (vkCodePressed != keyPressInfo.vkCode)
@@ -112,11 +111,10 @@ namespace CentralizedKeyboardHook
                     // If a different key was pressed, let's clear the timers we have started for the previous key.
                     std::unique_lock lock{ pressedKeyMutex };
                     PressedKeyDescriptor dummy{ .virtualKey = vkCodePressed };
-                    auto it = pressedKeyDescriptors.find(dummy);
-                    while (it != pressedKeyDescriptors.end())
+                    auto [it, last] = pressedKeyDescriptors.equal_range(dummy);
+                    for (; it != last; ++it)
                     {
                         KillTimer(runnerWindow, it->idTimer);
-                        ++it;
                     }
                 }
                 vkCodePressed = keyPressInfo.vkCode;
@@ -125,11 +123,10 @@ namespace CentralizedKeyboardHook
             {
                 std::unique_lock lock{ pressedKeyMutex };
                 PressedKeyDescriptor dummy{ .virtualKey = keyPressInfo.vkCode };
-                auto it = pressedKeyDescriptors.find(dummy);
-                while (it != pressedKeyDescriptors.end())
+                auto [it, last] = pressedKeyDescriptors.equal_range(dummy);
+                for (; it != last; ++it)
                 {
                     KillTimer(runnerWindow, it->idTimer);
-                    ++it;
                 }
                 vkCodePressed = 0x100;
             }
@@ -193,6 +190,7 @@ namespace CentralizedKeyboardHook
         const UINT upperId = hash & 0xFFFF;
         const UINT lowerId = vk & 0xFFFF; // The key to press can be the lower ID.
         const UINT timerId = upperId << 16 | lowerId;
+        std::unique_lock lock{ pressedKeyMutex };
         pressedKeyDescriptors.insert({ .virtualKey = vk, .moduleName = moduleName, .action = std::move(action), .idTimer = timerId, .millisecondsToPress = milliseconds });
     }
 
