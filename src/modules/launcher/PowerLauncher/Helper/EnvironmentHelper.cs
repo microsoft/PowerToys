@@ -5,19 +5,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Principal;
-using Microsoft.Win32.SafeHandles;
 using Wox.Plugin.Logger;
+using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher.Helper
 {
     public static class EnvironmentHelper
     {
-        private const string Username = "USERNAME";
-        private const string ProcessorArchitecture = "PROCESSOR_ARCHITECTURE";
+        //private const string Username = "USERNAME";
+        //private const string ProcessorArchitecture = "PROCESSOR_ARCHITECTURE";
         private const string Path = "PATH";
         private static HashSet<string> protectedProcessVariables;
 
@@ -25,8 +24,8 @@ namespace PowerLauncher.Helper
         {
             // Username and process architecture are set by the machine vars, this
             // may lead to incorrect values so save off the current values to restore.
-            string originalUsername = Environment.GetEnvironmentVariable(Username, EnvironmentVariableTarget.Process);
-            string originalArch = Environment.GetEnvironmentVariable(ProcessorArchitecture, EnvironmentVariableTarget.Process);
+            // string originalUsername = Environment.GetEnvironmentVariable(Username, EnvironmentVariableTarget.Process);
+            // string originalArch = Environment.GetEnvironmentVariable(ProcessorArchitecture, EnvironmentVariableTarget.Process);
 
             var environment = new Dictionary<string, string>();
             MergeTargetEnvironmentVariables(environment, EnvironmentVariableTarget.Process);
@@ -78,7 +77,7 @@ namespace PowerLauncher.Helper
             }
         }
 
-        private static void MergeTargetEnvironmentVariables(
+        private static void GetMergedMachineAndUserEnvVariables(
             Dictionary<string, string> environment, EnvironmentVariableTarget target)
         {
             IDictionary variables = Environment.GetEnvironmentVariables(target);
@@ -88,17 +87,37 @@ namespace PowerLauncher.Helper
             }
         }
 
+        /// <summary>
+        /// This method is called from <see cref="MainWindow.OnSourceInitialized"/> to initialize a list of protected environment variables after process initialization.
+        /// Protected variables are environment variables that must not be changed on process level when updating the environment variables with changes on machine and/or user level.
+        /// This method is used to fill the private variable <see cref="protectedProcessVariables"/>.
+        /// </summary>
+        public static void GetProtectedEnvVariables()
+        {
+            IDictionary processVars;
+            var machineAndUserVars = new Dictionary<string, string>();
+
+            Stopwatch.Normal("EnvironmentHelper.GetProtectedEnvironmentVariables - Duration cost", () =>
+            {
+                // Adding some well known variables that must kept unchanged on process level.
+                // Changes of this variables may lead to incorrect values
+                protectedProcessVariables.Add("USERNAME");
+                protectedProcessVariables.Add("PROCESSOR_ARCHITECTURE");
+
+                // Getting environment variables
+                processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+                machineAndUserVars = GetMergedMachineAndUserEnvVariables;
+
+                // Adding variable names that 
+            });
+        }
+
         private static bool IsRunningAsSystem()
         {
             using (var identity = WindowsIdentity.GetCurrent())
             {
                 return identity.IsSystem;
             }
-        }
-
-        public static void GetProtectedEnvironmentVariables()
-        {
-            // ToDo: Write Code
         }
     }
 }
