@@ -145,7 +145,8 @@ namespace PowerLauncher.Helper
                     string uVarKey = (string)uVar.Key;
                     string uVarValue = (string)uVar.Value;
 
-                    if (uVarKey != PathVariable)
+                    // The variable name can be "PATH" or "Path"
+                    if (!uVarKey.Equals(PathVariable, StringComparison.OrdinalIgnoreCase))
                     {
                         environment[uVarKey] = uVarValue;
                     }
@@ -153,8 +154,8 @@ namespace PowerLauncher.Helper
                     {
                         // When we merging the PATH variable we can't simply override machine layer's value. The path variable must be joined by appending the user value to the machine value.
                         // This is the official behavior and checked by trying it out the physical machine.
-                        string newPathValue = environment[PathVariable].EndsWith(';') ? environment[PathVariable] + uVarValue : environment[PathVariable] + ';' + uVarValue;
-                        environment[PathVariable] = newPathValue;
+                        string newPathValue = environment[uVarKey].EndsWith(';') ? environment[uVarKey] + uVarValue : environment[uVarKey] + ';' + uVarValue;
+                        environment[uVarKey] = newPathValue;
                     }
                 }
             }
