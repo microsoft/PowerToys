@@ -14,14 +14,14 @@ namespace PowerLauncher.Helper
     public static class EnvironmentHelper
     {
         private const string PathVariable = "PATH";
-        private static HashSet<string> protectedProcessVariables;
+        private static HashSet<string> protectedProcessVariables = new HashSet<string>(); // This HashSet later contains the list ov environment variabled that will be skipped on update.
 
         /// <summary>
         /// This method is called from <see cref="MainWindow.OnSourceInitialized"/> to initialize a list of protected environment variables after process initialization.
         /// Protected variables are environment variables that must not be changed on process level when updating the environment variables with changes on machine and/or user level.
         /// This method is used to fill the private variable <see cref="protectedProcessVariables"/>.
         /// </summary>
-        public static void GetProtectedEnvironmentVariables()
+        internal static void GetProtectedEnvironmentVariables()
         {
             IDictionary processVars;
             var machineAndUserVars = new Dictionary<string, string>();
@@ -38,20 +38,20 @@ namespace PowerLauncher.Helper
                 GetMachineAndUserVariables(machineAndUserVars);
 
                 // Adding names of variables that are different on process level or existing only on process level
-                foreach (DictionaryEntry pVar in processVars)
+                foreach (KeyValuePair<string, string> pVar in processVars)
                 {
-                    if (machineAndUserVars.ContainsKey(pVar.Key.ToString()))
+                    if (machineAndUserVars.ContainsKey(pVar.Key))
                     {
-                        if (machineAndUserVars[(string)pVar.Key] != pVar.Value.ToString())
+                        if (machineAndUserVars[pVar.Key] != pVar.Value)
                         {
                             // Variable value for this process differs form merged machine/user value.
-                            protectedProcessVariables.Add((string)pVar.Key);
+                            protectedProcessVariables.Add(pVar.Key);
                         }
                     }
                     else
                     {
                         // Variable exists only for this process
-                        protectedProcessVariables.Add((string)pVar.Key);
+                        protectedProcessVariables.Add(pVar.Key);
                     }
                 }
             });
@@ -73,7 +73,7 @@ namespace PowerLauncher.Helper
                 int varValueLength = kv.Value == null ? 0 : kv.Value.Length;
 
                 // The name of environment variables must not be null, empty or have a length of zero.
-                // But if the value of the environment variable is null or empty then the variable is explicit defined for deletion. => Here we don't need to check anything.
+                // But if the value of the environment variable is null or an empty string then the variable is explicit defined for deletion. => Here we don't need to check anything.
                 if (!string.IsNullOrEmpty(kv.Key) & varNameLength > 0)
                 {
                     try
@@ -100,18 +100,18 @@ namespace PowerLauncher.Helper
 
         /// <summary>
         /// This method gets all deleted environment variables and adds them to a dictionary.
-        /// To delete variables with <see cref="Environment.SetEnvironmentVariable(string, string?)"/> the second parameter (value) must be null or empty (<see href="https://docs.microsoft.com/en-us/dotnet/api/system.environment.setenvironmentvariable"/>).
+        /// To delete variables with <see cref="Environment.SetEnvironmentVariable(string, string?)"/> the second parameter (value) must be null or an empty string (<see href="https://docs.microsoft.com/en-us/dotnet/api/system.environment.setenvironmentvariable"/>).
         /// </summary>
         /// <param name="environment">The dictionary of variable on which the deleted variables should be listed/added.</param>
         private static void MarkRemovedVariablesForDeletion(Dictionary<string, string> environment)
         {
             IDictionary processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
 
-            foreach (DictionaryEntry pVar in processVars)
+            foreach (KeyValuePair<string, string> pVar in processVars)
             {
-                if (!environment.ContainsKey((string)pVar.Key))
+                if (!environment.ContainsKey(pVar.Key))
                 {
-                    environment.Add((string)pVar.Key, null);
+                    environment.Add(pVar.Key, string.Empty);
                 }
             }
         }
@@ -123,27 +123,27 @@ namespace PowerLauncher.Helper
         private static void GetMachineAndUserVariables(Dictionary<string, string> environment)
         {
             // Getting machine variables
-            IDictionary mV = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
-            foreach (DictionaryEntry entry in mV)
+            IDictionary machineVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+            foreach (KeyValuePair<string, string> mVar in machineVars)
             {
-                environment[(string)entry.Key] = (string)entry.Value;
+                environment[mVar.Key] = mVar.Value;
             }
 
             // Getting user variables and merge it
             if (!IsRunningAsSystem())
             {
-                IDictionary uV = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
-                foreach (DictionaryEntry entry in uV)
+                IDictionary userVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
+                foreach (KeyValuePair<string, string> uVar in userVars)
                 {
-                    if (!(entry.Key.ToString() == PathVariable))
+                    if (uVar.Key != PathVariable)
                     {
-                        environment[(string)entry.Key] = (string)entry.Value;
+                        environment[uVar.Key] = uVar.Value;
                     }
                     else
                     {
                         // When we merging the PATH variable we can't simply override machine layer's value. The path variable must be joined by appending the user value to the machine value.
                         // This is the official behavior and checked by trying it out the physical machine.
-                        string newPathValue = environment[PathVariable].EndsWith(";", StringComparison.InvariantCulture) ? environment[PathVariable] + (string)entry.Value : environment[PathVariable] + ";" + (string)entry.Value;
+                        string newPathValue = environment[PathVariable].EndsWith(';') ? environment[PathVariable] + uVar.Value : environment[PathVariable] + ';' + uVar.Value;
                         environment[PathVariable] = newPathValue;
                     }
                 }
