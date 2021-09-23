@@ -622,7 +622,7 @@
     <value>Activation method</value>
   </data>
   <data name="ShortcutGuide_ActivationMethod.Description" xml:space="preserve">
-    <value>Whether to use a shortcut or press the Windows key for some time to activate</value>
+    <value>Use a shortcut or press the Windows key for some time to activate</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
     <value>Use customized shortcut</value>
