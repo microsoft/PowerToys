@@ -419,6 +419,11 @@ namespace FancyZonesEditor
             {
                 LayoutModel model = element.DataContext as LayoutModel;
 
+                if (model.Guid == _backup.Guid)
+                {
+                    _backup = null;
+                }
+
                 if (model == _settings.AppliedModel)
                 {
                     _settings.SetAppliedModel(_settings.BlankModel);
