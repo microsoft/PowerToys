@@ -121,17 +121,22 @@ bool uninstall_msi_version(const std::wstring& package_path)
     return ERROR_SUCCESS == uninstall_result;
 }
 
-std::optional<VersionHelper> get_installed_powertoys_version()
+struct InstalledVersionInfo
+{
+    VersionHelper version;
+    std::wstring install_folder;
+};
+std::optional<InstalledVersionInfo> get_installed_powertoys_version()
 {
     auto installed_path = GetMsiPackageInstalledPath();
     if (!installed_path)
     {
         return std::nullopt;
     }
-    *installed_path += L"\\PowerToys.exe";
+    std::wstring executable_path = *installed_path + L"\\PowerToys.exe";
 
     // Get the version information for the file requested
-    const DWORD fvSize = GetFileVersionInfoSizeW(installed_path->c_str(), nullptr);
+    const DWORD fvSize = GetFileVersionInfoSizeW(executable_path.c_str(), nullptr);
     if (!fvSize)
     {
         return std::nullopt;
@@ -139,7 +144,7 @@ std::optional<VersionHelper> get_installed_powertoys_version()
 
     auto pbVersionInfo = std::make_unique<BYTE[]>(fvSize);
 
-    if (!GetFileVersionInfoW(installed_path->c_str(), 0, fvSize, pbVersionInfo.get()))
+    if (!GetFileVersionInfoW(executable_path.c_str(), 0, fvSize, pbVersionInfo.get()))
     {
         return std::nullopt;
     }
@@ -150,23 +155,17 @@ std::optional<VersionHelper> get_installed_powertoys_version()
     {
         return std::nullopt;
     }
-    return VersionHelper{ (fileInfo->dwFileVersionMS >> 16) & 0xffff,
-                          (fileInfo->dwFileVersionMS >> 0) & 0xffff,
-                          (fileInfo->dwFileVersionLS >> 16) & 0xffff };
+    return InstalledVersionInfo{
+        .version = VersionHelper{ (fileInfo->dwFileVersionMS >> 16) & 0xffff,
+                                  (fileInfo->dwFileVersionMS >> 0) & 0xffff,
+                                  (fileInfo->dwFileVersionLS >> 16) & 0xffff },
+        .install_folder = std::move(*installed_path)
+    };
 }
 
 int Bootstrapper(HINSTANCE hInstance)
 {
     winrt::init_apartment();
-    char* programFilesDir = nullptr;
-    size_t size = 0;
-    std::string defaultInstallDir;
-
-    if (!_dupenv_s(&programFilesDir, &size, "PROGRAMFILES"))
-    {
-        defaultInstallDir += programFilesDir;
-        defaultInstallDir += "\\PowerToys";
-    }
 
     fs::path logDir = PTSettingsHelper::get_root_save_folder_location();
 
@@ -182,7 +181,7 @@ int Bootstrapper(HINSTANCE hInstance)
     ("skip_dotnet_install", "Skip dotnet 3.X installation even if it's not detected")
     ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"))
     ("log_dir", "Log directory", cxxopts::value<std::string>()->default_value(logDir.string()))
-    ("install_dir", "Installation directory", cxxopts::value<std::string>()->default_value(defaultInstallDir))
+    ("install_dir", "Installation directory", cxxopts::value<std::string>()->default_value(""))
     ("extract_msi", "Extract MSI to the working directory and exit. Use only if you must access MSI directly.");
     // clang-format on
 
@@ -231,7 +230,7 @@ int Bootstrapper(HINSTANCE hInstance)
 
         installFolderProp = std::wstring(installDir.length(), L' ');
         std::copy(installDir.begin(), installDir.end(), installFolderProp.begin());
-        installFolderProp = L"INSTALLFOLDER=" + installFolderProp;
+        installFolderProp = L"INSTALLFOLDER=\"" + installFolderProp + L"\"";
     }
 
     try
@@ -281,12 +280,21 @@ int Bootstrapper(HINSTANCE hInstance)
     }
 
     // Check if there's a newer version installed
-    const auto installedVersion = get_installed_powertoys_version();
-    if (installedVersion && *installedVersion >= myVersion)
+    const auto installedVersionInfo = get_installed_powertoys_version();
+    if (installedVersionInfo)
     {
-        spdlog::error(L"Detected a newer version {} vs {}", (*installedVersion).toWstring(), myVersion.toWstring());
-        ShowMessageBoxError(IDS_NEWER_VERSION_ERROR);
-        return 0;
+        if (installedVersionInfo->version >= myVersion)
+        {
+            spdlog::error(L"Detected a newer version {} vs {}", installedVersionInfo->version.toWstring(), myVersion.toWstring());
+            ShowMessageBoxError(IDS_NEWER_VERSION_ERROR);
+            return 0;
+        }
+        // If we are good to go and install folder wasn't specified via cmd line, make sure to retain the previous
+        // installation path
+        else if (installFolderProp.empty())
+        {
+            installFolderProp = L"INSTALLFOLDER=\"" + installedVersionInfo->install_folder + L"\"";
+        }
     }
 
     // Setup MSI UI visibility and restart as elevated if required
