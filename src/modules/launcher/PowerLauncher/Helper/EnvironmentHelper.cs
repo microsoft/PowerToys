@@ -24,7 +24,7 @@ namespace PowerLauncher.Helper
         /// </summary>
         internal static void GetProtectedEnvironmentVariables()
         {
-            IDictionary processVars;
+            IDictionary<string, string> processVars;
             var machineAndUserVars = new Dictionary<string, string>();
 
             Stopwatch.Normal("EnvironmentHelper.GetProtectedEnvironmentVariables - Duration cost", () =>
@@ -35,7 +35,7 @@ namespace PowerLauncher.Helper
                 protectedProcessVariables.Add("PROCESSOR_ARCHITECTURE");
 
                 // Getting environment variables
-                processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+                processVars = (IDictionary<string, string>)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
                 GetMachineAndUserVariables(machineAndUserVars);
 
                 // Adding names of variables that are different on process level or existing only on process level
@@ -106,7 +106,7 @@ namespace PowerLauncher.Helper
         /// <param name="environment">The dictionary of variable on which the deleted variables should be listed/added.</param>
         private static void GetDeletedMachineAndUserVariables(Dictionary<string, string> environment)
         {
-            IDictionary processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+            IDictionary<string, string> processVars = (IDictionary<string, string>)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
 
             foreach (KeyValuePair<string, string> pVar in processVars)
             {
@@ -124,7 +124,7 @@ namespace PowerLauncher.Helper
         private static void GetMachineAndUserVariables(Dictionary<string, string> environment)
         {
             // Getting machine variables
-            IDictionary machineVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+            IDictionary<string, string> machineVars = (IDictionary<string, string>)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
             foreach (KeyValuePair<string, string> mVar in machineVars)
             {
                 environment[mVar.Key] = mVar.Value;
@@ -133,7 +133,7 @@ namespace PowerLauncher.Helper
             // Getting user variables and merge it
             if (!IsRunningAsSystem())
             {
-                IDictionary userVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
+                IDictionary<string, string> userVars = (IDictionary<string, string>)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
                 foreach (KeyValuePair<string, string> uVar in userVars)
                 {
                     if (uVar.Key != PathVariable)
