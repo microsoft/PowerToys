@@ -195,9 +195,13 @@ namespace ColorPicker.Helpers
             z = z * 100 / 108.8840;
 
             // XYZ to CIELab transformation
-            double fx = (x > .008856) ? Math.Pow(x, 1.0 / 3.0) : (x * 7.787) + (16.0 / 116.0);
-            double fy = (y > .008856) ? Math.Pow(y, 1.0 / 3.0) : (y * 7.787) + (16.0 / 116.0);
-            double fz = (z > .008856) ? Math.Pow(z, 1.0 / 3.0) : (z * 7.787) + (16.0 / 116.0);
+            double delta = 6d / 29;
+            double m = (1d / 3) * Math.Pow(delta, -2);
+            double t = Math.Pow(delta, 3);
+
+            double fx = (x > t) ? Math.Pow(x, 1.0 / 3.0) : (x * m) + (16.0 / 116.0);
+            double fy = (y > t) ? Math.Pow(y, 1.0 / 3.0) : (y * m) + (16.0 / 116.0);
+            double fz = (z > t) ? Math.Pow(z, 1.0 / 3.0) : (z * m) + (16.0 / 116.0);
 
             double l = (116 * fy) - 16;
             double a = 500 * (fx - fy);
