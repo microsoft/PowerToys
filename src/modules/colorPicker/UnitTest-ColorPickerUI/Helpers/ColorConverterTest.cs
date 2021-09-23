@@ -305,23 +305,22 @@ namespace Microsoft.ColorPicker.UnitTests
         }
 
         [TestMethod]
-        [DataRow("FFFFFF", 100.00, 0.01, -0.01)] // white
+        [DataRow("FFFFFF", 100.00, 0.00, -0.01)] // white
         [DataRow("808080", 53.59, 0.00, -0.01)] // gray
         [DataRow("000000", 0.00, 0.00, 0.00)] // black
         [DataRow("FF0000", 53.23, 80.11, 67.22)] // red
         [DataRow("008000", 46.23, -51.70, 49.90)] // green
-        [DataRow("80FFFF", 93.16, -35.22, -10.88)] // cyan
+        [DataRow("80FFFF", 93.16, -35.23, -10.87)] // cyan
         [DataRow("8080FF", 59.20, 33.1, -63.47)] // blue
         [DataRow("BF40BF", 50.10, 65.51, -41.49)] // magenta
         [DataRow("BFBF00", 75.04, -17.35, 76.03)] // yellow
         [DataRow("008000", 46.23, -51.70, 49.90)] // green
-        [DataRow("80FFFF", 93.16, -35.22, -10.88)] // cyan
         [DataRow("8080FF", 59.20, 33.1, -63.47)] // blue
         [DataRow("BF40BF", 50.10, 65.51, -41.49)] // magenta
         [DataRow("0048BA", 34.35, 27.94, -64.81)] // absolute zero
-        [DataRow("B0BF1A", 73.91, -23.38, 71.15)] // acid green
+        [DataRow("B0BF1A", 73.91, -23.39, 71.15)] // acid green
         [DataRow("D0FF14", 93.87, -40.21, 88.97)] // arctic lime
-        [DataRow("1B4D3E", 29.13, -20.96, 3.95)] // brunswick green
+        [DataRow("1B4D3E", 29.13, -20.97, 3.95)] // brunswick green
         [DataRow("FFEF00", 93.01, -13.86, 91.48)] // canary yellow
         [DataRow("FFA600", 75.16, 23.41, 79.11)] // cheese
         [DataRow("1A2421", 13.18, -5.23, 0.56)] // dark jungle green
@@ -332,8 +331,8 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("5218FA", 36.65, 75.63, -97.71)] // han purple
         [DataRow("FF496C", 59.07, 69.90, 21.79)] // infra red
         [DataRow("545AA7", 41.20, 19.32, -42.35)] // liberty
-        [DataRow("E6A8D7", 75.91, 30.14, -14.80)] // light orchid
-        [DataRow("ADDFAD", 84.32, -25.66, 19.36)] // light moss green
+        [DataRow("E6A8D7", 75.91, 30.13, -14.80)] // light orchid
+        [DataRow("ADDFAD", 84.32, -25.67, 19.36)] // light moss green
         [DataRow("E3F988", 94.25, -23.70, 51.57)] // mindaro
         public void ColorRGBtoCIELABTest(string hexValue, double lightness, double chromaticityA, double chromaticityB)
         {
