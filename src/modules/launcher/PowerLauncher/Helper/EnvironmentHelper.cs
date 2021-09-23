@@ -65,7 +65,7 @@ namespace PowerLauncher.Helper
         {
             var newEnvironment = new Dictionary<string, string>();
             GetMachineAndUserVariables(newEnvironment);
-            MarkRemovedVariablesForDeletion(newEnvironment);
+            GetDeletedMachineAndUserVariables(newEnvironment);
 
             foreach (KeyValuePair<string, string> kv in newEnvironment)
             {
@@ -104,7 +104,7 @@ namespace PowerLauncher.Helper
         /// To delete variables with <see cref="Environment.SetEnvironmentVariable(string, string?)"/> the second parameter (value) must be null or an empty string (<see href="https://docs.microsoft.com/en-us/dotnet/api/system.environment.setenvironmentvariable"/>).
         /// </summary>
         /// <param name="environment">The dictionary of variable on which the deleted variables should be listed/added.</param>
-        private static void MarkRemovedVariablesForDeletion(Dictionary<string, string> environment)
+        private static void GetDeletedMachineAndUserVariables(Dictionary<string, string> environment)
         {
             IDictionary processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
 
