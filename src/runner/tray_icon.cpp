@@ -2,7 +2,8 @@
 #include "Generated files/resource.h"
 #include "settings_window.h"
 #include "tray_icon.h"
-#include "CentralizedHotkeys.h"
+#include "centralized_hotkeys.h"
+#include "centralized_kb_hook.h"
 #include <Windows.h>
 
 #include <common/utils/process_path.h>
@@ -249,6 +250,7 @@ void start_tray_icon()
                                   nullptr);
         WINRT_VERIFY(hwnd);
         CentralizedHotkeys::RegisterWindow(hwnd);
+        CentralizedKeyboardHook::RegisterWindow(hwnd);
         memset(&tray_icon_data, 0, sizeof(tray_icon_data));
         tray_icon_data.cbSize = sizeof(tray_icon_data);
         tray_icon_data.hIcon = icon;

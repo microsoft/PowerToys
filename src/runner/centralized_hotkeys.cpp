@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "CentralizedHotkeys.h"
+#include "centralized_hotkeys.h"
 
 #include <map>
 #include <common/logger/logger.h>

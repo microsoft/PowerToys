@@ -52,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _isEnabled = GeneralSettingsConfig.Enabled.ShortcutGuide;
+            _useLegacyPressWinKeyBehavior = Settings.Properties.UseLegacyPressWinKeyBehavior.Value;
             _pressTime = Settings.Properties.PressTime.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
             _disabledApps = Settings.Properties.DisabledApps.Value;
@@ -66,6 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private bool _isEnabled;
         private int _themeIndex;
+        private bool _useLegacyPressWinKeyBehavior;
         private int _pressTime;
         private int _opacity;
 
@@ -146,6 +148,42 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _opacity = value;
                     Settings.Properties.OverlayOpacity.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool UseLegacyPressWinKeyBehavior
+        {
+            get
+            {
+                return _useLegacyPressWinKeyBehavior;
+            }
+
+            set
+            {
+                if (_useLegacyPressWinKeyBehavior != value)
+                {
+                    _useLegacyPressWinKeyBehavior = value;
+                    Settings.Properties.UseLegacyPressWinKeyBehavior.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int PressTime
+        {
+            get
+            {
+                return _pressTime;
+            }
+
+            set
+            {
+                if (_pressTime != value)
+                {
+                    _pressTime = value;
+                    Settings.Properties.PressTime.Value = value;
                     NotifyPropertyChanged();
                 }
             }

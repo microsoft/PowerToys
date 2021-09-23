@@ -615,6 +615,24 @@
     <value>Press duration before showing (ms)</value>
     <comment>pressing a key in milliseconds</comment>
   </data>
+  <data name="ShortcutGuide_PressTime.Description" xml:space="preserve">
+    <value>How long to press the Windows key to activate the module</value>
+  </data>
+  <data name="ShortcutGuide_ActivationMethod.Header" xml:space="preserve">
+    <value>Activation method</value>
+  </data>
+  <data name="ShortcutGuide_ActivationMethod.Description" xml:space="preserve">
+    <value>Use a shortcut or press the Windows key for some time to activate</value>
+  </data>
+  <data name="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
+    <value>Customized shortcut</value>
+  </data>
+  <data name="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" xml:space="preserve">
+    <value>Hold down Windows key</value>
+  </data>
+  <data name="ShortcutGuide_PressWinKeyWarning.Title" xml:space="preserve">
+    <value>In some edge cases Shortcut Guide might not function correctly when using this activation method</value>
+  </data>
   <data name="ShortcutGuide_Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
