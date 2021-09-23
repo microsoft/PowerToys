@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "util.h"
 
+#include <sstream>
+
 #include "FancyZonesDataTypes.h"
 
 // Non-Localizable strings
