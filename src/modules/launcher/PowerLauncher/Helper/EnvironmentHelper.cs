@@ -13,8 +13,9 @@ namespace PowerLauncher.Helper
 {
     public static class EnvironmentHelper
     {
+        // The HashSet will contain the list of environment variables that will be skipped on update.
         private const string PathVariable = "PATH";
-        private static HashSet<string> protectedProcessVariables = new HashSet<string>(); // This HashSet later contains the list ov environment variabled that will be skipped on update.
+        private static HashSet<string> protectedProcessVariables = new HashSet<string>();
 
         /// <summary>
         /// This method is called from <see cref="MainWindow.OnSourceInitialized"/> to initialize a list of protected environment variables after process initialization.
