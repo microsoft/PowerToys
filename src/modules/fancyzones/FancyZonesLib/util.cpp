@@ -7,7 +7,6 @@
 #include <common/utils/window.h>
 
 #include <array>
-#include <sstream>
 #include <complex>
 #include <wil/Resource.h>
 
