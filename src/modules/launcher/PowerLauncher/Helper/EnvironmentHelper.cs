@@ -24,7 +24,7 @@ namespace PowerLauncher.Helper
         /// </summary>
         internal static void GetProtectedEnvironmentVariables()
         {
-            IDictionary<string, string> processVars;
+            IDictionary processVars;
             var machineAndUserVars = new Dictionary<string, string>();
 
             Stopwatch.Normal("EnvironmentHelper.GetProtectedEnvironmentVariables - Duration cost", () =>
@@ -35,24 +35,27 @@ namespace PowerLauncher.Helper
                 protectedProcessVariables.Add("PROCESSOR_ARCHITECTURE");
 
                 // Getting environment variables
-                processVars = (IDictionary<string, string>)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+                processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
                 GetMachineAndUserVariables(machineAndUserVars);
 
                 // Adding names of variables that are different on process level or existing only on process level
-                foreach (KeyValuePair<string, string> pVar in processVars)
+                foreach (DictionaryEntry pVar in processVars)
                 {
-                    if (machineAndUserVars.ContainsKey(pVar.Key))
+                    string pVarKey = (string)pVar.Key;
+                    string pVarValue = (string)pVar.Value;
+
+                    if (machineAndUserVars.ContainsKey(pVarKey))
                     {
-                        if (machineAndUserVars[pVar.Key] != pVar.Value)
+                        if (machineAndUserVars[pVarKey] != pVarValue)
                         {
                             // Variable value for this process differs form merged machine/user value.
-                            protectedProcessVariables.Add(pVar.Key);
+                            protectedProcessVariables.Add(pVarKey);
                         }
                     }
                     else
                     {
                         // Variable exists only for this process
-                        protectedProcessVariables.Add(pVar.Key);
+                        protectedProcessVariables.Add(pVarKey);
                     }
                 }
             });
@@ -63,6 +66,7 @@ namespace PowerLauncher.Helper
         /// </summary>
         internal static void UpdateEnvironment()
         {
+            // Getting updated environment variables
             var newEnvironment = new Dictionary<string, string>();
             GetMachineAndUserVariables(newEnvironment);
             GetDeletedMachineAndUserVariables(newEnvironment);
@@ -106,13 +110,15 @@ namespace PowerLauncher.Helper
         /// <param name="environment">The dictionary of variable on which the deleted variables should be listed/added.</param>
         private static void GetDeletedMachineAndUserVariables(Dictionary<string, string> environment)
         {
-            IDictionary<string, string> processVars = (IDictionary<string, string>)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+            IDictionary processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
 
-            foreach (KeyValuePair<string, string> pVar in processVars)
+            foreach (DictionaryEntry pVar in processVars)
             {
-                if (!environment.ContainsKey(pVar.Key))
+                string pVarKey = (string)pVar.Key;
+
+                if (!environment.ContainsKey((string)pVarKey))
                 {
-                    environment.Add(pVar.Key, string.Empty);
+                    environment.Add((string)pVarKey, string.Empty);
                 }
             }
         }
@@ -124,27 +130,30 @@ namespace PowerLauncher.Helper
         private static void GetMachineAndUserVariables(Dictionary<string, string> environment)
         {
             // Getting machine variables
-            IDictionary<string, string> machineVars = (IDictionary<string, string>)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
-            foreach (KeyValuePair<string, string> mVar in machineVars)
+            IDictionary machineVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+            foreach (DictionaryEntry mVar in machineVars)
             {
-                environment[mVar.Key] = mVar.Value;
+                environment[(string)mVar.Key] = (string)mVar.Value;
             }
 
             // Getting user variables and merge it
             if (!IsRunningAsSystem())
             {
-                IDictionary<string, string> userVars = (IDictionary<string, string>)Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
-                foreach (KeyValuePair<string, string> uVar in userVars)
+                IDictionary userVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
+                foreach (DictionaryEntry uVar in userVars)
                 {
-                    if (uVar.Key != PathVariable)
+                    string uVarKey = (string)uVar.Key;
+                    string uVarValue = (string)uVar.Value;
+
+                    if (uVarKey != PathVariable)
                     {
-                        environment[uVar.Key] = uVar.Value;
+                        environment[uVarKey] = uVarValue;
                     }
                     else
                     {
                         // When we merging the PATH variable we can't simply override machine layer's value. The path variable must be joined by appending the user value to the machine value.
                         // This is the official behavior and checked by trying it out the physical machine.
-                        string newPathValue = environment[PathVariable].EndsWith(';') ? environment[PathVariable] + uVar.Value : environment[PathVariable] + ';' + uVar.Value;
+                        string newPathValue = environment[PathVariable].EndsWith(';') ? environment[PathVariable] + uVarValue : environment[PathVariable] + ';' + uVarValue;
                         environment[PathVariable] = newPathValue;
                     }
                 }
