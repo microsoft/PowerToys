@@ -208,9 +208,9 @@ namespace ColorPicker.Helpers
         private static string ColorToCIELAB(Color color)
         {
             var (lightness, chromaticityA, chromaticityB) = ColorHelper.ConvertToCIELABColor(color);
-            lightness = Math.Round(lightness);
-            chromaticityA = Math.Round(chromaticityA);
-            chromaticityB = Math.Round(chromaticityB);
+            lightness = Math.Round(lightness, 2);
+            chromaticityA = Math.Round(chromaticityA, 2);
+            chromaticityB = Math.Round(chromaticityB, 2);
 
             return $"CIELab({lightness.ToString(CultureInfo.InvariantCulture)}" +
                    $", {chromaticityA.ToString(CultureInfo.InvariantCulture)}" +
@@ -226,9 +226,9 @@ namespace ColorPicker.Helpers
         {
             var (x, y, z) = ColorHelper.ConvertToCIEXYZColor(color);
 
-            x = Math.Round(x * 100);
-            y = Math.Round(y * 100);
-            z = Math.Round(z * 100);
+            x = Math.Round(x * 100, 4);
+            y = Math.Round(y * 100, 4);
+            z = Math.Round(z * 100, 4);
 
             return $"xyz({x.ToString(CultureInfo.InvariantCulture)}" +
                    $", {y.ToString(CultureInfo.InvariantCulture)}" +
