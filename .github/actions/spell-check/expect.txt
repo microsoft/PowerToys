@@ -230,10 +230,13 @@ CHILDACTIVATE
 CHILDWINDOW
 chrdavis
 chrisharris
+chromaticities
 chrono
 Chrzan
 chrzan
 CHT
+cielab
+CIEXYZ
 CImage
 cinttypes
 cla
@@ -289,6 +292,7 @@ comhost
 cominterop
 commandline
 commctrl
+companding
 Compat
 COMPOSITIONFULL
 comsupp
@@ -403,6 +407,7 @@ ddd
 ddee
 ddf
 Deact
+debian
 DECLAR
 declspec
 decltype
@@ -1265,6 +1270,7 @@ mii
 MIIM
 millis
 mimetype
+mindaro
 Minimizeallwindows
 MINIMIZEBOX
 miniz
@@ -1958,6 +1964,7 @@ SRCCOPY
 sre
 sregex
 SResize
+SRGB
 srme
 srre
 srw
