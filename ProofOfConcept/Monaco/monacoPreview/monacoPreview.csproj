@@ -4,7 +4,20 @@
         <OutputType>WinExe</OutputType>
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <UseWPF>true</UseWPF>
+        <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     </PropertyGroup>
+
+    <ItemGroup>
+      <COMReference Include="Shell32">
+        <WrapperTool>tlbimp</WrapperTool>
+        <VersionMinor>0</VersionMinor>
+        <VersionMajor>1</VersionMajor>
+        <Guid>50a7e9b0-70ef-11d1-b75a-00a0c90564fe</Guid>
+        <Lcid>0</Lcid>
+        <Isolated>false</Isolated>
+        <EmbedInteropTypes>true</EmbedInteropTypes>
+      </COMReference>
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Toolkit.Uwp.UI" Version="6.1.1" />
@@ -23,6 +36,11 @@
         <None Update="monacoSRC\**\*.*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="PreviewWindow.xaml">
+        <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      </Page>
     </ItemGroup>
 
 </Project>

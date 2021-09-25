@@ -1,14 +1,21 @@
 ﻿using System;
 using System.IO;
+using System.Windows;
 using Microsoft.Web.WebView2.Core;
+using Windows.UI.Xaml;
 using WK.Libraries.WTL;
+using System.Windows.Shell;
+using Microsoft.Win32;
+using System.ComponentModel;
+using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace monacoPreview
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : System.Windows.Window
+    public partial class PreviewWindow : IPreviewHandler, IOleWindow, IObjectWithSite
     { 
         // This variable prevents users from navigating
         private bool WasNavigated = false;
@@ -19,7 +26,7 @@ namespace monacoPreview
         // Filehandler class from FileHandler.cs
         private readonly FileHandler fileHandler = new FileHandler();
 
-        public MainWindow()
+        public PreviewWindow()
         {
             System.Diagnostics.Debug.WriteLine("Start");
 
@@ -136,6 +143,61 @@ namespace monacoPreview
             code = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(code)).Replace("+", "%2B");
 
             return new Uri(settings.baseURL + "?code=" + code + "&lang=" + lang + "&theme=" + settings.GetTheme(ThemeListener.AppMode) + "&wrap=" + (this.settings.wrap ? "1" : "0"));
+        }
+
+        public void SetWindow(IntPtr hwnd, ref RECT rect)
+        {
+            
+        }
+
+        public void SetRect(ref RECT rect)
+        {
+            
+        }
+
+        public void DoPreview()
+        {
+            
+        }
+
+        public void Unload()
+        {
+            
+        }
+
+        public void SetFocus()
+        {
+            
+        }
+
+        public void QueryFocus(out IntPtr phwnd)
+        {
+            phwnd = new IntPtr();
+        }
+
+        public uint TranslateAccelerator(ref MSG pmsg)
+        {
+            return 1;
+        }
+
+        public void GetWindow(out IntPtr phwnd)
+        {
+            phwnd = this;
+        }
+
+        public void ContextSensitiveHelp([MarshalAs(UnmanagedType.Bool)] bool fEnterMode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetSite([In, MarshalAs(UnmanagedType.IUnknown)] object pUnkSite)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GetSite(ref Guid riid, [MarshalAs(UnmanagedType.IUnknown)] out object ppvSite)
+        {
+            throw new NotImplementedException();
         }
     }
 } 

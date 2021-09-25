@@ -2,6 +2,11 @@
 <html>
 	<head>
 		<script>
+
+			function getFile(path) {
+                //To-DO: get file directly
+            }
+
 			// Set variables
 
 			// Get URL parameters:
@@ -12,7 +17,7 @@
 			const urlParams = new URLSearchParams(window.location.search);
 
 			// Code for the editor
-			code = [atob(urlParams.get("code"))].join('\n');
+            code = (urlParams.get("code")!==null) ? [atob(urlParams.get("code"))].join('\n') : getFile(urlParams.get("file"));
 			// Theme of the editor
 			theme = urlParams.get("theme")=="dark"?"vs-dark":"vs";
 			// Code language

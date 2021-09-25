@@ -18,6 +18,9 @@ namespace monacoPreview
 
         // URL to the page
         public string baseURL = "file://" + System.AppContext.BaseDirectory + "/index.html";
+
+        // Activate compatibility mode
+        public bool compatibility = true;
         
 
         public String GetTheme(ThemeListener.ThemeModes t)
