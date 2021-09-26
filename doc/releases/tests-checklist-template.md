@@ -221,7 +221,8 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
  * Run PowerToys as user:
    - [ ] Verify `Win + Shift + /` opens the guide
    - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
-   * Restore the `Win + Shift + /` hotkey.
+   - [ ] Set Shortcut Guide to start with a Windows key press and verify it works.
+ * Restore the `Win + Shift + /` hotkey.
    - [ ] Open the guide and close it pressing `Esc`
    - [ ] Open the guide and close it pressing and releasing the `Win` key
  * With PowerToys running as a user, open an elevated app and keep it on foreground:
