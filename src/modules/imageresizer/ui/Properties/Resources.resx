@@ -132,6 +132,7 @@
   </data>
   <data name="Input_Auto" xml:space="preserve">
     <value>(auto)</value>
+    <comment>short for automatic</comment>
   </data>
   <data name="Input_Content" xml:space="preserve">
     <value>_Select a size</value>

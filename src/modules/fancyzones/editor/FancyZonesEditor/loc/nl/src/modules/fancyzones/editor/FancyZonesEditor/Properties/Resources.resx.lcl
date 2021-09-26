@@ -116,7 +116,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Please report the bug to ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Meld de fout bij]]></Val>
+            <Val><![CDATA[Meld de fout bij ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -209,7 +209,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Highlight distance]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Afstand markeren]]></Val>
+            <Val><![CDATA[Markeeringsafstand]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Distance to highlight adjacent zones]]></Val>
@@ -368,7 +368,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Please report the bug to ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Meld de fout bij]]></Val>
+            <Val><![CDATA[Meld de fout bij ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -485,7 +485,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Monitor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bewaken]]></Val>
+            <Val><![CDATA[Beeldscherm]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

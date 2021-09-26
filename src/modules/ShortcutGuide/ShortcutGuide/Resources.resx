@@ -125,6 +125,7 @@
   </data>
   <data name="Setting_Description_Theme_Light" xml:space="preserve">
     <value>Light</value>
+    <comment>light as in color, not weight</comment>
   </data>
   <data name="Setting_Description_Theme_Dark" xml:space="preserve">
     <value>Dark</value>
@@ -137,6 +138,7 @@
   </data>
   <data name="Shortcut_Guide" xml:space="preserve">
     <value>Shortcut Guide</value>
+    <comment>Product name, do not alter</comment>
   </data>
   <data name="No_Action" xml:space="preserve">
     <value>No action</value>

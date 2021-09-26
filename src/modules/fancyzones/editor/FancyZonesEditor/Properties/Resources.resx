@@ -137,9 +137,11 @@
   </data>
   <data name="Crash_Report_Message_Box_Text_Part1" xml:space="preserve">
     <value>Error logged to </value>
+    <comment>(note the space at the end)</comment>
   </data>
   <data name="Crash_Report_Message_Box_Text_Part2" xml:space="preserve">
     <value>Please report the bug to </value>
+    <comment>(note the space at the end)</comment>
   </data>
   <data name="Custom" xml:space="preserve">
     <value>Custom</value>
@@ -149,7 +151,7 @@
   </data>
   <data name="Distance_adjacent_zones" xml:space="preserve">
     <value>Highlight distance</value>
-    <comment>Distance of when an adjacent zone should light up when the window is close to it</comment>
+    <comment>noun; distance of when an adjacent zone should light up when the window is close to it</comment>
   </data>
   <data name="Fancy_Zones_Editor_App_Title" xml:space="preserve">
     <value>FancyZones Editor</value>
@@ -228,6 +230,7 @@
   </data>
   <data name="Error_Report" xml:space="preserve">
     <value>Please report the bug to </value>
+    <comment>(note the space at the end)</comment>
   </data>
   <data name="Error_Monitor_Match_Not_Found" xml:space="preserve">
     <value>Match not found ({0})</value>
@@ -256,7 +259,7 @@
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Delete</value>
-    <comment>Context menu label that allows the user duplicate a layout</comment>
+    <comment>Context menu label that allows the user to delete a layout</comment>
   </data>
   <data name="Duplicate" xml:space="preserve">
     <value>Duplicate</value>
@@ -284,6 +287,7 @@
   </data>
   <data name="Monitor" xml:space="preserve">
     <value>Monitor</value>
+    <comment>"monitor" means the device, not a verb</comment>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Template settings</value>
@@ -363,7 +367,7 @@
   <data name="Edit_Layout" xml:space="preserve">
     <value>Edit layout</value>
   </data>
-    <data name="Layout_Creation_Announce" xml:space="preserve">
-    <value>custom layout was created successfully.</value>
+  <data name="Layout_Creation_Announce" xml:space="preserve">
+    <value>Custom layout was created successfully.</value>
   </data>
 </root>
