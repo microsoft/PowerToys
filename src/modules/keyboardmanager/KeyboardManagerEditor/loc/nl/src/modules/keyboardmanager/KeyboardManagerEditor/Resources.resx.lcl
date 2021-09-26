@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The following keys have been reassigned and you won't be able to use them for their original assignment:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[De volgende sleutels zijn opnieuw toegewezen en u kunt ze niet gebruiken voor de oorspronkelijke toewijzing:]]></Val>
+            <Val><![CDATA[De volgende toetsen zijn opnieuw toegewezen en u kunt ze niet gebruiken voor de oorspronkelijke toewijzing:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -401,7 +401,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sleutel]]></Val>
+            <Val><![CDATA[Toets]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
