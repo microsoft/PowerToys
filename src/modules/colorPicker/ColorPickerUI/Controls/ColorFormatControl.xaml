@@ -20,7 +20,7 @@
                 <ColumnDefinition Width="36"/>
             </Grid.ColumnDefinitions>
             <TextBlock x:Name="FormatNameTextBlock"
-                       Opacity="0.4"
+                       Opacity="0.6"
                        Foreground="{DynamicResource PrimaryForegroundBrush}"
                        Margin="8"
                        FontWeight="SemiBold"
@@ -44,7 +44,8 @@
             <Button x:Name="CopyToClipboardButton"
                     ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}"
                     Background="{DynamicResource ColorControlBackgroundBrush}"
-                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    Opacity="0.6"
                     Height="36"
                     Width="36"
                     Grid.Column="2"
