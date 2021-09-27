@@ -20,11 +20,12 @@ namespace PowerToys.Settings
             ElevatedStatus,
             IsUserAdmin,
             ShowOobeWindow,
+            SettingsWindow,
         }
 
         // Quantity of arguments
-        private const int RequiredArgumentsQty = 6;
-        private const int RequiredAndOptionalArgumentsQty = 7;
+        private const int RequiredArgumentsQty = 7;
+        private const int RequiredAndOptionalArgumentsQty = 8;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
@@ -52,11 +53,25 @@ namespace PowerToys.Settings
 
                     IsElevated = args[(int)Arguments.ElevatedStatus] == "true";
                     IsUserAnAdmin = args[(int)Arguments.IsUserAdmin] == "true";
+                    app.ShowOobe = args[(int)Arguments.ShowOobeWindow] == "true";
 
                     if (args.Length == RequiredAndOptionalArgumentsQty)
                     {
-                        // open oobe window
-                        app.ShowOobe = args[(int)Arguments.ShowOobeWindow] == "true";
+                        // open specific window
+                        switch (args[(int)Arguments.SettingsWindow])
+                        {
+                            case "Overview": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.GeneralPage); break;
+                            case "Awake": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.AwakePage); break;
+                            case "ColorPicker": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.ColorPickerPage); break;
+                            case "FancyZones": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.FancyZonesPage); break;
+                            case "Run": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage); break;
+                            case "ImageResizer": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.ImageResizerPage); break;
+                            case "KBM": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.KeyboardManagerPage); break;
+                            case "PowerRename": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.PowerRenamePage); break;
+                            case "FileExplorer": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.PowerPreviewPage); break;
+                            case "ShortcutGuide": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.ShortcutGuidePage); break;
+                            case "VideoConference": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.VideoConferencePage); break;
+                        }
                     }
 
                     RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>

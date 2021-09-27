@@ -62,12 +62,15 @@ void change_menu_item_text(const UINT item_id, wchar_t* new_text)
     SetMenuItemInfoW(h_menu, item_id, false, &menuitem);
 }
 
-void handle_tray_command(HWND window, const WPARAM command_id)
+void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
 {
     switch (command_id)
     {
     case ID_SETTINGS_MENU_COMMAND:
-        open_settings_window();
+        {
+            std::wstring settings_window{ winrt::to_hstring(ESettingsWindowNames_to_string(static_cast<ESettingsWindowNames>(lparam))) };
+            open_settings_window(settings_window);
+        }
         break;
     case ID_EXIT_MENU_COMMAND:
         if (h_menu)
@@ -147,7 +150,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         DestroyWindow(window);
         break;
     case WM_COMMAND:
-        handle_tray_command(window, wparam);
+        handle_tray_command(window, wparam, lparam);
         break;
     // Shell_NotifyIcon can fail when we invoke it during the time explorer.exe isn't present/ready to handle it.
     // We'll also never receive wm_taskbar_restart message if the first call to Shell_NotifyIcon failed, so we use
@@ -167,7 +170,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             {
             case WM_LBUTTONUP:
             {
-                open_settings_window();
+                open_settings_window(std::nullopt);
                 break;
             }
             case WM_RBUTTONUP:
