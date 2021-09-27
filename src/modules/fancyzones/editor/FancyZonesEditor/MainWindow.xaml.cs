@@ -419,7 +419,7 @@ namespace FancyZonesEditor
             {
                 LayoutModel model = element.DataContext as LayoutModel;
 
-                if (model.Guid == _backup.Guid)
+                if (_backup != null && model.Guid == _backup.Guid)
                 {
                     _backup = null;
                 }
