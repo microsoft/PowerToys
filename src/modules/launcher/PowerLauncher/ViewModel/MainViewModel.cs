@@ -84,6 +84,10 @@ namespace PowerLauncher.ViewModel
         public void RegisterHotkey(IntPtr hwnd)
         {
             Log.Info("RegisterHotkey()", GetType());
+
+            // Allow OOBE to call PowerToys Run.
+            NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey);
+
             _settings.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(PowerToysRunSettings.Hotkey))
