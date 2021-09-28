@@ -533,8 +533,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "VideoConference";
     default:
     {
-        assert(false);
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
+        assert(false);
     }
     }
     return "";
@@ -588,8 +588,8 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     }
     else
     {
-        assert(false);
         Logger::error(L"Can't convert string value={} to ESettingsWindowNames", winrt::to_hstring(value));
+        assert(false);
     }
 
     return ESettingsWindowNames::Overview;
