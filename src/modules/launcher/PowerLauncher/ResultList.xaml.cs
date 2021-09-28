@@ -69,6 +69,14 @@ namespace PowerLauncher
                     tooltip.PlacementRectangle = new Rect(0, button.Height, 0, 0);
                     tooltip.IsOpen = true;
                 }
+                else
+                {
+                    HideCurrentToolTip();
+                }
+            }
+            else
+            {
+                HideCurrentToolTip();
             }
         }
 
