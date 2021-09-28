@@ -116,7 +116,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
         public List<Result> Query(Query query)
         {
             var search = query?.Search ?? string.Empty;
-            return ServiceHelper.Search(search, _icoPath).ToList();
+            return ServiceHelper.Search(search, _icoPath, _context).ToList();
         }
 
         public string GetTranslatedPluginTitle()
