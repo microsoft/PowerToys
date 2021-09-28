@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
             var services = ServiceController.GetServices();
 
             return services
-                .Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase))
+                .Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).StartsWith(search, StringComparison.OrdinalIgnoreCase))
                 .Select(s =>
                 {
                     ServiceResult serviceResult = new ServiceResult(s);
