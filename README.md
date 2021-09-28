@@ -93,7 +93,7 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 - Fixed issue with new updates changing the PowerToys install location.
 - Fixed settings with NumberBox elements overlapping the delete button.
 - Fixed issue with the bug report tool not generating .zip files.
-- Fixed issue with disabled shortcuts looking the same as when enabled. Thanks @niels9001!
+- Updated the shortcut configuration experience in Settings. Thanks @niels9001!
 - Fixed inconsistent with of sidebar icons. Thanks @niels9001!
 - Fixed sidebar UI not scaling for longer text strings in certain localizations. Thanks @niels9001!
 - Fixed issue with settings not displaying invalid keystroke assignments. Thanks @niels9001!
@@ -135,11 +135,10 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 
 - Improvements on subtitle layout for Settings plugin. Thanks @htcfreek!
 - Added path filters for Settings plugin via `>` key. Thanks @htcfreek! 
-- Translation improvements for Settings plugin. Thanks @htcfreek! 
-- Fixed exception errors for Settings Plugin. Thanks @htcfreek!
+- Translation improvements for Settings plugin. Thanks @htcfreek!
 - Added translation support for Settings Plugin. Thanks @htcfreek!
 - Fixed issue with PowerToys Run not being in focus when launched.
-- Fixed crash on empty/deleted environment variables for Registry Plugin. Thanks @htcfreek!
+- Fixed crash on empty/deleted environment variables when updating variables after a change. Thanks @htcfreek!
 - Corrected Registry Plugin query results.
 - Fixed crash in Registry plugin queries.
 - Fixed crash when Windows shuts down.
