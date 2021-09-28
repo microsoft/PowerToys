@@ -94,7 +94,7 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 - Fixed settings with NumberBox elements overlapping the delete button.
 - Fixed issue with the bug report tool not generating .zip files.
 - Updated the shortcut configuration experience in Settings. Thanks @niels9001!
-- Fixed inconsistent with of sidebar icons. Thanks @niels9001!
+- Fixed inconsistent width of sidebar icons. Thanks @niels9001!
 - Fixed sidebar UI not scaling for longer text strings in certain localizations. Thanks @niels9001!
 - Fixed issue with settings not displaying invalid keystroke assignments. Thanks @niels9001!
 - Added user defined shortcuts when set to the "Welcome to PowerToys" instead of the default shortcuts.
