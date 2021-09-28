@@ -133,6 +133,7 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 
 ### PowerToys Run
 
+- Improvements on subtitle layout for Settings plugin. Thanks @htcfreek!
 - Added path filters for Settings plugin via `>` key. Thanks @htcfreek! 
 - Translation improvements for Settings plugin. Thanks @htcfreek! 
 - Fixed exception errors for Settings Plugin. Thanks @htcfreek!
