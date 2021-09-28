@@ -91,10 +91,10 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 **General**
 
 - Fixed issue with new updates changing the PowerToys install location.
-- Fixed settings with NumberBox elements overlaping the delete button.
+- Fixed settings with NumberBox elements overlapping the delete button.
 - Fixed issue with the bug report tool not generating .zip files.
 - Fixed issue with disabled shortcuts looking the same as when enabled. Thanks @niels9001!
-- Fixed inconsitent with of sidebar icons. Thanks @niels9001!
+- Fixed inconsistent with of sidebar icons. Thanks @niels9001!
 - Fixed sidebar UI not scaling for longer text strings in certain localizations. Thanks @niels9001!
 - Fixed issue with settings not displaying invalid keystroke assignments. Thanks @niels9001!
 - Added user defined shortcuts when set to the "Welcome to PowerToys" instead of the default shortcuts.
@@ -116,7 +116,7 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 
 ### File Explorer add-ons
 
-- Added PDF Thumbnail Provider for Winows Explorer. Thanks @rdeveen!
+- Added PDF Thumbnail Provider for Windows Explorer. Thanks @rdeveen!
 
 ### Image Resizer
 
@@ -128,12 +128,12 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 ### Keyboard Manager
 
 - Fixed crash when adding a shortcut.
-- Fixed issue with Remappings window not displaying.
+- Fixed issue with Re-mappings window not displaying.
 - Fixed issue when remapping a shortcut to `Alt`+`Tab` breaks the `Alt`+`Tab` navigation with arrow keys.
 
 ### PowerToys Run
 
-- Added path filiters for Settings plugin via `>` key. Thanks @htcfreek! 
+- Added path filters for Settings plugin via `>` key. Thanks @htcfreek! 
 - Translation improvements for Settings plugin. Thanks @htcfreek! 
 - Fixed exception errors for Settings Plugin. Thanks @htcfreek!
 - Added translation support for Settings Plugin. Thanks @htcfreek!
@@ -152,7 +152,7 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 
 ### Video Conference Mute
 
-- Fixed an issue with the first hotkey input in the settings being focused when the page loads. Prevents unintentionaly shortcut reassignment. Thanks @niels9001!
+- Fixed an issue with the first hotkey input in the settings being focused when the page loads. Prevents unintentionally shortcut reassignment. Thanks @niels9001!
 
 ## Community contributions
 

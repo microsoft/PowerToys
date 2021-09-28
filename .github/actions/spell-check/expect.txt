@@ -1702,6 +1702,7 @@ RBUTTONUP
 rclsid
 RCONTROL
 RCtrl
+rdeveen
 RDW
 readme
 READMODE
