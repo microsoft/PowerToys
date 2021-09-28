@@ -531,55 +531,65 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "ShortcutGuide";
     case ESettingsWindowNames::VideoConference:
         return "VideoConference";
+    default:
+    {
+        assert(false);
+        Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
+    }
     }
     return "";
 }
 
 ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
 {
-    if (value.compare("Overview") == 0)
+    if (value == "Overview")
     {
         return ESettingsWindowNames::Overview;
     }
-    else if (value.compare("Awake") == 0)
+    else if (value == "Awake")
     {
         return ESettingsWindowNames::Awake;
     }
-    else if (value.compare("ColorPicker") == 0)
+    else if (value == "ColorPicker")
     {
         return ESettingsWindowNames::ColorPicker;
     }
-    else if (value.compare("FancyZones") == 0)
+    else if (value == "FancyZones")
     {
         return ESettingsWindowNames::FancyZones;
     }
-    else if (value.compare("Run") == 0)
+    else if (value == "Run")
     {
         return ESettingsWindowNames::Run;
     }
-    else if (value.compare("ImageResizer") == 0)
+    else if (value == "ImageResizer")
     {
         return ESettingsWindowNames::ImageResizer;
     }
-    else if (value.compare("KBM") == 0)
+    else if (value == "KBM")
     {
         return ESettingsWindowNames::KBM;
     }
-    else if (value.compare("PowerRename") == 0)
+    else if (value == "PowerRename")
     {
         return ESettingsWindowNames::PowerRename;
     }
-    else if (value.compare("FileExplorer") == 0)
+    else if (value == "FileExplorer")
     {
         return ESettingsWindowNames::FileExplorer;
     }
-    else if (value.compare("ShortcutGuide") == 0)
+    else if (value == "ShortcutGuide")
     {
         return ESettingsWindowNames::ShortcutGuide;
     }
-    else if (value.compare("VideoConference") == 0)
+    else if (value == "VideoConference")
     {
         return ESettingsWindowNames::VideoConference;
+    }
+    else
+    {
+        assert(false);
+        Logger::error(L"Can't convert string value={} to ESettingsWindowNames", winrt::to_hstring(value));
     }
 
     return ESettingsWindowNames::Overview;

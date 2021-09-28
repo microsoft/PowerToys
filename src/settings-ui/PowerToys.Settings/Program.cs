@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Windows;
 using interop;
 using ManagedCommon;
@@ -71,6 +72,7 @@ namespace PowerToys.Settings
                             case "FileExplorer": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.PowerPreviewPage); break;
                             case "ShortcutGuide": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.ShortcutGuidePage); break;
                             case "VideoConference": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.VideoConferencePage); break;
+                            default: Debug.Assert(false, "Unexpected SettingsWindow argument value"); break;
                         }
                     }
 
