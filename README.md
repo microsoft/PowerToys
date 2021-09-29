@@ -116,7 +116,7 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 
 ### File Explorer add-ons
 
-- Added PDF Thumbnail Provider for Windows Explorer. Thanks @rdeveen!
+- Added PDF preview and thumbnail provider for Windows Explorer. Thanks @rdeveen!
 
 ### Image Resizer
 
