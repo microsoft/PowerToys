@@ -136,7 +136,7 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 - Improvements on subtitle layout for Settings plugin. Thanks @htcfreek!
 - Added path filters for Settings plugin via `>` key. Thanks @htcfreek! 
 - Translation improvements for Settings plugin. Thanks @htcfreek!
-- Added translation support for Settings Plugin. Thanks @htcfreek!
+- Enabled translation for Settings Plugin. Thanks @htcfreek!
 - Fixed issue with PowerToys Run not being in focus when launched.
 - Fixed crash on empty/deleted environment variables when updating variables after a change. Thanks @htcfreek!
 - Corrected Registry Plugin query results.
