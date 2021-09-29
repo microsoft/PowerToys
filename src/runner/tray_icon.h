@@ -1,10 +1,13 @@
 #pragma once
+#include <optional>
+#include <string>
+
 // Start the Tray Icon
 void start_tray_icon();
 // Stop the Tray Icon
 void stop_tray_icon();
 // Open the Settings Window
-void open_settings_window();
+void open_settings_window(std::optional<std::wstring> settings_window);
 // Callback type to be called by the tray icon loop
 typedef void (*main_loop_callback_function)(PVOID);
 // Calls a callback in _callback

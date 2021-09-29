@@ -569,6 +569,7 @@ errc
 errorlevel
 ERRORMESSAGE
 ERRORTITLE
+ESettings
 esize
 estdir
 etcore
@@ -994,6 +995,7 @@ IRepository
 IResult
 ISavable
 isbi
+iss
 ISearch
 IService
 isetting
