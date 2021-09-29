@@ -1,4 +1,6 @@
-[
+{
+  "$schema" : "./WindowsSettings.schema.json",
+  "settings": [
   {
     "Name": "AccessWorkOrSchool",
     "Areas": [ "AreaAccounts" ],
@@ -1734,4 +1736,4 @@
     "AltNames": [ "wgpocpl.cpl" ],
     "Command": "control Wgpocpl.cpl"
   }
-]
+]}

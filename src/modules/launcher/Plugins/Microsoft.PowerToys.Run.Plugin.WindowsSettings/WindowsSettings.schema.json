@@ -1,0 +1,76 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "required": [ "settings" ],
+    "properties": {
+        "settings": {
+            "type" : "array",
+            "items": {
+                "additionalProperties": false,
+                "required" : [ "Name", "Command", "Type" ],
+                "type":"object",
+                "properties": {
+                    "Name": { "type":"string" },
+                    "Areas": {
+                        "type":"array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "AreaAccounts",
+                                "AreaAdministrativeTools",
+                                "AreaApps",
+                                "AreaAppearanceAndPersonalization",
+                                "AreaClockAndRegion",
+                                "AreaCortana",
+                                "AreaDevices",
+                                "AreaEaseOfAccess",
+                                "AreaExtras",
+                                "AreaGaming",
+                                "AreaHardwareAndSound",
+                                "AreaHomePage",
+                                "AreaMixedReality",
+                                "AreaNetworkAndInternet",
+                                "AreaPersonalization",
+                                "AreaPhone",
+                                "AreaPrivacy",
+                                "AreaPrograms",
+                                "AreaSurfaceHub",
+                                "AreaSystem",
+                                "AreaSystemAndSecurity",
+                                "AreaTimeAndLanguage",
+                                "AreaUserAccounts",
+                                "AreaUpdateAndSecurity"
+                            ]
+                        }
+                    },
+                    "Type": {
+                        "type": "string",
+                        "enum": ["AppSettingsApp", "AppControlPanel"]
+                    },
+                    "AltNames": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    },
+                    "Command": {
+                        "type": "string"
+                    },
+                    "Note" : {
+                        "type": "string"
+                    },
+                    "DeprecatedInBuild": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295,
+                        "enum": [ 10240, 10586, 14393, 15063, 16299, 17134, 17763, 18362, 18363, 19041, 19042 ]
+                    },
+                    "IntroducedInBuild": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295,
+                        "enum": [ 10240, 10586, 14393, 15063, 16299, 17134, 17763, 18362, 18363, 19041, 19042 ]
+                    }
+                }
+            }
+        }
+    }
+}
