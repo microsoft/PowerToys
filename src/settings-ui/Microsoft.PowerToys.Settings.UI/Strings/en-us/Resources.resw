@@ -1099,22 +1099,21 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Windows key + Left or right arrow keys to move windows based on zone index</value>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" xml:space="preserve">
-    <value>Windows key + &#xE010; &#xE011; &#xE012; or &#xE013;</value>
-        <comment>Do not loc the icons (hex numbers)</comment>
+    <value>Windows key +    or </value>
+    <comment>Do not loc the icons (hex numbers)</comment>
   </data>
-
   <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description.Text" xml:space="preserve">
-    <value>Windows key + &#xE00E; or &#xE00F;</value>
-        <comment>Do not loc the icons (hex numbers)</comment>
+    <value>Windows key +  or </value>
+    <comment>Do not loc the icons (hex numbers)</comment>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition.Text" xml:space="preserve">
-    <value>Based on relative position</value>
+    <value>Relative position</value>
   </data>
   <data name="FancyZones_MoveWindow.Header" xml:space="preserve">
-    <value>Move windows</value>
+    <value>Move windows based on</value>
   </data>
   <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Text" xml:space="preserve">
-    <value>Based on zone index</value>
+    <value>Zone index</value>
   </data>
   <data name="ColorPicker_Editor.Header" xml:space="preserve">
     <value>Editor</value>
