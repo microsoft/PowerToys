@@ -28,7 +28,7 @@
                 
                 <TextBlock x:Name="TitleTxt"
                            Text="{x:Bind ModuleTitle}"
-                           AutomationProperties.HeadingLevel="Level2"
+                           AutomationProperties.HeadingLevel="Level1"
                            Style="{StaticResource TitleTextBlockStyle}" />
 
                 <TextBlock x:Name="DescriptionTxt"

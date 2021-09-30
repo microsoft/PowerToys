@@ -21,6 +21,7 @@
         
         <TextBlock x:Name="Header"
                    Text="{x:Bind ModuleTitle}"
+                   AutomationProperties.HeadingLevel="1"
                    Style="{StaticResource TitleTextBlockStyle}"
                    Margin="0,44,0,0"
                    VerticalAlignment="Stretch"/>
