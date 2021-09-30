@@ -1,73 +1,62 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema",
     "additionalProperties": false,
-    "required": [ "settings" ],
+    "required": [ "Settings" ],
     "properties": {
-        "settings": {
-            "type" : "array",
+        "Settings": {
+            "description": "A list with all possible windows settings.",
+            "type": "array",
             "items": {
                 "additionalProperties": false,
-                "required" : [ "Name", "Command", "Type" ],
-                "type":"object",
+                "required": [ "Name", "Command", "Type" ],
+                "type": "object",
                 "properties": {
-                    "Name": { "type":"string" },
+                    "Name": {
+                        "description": "The name of this setting.",
+                        "type": "string"
+                    },
                     "Areas": {
-                        "type":"array",
+                        "description": "A list of areas of this setting",
+                        "type": "array",
                         "items": {
+                            "description": "A area of this setting",
                             "type": "string",
-                            "enum": [
-                                "AreaAccounts",
-                                "AreaAdministrativeTools",
-                                "AreaApps",
-                                "AreaAppearanceAndPersonalization",
-                                "AreaClockAndRegion",
-                                "AreaCortana",
-                                "AreaDevices",
-                                "AreaEaseOfAccess",
-                                "AreaExtras",
-                                "AreaGaming",
-                                "AreaHardwareAndSound",
-                                "AreaHomePage",
-                                "AreaMixedReality",
-                                "AreaNetworkAndInternet",
-                                "AreaPersonalization",
-                                "AreaPhone",
-                                "AreaPrivacy",
-                                "AreaPrograms",
-                                "AreaSurfaceHub",
-                                "AreaSystem",
-                                "AreaSystemAndSecurity",
-                                "AreaTimeAndLanguage",
-                                "AreaUserAccounts",
-                                "AreaUpdateAndSecurity"
-                            ]
+                            "pattern": "^Area"
                         }
                     },
                     "Type": {
+                        "description": "The type of this setting.",
                         "type": "string",
-                        "enum": ["AppSettingsApp", "AppControlPanel"]
+                        "pattern": "^App"
                     },
                     "AltNames": {
+                        "description": "A list with alternative names for this setting",
                         "type": "array",
-                        "items": { "type": "string" }
+                        "items": {
+                            "description": "A alternative name for this setting",
+                            "type": "string"
+                        }
                     },
                     "Command": {
+                        "description": "The command for this setting.",
                         "type": "string"
                     },
-                    "Note" : {
-                        "type": "string"
+                    "Note": {
+                        "description": "A additional note for this setting.",
+                        "type": "string",
+                        "pattern": "^Note"
                     },
                     "DeprecatedInBuild": {
+                        "description": "The Windows build since this settings is not longer present.",
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 4294967295,
-                        "enum": [ 10240, 10586, 14393, 15063, 16299, 17134, 17763, 18362, 18363, 19041, 19042 ]
+                        "maximum": 4294967295
                     },
                     "IntroducedInBuild": {
+                        "description": "The minimum need Windows build for this setting.",
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 4294967295,
-                        "enum": [ 10240, 10586, 14393, 15063, 16299, 17134, 17763, 18362, 18363, 19041, 19042 ]
+                        "maximum": 4294967295
                     }
                 }
             }

@@ -1,13 +1,13 @@
 {
   "$schema" : "./WindowsSettings.schema.json",
-  "settings": [
-  {
-    "Name": "AccessWorkOrSchool",
-    "Areas": [ "AreaAccounts" ],
-    "Type": "AppSettingsApp",
-    "AltNames": [ "Workplace" ],
-    "Command": "ms-settings:workplace"
-  },
+  "Settings": [
+    {
+        "Name": "AccessWorkOrSchool",
+        "Areas": [ "AreaAccounts" ],
+        "Type": "AppSettingsApp",
+        "AltNames": [ "Workplace" ],
+        "Command": "ms-settings:workplace"
+    },
   {
     "Name": "EmailAndAppAccounts",
     "Areas": [ "AreaAccounts" ],
