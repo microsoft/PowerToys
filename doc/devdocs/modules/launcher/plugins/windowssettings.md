@@ -23,7 +23,7 @@ A minimum entry for the `WindowsSettings.json` looks like:
     "Name": "mySetting",
     "Areas": [ "AreaMySetting" ],
     "Type": "AppSettingsApp",
-    "AltNames": [ "ANiceSetting" ],
+    "AltNames": [ "NiceSetting" ],
     "Command": "ms-settings:mySetting"
   }
 ```
