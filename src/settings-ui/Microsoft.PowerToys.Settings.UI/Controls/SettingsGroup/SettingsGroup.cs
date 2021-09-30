@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -54,6 +55,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void SetEnabledState()
         {
             VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new SettingsGroupAutomationPeer(this);
         }
     }
 }

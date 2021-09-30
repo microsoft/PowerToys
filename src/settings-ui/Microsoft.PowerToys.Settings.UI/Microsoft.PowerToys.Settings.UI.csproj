@@ -95,6 +95,7 @@
     </Compile>
     <Compile Include="Behaviors\NavigationViewHeaderBehavior.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderMode.cs" />
+    <Compile Include="Controls\SettingsGroup\SettingsGroupAutomationPeer.cs" />
     <Compile Include="Controls\ShortcutControl\ShortcutControl.xaml.cs">
       <DependentUpon>ShortcutControl.xaml</DependentUpon>
     </Compile>
@@ -105,7 +106,7 @@
     <Compile Include="Controls\ShortcutControl\ShortcutDialogContentControl.xaml.cs">
       <DependentUpon>ShortcutDialogContentControl.xaml</DependentUpon>
     </Compile>
- <Compile Include="Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml.cs">
+    <Compile Include="Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml.cs">
       <DependentUpon>ShortcutWithTextLabelControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\SettingsPageControl\SettingsPageControl.xaml.cs">
