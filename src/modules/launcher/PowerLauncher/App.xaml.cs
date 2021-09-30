@@ -93,6 +93,9 @@ namespace PowerLauncher
         private void OnStartup(object sender, StartupEventArgs e)
         {
             Log.Info("On Startup.", GetType());
+
+            // Fix for .net 3.1.19 making PowerToys Run not adapt to DPI changes.
+            PowerLauncher.Helper.NativeMethods.SetProcessDPIAware();
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
             Stopwatch.Normal("App.OnStartup - Startup cost", () =>
