@@ -226,7 +226,7 @@
                                          HorizontalAlignment="Right"
                                          MinWidth="{StaticResource SettingActionControlMinWidth}"
                                          x:Uid="ImageResizer_FilenameFormatPlaceholder"/>
-                                <Button Content="&#xE946;" Height="32" FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                <Button Content="&#xE946;" x:Uid="ImageResizer_FilenameParameters" Height="32" FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                     <Button.Flyout>
                                         <Flyout>
                                             <TextBlock x:Name="FileFormatTextBlock">

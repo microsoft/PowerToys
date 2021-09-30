@@ -2,14 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml.Automation.Peers;
 
-namespace Microsoft.PowerToys.Settings.UI.Controls.SettingsGroup
+namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public class SettingsGroupAutomationPeer : FrameworkElementAutomationPeer
     {
