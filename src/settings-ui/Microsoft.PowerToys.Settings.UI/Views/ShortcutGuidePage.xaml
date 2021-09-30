@@ -65,7 +65,7 @@
                     <muxc:InfoBar
                         x:Uid="ShortcutGuide_PressWinKeyWarning"
                         Severity="Warning"
-                        
+                        IsTabStop="True"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior}"
                         IsClosable="False"
                     />
