@@ -1391,24 +1391,16 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="Awake_EnableAwake.Header" xml:space="preserve">
     <value>Enable Awake</value>
+    <comment>Awake is a produce name, do not loc</comment>
   </data>
-  <data name="Awake_NoKeepAwakeContent.Text" xml:space="preserve">
-    <value>Inactive</value>
+  <data name="Awake_NoKeepAwake.Content" xml:space="preserve">
+    <value>Keep using the selected power plan</value>
   </data>
-  <data name="Awake_IndefiniteKeepAwakeContent.Text" xml:space="preserve">
+  <data name="Awake_IndefiniteKeepAwake.Content" xml:space="preserve">
     <value>Keep awake indefinitely</value>
   </data>
-  <data name="Awake_TemporaryKeepAwakeContent.Text" xml:space="preserve">
+  <data name="Awake_TemporaryKeepAwake.Content" xml:space="preserve">
     <value>Keep awake temporarily</value>
-  </data>
-  <data name="Awake_NoKeepAwakeDescription.Text" xml:space="preserve">
-    <value>Your PC operates according to its current power plan</value>
-  </data>
-  <data name="Awake_IndefiniteKeepAwakeDescription.Text" xml:space="preserve">
-    <value>Keeps your PC awake until the setting is disabled</value>
-  </data>
-  <data name="Awake_TemporaryKeepAwakeDescription.Text" xml:space="preserve">
-    <value>Keeps your PC awake until the set time elapses</value>
   </data>
   <data name="Awake_EnableDisplayKeepAwake.Header" xml:space="preserve">
     <value>Keep screen on</value>
@@ -1507,7 +1499,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>See what's new</value>
   </data>
   <data name="Awake_Mode.Description" xml:space="preserve">
-    <value>Set the preferred behaviour of Awake</value>
+    <value>Manage the state of your device when Awake is active</value>
   </data>
   <data name="ExcludedApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
@@ -1635,5 +1627,8 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="ImageResizer_DefaultSize_NewSizePrefix" xml:space="preserve">
     <value>New size</value>
     <comment>First part of the default name of new sizes that can be added in PT's settings ui.</comment>
+  </data>
+  <data name="Awake_TimeBeforeAwake.Header" xml:space="preserve">
+    <value>Time before returning to the previous awakeness state</value>
   </data>
 </root>

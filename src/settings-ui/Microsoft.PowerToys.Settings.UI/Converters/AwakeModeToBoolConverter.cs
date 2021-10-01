@@ -12,30 +12,13 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (targetType != typeof(bool?))
-            {
-                throw new InvalidOperationException("The target type needs to be a boolean.");
-            }
-
-            if (parameter == null)
-            {
-                throw new NullReferenceException("Parameter cannot be null for the PowerToys Awake mode to bool converter.");
-            }
-
-            var expectedMode = (AwakeMode)Enum.Parse(typeof(AwakeMode), parameter.ToString());
-            var currentMode = (AwakeMode)value;
-
-            return currentMode.Equals(expectedMode);
+            var mode = (AwakeMode)value;
+            return (int)mode;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            if (parameter == null)
-            {
-                throw new NullReferenceException("Parameter cannot be null for the PowerToys Awake mode to bool converter.");
-            }
-
-            return (AwakeMode)Enum.Parse(typeof(AwakeMode), parameter.ToString());
+            return (AwakeMode)Enum.ToObject(typeof(AwakeMode), (int)value);
         }
     }
 }

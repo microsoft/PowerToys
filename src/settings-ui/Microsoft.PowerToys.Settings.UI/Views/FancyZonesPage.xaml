@@ -231,7 +231,7 @@
                                     <controls:Setting.ActionContent>
                                         <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinHeight="56" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                             <ComboBoxItem x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible">
-                                                <StackPanel Orientation="Vertical">
+                                                <StackPanel Orientation="Vertical" Spacing="4">
                                                     <TextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex"/>
                                                     <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
                                                         <Run x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description" />
@@ -239,7 +239,7 @@
                                                 </StackPanel>
                                             </ComboBoxItem>
                                             <ComboBoxItem x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Accessible">
-                                                <StackPanel Orientation="Vertical">
+                                                <StackPanel Orientation="Vertical" Spacing="4">
                                                     <TextBlock x:Uid="FancyZones_MoveWindowBasedOnRelativePosition"/>
                                                     <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}"  Style="{StaticResource SecondaryTextStyle}">
                                                         <Run x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Description" />

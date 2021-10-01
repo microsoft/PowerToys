@@ -37,7 +37,7 @@
                             <controls:Setting x:Uid="ColorPicker_ActivationAction" Icon="&#xEC4E;" >
                                 <controls:Setting.ActionContent>
                             <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                      SelectedIndex="{Binding ActivationBehavior, Mode=TwoWay}" >
+                                      SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}" >
                                         <ComboBoxItem x:Uid="EditorFirst"/>
                                         <ComboBoxItem x:Uid="ColorPickerFirst"/>
                                         <ComboBoxItem x:Uid="ColorPickerOnly"/>
