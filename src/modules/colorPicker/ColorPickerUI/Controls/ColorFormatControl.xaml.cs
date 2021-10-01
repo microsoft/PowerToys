@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -22,6 +23,8 @@ namespace ColorPicker.Controls
         public static readonly DependencyProperty ColorFormatModelProperty = DependencyProperty.Register("ColorFormatModel", typeof(ColorFormatModel), typeof(ColorFormatControl), new PropertyMetadata(ColorFormatModelPropertyChanged));
 
         public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register("SelectedColor", typeof(Color), typeof(ColorFormatControl), new PropertyMetadata(SelectedColorPropertyChanged));
+
+        public static readonly DependencyProperty SelectedColorCopyHelperTextProperty = DependencyProperty.Register("SelectedColorCopyHelperText", typeof(string), typeof(ColorFormatControl));
 
         public static readonly DependencyProperty ColorCopiedNotificationBorderProperty = DependencyProperty.Register("ColorCopiedNotificationBorder", typeof(FrameworkElement), typeof(ColorFormatControl), new PropertyMetadata(ColorCopiedBorderPropertyChanged));
 
@@ -47,6 +50,12 @@ namespace ColorPicker.Controls
             set { SetValue(ColorCopiedNotificationBorderProperty, value); }
         }
 
+        public string SelectedColorCopyHelperText
+        {
+            get { return (string)GetValue(SelectedColorCopyHelperTextProperty); }
+            set { SetValue(SelectedColorCopyHelperTextProperty, value); }
+        }
+
         public ColorFormatControl()
         {
             InitializeComponent();
@@ -68,7 +77,10 @@ namespace ColorPicker.Controls
 
         private static void SelectedColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ColorFormatControl)d).ColorTextRepresentationTextBlock.Text = ((ColorFormatControl)d).ColorFormatModel.Convert((Color)e.NewValue);
+            var self = (ColorFormatControl)d;
+            var colorText = self.ColorFormatModel.Convert((Color)e.NewValue);
+            self.ColorTextRepresentationTextBlock.Text = colorText;
+            self.SelectedColorCopyHelperText = string.Format(CultureInfo.InvariantCulture, "{0} {1}", self.ColorFormatModel.FormatName, colorText);
         }
 
         private static void ColorFormatModelPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

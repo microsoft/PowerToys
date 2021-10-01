@@ -1,4 +1,5 @@
 ﻿<UserControl x:Class="ColorPicker.Controls.ColorFormatControl"
+             xmlns:local="clr-namespace:ColorPicker"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -50,7 +51,8 @@
                     Width="36"
                     Grid.Column="2"
                     AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}"
-                    AutomationProperties.HelpText="{Binding ElementName=ColorTextRepresentationTextBlock, Path=Text}"
+                    AutomationProperties.HelpText="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:Controls.ColorFormatControl}}, Path=SelectedColorCopyHelperText}"
+
                     FontSize="12"
                     Style="{StaticResource DefaultButtonStyle}"
                     FontFamily="Segoe MDL2 Assets">
