@@ -221,12 +221,15 @@ void OverlayWindow::CloseWindow(HideWindowType type, int mainThreadId)
 
     if (this->winkey_popup)
     {
-        INPUT dummyEvent[1] = {};
-        dummyEvent[0].type = INPUT_KEYBOARD;
-        dummyEvent[0].ki.wVk = 0x99;
-        dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
-        SendInput(1, dummyEvent, sizeof(INPUT));
-        
+        if (shouldReactToPressedWinKey.value)
+        {
+            // Send a dummy key to prevent Start Menu from activating
+            INPUT dummyEvent[1] = {};
+            dummyEvent[0].type = INPUT_KEYBOARD;
+            dummyEvent[0].ki.wVk = 0xFF;
+            dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
+            SendInput(1, dummyEvent, sizeof(INPUT));
+        }
         this->winkey_popup->SetWindowCloseType(ToWstring(type));
         Logger::trace(L"Terminating process");
         PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
