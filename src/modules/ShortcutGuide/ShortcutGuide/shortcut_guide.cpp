@@ -221,6 +221,15 @@ void OverlayWindow::CloseWindow(HideWindowType type, int mainThreadId)
 
     if (this->winkey_popup)
     {
+        if (shouldReactToPressedWinKey.value)
+        {
+            // Send a dummy key to prevent Start Menu from activating
+            INPUT dummyEvent[1] = {};
+            dummyEvent[0].type = INPUT_KEYBOARD;
+            dummyEvent[0].ki.wVk = 0xFF;
+            dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
+            SendInput(1, dummyEvent, sizeof(INPUT));
+        }
         this->winkey_popup->SetWindowCloseType(ToWstring(type));
         Logger::trace(L"Terminating process");
         PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
@@ -300,6 +309,7 @@ void OverlayWindow::init_settings()
     overlayOpacity.value = settings.overlayOpacity;
     theme.value = settings.theme;
     disabledApps.value = settings.disabledApps;
+    shouldReactToPressedWinKey.value = settings.shouldReactToPressedWinKey;
     update_disabled_apps();
 }
 
@@ -394,6 +404,22 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
     try
     {
         settings.overlayOpacity = (int)properties.GetNamedObject(OverlayOpacity::name).GetNamedNumber(L"value");
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        settings.shouldReactToPressedWinKey = properties.GetNamedObject(ShouldReactToPressedWinKey::name).GetNamedBoolean(L"value");
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        settings.windowsKeyPressTime = (int)properties.GetNamedObject(WindowsKeyPressTime::name).GetNamedNumber(L"value");
     }
     catch (...)
     {
