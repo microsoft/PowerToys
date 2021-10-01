@@ -411,7 +411,7 @@ ShortcutGuideSettings OverlayWindow::GetSettings() noexcept
 
     try
     {
-        settings.shouldReactToPressedWinKey = (int)properties.GetNamedObject(ShouldReactToPressedWinKey::name).GetNamedBoolean(L"value");
+        settings.shouldReactToPressedWinKey = properties.GetNamedObject(ShouldReactToPressedWinKey::name).GetNamedBoolean(L"value");
     }
     catch (...)
     {
