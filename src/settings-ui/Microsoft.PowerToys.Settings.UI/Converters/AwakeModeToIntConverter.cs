@@ -8,7 +8,7 @@ using Windows.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class AwakeModeToBoolConverter : IValueConverter
+    public sealed class AwakeModeToIntConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

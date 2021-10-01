@@ -105,7 +105,7 @@
     <Compile Include="Controls\ShortcutControl\ShortcutDialogContentControl.xaml.cs">
       <DependentUpon>ShortcutDialogContentControl.xaml</DependentUpon>
     </Compile>
- <Compile Include="Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml.cs">
+    <Compile Include="Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml.cs">
       <DependentUpon>ShortcutWithTextLabelControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\SettingsPageControl\SettingsPageControl.xaml.cs">
@@ -118,7 +118,7 @@
     <Compile Include="Controls\TextBlockControl.xaml.cs">
       <DependentUpon>TextBlockControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\AwakeModeToBoolConverter.cs" />
+    <Compile Include="Converters\AwakeModeToIntConverter.cs" />
     <Compile Include="Converters\ImageResizerFitToStringConverter.cs" />
     <Compile Include="Converters\ImageResizerUnitToStringConverter.cs" />
     <Compile Include="Converters\UpdateStateToBoolConverter.cs" />

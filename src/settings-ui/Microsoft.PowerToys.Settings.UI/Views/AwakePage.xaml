@@ -4,14 +4,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:c="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
-        <c:AwakeModeToBoolConverter x:Key="AwakeModeToBoolConverter" />
+        <converters:AwakeModeToIntConverter x:Key="AwakeModeToIntConverter" />
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="Awake" IsTabStop="False"
@@ -33,7 +33,7 @@
                     <controls:Setting x:Uid="Awake_Mode" Icon="&#xEC4E;" >
                         <controls:Setting.ActionContent>
                             <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                      SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToBoolConverter}}">
+                                      SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
                                 <ComboBoxItem x:Uid="Awake_NoKeepAwake"/>
                                 <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwake"/>
                                 <ComboBoxItem x:Uid="Awake_TemporaryKeepAwake"/>
@@ -41,7 +41,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="Awake_TimeBeforeAwake" Icon="&#xE121;" Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
+                    <controls:Setting x:Uid="Awake_TimeBeforeAwake" Icon="&#xE916;" Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
                         <controls:Setting.ActionContent>
                             <StackPanel
                                                 Orientation="Horizontal">
