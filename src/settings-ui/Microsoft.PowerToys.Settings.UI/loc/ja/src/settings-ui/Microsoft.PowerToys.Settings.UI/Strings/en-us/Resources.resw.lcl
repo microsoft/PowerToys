@@ -3500,7 +3500,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use Boost library]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ブースト ライブラリを使用する]]></Val>
+            <Val><![CDATA[Boost ライブラリを使用する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
