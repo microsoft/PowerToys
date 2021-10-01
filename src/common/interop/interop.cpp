@@ -171,6 +171,10 @@ public
             return gcnew String(CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
         }
 
+        static String ^ PowerLauncherCentralizedHookSharedEvent() {
+            return gcnew String(CommonSharedConstants::POWER_LAUNCHER_CENTRALIZED_HOOK_SHARED_EVENT);
+        }
+
         static String ^ RunSendSettingsTelemetryEvent() {
             return gcnew String(CommonSharedConstants::RUN_SEND_SETTINGS_TELEMETRY_EVENT);
         }

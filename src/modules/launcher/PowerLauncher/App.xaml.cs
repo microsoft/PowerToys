@@ -112,7 +112,7 @@ namespace PowerLauncher
 
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
-                _settings.UsePowerToysRunnerKeyboardHook = e.Args.Contains("--centralized-kb-hook");
+                _settings.StartedFromPowerToysRunner = e.Args.Contains("--started-from-runner");
 
                 _stringMatcher = new StringMatcher();
                 StringMatcher.Instance = _stringMatcher;

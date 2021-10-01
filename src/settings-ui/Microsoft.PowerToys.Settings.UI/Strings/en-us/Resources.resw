@@ -401,6 +401,9 @@
   <data name="PowerLauncher_IgnoreHotkeysInFullScreen.Content" xml:space="preserve">
     <value>Ignore shortcuts in fullscreen mode</value>
   </data>
+  <data name="PowerLauncher_UseCentralizedKeyboardHook.Content" xml:space="preserve">
+    <value>Use centralized keyboard hook (try it if there are issues with the shortcut)</value>
+  </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>

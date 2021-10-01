@@ -100,6 +100,11 @@ namespace PowerLauncher
                         _settings.Hotkey = openPowerlauncher;
                     }
 
+                    if (_settings.UseCentralizedKeyboardHook != overloadSettings.Properties.UseCentralizedKeyboardHook)
+                    {
+                        _settings.UseCentralizedKeyboardHook = overloadSettings.Properties.UseCentralizedKeyboardHook;
+                    }
+
                     if (_settings.MaxResultsToShow != overloadSettings.Properties.MaximumNumberOfResults)
                     {
                         _settings.MaxResultsToShow = overloadSettings.Properties.MaximumNumberOfResults;

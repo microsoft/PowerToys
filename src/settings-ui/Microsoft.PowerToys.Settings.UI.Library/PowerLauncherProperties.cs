@@ -48,6 +48,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("startupPosition")]
         public StartupPosition Position { get; set; }
 
+        [JsonPropertyName("use_centralized_keyboard_hook")]
+        public bool UseCentralizedKeyboardHook { get; set; }
+
         public PowerLauncherProperties()
         {
             OpenPowerLauncher = new HotkeySettings(false, false, true, false, 32);
@@ -61,6 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             MaximumNumberOfResults = 4;
             Theme = Theme.System;
             Position = StartupPosition.Cursor;
+            UseCentralizedKeyboardHook = false;
         }
     }
 }
