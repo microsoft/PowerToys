@@ -25,6 +25,7 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_OPEN_POWERLAUNCHER[] = L"open_powerlauncher";
+    const wchar_t JSON_KEY_USE_CENTRALIZED_KEYBOARD_HOOK[] = L"use_centralized_keyboard_hook";
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -73,11 +74,15 @@ private:
     // Hotkey to invoke the module
     Hotkey m_hotkey = { .key = 0 };
 
+    // If the centralized keyboard hook should be used to activate PowerToys Run
+    bool m_use_centralized_keyboard_hook = false;
+
     // Helper function to extract the hotkey from the settings
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings);
 
     // Handle to event used to invoke the Runner
     HANDLE m_hEvent;
+    HANDLE m_hCentralizedKeyboardHookEvent;
 
     HANDLE send_telemetry_event;
 
@@ -115,6 +120,8 @@ public:
         init_settings();
 
         m_hEvent = CreateDefaultEvent(CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
+        m_hCentralizedKeyboardHookEvent = CreateDefaultEvent(CommonSharedConstants::POWER_LAUNCHER_CENTRALIZED_HOOK_SHARED_EVENT);
+
         send_telemetry_event = CreateDefaultEvent(CommonSharedConstants::RUN_SEND_SETTINGS_TELEMETRY_EVENT);
     };
 
@@ -199,7 +206,7 @@ public:
     {
         Logger::info("Microsoft_Launcher::enable()");
         m_enabled = true;
-        ResetEvent(m_hEvent);
+        ResetEvent(m_hCentralizedKeyboardHookEvent);
         ResetEvent(send_telemetry_event);
 
         unsigned long powertoys_pid = GetCurrentProcessId();
@@ -210,7 +217,7 @@ public:
             std::wstring executable_args;
             executable_args += L" -powerToysPid ";
             executable_args += std::to_wstring(powertoys_pid);
-            executable_args += L" --centralized-kb-hook";
+            executable_args += L" --started-from-runner";
 
             SHELLEXECUTEINFOW sei{ sizeof(sei) };
             sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -234,7 +241,7 @@ public:
             std::wstring runExecutablePath = get_module_folderpath();
             std::wstring params;
             params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
-            params += L"--centralized-kb-hook ";
+            params += L"--started-from-runner ";
             runExecutablePath += L"\\modules\\launcher\\PowerLauncher.exe";
             if (RunNonElevatedEx(runExecutablePath, params))
             {
@@ -268,6 +275,7 @@ public:
             TerminateRunningInstance();
             processStarted = false;
             ResetEvent(m_hEvent);
+            ResetEvent(m_hCentralizedKeyboardHookEvent);
             ResetEvent(send_telemetry_event);
         }
 
@@ -310,13 +318,13 @@ public:
                 enable();
             }
 
-            /* Before we used the central keyboard hook to trigger PowerToys Run.
-             * Now, PowerToys Run uses a global hotkey so that it can get focus.
-             * This means we can't return true so that the hotkey can propagate to PowerToys Run.
-            Logger::trace("Set POWER_LAUNCHER_SHARED_EVENT");
-            SetEvent(m_hEvent);
-            return true;
-            */
+            /* Now, PowerToys Run uses a global hotkey so that it can get focus.
+             * Activate it with the centralized keyboard hook only if the setting is on.*/
+            if (m_use_centralized_keyboard_hook) {
+                Logger::trace("Set POWER_LAUNCHER_SHARED_EVENT");
+                SetEvent(m_hCentralizedKeyboardHookEvent);
+                return true;
+            }
         }
 
         return false;
@@ -360,6 +368,7 @@ void Microsoft_Launcher::init_settings()
 
 void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& settings)
 {
+    m_use_centralized_keyboard_hook = false;
     auto settingsObject = settings.get_raw_json();
     if (settingsObject.GetView().Size())
     {
@@ -375,6 +384,15 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
         catch(...)
         {
             Logger::error("Failed to initialize PT Run start shortcut");
+        }
+        try
+        {
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+            m_use_centralized_keyboard_hook = (bool)jsonPropertiesObject.GetNamedBoolean(JSON_KEY_USE_CENTRALIZED_KEYBOARD_HOOK);
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to get centralized keyboard hook setting");
         }
     }
     else
