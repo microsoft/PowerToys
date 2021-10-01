@@ -167,7 +167,11 @@
                             </AutoSuggestBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    <muxc:InfoBar x:Uid="Run_AllPluginsDisabled" Severity="Error" IsOpen="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}" IsClosable="False" />
+                    <muxc:InfoBar x:Uid="Run_AllPluginsDisabled"
+                                  Severity="Error"
+                                  IsTabStop="True"
+                                  IsOpen="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
+                                  IsClosable="False" />
 
                     <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <muxc:ProgressRing IsActive="True" Width="20" Height="20" Margin="18,18" />
@@ -212,10 +216,12 @@
                                                     </controls:Setting.ActionContent>
                                                 </controls:Setting>
                                                 <muxc:InfoBar Severity="Error" x:Uid="Run_NotAccessibleWarning"
+                                                              IsTabStop="True"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"
                                                               IsClosable="False" />
                                                 <muxc:InfoBar Severity="Error"
                                                               x:Uid="Run_NotAllowedActionKeyword"
+                                                              IsTabStop="True"
                                                               IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />

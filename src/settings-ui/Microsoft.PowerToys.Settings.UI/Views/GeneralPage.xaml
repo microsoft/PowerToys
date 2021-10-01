@@ -61,12 +61,14 @@
                     <muxc:InfoBar x:Uid="General_UpToDate"
                                   IsClosable="False"
                                   Severity="Success"
+                                  IsTabStop="True"
                                   IsOpen="{Binding IsNewVersionCheckedAndUpToDate, Mode=OneWay}"/>
 
                     <!-- New version available -->
                     <muxc:InfoBar x:Uid="General_NewVersionAvailable"
                                   IsClosable="False"
                                   Severity="Informational"
+                                  IsTabStop="True"
                                   IsOpen="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
                                   Message="{Binding PowerToysNewAvailableVersion, Mode=OneWay}">
                         <muxc:InfoBar.Content>
@@ -102,6 +104,7 @@
                     <muxc:InfoBar x:Uid="General_NewVersionReadyToInstall"
                                   IsClosable="False"
                                   Severity="Success"
+                                  IsTabStop="True"
                                   IsOpen="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
                                   Message="{Binding PowerToysNewAvailableVersion}">
                         <muxc:InfoBar.Content>
@@ -126,6 +129,7 @@
                     <muxc:InfoBar x:Uid="General_FailedToDownloadTheNewVersion"
                                   IsClosable="False"
                                   Severity="Error"
+                                  IsTabStop="True"
                                   IsOpen="{Binding PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
                                   Message="{Binding PowerToysNewAvailableVersion}">
                         <muxc:InfoBar.Content>
@@ -192,6 +196,7 @@
                                 </controls:Setting>
                                 <muxc:InfoBar x:Uid="General_RunAsAdminRequired" 
                                           Severity="Warning"
+                                          IsTabStop="True"
                                           IsClosable="False"
                                           IsOpen="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource NegationConverter}}"/>
                             </StackPanel>

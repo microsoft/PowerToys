@@ -963,6 +963,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
   </data>
+  <data name="ImageResizer_FilenameParameters.AutomationProperties.Name" xml:space="preserve">
+    <value>Filename parameters</value>
+  </data>
   <data name="ColorModeHeader.Header" xml:space="preserve">
     <value>App theme</value>
   </data>
