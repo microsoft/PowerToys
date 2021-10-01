@@ -1391,7 +1391,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="Awake_EnableAwake.Header" xml:space="preserve">
     <value>Enable Awake</value>
-    <comment>Awake is a produce name, do not loc</comment>
+    <comment>Awake is a product name, do not loc</comment>
   </data>
   <data name="Awake_NoKeepAwake.Content" xml:space="preserve">
     <value>Keep using the selected power plan</value>
