@@ -14,35 +14,26 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
 {
     public class TerminalQuery : ITerminalQuery
     {
+        private readonly PackageManager _packageManager;
+
         private static ReadOnlyCollection<string> Packages => new List<string>
         {
             "Microsoft.WindowsTerminal",
             "Microsoft.WindowsTerminalPreview",
         }.AsReadOnly();
 
-        private static IEnumerable<TerminalPackage> _terminals;
+        private IEnumerable<TerminalPackage> Terminals => GetTerminals();
 
         public TerminalQuery()
         {
-            var user = WindowsIdentity.GetCurrent().User;
-            var packages = new PackageManager().FindPackagesForUser(user.Value).Where(a => Packages.Contains(a.Id.Name));
-
-            var localAppDataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
-
-            _terminals = packages.Select(p =>
-            {
-                var aumid = p.GetAppListEntries().Single().AppUserModelId;
-                var version = new Version(p.Id.Version.Major, p.Id.Version.Minor, p.Id.Version.Build, p.Id.Version.Revision);
-                var settingsPath = Path.Combine(localAppDataPath, "Packages", p.Id.FamilyName, "LocalState", "settings.json");
-                return new TerminalPackage(aumid, version, p.DisplayName, settingsPath, p.Logo.LocalPath);
-            });
+            _packageManager = new PackageManager();
         }
 
         public IEnumerable<TerminalProfile> GetProfiles()
         {
             var profiles = new List<TerminalProfile>();
 
-            foreach (var terminal in _terminals)
+            foreach (var terminal in Terminals)
             {
                 if (!File.Exists(terminal.SettingsPath))
                 {
@@ -54,6 +45,20 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
             }
 
             return profiles.OrderBy(p => p.Name);
+        }
+
+        private IEnumerable<TerminalPackage> GetTerminals()
+        {
+            var user = WindowsIdentity.GetCurrent().User;
+            var localAppDataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+
+            foreach (var p in _packageManager.FindPackagesForUser(user.Value).Where(p => Packages.Contains(p.Id.Name)))
+            {
+                var aumid = p.GetAppListEntries().Single().AppUserModelId;
+                var version = new Version(p.Id.Version.Major, p.Id.Version.Minor, p.Id.Version.Build, p.Id.Version.Revision);
+                var settingsPath = Path.Combine(localAppDataPath, "Packages", p.Id.FamilyName, "LocalState", "settings.json");
+                yield return new TerminalPackage(aumid, version, p.DisplayName, settingsPath, p.Logo.LocalPath);
+            }
         }
     }
 }

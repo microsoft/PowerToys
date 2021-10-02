@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wox.Infrastructure.Image;
 
@@ -22,8 +21,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
 
         public string LogoPath { get; }
 
-        public ImageSource Logo() => ImageFromPath();
-
         public TerminalPackage(string appUserModelId, Version version, string displayName, string settingsPath, string logoPath)
         {
             AppUserModelId = appUserModelId;
@@ -33,7 +30,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
             LogoPath = logoPath;
         }
 
-        private BitmapImage ImageFromPath()
+        public BitmapImage GetLogo()
         {
             if (File.Exists(LogoPath))
             {

@@ -7,7 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
-using ManagedCommon;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers;
 using Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -25,6 +26,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
         private PluginInitContext _context;
         private bool _openNewTab;
         private bool _showHiddenProfiles;
+        private Dictionary<string, BitmapImage> _logoCache = new Dictionary<string, BitmapImage>();
 
         public string Name => Resources.plugin_name;
 
@@ -73,7 +75,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
                     {
                         Title = profile.Name,
                         SubTitle = profile.Terminal.DisplayName,
-                        Icon = profile.Terminal.Logo,
+                        Icon = () => GetLogo(profile.Terminal),
                         Action = _ =>
                         {
                             Launch(profile.Terminal.AppUserModelId, profile.Name);
@@ -182,6 +184,18 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal
 
             _openNewTab = openNewTab;
             _showHiddenProfiles = showHiddenProfiles;
+        }
+
+        private ImageSource GetLogo(TerminalPackage terminal)
+        {
+            var aumid = terminal.AppUserModelId;
+
+            if (!_logoCache.ContainsKey(aumid))
+            {
+                _logoCache.Add(aumid, terminal.GetLogo());
+            }
+
+            return _logoCache[aumid];
         }
     }
 }
