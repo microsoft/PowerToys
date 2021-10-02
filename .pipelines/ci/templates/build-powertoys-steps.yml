@@ -138,7 +138,8 @@ steps:
       **\Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.dll
       **\Microsoft.Plugin.Uri.UnitTests.dll
       **\Wox.Test.dll
-      **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
+      **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll     
+      **\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests.dll
       !**\obj\**
 
 # Native dlls

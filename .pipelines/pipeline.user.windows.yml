@@ -158,6 +158,7 @@ build:
             - 'modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll'
             - 'modules\launcher\Plugins\Service\Microsoft.PowerToys.Run.Plugin.Service.dll'
             - 'modules\launcher\Plugins\System\Microsoft.PowerToys.Run.Plugin.System.dll'
+            - 'modules\launcher\Plugins\WindowsTerminal\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll'
             - 'modules\launcher\PowerLauncher.dll'
             - 'modules\launcher\PowerLauncher.exe'
             - 'modules\launcher\PowerLauncher.Telemetry.dll'
