@@ -11,6 +11,7 @@
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
@@ -226,16 +227,29 @@
 
                         <controls:SettingExpander.Content>
                             <StackPanel>
-                                <RadioButton x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex"
-                                             IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnZoneIndex}"
-                                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"
-                                             GroupName="OverrideSnapGroup"
-                                             Margin="{StaticResource ExpanderSettingMargin}"/>
-                                <RadioButton x:Uid="FancyZones_MoveWindowBasedOnRelativePosition"
-                                             IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition}"
-                                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"
-                                             GroupName="OverrideSnapGroup"
-                                             Margin="{StaticResource ExpanderSettingMargin}"/>
+                                <controls:Setting x:Uid="FancyZones_MoveWindow" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinHeight="56" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                            <ComboBoxItem x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible">
+                                                <StackPanel Orientation="Vertical" Spacing="4">
+                                                    <TextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex"/>
+                                                    <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
+                                                        <Run x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description" />
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Accessible">
+                                                <StackPanel Orientation="Vertical" Spacing="4">
+                                                    <TextBlock x:Uid="FancyZones_MoveWindowBasedOnRelativePosition"/>
+                                                    <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}"  Style="{StaticResource SecondaryTextStyle}">
+                                                        <Run x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Description" />
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </ComboBoxItem>
+                                        </ComboBox>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
                                           Margin="56,8,16,8"

@@ -119,7 +119,7 @@
     <Compile Include="Controls\TextBlockControl.xaml.cs">
       <DependentUpon>TextBlockControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\AwakeModeToBoolConverter.cs" />
+    <Compile Include="Converters\AwakeModeToIntConverter.cs" />
     <Compile Include="Converters\ImageResizerFitToStringConverter.cs" />
     <Compile Include="Converters\ImageResizerUnitToStringConverter.cs" />
     <Compile Include="Converters\UpdateStateToBoolConverter.cs" />

@@ -991,23 +991,14 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
     <value>Default color format</value>
   </data>
-  <data name="ColorPickerFirst.Text" xml:space="preserve">
-    <value>Color Picker with editor mode enabled</value>
-    <comment>do not loc the product name</comment>
+  <data name="ColorPickerFirst.Content" xml:space="preserve">
+    <value>Pick a color and open editor</value>
   </data>
-  <data name="ColorPickerFirst_Accessible.AutomationProperties.Name" xml:space="preserve">
-    <value>Color Picker with editor mode enabled</value>
-    <comment>do not loc the product name</comment>
+  <data name="EditorFirst.Content" xml:space="preserve">
+    <value>Open editor</value>
   </data>
-  <data name="ColorPickerFirst_Description.Text" xml:space="preserve">
-    <value>Pick a color from the screen, copy formatted value to clipboard, then to the editor</value>
-    <comment>do not loc the product name</comment>
-  </data>
-  <data name="EditorFirst.Text" xml:space="preserve">
-    <value>Editor</value>
-  </data>
-  <data name="EditorFirst_Accessible.AutomationProperties.Name" xml:space="preserve">
-    <value>Editor</value>
+  <data name="ColorPickerOnly.Content" xml:space="preserve">
+    <value>Only pick a color</value>
   </data>
   <data name="ColorPicker_ActivationAction.Header" xml:space="preserve">
     <value>Activation behavior</value>
@@ -1050,20 +1041,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="MadeWithOssLove.Text" xml:space="preserve">
     <value>Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
-  <data name="ColorPickerOnly.Text" xml:space="preserve">
-    <value>Color Picker only</value>
-    <comment>do not loc the product name</comment>
-  </data>
-  <data name="ColorPickerOnly_Accessible.AutomationProperties.Name" xml:space="preserve">
-    <value>Color Picker only</value>
-    <comment>do not loc the product name</comment>
-  </data>
-  <data name="ColorPickerOnly_Description.Text" xml:space="preserve">
-    <value>Pick a color from the screen and copy formatted value to clipboard</value>
-  </data>
-  <data name="EditorFirst_Description.Text" xml:space="preserve">
-    <value>Open directly into the editor mode</value>
-  </data>
   <data name="ColorPicker_ColorFormats.Header" xml:space="preserve">
     <value>Color formats</value>
   </data>
@@ -1098,11 +1075,28 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Small</value>
     <comment>The size of the image</comment>
   </data>
-  <data name="FancyZones_MoveWindowBasedOnRelativePosition.Content" xml:space="preserve">
-    <value>Win + Up/Down/Left/Right to move windows based on relative position</value>
+  <data name="FancyZones_MoveWindowBasedOnRelativePosition_Accessible.AutomationProperties.Name" xml:space="preserve">
+    <value>Windows key + Up, down, left or right arrow key to move windows based on relative position</value>
   </data>
-  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" xml:space="preserve">
-    <value>Win + Left/Right to move windows based on zone index</value>
+  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible.AutomationProperties.Name" xml:space="preserve">
+    <value>Windows key + Left or right arrow keys to move windows based on zone index</value>
+  </data>
+  <data name="FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" xml:space="preserve">
+    <value>Windows key +    or </value>
+    <comment>Do not loc the icons (hex numbers)</comment>
+  </data>
+  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description.Text" xml:space="preserve">
+    <value>Windows key +  or </value>
+    <comment>Do not loc the icons (hex numbers)</comment>
+  </data>
+  <data name="FancyZones_MoveWindowBasedOnRelativePosition.Text" xml:space="preserve">
+    <value>Relative position</value>
+  </data>
+  <data name="FancyZones_MoveWindow.Header" xml:space="preserve">
+    <value>Move windows based on</value>
+  </data>
+  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Text" xml:space="preserve">
+    <value>Zone index</value>
   </data>
   <data name="ColorPicker_Editor.Header" xml:space="preserve">
     <value>Editor</value>
@@ -1403,24 +1397,16 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="Awake_EnableAwake.Header" xml:space="preserve">
     <value>Enable Awake</value>
+    <comment>Awake is a product name, do not loc</comment>
   </data>
-  <data name="Awake_NoKeepAwakeContent.Text" xml:space="preserve">
-    <value>Inactive</value>
+  <data name="Awake_NoKeepAwake.Content" xml:space="preserve">
+    <value>Keep using the selected power plan</value>
   </data>
-  <data name="Awake_IndefiniteKeepAwakeContent.Text" xml:space="preserve">
+  <data name="Awake_IndefiniteKeepAwake.Content" xml:space="preserve">
     <value>Keep awake indefinitely</value>
   </data>
-  <data name="Awake_TemporaryKeepAwakeContent.Text" xml:space="preserve">
+  <data name="Awake_TemporaryKeepAwake.Content" xml:space="preserve">
     <value>Keep awake temporarily</value>
-  </data>
-  <data name="Awake_NoKeepAwakeDescription.Text" xml:space="preserve">
-    <value>Your PC operates according to its current power plan</value>
-  </data>
-  <data name="Awake_IndefiniteKeepAwakeDescription.Text" xml:space="preserve">
-    <value>Keeps your PC awake until the setting is disabled</value>
-  </data>
-  <data name="Awake_TemporaryKeepAwakeDescription.Text" xml:space="preserve">
-    <value>Keeps your PC awake until the set time elapses</value>
   </data>
   <data name="Awake_EnableDisplayKeepAwake.Header" xml:space="preserve">
     <value>Keep screen on</value>
@@ -1519,7 +1505,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>See what's new</value>
   </data>
   <data name="Awake_Mode.Description" xml:space="preserve">
-    <value>Set the preferred behaviour of Awake</value>
+    <value>Manage the state of your device when Awake is active</value>
   </data>
   <data name="ExcludedApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
@@ -1647,5 +1633,8 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="ImageResizer_DefaultSize_NewSizePrefix" xml:space="preserve">
     <value>New size</value>
     <comment>First part of the default name of new sizes that can be added in PT's settings ui.</comment>
+  </data>
+  <data name="Awake_TimeBeforeAwake.Header" xml:space="preserve">
+    <value>Time before returning to the previous awakeness state</value>
   </data>
 </root>
