@@ -42,7 +42,9 @@ std::optional<fs::path> ExtractEmbeddedInstaller(const fs::path extractPath)
         return std::nullopt;
     }
 
-    auto installerPath = extractPath / L"PowerToysBootstrappedInstaller-" PRODUCT_VERSION_STRING L".msi";
+    std::wstring msiName(L"PowerToysSetup-" STRINGIZE(VERSION_MAJOR) "." STRINGIZE(VERSION_MINOR) "." STRINGIZE(VERSION_REVISION) L"-");
+    msiName += get_architecture_string(get_current_architecture()) + std::wstring(L".msi");
+    auto installerPath = extractPath / msiName;
     return executableRes->saveAsFile(installerPath) ? std::make_optional(std::move(installerPath)) : std::nullopt;
 }
 
