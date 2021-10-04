@@ -52,6 +52,10 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("http://[2001:0DB8::1]", true, "http://[2001:db8::1]/")]
         [DataRow("[2001:0DB8::1]:80", true, "https://[2001:db8::1]/")]
         [DataRow("http://[2001:0DB8::1]:80", true, "http://[2001:db8::1]/")]
+        [DataRow("mailto:example@mail.com", true, "mailto:example@mail.com")]
+        [DataRow("tel:411", true, "tel:411")]
+        [DataRow("ftp://example.com", true, "ftp://example.com/")]
+
         public void TryParseCanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
             // Arrange

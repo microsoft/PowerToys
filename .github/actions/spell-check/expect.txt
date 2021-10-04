@@ -669,6 +669,7 @@ FRAMEDOWNLOAD
 franky
 Froml
 fstream
+ftp
 ftps
 FTYPE
 FULLNAME
