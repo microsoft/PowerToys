@@ -153,6 +153,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerLauncher", "src\module
 		{5043CECE-E6A7-4867-9CBE-02D27D83747A} = {5043CECE-E6A7-4867-9CBE-02D27D83747A}
 		{F8B870EB-D5F5-45BA-9CF7-A5C459818820} = {F8B870EB-D5F5-45BA-9CF7-A5C459818820}
 		{74F1B9ED-F59C-4FE7-B473-7B453E30837E} = {74F1B9ED-F59C-4FE7-B473-7B453E30837E}
+		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85} = {A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}
 		{4BABF3FE-3451-42FD-873F-3C332E18DCEF} = {4BABF3FE-3451-42FD-873F-3C332E18DCEF}
 	EndProjectSection
 EndProject
@@ -366,6 +367,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfThumbnailProvider", "src\modules\previewpane\PdfThumbnailProvider\PdfThumbnailProvider.csproj", "{11491FD8-F921-48BF-880C-7FEA185B80A1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-PdfThumbnailProvider", "src\modules\previewpane\UnitTests-PdfThumbnailProvider\UnitTests-PdfThumbnailProvider.csproj", "{F40C3397-1834-4530-B2D9-8F8B8456BCDF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.WindowsTerminal", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsTerminal\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.csproj", "{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests.csproj", "{4ED320BC-BA04-4D42-8D15-CBE62151F08B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -605,9 +610,7 @@ Global
 		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Release|x86.ActiveCfg = Release|x64
 		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Debug|x64.ActiveCfg = Debug|x64
 		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Debug|x64.Build.0 = Debug|x64
-		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Debug|x86.ActiveCfg = Debug|Win32
-		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Debug|x86.Build.0 = Debug|Win32
-		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Debug|x86.Deploy.0 = Debug|Win32
+		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Debug|x86.ActiveCfg = Debug|x64
 		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Release|x64.ActiveCfg = Release|x64
 		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Release|x64.Build.0 = Release|x64
 		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Release|x86.ActiveCfg = Release|Win32
@@ -965,6 +968,19 @@ Global
 		{F40C3397-1834-4530-B2D9-8F8B8456BCDF}.Release|x64.ActiveCfg = Release|x64
 		{F40C3397-1834-4530-B2D9-8F8B8456BCDF}.Release|x64.Build.0 = Release|x64
 		{F40C3397-1834-4530-B2D9-8F8B8456BCDF}.Release|x86.ActiveCfg = Release|x64
+		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}.Debug|x64.ActiveCfg = Debug|x64
+		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}.Debug|x64.Build.0 = Debug|x64
+		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}.Debug|x86.ActiveCfg = Debug|x64
+		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}.Release|x64.ActiveCfg = Release|x64
+		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}.Release|x64.Build.0 = Release|x64
+		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85}.Release|x86.ActiveCfg = Release|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Debug|x64.ActiveCfg = Debug|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Debug|x64.Build.0 = Debug|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Debug|x86.ActiveCfg = Debug|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Release|x64.ActiveCfg = Release|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Release|x64.Build.0 = Release|x64
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Release|x86.ActiveCfg = Release|Any CPU
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1080,6 +1096,8 @@ Global
 		{470FBAF9-E1F8-4F3E-8786-198A1C81C8A8} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{11491FD8-F921-48BF-880C-7FEA185B80A1} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{F40C3397-1834-4530-B2D9-8F8B8456BCDF} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{A2D583F0-B70C-4462-B1F0-8E81AFB7BA85} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{4ED320BC-BA04-4D42-8D15-CBE62151F08B} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

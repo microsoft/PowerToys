@@ -1019,6 +1019,7 @@ ITemplate
 ITEMSTATEICONCLICK
 ITest
 ith
+ITerminal
 IThrottled
 IThumbnail
 ITrigger
@@ -1068,6 +1069,7 @@ KBDLLHOOKSTRUCT
 kbm
 KERNELBASE
 KEYBDINPUT
+keybindings
 keyboardeventhandlers
 keyboardmanager
 keyboardmanagercommon

@@ -322,6 +322,9 @@
                 <Directory Id="ServicePluginFolder" Name="Service">
                   <Directory Id="ServiceImagesFolder" Name="Images" />
                 </Directory>
+                <Directory Id="WindowsTerminalPluginFolder" Name="WindowsTerminal">
+                  <Directory Id="WindowsTerminalImagesFolder" Name="Images" />
+                </Directory>
                 <Directory Id="SystemPluginFolder" Name="System">
                   <Directory Id="SystemImagesFolder" Name="Images" />
                 </Directory>
@@ -1035,7 +1038,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;WindowsSettingsPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;WindowsSettingsPluginFolder;ServicePluginFolderPluginFolder?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
@@ -1131,6 +1134,9 @@
                 </Component>
                 <Component Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
                     <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
+                </Component>
+                <Component Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
+                    <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
                 </Component>
                 <?undef IdSafeLanguage?>
             <?endforeach?>
@@ -1325,6 +1331,17 @@
           <File Id="WindowsSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Images\WindowsSettings.light.png" />
       </Component>
 
+      <!-- WindowsTerminal Plugin -->
+      <Component Id="WindowsTerminalComponent" Directory="WindowsTerminalPluginFolder" Guid="5392FD11-9A69-4409-A711-748C225F1A18">
+        <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll?>
+          <File Id="WindowsTerminal_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="WindowsTerminalImagesComponent" Directory="WindowsTerminalImagesFolder" Guid="CDD21BEB-E2F3-4138-A1F8-72FD3B52706A">
+        <File Id="WindowsTerminalDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.dark.png" />
+        <File Id="WindowsTerminalLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.light.png" />
+      </Component>
+      
     </ComponentGroup>
   </Fragment>
 </Wix>
