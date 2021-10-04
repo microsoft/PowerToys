@@ -7,8 +7,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure
@@ -81,7 +81,14 @@ namespace Wox.Infrastructure
 
         public static string Formatted<T>(this T t)
         {
-            var formatted = JsonConvert.SerializeObject(t, Formatting.Indented, new StringEnumConverter());
+            var formatted = JsonSerializer.Serialize(t, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Converters =
+                {
+                    new JsonStringEnumConverter(),
+                },
+            });
 
             return formatted;
         }

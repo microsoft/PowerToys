@@ -24,6 +24,7 @@ namespace Microsoft.Plugin.Program.Storage
         private const string LnkExtension = ".lnk";
         private const string UrlExtension = ".url";
 
+        private IStorage<IList<Programs.Win32Program>> _storage;
         private ProgramPluginSettings _settings;
         private IList<IFileSystemWatcherWrapper> _fileSystemWatcherHelpers;
         private string[] _pathsToWatch;
@@ -32,9 +33,10 @@ namespace Microsoft.Plugin.Program.Storage
 
         private static ConcurrentQueue<string> commonEventHandlingQueue = new ConcurrentQueue<string>();
 
-        public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, ProgramPluginSettings settings, string[] pathsToWatch)
+        public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Win32Program>> storage, ProgramPluginSettings settings, string[] pathsToWatch)
         {
             _fileSystemWatcherHelpers = fileSystemWatcherHelpers;
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage), "Win32ProgramRepository requires an initialized storage interface");
             _settings = settings ?? throw new ArgumentNullException(nameof(settings), "Win32ProgramRepository requires an initialized settings object");
             _pathsToWatch = pathsToWatch;
             _numberOfPathsToWatch = pathsToWatch.Length;
@@ -243,6 +245,17 @@ namespace Microsoft.Plugin.Program.Storage
             var applications = Programs.Win32Program.All(_settings);
             Log.Info($"Indexed {applications.Count} win32 applications", GetType());
             SetList(applications);
+        }
+
+        public void Save()
+        {
+            _storage.Save(Items);
+        }
+
+        public void Load()
+        {
+            var items = _storage.TryLoad(Array.Empty<Win32Program>());
+            SetList(items);
         }
     }
 }

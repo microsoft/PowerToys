@@ -4,18 +4,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using ManagedCommon;
+using Microsoft.PowerToys.Run.Plugin.System.Properties;
 using Microsoft.PowerToys.Run.Plugin.System.Win32;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.System
 {
-    public class Main : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n, ISettingProvider
     {
         private PluginInitContext _context;
+        private const string ConfirmSystemCommands = nameof(ConfirmSystemCommands);
+        private const string LocalizeSystemCommands = nameof(LocalizeSystemCommands);
 
         internal const int EWXLOGOFF = 0x00000000;
         internal const int EWXSHUTDOWN = 0x00000001;
@@ -26,13 +34,34 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public string IconTheme { get; set; }
 
-        public string Name => Properties.Resources.Microsoft_plugin_sys_plugin_name;
+        public ICommand Command { get; set; }
 
-        public string Description => Properties.Resources.Microsoft_plugin_sys_plugin_description;
+        public string Name => Resources.Microsoft_plugin_sys_plugin_name;
+
+        public string Description => Resources.Microsoft_plugin_sys_plugin_description;
+
+        private bool _confirmSystemCommands;
+        private bool _localizeSystemCommands;
+
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
+        {
+            new PluginAdditionalOption()
+            {
+                Key = ConfirmSystemCommands,
+                DisplayLabel = Resources.confirm_system_commands,
+                Value = false,
+            },
+            new PluginAdditionalOption()
+            {
+                Key = LocalizeSystemCommands,
+                DisplayLabel = Resources.Use_localized_system_commands,
+                Value = true,
+            },
+        };
 
         public void Init(PluginInitContext context)
         {
-            this._context = context;
+            _context = context;
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconTheme(_context.API.GetCurrentTheme());
         }
@@ -63,79 +92,80 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         private List<Result> Commands()
         {
+            CultureInfo culture = CultureInfo.CurrentUICulture;
+
+            if (!_localizeSystemCommands)
+            {
+                culture = new CultureInfo("en-US");
+            }
+
             var results = new List<Result>();
             results.AddRange(new[]
             {
                 new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_sys_shutdown_computer,
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_shutdown_computer_description,
+                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_shutdown_computer), culture),
+                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_shutdown_computer_description), culture),
                     IcoPath = $"Images\\shutdown.{IconTheme}.png",
                     Action = c =>
                     {
-                        Helper.OpenInShell("shutdown", "/s /t 0");
-                        return true;
+                        return ExecuteCommand(Resources.Microsoft_plugin_sys_shutdown_computer_confirmation, () => Helper.OpenInShell("shutdown", "/s /t 0"));
                     },
                 },
                 new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_sys_restart_computer,
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_restart_computer_description,
+                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_restart_computer), culture),
+                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_restart_computer_description), culture),
                     IcoPath = $"Images\\restart.{IconTheme}.png",
                     Action = c =>
                     {
-                        Helper.OpenInShell("shutdown", "/r /t 0");
-                        return true;
+                        return ExecuteCommand(Resources.Microsoft_plugin_sys_restart_computer_confirmation, () => Helper.OpenInShell("shutdown", "/r /t 0"));
                     },
                 },
                 new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_sys_sign_out,
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_sign_out_description,
+                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_sign_out), culture),
+                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_sign_out_description), culture),
                     IcoPath = $"Images\\logoff.{IconTheme}.png",
                     Action = c =>
                     {
-                        NativeMethods.ExitWindowsEx(EWXLOGOFF, 0);
-                        return true;
+                        return ExecuteCommand(Resources.Microsoft_plugin_sys_sign_out_confirmation, () => NativeMethods.ExitWindowsEx(EWXLOGOFF, 0));
                     },
                 },
                 new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_sys_lock,
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_lock_description,
+                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_lock), culture),
+                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_lock_description), culture),
                     IcoPath = $"Images\\lock.{IconTheme}.png",
                     Action = c =>
                     {
-                        NativeMethods.LockWorkStation();
-                        return true;
+                        return ExecuteCommand(Resources.Microsoft_plugin_sys_lock_confirmation, () => NativeMethods.LockWorkStation());
                     },
                 },
                 new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_sys_sleep,
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_sleep_description,
+                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_sleep), culture),
+                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_sleep_description), culture),
                     IcoPath = $"Images\\sleep.{IconTheme}.png",
                     Action = c =>
                     {
-                        NativeMethods.SetSuspendState(false, true, true);
-                        return true;
+                        return ExecuteCommand(Resources.Microsoft_plugin_sys_sleep_confirmation, () => NativeMethods.SetSuspendState(false, true, true));
                     },
                 },
                 new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_sys_hibernate,
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_hibernate_description,
+                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_hibernate), culture),
+                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_hibernate_description), culture),
                     IcoPath = $"Images\\sleep.{IconTheme}.png", // Icon change needed
                     Action = c =>
                     {
-                        NativeMethods.SetSuspendState(true, true, true);
-                        return true;
+                        return ExecuteCommand(Resources.Microsoft_plugin_sys_hibernate_confirmation, () => NativeMethods.SetSuspendState(true, true, true));
                     },
                 },
                 new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_sys_emptyrecyclebin,
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_emptyrecyclebin_description,
+                    Title = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_emptyrecyclebin), culture),
+                    SubTitle = Resources.ResourceManager.GetString(nameof(Resources.Microsoft_plugin_sys_emptyrecyclebin_description), culture),
                     IcoPath = $"Images\\recyclebin.{IconTheme}.png",
                     Action = c =>
                     {
@@ -145,7 +175,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                         var result = NativeMethods.SHEmptyRecycleBin(new WindowInteropHelper(Application.Current.MainWindow).Handle, 0);
                         if (result != (uint)NativeMethods.HRESULT.S_OK && result != 0x8000FFFF)
                         {
-                            var name = "Plugin: " + Properties.Resources.Microsoft_plugin_sys_plugin_name;
+                            var name = "Plugin: " + Resources.Microsoft_plugin_sys_plugin_name;
                             var message = $"Error emptying recycle bin, error code: {result}\n" +
                                           "please refer to https://msdn.microsoft.com/en-us/library/windows/desktop/aa378137";
                             _context.API.ShowMsg(name, message);
@@ -177,12 +207,55 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public string GetTranslatedPluginDescription()
         {
-            return Properties.Resources.Microsoft_plugin_sys_plugin_description;
+            return Resources.Microsoft_plugin_sys_plugin_description;
         }
 
         public string GetTranslatedPluginTitle()
         {
-            return Properties.Resources.Microsoft_plugin_sys_plugin_name;
+            return Resources.Microsoft_plugin_sys_plugin_name;
+        }
+
+        private bool ExecuteCommand(string confirmationMessage, Action command)
+        {
+            if (_confirmSystemCommands)
+            {
+                MessageBoxResult messageBoxResult = MessageBox.Show(
+                    confirmationMessage,
+                    Resources.Microsoft_plugin_sys_confirmation,
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (messageBoxResult == MessageBoxResult.No)
+                {
+                    return false;
+                }
+            }
+
+            command();
+            return true;
+        }
+
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            var confirmSystemCommands = false;
+            var localizeSystemCommands = true;
+
+            if (settings != null && settings.AdditionalOptions != null)
+            {
+                var optionConfirm = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ConfirmSystemCommands);
+                confirmSystemCommands = optionConfirm?.Value ?? false;
+
+                var optionLocalize = settings.AdditionalOptions.FirstOrDefault(x => x.Key == LocalizeSystemCommands);
+                localizeSystemCommands = optionLocalize?.Value ?? true;
+            }
+
+            _confirmSystemCommands = confirmSystemCommands;
+            _localizeSystemCommands = localizeSystemCommands;
         }
     }
 }

@@ -50,6 +50,12 @@ namespace PowerLauncher.ViewModel
         private bool _saved;
         private ushort _hotkeyHandle;
 
+        private const int _globalHotKeyId = 0x0001;
+        private IntPtr _globalHotKeyHwnd;
+        private uint _globalHotKeyVK;
+        private uint _globalHotKeyFSModifiers;
+        private bool _usingGlobalHotKey;
+
         internal HotkeyManager HotkeyManager { get; private set; }
 
         public MainViewModel(PowerToysRunSettings settings)
@@ -75,39 +81,54 @@ namespace PowerLauncher.ViewModel
             RegisterResultsUpdatedEvent();
         }
 
-        public void RegisterHotkey()
+        public void RegisterHotkey(IntPtr hwnd)
         {
             Log.Info("RegisterHotkey()", GetType());
-            if (_settings != null && _settings.UsePowerToysRunnerKeyboardHook)
+
+            // Allow OOBE to call PowerToys Run.
+            NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey);
+
+            if (_settings.StartedFromPowerToysRunner)
             {
-                NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey);
-                _hotkeyHandle = 0;
+                // Allow runner to call PowerToys Run from the centralized keyboard hook.
+                NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherCentralizedHookSharedEvent(), OnCentralizedKeyboardHookHotKey);
             }
-            else
+
+            _settings.PropertyChanged += (s, e) =>
             {
-                HotkeyManager = new HotkeyManager();
-                _settings.PropertyChanged += (s, e) =>
+                if (e.PropertyName == nameof(PowerToysRunSettings.Hotkey) || e.PropertyName == nameof(PowerToysRunSettings.UseCentralizedKeyboardHook))
                 {
-                    if (e.PropertyName == nameof(PowerToysRunSettings.Hotkey))
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        Application.Current.Dispatcher.Invoke(() =>
+                        if (!string.IsNullOrEmpty(_settings.PreviousHotkey))
                         {
-                            if (!string.IsNullOrEmpty(_settings.PreviousHotkey))
+                            if (_usingGlobalHotKey)
                             {
-                                HotkeyManager.UnregisterHotkey(_hotkeyHandle);
+                                NativeMethods.UnregisterHotKey(_globalHotKeyHwnd, _globalHotKeyId);
+                                _usingGlobalHotKey = false;
+                                Log.Info("Unregistering previous global hotkey", GetType());
                             }
 
-                            if (!string.IsNullOrEmpty(_settings.Hotkey))
+                            if (_hotkeyHandle != 0)
                             {
-                                SetHotkey(_settings.Hotkey, OnHotkey);
+                                HotkeyManager?.UnregisterHotkey(_hotkeyHandle);
+                                _hotkeyHandle = 0;
+                                Log.Info("Unregistering previous low level key handler", GetType());
                             }
-                        });
-                    }
-                };
+                        }
 
-                SetHotkey(_settings.Hotkey, OnHotkey);
-                SetCustomPluginHotkey();
-            }
+                        if (!string.IsNullOrEmpty(_settings.Hotkey))
+                        {
+                            SetHotkey(hwnd, _settings.Hotkey, OnHotkey);
+                        }
+                    });
+                }
+            };
+
+            SetHotkey(hwnd, _settings.Hotkey, OnHotkey);
+
+            // TODO: Custom plugin hotkeys.
+            // SetCustomPluginHotkey();
         }
 
         private void RegisterResultsUpdatedEvent()
@@ -376,6 +397,8 @@ namespace PowerLauncher.ViewModel
             }
         }
 
+        public bool LoadedAtLeastOnce { get; set; }
+
         private Visibility _visibility;
 
         public Visibility MainWindowVisibility
@@ -390,16 +413,20 @@ namespace PowerLauncher.ViewModel
                 if (_visibility != value)
                 {
                     _visibility = value;
-                    OnPropertyChanged(nameof(MainWindowVisibility));
-                }
+                    if (LoadedAtLeastOnce)
+                    {
+                        // Don't trigger telemetry on cold boot. Must have been loaded at least once.
+                        if (value == Visibility.Visible)
+                        {
+                            PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
+                        }
+                        else
+                        {
+                            PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
+                        }
+                    }
 
-                if (value == Visibility.Visible)
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
-                }
-                else
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
+                    OnPropertyChanged(nameof(MainWindowVisibility));
                 }
             }
         }
@@ -666,15 +693,35 @@ namespace PowerLauncher.ViewModel
             return selected;
         }
 
-        private void SetHotkey(string hotkeyStr, HotkeyCallback action)
+#pragma warning disable CA1801 // Review unused parameters
+        internal bool ProcessHotKeyMessages(IntPtr wparam, IntPtr lparam)
+#pragma warning restore CA1801 // Review unused parameters
         {
-            var hotkey = new HotkeyModel(hotkeyStr);
-            SetHotkey(hotkey, action);
+            if (wparam.ToInt32() == _globalHotKeyId)
+            {
+                OnHotkey();
+                return true;
+            }
+
+            return false;
         }
 
-        private void SetHotkey(HotkeyModel hotkeyModel, HotkeyCallback action)
+        private static uint VKModifiersFromHotKey(Hotkey hotkey)
         {
+            return (uint)(HOTKEY_MODIFIERS.NOREPEAT | (hotkey.Alt ? HOTKEY_MODIFIERS.ALT : 0) | (hotkey.Ctrl ? HOTKEY_MODIFIERS.CONTROL : 0) | (hotkey.Shift ? HOTKEY_MODIFIERS.SHIFT : 0) | (hotkey.Win ? HOTKEY_MODIFIERS.WIN : 0));
+        }
+
+        private void SetHotkey(IntPtr hwnd, string hotkeyStr, HotkeyCallback action)
+        {
+            var hotkey = new HotkeyModel(hotkeyStr);
+            SetHotkey(hwnd, hotkey, action);
+        }
+
+        private void SetHotkey(IntPtr hwnd, HotkeyModel hotkeyModel, HotkeyCallback action)
+        {
+            Log.Info("Set HotKey()", GetType());
             string hotkeyStr = hotkeyModel.ToString();
+
             try
             {
                 Hotkey hotkey = new Hotkey
@@ -686,7 +733,47 @@ namespace PowerLauncher.ViewModel
                     Key = (byte)KeyInterop.VirtualKeyFromKey(hotkeyModel.CharKey),
                 };
 
-                _hotkeyHandle = HotkeyManager.RegisterHotkey(hotkey, action);
+                if (_usingGlobalHotKey)
+                {
+                    NativeMethods.UnregisterHotKey(_globalHotKeyHwnd, _globalHotKeyId);
+                    _usingGlobalHotKey = false;
+                    Log.Info("Unregistering previous global hotkey", GetType());
+                }
+
+                if (_hotkeyHandle != 0)
+                {
+                    HotkeyManager?.UnregisterHotkey(_hotkeyHandle);
+                    _hotkeyHandle = 0;
+                    Log.Info("Unregistering previous low level key handler", GetType());
+                }
+
+                if (_settings.StartedFromPowerToysRunner && _settings.UseCentralizedKeyboardHook)
+                {
+                    Log.Info("Using the Centralized Keyboard Hook for the HotKey.", GetType());
+                }
+                else
+                {
+                    _globalHotKeyVK = hotkey.Key;
+                    _globalHotKeyFSModifiers = VKModifiersFromHotKey(hotkey);
+                    if (NativeMethods.RegisterHotKey(hwnd, _globalHotKeyId, _globalHotKeyFSModifiers, _globalHotKeyVK))
+                    {
+                        // Using global hotkey registered through the native RegisterHotKey method.
+                        _globalHotKeyHwnd = hwnd;
+                        _usingGlobalHotKey = true;
+                        Log.Info("Registered global hotkey", GetType());
+                        return;
+                    }
+
+                    Log.Warn("Registering global shortcut failed. Will use low-level keyboard hook instead.", GetType());
+
+                    // Using fallback low-level keyboard hook through HotkeyManager.
+                    if (HotkeyManager == null)
+                    {
+                        HotkeyManager = new HotkeyManager();
+                    }
+
+                    _hotkeyHandle = HotkeyManager.RegisterHotkey(hotkey, action);
+                }
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
@@ -715,6 +802,11 @@ namespace PowerLauncher.ViewModel
             return false;
         }
 
+        /* TODO: Custom Hotkeys for Plugins. Commented since this is an incomplete feature.
+         * This needs:
+         *  - Support for use with global shortcut.
+         *  - Support for use with the fallback Shortcut Manager.
+         *  - Support for use through the runner centralized keyboard hooks.
         private void SetCustomPluginHotkey()
         {
             if (_settings.CustomPluginHotkeys == null)
@@ -734,6 +826,15 @@ namespace PowerLauncher.ViewModel
                     MainWindowVisibility = Visibility.Visible;
                     ChangeQueryText(hotkey.ActionKeyword);
                 });
+            }
+        }
+        */
+
+        private void OnCentralizedKeyboardHookHotKey()
+        {
+            if (_settings.StartedFromPowerToysRunner && _settings.UseCentralizedKeyboardHook)
+            {
+                OnHotkey();
             }
         }
 
@@ -960,6 +1061,12 @@ namespace PowerLauncher.ViewModel
             {
                 if (disposing)
                 {
+                    if (_usingGlobalHotKey)
+                    {
+                        NativeMethods.UnregisterHotKey(_globalHotKeyHwnd, _globalHotKeyId);
+                        _usingGlobalHotKey = false;
+                    }
+
                     if (_hotkeyHandle != 0)
                     {
                         HotkeyManager?.UnregisterHotkey(_hotkeyHandle);

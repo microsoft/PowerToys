@@ -35,3 +35,4 @@
 
 #endif //PCH_H
 
+namespace fs = std::filesystem;

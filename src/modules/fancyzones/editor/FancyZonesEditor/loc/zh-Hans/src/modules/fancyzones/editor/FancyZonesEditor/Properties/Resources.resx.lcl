@@ -409,6 +409,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";KeyboardControlsDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[]D;]A;     - [Shift]5D;+S to split currently focused zone.]D;]A;     - Ctrl+Tab to focus zones/resizers.]D;]A;     - Tab to cycle zones and resizers.]D;]A;     - Delete to remove the focused resizer.]D;]A;     - Arrows to move the focused resizer.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[]D;]A;     - 按 [Shift]5D;+S 以拆分当前焦点区域。]D;]A;     - 按 Ctrl+Tab 以聚焦区域/大小调整器。]D;]A;     - 按 Tab 以循环区域和大小调整器。]D;]A;     - 按 Delete 以删除焦点大小调整器。]D;]A;     - 按 Arrows 以移动焦点大小调整器。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";KeyboardControlsName" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Keyboard Navigation:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[键盘导航:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Layout_Canvas_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create layouts that have overlapping zones]]></Val>
@@ -423,6 +441,15 @@
           <Val><![CDATA[Canvas]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[画布]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Layout_Creation_Announce" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[custom layout was created successfully.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功创建自定义布局。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -486,6 +513,15 @@
           <Val><![CDATA[Name]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[名称]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";New_zone_added" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[New zone added]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已添加新区域]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

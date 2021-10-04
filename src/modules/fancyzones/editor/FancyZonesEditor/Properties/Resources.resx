@@ -120,6 +120,9 @@
   <data name="Add_zone" xml:space="preserve">
     <value>Add new zone</value>
   </data>
+  <data name="New_zone_added" xml:space="preserve">
+    <value>New zone added</value>
+  </data>
   <data name="Apply" xml:space="preserve">
     <value>Apply</value>
   </data>
@@ -333,6 +336,17 @@
     <value>Merge/Delete:</value>
     <comment>Title for concept behind Merging two zones together or removing an zone</comment>
   </data>
+  <data name="KeyboardControlsName" xml:space="preserve">
+    <value>Keyboard Navigation:</value>
+  </data>    
+  <data name="KeyboardControlsDescription" xml:space="preserve">
+    <value>
+     - [Shift]+S to split currently focused zone.
+     - Ctrl+Tab to focus zones/resizers.
+     - Tab to cycle zones and resizers.
+     - Delete to remove the focused resizer.
+     - Arrows to move the focused resizer.</value>
+  </data>        
   <data name="SplitterDescription" xml:space="preserve">
     <value>Hold Shift key for vertical split.</value>
     <comment>A segmenter visual for splitting one item into two.  This would be the vertical line. Shift key is referring to key on keyboard</comment>
@@ -359,5 +373,8 @@
   </data>
   <data name="Edit_Layout" xml:space="preserve">
     <value>Edit layout</value>
+  </data>
+    <data name="Layout_Creation_Announce" xml:space="preserve">
+    <value>custom layout was created successfully.</value>
   </data>
 </root>

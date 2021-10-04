@@ -17,7 +17,6 @@
 #include <wil/resource.h>
 #include <wil/com.h>
 
-#include <mfapi.h>
 #include <mfidl.h>
 #include <mftransform.h>
 #include <dshow.h>
@@ -262,7 +261,7 @@ IMFSample* ConvertIMFVideoSample(const MFT_REGISTER_TYPE_INFO& inputType,
 
     if (!videoDecoderActivated)
     {
-        LOG("No converter avialable for the selected format");
+        LOG("No converter available for the selected format");
         return nullptr;
     }
 

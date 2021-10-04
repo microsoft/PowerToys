@@ -39,6 +39,8 @@ void Trace::SendSettings(ShortcutGuideSettings settings) noexcept
         TraceLoggingInt32(settings.overlayOpacity, "OverlayOpacity"),
         TraceLoggingWideString(settings.theme.c_str(), "Theme"),
         TraceLoggingWideString(settings.disabledApps.c_str(), "DisabledApps"),
+        TraceLoggingBoolean(settings.shouldReactToPressedWinKey, "ShouldReactToPressedWinKey"),
+        TraceLoggingInt32(settings.windowsKeyPressTime, "WindowsKeyPressTime"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));

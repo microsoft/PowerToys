@@ -191,7 +191,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     deleteShortcut.Content(deleteSymbol);
     deleteShortcut.Background(Media::SolidColorBrush(Colors::Transparent()));
     deleteShortcut.HorizontalAlignment(HorizontalAlignment::Center);
-    deleteShortcut.Click([&, parent, row, brush](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    deleteShortcut.Click([&, parent, row, brush, deleteShortcut](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         Button currentButton = sender.as<Button>();
         uint32_t rowIndex;
         // Get index of delete button
@@ -215,8 +215,16 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             UpdateAccessibleNames(sourceCol, targetCol, targetApp, delButton, i);
         }
 
+        if (auto automationPeer{ Automation::Peers::FrameworkElementAutomationPeer::FromElement(deleteShortcut) })
+        {
+            automationPeer.RaiseNotificationEvent(
+                Automation::Peers::AutomationNotificationKind::ActionCompleted,
+                Automation::Peers::AutomationNotificationProcessing::ImportantMostRecent,
+                GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_EVENT),
+                L"ShortcutRemappingDeletedNotificationEvent" /* unique name for this notification category */);
+        }
+
         children.RemoveAt(rowIndex);
-        parent.UpdateLayout();
         shortcutRemapBuffer.erase(shortcutRemapBuffer.begin() + rowIndex);
         // delete the SingleKeyRemapControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + rowIndex);
@@ -235,7 +243,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     deleteShortcutContainer.Orientation(Orientation::Vertical);
     deleteShortcutContainer.VerticalAlignment(VerticalAlignment::Center);
     row.Children().Append(deleteShortcutContainer);
-    parent.UpdateLayout();
 
     // Set accessible names
     UpdateAccessibleNames(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->GetShortcutControl(), keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->GetShortcutControl(), targetAppTextBox, deleteShortcut, (int)keyboardRemapControlObjects.size());

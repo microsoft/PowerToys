@@ -134,11 +134,19 @@ namespace FancyZonesEditor
 
         public void Show()
         {
+            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
+            if (_layoutPreview != null)
+            {
+                mainWindowSettings.PropertyChanged -= _layoutPreview.ZoneSettings_PropertyChanged;
+            }
+
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
                 Opacity = 1,
             };
+
+            mainWindowSettings.PropertyChanged += _layoutPreview.ZoneSettings_PropertyChanged;
 
             ShowLayout();
             OpenMainWindow();
@@ -160,7 +168,10 @@ namespace FancyZonesEditor
 
             for (int i = 0; i < DesktopsCount; i++)
             {
-                Monitors[i].Window.Show();
+                if (!Monitors[i].Window.IsVisible)
+                {
+                    Monitors[i].Window.Show();
+                }
             }
         }
 
@@ -218,12 +229,22 @@ namespace FancyZonesEditor
 
         public void CloseEditor()
         {
+            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
+
             _editorLayout = null;
+
+            if (_layoutPreview != null)
+            {
+                mainWindowSettings.PropertyChanged -= _layoutPreview.ZoneSettings_PropertyChanged;
+            }
+
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
                 Opacity = 1,
             };
+
+            mainWindowSettings.PropertyChanged += _layoutPreview.ZoneSettings_PropertyChanged;
 
             CurrentLayoutWindow.Content = _layoutPreview;
 
@@ -232,9 +253,18 @@ namespace FancyZonesEditor
 
         public void FocusEditor()
         {
-            if (_editorLayout != null && _editorLayout is CanvasEditor canvasEditor)
+            if (_editorLayout == null)
+            {
+                return;
+            }
+
+            if (_editorLayout is CanvasEditor canvasEditor)
             {
                 canvasEditor.FocusZone();
+            }
+            else if (_editorLayout is GridEditor gridEditor)
+            {
+                gridEditor.FocusZone();
             }
         }
 

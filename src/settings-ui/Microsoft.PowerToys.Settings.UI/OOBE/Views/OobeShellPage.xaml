@@ -7,6 +7,7 @@
     xmlns:localModels="using:Microsoft.PowerToys.Settings.UI.OOBE.ViewModel"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    winui:BackdropMaterial.ApplyToRootOrPageBackground="True"
     mc:Ignorable="d"
     Loaded="UserControl_Loaded">
 
@@ -19,18 +20,18 @@
             </winui:NavigationViewItem>
         </DataTemplate>
     </UserControl.Resources>
-    
-    <Grid>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="720" />
                     </VisualState.StateTriggers>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="600" />
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
@@ -52,17 +53,6 @@
                               IsBackButtonVisible="Collapsed"
                               MenuItemsSource="{x:Bind Modules, Mode=OneTime}"
                               MenuItemTemplate="{StaticResource NavigationViewMenuItem}">
-            <winui:NavigationView.PaneCustomContent>
-                <StackPanel Grid.Column="0" Margin="16"
-                            Orientation="Vertical">
-                    <TextBlock x:Uid="Oobe_GettingStarted"
-                               TextWrapping="Wrap"
-                               FontWeight="SemiBold"
-                               AutomationProperties.HeadingLevel="Level1"
-                               Style="{StaticResource PageTitleStyle}"
-                               Margin="0,0,0,16" />
-                </StackPanel>
-            </winui:NavigationView.PaneCustomContent>
             <winui:NavigationView.Content>
                 <Frame x:Name="NavigationFrame" />
             </winui:NavigationView.Content>

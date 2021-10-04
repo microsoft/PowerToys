@@ -23,6 +23,7 @@ body:
     label: Utility with translation issue
     options:
       - General
+      - PowerToys Awake
       - ColorPicker
       - FancyZones
       - FancyZones Editor 

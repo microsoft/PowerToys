@@ -138,9 +138,33 @@ namespace FancyZonesEditor
             {
                 return _customModels;
             }
+
+            set
+            {
+                foreach (LayoutModel model in _customModels)
+                {
+                    QuickKeys.PropertyChanged -= model.QuickSwitchKeys_PropertyChanged;
+                }
+
+                _customModels.Clear();
+                _customModels = value;
+
+                foreach (LayoutModel model in _customModels)
+                {
+                    QuickKeys.PropertyChanged += model.QuickSwitchKeys_PropertyChanged;
+                }
+            }
         }
 
         private static ObservableCollection<LayoutModel> _customModels = new ObservableCollection<LayoutModel>();
+
+        public static int CustomModelsCount
+        {
+            get
+            {
+                return _customModels.Count;
+            }
+        }
 
         public static QuickKeysModel QuickKeys { get; } = new QuickKeysModel();
 

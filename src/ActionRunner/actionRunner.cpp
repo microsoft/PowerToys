@@ -28,8 +28,6 @@
 
 using namespace cmdArg;
 
-namespace fs = std::filesystem;
-
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     int nArgs = 0;

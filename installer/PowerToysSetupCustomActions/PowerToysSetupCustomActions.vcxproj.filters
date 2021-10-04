@@ -12,6 +12,8 @@
     <ClInclude Include="Telemetry\TraceLoggingDefines.h">
       <Filter>Telemetry</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\PowerToysBootstrapper\bootstrapper\RcResource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CustomAction.def" />
@@ -21,5 +23,8 @@
     <Filter Include="Telemetry">
       <UniqueIdentifier>{6e73ce5d-e715-4e7e-b796-c5d180b07ff2}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
 </Project>

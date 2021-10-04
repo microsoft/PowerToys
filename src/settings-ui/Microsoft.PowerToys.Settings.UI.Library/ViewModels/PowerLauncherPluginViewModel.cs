@@ -139,21 +139,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        private bool _showAdditionalInfoPanel;
-
-        public bool ShowAdditionalInfoPanel
-        {
-            get => _showAdditionalInfoPanel;
-            set
-            {
-                if (value != _showAdditionalInfoPanel)
-                {
-                    _showAdditionalInfoPanel = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")

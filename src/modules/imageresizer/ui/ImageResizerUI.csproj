@@ -66,13 +66,13 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
     <PackageReference Include="ModernWpfUI" Version="0.9.4" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.IO.Abstractions">
       <Version>12.2.5</Version>
     </PackageReference>
+    <PackageReference Include="System.Text.Json" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\interop\PowerToysInterop.vcxproj" />

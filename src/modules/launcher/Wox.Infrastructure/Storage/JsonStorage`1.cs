@@ -6,7 +6,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
-using Newtonsoft.Json;
+using System.Text.Json;
 using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
@@ -20,7 +20,16 @@ namespace Wox.Infrastructure.Storage
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IFile File = FileSystem.File;
 
-        private readonly JsonSerializerSettings _serializerSettings;
+        // use property initialization instead of DefaultValueAttribute
+        // easier and flexible for default value of object
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            IgnoreNullValues = true,
+            IncludeFields = true,
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = true,
+        };
+
         private T _data;
 
         // need a new directory name
@@ -34,17 +43,6 @@ namespace Wox.Infrastructure.Storage
         // This storage helper returns whether or not to delete the json storage items
         private const int _jsonStorage = 1;
         private StoragePowerToysVersionInfo _storageHelper;
-
-        internal JsonStorage()
-        {
-            // use property initialization instead of DefaultValueAttribute
-            // easier and flexible for default value of object
-            _serializerSettings = new JsonSerializerSettings
-            {
-                ObjectCreationHandling = ObjectCreationHandling.Replace,
-                NullValueHandling = NullValueHandling.Ignore,
-            };
-        }
 
         public T Load()
         {
@@ -84,7 +82,7 @@ namespace Wox.Infrastructure.Storage
         {
             try
             {
-                _data = JsonConvert.DeserializeObject<T>(serialized, _serializerSettings);
+                _data = JsonSerializer.Deserialize<T>(serialized, _serializerOptions);
             }
             catch (JsonException e)
             {
@@ -105,7 +103,7 @@ namespace Wox.Infrastructure.Storage
                 BackupOriginFile();
             }
 
-            _data = JsonConvert.DeserializeObject<T>("{}", _serializerSettings);
+            _data = JsonSerializer.Deserialize<T>("{}", _serializerOptions);
             Save();
         }
 
@@ -126,7 +124,7 @@ namespace Wox.Infrastructure.Storage
         {
             try
             {
-                string serialized = JsonConvert.SerializeObject(_data, Formatting.Indented);
+                string serialized = JsonSerializer.Serialize(_data, _serializerOptions);
                 File.WriteAllText(FilePath, serialized);
                 _storageHelper.Close();
 

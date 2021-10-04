@@ -8,15 +8,16 @@
                     xmlns:props="clr-namespace:FancyZonesEditor.Properties"
                     mc:Ignorable="d"
                     Title=""
-                    Width="320"
+                    MinWidth="360"
                     BorderThickness="0"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
                     ui:WindowHelper.UseModernWindowStyle="True"
                     ui:TitleBar.IsIconVisible="False"
-                    SizeToContent="Height"
+                    SizeToContent="WidthAndHeight"
                     Background="{DynamicResource PrimaryBackgroundBrush}"
                     ResizeMode="NoResize"
                     WindowStartupLocation="CenterOwner"
+                    ContentRendered="EditorWindow_ContentRendered"
                     Closed="OnClosed">
     <Grid>
         <Grid
@@ -51,8 +52,16 @@
                         Text="{x:Static props:Resources.MergeName}" />
                     <Run Text="{x:Static props:Resources.MergeDescription}" />
                 </TextBlock>
+                <TextBlock 
+                    Margin="0,8,0,0"
+                    TextWrapping="Wrap">
+                    <Run 
+                        FontWeight="Bold" 
+                        Text="{x:Static props:Resources.KeyboardControlsName}" />
+                    <Run Text="{x:Static props:Resources.KeyboardControlsDescription}" />
+                </TextBlock>
             </StackPanel>
-            <Grid Margin="0,24,0,0">
+            <Grid Margin="0,24,0,-36">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="8"/>

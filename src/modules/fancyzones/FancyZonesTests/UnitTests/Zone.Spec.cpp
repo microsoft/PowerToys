@@ -37,7 +37,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(GetSetId)
         {
-            constexpr size_t zoneId = 123;
+            constexpr ZoneIndex zoneId = 123;
             winrt::com_ptr<IZone> zone = MakeZone(m_zoneRect, zoneId);
 
             Assert::AreEqual(zone->Id(), zoneId);

@@ -109,28 +109,28 @@ public:
     WorkArea(HINSTANCE hinstance);
     ~WorkArea();
 
-    bool Init(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm);
+    bool Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndex(HWND window, size_t index) noexcept;
+    MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>& indexSet) noexcept;
+    MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
     ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
-    IFACEMETHODIMP_(std::wstring)
+    IFACEMETHODIMP_(FancyZonesDataTypes::DeviceIdData)
     UniqueId() const noexcept { return { m_uniqueId }; }
     IFACEMETHODIMP_(void)
     SaveWindowProcessToZoneIndex(HWND window) noexcept;
     IFACEMETHODIMP_(IZoneSet*)
     ActiveZoneSet() const noexcept { return m_activeZoneSet.get(); }
-    IFACEMETHODIMP_(std::vector<size_t>)
+    IFACEMETHODIMP_(ZoneIndexSet)
     GetWindowZoneIndexes(HWND window) const noexcept;
     IFACEMETHODIMP_(void)
     ShowZoneWindow() noexcept;
@@ -151,21 +151,21 @@ protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
-    void InitializeZoneSets(const std::wstring& parentUniqueId) noexcept;
+    void InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept;
     void CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    std::vector<size_t> ZonesFromPoint(POINT pt) noexcept;
+    ZoneIndexSet ZonesFromPoint(POINT pt) noexcept;
     void SetAsTopmostWindow() noexcept;
 
     HMONITOR m_monitor{};
-    std::wstring m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
+    FancyZonesDataTypes::DeviceIdData m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
     std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
-    std::vector<size_t> m_initialHighlightZone;
-    std::vector<size_t> m_highlightZone;
+    ZoneIndexSet m_initialHighlightZone;
+    ZoneIndexSet m_highlightZone;
     WPARAM m_keyLast{};
     size_t m_keyCycle{};
     std::unique_ptr<ZoneWindowDrawing> m_zoneWindowDrawing;
@@ -189,7 +189,7 @@ WorkArea::~WorkArea()
     windowPool.FreeZoneWindow(m_window);
 }
 
-bool WorkArea::Init(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm)
+bool WorkArea::Init(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm)
 {
     m_zoneColors = zoneColors;
     m_overlappingAlgorithm = overlappingAlgorithm;
@@ -305,13 +305,13 @@ IFACEMETHODIMP WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcep
 }
 
 IFACEMETHODIMP_(void)
-WorkArea::MoveWindowIntoZoneByIndex(HWND window, size_t index) noexcept
+WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
 {
     MoveWindowIntoZoneByIndexSet(window, { index });
 }
 
 IFACEMETHODIMP_(void)
-WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>& indexSet) noexcept
+WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept
 {
     if (m_activeZoneSet)
     {
@@ -383,7 +383,7 @@ WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
     }
 }
 
-IFACEMETHODIMP_(std::vector<size_t>)
+IFACEMETHODIMP_(ZoneIndexSet)
 WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
 {
     if (m_activeZoneSet)
@@ -467,11 +467,17 @@ WorkArea::SetOverlappingZonesAlgorithm(OverlappingZonesAlgorithm overlappingAlgo
 
 #pragma region private
 
-void WorkArea::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
+void WorkArea::InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept
 {
+    wil::unique_cotaskmem_string virtualDesktopId;
+    if (SUCCEEDED(StringFromCLSID(m_uniqueId.virtualDesktopId, &virtualDesktopId)))
+    {
+        Logger::debug(L"Initialize zone sets on the virtual desktop {}", virtualDesktopId.get());
+    }
+    
     bool deviceAdded = FancyZonesDataInstance().AddDevice(m_uniqueId);
     // If the device has been added, check if it should inherit the parent's layout
-    if (deviceAdded && !parentUniqueId.empty())
+    if (deviceAdded && parentUniqueId.virtualDesktopId != GUID_NULL)
     {
         FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
     }
@@ -575,7 +581,7 @@ LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     return 0;
 }
 
-std::vector<size_t> WorkArea::ZonesFromPoint(POINT pt) noexcept
+ZoneIndexSet WorkArea::ZonesFromPoint(POINT pt) noexcept
 {
     if (m_activeZoneSet)
     {
@@ -618,7 +624,7 @@ LRESULT CALLBACK WorkArea::s_WndProc(HWND window, UINT message, WPARAM wparam, L
                                   DefWindowProc(window, message, wparam, lparam);
 }
 
-winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept
+winrt::com_ptr<IWorkArea> MakeWorkArea(HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId, const ZoneColors& zoneColors, OverlappingZonesAlgorithm overlappingAlgorithm) noexcept
 {
     auto self = winrt::make_self<WorkArea>(hinstance);
     if (self->Init(hinstance, monitor, uniqueId, parentUniqueId, zoneColors, overlappingAlgorithm))

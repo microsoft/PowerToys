@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -13,7 +17,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
 {
     public class Main : IPlugin, IPluginI18n
     {
-        public PluginInitContext _context { get; private set; }
+        private PluginInitContext _context;
 
         public string Name => GetTranslatedPluginTitle();
 
@@ -24,9 +28,9 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
             VSCodeInstances.LoadVSCodeInstances();
         }
 
-        public readonly VSCodeWorkspacesApi _workspacesApi = new VSCodeWorkspacesApi();
+        private readonly VSCodeWorkspacesApi _workspacesApi = new VSCodeWorkspacesApi();
 
-        public readonly VSCodeRemoteMachinesApi _machinesApi = new VSCodeRemoteMachinesApi();
+        private readonly VSCodeRemoteMachinesApi _machinesApi = new VSCodeRemoteMachinesApi();
 
         public List<Result> Query(Query query)
         {
@@ -49,12 +53,12 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                         title += $" - {(a.ExtraInfo != null ? $"{a.ExtraInfo} ({typeWorkspace})" : typeWorkspace)}";
                     }
 
-                    var tooltip = new ToolTipData(title, $"{Resources.Workspace}{(a.TypeWorkspace != TypeWorkspace.Local ? $" {Resources.In} {typeWorkspace}" : "")}: {SystemPath.RealPath(a.RelativePath)}");
+                    var tooltip = new ToolTipData(title, $"{Resources.Workspace}{(a.TypeWorkspace != TypeWorkspace.Local ? $" {Resources.In} {typeWorkspace}" : string.Empty)}: {SystemPath.RealPath(a.RelativePath)}");
 
                     results.Add(new Result
                     {
                         Title = title,
-                        SubTitle = $"{Resources.Workspace}{(a.TypeWorkspace != TypeWorkspace.Local ? $" {Resources.In} {typeWorkspace}" : "")}: {SystemPath.RealPath(a.RelativePath)}",
+                        SubTitle = $"{Resources.Workspace}{(a.TypeWorkspace != TypeWorkspace.Local ? $" {Resources.In} {typeWorkspace}" : string.Empty)}: {SystemPath.RealPath(a.RelativePath)}",
                         Icon = a.VSCodeInstance.WorkspaceIcon,
                         ToolTipData = tooltip,
                         Action = c =>
@@ -67,7 +71,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                                     FileName = a.VSCodeInstance.ExecutablePath,
                                     UseShellExecute = true,
                                     Arguments = $"--folder-uri {a.Path}",
-                                    WindowStyle = ProcessWindowStyle.Hidden
+                                    WindowStyle = ProcessWindowStyle.Hidden,
                                 };
                                 Process.Start(process);
 
@@ -80,12 +84,12 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                                 _context.API.ShowMsg(name, msg, string.Empty);
                                 hide = false;
                             }
+
                             return hide;
                         },
                         ContextData = a,
                     });
                 });
-
 
                 // Search opened remote machines
                 _machinesApi.Machines.ForEach(a =>
@@ -128,6 +132,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                                 _context.API.ShowMsg(name, msg, string.Empty);
                                 hide = false;
                             }
+
                             return hide;
                         },
                         ContextData = a,
@@ -147,20 +152,20 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
                     x.Score = 100;
                 }
 
-                //intersect the title with the query
+                // intersect the title with the query
                 var intersection = Convert.ToInt32(x.Title.ToLowerInvariant().Intersect(query.Search.ToLowerInvariant()).Count() * query.Search.Count());
                 var differenceWithQuery = Convert.ToInt32((x.Title.Count() - intersection) * query.Search.Count() * 0.7);
                 x.Score = x.Score - differenceWithQuery + intersection;
 
-                //if is a remote machine give it 12 extra points
+                // if is a remote machine give it 12 extra points
                 if (x.ContextData is VSCodeRemoteMachine)
                 {
-                    x.Score = Convert.ToInt32(x.Score + intersection * 2);
+                    x.Score = Convert.ToInt32(x.Score + (intersection * 2));
                 }
             });
 
             results = results.OrderByDescending(x => x.Score).ToList();
-            if (query.Search == string.Empty || query.Search.Replace(" ", "") == string.Empty)
+            if (query.Search == string.Empty || query.Search.Replace(" ", string.Empty) == string.Empty)
             {
                 results = results.OrderBy(x => x.Title).ToList();
             }

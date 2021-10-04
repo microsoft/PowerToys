@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Classes
         /// <param name="key">The <see cref="RegistryKey"/> for this entry.</param>
         /// <param name="valueName">The value name of the current selected registry value.</param>
         /// <param name="value">The value of the current selected registry value.</param>
-        internal RegistryEntry(RegistryKey key, string valueName, object? value)
+        internal RegistryEntry(RegistryKey key, string valueName, object value)
         {
             KeyPath = key.Name;
             Key = key;

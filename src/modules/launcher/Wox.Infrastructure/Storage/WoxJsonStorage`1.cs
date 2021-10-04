@@ -13,12 +13,12 @@ namespace Wox.Infrastructure.Storage
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
 
-        public WoxJsonStorage(string fileName = "")
+        public WoxJsonStorage()
         {
             var directoryPath = Path.Combine(Constant.DataDirectory, DirectoryName);
             Helper.ValidateDirectory(directoryPath);
 
-            var filename = fileName != null && fileName.Length != 0 ? fileName : typeof(T).Name;
+            var filename = typeof(T).Name;
             FilePath = Path.Combine(directoryPath, $"{filename}{FileSuffix}");
         }
     }

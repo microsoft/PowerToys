@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.ServiceProcess;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.Run.Plugin.Service.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;
@@ -18,18 +19,41 @@ namespace Microsoft.PowerToys.Run.Plugin.Service.Helpers
 {
     public static class ServiceHelper
     {
-        public static IEnumerable<Result> Search(string search, string icoPath)
+        public static IEnumerable<Result> Search(string search, string icoPath, PluginInitContext context)
         {
             var services = ServiceController.GetServices();
 
             return services
-                .Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase))
-                .Select(s => new Result
+                .Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || GetResultTitle(s).StartsWith(search, StringComparison.OrdinalIgnoreCase))
+                .Select(s =>
                 {
-                    Title = GetResultTitle(s),
-                    SubTitle = GetResultSubTitle(s),
-                    IcoPath = icoPath,
-                    ContextData = new ServiceResult(s),
+                    ServiceResult serviceResult = new ServiceResult(s);
+                    Func<ActionContext, bool> serviceAction;
+                    if (serviceResult.IsRunning)
+                    {
+                        serviceAction = _ =>
+                        {
+                            Task.Run(() => ServiceHelper.ChangeStatus(serviceResult, Action.Stop, context.API));
+                            return true;
+                        };
+                    }
+                    else
+                    {
+                        serviceAction = _ =>
+                        {
+                            Task.Run(() => ServiceHelper.ChangeStatus(serviceResult, Action.Start, context.API));
+                            return true;
+                        };
+                    }
+
+                    return new Result
+                    {
+                        Title = ServiceHelper.GetResultTitle(s),
+                        SubTitle = ServiceHelper.GetResultSubTitle(s),
+                        IcoPath = icoPath,
+                        ContextData = serviceResult,
+                        Action = serviceAction,
+                    };
                 });
         }
 

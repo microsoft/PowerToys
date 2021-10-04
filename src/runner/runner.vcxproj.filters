@@ -39,7 +39,7 @@
     <ClCompile Include="settings_telemetry.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="CentralizedHotkeys.cpp">
+    <ClCompile Include="centralized_hotkeys.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>
@@ -84,7 +84,7 @@
     <ClInclude Include="settings_telemetry.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="CentralizedHotkeys.h">
+    <ClInclude Include="centralized_hotkeys.h">
       <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>

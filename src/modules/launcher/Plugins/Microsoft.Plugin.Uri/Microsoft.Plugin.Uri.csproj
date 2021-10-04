@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 <Import Project="..\..\..\..\Version.props" />
   
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectGuid>{03276a39-d4e9-417c-8ffd-200b0ee5e871}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.Plugin.Uri</RootNamespace>
@@ -58,10 +58,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj">
+    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" >
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj">
+    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" >
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>

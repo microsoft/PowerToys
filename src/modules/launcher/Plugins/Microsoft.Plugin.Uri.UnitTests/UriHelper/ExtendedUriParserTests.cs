@@ -3,12 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Plugin.Uri.UriHelper;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
 {
-    [TestFixture]
+    [TestClass]
     public class ExtendedUriParserTests
     {
         [TestCase("google.com", true, "https://google.com/")]
@@ -55,6 +54,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [TestCase("mailto:example@mail.com", true, "mailto:example@mail.com")]
         [TestCase("tel:411", true, "tel:411")]
         [TestCase("ftp://example.com", true, "ftp://example.com/")]
+  
         public void TryParseCanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
             // Arrange

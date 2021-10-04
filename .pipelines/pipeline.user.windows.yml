@@ -33,13 +33,14 @@ restore:
       name: 'Restore Installer'
       command: '.pipelines\restore-installer.cmd'
     - !!defaultcommand
+      name: 'Restore Installer BootStrapper'
+      command: '.pipelines\restore-bootstrapper.cmd'
+    - !!defaultcommand
       name: 'Restore Localization packages'
       command: '.pipelines\restore-localization.cmd'
     - !!defaultcommand
       name: 'Restore Tools packages'
       command: '.pipelines\restore-tools.cmd'
-
-
 
 build:
   commands:
@@ -102,11 +103,16 @@ build:
             - 'modules\FancyZones\ManagedCommon.dll'
             - 'modules\FancyZones\ManagedTelemetry.dll'
             - 'modules\FancyZones\PowerToys.FancyZones.exe'
+            - 'modules\FancyZones\PowerToysInterop.dll'
             - 'modules\FancyZones\Telemetry.dll'
             - 'modules\FancyZones\Microsoft.PowerToys.Common.UI.dll'
             - 'modules\FileExplorerPreview\ManagedTelemetry.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll'
+            - 'modules\FileExplorerPreview\PdfPreviewHandler.dll'
+            - 'modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll'
+            - 'modules\FileExplorerPreview\PdfThumbnailProvider.dll'
+            - 'modules\FileExplorerPreview\PdfThumbnailProvider.comhost.dll'
             - 'modules\FileExplorerPreview\powerpreview.dll'
             - 'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
             - 'modules\FileExplorerPreview\SvgPreviewHandler.dll'
@@ -167,6 +173,7 @@ build:
             # TODO(yuyoyuppe): uncomment when VCM should be enabled
             #- 'modules\VideoConference\VideoConferenceModule.dll'
             #- 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
+            #- 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
             - 'Settings\ManagedTelemetry.dll'
             - 'Settings\Microsoft.PowerToys.Settings.UI.exe'
             - 'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
@@ -176,7 +183,7 @@ build:
             - 'Settings\Telemetry.dll'
             - 'Settings\ManagedCommon.dll'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
       name: 'Build Power Toys Tools'
       command: '.pipelines\build-tools.cmd'
@@ -187,7 +194,17 @@ build:
             - 'BugReportTool\BugReportTool.exe'
             - 'WebcamReportTool\WebcamReportTool.exe'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
+    - !!buildcommand
+      name: 'Build Power Toys Installer Custom Action' # Need to do separately to sign dll before building installer
+      command: '.pipelines\build-installer-PTCustomActions.cmd'
+      artifacts:
+        - from: 'installer\PowerToysSetupCustomActions\x64\Release'
+          to: 'Build_Output'
+          include:
+            - 'PowerToysSetupCustomActions.dll'
+          signing_options:
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
       name: 'Build Power Toys Installer'
       command: '.pipelines\build-installer.cmd'
@@ -197,7 +214,7 @@ build:
           include:
             - 'PowerToysSetup-*.msi'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
+            sign_inline: true  # This does signing as soon as this command completes
     - !!buildcommand
       name: 'Build Power Toys Bootstrapper'
       command: '.pipelines\build-bootstrapper.cmd'
@@ -210,8 +227,7 @@ build:
           include:
             - 'PowerToysSetup-*.exe'
           signing_options:
-            sign_inline: true  # This does signing a soon as this command completes
-
+            sign_inline: true  # This does signing as soon as this command completes
 
 #package:
 #  commands:

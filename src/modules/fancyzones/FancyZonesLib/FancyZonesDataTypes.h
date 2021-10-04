@@ -10,6 +10,8 @@
 
 #include <windef.h>
 
+#include <FancyZonesLib/Zone.h>
+
 namespace FancyZonesDataTypes
 {
     enum class ZoneSetLayoutType : int
@@ -111,22 +113,28 @@ namespace FancyZonesDataTypes
         ZoneSetLayoutType type;
     };
 
+    struct DeviceIdData
+    {
+        std::wstring deviceName = L"FallbackDevice";
+        int width;
+        int height;
+        GUID virtualDesktopId;
+        std::wstring monitorId;
+
+        static std::optional<DeviceIdData> ParseDeviceId(const std::wstring& str);
+        static bool IsValidDeviceId(const std::wstring& str);
+        
+        std::wstring toString() const;
+        bool isEqualWithNullVirtualDesktopId(const DeviceIdData& other) const;
+    };
+
     struct AppZoneHistoryData
     {
         std::unordered_map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
 
         std::wstring zoneSetUuid;
-        std::wstring deviceId;
-        std::vector<size_t> zoneIndexSet;
-    };
-
-    struct DeviceIdData
-    {
-        std::wstring deviceName;
-        int width;
-        int height;
-        GUID virtualDesktopId;
-        std::wstring monitorId;
+        DeviceIdData deviceId;
+        ZoneIndexSet zoneIndexSet;
     };
 
     struct DeviceInfoData
@@ -136,5 +144,32 @@ namespace FancyZonesDataTypes
         int spacing;
         int zoneCount;
         int sensitivityRadius;
+    };
+
+    inline bool operator==(const DeviceIdData& lhs, const DeviceIdData& rhs)
+    {
+        return lhs.deviceName.compare(rhs.deviceName) == 0 && lhs.width == rhs.width && lhs.height == rhs.height && lhs.virtualDesktopId == rhs.virtualDesktopId && lhs.monitorId.compare(rhs.monitorId) == 0;
+    }
+
+    inline bool operator!=(const DeviceIdData& lhs, const DeviceIdData& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    inline bool operator<(const DeviceIdData& lhs, const DeviceIdData& rhs)
+    {
+        return lhs.deviceName.compare(rhs.deviceName) < 0 || lhs.width < rhs.width || lhs.height < rhs.height || lhs.monitorId.compare(rhs.monitorId) < 0;
+    }
+}
+
+namespace std
+{
+    template<>
+    struct hash<FancyZonesDataTypes::DeviceIdData>
+    {
+        size_t operator()(const FancyZonesDataTypes::DeviceIdData& Value) const
+        {
+            return 0;
+        }
     };
 }

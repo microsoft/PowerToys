@@ -21,10 +21,6 @@ namespace FancyZonesEditor.ViewModels
 
         public static double DesktopPreviewMultiplier { get; private set; }
 
-        public RelayCommand AddCommand { get; set; }
-
-        public RelayCommand DeleteCommand { get; set; }
-
         public RelayCommand<MonitorInfoModel> SelectCommand { get; set; }
 
         public MonitorViewModel()
