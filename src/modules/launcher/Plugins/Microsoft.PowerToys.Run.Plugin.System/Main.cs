@@ -4,25 +4,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.System.Win32;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.System
 {
-    public class Main : IPlugin, IPluginI18n, ISettingProvider
+    public class Main : IPlugin, IPluginI18n
     {
         private PluginInitContext _context;
-        private const string ConfirmSystemCommands = nameof(ConfirmSystemCommands);
 
         internal const int EWXLOGOFF = 0x00000000;
         internal const int EWXSHUTDOWN = 0x00000001;
@@ -33,27 +26,13 @@ namespace Microsoft.PowerToys.Run.Plugin.System
 
         public string IconTheme { get; set; }
 
-        public ICommand Command { get; set; }
-
         public string Name => Properties.Resources.Microsoft_plugin_sys_plugin_name;
 
         public string Description => Properties.Resources.Microsoft_plugin_sys_plugin_description;
 
-        private bool _confirmSystemCommands;
-
-        public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>()
-        {
-            new PluginAdditionalOption()
-            {
-                Key = ConfirmSystemCommands,
-                DisplayLabel = Properties.Resources.confirm_system_commands,
-                Value = false,
-            },
-        };
-
         public void Init(PluginInitContext context)
         {
-            _context = context;
+            this._context = context;
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconTheme(_context.API.GetCurrentTheme());
         }
@@ -94,7 +73,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\shutdown.{IconTheme}.png",
                     Action = c =>
                     {
-                        return ExecuteCommand(Properties.Resources.Microsoft_plugin_sys_shutdown_computer_confirmation, () => Helper.OpenInShell("shutdown", "/s /t 0"));
+                        Helper.OpenInShell("shutdown", "/s /t 0");
+                        return true;
                     },
                 },
                 new Result
@@ -104,7 +84,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\restart.{IconTheme}.png",
                     Action = c =>
                     {
-                        return ExecuteCommand(Properties.Resources.Microsoft_plugin_sys_restart_computer_confirmation, () => Helper.OpenInShell("shutdown", "/r /t 0"));
+                        Helper.OpenInShell("shutdown", "/r /t 0");
+                        return true;
                     },
                 },
                 new Result
@@ -114,7 +95,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\logoff.{IconTheme}.png",
                     Action = c =>
                     {
-                        return ExecuteCommand(Properties.Resources.Microsoft_plugin_sys_sign_out_confirmation, () => NativeMethods.ExitWindowsEx(EWXLOGOFF, 0));
+                        NativeMethods.ExitWindowsEx(EWXLOGOFF, 0);
+                        return true;
                     },
                 },
                 new Result
@@ -124,7 +106,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\lock.{IconTheme}.png",
                     Action = c =>
                     {
-                        return ExecuteCommand(Properties.Resources.Microsoft_plugin_sys_lock_confirmation, () => NativeMethods.LockWorkStation());
+                        NativeMethods.LockWorkStation();
+                        return true;
                     },
                 },
                 new Result
@@ -134,7 +117,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\sleep.{IconTheme}.png",
                     Action = c =>
                     {
-                        return ExecuteCommand(Properties.Resources.Microsoft_plugin_sys_sleep_confirmation, () => NativeMethods.SetSuspendState(false, true, true));
+                        NativeMethods.SetSuspendState(false, true, true);
+                        return true;
                     },
                 },
                 new Result
@@ -144,7 +128,8 @@ namespace Microsoft.PowerToys.Run.Plugin.System
                     IcoPath = $"Images\\sleep.{IconTheme}.png", // Icon change needed
                     Action = c =>
                     {
-                        return ExecuteCommand(Properties.Resources.Microsoft_plugin_sys_hibernate_confirmation, () => NativeMethods.SetSuspendState(true, true, true));
+                        NativeMethods.SetSuspendState(true, true, true);
+                        return true;
                     },
                 },
                 new Result
@@ -198,59 +183,6 @@ namespace Microsoft.PowerToys.Run.Plugin.System
         public string GetTranslatedPluginTitle()
         {
             return Properties.Resources.Microsoft_plugin_sys_plugin_name;
-        }
-
-        public void UpdateSettings(PowerLauncherPluginSettings settings)
-        {
-            var confirmSystemCommands = false;
-
-            if (settings != null && settings.AdditionalOptions != null)
-            {
-                var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ConfirmSystemCommands);
-
-                confirmSystemCommands = option == null ? false : option.Value;
-            }
-
-            _confirmSystemCommands = confirmSystemCommands;
-        }
-
-        private bool ExecuteCommand(string confirmationMessage, Action command)
-        {
-            if (_confirmSystemCommands)
-            {
-                MessageBoxResult messageBoxResult = MessageBox.Show(
-                    confirmationMessage,
-                    Properties.Resources.Microsoft_plugin_sys_confirmation,
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (messageBoxResult == MessageBoxResult.No)
-                {
-                    return false;
-                }
-            }
-
-            command();
-            return true;
-        }
-
-        public Control CreateSettingPanel()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void UpdateSettings(PowerLauncherPluginSettings settings)
-        {
-            var confirmSystemCommands = false;
-
-            if (settings != null && settings.AdditionalOptions != null)
-            {
-                var option = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ConfirmSystemCommands);
-
-                confirmSystemCommands = option == null ? false : option.Value;
-            }
-
-            _confirmSystemCommands = confirmSystemCommands;
         }
     }
 }

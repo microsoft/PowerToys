@@ -282,12 +282,14 @@
                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"
                                           Margin="{StaticResource SmallTopMargin}"/>
 
-                                    <TextBlock x:Name="AdditionalOptionsTextBlock"
-                                        x:Uid="Run_AdditionalOptions"
-                                        Margin="{StaticResource SmallTopMargin}"
-                                        Visibility="{x:Bind ShowAdditionalOptions, Converter={StaticResource BoolToVisibilityConverter}}"
-                                        Style="{StaticResource SettingsGroupTitleStyle}"
-                                        Opacity="{x:Bind DisabledOpacity}"/>
+
+
+                                <TextBlock x:Name="AdditionalOptionsTextBlock"
+                                           x:Uid="Run_AdditionalOptions"
+                                           Margin="{StaticResource SmallTopMargin}"
+                                           Visibility="{x:Bind ShowAdditionalOptions, Converter={StaticResource BoolToVisibilityConverter}}"
+                                           Style="{StaticResource SettingsGroupTitleStyle}"
+                                           Opacity="{x:Bind DisabledOpacity}"/>
 
                                 <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
                                           SelectionMode="None"
