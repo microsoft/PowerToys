@@ -911,7 +911,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Allow zones to span across monitors]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Toestaan dat zones worden overspannen tussen monitors]]></Val>
+            <Val><![CDATA[Toestaan dat zones zich over monitors uitstrekken]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1780,6 +1780,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ImageResizer_FilenameParameters.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Filename parameters]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bestandsnaamparameters]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ImageResizer_Fit.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Fit]]></Val>
@@ -1793,7 +1802,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fills]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vult aan]]></Val>
+            <Val><![CDATA[Vult op]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1811,7 +1820,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Stretches to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uitrekken tot]]></Val>
+            <Val><![CDATA[Strekt uit over]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1955,7 +1964,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fill]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Doorvoeren]]></Val>
+            <Val><![CDATA[Opvullen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1991,7 +2000,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Inches]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inch]]></Val>
+            <Val><![CDATA[Inches]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3026,7 +3035,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Met 'Geluid voor videovergadering uitschakelen' kunnen gebruikers snel en met één toetsaanslag de microfoon en de camera uitschakelen tijdens een telefonische vergadering, ongeacht welke app op dat moment de focus heeft op uw computer.]]></Val>
+            <Val><![CDATA[Met 'Videovergadering dempen' kunnen gebruikers snel en met één toetsaanslag de microfoon en de camera uitschakelen tijdens een telefonische vergadering, ongeacht welke app op dat moment de focus heeft op uw computer.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3349,6 +3358,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";PowerLauncher_UseCentralizedKeyboardHook.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use centralized keyboard hook (try it if there are issues with the shortcut)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gecentraliseerde keyboard hook gebruiken (proberen als er problemen zijn met de toetsencombinatie)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";PowerRename.ModuleDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.]]></Val>
@@ -3519,6 +3537,24 @@
           <Val><![CDATA[Settings theme]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Thema instellingen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Customized shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aangepaste snelkoppeling]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hold down Windows key]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows-toets ingedrukt houden]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3910,6 +3946,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ShortcutGuide_ActivationMethod.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use a shortcut or press the Windows key for some time to activate]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Een snelkoppeling gebruiken of de Windows-toets enige tijd indrukken voor activatie]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_ActivationMethod.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Activation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Activeringsmethode]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ShortcutGuide_Appearance_Behavior.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Appearance & behavior]]></Val>
@@ -3964,11 +4018,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ShortcutGuide_PressTime.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[How long to press the Windows key to activate the module]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Hoelang de Windows-toets moet worden ingedrukt om de module te activeren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ShortcutGuide_PressTime.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Duur van het indrukken voordat wordt weergegeven (ms)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_PressWinKeyWarning.Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[In some edge cases Shortcut Guide might not function correctly when using this activation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[In bepaalde edge-gevallen is het mogelijk dat de Shortcut Guide niet correct werkt wanneer deze activeringsmethode wordt gebruikt]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4004,7 +4076,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Video Conference Mute is a quick and easy way to do an global "mute" of both your microphone and webcam. Disabling this module or closing PowerToys will unmute the microphone and camera.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Met videovergadering dempen kunt u snel en eenvoudig globaal uw microfoon en webcam dempen. Als u deze module uitschakelt of met PowerToys sluit, worden de microfoon en de camera uitgeschakeld.]]></Val>
+            <Val><![CDATA[Met Videovergadering dempen kunt u snel en eenvoudig globaal uw microfoon en webcam dempen. Als u deze module uitschakelt of met PowerToys sluit, worden de microfoon en de camera uitgeschakeld.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
