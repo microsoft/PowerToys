@@ -326,7 +326,7 @@
         <Str Cat="Text">
           <Val><![CDATA[fills]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[vult aan]]></Val>
+            <Val><![CDATA[vult op]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -362,7 +362,7 @@
         <Str Cat="Text">
           <Val><![CDATA[stretches to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[uitgerekt tot]]></Val>
+            <Val><![CDATA[strekt uit over]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -380,7 +380,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Inches]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inch]]></Val>
+            <Val><![CDATA[Inches]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
