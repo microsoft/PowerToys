@@ -250,11 +250,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public void AddRow()
+        public void AddRow(string sizeNamePrefix)
         {
+            /// This is a fallback validation to eliminate the warning "CA1062:Validate arguments of public methods" when using the parameter (variable) "sizeNamePrefix" in the code.
+            /// If the parameter is unexpectedly empty or null, we fill the parameter with a non-localized string.
+            /// Normally the parameter "sizeNamePrefix" can't be null or empty because it is filled with a localized string when we call this method from <see cref="UI.Views.ImageResizerPage.AddSizeButton_Click"/>.
+            sizeNamePrefix = string.IsNullOrEmpty(sizeNamePrefix) ? "New Size" : sizeNamePrefix;
+
             ObservableCollection<ImageSize> imageSizes = Sizes;
             int maxId = imageSizes.Count > 0 ? imageSizes.OrderBy(x => x.Id).Last().Id : -1;
-            ImageSize newSize = new ImageSize(maxId + 1);
+            string sizeName = GenerateNameForNewSize(imageSizes, sizeNamePrefix);
+
+            ImageSize newSize = new ImageSize(maxId + 1, sizeName, ResizeFit.Fit, 854, 480, ResizeUnit.Pixel);
             newSize.PropertyChanged += SizePropertyChanged;
             imageSizes.Add(newSize);
             _advancedSizes = imageSizes;
@@ -370,6 +377,29 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             imageSizes.Where<ImageSize>(x => x.Id == modifiedSize.Id).First().Update(modifiedSize);
             _advancedSizes = imageSizes;
             SavesImageSizes(imageSizes);
+        }
+
+        private static string GenerateNameForNewSize(in ObservableCollection<ImageSize> sizesList, in string namePrefix)
+        {
+            int newSizeCounter = 0;
+
+            foreach (ImageSize imgSize in sizesList)
+            {
+                string name = imgSize.Name;
+
+                if (name.StartsWith(namePrefix, StringComparison.InvariantCulture))
+                {
+                    if (int.TryParse(name.Substring(namePrefix.Length), out int number))
+                    {
+                        if (newSizeCounter < number)
+                        {
+                            newSizeCounter = number;
+                        }
+                    }
+                }
+            }
+
+            return $"{namePrefix} {++newSizeCounter}";
         }
     }
 }

@@ -51,6 +51,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
                     Glyph = "\xE71A",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
+                    AcceleratorModifiers = ModifierKeys.Control,
                     Action = _ =>
                     {
                         Task.Run(() => ServiceHelper.ChangeStatus(serviceResult, Action.Stop, _context.API));
@@ -84,6 +85,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
                     Glyph = "\xEDB5",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
+                    AcceleratorModifiers = ModifierKeys.Control,
                     Action = _ =>
                     {
                         Task.Run(() => ServiceHelper.ChangeStatus(serviceResult, Action.Start, _context.API));
@@ -114,7 +116,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Service
         public List<Result> Query(Query query)
         {
             var search = query?.Search ?? string.Empty;
-            return ServiceHelper.Search(search, _icoPath).ToList();
+            return ServiceHelper.Search(search, _icoPath, _context).ToList();
         }
 
         public string GetTranslatedPluginTitle()

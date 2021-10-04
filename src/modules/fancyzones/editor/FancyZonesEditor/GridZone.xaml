@@ -13,6 +13,8 @@
     BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
     BorderThickness="1"
     Opacity="1"
+    Focusable="True"
+    IsTabStop="True"    
     ui:ControlHelper.CornerRadius="4"
     mc:Ignorable="d">
     

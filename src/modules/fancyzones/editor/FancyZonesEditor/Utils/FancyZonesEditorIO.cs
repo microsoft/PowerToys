@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
@@ -31,6 +32,9 @@ namespace FancyZonesEditor.Utils
 
         // Non-localizable string: Multi-monitor id
         private const string MultiMonitorId = "FancyZones#MultiMonitorDevice";
+
+        // Non-localizable string: default virtual desktop id
+        private const string DefaultVirtualDesktopGuid = "{00000000-0000-0000-0000-000000000000}";
 
         private readonly IFileSystem _fileSystem = new FileSystem();
 
@@ -724,7 +728,13 @@ namespace FancyZonesEditor.Utils
                 bool unused = true;
                 foreach (Monitor monitor in monitors)
                 {
-                    if (monitor.Device.Id == device.DeviceId)
+                    string deviceIdSaved = monitor.Device.Id.Substring(0, monitor.Device.Id.LastIndexOf("_"));
+                    string deviceIdReadFromSettings = device.DeviceId.Substring(0, device.DeviceId.LastIndexOf("_"));
+
+                    string virtualDesktopIdSaved = monitor.Device.Id.Substring(monitor.Device.Id.LastIndexOf("_") + 1);
+                    string virtualDesktopIdReadFromSettings = device.DeviceId.Substring(device.DeviceId.LastIndexOf("_") + 1);
+
+                    if (deviceIdSaved == deviceIdReadFromSettings && (virtualDesktopIdSaved == virtualDesktopIdReadFromSettings || virtualDesktopIdReadFromSettings == DefaultVirtualDesktopGuid))
                     {
                         var settings = new LayoutSettings
                         {
@@ -758,7 +768,7 @@ namespace FancyZonesEditor.Utils
                 return false;
             }
 
-            MainWindowSettingsModel.CustomModels.Clear();
+            ObservableCollection<LayoutModel> models = new ObservableCollection<LayoutModel>();
             bool result = true;
 
             foreach (var zoneSet in customLayouts)
@@ -793,8 +803,10 @@ namespace FancyZonesEditor.Utils
                     continue;
                 }
 
-                MainWindowSettingsModel.CustomModels.Add(layout);
+                models.Add(layout);
             }
+
+            MainWindowSettingsModel.CustomModels = models;
 
             return result;
         }

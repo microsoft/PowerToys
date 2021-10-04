@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ReorderButtonUp_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            ColorFormatModel color = ((Button)sender).DataContext as ColorFormatModel;
+            ColorFormatModel color = ((MenuFlyoutItem)sender).DataContext as ColorFormatModel;
             if (color == null)
             {
                 return;
@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ReorderButtonDown_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            ColorFormatModel color = ((Button)sender).DataContext as ColorFormatModel;
+            ColorFormatModel color = ((MenuFlyoutItem)sender).DataContext as ColorFormatModel;
             if (color == null)
             {
                 return;

@@ -4,9 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
 
@@ -38,12 +40,24 @@ namespace FancyZonesEditor
             InitializeComponent();
             Loaded += GridEditor_Loaded;
             Unloaded += GridEditor_Unloaded;
+            KeyDown += GridEditor_KeyDown;
+            KeyUp += GridEditor_KeyUp;
             gridEditorUniqueId = ++gridEditorUniqueIdCounter;
-            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+        }
+
+        public void FocusZone()
+        {
+            if (Preview.Children.Count > 0)
+            {
+                var zone = Preview.Children[0] as GridZone;
+                zone.Focus();
+            }
         }
 
         private void GridEditor_Loaded(object sender, RoutedEventArgs e)
         {
+            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+
             GridLayoutModel model = (GridLayoutModel)DataContext;
             if (model == null)
             {
@@ -55,6 +69,146 @@ namespace FancyZonesEditor
             Model = model;
             Model.PropertyChanged += OnGridDimensionsChanged;
             SetupUI();
+        }
+
+        private void HandleResizerKeyDown(GridResizer resizer, KeyEventArgs e)
+        {
+            DragDeltaEventArgs args = null;
+            if (resizer.Orientation == Orientation.Horizontal)
+            {
+                if (e.Key == Key.Up)
+                {
+                    args = new DragDeltaEventArgs(0, -1);
+                }
+                else if (e.Key == Key.Down)
+                {
+                    args = new DragDeltaEventArgs(0, 1);
+                }
+            }
+            else
+            {
+                if (e.Key == Key.Left)
+                {
+                    args = new DragDeltaEventArgs(-1, 0);
+                }
+                else if (e.Key == Key.Right)
+                {
+                    args = new DragDeltaEventArgs(1, 0);
+                }
+            }
+
+            if (args != null)
+            {
+                e.Handled = true;
+                Resizer_DragDelta(resizer, args);
+            }
+
+            if (e.Key == Key.Delete)
+            {
+                int resizerIndex = AdornerLayer.Children.IndexOf(resizer);
+                var resizerData = _data.Resizers[resizerIndex];
+
+                var indices = new List<int>(resizerData.PositiveSideIndices);
+                indices.AddRange(resizerData.NegativeSideIndices);
+                _data.DoMerge(indices);
+                SetupUI();
+                e.Handled = true;
+            }
+        }
+
+        private void HandleResizerKeyUp(GridResizer resizer, KeyEventArgs e)
+        {
+            if (resizer.Orientation == Orientation.Horizontal)
+            {
+                e.Handled = e.Key == Key.Up || e.Key == Key.Down;
+            }
+            else
+            {
+                e.Handled = e.Key == Key.Left || e.Key == Key.Right;
+            }
+
+            if (e.Handled)
+            {
+                int resizerIndex = AdornerLayer.Children.IndexOf(resizer);
+                Resizer_DragCompleted(resizer, null);
+                Debug.Assert(AdornerLayer.Children.Count > resizerIndex, "Resizer index out of range");
+                Keyboard.Focus(AdornerLayer.Children[resizerIndex]);
+                _dragY = _dragX = 0;
+            }
+        }
+
+        private void HandleGridZoneKeyUp(GridZone gridZone, KeyEventArgs e)
+        {
+            if (e.Key != Key.S)
+            {
+                return;
+            }
+
+            Orientation orient = Orientation.Horizontal;
+            int offset = 0;
+
+            int zoneIndex = Preview.Children.IndexOf(gridZone);
+            var zone = _data.Zones[zoneIndex];
+            Debug.Assert(Preview.Children.Count > zoneIndex, "Zone index out of range");
+
+            if (((App)Application.Current).MainWindowSettings.IsShiftKeyPressed)
+            {
+                orient = Orientation.Vertical;
+                offset = gridZone.SnapAtHalfX();
+            }
+            else
+            {
+                offset = gridZone.SnapAtHalfY();
+            }
+
+            gridZone.DoSplit(orient, offset);
+        }
+
+        private void GridEditor_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            {
+                e.Handled = true;
+                App.Overlay.FocusEditorWindow();
+            }
+            else
+            {
+                var resizer = Keyboard.FocusedElement as GridResizer;
+                if (resizer != null)
+                {
+                    HandleResizerKeyDown(resizer, e);
+                    return;
+                }
+            }
+        }
+
+        private void GridEditor_KeyUp(object sender, KeyEventArgs e)
+        {
+            var resizer = Keyboard.FocusedElement as GridResizer;
+            if (resizer != null)
+            {
+                HandleResizerKeyUp(resizer, e);
+                return;
+            }
+
+            var gridZone = Keyboard.FocusedElement as GridZone;
+            if (gridZone != null)
+            {
+                HandleGridZoneKeyUp(gridZone, e);
+                return;
+            }
+        }
+
+        private void GridEditor_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ((App)Application.Current).MainWindowSettings.PropertyChanged -= ZoneSettings_PropertyChanged;
+
+            if (Model != null)
+            {
+                Model.PropertyChanged -= OnGridDimensionsChanged;
+            }
+
+            gridEditorUniqueId = -1;
         }
 
         private void PlaceResizer(GridResizer resizerThumb)
@@ -174,11 +328,6 @@ namespace FancyZonesEditor
             }
         }
 
-        private void GridEditor_Unloaded(object sender, RoutedEventArgs e)
-        {
-            gridEditorUniqueId = -1;
-        }
-
         private Size WorkAreaSize()
         {
             Rect workingArea = App.Overlay.WorkArea;
@@ -188,7 +337,7 @@ namespace FancyZonesEditor
         public GridLayoutModel Model
         {
             get { return (GridLayoutModel)GetValue(ModelProperty); }
-            set { SetValue(ModelProperty, value); }
+            private set { SetValue(ModelProperty, value); }
         }
 
         public Panel PreviewPanel
@@ -259,7 +408,7 @@ namespace FancyZonesEditor
                 delta = Convert.ToInt32(_dragY / actualSize.Height * GridData.Multiplier);
             }
 
-            if (_data.CanDrag(resizerIndex, delta))
+            if (resizerIndex != -1 && _data.CanDrag(resizerIndex, delta))
             {
                 // Just update the UI, don't tell _data
                 if (resizer.Orientation == Orientation.Vertical)
@@ -320,6 +469,12 @@ namespace FancyZonesEditor
         {
             GridResizer resizer = (GridResizer)sender;
             int resizerIndex = AdornerLayer.Children.IndexOf(resizer);
+            if (resizerIndex == -1)
+            {
+                // Resizer was removed during drag
+                return;
+            }
+
             Size actualSize = WorkAreaSize();
 
             double pixelDelta = resizer.Orientation == Orientation.Vertical ?

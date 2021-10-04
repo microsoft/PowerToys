@@ -117,6 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="confirm_system_commands" xml:space="preserve">
+    <value>Show a dialog to confirm system commands</value>
+  </data>
+  <data name="Microsoft_plugin_sys_confirmation" xml:space="preserve">
+    <value>Please Confirm</value>
+    <comment>Request confirmation</comment>
+  </data>
   <data name="Microsoft_plugin_sys_emptyrecyclebin" xml:space="preserve">
     <value>Empty Recycle Bin</value>
     <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
@@ -129,12 +136,20 @@
     <value>Hibernate</value>
     <comment>This should align to the action in Windows of a hibernating your computer.</comment>
   </data>
+  <data name="Microsoft_plugin_sys_hibernate_confirmation" xml:space="preserve">
+    <value>You are about to put this computer into hibernation, are you sure?</value>
+    <comment>This should align to the action in Windows of a hibernating your computer.</comment>
+  </data>
   <data name="Microsoft_plugin_sys_hibernate_description" xml:space="preserve">
     <value>Hibernate computer</value>
     <comment>This should align to the action in Windows of a hibernating your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_lock" xml:space="preserve">
     <value>Lock</value>
+    <comment>This should align to the action in Windows of a locking your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_lock_confirmation" xml:space="preserve">
+    <value>You are about to lock this computer, are you sure?</value>
     <comment>This should align to the action in Windows of a locking your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_lock_description" xml:space="preserve">
@@ -153,12 +168,20 @@
     <value>Restart</value>
     <comment>This should align to the action in Windows of a restarting your computer.</comment>
   </data>
+  <data name="Microsoft_plugin_sys_restart_computer_confirmation" xml:space="preserve">
+    <value>You are about to restart this computer, are you sure?</value>
+    <comment>This should align to the action in Windows of a restarting your computer.</comment>
+  </data>
   <data name="Microsoft_plugin_sys_restart_computer_description" xml:space="preserve">
     <value>Restart computer</value>
     <comment>This should align to the action in Windows of a restarting your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_shutdown_computer" xml:space="preserve">
     <value>Shutdown</value>
+    <comment>This should align to the action in Windows of a shutting down your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_shutdown_computer_confirmation" xml:space="preserve">
+    <value>You are about to shut down this computer, are you sure?</value>
     <comment>This should align to the action in Windows of a shutting down your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_shutdown_computer_description" xml:space="preserve">
@@ -169,6 +192,10 @@
     <value>Sign out</value>
     <comment>This should align to the action in windows of a signing out back to the lock screen.</comment>
   </data>
+  <data name="Microsoft_plugin_sys_sign_out_confirmation" xml:space="preserve">
+    <value>You are about to sign out of this computer, are you sure?</value>
+    <comment>This should align to the action in windows of a signing out back to the lock screen.</comment>
+  </data>
   <data name="Microsoft_plugin_sys_sign_out_description" xml:space="preserve">
     <value>Sign out of computer</value>
     <comment>This should align to the action in windows of a signing out back to the lock screen.</comment>
@@ -177,8 +204,15 @@
     <value>Sleep</value>
     <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
   </data>
+  <data name="Microsoft_plugin_sys_sleep_confirmation" xml:space="preserve">
+    <value>You are about to put this computer to sleep, are you sure?</value>
+    <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
+  </data>
   <data name="Microsoft_plugin_sys_sleep_description" xml:space="preserve">
     <value>Put computer to sleep</value>
     <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
+  </data>
+  <data name="Use_localized_system_commands" xml:space="preserve">
+    <value>Use localized system commands instead of english ones</value>
   </data>
 </root>

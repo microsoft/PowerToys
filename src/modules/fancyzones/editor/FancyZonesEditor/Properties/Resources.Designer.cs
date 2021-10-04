@@ -448,6 +448,29 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 
+        ///     - [Shift]+S to split currently focused zone.
+        ///     - Ctrl+Tab to focus zones/resizers.
+        ///     - Tab to cycle zones and resizers.
+        ///     - Delete to remove the focused resizer.
+        ///     - Arrows to move the focused resizer..
+        /// </summary>
+        public static string KeyboardControlsDescription {
+            get {
+                return ResourceManager.GetString("KeyboardControlsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keyboard Navigation:.
+        /// </summary>
+        public static string KeyboardControlsName {
+            get {
+                return ResourceManager.GetString("KeyboardControlsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create layouts that have overlapping zones.
         /// </summary>
         public static string Layout_Canvas_Description {
@@ -462,6 +485,15 @@ namespace FancyZonesEditor.Properties {
         public static string Layout_Canvas_Title {
             get {
                 return ResourceManager.GetString("Layout_Canvas_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to custom layout was created successfully..
+        /// </summary>
+        public static string Layout_Creation_Announce {
+            get {
+                return ResourceManager.GetString("Layout_Creation_Announce", resourceCulture);
             }
         }
         
@@ -525,6 +557,15 @@ namespace FancyZonesEditor.Properties {
         public static string Name {
             get {
                 return ResourceManager.GetString("Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New zone added.
+        /// </summary>
+        public static string New_zone_added {
+            get {
+                return ResourceManager.GetString("New_zone_added", resourceCulture);
             }
         }
         

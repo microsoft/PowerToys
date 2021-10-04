@@ -121,34 +121,17 @@ steps:
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
       **\UnitTests-SvgThumbnailProvider.dll
+      **\UnitTests-PdfThumbnailProvider.dll
       **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
+      **\UnitTests-MarkdownPreviewHandler.dll
+      **\UnitTests-PdfPreviewHandler.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
       **\PreviewPaneUnitTests.dll
       **\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.dll
       **\UnitTest-ColorPickerUI.dll
       **\Microsoft.Interop.Tests.dll
-      !**\obj\**
-      !**\ref\**
-      
-- task: VSTest@2
-  displayName: 'XUnit Tests'
-  inputs:
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    testSelector: 'testAssemblies'
-    testAssemblyVer2: |
       **\ImageResizer.Test.dll
-      !**\obj\**
-      !**\ref\**
-
-- task: VSTest@2
-  displayName: 'NUnit Tests'
-  inputs:
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    testSelector: 'testAssemblies'
-    testAssemblyVer2: |
       **\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.dll
       **\Microsoft.Plugin.Folder.UnitTests.dll
       **\Microsoft.Plugin.Program.UnitTests.dll
@@ -157,7 +140,6 @@ steps:
       **\Wox.Test.dll
       **\Microsoft.PowerToys.Run.Plugin.System.UnitTests.dll
       !**\obj\**
-      !**\ref\**
 
 # Native dlls
 - task: VSTest@2

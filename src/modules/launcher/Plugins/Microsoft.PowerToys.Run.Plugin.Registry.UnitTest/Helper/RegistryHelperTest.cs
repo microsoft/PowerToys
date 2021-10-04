@@ -22,8 +22,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
         public void GetRegistryBaseKeyTestOnlyOneBaseKey(string query, string expectedBaseKey)
         {
             var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey(query);
-            Assert.IsTrue(baseKeyList != null && baseKeyList.Count() == 1);
-            Assert.AreEqual(expectedBaseKey, baseKeyList?.FirstOrDefault()?.Name ?? string.Empty);
+            Assert.IsTrue(baseKeyList.Count() == 1);
+            Assert.AreEqual(expectedBaseKey, baseKeyList.FirstOrDefault().Name);
         }
 
         [TestMethod]
@@ -31,12 +31,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
         {
             var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey("HKC\\Control Panel\\Accessibility"); /* #no-spell-check-line */
 
-            Assert.IsTrue(baseKeyList != null && baseKeyList.Count() > 1);
+            Assert.IsTrue(baseKeyList.Count() > 1);
 
-            var list = baseKeyList?.Select(found => found.Name);
-            Assert.IsTrue(list?.Contains("HKEY_CLASSES_ROOT"));
-            Assert.IsTrue(list?.Contains("HKEY_CURRENT_CONFIG"));
-            Assert.IsTrue(list?.Contains("HKEY_CURRENT_USER"));
+            var list = baseKeyList.Select(found => found.Name);
+            Assert.IsTrue(list.Contains("HKEY_CLASSES_ROOT"));
+            Assert.IsTrue(list.Contains("HKEY_CURRENT_CONFIG"));
+            Assert.IsTrue(list.Contains("HKEY_CURRENT_USER"));
         }
 
         [TestMethod]

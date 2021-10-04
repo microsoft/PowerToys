@@ -38,5 +38,11 @@ namespace FancyZonesEditor
         }
 
         private GridLayoutModel _stashedModel;
+
+        // This is required to fix a WPF rendering bug when using custom chrome
+        private void EditorWindow_ContentRendered(object sender, System.EventArgs e)
+        {
+            InvalidateVisual();
+        }
     }
 }

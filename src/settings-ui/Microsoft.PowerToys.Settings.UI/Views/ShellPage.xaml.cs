@@ -8,7 +8,10 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Windows.Data.Json;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
+using WinUI = Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -156,10 +159,74 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             shellFrame.Navigate(typeof(GeneralPage));
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
-        private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        private void OobeButton_Click(object sender, RoutedEventArgs e)
         {
-            scrollViewer.ChangeView(null, 0, null, true);
+            OpenOobeWindowCallback();
+        }
+
+        private bool navigationViewInitialStateProcessed; // avoid announcing initial state of the navigation pane.
+
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
+#pragma warning disable CA1822 // Mark members as static
+        private void NavigationView_PaneOpened(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
+        {
+            if (!navigationViewInitialStateProcessed)
+            {
+                navigationViewInitialStateProcessed = true;
+                return;
+            }
+
+            var peer = FrameworkElementAutomationPeer.FromElement(sender);
+            if (peer == null)
+            {
+                peer = FrameworkElementAutomationPeer.CreatePeerForElement(sender);
+            }
+
+            if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
+            {
+                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+                peer.RaiseNotificationEvent(
+                    AutomationNotificationKind.ActionCompleted,
+                    AutomationNotificationProcessing.ImportantMostRecent,
+                    loader.GetString("Shell_NavigationMenu_Announce_Open"),
+                    "navigationMenuPaneOpened");
+            }
+        }
+
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
+        private void NavigationView_PaneClosed(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
+        {
+            if (!navigationViewInitialStateProcessed)
+            {
+                navigationViewInitialStateProcessed = true;
+                return;
+            }
+
+            var peer = FrameworkElementAutomationPeer.FromElement(sender);
+            if (peer == null)
+            {
+                peer = FrameworkElementAutomationPeer.CreatePeerForElement(sender);
+            }
+
+            if (AutomationPeer.ListenerExists(AutomationEvents.MenuClosed))
+            {
+                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
+                peer.RaiseNotificationEvent(
+                    AutomationNotificationKind.ActionCompleted,
+                    AutomationNotificationProcessing.ImportantMostRecent,
+                    loader.GetString("Shell_NavigationMenu_Announce_Collapse"),
+                    "navigationMenuPaneClosed");
+            }
+        }
+
+        private void OOBEItem_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            OpenOobeWindowCallback();
+        }
+
+        private async void FeedbackItem_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
         }
     }
 }

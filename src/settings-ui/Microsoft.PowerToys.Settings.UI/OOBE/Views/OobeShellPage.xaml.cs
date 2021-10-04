@@ -5,9 +5,11 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Windows.ApplicationModel.Resources;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
@@ -53,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             DataContext = ViewModel;
             OobeShellHandler = this;
-
+            UpdateUITheme();
             Modules = new ObservableCollection<OobePowerToysModule>();
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
 
@@ -177,6 +179,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/OOBEShortcutGuide.png",
                 Link = "https://aka.ms/PowerToysOverview_ShortcutGuide",
             });
+
+            // TODO(yuyoyuppe): uncomment when VCM should be enabled
             /* Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_VideoConference"),
@@ -225,6 +229,22 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                 case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
                 case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
+            }
+        }
+
+        public void UpdateUITheme()
+        {
+            switch (SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Theme.ToUpperInvariant())
+            {
+                case "LIGHT":
+                    this.RequestedTheme = ElementTheme.Light;
+                    break;
+                case "DARK":
+                    this.RequestedTheme = ElementTheme.Dark;
+                    break;
+                case "SYSTEM":
+                    this.RequestedTheme = ElementTheme.Default;
+                    break;
             }
         }
     }

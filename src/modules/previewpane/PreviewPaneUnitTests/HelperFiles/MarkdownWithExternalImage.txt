@@ -1,2 +1,0 @@
-﻿![Minion](https://octodex.github.com/images/minion.png)
-<script>alert("hello")</script>

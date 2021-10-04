@@ -5,10 +5,12 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
@@ -29,8 +31,10 @@ namespace PowerLauncher
         private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed;
+        private HwndSource _hwndSource;
         private Timer _firstDeleteTimer = new Timer();
         private bool _coldStateHotkeyPressed;
+        private bool _disposedValue;
 
         public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
             : this()
@@ -93,6 +97,41 @@ namespace PowerLauncher
             Activate();
         }
 
+        private const string EnvironmentChangeType = "Environment";
+
+#pragma warning disable CA1801 // Review unused parameters
+        public IntPtr ProcessWindowMessages(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
+#pragma warning restore CA1801 // Review unused parameters
+        {
+            switch ((WM)msg)
+            {
+                case WM.SETTINGCHANGE:
+                    string changeType = Marshal.PtrToStringUni(lparam);
+                    if (changeType == EnvironmentChangeType)
+                    {
+                        Log.Info("Reload environment", typeof(EnvironmentHelper));
+                        EnvironmentHelper.UpdateEnvironment();
+                        handled = true;
+                    }
+
+                    break;
+                case WM.HOTKEY:
+                    handled = _viewModel.ProcessHotKeyMessages(wparam, lparam);
+                    break;
+            }
+
+            return IntPtr.Zero;
+        }
+
+        private void OnSourceInitialized(object sender, EventArgs e)
+        {
+            _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+            _hwndSource.AddHook(ProcessWindowMessages);
+
+            // Call RegisterHotKey only after a window handle can be used, so that a global hotkey can be registered.
+            _viewModel.RegisterHotkey(_hwndSource.Handle);
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             WindowsInteropHelper.DisableControlBox(this);
@@ -116,6 +155,7 @@ namespace PowerLauncher
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             _viewModel.MainWindowVisibility = Visibility.Collapsed;
+            _viewModel.LoadedAtLeastOnce = true;
 
             BringProcessToForeground();
         }
@@ -358,8 +398,6 @@ namespace PowerLauncher
             }
         }
 
-        private bool disposedValue;
-
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = (TextBox)sender;
@@ -450,7 +488,7 @@ namespace PowerLauncher
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -458,12 +496,14 @@ namespace PowerLauncher
                     {
                         _firstDeleteTimer.Dispose();
                     }
+
+                    _hwndSource?.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
                 _firstDeleteTimer = null;
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
@@ -478,6 +518,12 @@ namespace PowerLauncher
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private void OnClosed(object sender, EventArgs e)
+        {
+            _hwndSource.RemoveHook(ProcessWindowMessages);
+            _hwndSource = null;
         }
     }
 }

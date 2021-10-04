@@ -37,7 +37,6 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             DataContextChanged += LayoutPreview_DataContextChanged;
-            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
         }
 
         public void UpdatePreview()
@@ -60,7 +59,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        public void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == PropertyZoneCountID)
             {

@@ -1,24 +1,25 @@
-﻿// Copyright (c) Brice Lambson
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System;
-using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ImageResizer.Properties;
 using ImageResizer.Test;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Models
 {
+    [TestClass]
     public class ResizeOperationTests : IDisposable
     {
         private readonly TestDirectory _directory = new TestDirectory();
         private bool disposedValue;
 
-        [Fact]
+        [TestMethod]
         public void ExecuteCopiesFrameMetadata()
         {
             var operation = new ResizeOperation("Test.jpg", _directory, Settings());
@@ -27,10 +28,10 @@ namespace ImageResizer.Models
 
             AssertEx.Image(
                 _directory.File(),
-                image => Assert.Equal("Test", ((BitmapMetadata)image.Frames[0].Metadata).Comment));
+                image => Assert.AreEqual("Test", ((BitmapMetadata)image.Frames[0].Metadata).Comment));
         }
 
-        [Fact]
+        [TestMethod]
         public void ExecuteCopiesFrameMetadataExceptWhenMetadataCannotBeCloned()
         {
             var operation = new ResizeOperation("TestMetadataIssue2447.jpg", _directory, Settings());
@@ -39,20 +40,20 @@ namespace ImageResizer.Models
 
             AssertEx.Image(
                 _directory.File(),
-                image => Assert.Null(((BitmapMetadata)image.Frames[0].Metadata).CameraModel));
+                image => Assert.IsNull(((BitmapMetadata)image.Frames[0].Metadata).CameraModel));
         }
 
-        [Fact]
+        [TestMethod]
         public void ExecuteKeepsDateModified()
         {
             var operation = new ResizeOperation("Test.png", _directory, Settings(s => s.KeepDateModified = true));
 
             operation.Execute();
 
-            Assert.Equal(File.GetLastWriteTimeUtc("Test.png"), File.GetLastWriteTimeUtc(_directory.File()));
+            Assert.AreEqual(File.GetLastWriteTimeUtc("Test.png"), File.GetLastWriteTimeUtc(_directory.File()));
         }
 
-        [Fact]
+        [TestMethod]
         public void ExecuteKeepsDateModifiedWhenReplacingOriginals()
         {
             var path = Path.Combine(_directory, "Test.png");
@@ -72,10 +73,10 @@ namespace ImageResizer.Models
 
             operation.Execute();
 
-            Assert.Equal(originalDateModified, File.GetLastWriteTimeUtc(_directory.File()));
+            Assert.AreEqual(originalDateModified, File.GetLastWriteTimeUtc(_directory.File()));
         }
 
-        [Fact]
+        [TestMethod]
         public void ExecuteReplacesOriginals()
         {
             var path = Path.Combine(_directory, "Test.png");
@@ -85,10 +86,10 @@ namespace ImageResizer.Models
 
             operation.Execute();
 
-            AssertEx.Image(_directory.File(), image => Assert.Equal(96, image.Frames[0].PixelWidth));
+            AssertEx.Image(_directory.File(), image => Assert.AreEqual(96, image.Frames[0].PixelWidth));
         }
 
-        [Fact]
+        [TestMethod]
         public void ExecuteTransformsEachFrame()
         {
             var operation = new ResizeOperation("Test.gif", _directory, Settings());
@@ -99,12 +100,12 @@ namespace ImageResizer.Models
                 _directory.File(),
                 image =>
                 {
-                    Assert.Equal(2, image.Frames.Count);
-                    AssertEx.All(image.Frames, frame => Assert.Equal(96, frame.PixelWidth));
+                    Assert.AreEqual(2, image.Frames.Count);
+                    AssertEx.All(image.Frames, frame => Assert.AreEqual(96, frame.PixelWidth));
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void ExecuteUsesFallbackEncoder()
         {
             var operation = new ResizeOperation(
@@ -114,10 +115,10 @@ namespace ImageResizer.Models
 
             operation.Execute();
 
-            Assert.Contains("Test (Test).png", _directory.FileNames);
+            CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test).png");
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformIgnoresOrientationWhenLandscapeToPortrait()
         {
             var operation = new ResizeOperation(
@@ -137,12 +138,12 @@ namespace ImageResizer.Models
                 _directory.File(),
                 image =>
                 {
-                    Assert.Equal(192, image.Frames[0].PixelWidth);
-                    Assert.Equal(96, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(192, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformIgnoresOrientationWhenPortraitToLandscape()
         {
             var operation = new ResizeOperation(
@@ -162,12 +163,12 @@ namespace ImageResizer.Models
                 _directory.File(),
                 image =>
                 {
-                    Assert.Equal(96, image.Frames[0].PixelWidth);
-                    Assert.Equal(192, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(192, image.Frames[0].PixelHeight);
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformIgnoresIgnoreOrientationWhenAuto()
         {
             var operation = new ResizeOperation(
@@ -187,12 +188,12 @@ namespace ImageResizer.Models
                 _directory.File(),
                 image =>
                 {
-                    Assert.Equal(96, image.Frames[0].PixelWidth);
-                    Assert.Equal(48, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(48, image.Frames[0].PixelHeight);
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformIgnoresIgnoreOrientationWhenPercent()
         {
             var operation = new ResizeOperation(
@@ -214,12 +215,12 @@ namespace ImageResizer.Models
                 _directory.File(),
                 image =>
                 {
-                    Assert.Equal(96, image.Frames[0].PixelWidth);
-                    Assert.Equal(192, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(192, image.Frames[0].PixelHeight);
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformHonorsShrinkOnly()
         {
             var operation = new ResizeOperation(
@@ -239,12 +240,12 @@ namespace ImageResizer.Models
                 _directory.File(),
                 image =>
                 {
-                    Assert.Equal(192, image.Frames[0].PixelWidth);
-                    Assert.Equal(96, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(192, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformIgnoresShrinkOnlyWhenPercent()
         {
             var operation = new ResizeOperation(
@@ -264,12 +265,12 @@ namespace ImageResizer.Models
                 _directory.File(),
                 image =>
                 {
-                    Assert.Equal(256, image.Frames[0].PixelWidth);
-                    Assert.Equal(128, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(256, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(128, image.Frames[0].PixelHeight);
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformHonorsShrinkOnlyWhenAutoHeight()
         {
             var operation = new ResizeOperation(
@@ -287,10 +288,10 @@ namespace ImageResizer.Models
 
             AssertEx.Image(
                 _directory.File(),
-                image => Assert.Equal(192, image.Frames[0].PixelWidth));
+                image => Assert.AreEqual(192, image.Frames[0].PixelWidth));
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformHonorsShrinkOnlyWhenAutoWidth()
         {
             var operation = new ResizeOperation(
@@ -308,10 +309,10 @@ namespace ImageResizer.Models
 
             AssertEx.Image(
                 _directory.File(),
-                image => Assert.Equal(96, image.Frames[0].PixelHeight));
+                image => Assert.AreEqual(96, image.Frames[0].PixelHeight));
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformHonorsUnit()
         {
             var operation = new ResizeOperation(
@@ -327,10 +328,10 @@ namespace ImageResizer.Models
 
             operation.Execute();
 
-            AssertEx.Image(_directory.File(), image => Assert.Equal(image.Frames[0].DpiX, image.Frames[0].PixelWidth, 0));
+            AssertEx.Image(_directory.File(), image => Assert.AreEqual(Math.Ceiling(image.Frames[0].DpiX), image.Frames[0].PixelWidth));
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformHonorsFitWhenFit()
         {
             var operation = new ResizeOperation(
@@ -344,12 +345,12 @@ namespace ImageResizer.Models
                 _directory.File(),
                 image =>
                 {
-                    Assert.Equal(96, image.Frames[0].PixelWidth);
-                    Assert.Equal(48, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(48, image.Frames[0].PixelHeight);
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformHonorsFitWhenFill()
         {
             var operation = new ResizeOperation(
@@ -363,13 +364,13 @@ namespace ImageResizer.Models
                 _directory.File(),
                 image =>
                 {
-                    Assert.Equal(Colors.White, image.Frames[0].GetFirstPixel());
-                    Assert.Equal(96, image.Frames[0].PixelWidth);
-                    Assert.Equal(96, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(Colors.White, image.Frames[0].GetFirstPixel());
+                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void TransformHonorsFitWhenStretch()
         {
             var operation = new ResizeOperation(
@@ -383,13 +384,13 @@ namespace ImageResizer.Models
                 _directory.File(),
                 image =>
                 {
-                    Assert.Equal(Colors.Black, image.Frames[0].GetFirstPixel());
-                    Assert.Equal(96, image.Frames[0].PixelWidth);
-                    Assert.Equal(96, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(Colors.Black, image.Frames[0].GetFirstPixel());
+                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void GetDestinationPathUniquifiesOutputFilename()
         {
             File.WriteAllBytes(Path.Combine(_directory, "Test (Test).png"), Array.Empty<byte>());
@@ -398,10 +399,10 @@ namespace ImageResizer.Models
 
             operation.Execute();
 
-            Assert.Contains("Test (Test) (1).png", _directory.FileNames);
+            CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test) (1).png");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetDestinationPathUniquifiesOutputFilenameAgain()
         {
             File.WriteAllBytes(Path.Combine(_directory, "Test (Test).png"), Array.Empty<byte>());
@@ -411,10 +412,10 @@ namespace ImageResizer.Models
 
             operation.Execute();
 
-            Assert.Contains("Test (Test) (2).png", _directory.FileNames);
+            CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test) (2).png");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetDestinationPathUsesFileNameFormat()
         {
             var operation = new ResizeOperation(
@@ -424,10 +425,10 @@ namespace ImageResizer.Models
 
             operation.Execute();
 
-            Assert.Contains("Test_Test_96_96_96_48.png", _directory.FileNames);
+            CollectionAssert.Contains(_directory.FileNames.ToList(), "Test_Test_96_96_96_48.png");
         }
 
-        [Fact]
+        [TestMethod]
         public void ExecuteHandlesDirectoriesInFileNameFormat()
         {
             var operation = new ResizeOperation(
@@ -437,7 +438,7 @@ namespace ImageResizer.Models
 
             operation.Execute();
 
-            Assert.True(File.Exists(_directory + @"\Directory\Test (Test).png"));
+            Assert.IsTrue(File.Exists(_directory + @"\Directory\Test (Test).png"));
         }
 
         private static Settings Settings(Action<Settings> action = null)

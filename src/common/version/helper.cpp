@@ -5,28 +5,65 @@
 #include <algorithm>
 #include <sstream>
 
-VersionHelper::VersionHelper(std::string str)
-{
-    // Remove whitespaces chars and a leading 'v'
-    str = left_trim<char>(trim<char>(str), "v");
-    // Replace '.' with spaces
-    replace_chars(str, ".", ' ');
-
-    std::istringstream ss{ str };
-    ss >> major;
-    ss >> minor;
-    ss >> revision;
-    if (ss.fail() || !ss.eof())
-    {
-        throw std::logic_error("VersionHelper: couldn't parse the supplied version string");
-    }
-}
-
 VersionHelper::VersionHelper(const size_t major, const size_t minor, const size_t revision) :
     major{ major },
     minor{ minor },
     revision{ revision }
 {
+}
+
+template<typename CharT>
+struct Constants;
+
+template<>
+struct Constants<char>
+{
+    static inline const char* V = "v";
+    static inline const char* DOT = ".";
+    static inline const char SPACE = ' ';
+};
+
+template<>
+struct Constants<wchar_t>
+{
+    static inline const wchar_t* V = L"v";
+    static inline const wchar_t* DOT = L".";
+    static inline const wchar_t SPACE = L' ';
+};
+
+template<typename CharT>
+std::optional<VersionHelper> fromString(std::basic_string_view<CharT> str)
+{
+    try
+    {
+        str = left_trim<CharT>(trim<CharT>(str), Constants<CharT>::V);
+        std::basic_string<CharT> spacedStr{ str };
+        replace_chars<CharT>(spacedStr, Constants<CharT>::DOT, Constants<CharT>::SPACE);
+
+        std::basic_istringstream<CharT> ss{ spacedStr };
+        VersionHelper result{ 0, 0, 0 };
+        ss >> result.major;
+        ss >> result.minor;
+        ss >> result.revision;
+        if (!ss.fail() && ss.eof())
+        {
+            return result;
+        }
+    }
+    catch (...)
+    {
+    }
+    return std::nullopt;
+}
+
+std::optional<VersionHelper> VersionHelper::fromString(std::string_view s)
+{
+    return ::fromString(s);
+}
+
+std::optional<VersionHelper> VersionHelper::fromString(std::wstring_view s)
+{
+    return ::fromString(s);
 }
 
 std::wstring VersionHelper::toWstring() const

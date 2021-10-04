@@ -12,6 +12,7 @@ Acceleratorkeys
 ACCEPTFILES
 accessibile
 accessibilityinsights
+Accessible
 Acl
 aclapi
 AColumn
@@ -102,6 +103,7 @@ asm
 asmx
 aspnet
 aspx
+ASSOCCHANGED
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -124,8 +126,9 @@ AUTOMATIONPROPERTIES
 Autorun
 AUTOSIZECOLUMNS
 AUTOUPDATE
+available
 AValid
-avialable
+awakeness
 awakeversion
 AWAYMODE
 AYUV
@@ -227,10 +230,14 @@ CHECKCANCELED
 CHILDACTIVATE
 CHILDWINDOW
 chrdavis
+chrisharris
+chromaticities
 chrono
 Chrzan
 chrzan
 CHT
+cielab
+CIEXYZ
 CImage
 cinttypes
 cla
@@ -269,6 +276,7 @@ codereview
 Codespaces
 COINIT
 colorconv
+colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
@@ -285,6 +293,7 @@ comhost
 cominterop
 commandline
 commctrl
+companding
 Compat
 COMPOSITIONFULL
 comsupp
@@ -371,7 +380,6 @@ CXSMICON
 CXVIRTUALSCREEN
 cxx
 cxxopts
-CYMK
 CYSMICON
 cziplib
 Dac
@@ -392,6 +400,7 @@ dbg
 Dbghelp
 DBLCLKS
 DBLEPSILON
+dchristensen
 DCOM
 dcomp
 DComposition
@@ -399,6 +408,8 @@ ddd
 ddee
 ddf
 Deact
+debian
+DECLAR
 declspec
 decltype
 Dedup
@@ -419,6 +430,7 @@ Delimarsky
 delims
 dend
 DENORMAL
+Deondre
 depersist
 deprioritized
 deps
@@ -559,6 +571,7 @@ errc
 errorlevel
 ERRORMESSAGE
 ERRORTITLE
+ESettings
 esize
 estdir
 etcore
@@ -646,12 +659,14 @@ FOF
 FOFX
 FOLDERID
 folderpath
+FORCEMINIMIZE
 FORCEOFFLINE
 foreach
 formatetc
 FPower
 FRAMECHANGED
 FRAMEDOWNLOAD
+franky
 Froml
 fstream
 ftp
@@ -664,6 +679,7 @@ Functiondiscoverykeys
 fwlink
 fwrite
 fxcop
+FZE
 gabime
 GAC
 gacutil
@@ -729,6 +745,7 @@ HDN
 hdrop
 HDS
 HEB
+Heiko
 helptext
 HEVC
 hfile
@@ -801,6 +818,7 @@ Hyperlink
 IAction
 IActivated
 IAnimatable
+ianjoneill
 IApp
 IApplication
 IAppx
@@ -837,6 +855,7 @@ IDirectory
 IDispatch
 IDisposable
 idl
+IDLIST
 IDOK
 IDOn
 IDR
@@ -979,6 +998,7 @@ IRepository
 IResult
 ISavable
 isbi
+iss
 ISearch
 IService
 isetting
@@ -1021,6 +1041,7 @@ ixx
 IYUV
 IZone
 IZoom
+jakeoeding
 JArray
 jarro
 Jarryd
@@ -1045,6 +1066,7 @@ jyuwono
 kbd
 KBDLLHOOKSTRUCT
 kbm
+KERNELBASE
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
@@ -1253,6 +1275,7 @@ mii
 MIIM
 millis
 mimetype
+mindaro
 Minimizeallwindows
 MINIMIZEBOX
 miniz
@@ -1298,8 +1321,10 @@ mscorlib
 msdata
 MSDN
 msedge
+MSGFLT
 mshtmdid
 msi
+MSIFASTINSTALL
 MSIHANDLE
 MSIINSTALLER
 MSIL
@@ -1307,6 +1332,7 @@ msiquery
 MSIRESTARTMANAGERCONTROL
 msix
 msixbundle
+MSIXCA
 MSIXVERSION
 MSLLHOOKSTRUCT
 Mso
@@ -1435,8 +1461,10 @@ ntdll
 NTFS
 NTSTATUS
 nuget
+null
 nullopt
 nullptr
+numberbox
 NUMLOCK
 NUMPAD
 nunit
@@ -1519,6 +1547,7 @@ PCWSTR
 pdb
 pdbonly
 pdf
+pdfpreviewhandler
 pdo
 pdto
 pdtobj
@@ -1678,6 +1707,7 @@ RBUTTONUP
 rclsid
 RCONTROL
 RCtrl
+rdeveen
 RDW
 readme
 READMODE
@@ -1841,6 +1871,8 @@ sfgao
 SFGAOF
 SHAREIMAGELISTS
 sharpkeys
+SHCNE
+SHCNF
 shcore
 shellapi
 SHELLDLL
@@ -1873,7 +1905,9 @@ SHOWDEFAULT
 SHOWELEVATIONPROMPT
 SHOWMAXIMIZED
 SHOWMINIMIZED
+SHOWMINNOACTIVE
 SHOWNA
+SHOWNOACTIVATE
 SHOWNORMAL
 SHOWWINDOW
 shtypes
@@ -1912,6 +1946,7 @@ Soref
 SORTDOWN
 SOURCECLIENTAREAONLY
 SOURCEHEADER
+spamming
 spdisp
 spdlog
 spdo
@@ -1935,6 +1970,7 @@ SRCCOPY
 sre
 sregex
 SResize
+SRGB
 srme
 srre
 srw
@@ -2031,6 +2067,7 @@ syslog
 SYSMENU
 systemd
 SYSTEMTIME
+systray
 Tadele
 tadele
 Tahoma
@@ -2093,6 +2130,8 @@ todo
 toggleswitch
 toolbar
 Toolchain
+toolkitcontrols
+toolkitconverters
 toolset
 toolstrip
 tooltip
@@ -2109,6 +2148,7 @@ traies
 transcoded
 transparrent
 TRAYMOUSEMESSAGE
+triaging
 TRK
 trl
 trunc
@@ -2312,6 +2352,7 @@ WINDOWPOSCHANGED
 WINDOWPOSCHANGING
 Windowsapp
 WINDOWSBUILDNUMBER
+Windowscodecs
 windowsdesktop
 windowssearch
 windowsx
@@ -2370,6 +2411,7 @@ wprintf
 wprp
 wregex
 WResize
+writefile
 wsf
 wsh
 wsl
@@ -2402,6 +2444,7 @@ XDiff
 XDocument
 XElement
 XFile
+xia
 XIncrement
 XInstance
 xlink

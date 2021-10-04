@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 return new List<Result>(0);
             }
 
-            ICollection<KeyValuePair<string, object?>> valueList = new List<KeyValuePair<string, object?>>(key.ValueCount);
+            ICollection<KeyValuePair<string, object>> valueList = new List<KeyValuePair<string, object>>(key.ValueCount);
 
             var resultList = new List<Result>();
 
@@ -116,7 +116,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
                 if (!string.IsNullOrEmpty(searchValue))
                 {
                     var filteredValueName = valueList.Where(found => found.Key.Contains(searchValue, StringComparison.InvariantCultureIgnoreCase));
-                    var filteredValueList = valueList.Where(found => found.Value?.ToString()?.Contains(searchValue, StringComparison.InvariantCultureIgnoreCase) ?? false);
+                    var filteredValueList = valueList.Where(found => found.Value.ToString()?.Contains(searchValue, StringComparison.InvariantCultureIgnoreCase) ?? false);
 
                     valueList = filteredValueName.Concat(filteredValueList).Distinct().ToList();
                 }
@@ -196,7 +196,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// <param name="key">The registry key for the tool-tip</param>
         /// <param name="valueEntry">The value name and value of the registry value</param>
         /// <returns>A tool-tip text</returns>
-        private static string GetToolTipTextForRegistryValue(RegistryKey key, KeyValuePair<string, object?> valueEntry)
+        private static string GetToolTipTextForRegistryValue(RegistryKey key, KeyValuePair<string, object> valueEntry)
         {
             return $"{Resources.KeyName}\t{key.Name}{Environment.NewLine}"
                  + $"{Resources.Name}\t{valueEntry.Key}{Environment.NewLine}"
@@ -210,7 +210,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// <param name="key">The registry key for the sub-title</param>
         /// <param name="valueEntry">The value name and value of the registry value</param>
         /// <returns>A sub-title text</returns>
-        private static string GetSubTileForRegistryValue(RegistryKey key, KeyValuePair<string, object?> valueEntry)
+        private static string GetSubTileForRegistryValue(RegistryKey key, KeyValuePair<string, object> valueEntry)
         {
             return $"{Resources.Type} {ValueHelper.GetType(key, valueEntry.Key)}"
                  + $" - {Resources.Value} {ValueHelper.GetValue(key, valueEntry.Key, 50)}";

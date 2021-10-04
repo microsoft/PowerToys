@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
 using Microsoft.PowerToys.Common.UI;
@@ -57,6 +58,8 @@ namespace FancyZonesEditor
 
         private ThemeManager _themeManager;
 
+        private EventWaitHandle _eventHandle;
+
         public static bool DebugMode
         {
             get
@@ -80,6 +83,15 @@ namespace FancyZonesEditor
             FancyZonesEditorIO = new FancyZonesEditorIO();
             Overlay = new Overlay();
             MainWindowSettings = new MainWindowSettingsModel();
+
+            new Thread(() =>
+            {
+                _eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, interop.Constants.FZEExitEvent());
+                if (_eventHandle.WaitOne())
+                {
+                    Environment.Exit(0);
+                }
+            }).Start();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
@@ -145,6 +157,14 @@ namespace FancyZonesEditor
             Overlay.Show();
         }
 
+        private void OnExit(object sender, ExitEventArgs e)
+        {
+            if (_eventHandle != null)
+            {
+                _eventHandle.Set();
+            }
+        }
+
         public void App_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == System.Windows.Input.Key.LeftShift || e.Key == System.Windows.Input.Key.RightShift)
@@ -158,6 +178,11 @@ namespace FancyZonesEditor
             if (e.Key == System.Windows.Input.Key.LeftShift || e.Key == System.Windows.Input.Key.RightShift)
             {
                 MainWindowSettings.IsShiftKeyPressed = true;
+            }
+            else if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            {
+                e.Handled = true;
+                App.Overlay.FocusEditor();
             }
         }
 

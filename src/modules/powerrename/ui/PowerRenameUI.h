@@ -68,6 +68,7 @@ private:
 
     long m_refCount = 0;
     bool m_canceled = false;
+    std::atomic<bool> m_loadingThread{ false };
     HANDLE m_workerThreadHandle = nullptr;
     CComPtr<IProgressDialog> m_sppd;
 };

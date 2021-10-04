@@ -70,10 +70,17 @@ namespace ColorPicker.Keyboard
             var virtualCode = e.KeyboardData.VirtualCode;
 
             // ESC pressed
-            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape))
+            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape)
+                && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown
+                )
             {
-                e.Handled = _appStateHandler.EndUserSession();
-                return;
+                if (_appStateHandler.IsColorPickerVisible()
+                    || !AppStateHandler.BlockEscapeKeyClosingColorPickerEditor
+                    )
+                {
+                    e.Handled = _appStateHandler.EndUserSession();
+                    return;
+                }
             }
 
             if ((System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())

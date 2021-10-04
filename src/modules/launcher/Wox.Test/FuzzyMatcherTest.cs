@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Wox.Test
 {
-    [TestFixture]
+    [TestClass]
     public class FuzzyMatcherTest
     {
         private const string Chrome = "Chrome";
@@ -49,7 +49,7 @@ namespace Wox.Test
             return listToReturn;
         }
 
-        [Test]
+        [TestMethod]
         public void MatchTest()
         {
             var sources = new List<string>
@@ -80,22 +80,24 @@ namespace Wox.Test
             Assert.IsTrue(results[2].Title == "file open in browser-test");
         }
 
-        [TestCase("Chrome")]
+        [DataTestMethod]
+        [DataRow("Chrome")]
         public void WhenGivenNotAllCharactersFoundInSearchStringThenShouldReturnZeroScore(string searchString)
         {
             var compareString = "Can have rum only in my glass";
             var matcher = new StringMatcher();
             var scoreResult = matcher.FuzzyMatch(searchString, compareString).RawScore;
 
-            Assert.True(scoreResult == 0);
+            Assert.IsTrue(scoreResult == 0);
         }
 
-        [TestCase("chr")]
-        [TestCase("chrom")]
-        [TestCase("chrome")]
-        [TestCase("cand")]
-        [TestCase("cpywa")]
-        [TestCase("ccs")]
+        [DataTestMethod]
+        [DataRow("chr")]
+        [DataRow("chrom")]
+        [DataRow("chrome")]
+        [DataRow("cand")]
+        [DataRow("cpywa")]
+        [DataRow("ccs")]
         public void WhenGivenStringsAndAppliedPrecisionFilteringThenShouldReturnGreaterThanPrecisionScoreResults(string searchTerm)
         {
             var results = new List<Result>();
@@ -129,7 +131,8 @@ namespace Wox.Test
             }
         }
 
-        [TestCase("vim", "Vim", "ignoreDescription", "ignore.exe", "Vim Diff", "ignoreDescription", "ignore.exe")]
+        [DataTestMethod]
+        [DataRow("vim", "Vim", "ignoreDescription", "ignore.exe", "Vim Diff", "ignoreDescription", "ignore.exe")]
         public void WhenMultipleResultsExactMatchingResultShouldHaveGreatestScore(string queryString, string firstName, string firstDescription, string firstExecutableName, string secondName, string secondDescription, string secondExecutableName)
         {
             // Act
@@ -149,16 +152,17 @@ namespace Wox.Test
             Assert.IsTrue(firstScore > secondScore);
         }
 
-        [TestCase("goo", "Google Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("chr", "Google Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
-        [TestCase("chr", "Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("chr", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("chr", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
-        [TestCase("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.None, true)]
-        [TestCase("ccs", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Low, true)]
-        [TestCase("cand", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("cand", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [DataTestMethod]
+        [DataRow("goo", "Google Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("chr", "Google Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
+        [DataRow("chr", "Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("chr", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [DataRow("chr", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
+        [DataRow("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [DataRow("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.None, true)]
+        [DataRow("ccs", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Low, true)]
+        [DataRow("cand", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("cand", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, false)]
         public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(
             string queryString,
             string compareString,
@@ -185,23 +189,24 @@ namespace Wox.Test
                 $"{$"Query:{queryString}{Environment.NewLine} "}{$"Compare:{compareString}{Environment.NewLine}"}{$"Raw Score: {matchResult.RawScore}{Environment.NewLine}"}{$"Precision Score: {(int)expectedPrecisionScore}"}");
         }
 
-        [TestCase("exce", "OverLeaf-Latex: An online LaTeX editor", StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("term", "Windows Terminal (Preview)", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql s managa", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("sql' s manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("sql s manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql serv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql serv man", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sql studio", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("mic", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("chr", "Shutdown", StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("mssms", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("chr", "Change settings for text-to-speech and for speech recognition (if installed).", StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("ch r", "Change settings for text-to-speech and for speech recognition (if installed).", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("a test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataTestMethod]
+        [DataRow("exce", "OverLeaf-Latex: An online LaTeX editor", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [DataRow("term", "Windows Terminal (Preview)", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("sql s managa", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
+        [DataRow("sql' s manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
+        [DataRow("sql s manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("sql manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("sql", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("sql serv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("sql serv man", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("sql studio", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("mic", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("chr", "Shutdown", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [DataRow("mssms", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
+        [DataRow("chr", "Change settings for text-to-speech and for speech recognition (if installed).", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [DataRow("ch r", "Change settings for text-to-speech and for speech recognition (if installed).", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("a test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
         public void WhenGivenQueryShouldReturnResultsContainingAllQuerySubstrings(
             string queryString,
             string compareString,
@@ -228,8 +233,9 @@ namespace Wox.Test
                 $"{$"Query:{queryString}{Environment.NewLine} "}{$"Compare:{compareString}{Environment.NewLine}"}{$"Raw Score: {matchResult.RawScore}{Environment.NewLine}"}{$"Precision Score: {(int)expectedPrecisionScore}"}");
         }
 
-        [TestCase("Windows Terminal", "Windows_Terminal", "term")]
-        [TestCase("Windows Terminal", "WindowsTerminal", "term")]
+        [DataTestMethod]
+        [DataRow("Windows Terminal", "Windows_Terminal", "term")]
+        [DataRow("Windows Terminal", "WindowsTerminal", "term")]
         public void FuzzyMatchingScoreShouldBeHigherWhenPreceedingCharacterIsSpace(string firstCompareStr, string secondCompareStr, string query)
         {
             // Arrange

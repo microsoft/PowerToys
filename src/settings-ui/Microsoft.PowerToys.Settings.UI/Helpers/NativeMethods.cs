@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
@@ -20,6 +21,12 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         [DllImport("user32.dll")]
         public static extern bool AllowSetForegroundWindow(int dwProcessId);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        public static extern IntPtr LoadLibrary(string dllToLoad);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        public static extern bool FreeLibrary(IntPtr hModule);
 #pragma warning restore CA1401 // P/Invokes should not be visible
     }
 }

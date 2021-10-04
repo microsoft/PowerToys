@@ -1,5 +1,6 @@
 #include "VideoCaptureDeviceList.h"
 #include "Logging.h"
+#include "MediaFoundationAPIProvider.h"
 #include <mfapi.h>
 #include <Mfidl.h>
 
@@ -32,11 +33,17 @@ HRESULT VideoCaptureDeviceList::EnumerateDevices()
     HRESULT hr = S_OK;
     wil::com_ptr<IMFAttributes> pAttributes;
     Clear();
+    auto mfplatAPI = mfplatAPIProvider::create();
+    auto mfAPI = mfAPIProvider::create();
+    if (!mfplatAPI || !mfAPI)
+    {
+        return ERROR_FILE_NOT_FOUND;
+    }
 
     // Initialize an attribute store. We will use this to
     // specify the enumeration parameters.
 
-    hr = MFCreateAttributes(&pAttributes, 1);
+    hr = mfplatAPI->MFCreateAttributes(&pAttributes, 1);
 
     // Ask for source type = video capture devices
     if (SUCCEEDED(hr))
@@ -52,13 +59,12 @@ HRESULT VideoCaptureDeviceList::EnumerateDevices()
     // Enumerate devices.
     if (SUCCEEDED(hr))
     {
-        hr = MFEnumDeviceSources(pAttributes.get(), &m_ppDevices, &m_numberDevices);
+        hr = mfAPI->MFEnumDeviceSources(pAttributes.get(), &m_ppDevices, &m_numberDevices);
     }
     else
     {
         LOG("VideoCaptureDeviceList::EnumerateDevices(): Couldn't SetGUID");
     }
-
 
     if (FAILED(hr))
     {

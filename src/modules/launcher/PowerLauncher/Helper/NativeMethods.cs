@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using Microsoft.Win32.SafeHandles;
 using static PowerLauncher.Helper.WindowsInteropHelper;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
@@ -29,6 +30,21 @@ namespace PowerLauncher.Helper
 
         [DllImport("user32.dll")]
         internal static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+
+        [DllImport("user32")]
+        internal static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+        [DllImport("user32")]
+        internal static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool SetProcessDPIAware();
+
+        [DllImport("user32.dll")]
+        internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
@@ -85,6 +101,34 @@ namespace PowerLauncher.Helper
         }
     }
 
+    // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerhotkey
+    internal enum HOTKEY_MODIFIERS : uint
+    {
+        ALT = 0x0001,
+        CONTROL = 0x0002,
+        SHIFT = 0x0004,
+        WIN = 0x0008,
+        NOREPEAT = 0x4000,
+        CHECK_FLAGS = 0x000F, // modifiers to compare between keys.
+    }
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
+    internal enum SW : int
+    {
+        HIDE = 0x0000,
+        SHOWNORMAL = 0x0001,
+        SHOWMINIMIZED = 0x0002,
+        SHOWMAXIMIZED = 0x0003,
+        SHOWNOACTIVATE = 0x0004,
+        SHOW = 0x0005,
+        MINIMIZE = 0x0006,
+        SHOWMINNOACTIVE = 0x0007,
+        SHOWNA = 0x0008,
+        RESTORE = 0x0009,
+        SHOWDEFAULT = 0x000A,
+        FORCEMINIMIZE = 0x000B,
+    }
+
     internal enum WM
     {
         NULL = 0x0000,
@@ -108,6 +152,7 @@ namespace PowerLauncher.Helper
         ERASEBKGND = 0x0014,
         SYSCOLORCHANGE = 0x0015,
         SHOWWINDOW = 0x0018,
+        SETTINGCHANGE = 0x001A,
         ACTIVATEAPP = 0x001C,
         SETCURSOR = 0x0020,
         MOUSEACTIVATE = 0x0021,
@@ -182,6 +227,8 @@ namespace PowerLauncher.Helper
         IME_KEYUP = 0x0291,
 
         NCMOUSELEAVE = 0x02A2,
+
+        HOTKEY = 0x0312,
 
         DWMCOMPOSITIONCHANGED = 0x031E,
         DWMNCRENDERINGCHANGED = 0x031F,

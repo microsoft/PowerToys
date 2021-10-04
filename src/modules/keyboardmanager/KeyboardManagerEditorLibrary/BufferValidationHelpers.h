@@ -14,6 +14,9 @@ namespace BufferValidationHelpers
         ClearUnusedDropDowns
     };
 
+    // Helper function to verify if a key is being remapped to/from its combined key
+    bool IsKeyRemappingToItsCombinedKey(DWORD keyCode1, DWORD keyCode2);
+
     // Function to validate and update an element of the key remap buffer when the selection has changed
     ShortcutErrorType ValidateAndUpdateKeyBufferElement(int rowIndex, int colIndex, int selectedKeyCode, RemapBuffer& remapBuffer);
 

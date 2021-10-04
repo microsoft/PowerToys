@@ -39,36 +39,29 @@ inline std::wstring get_process_path(HWND window) noexcept
     {
         // It is a UWP app. We will enumerate the windows and look for one created
         // by something with a different PID
-        // It might take a time to connect the process. That's the reason for the retry loop here
         DWORD new_pid = pid;
 
-        const int retryAttempts = 10;
-        for (int retry = 0; retry < retryAttempts && pid == new_pid; retry++)
+        EnumChildWindows(
+            window, [](HWND hwnd, LPARAM param) -> BOOL {
+                auto new_pid_ptr = reinterpret_cast<DWORD*>(param);
+                DWORD pid;
+                GetWindowThreadProcessId(hwnd, &pid);
+                if (pid != *new_pid_ptr)
+                {
+                    *new_pid_ptr = pid;
+                    return FALSE;
+                }
+                else
+                {
+                    return TRUE;
+                }
+            },
+            reinterpret_cast<LPARAM>(&new_pid));
+
+        // If we have a new pid, get the new name.
+        if (new_pid != pid)
         {
-            EnumChildWindows(
-                window, [](HWND hwnd, LPARAM param) -> BOOL {
-                    auto new_pid_ptr = reinterpret_cast<DWORD*>(param);
-                    DWORD pid;
-                    GetWindowThreadProcessId(hwnd, &pid);
-                    if (pid != *new_pid_ptr)
-                    {
-                        *new_pid_ptr = pid;
-                        return FALSE;
-                    }
-                    else
-                    {
-                        return TRUE;
-                    }
-                },
-                reinterpret_cast<LPARAM>(&new_pid));
-
-            // If we have a new pid, get the new name.
-            if (new_pid != pid)
-            {
-                return get_process_path(new_pid);
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            return get_process_path(new_pid);
         }
     }
 

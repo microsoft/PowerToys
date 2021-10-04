@@ -163,12 +163,31 @@ private:
             m_hProcess = sei.hProcess;
         }
     }
-    
+
+    void SendFZECloseEvent()
+    {
+        auto exitEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::FZE_EXIT_EVENT);
+        if (!exitEvent)
+        {
+            Logger::warn(L"Failed to create exitEvent. {}", get_last_error_or_default(GetLastError()));
+        }
+        else
+        {
+            Logger::trace(L"Signaled exitEvent");
+            if (!SetEvent(exitEvent))
+            {
+                Logger::warn(L"Failed to signal exitEvent. {}", get_last_error_or_default(GetLastError()));
+            }
+
+            ResetEvent(exitEvent);
+            CloseHandle(exitEvent);
+        }
+    }
+
     void Disable(bool const traceEvent)
     {
         m_enabled = false;
         // Log telemetry
-
         if (traceEvent)
         {
             Trace::FancyZones::EnableFancyZones(false);
@@ -178,14 +197,15 @@ private:
         {
             ResetEvent(m_toggleEditorEvent);
         }
-        
+
         if (m_hProcess)
         {
             TerminateProcess(m_hProcess, 0);
+            SendFZECloseEvent();
             m_hProcess = nullptr;
-        }        
+        }
     }
-    
+
     std::wstring app_name;
     //contains the non localized key of the powertoy
     std::wstring app_key;

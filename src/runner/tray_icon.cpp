@@ -2,13 +2,15 @@
 #include "Generated files/resource.h"
 #include "settings_window.h"
 #include "tray_icon.h"
-#include "CentralizedHotkeys.h"
+#include "centralized_hotkeys.h"
+#include "centralized_kb_hook.h"
 #include <Windows.h>
 
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/version/version.h>
 #include <common/logger/logger.h>
+#include <common/utils/elevation.h>
 
 namespace
 {
@@ -60,12 +62,15 @@ void change_menu_item_text(const UINT item_id, wchar_t* new_text)
     SetMenuItemInfoW(h_menu, item_id, false, &menuitem);
 }
 
-void handle_tray_command(HWND window, const WPARAM command_id)
+void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
 {
     switch (command_id)
     {
     case ID_SETTINGS_MENU_COMMAND:
-        open_settings_window();
+        {
+            std::wstring settings_window{ winrt::to_hstring(ESettingsWindowNames_to_string(static_cast<ESettingsWindowNames>(lparam))) };
+            open_settings_window(settings_window);
+        }
         break;
     case ID_EXIT_MENU_COMMAND:
         if (h_menu)
@@ -84,6 +89,7 @@ void handle_tray_command(HWND window, const WPARAM command_id)
         }
         break;
     case ID_REPORT_BUG_COMMAND:
+    {        
         std::wstring bug_report_path = get_module_folderpath();
         bug_report_path += L"\\Tools\\BugReportTool.exe";
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
@@ -99,6 +105,14 @@ void handle_tray_command(HWND window, const WPARAM command_id)
         }
 
         break;
+    }
+
+    case ID_DOCUMENTATION_MENU_COMMAND:
+    {
+        RunNonElevatedEx(L"https://aka.ms/PowerToysOverview", L"");
+        break;
+    }
+        
     }
 }
 
@@ -136,7 +150,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         DestroyWindow(window);
         break;
     case WM_COMMAND:
-        handle_tray_command(window, wparam);
+        handle_tray_command(window, wparam, lparam);
         break;
     // Shell_NotifyIcon can fail when we invoke it during the time explorer.exe isn't present/ready to handle it.
     // We'll also never receive wm_taskbar_restart message if the first call to Shell_NotifyIcon failed, so we use
@@ -156,7 +170,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             {
             case WM_LBUTTONUP:
             {
-                open_settings_window();
+                open_settings_window(std::nullopt);
                 break;
             }
             case WM_RBUTTONUP:
@@ -171,10 +185,12 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                     static std::wstring settings_menuitem_label = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT);
                     static std::wstring exit_menuitem_label = GET_RESOURCE_STRING(IDS_EXIT_MENU_TEXT);
                     static std::wstring submit_bug_menuitem_label = GET_RESOURCE_STRING(IDS_SUBMIT_BUG_TEXT);
+                    static std::wstring documentation_menuitem_label = GET_RESOURCE_STRING(IDS_DOCUMENTATION_MENU_TEXT);
                     
                     change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
                     change_menu_item_text(ID_EXIT_MENU_COMMAND, exit_menuitem_label.data());
                     change_menu_item_text(ID_REPORT_BUG_COMMAND, submit_bug_menuitem_label.data());
+                    change_menu_item_text(ID_DOCUMENTATION_MENU_COMMAND, documentation_menuitem_label.data());
                 }
                 if (!h_sub_menu)
                 {
@@ -237,6 +253,7 @@ void start_tray_icon()
                                   nullptr);
         WINRT_VERIFY(hwnd);
         CentralizedHotkeys::RegisterWindow(hwnd);
+        CentralizedKeyboardHook::RegisterWindow(hwnd);
         memset(&tray_icon_data, 0, sizeof(tray_icon_data));
         tray_icon_data.cbSize = sizeof(tray_icon_data);
         tray_icon_data.hIcon = icon;
@@ -246,6 +263,7 @@ void start_tray_icon()
         std::wstring about_msg_pt_version = L"PowerToys " + get_product_version();
         wcscpy_s(tray_icon_data.szTip, sizeof(tray_icon_data.szTip) / sizeof(WCHAR), about_msg_pt_version.c_str());
         tray_icon_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+        ChangeWindowMessageFilterEx(hwnd, WM_COMMAND, MSGFLT_ALLOW, nullptr);
 
         tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
     }

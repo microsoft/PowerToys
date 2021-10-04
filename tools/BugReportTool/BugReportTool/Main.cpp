@@ -30,7 +30,6 @@ map<wstring, vector<wstring>> escapeInfo = {
 
 vector<wstring> filesToDelete = {
     L"PowerToys Run\\Cache",
-    L"PowerToys Run\\Settings\\ImageUsageCache.json",
     L"PowerRename\\replace-mru.json",
     L"PowerRename\\search-mru.json",
     L"PowerToys Run\\Settings\\UserSelectedRecord.json",
@@ -300,7 +299,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         return 1;
     }
 
+#ifndef _DEBUG
     InstallationFolder::ReportStructure(reportDir);
+#endif
 
     // Hide sensitive information
     HideUserPrivateInfo(reportDir);
@@ -330,10 +331,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
-    std::string reportFilename{"PowerToysReport_"};
-    reportFilename += timeutil::format_as_local("%F-%H-%M-%S", timeutil::now());
-    reportFilename += ".zip";
-    zipPath /= reportFilename;
 
     try
     {

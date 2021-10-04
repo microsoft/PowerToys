@@ -61,6 +61,24 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show a dialog to confirm system commands.
+        /// </summary>
+        internal static string confirm_system_commands {
+            get {
+                return ResourceManager.GetString("confirm_system_commands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please Confirm.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Empty Recycle Bin.
         /// </summary>
         internal static string Microsoft_plugin_sys_emptyrecyclebin {
@@ -88,6 +106,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are about to put this computer into hibernation, are you sure?.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_hibernate_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_hibernate_confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hibernate computer.
         /// </summary>
         internal static string Microsoft_plugin_sys_hibernate_description {
@@ -102,6 +129,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         internal static string Microsoft_plugin_sys_lock {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_lock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are about to lock this computer, are you sure?.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_lock_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_lock_confirmation", resourceCulture);
             }
         }
         
@@ -142,6 +178,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are about to restart this computer, are you sure?.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_restart_computer_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_restart_computer_confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Restart computer.
         /// </summary>
         internal static string Microsoft_plugin_sys_restart_computer_description {
@@ -156,6 +201,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         internal static string Microsoft_plugin_sys_shutdown_computer {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_shutdown_computer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are about to shut down this computer, are you sure?.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_shutdown_computer_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_shutdown_computer_confirmation", resourceCulture);
             }
         }
         
@@ -178,6 +232,15 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are about to sign out of this computer, are you sure?.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_sign_out_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_sign_out_confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sign out of computer.
         /// </summary>
         internal static string Microsoft_plugin_sys_sign_out_description {
@@ -196,11 +259,29 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are about to put this computer to sleep, are you sure?.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_sleep_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_sleep_confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Put computer to sleep.
         /// </summary>
         internal static string Microsoft_plugin_sys_sleep_description {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_sleep_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use localized system commands instead of english ones.
+        /// </summary>
+        internal static string Use_localized_system_commands {
+            get {
+                return ResourceManager.GetString("Use_localized_system_commands", resourceCulture);
             }
         }
     }

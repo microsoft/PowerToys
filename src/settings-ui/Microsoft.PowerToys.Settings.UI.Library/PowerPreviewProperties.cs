@@ -63,6 +63,40 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enablePdfPreview = true;
+
+        [JsonPropertyName("pdf-previewer-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnablePdfPreview
+        {
+            get => enablePdfPreview;
+            set
+            {
+                if (value != enablePdfPreview)
+                {
+                    LogTelemetryEvent(value);
+                    enablePdfPreview = value;
+                }
+            }
+        }
+
+        private bool enablePdfThumbnail = true;
+
+        [JsonPropertyName("pdf-thumbnail-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnablePdfThumbnail
+        {
+            get => enablePdfThumbnail;
+            set
+            {
+                if (value != enablePdfThumbnail)
+                {
+                    LogTelemetryEvent(value);
+                    enablePdfThumbnail = value;
+                }
+            }
+        }
+
         public PowerPreviewProperties()
         {
         }

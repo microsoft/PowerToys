@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             }
             catch (Exception exception)
             {
-                Log.Exception("Error loading settings JSON file", exception, typeof(Main));
+                Log.Exception("Error loading settings JSON file", exception, typeof(JsonSettingsListHelper));
             }
 
             return settingsList ?? Enumerable.Empty<WindowsSetting>();

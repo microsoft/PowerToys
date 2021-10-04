@@ -18,6 +18,9 @@ namespace Helpers
     // Function to check if the key is a modifier key
     bool IsModifierKey(DWORD key);
 
+    // Function to get the combined key for modifier keys
+    DWORD GetCombinedKey(DWORD key);
+
     // Function to get the type of the key
     KeyType GetKeyType(DWORD key);
 

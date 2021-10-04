@@ -78,6 +78,17 @@ private:
         std::wstring value;
     } disabledApps;
 
+    struct ShouldReactToPressedWinKey
+    {
+        static inline PCWSTR name = L"use_legacy_press_win_key_behavior";
+        bool value;
+    } shouldReactToPressedWinKey;
+
+    struct WindowsKeyPressTime
+    {
+        static inline PCWSTR name = L"press_time";
+    } windowsKeyPressTime;
+
     struct OpenShortcut
     {
         static inline PCWSTR name = L"open_shortcutguide";

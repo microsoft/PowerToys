@@ -6,9 +6,9 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Reflection;
+using System.Text.Json;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
-using Newtonsoft.Json;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -117,7 +117,7 @@ namespace PowerLauncher.Plugin
 
             try
             {
-                metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
+                metadata = JsonSerializer.Deserialize<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginDirectory = pluginDirectory;
             }
             catch (Exception e)
