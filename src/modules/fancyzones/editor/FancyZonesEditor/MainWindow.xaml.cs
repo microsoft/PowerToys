@@ -161,6 +161,12 @@ namespace FancyZonesEditor
 
         private async void NewLayoutButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_openedDialog != null)
+            {
+                // another dialog already opened
+                return;
+            }
+
             string defaultNamePrefix = FancyZonesEditor.Properties.Resources.Default_Custom_Layout_Name;
             int maxCustomIndex = 0;
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
