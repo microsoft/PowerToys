@@ -227,7 +227,7 @@ namespace PowerLauncher
             var defaultOptions = defaultAdditionalOptions.ToDictionary(x => x.Key);
             foreach (var option in additionalOptions)
             {
-                if (defaultOptions.ContainsKey(option.Key))
+                if (option.Key != null && defaultOptions.ContainsKey(option.Key))
                 {
                     defaultOptions[option.Key].Value = option.Value;
                 }
