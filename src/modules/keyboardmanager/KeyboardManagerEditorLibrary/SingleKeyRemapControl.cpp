@@ -56,7 +56,14 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
         }
     });
 
-    singleKeyRemapControlLayout.as<StackPanel>().UpdateLayout();
+    try
+    {
+        // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
+        singleKeyRemapControlLayout.as<StackPanel>().UpdateLayout();
+    }
+    catch (...)
+    {
+    }
 }
 
 // Function to set the accessible names for all the controls in a row
@@ -168,7 +175,14 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         }
 
         children.RemoveAt(rowIndex);
-        parent.UpdateLayout();
+        try
+        {
+            // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
+            parent.UpdateLayout();
+        }
+        catch (...)
+        {
+        }
         singleKeyRemapBuffer.erase(singleKeyRemapBuffer.begin() + rowIndex);
     
         // delete the SingleKeyRemapControl objects so that they get destructed
@@ -183,7 +197,14 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     deleteRemapKeystoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
     ToolTipService::SetToolTip(deleteRemapKeys, deleteRemapKeystoolTip);
     row.Children().Append(deleteRemapKeys);
-    parent.UpdateLayout();
+    try
+    {
+        // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
+        parent.UpdateLayout();
+    }
+    catch (...)
+    {
+    }
 
     // Set accessible names
     UpdateAccessibleNames(keyboardRemapControlObjects.back()[0]->getSingleKeyRemapControl(), keyboardRemapControlObjects.back()[1]->getSingleKeyRemapControl(), deleteRemapKeys, (int)keyboardRemapControlObjects.size());
@@ -362,7 +383,14 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     buttonPanel.Children().Append(cancelButton);
 
     stackPanel.Children().Append(buttonPanel);
-    stackPanel.UpdateLayout();
+    try
+    {
+        // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
+        stackPanel.UpdateLayout();
+    }
+    catch (...)
+    {
+    }
 
     // Configure the keyboardManagerState to store the UI information.
     keyboardManagerState.ConfigureDetectSingleKeyRemapUI(keyStackPanel);
