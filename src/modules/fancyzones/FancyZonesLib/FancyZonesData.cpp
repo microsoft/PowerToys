@@ -183,8 +183,15 @@ const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneH
 std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& zoneWindowId) const
 {
     std::scoped_lock lock{ dataLock };
-    auto it = deviceInfoMap.find(zoneWindowId);
-    return it != end(deviceInfoMap) ? std::optional{ it->second } : std::nullopt;
+    for (const auto& [deviceId, deviceInfo] : deviceInfoMap)
+    {
+        if (zoneWindowId.isEqualWithNullVirtualDesktopId(deviceId))
+        {
+            return deviceInfo;
+        }
+    }
+
+    return std::nullopt;
 }
 
 std::optional<FancyZonesDataTypes::CustomZoneSetData> FancyZonesData::FindCustomZoneSet(const std::wstring& guid) const
@@ -559,31 +566,33 @@ void FancyZonesData::SetActiveZoneSet(const FancyZonesDataTypes::DeviceIdData& d
 {
     std::scoped_lock lock{ dataLock };
 
-    auto deviceIt = deviceInfoMap.find(deviceId);
-    if (deviceIt == deviceInfoMap.end())
+    for (auto& [deviceIdData, deviceInfo] : deviceInfoMap)
     {
-        return;
-    }
-
-    deviceIt->second.activeZoneSet = data;
-
-    // If the zone set is custom, we need to copy its properties to the device
-    auto zonesetIt = customZoneSetsMap.find(data.uuid);
-    if (zonesetIt != customZoneSetsMap.end())
-    {
-        if (zonesetIt->second.type == FancyZonesDataTypes::CustomLayoutType::Grid)
+        if (deviceId.isEqualWithNullVirtualDesktopId(deviceIdData))
         {
-            auto layoutInfo = std::get<FancyZonesDataTypes::GridLayoutInfo>(zonesetIt->second.info);
-            deviceIt->second.sensitivityRadius = layoutInfo.sensitivityRadius();
-            deviceIt->second.showSpacing = layoutInfo.showSpacing();
-            deviceIt->second.spacing = layoutInfo.spacing();
-            deviceIt->second.zoneCount = layoutInfo.zoneCount();
-        }
-        else if (zonesetIt->second.type == FancyZonesDataTypes::CustomLayoutType::Canvas)
-        {
-            auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(zonesetIt->second.info);
-            deviceIt->second.sensitivityRadius = layoutInfo.sensitivityRadius;
-            deviceIt->second.zoneCount = (int)layoutInfo.zones.size();
+            deviceInfo.activeZoneSet = data;
+
+            // If the zone set is custom, we need to copy its properties to the device
+            auto zonesetIt = customZoneSetsMap.find(data.uuid);
+            if (zonesetIt != customZoneSetsMap.end())
+            {
+                if (zonesetIt->second.type == FancyZonesDataTypes::CustomLayoutType::Grid)
+                {
+                    auto layoutInfo = std::get<FancyZonesDataTypes::GridLayoutInfo>(zonesetIt->second.info);
+                    deviceInfo.sensitivityRadius = layoutInfo.sensitivityRadius();
+                    deviceInfo.showSpacing = layoutInfo.showSpacing();
+                    deviceInfo.spacing = layoutInfo.spacing();
+                    deviceInfo.zoneCount = layoutInfo.zoneCount();
+                }
+                else if (zonesetIt->second.type == FancyZonesDataTypes::CustomLayoutType::Canvas)
+                {
+                    auto layoutInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(zonesetIt->second.info);
+                    deviceInfo.sensitivityRadius = layoutInfo.sensitivityRadius;
+                    deviceInfo.zoneCount = (int)layoutInfo.zones.size();
+                }
+            }
+
+            break;
         }
     }
 }
