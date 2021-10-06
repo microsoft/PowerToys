@@ -8,8 +8,8 @@ The Windows settings Plugin allows users to search the Windows settings.
 * Support legacy Windows settings (Windows 7, 8.1)
 * Support extra programs for setting (like ODBC)
 
-* Support search by the are of the setting (like `Privacy`)
-* Support search by the command line of the setting (like `workplace` found `ms-settings:workplace` )
+* Support search by the area of the setting (like `Privacy`)
+* Support search for alternative names of a setting
 
 ## How to add a new Windows Setting or change one
 
@@ -39,6 +39,28 @@ Optional values for each entry are: `Note`, `IntroducedInBuild`, `DeprecatedInBu
 * The strings for `Areas`, `Type` and `Note` are used as ids for the resource file under `Properties\Resources.resx`
 * When you add new strings make sure you have add add all translations for it.
 
+## Scores
+
+There are three different score types with different start values.
+
+| Score type   | Start value  |
+| ------------ | ------------ |
+| High score   | 10000        |
+| Medium score |  5000        |
+| Low score    |  1000        |
+
+Each score will decreased by one when a condition match.
+
+| Priority | Condition                                                         | Score type   |
+| -------- | ----------------------------------------------------------------- | ------------ |
+| 1.       | Settings name starts with the search value                        | High score   |
+| 2.       | Settings name contain the search value                            | Medium score |
+| 3.       | Setting has no area                                               | Low score    |
+| 4.       | One area of the settings starts with the search value             | Low score    |
+| 5.       | Setting has no alternative name                                   | Low score    |
+| 6.       | One alternative name of the settings starts with the search value | Medium score |
+| x.       | no condition match                                                | Low score    |
+
 ## Important for developers
 
 ### General
@@ -65,24 +87,27 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 
 ### Program files
 
-| File                                  | Content                                                                  |
-| ------------------------------------- | ------------------------------------------------------------------------ |
-| `Classes\WindowsSetting.cs`           | `TODO`                                                                   |
-| `Classes\WindowsSettings.cs`          | `TODO`                                                                   |
-| `Helper\ContextMenuHelper.cs`         | All functions to build the context menu (for each result entry)          |
-| `Helper\JsonSettingsListHelper.cs`    | All functions to `TODO`
-| `Helper\ResultHelper.cs`              | All functions to convert internal results into WOX results               |
-| `Helper\TranslationHelper.cs`         | All functions to translate the result in the surface language            |
-| `Helper\UnsupportedSettingsHelper.cs` | All functions to filter not supported Windows settings out               |
-| `Helper\WindowsSettingsPathHelper.cs` | All functions to `TODO`                                                  |
-| `Images\WindowsSettings.dark.png`     | Symbol for the results for the dark theme                                |
-| `Images\WindowsSettings.light.png`    | Symbol for the results for the light theme                               |
-| `Properties\Resources.Designer.resx`  | File that contain all translatable keys                                  |
-| `Properties\Resources.resx`           | File that contain all translatable strings in the neutral language       |
-| `GlobalSuppressions.cs`               | Code suppressions (no real file, linked via *.csproj)                    |
-| `Main.cs`                             | Main class, the only place that implement the WOX interfaces             |
-| `plugin.json`                         | All meta-data for this plugin                                            |
-| `StyleCop.json`                       | Code style (no real file, linked via *.csproj)                           |
+| File                                  | Content                                                                 |
+| ------------------------------------- | ----------------------------------------------------------------------- |
+| `Classes\WindowsSetting.cs`           | A class that represent one Windows setting                              |
+| `Classes\WindowsSettings.cs`          | A wrapper class that only contains a list with Windows settings (see 1) |
+| `Helper\ContextMenuHelper.cs`         | All functions to build the context menu (for each result entry)         |
+| `Helper\JsonSettingsListHelper.cs`    | All functions to load the windows settings from a JSON file             |
+| `Helper\ResultHelper.cs`              | All functions to convert internal results into WOX results              |
+| `Helper\TranslationHelper.cs`         | All functions to translate the result in the surface language           |
+| `Helper\UnsupportedSettingsHelper.cs` | All functions to filter not supported Windows settings out              |
+| `Helper\WindowsSettingsPathHelper.cs` | All functions to build the area paths                                   |
+| `Images\WindowsSettings.dark.png`     | Symbol for the results for the dark theme                               |
+| `Images\WindowsSettings.light.png`    | Symbol for the results for the light theme                              |
+| `Properties\Resources.Designer.resx`  | File that contain all translatable keys                                 |
+| `Properties\Resources.resx`           | File that contain all translatable strings in the neutral language      |
+| `GlobalSuppressions.cs`               | Code suppressions (no real file, linked via *.csproj)                   |
+| `Main.cs`                             | Main class, the only place that implement the WOX interfaces            |
+| `plugin.json`                         | All meta-data for this plugin                                           |
+| `StyleCop.json`                       | Code style (no real file, linked via *.csproj)                          |
+
+1. We need this extra wrapper class to make it possible that the JSON file can have and use a JSON schema file.
+Because the JSON file must have a object as root type, instead of a array.
 
 ### Important project values (*.csproj)
 
