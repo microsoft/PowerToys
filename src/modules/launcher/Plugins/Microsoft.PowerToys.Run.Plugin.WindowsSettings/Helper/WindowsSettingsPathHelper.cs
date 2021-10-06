@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// <param name="windowsSettings">A class that contain all possible windows settings.</param>
         internal static void GenerateSettingsPathValues(in WindowsSettings windowsSettings)
         {
-            if(windowsSettings?.Settings is null)
+            if (windowsSettings?.Settings is null)
             {
                 return;
             }
