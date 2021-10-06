@@ -42,7 +42,14 @@ ShortcutControl::ShortcutControl(StackPanel table, StackPanel row, const int col
     shortcutControlLayout.as<StackPanel>().Children().Append(typeShortcut.as<Button>());
     shortcutControlLayout.as<StackPanel>().Children().Append(shortcutDropDownStackPanel.as<StackPanel>());
     KeyDropDownControl::AddDropDown(table, row, shortcutDropDownStackPanel.as<StackPanel>(), colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, false);
-    shortcutControlLayout.as<StackPanel>().UpdateLayout();
+    try
+    {
+        // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
+        shortcutControlLayout.as<StackPanel>().UpdateLayout();
+    }
+    catch (...)
+    {
+    }
 }
 
 // Function to set the accessible name of the target App text box
@@ -480,7 +487,14 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     buttonPanel.Children().Append(cancelButton);
 
     stackPanel.Children().Append(buttonPanel);
-    stackPanel.UpdateLayout();
+    try
+    {
+        // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
+        stackPanel.UpdateLayout();
+    }
+    catch (...)
+    {
+    }
 
     // Configure the keyboardManagerState to store the UI information.
     keyboardManagerState.ConfigureDetectShortcutUI(keyStackPanel1, keyStackPanel2);
