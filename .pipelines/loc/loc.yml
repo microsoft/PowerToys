@@ -1,0 +1,41 @@
+trigger: none
+pr: none
+
+pool:
+  vmImage: windows-2019
+
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: master
+
+steps:
+
+- checkout: self
+  clean: true
+  submodules: false
+  persistCredentials: true
+
+- task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
+  displayName: 'Touchdown Build - 37400, PRODEXT'
+  inputs:
+    teamId: 37400
+    authId: '$(TouchdownApplicationID)'
+    authKey: '$(TouchdownApplicationKey)'
+    resourceFilePath: |
+     **\Resources.resx
+    outputDirectoryRoot: LocOutput
+    appendRelativeDir: true
+    pseudoSetting: Included
+
+- powershell: 'tar cf LocOutput.tar LocOutput'
+  displayName: 'PowerShell Script'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: LocOutput'
+  inputs:
+    PathtoPublish: LocOutput.tar
+    ArtifactName: LocOutput
+
+
