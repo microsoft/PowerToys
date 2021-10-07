@@ -16,26 +16,49 @@ The Windows settings Plugin allows users to search the Windows settings.
 All Windows settings are located in `WindowsSettings.json` in root folder of the project.
 The `WindowsSettings.json` use a JSON schema file that make it easier to edit it.
 
+| Key                 | Optional | Value type        | String prefix |
+| ------------------- | -------- | ----------------- | ------------- |
+| `Name`              | **No**   | String            |               |
+| `Type`              | **No**   | String            | `App`         |
+| `Command`           | **No**   | String            |               |
+| `Areas`             | Yes      | List with strings | `Area`        |
+| `AltNames`          | Yes      | List with strings |               |
+| `Note`              | Yes      | String            | `Note`        |
+| `IntroducedInBuild` | Yes      | Integer           |               |
+| `DeprecatedInBuild` | Yes      | Integer           |               |
+
 A minimum entry for the `WindowsSettings.json` looks like:
 
 ```
   {
     "Name": "mySetting",
-    "Areas": [ "AreaMySetting" ],
     "Type": "AppSettingsApp",
-    "AltNames": [ "NiceSetting" ],
     "Command": "ms-settings:mySetting"
   }
 ```
-Optional values for each entry are: `Note`, `IntroducedInBuild`, `DeprecatedInBuild`
+
+A full entry for the `WindowsSettings.json` looks like:
+
+```
+  {
+    "Name": "mySetting",
+    "Type": "AppSettingsApp",
+    "Command": "ms-settings:mySetting",
+    "Areas": [ "AreaMySettingArea" ],
+    "AltNames": [ "NiceSetting" ],
+    "Note": "NoteMySettingNote",
+    "IntroducedInBuild" : 1903,
+    "DeprecatedInBuild" : 2004
+  }
+```
+
 
 ### Remarks
-* The strings under `Areas` must start with `Area`
-* The string for `Type` must start with `App`
-* The string for `Note` must start with `Note`
+
 * The `Command` for modern Windows settings should start with `ms-settings:`
 * The `Command` for legacy Windows settings should start with `control`
-* The numeric value for `IntroducedInBuild` and  `DeprecatedInBuild` must be in range of `0` to `4294967295`
+* The integer value for `IntroducedInBuild` and  `DeprecatedInBuild` must be in range of `0` to `4294967295`
+* The strings for `Name`, `AltNames`, `Areas`, `Type` and `Note` must not contain whitespace(s) or special characters (#, €, $, etc.)
 * The strings for `Areas`, `Type` and `Note` are used as ids for the resource file under `Properties\Resources.resx`
 * When you add new strings make sure you have add add all translations for it.
 
