@@ -625,9 +625,20 @@ namespace Microsoft.Plugin.Program.Programs
             var folderQueue = new Queue<string>();
             folderQueue.Enqueue(directory);
 
+            // Keep track of already visited directories to avoid cycles.
+            var alreadyVisited = new HashSet<string>();
+
             do
             {
                 var currentDirectory = folderQueue.Dequeue();
+
+                if (alreadyVisited.Contains(currentDirectory))
+                {
+                    continue;
+                }
+
+                alreadyVisited.Add(currentDirectory);
+
                 try
                 {
                     foreach (var suffix in suffixes)
