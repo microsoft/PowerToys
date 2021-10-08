@@ -983,7 +983,6 @@ Global
 		{4642D596-723F-4BFC-894C-46811219AC4A}.Debug|x86.ActiveCfg = Debug|x64
 		{4642D596-723F-4BFC-894C-46811219AC4A}.Release|x64.ActiveCfg = Release|x64
 		{4642D596-723F-4BFC-894C-46811219AC4A}.Release|x64.Build.0 = Release|x64
-		{4642D596-723F-4BFC-894C-46811219AC4A}.Release|x64.Deploy.0 = Release|x64
 		{4642D596-723F-4BFC-894C-46811219AC4A}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
