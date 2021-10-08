@@ -12,6 +12,7 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
+    
         <local:ExplorerItemTemplateSelector x:Key="ExplorerItemTemplateSelector"
                                             FolderTemplate="{StaticResource FolderTemplate}"
                                             FileTemplate="{StaticResource FileTemplate}" />
@@ -31,7 +32,7 @@
                 <CheckBox TabIndex="0" Grid.Column="0" XYFocusKeyboardNavigation="Enabled"  Checked="Checked_ids" IsTabStop="True" Unchecked="Checked_ids"  Content="" Name="{x:Bind IdStr}" AutomationProperties.Name="{x:Bind Original}" AutomationProperties.HelpText="{x:Bind Renamed}" IsChecked="{x:Bind Checked, Mode=TwoWay}" />
                 <Image Width="16" Source="ms-appx:///Assets/file.png" HorizontalAlignment="Left" Grid.Column="1"/>
 
-                <TextBlock Text="{x:Bind Original, Mode=OneWay}" FontFamily="SemiBold" VerticalAlignment="Center"  FontSize="12" Grid.Column="2"/>
+                <TextBlock Text="{x:Bind Original, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"  FontSize="12" Grid.Column="2"/>
             </Grid>
         </DataTemplate>
 
@@ -51,7 +52,7 @@
                 <CheckBox TabIndex="0" IsTabStop="True" XYFocusKeyboardNavigation="Enabled"  Grid.Row="0" Grid.Column="0" Checked="Checked_ids" Unchecked="Checked_ids" Content="" Name="{x:Bind IdStr}" AutomationProperties.Name="{x:Bind Original}" AutomationProperties.HelpText="{x:Bind Renamed}" IsChecked="{x:Bind Checked, Mode=TwoWay}" />
                 <Image Width="16" Source="ms-appx:///Assets/folder.png" HorizontalAlignment="Left" Grid.Column="1"/>
 
-                <TextBlock Text="{x:Bind Original, Mode=OneWay}" FontFamily="SemiBold" VerticalAlignment="Center"  FontSize="12" Grid.Column="2"/>
+                <TextBlock Text="{x:Bind Original, Mode=OneWay}"  Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"  FontSize="12" Grid.Column="2"/>
 
                 <ListView Grid.ColumnSpan="3" IsTabStop="false" XYFocusKeyboardNavigation="Enabled"  SelectionMode="None" IsItemClickEnabled="False" ItemsSource="{x:Bind Children}" Grid.Row="1" ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
                     <ListView.ItemContainerStyle>
@@ -67,8 +68,7 @@
             <Grid Height="24"
                   Margin="0,4,0,0">
                 <TextBlock Text="{x:Bind Renamed, Mode=OneWay}"
-                           FontFamily="SemiBold"
-                           Foreground="{ThemeResource SystemColorControlAccentBrush}"
+                           FontFamily="Bold"
                            VerticalAlignment="Center"
                            FontSize="14"/>
             </Grid>
@@ -80,8 +80,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <TextBlock Text="{x:Bind Renamed, Mode=OneWay}"
-                           FontFamily="SemiBold"
-                           Foreground="{ThemeResource SystemColorControlAccentBrush}"
+                           FontFamily="Bold"
                            VerticalAlignment="Center"
                            FontSize="14"/>
                 <ListView IsTabStop="false"
@@ -129,8 +128,9 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="36" />
                 <ColumnDefinition Width="48" />
-                <ColumnDefinition Width="*" MinWidth="320"/>
-                <ColumnDefinition Width="*" MinWidth="320"/>
+                <ColumnDefinition Width="Auto" MinWidth="324"/>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="48" />
             </Grid.ColumnDefinitions>
 
             <CheckBox x:Name="chckBox_selectAll" IsChecked="True"
@@ -148,9 +148,9 @@
                        FontWeight="SemiBold"
                        Margin="2,-2,0,0"
                        VerticalAlignment="Center" />
-            <AppBarSeparator Grid.Column="3"
-                             Margin="-4,0,0,0"
-                             HorizontalAlignment="Left" />
+            <!--<AppBarSeparator Grid.Column="3"
+                             Margin="-6,0,0,0"
+                             HorizontalAlignment="Left" />-->
             <TextBlock x:Uid="TxtBlock_Renamed"
                        FontWeight="SemiBold"
                        Grid.Column="3"
@@ -185,11 +185,11 @@
                        Fill="{ThemeResource CardStrokeColorDefaultBrush}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Bottom" />
-            <ScrollViewer Grid.ColumnSpan="4"
+            <ScrollViewer Grid.ColumnSpan="6"
                           Grid.Row="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" MinWidth="400" x:Name="OriginalColumn" />
+                        <ColumnDefinition Width="Auto" MinWidth="324" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <ListView IsTabStop="false" SelectionMode="None" XYFocusKeyboardNavigation="Enabled"  IsItemClickEnabled="False" ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}" Margin="4,0,0,0" ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
@@ -240,10 +240,10 @@
                             VerticalAlignment="Center"
                             Visibility="{Binding ElementName=chckBox_regex, Path=IsChecked}"
                             MinHeight="32"
+                            Margin="4"
                             Background="Transparent"
                             BorderBrush="Transparent"
                             Content="&#xE946;"
-                            Foreground="{ThemeResource SystemColorControlAccentBrush}"
                             HorizontalAlignment="Right">
                         <Button.Flyout>
                             <Flyout x:Name="RegExFlyout">
@@ -323,13 +323,13 @@
                                     Padding="12,12,0,0"
                                     ItemsSource="{x:Bind ReplaceMRU}" />
 
-                    <Button FontFamily="Segoe Fluent Icons"
+                        <Button FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             VerticalAlignment="Center"
-                            Height="32"
+                            MinHeight="32"
+                            Margin="4"
                             Background="Transparent"
                             BorderBrush="Transparent"
                             Content="&#xE946;"
-                            Foreground="{ThemeResource SystemColorControlAccentBrush}"
                             HorizontalAlignment="Right">
                         <Button.Flyout>
                             <Flyout x:Name="DateTimeFlyout" ShouldConstrainToRootBounds="False">
@@ -350,7 +350,7 @@
                                                 <Grid ColumnSpacing="8"
                                                       Margin="-10,0,0,0">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="48" />
+                                                        <ColumnDefinition Width="56" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
                                                     <Border CornerRadius="4"
@@ -490,6 +490,7 @@
                         x:Uid="TxtBlock_BtnSettings"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         Grid.Row="5"
+                        Padding="4"
                         Background="Transparent"
                         BorderBrush="Transparent"
                         Grid.Column="1">
@@ -499,7 +500,7 @@
                                 <animatedvisuals:AnimatedSettingsVisualSource />
                             </controls:AnimatedIcon.Source>
                             <controls:AnimatedIcon.FallbackIconSource>
-                                <controls:SymbolIconSource Symbol="Find" />
+                                <controls:SymbolIconSource Symbol="Setting" />
                             </controls:AnimatedIcon.FallbackIconSource>
                         </controls:AnimatedIcon>
 
@@ -537,7 +538,7 @@
                 <muxc:SplitButton.Content>
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE13E;"
-                                  FontSize="10"
+                                  FontSize="12"
                                   VerticalAlignment="Center"
                                   Margin="0,2,8,0" />
                         <TextBlock x:Uid="TxtBlock_BtnApply" />
