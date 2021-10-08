@@ -103,14 +103,13 @@
     </UserControl.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-          Padding="20"
-          ColumnSpacing="40">
+          Padding="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="0"/> <!-- 48 if we need to draw the titlebar ourself -->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -226,8 +225,10 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="48" />
             </Grid.RowDefinitions>
-            <StackPanel Orientation="Vertical"
-                        Padding="0,0,0,16">
+            <ScrollViewer>
+                <StackPanel Orientation="Vertical"
+                            Padding="0,0,0,16"
+                            Margin="0,0,20,0">
                 <Grid>
                     <AutoSuggestBox x:Name="textBox_search"
                              x:Uid="SearchBox"
@@ -466,12 +467,12 @@
                 </StackPanel>
             </StackPanel>
 
-
+            </ScrollViewer>
 
             <Rectangle Height="1"
                        Fill="{ThemeResource CardStrokeColorDefaultBrush}"
                        HorizontalAlignment="Stretch"
-                       Margin="0,0,0,0"
+                       Margin="0,0,20,0"
                        VerticalAlignment="Top"
                        Grid.Row="1" />
 
@@ -528,6 +529,7 @@
             <muxc:SplitButton Grid.Row="1"
                               Style="{StaticResource SplitAccentButtonStyle}"
                               x:Name="btn_rename"
+                              Margin="0,0,20,0"
                               Click="btn_rename_Click"
                               HorizontalAlignment="Right"
                               VerticalAlignment="Bottom"
@@ -535,6 +537,7 @@
                 <muxc:SplitButton.Content>
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE13E;"
+                                  FontSize="10"
                                   VerticalAlignment="Center"
                                   Margin="0,2,8,0" />
                         <TextBlock x:Uid="TxtBlock_BtnApply" />
