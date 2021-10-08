@@ -362,7 +362,10 @@
                                                                 </VisualState>
                                                                 <VisualState x:Name="Disabled">
                                                                     <VisualState.Setters>
-                                                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SplitButtonForegroundDisabled}"/>
+                                                                        <Setter Target="ContentPresenter.Background" Value="{ThemeResource AccentButtonBackgroundDisabled}"/>
+                                                                        <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushDisabled}"/>
+                                                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}"/>
+                                                                        <Setter Target="ContentPresenter.Opacity" Value="0.6"/>
                                                                     </VisualState.Setters>
                                                                 </VisualState>
                                                             </VisualStateGroup>
@@ -389,7 +392,6 @@
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal"/>
-
                                         <VisualState x:Name="FlyoutOpen">
                                             <VisualState.Setters>
                                                 <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPressed}"/>

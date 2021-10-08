@@ -32,7 +32,7 @@
                 <CheckBox TabIndex="0" Grid.Column="0" XYFocusKeyboardNavigation="Enabled"  Checked="Checked_ids" IsTabStop="True" Unchecked="Checked_ids"  Content="" Name="{x:Bind IdStr}" AutomationProperties.Name="{x:Bind Original}" AutomationProperties.HelpText="{x:Bind Renamed}" IsChecked="{x:Bind Checked, Mode=TwoWay}" />
                 <Image Width="16" Source="ms-appx:///Assets/file.png" HorizontalAlignment="Left" Grid.Column="1"/>
 
-                <TextBlock Text="{x:Bind Original, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"  FontSize="12" Grid.Column="2"/>
+                <TextBlock Text="{x:Bind Original, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" FontSize="12" Grid.Column="2"/>
             </Grid>
         </DataTemplate>
 
@@ -52,9 +52,9 @@
                 <CheckBox TabIndex="0" IsTabStop="True" XYFocusKeyboardNavigation="Enabled"  Grid.Row="0" Grid.Column="0" Checked="Checked_ids" Unchecked="Checked_ids" Content="" Name="{x:Bind IdStr}" AutomationProperties.Name="{x:Bind Original}" AutomationProperties.HelpText="{x:Bind Renamed}" IsChecked="{x:Bind Checked, Mode=TwoWay}" />
                 <Image Width="16" Source="ms-appx:///Assets/folder.png" HorizontalAlignment="Left" Grid.Column="1"/>
 
-                <TextBlock Text="{x:Bind Original, Mode=OneWay}"  Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"  FontSize="12" Grid.Column="2"/>
+                <TextBlock Text="{x:Bind Original, Mode=OneWay}"  Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" FontSize="12" Grid.Column="2"/>
 
-                <ListView Grid.ColumnSpan="3" IsTabStop="false" XYFocusKeyboardNavigation="Enabled"  SelectionMode="None" IsItemClickEnabled="False" ItemsSource="{x:Bind Children}" Grid.Row="1" ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
+                <ListView Grid.ColumnSpan="3" IsTabStop="false" XYFocusKeyboardNavigation="Enabled" SelectionMode="None" IsItemClickEnabled="False" ItemsSource="{x:Bind Children}" Grid.Row="1" ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="IsTabStop" Value="False"/>
@@ -68,7 +68,7 @@
             <Grid Height="24"
                   Margin="0,4,0,0">
                 <TextBlock Text="{x:Bind Renamed, Mode=OneWay}"
-                           FontFamily="Bold"
+                           FontWeight="SemiBold"
                            VerticalAlignment="Center"
                            FontSize="14"/>
             </Grid>
@@ -80,7 +80,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <TextBlock Text="{x:Bind Renamed, Mode=OneWay}"
-                           FontFamily="Bold"
+                           FontWeight="Bold"
                            VerticalAlignment="Center"
                            FontSize="14"/>
                 <ListView IsTabStop="false"
@@ -148,13 +148,13 @@
                        FontWeight="SemiBold"
                        Margin="2,-2,0,0"
                        VerticalAlignment="Center" />
-            <!--<AppBarSeparator Grid.Column="3"
-                             Margin="-6,0,0,0"
-                             HorizontalAlignment="Left" />-->
+            <AppBarSeparator Grid.Column="3"
+                             Margin="-6,4,0,4"
+                             HorizontalAlignment="Left" />
             <TextBlock x:Uid="TxtBlock_Renamed"
                        FontWeight="SemiBold"
                        Grid.Column="3"
-                       Margin="0,-2,0,0"
+                       Margin="4,-2,0,0"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Center"  />
             <Button Content="&#xE16E;"
@@ -181,15 +181,16 @@
             </Button>
 
             <Rectangle Height="1"
-                       Grid.ColumnSpan="4"
+                       Grid.ColumnSpan="5"
                        Fill="{ThemeResource CardStrokeColorDefaultBrush}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Bottom" />
             <ScrollViewer Grid.ColumnSpan="6"
+                          HorizontalScrollMode="Enabled"
                           Grid.Row="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" MinWidth="324" />
+                        <ColumnDefinition Width="Auto" MinWidth="286" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <ListView IsTabStop="false" SelectionMode="None" XYFocusKeyboardNavigation="Enabled"  IsItemClickEnabled="False" ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}" Margin="4,0,0,0" ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
@@ -490,7 +491,7 @@
                         x:Uid="TxtBlock_BtnSettings"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         Grid.Row="5"
-                        Padding="4"
+                        Padding="6"
                         Background="Transparent"
                         BorderBrush="Transparent"
                         Grid.Column="1">
@@ -538,9 +539,9 @@
                 <muxc:SplitButton.Content>
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE13E;"
-                                  FontSize="12"
+                                  FontSize="14"
                                   VerticalAlignment="Center"
-                                  Margin="0,2,8,0" />
+                                  Margin="0,2,10,0" />
                         <TextBlock x:Uid="TxtBlock_BtnApply" />
                     </StackPanel>
                 </muxc:SplitButton.Content>
