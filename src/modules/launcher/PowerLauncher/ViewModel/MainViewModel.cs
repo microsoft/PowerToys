@@ -615,7 +615,7 @@ namespace PowerLauncher.ViewModel
                                             }
 
                                             currentCancellationToken.ThrowIfCancellationRequested();
-                                            UpdateResultsListViewAfterQuery(queryText, true);
+                                            UpdateResultsListViewAfterQuery(queryText);
                                         }
                                     }
                                     catch (OperationCanceledException)
@@ -656,7 +656,7 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        private void UpdateResultsListViewAfterQuery(string queryText, bool isDelayedInvoke = false)
+        private void UpdateResultsListViewAfterQuery(string queryText)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -669,10 +669,7 @@ namespace PowerLauncher.ViewModel
                 if (Results.Results.Count > 0)
                 {
                     Results.Visibility = Visibility.Visible;
-                    if (!isDelayedInvoke)
-                    {
-                        Results.SelectedIndex = 0;
-                    }
+                    Results.SelectedIndex = 0;
                 }
                 else
                 {
