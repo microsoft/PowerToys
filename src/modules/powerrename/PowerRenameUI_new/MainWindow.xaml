@@ -513,7 +513,8 @@
                     </Button.Content>
                 </Button>
 
-                <Button Content="&#xE11B;"
+                <Button x:Name="btn_docs"
+                        Content="&#xE11B;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         x:Uid="DocsBtn"
                         Background="Transparent"
