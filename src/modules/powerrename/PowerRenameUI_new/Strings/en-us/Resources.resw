@@ -225,6 +225,12 @@
   <data name="TextBox_ApplyTo.Text" xml:space="preserve">
     <value>Apply to</value>
   </data>
+  <data name="DocsBtn.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+    <data name="DocsBtn.AutomationProperties.Name" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
   <data name="TglButton_IncludeFiles.ToolTipService.ToolTip" xml:space="preserve">
     <value>Include files</value>
   </data>
