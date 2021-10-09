@@ -121,7 +121,7 @@
     <value>Search for</value>
   </data>
   <data name="RegExCheatSheet_Title.Text" xml:space="preserve">
-    <value>RegEx cheatsheet</value>
+    <value>RegEx help</value>
   </data>
   <data name="RegExCheatSheet_MatchAny" xml:space="preserve">
     <value>Matches any character</value>
@@ -147,7 +147,6 @@
   <data name="RegExCheatSheet_LearnMore.Text" xml:space="preserve">
     <value>Learn more about RegEx</value>
   </data>
-
   <data name="ReplaceBox.PlaceholderText" xml:space="preserve">
     <value>Replace with</value>
   </data>
@@ -214,7 +213,6 @@
   <data name="DateTimeCheatSheet_MilliSeconds1D" xml:space="preserve">
     <value>Milliseconds represented only by the first digit.</value>
   </data>
-
   <data name="ChckBox_RegEx.Content" xml:space="preserve">
     <value>Use RegEx</value>
   </data>
@@ -224,45 +222,109 @@
   <data name="ChckBox_Case.Content" xml:space="preserve">
     <value>Case sensitive</value>
   </data>
-
   <data name="TextBox_ApplyTo.Text" xml:space="preserve">
     <value>Apply to</value>
   </data>
-
   <data name="TglButton_IncludeFiles.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Include files</value>
+  </data>
+    <data name="TglButton_IncludeFiles.AutomationProperties.Name" xml:space="preserve">
     <value>Include files</value>
   </data>
   <data name="TglButton_IncludeFolders.ToolTipService.ToolTip" xml:space="preserve">
     <value>Include folders</value>
   </data>
+    <data name="TglButton_IncludeFolders.AutomationProperties.Name" xml:space="preserve">
+    <value>Include folders</value>
+  </data>
   <data name="TglButton_IncludeSubFolders.ToolTipService.ToolTip" xml:space="preserve">
     <value>Include subfolders</value>
   </data>
-
+  <data name="TglButton_IncludeSubFolders.AutomationProperties.Name" xml:space="preserve">
+    <value>Include subfolders</value>
+  </data>
   <data name="TextBlock_TextFormatting.Text" xml:space="preserve">
     <value>Text formatting</value>
+  </data>
+    <data name="TglButton_Lowercase.ToolTipService.ToolTip" xml:space="preserve">
+    <value>lowercase</value>
+  </data>
+      <data name="TglButton_Lowercase.AutomationProperties.Name" xml:space="preserve">
+    <value>Lowercase</value>
+  </data>
+  <data name="TglButton_Uppercase.ToolTipService.ToolTip" xml:space="preserve">
+    <value>UPPERCASE</value>
+  </data>
+    <data name="TglButton_Uppercase.AutomationProperties.Name" xml:space="preserve">
+    <value>Upercase</value>
+  </data>
+  <data name="TglButton_Titlecase.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Title case</value>
+  </data>
+  <data name="TglButton_Titlecase.AutomationProperties.Name" xml:space="preserve">
+    <value>Title case</value>
   </data>
   <data name="TglButton_Capitalize.ToolTipService.ToolTip" xml:space="preserve">
     <value>Capitalize Each Word</value>
   </data>
+    <data name="TglButton_Capitalize.AutomationProperties.Name" xml:space="preserve">
+    <value>Capitalize each word</value>
+  </data>
   <data name="TglButton_EnumItems.ToolTipService.ToolTip" xml:space="preserve">
     <value>Enumerate items</value>
   </data>
-
+    <data name="TglButton_EnumItems.AutomationProperties.Name" xml:space="preserve">
+    <value>Enumerate items</value>
+  </data>
+      <data name="SelectAllCheckBox.AutomationProperties.Name" xml:space="preserve">
+    <value>Select or deselect all</value>
+  </data>
+  <data name="FilterBtn.AutomationProperties.Name" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="FilterBtn.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+    <data name="ShowAll.Text" xml:space="preserve">
+    <value>Show all files</value>
+  </data>
+      <data name="ShowOnly.Text" xml:space="preserve">
+    <value>Only show files that will be renamed</value>
+  </data>
   <data name="TxtBlock_Original.Text" xml:space="preserve">
     <value>Original</value>
   </data>
   <data name="TxtBlock_Renamed.Text" xml:space="preserve">
     <value>Renamed</value>
   </data>
-
   <data name="TxtBlock_BtnSettings.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TxtBlock_BtnSettings.AutomationProperties.Name" xml:space="preserve">
     <value>Settings</value>
   </data>
   <data name="TxtBlock_BtnApply.Text" xml:space="preserve">
     <value>Apply</value>
   </data>
+    <data name="BtnApply.AutomationProperties.Name" xml:space="preserve">
+    <value>Apply</value>
+  </data>
   <data name="TxtBlock_BtnApplyAndClose.Text" xml:space="preserve">
     <value>Apply and close</value>
   </data>
+  <data name="RegExBtn.AutomationProperties.Name" xml:space="preserve">
+    <value>RegEx help</value>
+  </data>
+  <data name="RegExBtn.ToolTipService.ToolTip" xml:space="preserve">
+    <value>RegEx help</value>
+  </data>
+    <data name="FileCreationBtn.AutomationProperties.Name" xml:space="preserve">
+    <value>File creation date and time help</value>
+  </data>
+  <data name="FileCreationBtn.ToolTipService.ToolTip" xml:space="preserve">
+     <value>File creation date and time help</value>
+  </data>
+
+
+  
 </root>
