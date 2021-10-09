@@ -256,7 +256,7 @@
     <value>UPPERCASE</value>
   </data>
     <data name="TglButton_Uppercase.AutomationProperties.Name" xml:space="preserve">
-    <value>Upercase</value>
+    <value>Uppercase</value>
   </data>
   <data name="TglButton_Titlecase.ToolTipService.ToolTip" xml:space="preserve">
     <value>Title case</value>
