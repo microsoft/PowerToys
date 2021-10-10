@@ -29,7 +29,7 @@ The `WindowsSettings.json` use a JSON schema file that make it easier to edit it
 
 A minimum entry for the `WindowsSettings.json` looks like:
 
-```
+```json
   {
     "Name": "mySetting",
     "Type": "AppSettingsApp",
@@ -39,7 +39,7 @@ A minimum entry for the `WindowsSettings.json` looks like:
 
 A full entry for the `WindowsSettings.json` looks like:
 
-```
+```json
   {
     "Name": "mySetting",
     "Type": "AppSettingsApp",
@@ -51,7 +51,6 @@ A full entry for the `WindowsSettings.json` looks like:
     "DeprecatedInBuild" : 2004
   }
 ```
-
 
 ### Remarks
 
@@ -90,7 +89,7 @@ Each score will decreased by one when a condition match.
 
 * The assembly name is cached into `_assemblyName` (to avoid to many calls of `Assembly.GetExecutingAssembly()`)
 
-## Microsoft.Plugin.Registry project
+## Microsoft.PowerToys.Run.Plugin.WindowsSettings project
 
 ### Important plugin values (meta-data)
 
