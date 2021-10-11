@@ -83,6 +83,23 @@
 - [ ] Disable FZ
 - [ ] Re-enable FZ, verify that everything is in the same state as it was before disabling.
 
+* Test layout resetting.
+Before testing 
+   * Remove all virtual desktops 
+   * Remove `CurrentVirtualDesktop` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops` 
+   * Remove `VirtualDesktopIDs` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops`
+
+
+- [ ] Test screen locking
+   * Set custom layouts on each monitor
+   * Lock screen / unplug monitor / plug monitor
+   * Verify that layouts weren't reset to defaults
+   
+- [ ] Test restart
+   * Set custom layouts on each monitor
+   * Restart the computer
+   * Verify that layouts weren't reset to defaults
+
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
