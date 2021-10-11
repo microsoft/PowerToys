@@ -3175,6 +3175,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Settings app.
+        /// </summary>
+        internal static string SettingsApp {
+            get {
+                return ResourceManager.GetString("SettingsApp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Settings home page.
         /// </summary>
         internal static string SettingsHomePage {

@@ -2,6 +2,7 @@
     {
         "Name": "OpenSettingsApp",
         "Type": "AppSettingsApp",
+        "AltNames": [ "SettingsApp", "AppSettingsApp" ],
         "Command": "ms-settings:"
     },
     {

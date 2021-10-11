@@ -1405,6 +1405,9 @@
     <value>Session cleanup</value>
     <comment>Area SurfaceHub</comment>
   </data>
+  <data name="SettingsApp" xml:space="preserve">
+    <value>Settings app</value>
+  </data>
   <data name="SettingsHomePage" xml:space="preserve">
     <value>Settings home page</value>
     <comment>Area Home, Overview-page for all areas of settings </comment>
