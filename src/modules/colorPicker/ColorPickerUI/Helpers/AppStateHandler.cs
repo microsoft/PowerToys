@@ -4,6 +4,8 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
@@ -134,6 +136,7 @@ namespace ColorPicker.Helpers
                 _colorEditorWindow = new ColorEditorWindow(this);
                 _colorEditorWindow.Content = _colorEditorViewModel;
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
+                _colorEditorViewModel.OpenSettingsRequested += ColorEditorViewModel_OpenSettingsRequested;
                 _colorEditorViewModel.OpenColorPickerRequested += (object sender, EventArgs e) =>
                 {
                     SessionEventHelper.Event.EditorColorPickerOpened = true;
@@ -182,6 +185,21 @@ namespace ColorPicker.Helpers
             }
 
             _colorEditorWindow.Hide();
+        }
+
+        private void ColorEditorViewModel_OpenSettingsRequested(object sender, EventArgs e)
+        {
+            try
+            {
+                var assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                var fullPath = Directory.GetParent(assemblyPath).FullName;
+                Process.Start(new ProcessStartInfo(fullPath + "\\..\\PowerToys.exe") { Arguments = "--open-settings=ColorPicker" });
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+            }
         }
     }
 }
