@@ -46,7 +46,7 @@ public:
 
     void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
 
-    std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& zoneWindowId) const;
+    std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& id) const;
     std::optional<FancyZonesDataTypes::CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
 
     const JSONHelpers::TDeviceInfoMap& GetDeviceInfoMap() const;

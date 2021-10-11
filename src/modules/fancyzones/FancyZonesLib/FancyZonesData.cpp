@@ -180,12 +180,12 @@ const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneH
     return appZoneHistoryMap;
 }
 
-std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& zoneWindowId) const
+std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& id) const
 {
     std::scoped_lock lock{ dataLock };
     for (const auto& [deviceId, deviceInfo] : deviceInfoMap)
     {
-        if (zoneWindowId.isEqualWithNullVirtualDesktopId(deviceId))
+        if (id.isEqualWithNullVirtualDesktopId(deviceId))
         {
             return deviceInfo;
         }
@@ -206,8 +206,11 @@ bool FancyZonesData::AddDevice(const FancyZonesDataTypes::DeviceIdData& deviceId
     _TRACER_;
     using namespace FancyZonesDataTypes;
 
+    auto deviceInfo = FindDeviceInfo(deviceId);
+
     std::scoped_lock lock{ dataLock };
-    if (!deviceInfoMap.contains(deviceId))
+
+    if (!deviceInfo.has_value())
     {
         wil::unique_cotaskmem_string virtualDesktopId;
         if (SUCCEEDED(StringFromCLSID(deviceId.virtualDesktopId, &virtualDesktopId)))
@@ -224,13 +227,12 @@ bool FancyZonesData::AddDevice(const FancyZonesDataTypes::DeviceIdData& deviceId
             const ZoneSetData zoneSetData{ guidString.get(), ZoneSetLayoutType::PriorityGrid };
             DeviceInfoData defaultDeviceInfoData{ zoneSetData, DefaultValues::ShowSpacing, DefaultValues::Spacing, DefaultValues::ZoneCount, DefaultValues::SensitivityRadius };
             deviceInfoMap[deviceId] = std::move(defaultDeviceInfoData);
+            return true;
         }
         else
         {
-            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ NonLocalizable::NullStr, ZoneSetLayoutType::Blank } };
+            Logger::error("Failed to create an ID for the new layout");
         }
-
-        return true;
     }
 
     return false;
@@ -245,7 +247,7 @@ void FancyZonesData::CloneDeviceInfo(const FancyZonesDataTypes::DeviceIdData& so
     std::scoped_lock lock{ dataLock };
 
     // The source virtual desktop is deleted, simply ignore it.
-    if (!deviceInfoMap.contains(source))
+    if (!FindDeviceInfo(source).has_value())
     {
         return;
     }

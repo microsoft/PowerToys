@@ -146,6 +146,11 @@ namespace FancyZonesDataTypes
         int sensitivityRadius;
     };
 
+    inline bool operator==(const ZoneSetData& lhs, const ZoneSetData& rhs)
+    {
+        return lhs.type == rhs.type && lhs.uuid == rhs.uuid;
+    }
+
     inline bool operator==(const DeviceIdData& lhs, const DeviceIdData& rhs)
     {
         return lhs.deviceName.compare(rhs.deviceName) == 0 && lhs.width == rhs.width && lhs.height == rhs.height && lhs.virtualDesktopId == rhs.virtualDesktopId && lhs.monitorId.compare(rhs.monitorId) == 0;
@@ -159,6 +164,11 @@ namespace FancyZonesDataTypes
     inline bool operator<(const DeviceIdData& lhs, const DeviceIdData& rhs)
     {
         return lhs.deviceName.compare(rhs.deviceName) < 0 || lhs.width < rhs.width || lhs.height < rhs.height || lhs.monitorId.compare(rhs.monitorId) < 0;
+    }
+
+    inline bool operator==(const DeviceInfoData& lhs, const DeviceInfoData& rhs)
+    {
+        return lhs.activeZoneSet == rhs.activeZoneSet && lhs.showSpacing == rhs.showSpacing && lhs.spacing == rhs.spacing && lhs.zoneCount == rhs.zoneCount && lhs.sensitivityRadius == rhs.sensitivityRadius;
     }
 }
 
