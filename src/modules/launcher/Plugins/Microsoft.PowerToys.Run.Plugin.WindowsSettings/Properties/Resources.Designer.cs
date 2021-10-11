@@ -1278,18 +1278,18 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Edit the system environment variables.
         /// </summary>
-        internal static string EditSystemEnvironmentVars {
+        internal static string EditSystemEnvironmentVariables {
             get {
-                return ResourceManager.GetString("EditSystemEnvironmentVars", resourceCulture);
+                return ResourceManager.GetString("EditSystemEnvironmentVariables", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Edit environment variables for your account.
         /// </summary>
-        internal static string EditUserEnvironmentVars {
+        internal static string EditUserEnvironmentVariables {
             get {
-                return ResourceManager.GetString("EditUserEnvironmentVars", resourceCulture);
+                return ResourceManager.GetString("EditUserEnvironmentVariables", resourceCulture);
             }
         }
         
@@ -1326,15 +1326,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Environment {
             get {
                 return ResourceManager.GetString("Environment", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Environment variables.
-        /// </summary>
-        internal static string EnvironmentVariables {
-            get {
-                return ResourceManager.GetString("EnvironmentVariables", resourceCulture);
             }
         }
         

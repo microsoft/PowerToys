@@ -1753,18 +1753,18 @@
         "Note": "NoteEditingRequireAdminPrivileges"
     },
     {
-        "Name": "EditSystemEnvironmentVars",
+        "Name": "EditSystemEnvironmentVariables",
         "Areas": [ "AreaSystemAndSecurity", "AreaSystemPropertiesAdvanced" ],
         "Type": "AppControlPanel",
-        "AltNames": [ "EnvironmentVariables", "EditEnvironmentVariables", "SystemVariables", "sysdm.cpl" ],
+        "AltNames": [ "EditEnvironmentVariables", "SystemVariables", "sysdm.cpl" ],
         "Command": "rundll32.exe sysdm.cpl,EditEnvironmentVariables",
         "Note": "NoteEditingRequireAdminPrivileges"
     },
     {
-        "Name": "EditUserEnvironmentVars",
+        "Name": "EditUserEnvironmentVariables",
         "Areas": [ "AreaSystemAndSecurity", "AreaSystemPropertiesAdvanced" ],
         "Type": "AppControlPanel",
-        "AltNames": [ "EnvironmentVariables", "EditEnvironmentVariables", "UserEnvironmentVariables", "UserVariables", "sysdm.cpl" ],
+        "AltNames": [ "UserEnvironmentVariables", "UserVariables", "sysdm.cpl" ],
         "Command": "rundll32.exe sysdm.cpl,EditEnvironmentVariables"
     }
 ]

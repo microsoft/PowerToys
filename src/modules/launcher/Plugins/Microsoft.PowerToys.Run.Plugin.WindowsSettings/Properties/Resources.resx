@@ -612,15 +612,16 @@
   </data>
   <data name="EditEnvironmentVariables" xml:space="preserve">
     <value>Edit environment variables</value>
+    <comment>Used as AltName on EditSystemEnvironmentVars settings to make both entries available via 'Edit environment variables'.</comment>
   </data>
   <data name="Edition" xml:space="preserve">
     <value>Edition</value>
     <comment>Means the "Windows Edition"</comment>
   </data>
-  <data name="EditSystemEnvironmentVars" xml:space="preserve">
+  <data name="EditSystemEnvironmentVariables" xml:space="preserve">
     <value>Edit the system environment variables</value>
   </data>
-  <data name="EditUserEnvironmentVars" xml:space="preserve">
+  <data name="EditUserEnvironmentVariables" xml:space="preserve">
     <value>Edit environment variables for your account</value>
   </data>
   <data name="Email" xml:space="preserve">
@@ -638,9 +639,6 @@
   <data name="Environment" xml:space="preserve">
     <value>Environment</value>
     <comment>Area MixedReality, only available if the Mixed Reality Portal app is installed.</comment>
-  </data>
-  <data name="EnvironmentVariables" xml:space="preserve">
-    <value>Environment variables</value>
   </data>
   <data name="Ethernet" xml:space="preserve">
     <value>Ethernet</value>
