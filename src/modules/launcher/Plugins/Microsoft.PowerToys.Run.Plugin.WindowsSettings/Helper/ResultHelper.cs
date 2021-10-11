@@ -91,12 +91,14 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// Open the settings page of the given <see cref="IWindowsSetting"/>.
         /// </summary>
         /// <param name="entry">The <see cref="WindowsSetting"/> that contain the information to open the setting on command level.</param>
+        /// <param name="runAsAdministrator">If true the command of the <see cref="WindowsSetting"/> will be opened as administrator.</param>
         /// <returns><see langword="true"/> if the settings could be opened, otherwise <see langword="false"/>.</returns>
-        private static bool DoOpenSettingsAction(WindowsSetting entry)
+        internal static bool DoOpenSettingsAction(WindowsSetting entry, bool runAsAdministrator = false)
         {
             ProcessStartInfo processStartInfo;
 
             var command = entry.Command;
+            var runAsAdministratorArg = !runAsAdministrator ? string.Empty : "runas";
 
             if (command.Contains("%windir%", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -113,6 +115,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 processStartInfo = new ProcessStartInfo(file, arguments)
                 {
                     UseShellExecute = false,
+                    Verb = runAsAdministratorArg,
                 };
             }
             else
@@ -120,6 +123,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 processStartInfo = new ProcessStartInfo(command)
                 {
                     UseShellExecute = true,
+                    Verb = runAsAdministratorArg,
                 };
             }
 

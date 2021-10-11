@@ -31,19 +31,33 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 return new List<ContextMenuResult>(0);
             }
 
-            var list = new List<ContextMenuResult>(1)
+            var list = new List<ContextMenuResult>();
+            if (!entry.Command.StartsWith("ms-settings:", StringComparison.Ordinal))
             {
-                new ContextMenuResult
+                // Settings entry result for others than modern settings app. These apps support run as admin.
+                list.Add(new ContextMenuResult
                 {
-                    AcceleratorKey = Key.C,
+                    AcceleratorKey = Key.Enter,
                     AcceleratorModifiers = ModifierKeys.Control,
-                    Action = _ => TryToCopyToClipBoard(entry.Command),
+                    Action = _ => ResultHelper.DoOpenSettingsAction(entry, true),
                     FontFamily = "Segoe MDL2 Assets",
-                    Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
+                    Glyph = "\xE7EF",                       // E7EF => Symbol: Open as admin
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyCommand} (Ctrl+C)",
-                },
-            };
+                    Title = $"{Resources.OpenSettingAsAdmin} (Ctrl+Enter)",
+                });
+            }
+
+            // context menu entrie for all results
+            list.Add(new ContextMenuResult
+            {
+                AcceleratorKey = Key.C,
+                AcceleratorModifiers = ModifierKeys.Control,
+                Action = _ => TryToCopyToClipBoard(entry.Command),
+                FontFamily = "Segoe MDL2 Assets",
+                Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
+                PluginName = assemblyName,
+                Title = $"{Resources.CopyCommand} (Ctrl+C)",
+            });
 
             return list;
         }

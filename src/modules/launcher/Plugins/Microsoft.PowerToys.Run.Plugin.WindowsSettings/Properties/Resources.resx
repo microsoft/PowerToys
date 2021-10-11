@@ -1094,6 +1094,10 @@
   <data name="OnScreen" xml:space="preserve">
     <value>On-Screen</value>
   </data>
+  <data name="OpenSettingAsAdmin" xml:space="preserve">
+    <value>Open as administrator</value>
+    <comment>Name of context menu result</comment>
+  </data>
   <data name="Os" xml:space="preserve">
     <value>OS</value>
     <comment>Means the "Operating System"</comment>

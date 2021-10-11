@@ -2437,6 +2437,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open as administrator.
+        /// </summary>
+        internal static string OpenSettingAsAdmin {
+            get {
+                return ResourceManager.GetString("OpenSettingAsAdmin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to OS.
         /// </summary>
         internal static string Os {
