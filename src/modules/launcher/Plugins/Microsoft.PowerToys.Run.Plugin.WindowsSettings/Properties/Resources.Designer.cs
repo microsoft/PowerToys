@@ -3643,6 +3643,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to UserAccountControlSettings.exe.
+        /// </summary>
+        internal static string UserAccountControlSettings_exe {
+            get {
+                return ResourceManager.GetString("UserAccountControlSettings.exe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User accounts.
         /// </summary>
         internal static string UserAccounts {
