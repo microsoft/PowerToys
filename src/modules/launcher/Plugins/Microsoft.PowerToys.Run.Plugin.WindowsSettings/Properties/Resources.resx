@@ -311,7 +311,7 @@
   </data>
   <data name="AreaSystemPropertiesAdvanced" xml:space="preserve">
     <value>System Properties</value>
-    <comment>System Properties dialoge sysdm.cpl</comment>
+    <comment>System Properties dialog sysdm.cpl</comment>
   </data>
   <data name="AreaTimeAndLanguage" xml:space="preserve">
     <value>Time and language</value>
@@ -1122,11 +1122,11 @@
   </data>
   <data name="OpenControlPanel" xml:space="preserve">
     <value>Open Control Panel</value>
-    <comment>'Open' is hear the verb and 'Control Panel' is here the name of the legacy settings app.</comment>
+    <comment>'Open' is the verb and 'Control Panel' is here the name of the legacy settings app.</comment>
   </data>
   <data name="OpenSettingsApp" xml:space="preserve">
     <value>Open Settings</value>
-    <comment>'Open' is hear the verb and 'Settings' is here the name of the modern settings app.</comment>
+    <comment>'Open' is the verb and 'Settings' is here the name of the modern settings app.</comment>
   </data>
   <data name="Os" xml:space="preserve">
     <value>OS</value>
@@ -1588,6 +1588,10 @@
   <data name="Typing" xml:space="preserve">
     <value>Typing</value>
     <comment>Area Device</comment>
+  </data>
+  <data name="UAC" xml:space="preserve">
+    <value>UAC</value>
+    <comment>Short version of 'User account control'</comment>
   </data>
   <data name="Uninstall" xml:space="preserve">
     <value>Uninstall</value>

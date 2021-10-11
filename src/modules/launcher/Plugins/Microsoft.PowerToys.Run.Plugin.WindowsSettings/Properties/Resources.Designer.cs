@@ -3616,6 +3616,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to UAC.
+        /// </summary>
+        internal static string UAC {
+            get {
+                return ResourceManager.GetString("UAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uninstall.
         /// </summary>
         internal static string Uninstall {
