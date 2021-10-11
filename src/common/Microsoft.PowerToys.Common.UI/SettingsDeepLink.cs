@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Diagnostics;
-using System.IO;
 
 namespace Microsoft.PowerToys.Common.UI
 {
@@ -57,13 +57,11 @@ namespace Microsoft.PowerToys.Common.UI
             }
         }
 
-        public static void OpenSettings(string powerToysRelativePath, SettingsWindow window)
+        public static void OpenSettings(SettingsWindow window)
         {
             try
             {
-                var assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                var fullPath = Directory.GetParent(assemblyPath).FullName;
-                Process.Start(new ProcessStartInfo(fullPath + "\\" + powerToysRelativePath) { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
+                Process.Start(new ProcessStartInfo(Environment.CurrentDirectory + "\\PowerToys.exe") { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch
