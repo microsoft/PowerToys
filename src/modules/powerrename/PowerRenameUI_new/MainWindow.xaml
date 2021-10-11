@@ -522,7 +522,8 @@
                         Grid.Row="1"
                         Height="32"
                         VerticalAlignment="Bottom"
-                        HorizontalAlignment="Left"/>
+                        HorizontalAlignment="Left"
+                        Click="OpenDocs"/>
 
 
                 <!--<Button Content="&#xE728;"

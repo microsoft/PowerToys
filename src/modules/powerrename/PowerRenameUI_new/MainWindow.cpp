@@ -319,4 +319,9 @@ namespace winrt::PowerRenameUI_new::implementation
         m_uiUpdatesItem.CloseUIWindow(true);
         m_uiUpdatesItem.Rename();
     }
+
+    void MainWindow::OpenDocs(winrt::Windows::Foundation::IInspectable const&, winrt::Windows::UI::Xaml::RoutedEventArgs const&)
+    {
+        Windows::System::Launcher::LaunchUriAsync(winrt::Windows::Foundation::Uri{ L"https://aka.ms/PowerToysOverview_PowerRename" });
+    }
 }
