@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 });
             }
 
-            // context menu entrie for all results
+            // context menu entry for all results
             list.Add(new ContextMenuResult
             {
                 AcceleratorKey = Key.C,
