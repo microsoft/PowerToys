@@ -101,7 +101,6 @@ AShortcut
 ASingle
 asm
 asmx
-asembly
 aspnet
 aspx
 ASSOCCHANGED
