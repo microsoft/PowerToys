@@ -2437,6 +2437,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open Control Panel.
+        /// </summary>
+        internal static string OpenControlPanel {
+            get {
+                return ResourceManager.GetString("OpenControlPanel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open Settings.
+        /// </summary>
+        internal static string OpenSettingsApp {
+            get {
+                return ResourceManager.GetString("OpenSettingsApp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to OS.
         /// </summary>
         internal static string Os {

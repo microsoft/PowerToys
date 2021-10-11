@@ -1,5 +1,15 @@
 [
   {
+        "Name": "OpenSettingsApp",
+        "Type": "AppSettingsApp",
+        "Command": "ms-settings:"
+  },
+  {
+        "Name": "OpenControlPanel",
+        "Type": "AppControlPanel",
+        "Command": "control.exe"
+  },
+  {
     "Name": "AccessWorkOrSchool",
     "Areas": [ "AreaAccounts" ],
     "Type": "AppSettingsApp",

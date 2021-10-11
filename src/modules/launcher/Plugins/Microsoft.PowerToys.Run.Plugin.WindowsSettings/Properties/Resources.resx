@@ -1094,6 +1094,14 @@
   <data name="OnScreen" xml:space="preserve">
     <value>On-Screen</value>
   </data>
+  <data name="OpenControlPanel" xml:space="preserve">
+    <value>Open Control Panel</value>
+    <comment>'Open' is hear the verb and 'Control Panel' is here the name of the legacy settings app.</comment>
+  </data>
+  <data name="OpenSettingsApp" xml:space="preserve">
+    <value>Open Settings</value>
+    <comment>'Open' is hear the verb and 'Settings' is here the name of the modern settings app.</comment>
+  </data>
   <data name="Os" xml:space="preserve">
     <value>OS</value>
     <comment>Means the "Operating System"</comment>
