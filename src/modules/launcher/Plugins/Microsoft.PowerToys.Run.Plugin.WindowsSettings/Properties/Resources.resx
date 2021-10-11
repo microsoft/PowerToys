@@ -309,6 +309,10 @@
   <data name="AreaSystemAndSecurity" xml:space="preserve">
     <value>System and Security</value>
   </data>
+  <data name="AreaSystemPropertiesAdvanced" xml:space="preserve">
+    <value>System Properties</value>
+    <comment>System Properties dialoge sysdm.cpl</comment>
+  </data>
   <data name="AreaTimeAndLanguage" xml:space="preserve">
     <value>Time and language</value>
   </data>
@@ -606,9 +610,18 @@
     <value>Ease of access center</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
+  <data name="EditEnvironmentVariables" xml:space="preserve">
+    <value>Edit environment variables</value>
+  </data>
   <data name="Edition" xml:space="preserve">
     <value>Edition</value>
     <comment>Means the "Windows Edition"</comment>
+  </data>
+  <data name="EditSystemEnvironmentVars" xml:space="preserve">
+    <value>Edit the system environment variables</value>
+  </data>
+  <data name="EditUserEnvironmentVars" xml:space="preserve">
+    <value>Edit environment variables for your account</value>
   </data>
   <data name="Email" xml:space="preserve">
     <value>Email</value>
@@ -625,6 +638,9 @@
   <data name="Environment" xml:space="preserve">
     <value>Environment</value>
     <comment>Area MixedReality, only available if the Mixed Reality Portal app is installed.</comment>
+  </data>
+  <data name="EnvironmentVariables" xml:space="preserve">
+    <value>Environment variables</value>
   </data>
   <data name="Ethernet" xml:space="preserve">
     <value>Ethernet</value>
@@ -1484,6 +1500,9 @@
     <value>System properties and Add New Hardware wizard</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
+  <data name="SystemVariables" xml:space="preserve">
+    <value>System variables</value>
+  </data>
   <data name="Tab" xml:space="preserve">
     <value>Tab</value>
     <comment>Means the key "Tabulator" on the keyboard</comment>
@@ -1581,6 +1600,12 @@
   <data name="UserAccounts" xml:space="preserve">
     <value>User accounts</value>
     <comment>Area Control Panel (legacy settings)</comment>
+  </data>
+  <data name="UserEnvironmentVariables" xml:space="preserve">
+    <value>User environment variables</value>
+  </data>
+  <data name="UserVariables" xml:space="preserve">
+    <value>User variables</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Version</value>

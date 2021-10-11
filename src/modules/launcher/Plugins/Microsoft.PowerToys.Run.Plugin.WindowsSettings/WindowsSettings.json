@@ -1751,5 +1751,20 @@
         "AltNames": [ "UserAccountControlSettings.exe", "UserAccounts", "UAC" ],
         "Command": "UserAccountControlSettings.exe",
         "Note": "NoteEditingRequireAdminPrivileges"
+    },
+    {
+        "Name": "EditSystemEnvironmentVars",
+        "Areas": [ "AreaSystemAndSecurity", "AreaSystemPropertiesAdvanced" ],
+        "Type": "AppControlPanel",
+        "AltNames": [ "EnvironmentVariables", "EditEnvironmentVariables", "SystemVariables", "sysdm.cpl" ],
+        "Command": "rundll32.exe sysdm.cpl,EditEnvironmentVariables",
+        "Note": "NoteEditingRequireAdminPrivileges"
+    },
+    {
+        "Name": "EditUserEnvironmentVars",
+        "Areas": [ "AreaSystemAndSecurity", "AreaSystemPropertiesAdvanced" ],
+        "Type": "AppControlPanel",
+        "AltNames": [ "EnvironmentVariables", "EditEnvironmentVariables", "UserEnvironmentVariables", "UserVariables", "sysdm.cpl" ],
+        "Command": "rundll32.exe sysdm.cpl,EditEnvironmentVariables"
     }
 ]

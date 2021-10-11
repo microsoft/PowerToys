@@ -547,6 +547,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to System Properties.
+        /// </summary>
+        internal static string AreaSystemPropertiesAdvanced {
+            get {
+                return ResourceManager.GetString("AreaSystemPropertiesAdvanced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Time and language.
         /// </summary>
         internal static string AreaTimeAndLanguage {
@@ -1249,11 +1258,38 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Edit environment variables.
+        /// </summary>
+        internal static string EditEnvironmentVariables {
+            get {
+                return ResourceManager.GetString("EditEnvironmentVariables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edition.
         /// </summary>
         internal static string Edition {
             get {
                 return ResourceManager.GetString("Edition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit the system environment variables.
+        /// </summary>
+        internal static string EditSystemEnvironmentVars {
+            get {
+                return ResourceManager.GetString("EditSystemEnvironmentVars", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit environment variables for your account.
+        /// </summary>
+        internal static string EditUserEnvironmentVars {
+            get {
+                return ResourceManager.GetString("EditUserEnvironmentVars", resourceCulture);
             }
         }
         
@@ -1290,6 +1326,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Environment {
             get {
                 return ResourceManager.GetString("Environment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Environment variables.
+        /// </summary>
+        internal static string EnvironmentVariables {
+            get {
+                return ResourceManager.GetString("EnvironmentVariables", resourceCulture);
             }
         }
         
@@ -3355,6 +3400,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to System variables.
+        /// </summary>
+        internal static string SystemVariables {
+            get {
+                return ResourceManager.GetString("SystemVariables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tab.
         /// </summary>
         internal static string Tab {
@@ -3585,6 +3639,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string UserAccounts {
             get {
                 return ResourceManager.GetString("UserAccounts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User environment variables.
+        /// </summary>
+        internal static string UserEnvironmentVariables {
+            get {
+                return ResourceManager.GetString("UserEnvironmentVariables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User variables.
+        /// </summary>
+        internal static string UserVariables {
+            get {
+                return ResourceManager.GetString("UserVariables", resourceCulture);
             }
         }
         
