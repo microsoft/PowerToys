@@ -296,6 +296,10 @@
   <data name="AreaPrograms" xml:space="preserve">
     <value>Programs</value>
   </data>
+  <data name="AreaSecurityandMaintenance" xml:space="preserve">
+    <value>Security and Maintenance</value>
+    <comment>Area Security and Maintenance in legacy Control Panel app.</comment>
+  </data>
   <data name="AreaSurfaceHub" xml:space="preserve">
     <value>SurfaceHub</value>
   </data>
@@ -427,6 +431,9 @@
   <data name="CellularAndSim" xml:space="preserve">
     <value>Cellular and SIM</value>
     <comment>Area NetworkAndInternet</comment>
+  </data>
+  <data name="ChangeUACSettings" xml:space="preserve">
+    <value>Change User Account Control settings</value>
   </data>
   <data name="ChooseWhichFoldersAppearOnStart" xml:space="preserve">
     <value>Choose which folders appear on Start</value>
@@ -1008,6 +1015,9 @@
   </data>
   <data name="NoteDisplayGraphics" xml:space="preserve">
     <value>Only available on devices that support advanced display options.</value>
+  </data>
+  <data name="NoteEditingRequireAdminPrivileges" xml:space="preserve">
+    <value>Editing this setting may require administrative privileges.</value>
   </data>
   <data name="NoteEnrolledWIP" xml:space="preserve">
     <value>Only present if user is enrolled in WIP.</value>

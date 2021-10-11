@@ -511,6 +511,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Security and Maintenance.
+        /// </summary>
+        internal static string AreaSecurityandMaintenance {
+            get {
+                return ResourceManager.GetString("AreaSecurityandMaintenance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SurfaceHub.
         /// </summary>
         internal static string AreaSurfaceHub {
@@ -831,6 +840,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string CellularAndSim {
             get {
                 return ResourceManager.GetString("CellularAndSim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change User Account Control settings.
+        /// </summary>
+        internal static string ChangeUACSettings {
+            get {
+                return ResourceManager.GetString("ChangeUACSettings", resourceCulture);
             }
         }
         
@@ -2208,6 +2226,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string NoteDisplayGraphics {
             get {
                 return ResourceManager.GetString("NoteDisplayGraphics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Editing this setting may require administrative privileges..
+        /// </summary>
+        internal static string NoteEditingRequireAdminPrivileges {
+            get {
+                return ResourceManager.GetString("NoteEditingRequireAdminPrivileges", resourceCulture);
             }
         }
         
