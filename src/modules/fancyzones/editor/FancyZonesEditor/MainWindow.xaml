@@ -337,7 +337,7 @@
                     ToolTip="{x:Static props:Resources.OpenSettings}"
                     Style="{StaticResource IconOnlyButtonStyle}">
                 <Button.Content>
-                    <TextBlock Text="&#xE115;"
+                    <TextBlock Text="&#xe713;"
                                FontFamily="Segoe MDL2 Assets"
                                AutomationProperties.Name="{x:Static props:Resources.OpenSettings}" />
                 </Button.Content>

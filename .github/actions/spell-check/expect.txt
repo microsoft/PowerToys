@@ -101,6 +101,7 @@ AShortcut
 ASingle
 asm
 asmx
+asembly
 aspnet
 aspx
 ASSOCCHANGED
@@ -184,6 +185,7 @@ Browsable
 bsd
 bstr
 bti
+btn
 BTNFACE
 Bto
 buf
