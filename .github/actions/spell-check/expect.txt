@@ -184,6 +184,7 @@ Browsable
 bsd
 bstr
 bti
+btn
 BTNFACE
 Bto
 buf

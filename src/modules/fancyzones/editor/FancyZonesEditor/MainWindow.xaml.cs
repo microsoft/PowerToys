@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -515,6 +517,19 @@ namespace FancyZonesEditor
             numberBox.ApplyTemplate(); // Apply template to be able to change child's property.
             var numberBoxTextBox = numberBox.Template.FindName(numberBoxTextBoxName, numberBox) as TextBox;
             numberBoxTextBox.SetValue(AutomationProperties.NameProperty, numberBox.GetValue(AutomationProperties.NameProperty));
+        }
+
+        private void SettingsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                var fullPath = Directory.GetParent(assemblyPath).FullName;
+                Process.Start(new ProcessStartInfo(fullPath + "\\..\\PowerToys.exe") { Arguments = "--open-settings=FancyZones" });
+            }
+            catch
+            {
+            }
         }
     }
 }
