@@ -85,7 +85,7 @@
             <Button Width="46"
                     Command="{Binding OpenSettingsCommand}"
                     Height="32"
-                    Content="&#xE115;"
+                    Content="&#xE713;"
                     TabIndex="2"
                     Background="Transparent"
                     FontFamily="Segoe MDL2 Assets"
