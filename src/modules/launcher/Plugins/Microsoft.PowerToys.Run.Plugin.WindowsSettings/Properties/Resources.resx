@@ -296,7 +296,7 @@
   <data name="AreaPrograms" xml:space="preserve">
     <value>Programs</value>
   </data>
-  <data name="AreaSecurityandMaintenance" xml:space="preserve">
+  <data name="AreaSecurityAndMaintenance" xml:space="preserve">
     <value>Security and Maintenance</value>
     <comment>Area Security and Maintenance in legacy Control Panel app.</comment>
   </data>

@@ -1746,7 +1746,7 @@
     },
     {
         "Name": "ChangeUACSettings",
-        "Areas": [ "AreaSystemAndSecurity", "AreaSecurityandMaintenance" ],
+        "Areas": [ "AreaSystemAndSecurity", "AreaSecurityAndMaintenance" ],
         "Type": "AppControlPanel",
         "AltNames": [ "UserAccountControlSettings.exe", "UserAccounts", "UAC" ],
         "Command": "UserAccountControlSettings.exe",

@@ -513,9 +513,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Security and Maintenance.
         /// </summary>
-        internal static string AreaSecurityandMaintenance {
+        internal static string AreaSecurityAndMaintenance {
             get {
-                return ResourceManager.GetString("AreaSecurityandMaintenance", resourceCulture);
+                return ResourceManager.GetString("AreaSecurityAndMaintenance", resourceCulture);
             }
         }
         
