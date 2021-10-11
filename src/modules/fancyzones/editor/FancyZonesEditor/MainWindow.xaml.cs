@@ -522,7 +522,7 @@ namespace FancyZonesEditor
 
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            SettingsDeepLink.OpenSettings("..\\PowerToys.exe", "FancyZones");
+            SettingsDeepLink.OpenSettings("..\\PowerToys.exe", SettingsDeepLink.SettingsWindow.FancyZones);
         }
     }
 }

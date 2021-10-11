@@ -188,7 +188,7 @@ namespace ColorPicker.Helpers
 
         private void ColorEditorViewModel_OpenSettingsRequested(object sender, EventArgs e)
         {
-            SettingsDeepLink.OpenSettings("..\\PowerToys.exe", "ColorPicker");
+            SettingsDeepLink.OpenSettings("..\\PowerToys.exe", SettingsDeepLink.SettingsWindow.ColorPicker);
         }
     }
 }

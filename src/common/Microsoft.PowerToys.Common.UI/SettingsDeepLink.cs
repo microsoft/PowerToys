@@ -9,13 +9,61 @@ namespace Microsoft.PowerToys.Common.UI
 {
     public static class SettingsDeepLink
     {
-        public static void OpenSettings(string powerToysRelativePath, string module)
+        public enum SettingsWindow
+        {
+            Overview = 0,
+            Awake,
+            ColorPicker,
+            FancyZones,
+            Run,
+            ImageResizer,
+            KBM,
+            PowerRename,
+            FileExplorer,
+            ShortcutGuide,
+            VideoConference,
+        }
+
+        private static string SettingsWindowNameToString(SettingsWindow value)
+        {
+            switch (value)
+            {
+                case SettingsWindow.Overview:
+                    return "Overview";
+                case SettingsWindow.Awake:
+                    return "Awake";
+                case SettingsWindow.ColorPicker:
+                    return "ColorPicker";
+                case SettingsWindow.FancyZones:
+                    return "FancyZones";
+                case SettingsWindow.Run:
+                    return "Run";
+                case SettingsWindow.ImageResizer:
+                    return "ImageResizer";
+                case SettingsWindow.KBM:
+                    return "KBM";
+                case SettingsWindow.PowerRename:
+                    return "PowerRename";
+                case SettingsWindow.FileExplorer:
+                    return "FileExplorer";
+                case SettingsWindow.ShortcutGuide:
+                    return "ShortcutGuide";
+                case SettingsWindow.VideoConference:
+                    return "VideoConference";
+                default:
+                    {
+                        return string.Empty;
+                    }
+            }
+        }
+
+        public static void OpenSettings(string powerToysRelativePath, SettingsWindow window)
         {
             try
             {
                 var assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
                 var fullPath = Directory.GetParent(assemblyPath).FullName;
-                Process.Start(new ProcessStartInfo(fullPath + "\\" + powerToysRelativePath) { Arguments = "--open-settings=" + module });
+                Process.Start(new ProcessStartInfo(fullPath + "\\" + powerToysRelativePath) { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch
