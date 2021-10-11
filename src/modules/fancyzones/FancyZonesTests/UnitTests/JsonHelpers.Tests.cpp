@@ -2042,6 +2042,258 @@ namespace FancyZonesUnitTests
 
                 Assert::IsFalse(data.RemoveAppLastZone(nullptr, deviceId, zoneSetId));
             }
+
+            TEST_METHOD (AddDevice)
+            {
+                FancyZonesDataTypes::DeviceIdData expected{
+                    .deviceName = L"Device",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = m_defaultVDId
+                };
+
+                auto result = m_fzData.AddDevice(expected);
+                Assert::IsTrue(result);
+
+                auto actualMap = m_fzData.GetDeviceInfoMap();
+
+                Assert::IsFalse(actualMap.find(expected) == actualMap.end());
+            }
+
+            TEST_METHOD (AddDeviceWithNullVirtualDesktopId)
+            {
+                FancyZonesDataTypes::DeviceIdData expected{
+                    .deviceName = L"Device",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = GUID_NULL
+                };
+
+                auto result = m_fzData.AddDevice(expected);
+                Assert::IsTrue(result);
+
+                auto actualMap = m_fzData.GetDeviceInfoMap();
+
+                Assert::IsFalse(actualMap.find(expected) == actualMap.end());
+            }
+
+            TEST_METHOD (AddDeviceDuplicate)
+            {
+                FancyZonesDataTypes::DeviceIdData expected{
+                    .deviceName = L"Device",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = m_defaultVDId
+                };
+
+                auto result = m_fzData.AddDevice(expected);
+                Assert::IsTrue(result);
+
+                auto result2 = m_fzData.AddDevice(expected);
+                Assert::IsFalse(result2);
+
+                auto actualMap = m_fzData.GetDeviceInfoMap();
+
+                Assert::IsFalse(actualMap.find(expected) == actualMap.end());
+            }
+
+            TEST_METHOD (AddDeviceWithNullVirtualDesktopIdDuplicated)
+            {
+                FancyZonesDataTypes::DeviceIdData expected{
+                    .deviceName = L"Device",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = GUID_NULL
+                };
+
+                auto result = m_fzData.AddDevice(expected);
+                Assert::IsTrue(result);
+
+                auto result2 = m_fzData.AddDevice(expected);
+                Assert::IsFalse(result2);
+
+                auto actualMap = m_fzData.GetDeviceInfoMap();
+
+                Assert::IsFalse(actualMap.find(expected) == actualMap.end());
+            }
+
+            TEST_METHOD (AddDeviceDuplicatedComparedWithNillVirtualDesktopId)
+            {
+                FancyZonesDataTypes::DeviceIdData device1{
+                    .deviceName = L"Device",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = m_defaultVDId
+                };
+
+                FancyZonesDataTypes::DeviceIdData device2{
+                    .deviceName = L"Device",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = GUID_NULL
+                };
+
+                auto result = m_fzData.AddDevice(device1);
+                Assert::IsTrue(result);
+
+                auto result2 = m_fzData.AddDevice(device2);
+                Assert::IsFalse(result2);
+
+                auto actualMap = m_fzData.GetDeviceInfoMap();
+
+                Assert::IsFalse(actualMap.find(device1) == actualMap.end());
+                Assert::IsTrue(actualMap.find(device2) == actualMap.end());
+            }
+
+            TEST_METHOD (AddDeviceDuplicatedComparedWithNillVirtualDesktopId2)
+            {
+                FancyZonesDataTypes::DeviceIdData device1{
+                    .deviceName = L"Device",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = m_defaultVDId
+                };
+
+                FancyZonesDataTypes::DeviceIdData device2{
+                    .deviceName = L"Device",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = GUID_NULL
+                };
+
+                auto result2 = m_fzData.AddDevice(device2);
+                Assert::IsTrue(result2);
+
+                auto result1 = m_fzData.AddDevice(device1);
+                Assert::IsFalse(result1);               
+
+                auto actualMap = m_fzData.GetDeviceInfoMap();
+
+                Assert::IsFalse(actualMap.find(device2) == actualMap.end());
+                Assert::IsTrue(actualMap.find(device1) == actualMap.end());
+            }
+
+            TEST_METHOD(CloneDeviceInfo)
+            {
+                FancyZonesDataTypes::DeviceIdData deviceSrc{
+                    .deviceName = L"Device1",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = m_defaultVDId
+                };
+                FancyZonesDataTypes::DeviceIdData deviceDst{
+                    .deviceName = L"Device2",
+                    .width = 300,
+                    .height = 400,
+                    .virtualDesktopId = m_defaultVDId
+                };
+
+                Assert::IsTrue(m_fzData.AddDevice(deviceSrc));
+                Assert::IsTrue(m_fzData.AddDevice(deviceDst));
+
+                m_fzData.CloneDeviceInfo(deviceSrc, deviceDst);
+
+                auto actualMap = m_fzData.GetDeviceInfoMap();
+                Assert::IsFalse(actualMap.find(deviceSrc) == actualMap.end());
+                Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
+                
+                auto expected = m_fzData.FindDeviceInfo(deviceSrc);
+                auto actual = m_fzData.FindDeviceInfo(deviceDst);
+
+                Assert::IsTrue(expected.has_value());
+                Assert::IsTrue(actual.has_value());
+                Assert::IsTrue(expected.value() == actual.value());
+            }
+
+            TEST_METHOD (CloneDeviceInfoIntoUnknownDevice)
+            {
+                FancyZonesDataTypes::DeviceIdData deviceSrc{
+                    .deviceName = L"Device1",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = m_defaultVDId
+                };
+                FancyZonesDataTypes::DeviceIdData deviceDst{
+                    .deviceName = L"Device2",
+                    .width = 300,
+                    .height = 400,
+                    .virtualDesktopId = m_defaultVDId
+                };
+
+                Assert::IsTrue(m_fzData.AddDevice(deviceSrc));
+
+                m_fzData.CloneDeviceInfo(deviceSrc, deviceDst);
+
+                auto actualMap = m_fzData.GetDeviceInfoMap();
+                Assert::IsFalse(actualMap.find(deviceSrc) == actualMap.end());
+                Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
+
+                auto expected = m_fzData.FindDeviceInfo(deviceSrc);
+                auto actual = m_fzData.FindDeviceInfo(deviceDst);
+
+                Assert::IsTrue(expected.has_value());
+                Assert::IsTrue(actual.has_value());
+                Assert::IsTrue(expected.value() == actual.value());
+            }
+
+            TEST_METHOD (CloneDeviceInfoFromUnknownDevice)
+            {
+                FancyZonesDataTypes::DeviceIdData deviceSrc{
+                    .deviceName = L"Device1",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = m_defaultVDId
+                };
+                FancyZonesDataTypes::DeviceIdData deviceDst{
+                    .deviceName = L"Device2",
+                    .width = 300,
+                    .height = 400,
+                    .virtualDesktopId = m_defaultVDId
+                };
+
+                Assert::IsTrue(m_fzData.AddDevice(deviceDst));
+
+                m_fzData.CloneDeviceInfo(deviceSrc, deviceDst);
+
+                auto actualMap = m_fzData.GetDeviceInfoMap();
+                Assert::IsTrue(actualMap.find(deviceSrc) == actualMap.end());
+                Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
+
+                Assert::IsFalse(m_fzData.FindDeviceInfo(deviceSrc).has_value());
+                Assert::IsTrue(m_fzData.FindDeviceInfo(deviceDst).has_value());
+            }
+
+            TEST_METHOD(CloneDeviceInfoNullVirtualDesktopId)
+            {
+                FancyZonesDataTypes::DeviceIdData deviceSrc{
+                    .deviceName = L"Device1",
+                    .width = 200,
+                    .height = 100,
+                    .virtualDesktopId = GUID_NULL
+                };
+                FancyZonesDataTypes::DeviceIdData deviceDst{
+                    .deviceName = L"Device2",
+                    .width = 300,
+                    .height = 400,
+                    .virtualDesktopId = m_defaultVDId
+                };
+
+                Assert::IsTrue(m_fzData.AddDevice(deviceSrc));
+                Assert::IsTrue(m_fzData.AddDevice(deviceDst));
+
+                m_fzData.CloneDeviceInfo(deviceSrc, deviceDst);
+
+                auto actualMap = m_fzData.GetDeviceInfoMap();
+                Assert::IsFalse(actualMap.find(deviceSrc) == actualMap.end());
+                Assert::IsFalse(actualMap.find(deviceDst) == actualMap.end());
+
+                auto expected = m_fzData.FindDeviceInfo(deviceSrc);
+                auto actual = m_fzData.FindDeviceInfo(deviceDst);
+
+                Assert::IsTrue(expected.has_value());
+                Assert::IsTrue(actual.has_value());
+                Assert::IsTrue(expected.value() == actual.value());
+            }
     };
 
     TEST_CLASS(EditorArgsUnitTests)
