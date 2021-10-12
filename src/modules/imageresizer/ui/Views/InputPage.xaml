@@ -159,7 +159,7 @@
                 <Button Width="36"
                     Command="{Binding OpenSettingsCommand}"
                     Height="36"
-                    Margin="-6,0,0,0"
+                    Margin="-8,0,0,0"
                     Content="&#xE713;"
                     Background="Transparent"
                     FontFamily="Segoe MDL2 Assets"
