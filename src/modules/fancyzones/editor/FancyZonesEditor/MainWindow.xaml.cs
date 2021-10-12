@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
+using Microsoft.PowerToys.Common.UI;
 using ModernWpf.Controls;
 
 namespace FancyZonesEditor
@@ -521,15 +522,7 @@ namespace FancyZonesEditor
 
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                var fullPath = Directory.GetParent(assemblyPath).FullName;
-                Process.Start(new ProcessStartInfo(fullPath + "\\..\\PowerToys.exe") { Arguments = "--open-settings=FancyZones" });
-            }
-            catch
-            {
-            }
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.FancyZones);
         }
     }
 }
