@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace Microsoft.PowerToys.Common.UI
 {
@@ -61,7 +62,9 @@ namespace Microsoft.PowerToys.Common.UI
         {
             try
             {
-                Process.Start(new ProcessStartInfo(Environment.CurrentDirectory + "\\PowerToys.exe") { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
+                var assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                var fullPath = Directory.GetParent(assemblyPath).FullName;
+                Process.Start(new ProcessStartInfo(fullPath + "\\..\\PowerToys.exe") { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch
