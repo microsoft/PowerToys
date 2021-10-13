@@ -148,7 +148,7 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 
 ### Shortcut Guide
 
-- Re-added the long Win key press to activate utility.
+- Re-added the long <kbd>Win</kbd> key press to activate utility.
 
 ### Video Conference Mute
 
