@@ -389,11 +389,25 @@ void AppWindow::SetHandlers()
     // AutoSuggestBox Search
     m_mainUserControl.AutoSuggestBoxSearch().TextChanged([&](winrt::Windows::Foundation::IInspectable const& sender, AutoSuggestBoxTextChangedEventArgs const&) {
         SearchReplaceChanged();
+        DWORD filter = 0;
+        m_prManager->GetFilter(&filter);
+        if (filter == PowerRenameFilters::ShouldRename)
+        {
+            m_mainUserControl.ExplorerItems().Clear();
+            PopulateExplorerItems();
+        }
     });
 
     // AutoSuggestBox Replace
     m_mainUserControl.AutoSuggestBoxReplace().TextChanged([&](winrt::Windows::Foundation::IInspectable const& sender, AutoSuggestBoxTextChangedEventArgs const&) {
         SearchReplaceChanged();
+        DWORD filter = 0;
+        m_prManager->GetFilter(&filter);
+        if (filter == PowerRenameFilters::ShouldRename)
+        {
+            m_mainUserControl.ExplorerItems().Clear();
+            PopulateExplorerItems();
+        }
     });
 
     // ToggleButton UpperCase
