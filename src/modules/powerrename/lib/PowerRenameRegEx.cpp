@@ -96,7 +96,14 @@ IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm, bool for
         {
             changed = true;
             CoTaskMemFree(m_searchTerm);
-            hr = SHStrDup(searchTerm, &m_searchTerm);
+            if (lstrcmp(searchTerm, L"") == 0)
+            {
+                m_searchTerm = NULL;
+            }
+            else
+            {
+                hr = SHStrDup(searchTerm, &m_searchTerm);
+            }
         }
     }
 

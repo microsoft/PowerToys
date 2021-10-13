@@ -150,4 +150,6 @@ private:
     CComPtr<IPowerRenameMRU> m_replaceMRU;
     UINT m_selectedCount = 0;
     UINT m_renamingCount = 0;
+
+    bool m_flagValidationInProgress = false;
 };

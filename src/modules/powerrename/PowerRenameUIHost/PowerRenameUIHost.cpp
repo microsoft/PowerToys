@@ -341,6 +341,8 @@ void AppWindow::ValidateFlags(PowerRenameFlags flag)
             m_mainUserControl.TglBtnTitleCase().IsChecked(false);
         }    
     }
+
+    m_flagValidationInProgress = true;
 }
 
 void AppWindow::UpdateFlag(PowerRenameFlags flag, UpdateFlagCommand command)
@@ -389,25 +391,11 @@ void AppWindow::SetHandlers()
     // AutoSuggestBox Search
     m_mainUserControl.AutoSuggestBoxSearch().TextChanged([&](winrt::Windows::Foundation::IInspectable const& sender, AutoSuggestBoxTextChangedEventArgs const&) {
         SearchReplaceChanged();
-        DWORD filter = 0;
-        m_prManager->GetFilter(&filter);
-        if (filter == PowerRenameFilters::ShouldRename)
-        {
-            m_mainUserControl.ExplorerItems().Clear();
-            PopulateExplorerItems();
-        }
     });
 
     // AutoSuggestBox Replace
     m_mainUserControl.AutoSuggestBoxReplace().TextChanged([&](winrt::Windows::Foundation::IInspectable const& sender, AutoSuggestBoxTextChangedEventArgs const&) {
         SearchReplaceChanged();
-        DWORD filter = 0;
-        m_prManager->GetFilter(&filter);
-        if (filter == PowerRenameFilters::ShouldRename)
-        {
-            m_mainUserControl.ExplorerItems().Clear();
-            PopulateExplorerItems();
-        }
     });
 
     // ToggleButton UpperCase
@@ -823,11 +811,26 @@ HRESULT AppWindow::OnRegExStarted(_In_ DWORD threadId) {
     return S_OK;
 }
 
-HRESULT AppWindow::OnRegExCanceled(_In_ DWORD threadId) {\
+HRESULT AppWindow::OnRegExCanceled(_In_ DWORD threadId) {
     return S_OK;
 }
 
 HRESULT AppWindow::OnRegExCompleted(_In_ DWORD threadId) {
+    if (m_flagValidationInProgress)
+    {
+        m_flagValidationInProgress = false;
+    }
+    else
+    {
+        DWORD filter = 0;
+        m_prManager->GetFilter(&filter);
+        if (filter == PowerRenameFilters::ShouldRename)
+        {
+            m_mainUserControl.ExplorerItems().Clear();
+            PopulateExplorerItems();
+        }
+    }
+
     return S_OK;
 }
 
