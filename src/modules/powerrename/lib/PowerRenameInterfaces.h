@@ -107,6 +107,7 @@ public:
     IFACEMETHOD(Reset)() = 0;
     IFACEMETHOD(Shutdown)() = 0;
     IFACEMETHOD(Rename)(_In_ HWND hwndParent, _In_ bool closeWindow) = 0;
+    IFACEMETHOD(UpdateChildrenPath)(_In_ int parentId, _In_ size_t oldParentPathSize) = 0;
     IFACEMETHOD(GetCloseUIWindowAfterRenaming)(_Out_ bool* closeUIWindowAfterRenaming) = 0;
     IFACEMETHOD(AddItem)(_In_ IPowerRenameItem * pItem) = 0;
     IFACEMETHOD(GetItemByIndex)(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem) = 0;

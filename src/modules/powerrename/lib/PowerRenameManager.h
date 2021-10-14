@@ -23,6 +23,7 @@ public:
     IFACEMETHODIMP Reset();
     IFACEMETHODIMP Shutdown();
     IFACEMETHODIMP Rename(_In_ HWND hwndParent, bool closeWindow);
+    IFACEMETHODIMP UpdateChildrenPath(_In_ int parentId, _In_ size_t oldParentPathSize);
     IFACEMETHODIMP GetCloseUIWindowAfterRenaming(_Out_ bool* closeUIWindowAfterRenaming);
     IFACEMETHODIMP AddItem(_In_ IPowerRenameItem* pItem);
     IFACEMETHODIMP GetItemByIndex(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem);
