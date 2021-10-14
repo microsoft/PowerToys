@@ -2150,7 +2150,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[密钥]]></Val>
+            <Val><![CDATA[键]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
