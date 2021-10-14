@@ -82,7 +82,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 Our goals for the [v0.47 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F24) primarily centered around stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
 
-Notably, based on the community feedback received, PowerToys has re-introduced the highly-requested ability to activate Shortcut Guide via holding the `Win` key. PowerToys also now allows various commands in PowerToys Run to be used in either the universal English phrasing or system-localized translation. The great feedback the community provides is invaluable in helping PowerToys continually grow and improve as a product.
+Notably, based on the community feedback received, PowerToys has re-introduced the highly-requested ability to activate Shortcut Guide via holding the <kbd>Win</kbd> key. PowerToys also now allows various commands in PowerToys Run to be used in either the universal English phrasing or system-localized translation. The great feedback the community provides is invaluable in helping PowerToys continually grow and improve as a product.
 
 An experimental version of PowerToys (v0.48) will be released the week of October 4th, introducing improvements to our Video Conference Mute utility! All updates from the v0.47.1 release will still apply in v0.48.
 
@@ -129,12 +129,12 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 
 - Fixed crash when adding a shortcut.
 - Fixed issue with Re-mappings window not displaying.
-- Fixed issue when remapping a shortcut to `Alt`+`Tab` breaks the `Alt`+`Tab` navigation with arrow keys.
+- Fixed issue when remapping a shortcut to <kbd>Alt</kbd>+<kbd>Tab</kbd> breaks the <kbd>Alt</kbd>+<kbd>Tab</kbd> navigation with arrow keys.
 
 ### PowerToys Run
 
 - Improvements on subtitle layout for Settings plugin. Thanks @htcfreek!
-- Added path filters for Settings plugin via `>` key. Thanks @htcfreek! 
+- Added path filters for Settings plugin via `>` character. Thanks @htcfreek! 
 - Translation improvements for Settings plugin. Thanks @htcfreek!
 - Enabled translation for Settings Plugin. Thanks @htcfreek!
 - Fixed issue with PowerToys Run not being in focus when launched.
@@ -148,7 +148,7 @@ An experimental version of PowerToys (v0.48) will be released the week of Octobe
 
 ### Shortcut Guide
 
-- Re-added the long Win key press to activate utility.
+- Re-added the long <kbd>Win</kbd> key press to activate utility.
 
 ### Video Conference Mute
 
