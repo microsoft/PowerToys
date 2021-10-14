@@ -56,12 +56,15 @@ AppWindow::AppWindow(HINSTANCE hInstance, std::vector<std::wstring> files) noexc
 
         if (!files.empty())
         {
-            CreateShellItemArrayFromPaths(files, &shellItemArray);
-            CComPtr<IEnumShellItems> enumShellItems;
-            hr = shellItemArray->EnumItems(&enumShellItems);
+            hr = CreateShellItemArrayFromPaths(files, &shellItemArray);
             if (SUCCEEDED(hr))
             {
-                EnumerateShellItems(enumShellItems);
+                CComPtr<IEnumShellItems> enumShellItems;
+                hr = shellItemArray->EnumItems(&enumShellItems);
+                if (SUCCEEDED(hr))
+                {
+                    EnumerateShellItems(enumShellItems);
+                }
             }
         }
     }
@@ -152,27 +155,35 @@ HRESULT AppWindow::CreateShellItemArrayFromPaths(
     IShellItemArray** shellItemArray)
 {
     *shellItemArray = nullptr;
-    PIDLIST_ABSOLUTE* itemList = new (std::nothrow) PIDLIST_ABSOLUTE[files.size()];
+    PIDLIST_ABSOLUTE* itemList = nullptr;
+    itemList = new (std::nothrow) PIDLIST_ABSOLUTE[files.size()];
     HRESULT hr = itemList ? S_OK : E_OUTOFMEMORY;
-    UINT cnt;
-    for (cnt = 0; SUCCEEDED(hr) && cnt < files.size(); cnt++)
+    UINT itemsCnt = 0;
+    for (const auto& file : files)
     {
         const DWORD BUFSIZE = 4096;
         TCHAR buffer[BUFSIZE] = TEXT("");
-        auto retval = GetFullPathName(files[cnt].c_str(), BUFSIZE, buffer, NULL);
+        auto retval = GetFullPathName(file.c_str(), BUFSIZE, buffer, NULL);
         if (retval != 0 && PathFileExists(buffer))
         {
-            hr = SHParseDisplayName(buffer, nullptr, &itemList[cnt], 0, nullptr);
+            hr = SHParseDisplayName(buffer, nullptr, &itemList[itemsCnt], 0, nullptr);
+            ++itemsCnt;
         }
     }
-    if (SUCCEEDED(hr))
+    if (SUCCEEDED(hr) && itemsCnt > 0)
     {
-        hr = SHCreateShellItemArrayFromIDLists(cnt, const_cast<LPCITEMIDLIST*>(itemList), shellItemArray);
+        hr = SHCreateShellItemArrayFromIDLists(itemsCnt, const_cast<LPCITEMIDLIST*>(itemList), shellItemArray);
+
+        for (UINT i = 0; i < itemsCnt; i++)
+        {
+            CoTaskMemFree(itemList[i]);
+        }
     }
-    for (UINT i = 0; i < cnt; i++)
+    else
     {
-        CoTaskMemFree(itemList[i]);
+        hr = E_FAIL;
     }
+
     delete[] itemList;
     return hr;
 }
