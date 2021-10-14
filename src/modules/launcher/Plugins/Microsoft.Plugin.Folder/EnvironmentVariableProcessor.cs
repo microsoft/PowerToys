@@ -12,10 +12,12 @@ namespace Microsoft.Plugin.Folder
 {
     public class EnvironmentVariableProcessor : IFolderProcessor
     {
+        private readonly IEnvironmentHelper _environmentHelper;
         private readonly IQueryEnvironmentVariable _queryEnvironmentVariable;
 
-        public EnvironmentVariableProcessor(IQueryEnvironmentVariable queryEnvironmentVariable)
+        public EnvironmentVariableProcessor(IEnvironmentHelper environmentHelper, IQueryEnvironmentVariable queryEnvironmentVariable)
         {
+            _environmentHelper = environmentHelper;
             _queryEnvironmentVariable = queryEnvironmentVariable;
         }
 
@@ -26,7 +28,7 @@ namespace Microsoft.Plugin.Folder
                 throw new ArgumentNullException(nameof(search));
             }
 
-            if (!search.StartsWith('%'))
+            if (!_environmentHelper.IsEnvironmentVariable(search))
             {
                 return Enumerable.Empty<IItemResult>();
             }

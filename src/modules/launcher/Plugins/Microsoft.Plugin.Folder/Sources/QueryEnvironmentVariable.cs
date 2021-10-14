@@ -14,10 +14,12 @@ namespace Microsoft.Plugin.Folder.Sources
     public class QueryEnvironmentVariable : IQueryEnvironmentVariable
     {
         private readonly IDirectory _directory;
+        private readonly IEnvironmentHelper _environmentHelper;
 
-        public QueryEnvironmentVariable(IDirectory directory)
+        public QueryEnvironmentVariable(IDirectory directory, IEnvironmentHelper environmentHelper)
         {
             _directory = directory;
+            _environmentHelper = environmentHelper;
         }
 
         public IEnumerable<IItemResult> Query(string querySearch)
@@ -41,14 +43,19 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public IEnumerable<EnvironmentVariableResult> GetEnvironmentVariables(string querySearch)
         {
-            foreach (DictionaryEntry variable in Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process))
+            foreach (DictionaryEntry variable in _environmentHelper.GetEnvironmentVariables())
             {
+                if (variable.Value == null)
+                {
+                    continue;
+                }
+
                 var name = "%" + (string)variable.Key + "%";
                 var path = (string)variable.Value;
 
                 if (_directory.Exists(path))
                 {
-                    yield return new EnvironmentVariableResult(querySearch, name, Environment.ExpandEnvironmentVariables(path));
+                    yield return new EnvironmentVariableResult(querySearch, name, path);
                 }
             }
         }
