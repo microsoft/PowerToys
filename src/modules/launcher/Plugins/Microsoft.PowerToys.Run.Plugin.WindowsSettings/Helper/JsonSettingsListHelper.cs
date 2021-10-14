@@ -27,12 +27,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// Read all possible Windows settings.
         /// </summary>
         /// <returns>A list with all possible windows settings.</returns>
-        internal static IEnumerable<WindowsSetting> ReadAllPossibleSettings()
+        internal static WindowsSettings ReadAllPossibleSettings()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var type = assembly.GetTypes().FirstOrDefault(x => x.Name == nameof(Main));
 
-            IEnumerable<WindowsSetting>? settingsList = null;
+            WindowsSettings? settings = null;
 
             try
             {
@@ -49,14 +49,14 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 using var reader = new StreamReader(stream);
                 var text = reader.ReadToEnd();
 
-                settingsList = JsonSerializer.Deserialize<IEnumerable<WindowsSetting>>(text, options);
+                settings = JsonSerializer.Deserialize<WindowsSettings>(text, options);
             }
             catch (Exception exception)
             {
                 Log.Exception("Error loading settings JSON file", exception, typeof(JsonSettingsListHelper));
             }
 
-            return settingsList ?? Enumerable.Empty<WindowsSetting>();
+            return settings ?? new WindowsSettings();
         }
     }
 }

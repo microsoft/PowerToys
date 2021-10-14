@@ -1,11 +1,13 @@
-[
-  {
-    "Name": "AccessWorkOrSchool",
-    "Areas": [ "AreaAccounts" ],
-    "Type": "AppSettingsApp",
-    "AltNames": [ "Workplace" ],
-    "Command": "ms-settings:workplace"
-  },
+{
+  "$schema" : "./WindowsSettings.schema.json",
+  "Settings": [
+    {
+        "Name": "AccessWorkOrSchool",
+        "Areas": [ "AreaAccounts" ],
+        "Type": "AppSettingsApp",
+        "AltNames": [ "Workplace" ],
+        "Command": "ms-settings:workplace"
+    },
   {
     "Name": "EmailAndAppAccounts",
     "Areas": [ "AreaAccounts" ],
@@ -1734,4 +1736,4 @@
     "AltNames": [ "wgpocpl.cpl" ],
     "Command": "control Wgpocpl.cpl"
   }
-]
+]}
