@@ -126,6 +126,10 @@ IFACEMETHODIMP CPowerRenameManager::UpdateChildrenPath(_In_ int parentId, _In_ s
                 std::wstring newPath = pathStr.replace(0, oldParentPathSize, renamedPath);
                 it->second->PutPath(newPath.c_str());
             }
+            else
+            {
+                break;
+            }
         }
     }
 
