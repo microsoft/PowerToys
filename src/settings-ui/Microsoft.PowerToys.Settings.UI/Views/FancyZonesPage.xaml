@@ -81,19 +81,27 @@
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" Margin="{StaticResource ExpanderSettingMargin}"  />
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <controls:CheckBoxSubTextControl IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" Header="Title yoo" Description="Description yoo" />
+                                
+                                <controls:CheckBoxSubTextControl IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}"
+                                                                 Margin="56, 0, 40, 16"
+                                                                 Header="Title yoo"
+                                                                 Description="Description yoo" />
+                                
+                                
                                 <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" 
                                           Margin="56, 0, 40, 16"
                                           AutomationProperties.Name="{Binding ElementName=SpanZonesAcrossMonitorsPrerequisitesTitle, Path=Text}">
-                                    <StackPanel Orientation="Vertical">
-                                        <TextBlock x:Name="SpanZonesAcrossMonitorsPrerequisitesTitle"
-                                                   Margin="0,10,0,0"
-                                                   x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
-                                        <controls:TextBlockControl x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites"
-                                            FontSize="{StaticResource SecondaryTextFontSize}"
-                                            EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            DisabledForeground="{ThemeResource TextFillColorDisabledBrush}"/>
-                                    </StackPanel>
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock x:Name="SpanZonesAcrossMonitorsPrerequisitesTitle"
+                                                       Margin="0,10,0,0"
+                                                       x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
+                                            <controls:TextBlockControl x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites"
+                                                FontSize="{StaticResource SecondaryTextFontSize}"
+                                                EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                DisabledForeground="{ThemeResource TextFillColorDisabledBrush}"/>
+                                        </StackPanel>
+                                    </CheckBox.Content>
                                 </CheckBox>
                             
                                 <controls:Setting x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">

@@ -16,21 +16,29 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public CheckBoxSubTextControl()
         {
-            this.DefaultStyleKey = typeof(CheckBoxSubTextControl);
             _checkBoxSubTextControl = (CheckBoxSubTextControl)this;
+            this.Loaded += CheckBoxSubTextControl_Loaded;
+        }
+
+        private void CheckBoxSubTextControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            StackPanel panel = new StackPanel() { Orientation = Orientation.Vertical };
+            panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 10, 0, 0), Text = Header });
+            panel.Children.Add(new TextBlock() { FontSize = 10, Text = Description });
+            _checkBoxSubTextControl.Content = panel;
         }
 
         public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(
             "Header",
             typeof(string),
             typeof(CheckBoxSubTextControl),
-            new PropertyMetadata(default(string), OnHeaderChanged));
+            new PropertyMetadata(default(string)));
 
         public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(
             "Description",
             typeof(object),
             typeof(CheckBoxSubTextControl),
-            new PropertyMetadata(null, OnDescriptionChanged));
+            new PropertyMetadata(default(string)));
 
         [Localizable(true)]
         public string Header
@@ -44,29 +52,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             get => (string)GetValue(DescriptionProperty);
             set => SetValue(DescriptionProperty, value);
-        }
-
-        private static void OnHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((CheckBoxSubTextControl)d).Update();
-        }
-
-        private static void OnDescriptionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((CheckBoxSubTextControl)d).Update();
-        }
-
-        private void Update()
-        {
-            if (_checkBoxSubTextControl == null)
-            {
-                return;
-            }
-
-            StackPanel panel = new StackPanel() { Orientation = Orientation.Vertical };
-            panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 10, 0, 0), Text = Header });
-            panel.Children.Add(new TextBlockControl() { FontSize = 10, Text = Description });
-            _checkBoxSubTextControl.Content = _checkBoxSubTextControl;
         }
     }
 }
