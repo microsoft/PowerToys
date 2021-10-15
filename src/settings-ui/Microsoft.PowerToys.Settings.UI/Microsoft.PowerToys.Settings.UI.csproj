@@ -95,6 +95,7 @@
     </Compile>
     <Compile Include="Behaviors\NavigationViewHeaderBehavior.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderMode.cs" />
+    <Compile Include="Controls\CheckBoxSubTextControl.cs" />
     <Compile Include="Controls\SettingsGroup\SettingsGroupAutomationPeer.cs" />
     <Compile Include="Controls\ShortcutControl\ShortcutControl.xaml.cs">
       <DependentUpon>ShortcutControl.xaml</DependentUpon>
@@ -306,6 +307,10 @@
     <PRIResource Include="Strings\*\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\CheckBoxSubTextControl\CheckBoxSubTextControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\ShortcutControl\ShortcutControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

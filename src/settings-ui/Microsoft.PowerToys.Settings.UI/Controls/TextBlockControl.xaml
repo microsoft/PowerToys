@@ -10,6 +10,6 @@
 
     <TextBlock x:Name="textBlock"
                Text="{Binding Text}"
-               TextWrapping="WrapWholeWords" 
+               TextWrapping="WrapWholeWords"
                Loaded="TextBlock_Loaded"/>
 </UserControl>
