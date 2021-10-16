@@ -549,7 +549,6 @@ elif
 elseif
 Emoji
 emptyrecyclebin
-Enableable
 ENABLEDPOPUP
 endforeach
 endif
