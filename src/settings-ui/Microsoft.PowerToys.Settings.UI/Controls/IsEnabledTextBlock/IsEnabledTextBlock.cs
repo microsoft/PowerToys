@@ -19,9 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         protected override void OnApplyTemplate()
         {
-            IsEnabledChanged -= EnableableTextBlock_IsEnabledChanged;
+            IsEnabledChanged -= IsEnabledTextBlock_IsEnabledChanged;
             SetEnabledState();
-            IsEnabledChanged += EnableableTextBlock_IsEnabledChanged;
+            IsEnabledChanged += IsEnabledTextBlock_IsEnabledChanged;
             base.OnApplyTemplate();
         }
 
@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(TextProperty, value);
         }
 
-        private void EnableableTextBlock_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void IsEnabledTextBlock_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             SetEnabledState();
         }

@@ -9,7 +9,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" ControlsResourcesVersion="Version2" />
                 <ResourceDictionary Source="/Controls/KeyVisual/KeyVisual.xaml" />
-                <ResourceDictionary Source="/Controls/EnableableTextBlock/EnableableTextBlock.xaml" />
+                <ResourceDictionary Source="/Controls/IsEnabledTextBlock/EnableableTextBlock.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/Styles/Button.xaml"/>
                 <ResourceDictionary Source="/Themes/Colors.xaml"/>
