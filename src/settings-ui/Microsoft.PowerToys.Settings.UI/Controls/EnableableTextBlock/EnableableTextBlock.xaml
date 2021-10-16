@@ -4,6 +4,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls">
 
     <Style TargetType="local:EnableableTextBlock">
+        <Setter Property="Foreground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:EnableableTextBlock">

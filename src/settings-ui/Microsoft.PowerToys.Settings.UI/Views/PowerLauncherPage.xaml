@@ -45,7 +45,7 @@
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
-                                <CheckBox x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}" Margin="{StaticResource ExpanderSettingMargin}" />
+                                <controls:CheckBoxSubTextControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}" Margin="{StaticResource ExpanderSettingMargin}" />
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" Margin="{StaticResource ExpanderSettingMargin}" />
                             </StackPanel>
