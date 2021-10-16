@@ -10,11 +10,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     [TemplateVisualState(Name = "Normal", GroupName = "CommonStates")]
     [TemplateVisualState(Name = "Disabled", GroupName = "CommonStates")]
-    public class EnableableTextBlock : Control
+    public class IsEnabledTextBlock : Control
     {
-        public EnableableTextBlock()
+        public IsEnabledTextBlock()
         {
-            this.DefaultStyleKey = typeof(EnableableTextBlock);
+            this.DefaultStyleKey = typeof(IsEnabledTextBlock);
         }
 
         protected override void OnApplyTemplate()
@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
            "Text",
            typeof(string),
-           typeof(EnableableTextBlock),
+           typeof(IsEnabledTextBlock),
            null);
 
         [Localizable(true)]
