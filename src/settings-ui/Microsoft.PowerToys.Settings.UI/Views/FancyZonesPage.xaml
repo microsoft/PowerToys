@@ -82,7 +82,7 @@
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" Margin="{StaticResource ExpanderSettingMargin}"  />
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <controls:CheckBoxSubTextControl IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}"
-                                                                 Margin="56, 0, 40, 16"
+                                                                 Margin="56, -2, 40, 14"
                                                                  x:Uid="FancyZones_SpanZonesAcrossMonitors"/>
 
                                 <controls:Setting x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
