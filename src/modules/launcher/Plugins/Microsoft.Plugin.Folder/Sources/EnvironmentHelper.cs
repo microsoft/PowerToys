@@ -21,7 +21,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public IDictionary GetEnvironmentVariables()
         {
-            return Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+            return Environment.GetEnvironmentVariables();
         }
     }
 }

@@ -29,16 +29,9 @@ namespace Microsoft.Plugin.Folder.Sources
                 throw new ArgumentNullException(nameof(querySearch));
             }
 
-            var results = GetEnvironmentVariables(querySearch).OrderBy(v => v.Title);
-
-            if (querySearch.Equals('%'))
-            {
-                return results;
-            }
-            else
-            {
-                return results.Where(v => v.Title.StartsWith(querySearch, StringComparison.InvariantCultureIgnoreCase));
-            }
+            return GetEnvironmentVariables(querySearch)
+                .OrderBy(v => v.Title)
+                .Where(v => v.Title.StartsWith(querySearch, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public IEnumerable<EnvironmentVariableResult> GetEnvironmentVariables(string querySearch)

@@ -868,6 +868,7 @@ IEasing
 IEnum
 IEnumerable
 IEnumerator
+IEnvironment
 IEquality
 IEquatable
 IEvent

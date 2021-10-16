@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
 
         [DataTestMethod]
         [DataRow(@"%OS%")] // Not a directory
-        [DataRow(@"%CUSTOM%")] // Direcectory doesn't exists
+        [DataRow(@"%CUSTOM%")] // Directory doesn't exist
         [DataRow(@"WINDIR")] // Not an environment variable
         public void QueryWithEmptyResults(string search)
         {
@@ -53,6 +53,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow(@"", 3)]
         [DataRow(@"%", 3)]
         [DataRow(@"%WIN", 1)]
         [DataRow(@"%WINDIR%", 1)]
