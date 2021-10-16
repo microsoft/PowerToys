@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <UseWPF>true</UseWPF>
         <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+        <Company>Microsoft Corporation</Company>
+        <AssemblyVersion>0.0.0</AssemblyVersion>
+        <OutputType>WinExe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
@@ -36,11 +38,6 @@
         <None Update="monacoSRC\**\*.*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
-    <ItemGroup>
-      <Page Update="PreviewWindow.xaml">
-        <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      </Page>
     </ItemGroup>
 
 </Project>

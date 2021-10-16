@@ -13,9 +13,9 @@ using System.Runtime.InteropServices;
 namespace monacoPreview
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for PreviewWindow.xaml
     /// </summary>
-    public partial class PreviewWindow : IPreviewHandler, IOleWindow, IObjectWithSite
+    public partial class PreviewWindow :  System.Windows.Window, IPreviewHandler, IOleWindow, IObjectWithSite
     { 
         // This variable prevents users from navigating
         private bool WasNavigated = false;
@@ -182,7 +182,7 @@ namespace monacoPreview
 
         public void GetWindow(out IntPtr phwnd)
         {
-            phwnd = this;
+            phwnd = new IntPtr();
         }
 
         public void ContextSensitiveHelp([MarshalAs(UnmanagedType.Bool)] bool fEnterMode)
