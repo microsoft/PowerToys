@@ -7,6 +7,7 @@ using Windows.UI.Accessibility;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
@@ -20,11 +21,25 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             this.Loaded += CheckBoxSubTextControl_Loaded;
         }
 
+        protected override void OnApplyTemplate()
+        {
+            Update();
+            base.OnApplyTemplate();
+        }
+
+        private void Update()
+        {
+            if (!string.IsNullOrEmpty(Header))
+            {
+                AutomationProperties.SetName(this, Header);
+            }
+        }
+
         private void CheckBoxSubTextControl_Loaded(object sender, RoutedEventArgs e)
         {
             StackPanel panel = new StackPanel() { Orientation = Orientation.Vertical };
             panel.Children.Add(new TextBlock() { Margin = new Thickness(0, 10, 0, 0), Text = Header });
-            panel.Children.Add(new TextBlock() { FontSize = 10, Text = Description });
+            panel.Children.Add(new EnableableTextBlock() { FontSize = (double)App.Current.Resources["SecondaryTextFontSize"], Foreground = (SolidColorBrush)App.Current.Resources["TextFillColorSecondaryBrush"], Text = Description });
             _checkBoxSubTextControl.Content = panel;
         }
 

@@ -236,10 +236,9 @@
                                                         <TextBlock x:Name="IncludeInGlobalResultTitle"
                                                                    Margin="0,10,0,0"
                                                                    x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
-                                                        <controls:TextBlockControl x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
-                                                                                   FontSize="{StaticResource SecondaryTextFontSize}" 
-                                                                                   EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}" 
-                                                                                   DisabledForeground="{ThemeResource TextFillColorDisabledBrush}" />
+                                                        <controls:EnableableTextBlock x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
+                                                                                   FontSize="{StaticResource SecondaryTextFontSize}"
+                                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                                     </StackPanel>
                                                 </CheckBox>
                                                

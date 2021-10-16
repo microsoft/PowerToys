@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -13,8 +12,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     [TemplateVisualState(Name = "Disabled", GroupName = "CommonStates")]
     public class EnableableTextBlock : Control
     {
-        private EnableableTextBlock _enableableTextBlock;
-
         public EnableableTextBlock()
         {
             this.DefaultStyleKey = typeof(EnableableTextBlock);
@@ -23,8 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         protected override void OnApplyTemplate()
         {
             IsEnabledChanged -= EnableableTextBlock_IsEnabledChanged;
-            _enableableTextBlock = (EnableableTextBlock)this;
-            Update();
             SetEnabledState();
             IsEnabledChanged += EnableableTextBlock_IsEnabledChanged;
             base.OnApplyTemplate();
@@ -33,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
            "Text",
            typeof(string),
-           typeof(TextBlockControl),
+           typeof(EnableableTextBlock),
            null);
 
         [Localizable(true)]
@@ -41,14 +36,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             get => (string)GetValue(TextProperty);
             set => SetValue(TextProperty, value);
-        }
-
-        private void Update()
-        {
-            if (_enableableTextBlock == null)
-            {
-                return;
-            }
         }
 
         private void EnableableTextBlock_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
