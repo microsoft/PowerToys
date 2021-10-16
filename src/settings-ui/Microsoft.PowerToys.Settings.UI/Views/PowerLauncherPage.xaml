@@ -45,7 +45,7 @@
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
-                                <controls:CheckBoxSubTextControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook"
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook"
                                                                  IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}"
                                                                  Margin="56, 0, 40, 16"/>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />

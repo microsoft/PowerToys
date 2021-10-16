@@ -81,7 +81,7 @@
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" Margin="{StaticResource ExpanderSettingMargin}"  />
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <controls:CheckBoxSubTextControl IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}"
+                                <controls:CheckBoxWithDescriptionControl IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}"
                                                                  Margin="56, -2, 40, 14"
                                                                  x:Uid="FancyZones_SpanZonesAcrossMonitors"/>
 

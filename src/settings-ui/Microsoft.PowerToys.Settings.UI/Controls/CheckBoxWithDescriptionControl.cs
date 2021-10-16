@@ -11,13 +11,13 @@ using Windows.UI.Xaml.Media;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public class CheckBoxSubTextControl : CheckBox
+    public class CheckBoxWithDescriptionControl : CheckBox
     {
-        private CheckBoxSubTextControl _checkBoxSubTextControl;
+        private CheckBoxWithDescriptionControl _checkBoxSubTextControl;
 
-        public CheckBoxSubTextControl()
+        public CheckBoxWithDescriptionControl()
         {
-            _checkBoxSubTextControl = (CheckBoxSubTextControl)this;
+            _checkBoxSubTextControl = (CheckBoxWithDescriptionControl)this;
             this.Loaded += CheckBoxSubTextControl_Loaded;
         }
 
@@ -46,13 +46,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(
             "Header",
             typeof(string),
-            typeof(CheckBoxSubTextControl),
+            typeof(CheckBoxWithDescriptionControl),
             new PropertyMetadata(default(string)));
 
         public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(
             "Description",
             typeof(object),
-            typeof(CheckBoxSubTextControl),
+            typeof(CheckBoxWithDescriptionControl),
             new PropertyMetadata(default(string)));
 
         [Localizable(true)]
