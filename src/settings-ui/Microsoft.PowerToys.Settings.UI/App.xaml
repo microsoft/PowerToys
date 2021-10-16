@@ -26,7 +26,7 @@
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             </Style>
 
-            <Style TargetType="controls:CheckBoxSubTextControl" BasedOn="{StaticResource DefaultCheckBoxStyle}" />
+            <Style TargetType="controls:CheckBoxWithDescriptionControl" BasedOn="{StaticResource DefaultCheckBoxStyle}" />
 
         </ResourceDictionary>
     </Application.Resources>
