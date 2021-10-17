@@ -564,11 +564,20 @@
   <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
     <value>Settings theme</value>
   </data>
-  <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
-    <value>Show icon on context menu</value>
+  <data name="PowerRename_Toggle_HideIcon.Content" xml:space="preserve">
+    <value>Hide icon in context menu</value>
   </data>
-  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
-    <value>Appear only in extended context menu</value>
+  <data name="PowerRename_Toggle_ContextMenu.Header" xml:space="preserve">
+    <value>Show in</value>
+  </data>
+	<data name="PowerRename_Toggle_ContextMenu.Description" xml:space="preserve">
+    <value>Press shift + right-click on files to open the extended menu</value>
+  </data>
+	<data name="PowerRename_Toggle_StandardContextMenu.Content" xml:space="preserve">
+    <value>Standard context menu</value>
+  </data>
+	<data name="PowerRename_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
+    <value>Extended context menu only</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Description" xml:space="preserve">
     <value>Press Shift + right-click on files to open the extended menu</value>

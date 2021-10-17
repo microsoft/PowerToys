@@ -39,7 +39,7 @@
                             <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
-                                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                                                              MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
