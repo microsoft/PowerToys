@@ -19,17 +19,17 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         private const string _pathDelimiterSequence = "\u0020\u0020\u02C3\u0020\u0020"; // = "<space><space><arrow><space><space>"
 
         /// <summary>
-        /// Generates the values for <see cref="WindowsSetting.JoinedAreaPath"/> and <see cref="WindowsSetting.JoinedFullSettingsPath"/> on all settings of the given list with <see cref="WindowsSetting"/>.
+        /// Generates the values for <see cref="WindowsSetting.JoinedAreaPath"/> and <see cref="WindowsSetting.JoinedFullSettingsPath"/> on all settings of the list in the given <see cref="WindowsSettings"/> class.
         /// </summary>
-        /// <param name="settingsList">The list that contains <see cref="WindowsSetting"/> to translate.</param>
-        internal static void GenerateSettingsPathValues(in IEnumerable<WindowsSetting>? settingsList)
+        /// <param name="windowsSettings">A class that contain all possible windows settings.</param>
+        internal static void GenerateSettingsPathValues(in WindowsSettings windowsSettings)
         {
-            if (settingsList is null)
+            if (windowsSettings?.Settings is null)
             {
                 return;
             }
 
-            foreach (var settings in settingsList)
+            foreach (var settings in windowsSettings.Settings)
             {
                 // Check if type value is filled. If not, then write log warning.
                 if (string.IsNullOrEmpty(settings.Type))
@@ -52,9 +52,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 // Generating path values.
                 if (!(settings.Areas is null) && settings.Areas.Any())
                 {
-                    var areaValue = string.Join(WindowsSettingsPathHelper._pathDelimiterSequence, settings.Areas);
+                    var areaValue = string.Join(_pathDelimiterSequence, settings.Areas);
                     settings.JoinedAreaPath = areaValue;
-                    settings.JoinedFullSettingsPath = $"{settings.Type}{WindowsSettingsPathHelper._pathDelimiterSequence}{areaValue}";
+                    settings.JoinedFullSettingsPath = $"{settings.Type}{_pathDelimiterSequence}{areaValue}";
                 }
                 else
                 {

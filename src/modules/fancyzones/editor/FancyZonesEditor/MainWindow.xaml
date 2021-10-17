@@ -327,6 +327,21 @@
                                  ItemsSource="{Binding MonitorInfoForViewModel}" />
                 </Grid>
             </ScrollViewer>
+            <Button Click="SettingsBtn_Click"
+                    x:Name="settingsBtn"
+                    Margin="8"
+                    Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    AutomationProperties.Name="{x:Static props:Resources.OpenSettings}"
+                    ToolTip="{x:Static props:Resources.OpenSettings}"
+                    Style="{StaticResource IconOnlyButtonStyle}">
+                <Button.Content>
+                    <TextBlock Text="&#xe713;"
+                               FontFamily="Segoe MDL2 Assets"
+                               AutomationProperties.Name="{x:Static props:Resources.OpenSettings}" />
+                </Button.Content>
+            </Button>
         </Grid>
 
         <ui:ContentDialog x:Name="EditLayoutDialog"

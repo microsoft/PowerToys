@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Windows;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
+using Microsoft.PowerToys.Common.UI;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace ColorPicker.Helpers
@@ -134,6 +135,7 @@ namespace ColorPicker.Helpers
                 _colorEditorWindow = new ColorEditorWindow(this);
                 _colorEditorWindow.Content = _colorEditorViewModel;
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
+                _colorEditorViewModel.OpenSettingsRequested += ColorEditorViewModel_OpenSettingsRequested;
                 _colorEditorViewModel.OpenColorPickerRequested += (object sender, EventArgs e) =>
                 {
                     SessionEventHelper.Event.EditorColorPickerOpened = true;
@@ -182,6 +184,11 @@ namespace ColorPicker.Helpers
             }
 
             _colorEditorWindow.Hide();
+        }
+
+        private void ColorEditorViewModel_OpenSettingsRequested(object sender, EventArgs e)
+        {
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ColorPicker);
         }
     }
 }

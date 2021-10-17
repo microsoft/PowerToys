@@ -82,17 +82,17 @@
                 VerticalAlignment="Center"
                 Margin="0,1,0,0" />
 
-            <!-- Enable once we have settings linking available -->
-            <!--<Button Width="46"
+            <Button Width="46"
+                    Command="{Binding OpenSettingsCommand}"
                     Height="32"
-                    Content="&#xE115;"
+                    Content="&#xE713;"
                     TabIndex="2"
                     Background="Transparent"
                     FontFamily="Segoe MDL2 Assets"
                     HorizontalAlignment="Right"
                     Margin="0,0,46,0"
                     ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
-                    AutomationProperties.Name="{x:Static p:Resources.Open_settings}" />-->
+                    AutomationProperties.Name="{x:Static p:Resources.Open_settings}" />
 
             <Button Width="64"
                     Height="32"

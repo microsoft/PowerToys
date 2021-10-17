@@ -610,7 +610,6 @@ namespace PowerLauncher.ViewModel
                                                     currentCancellationToken.ThrowIfCancellationRequested();
                                                     numResults = Results.Results.Count;
                                                     Results.Sort();
-                                                    Results.SelectedItem = Results.Results.FirstOrDefault();
                                                 }
                                             }
 
