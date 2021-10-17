@@ -899,11 +899,17 @@
   <data name="ImageResizer_FilenameFormatHeader.Header" xml:space="preserve">
     <value>Filename format</value>
   </data>
-  <data name="ImageResizer_UseOriginalDate.Header" xml:space="preserve">
-    <value>Use original date modified</value>
+  <data name="ImageResizer_FileModifiedDate.Header" xml:space="preserve">
+    <value>File modified timestamp</value>
   </data>
-  <data name="ImageResizer_UseOriginalDate.Description" xml:space="preserve">
-    <value>Keep the original modified date of the file (instead of the resize date)</value>
+  <data name="ImageResizer_FileModifiedDate.Description" xml:space="preserve">
+    <value>This timestamp is used as the modified timestamp in the file meta data</value>
+  </data>
+	<data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
+    <value>Original file timestamp</value>
+  </data>
+	<data name="ImageResizer_UseResizeDate.Content" xml:space="preserve">
+    <value>Timestamp of resize action</value>
   </data>
   <data name="Encoding.Header" xml:space="preserve">
     <value>Encoding</value>
