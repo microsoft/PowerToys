@@ -1,4 +1,6 @@
-[
+{
+    "$schema" : "./WindowsSettings.schema.json",
+    "Settings": [
     {
         "Name": "OpenSettingsApp",
         "Type": "AppSettingsApp",
@@ -1768,4 +1770,4 @@
         "AltNames": [ "UserEnvironmentVariables", "UserVariables", "sysdm.cpl" ],
         "Command": "rundll32.exe sysdm.cpl,EditEnvironmentVariables"
     }
-]
+]}
