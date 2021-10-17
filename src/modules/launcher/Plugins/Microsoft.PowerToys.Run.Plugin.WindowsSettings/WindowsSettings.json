@@ -1,5 +1,5 @@
 {
-    "$schema" : "./WindowsSettings.schema.json",
+    "$schema": "./WindowsSettings.schema.json",
     "Settings": [
     {
         "Name": "OpenSettingsApp",

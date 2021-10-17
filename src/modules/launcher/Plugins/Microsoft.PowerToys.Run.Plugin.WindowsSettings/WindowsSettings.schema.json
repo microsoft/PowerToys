@@ -3,6 +3,10 @@
     "additionalProperties": false,
     "required": [ "Settings" ],
     "properties": {
+        "$schema": {
+            "description": "Path to the schema file.",
+            "type": "string"
+        },
         "Settings": {
             "description": "A list with all possible windows settings.",
             "type": "array",
