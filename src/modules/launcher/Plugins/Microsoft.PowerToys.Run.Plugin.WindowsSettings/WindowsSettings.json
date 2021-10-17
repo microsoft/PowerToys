@@ -1760,7 +1760,7 @@
         "Areas": [ "AreaSystemAndSecurity", "AreaSystemPropertiesAdvanced" ],
         "Type": "AppControlPanel",
         "AltNames": [ "EditEnvironmentVariables", "SystemVariables", "sysdm.cpl" ],
-        "Command": "rundll32.exe sysdm.cpl,EditEnvironmentVariables",
+        "Command": "SystemPropertiesAdvanced.exe",
         "Note": "NoteEditingRequireAdminPrivileges"
     },
     {
