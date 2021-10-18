@@ -3,7 +3,6 @@
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
-#include <winuser.h>
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;
@@ -89,19 +88,19 @@ namespace winrt::PowerRenameUI_new::implementation
         return textBox_replace();
     }
 
-    Windows::UI::Xaml::Controls::CheckBox MainWindow::ChckBoxRegex()
+    Windows::UI::Xaml::Controls::CheckBox MainWindow::CheckBoxRegex()
     {
-        return chckBox_regex();
+        return checkBox_regex();
     }
 
-    Windows::UI::Xaml::Controls::CheckBox MainWindow::ChckBoxCaseSensitive()
+    Windows::UI::Xaml::Controls::CheckBox MainWindow::CheckBoxCaseSensitive()
     {
-        return chckBox_case();
+        return checkBox_case();
     }
 
-    Windows::UI::Xaml::Controls::CheckBox MainWindow::ChckBoxMatchAll()
+    Windows::UI::Xaml::Controls::CheckBox MainWindow::CheckBoxMatchAll()
     {
-        return chckBox_matchAll();
+        return checkBox_matchAll();
     }
 
     Windows::UI::Xaml::Controls::ComboBox MainWindow::ComboBoxRenameParts()
@@ -109,54 +108,54 @@ namespace winrt::PowerRenameUI_new::implementation
         return comboBox_renameParts();
     }
 
-    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::TglBtnIncludeFiles()
+    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::ToggleButtonIncludeFiles()
     {
-        return tglBtn_includeFiles();
+        return toggleButton_includeFiles();
     }
 
-    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::TglBtnIncludeFolders()
+    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::ToggleButtonIncludeFolders()
     {
-        return tglBtn_includeFolders();
+        return toggleButton_includeFolders();
     }
 
-    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::TglBtnIncludeSubfolders()
+    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::ToggleButtonIncludeSubfolders()
     {
-        return tglBtn_includeSubfolders();
+        return toggleButton_includeSubfolders();
     }
 
-    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::TglBtnEnumerateItems()
+    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::ToggleButtonEnumerateItems()
     {
-        return tglBtn_enumItems();
+        return toggleButton_enumItems();
     }
 
-    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::TglBtnUpperCase()
+    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::ToggleButtonUpperCase()
     {
-        return tglBtn_upperCase();
+        return toggleButton_upperCase();
     }
     
-    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::TglBtnLowerCase()
+    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::ToggleButtonLowerCase()
     {
-        return tglBtn_lowerCase();
+        return toggleButton_lowerCase();
     }
     
-    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::TglBtnTitleCase()
+    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::ToggleButtonTitleCase()
     {
-        return tglBtn_titleCase();
+        return toggleButton_titleCase();
     }
 
-    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::TglBtnCapitalize()
+    Windows::UI::Xaml::Controls::Primitives::ToggleButton MainWindow::ToggleButtonCapitalize()
     {
-        return tglBtn_capitalize();
+        return toggleButton_capitalize();
     }
 
-    Windows::UI::Xaml::Controls::Button MainWindow::BtnSettings()
+    Windows::UI::Xaml::Controls::Button MainWindow::ButtonSettings()
     {
-        return btn_settings();
+        return button_settings();
     }
 
-    Windows::UI::Xaml::Controls::CheckBox MainWindow::ChckBoxSelectAll()
+    Windows::UI::Xaml::Controls::CheckBox MainWindow::CheckBoxSelectAll()
     {
-        return chckBox_selectAll();
+        return checkBox_selectAll();
     }
 
     PowerRenameUI_new::UIUpdates MainWindow::UIUpdatesItem()
@@ -262,11 +261,11 @@ namespace winrt::PowerRenameUI_new::implementation
 
     void MainWindow::SelectAll(winrt::Windows::Foundation::IInspectable const&, winrt::Windows::UI::Xaml::RoutedEventArgs const&)
     {
-        if (chckBox_selectAll().IsChecked().GetBoolean() != m_allSelected)
+        if (checkBox_selectAll().IsChecked().GetBoolean() != m_allSelected)
         {
             auto fakeRoot = winrt::make<PowerRenameUI_new::implementation::ExplorerItem>(0, L"Fake", L"", 0, false);
             fakeRoot.Children(m_explorerItems);
-            ToggleAll(fakeRoot, chckBox_selectAll().IsChecked().GetBoolean());
+            ToggleAll(fakeRoot, checkBox_selectAll().IsChecked().GetBoolean());
             m_uiUpdatesItem.ToggleAll();
             m_allSelected = !m_allSelected;
         }
@@ -274,8 +273,8 @@ namespace winrt::PowerRenameUI_new::implementation
 
     void MainWindow::ShowAll(winrt::Windows::Foundation::IInspectable const&, winrt::Windows::UI::Xaml::RoutedEventArgs const&)
     {
-        btn_showAll().IsChecked(true);
-        btn_showRenamed().IsChecked(false);
+        button_showAll().IsChecked(true);
+        button_showRenamed().IsChecked(false);
         if (!m_uiUpdatesItem.ShowAll())
         {
             m_explorerItems.Clear();
@@ -285,8 +284,8 @@ namespace winrt::PowerRenameUI_new::implementation
 
     void MainWindow::ShowRenamed(winrt::Windows::Foundation::IInspectable const&, winrt::Windows::UI::Xaml::RoutedEventArgs const&)
     {
-        btn_showRenamed().IsChecked(true);
-        btn_showAll().IsChecked(false);
+        button_showRenamed().IsChecked(true);
+        button_showAll().IsChecked(false);
         if (m_uiUpdatesItem.ShowAll())
         {
             m_explorerItems.Clear();
@@ -308,7 +307,7 @@ namespace winrt::PowerRenameUI_new::implementation
         textBox_replace().Text(textBox_replace().Text() + s->Code());
     }
 
-    void MainWindow::btn_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const&, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const&)
+    void MainWindow::button_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const&, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const&)
     {
         m_uiUpdatesItem.CloseUIWindow(false);
         m_uiUpdatesItem.Rename();

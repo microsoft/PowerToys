@@ -52,7 +52,6 @@ AMPROPERTY
 AMPROPSETID
 anges
 angularsen
-animatedvisuals
 ansicolor
 ANull
 AOC
@@ -102,7 +101,6 @@ asdf
 AShortcut
 ASingle
 asm
-asmv
 asmx
 aspnet
 aspx
@@ -187,7 +185,6 @@ Browsable
 bsd
 bstr
 bti
-btn
 BTNFACE
 Bto
 buf
@@ -227,9 +224,7 @@ changecursor
 Changemove
 charconv
 charset
-chck
 chdir
-cheatsheet
 checkbox
 checkboxes
 CHECKCANCELED
@@ -366,7 +361,6 @@ CSY
 CTAB
 CTest
 ctime
-Ctl
 CTLCOLORSTATIC
 ctor
 CTriage
@@ -1302,7 +1296,6 @@ mlcfg
 mmdeviceapi
 mmi
 mmsys
-mngr
 mockapi
 MODECHANGE
 moderncop
@@ -1369,7 +1362,6 @@ mvvm
 myfile
 MYICON
 NAMECHANGE
-Namehs
 nameof
 NAMEONLY
 namespace
@@ -1784,7 +1776,6 @@ RESOURCEID
 RESTORESIZE
 RESTORETOMAXIMIZED
 restrictedcapabilities
-restrictederrorinfo
 resultlist
 resw
 resx
@@ -2124,7 +2115,6 @@ textbox
 TEXTINCLUDE
 textref
 tga
-tgl
 thead
 THEMECHANGED
 THICKFRAME
@@ -2138,7 +2128,6 @@ Timeline
 TIMERID
 timeunion
 timeutil
-titlebar
 titlecase
 TLayout
 tlb
@@ -2396,7 +2385,6 @@ winsdkver
 winspool
 winstore
 winui
-winuser
 winxamlmanager
 wistd
 withinrafael

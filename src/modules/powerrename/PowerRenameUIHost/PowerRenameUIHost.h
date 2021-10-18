@@ -101,7 +101,7 @@ private:
     AppWindow(HINSTANCE hInstance, std::vector<std::wstring> files) noexcept;
     void CreateAndShowWindow();
     bool OnCreate(HWND, LPCREATESTRUCT) noexcept;
-    void OnCommand(HWND, int id, HWND hwndCtl, UINT codeNotify) noexcept;
+    void OnCommand(HWND, int id, HWND hwndControl, UINT codeNotify) noexcept;
     void OnDestroy(HWND hwnd) noexcept;
     void OnResize(HWND, UINT state, int cx, int cy) noexcept;
     HRESULT CreateShellItemArrayFromPaths(std::vector<std::wstring> files, IShellItemArray** shellItemArray);
@@ -144,7 +144,7 @@ private:
     CComPtr<IPowerRenameManager> m_prManager;
     CComPtr<IUnknown> m_dataSource;
     CComPtr<IPowerRenameEnum> m_prEnum;
-    UIHostPowerRenameManagerEvents m_mngrEvents;
+    UIHostPowerRenameManagerEvents m_managerEvents;
     DWORD m_cookie = 0;
     CComPtr<IPowerRenameMRU> m_searchMRU;
     CComPtr<IPowerRenameMRU> m_replaceMRU;

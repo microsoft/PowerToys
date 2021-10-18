@@ -38,14 +38,14 @@ LRESULT AppWindow::MessageHandler(UINT message, WPARAM wParam, LPARAM lParam) no
 }
 
 AppWindow::AppWindow(HINSTANCE hInstance, std::vector<std::wstring> files) noexcept :
-    m_instance{ hInstance }, m_mngrEvents{ this }
+    m_instance{ hInstance }, m_managerEvents{ this }
 {
     HRESULT hr = CPowerRenameManager::s_CreateInstance(&m_prManager);
     // Create the factory for our items
     CComPtr<IPowerRenameItemFactory> prItemFactory;
     hr = CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&prItemFactory));
     hr = m_prManager->PutRenameItemFactory(prItemFactory);
-    hr = m_prManager->Advise(&m_mngrEvents, &m_cookie);
+    hr = m_prManager->Advise(&m_managerEvents, &m_cookie);
 
     if (SUCCEEDED(hr))
     {
@@ -105,13 +105,13 @@ bool AppWindow::OnCreate(HWND, LPCREATESTRUCT) noexcept
     SetHandlers();
     ReadSettings();
 
-    m_mainUserControl.UIUpdatesItem().BtnRenameEnabled(false);
+    m_mainUserControl.UIUpdatesItem().ButtonRenameEnabled(false);
     InitAutoComplete();
     SearchReplaceChanged();
     return true;
 }
 
-void AppWindow::OnCommand(HWND, int id, HWND hwndCtl, UINT codeNotify) noexcept
+void AppWindow::OnCommand(HWND, int id, HWND hwndControl, UINT codeNotify) noexcept
 {
     switch (id)
     {
@@ -318,38 +318,38 @@ void AppWindow::ValidateFlags(PowerRenameFlags flag)
 {
     if (flag == Uppercase)
     {
-        if (m_mainUserControl.TglBtnUpperCase().IsChecked())
+        if (m_mainUserControl.ToggleButtonUpperCase().IsChecked())
         {
-            m_mainUserControl.TglBtnLowerCase().IsChecked(false);
-            m_mainUserControl.TglBtnTitleCase().IsChecked(false);
-            m_mainUserControl.TglBtnCapitalize().IsChecked(false);
+            m_mainUserControl.ToggleButtonLowerCase().IsChecked(false);
+            m_mainUserControl.ToggleButtonTitleCase().IsChecked(false);
+            m_mainUserControl.ToggleButtonCapitalize().IsChecked(false);
         }
     }
     else if (flag == Lowercase)
     {
-        if (m_mainUserControl.TglBtnLowerCase().IsChecked())
+        if (m_mainUserControl.ToggleButtonLowerCase().IsChecked())
         {
-            m_mainUserControl.TglBtnUpperCase().IsChecked(false);
-            m_mainUserControl.TglBtnTitleCase().IsChecked(false);
-            m_mainUserControl.TglBtnCapitalize().IsChecked(false);
+            m_mainUserControl.ToggleButtonUpperCase().IsChecked(false);
+            m_mainUserControl.ToggleButtonTitleCase().IsChecked(false);
+            m_mainUserControl.ToggleButtonCapitalize().IsChecked(false);
         }
     }
     else if (flag == Titlecase)
     {
-        if (m_mainUserControl.TglBtnTitleCase().IsChecked())
+        if (m_mainUserControl.ToggleButtonTitleCase().IsChecked())
         {
-            m_mainUserControl.TglBtnUpperCase().IsChecked(false);
-            m_mainUserControl.TglBtnLowerCase().IsChecked(false);
-            m_mainUserControl.TglBtnCapitalize().IsChecked(false);
+            m_mainUserControl.ToggleButtonUpperCase().IsChecked(false);
+            m_mainUserControl.ToggleButtonLowerCase().IsChecked(false);
+            m_mainUserControl.ToggleButtonCapitalize().IsChecked(false);
         }
     }
     else if (flag == Capitalized)
     {
-        if (m_mainUserControl.TglBtnCapitalize().IsChecked())
+        if (m_mainUserControl.ToggleButtonCapitalize().IsChecked())
         {
-            m_mainUserControl.TglBtnUpperCase().IsChecked(false);
-            m_mainUserControl.TglBtnLowerCase().IsChecked(false);
-            m_mainUserControl.TglBtnTitleCase().IsChecked(false);
+            m_mainUserControl.ToggleButtonUpperCase().IsChecked(false);
+            m_mainUserControl.ToggleButtonLowerCase().IsChecked(false);
+            m_mainUserControl.ToggleButtonTitleCase().IsChecked(false);
         }    
     }
 
@@ -410,56 +410,56 @@ void AppWindow::SetHandlers()
     });
 
     // ToggleButton UpperCase
-    m_mainUserControl.TglBtnUpperCase().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonUpperCase().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(Uppercase);
         UpdateFlag(Uppercase, UpdateFlagCommand::Set);
     });
-    m_mainUserControl.TglBtnUpperCase().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonUpperCase().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(Uppercase, UpdateFlagCommand::Reset);
     });
 
     // ToggleButton LowerCase
-    m_mainUserControl.TglBtnLowerCase().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonLowerCase().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(Lowercase);
         UpdateFlag(Lowercase, UpdateFlagCommand::Set);
     });
-    m_mainUserControl.TglBtnLowerCase().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonLowerCase().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(Lowercase, UpdateFlagCommand::Reset);
     });
 
     // ToggleButton TitleCase
-    m_mainUserControl.TglBtnTitleCase().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonTitleCase().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(Titlecase);
         UpdateFlag(Titlecase, UpdateFlagCommand::Set);
     });
-    m_mainUserControl.TglBtnTitleCase().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonTitleCase().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(Titlecase, UpdateFlagCommand::Reset);
     });
 
     // ToggleButton Capitalize
-    m_mainUserControl.TglBtnCapitalize().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonCapitalize().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(Capitalized);
         UpdateFlag(Capitalized, UpdateFlagCommand::Set);
     });
-    m_mainUserControl.TglBtnCapitalize().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonCapitalize().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(Capitalized, UpdateFlagCommand::Reset);
     });
 
     // CheckBox Regex
-    m_mainUserControl.ChckBoxRegex().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.CheckBoxRegex().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(UseRegularExpressions);
         UpdateFlag(UseRegularExpressions, UpdateFlagCommand::Set);
     });
-    m_mainUserControl.ChckBoxRegex().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.CheckBoxRegex().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(UseRegularExpressions, UpdateFlagCommand::Reset);
     });
 
     // CheckBox CaseSensitive
-    m_mainUserControl.ChckBoxCaseSensitive().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.CheckBoxCaseSensitive().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(CaseSensitive);
         UpdateFlag(CaseSensitive, UpdateFlagCommand::Set);
     });
-    m_mainUserControl.ChckBoxCaseSensitive().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.CheckBoxCaseSensitive().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(CaseSensitive, UpdateFlagCommand::Reset);
     });
 
@@ -484,52 +484,52 @@ void AppWindow::SetHandlers()
     });
 
     // CheckBox MatchAllOccurences
-    m_mainUserControl.ChckBoxMatchAll().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.CheckBoxMatchAll().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(MatchAllOccurences);
         UpdateFlag(MatchAllOccurences, UpdateFlagCommand::Set);
     });
-    m_mainUserControl.ChckBoxMatchAll().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.CheckBoxMatchAll().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(MatchAllOccurences, UpdateFlagCommand::Reset);
     });
 
     // ToggleButton IncludeFiles
-    m_mainUserControl.TglBtnIncludeFiles().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonIncludeFiles().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(ExcludeFiles);
         UpdateFlag(ExcludeFiles, UpdateFlagCommand::Reset);
     });
-    m_mainUserControl.TglBtnIncludeFiles().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonIncludeFiles().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(ExcludeFiles, UpdateFlagCommand::Set);
     });
 
     // ToggleButton IncludeFolders
-    m_mainUserControl.TglBtnIncludeFolders().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonIncludeFolders().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(ExcludeFolders);
         UpdateFlag(ExcludeFolders, UpdateFlagCommand::Reset);
     });
-    m_mainUserControl.TglBtnIncludeFolders().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonIncludeFolders().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(ExcludeFolders, UpdateFlagCommand::Set);
     });
 
     // ToggleButton IncludeSubfolders
-    m_mainUserControl.TglBtnIncludeSubfolders().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonIncludeSubfolders().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(ExcludeSubfolders);
         UpdateFlag(ExcludeSubfolders, UpdateFlagCommand::Reset);
     });
-    m_mainUserControl.TglBtnIncludeSubfolders().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonIncludeSubfolders().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(ExcludeSubfolders, UpdateFlagCommand::Set);
     });
 
     // CheckBox EnumerateItems
-    m_mainUserControl.TglBtnEnumerateItems().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonEnumerateItems().Checked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ValidateFlags(EnumerateItems);
         UpdateFlag(EnumerateItems, UpdateFlagCommand::Set);
     });
-    m_mainUserControl.TglBtnEnumerateItems().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    m_mainUserControl.ToggleButtonEnumerateItems().Unchecked([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         UpdateFlag(EnumerateItems, UpdateFlagCommand::Reset);
     });
 
-    // BtnSettings
-    m_mainUserControl.BtnSettings().Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&)
+    // ButtonSettings
+    m_mainUserControl.ButtonSettings().Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&)
     {
         OpenSettingsApp();
     });
@@ -547,7 +547,7 @@ void AppWindow::ToggleAll()
 {
     UINT itemCount = 0;
     m_prManager->GetItemCount(&itemCount);
-    bool selected = m_mainUserControl.ChckBoxSelectAll().IsChecked().GetBoolean();
+    bool selected = m_mainUserControl.CheckBoxSelectAll().IsChecked().GetBoolean();
     for (UINT i = 0; i < itemCount; i++)
     {
         CComPtr<IPowerRenameItem> spItem;
@@ -691,31 +691,31 @@ void AppWindow::SetCheckboxesFromFlags(DWORD flags)
 {
     if (flags & CaseSensitive)
     {
-        m_mainUserControl.ChckBoxCaseSensitive().IsChecked(true);
+        m_mainUserControl.CheckBoxCaseSensitive().IsChecked(true);
     }
     if (flags & MatchAllOccurences)
     {
-        m_mainUserControl.ChckBoxMatchAll().IsChecked(true);
+        m_mainUserControl.CheckBoxMatchAll().IsChecked(true);
     }
     if (flags & UseRegularExpressions)
     {
-        m_mainUserControl.ChckBoxRegex().IsChecked(true);
+        m_mainUserControl.CheckBoxRegex().IsChecked(true);
     }
     if (flags & EnumerateItems)
     {
-        m_mainUserControl.TglBtnEnumerateItems().IsChecked(true);
+        m_mainUserControl.ToggleButtonEnumerateItems().IsChecked(true);
     }
     if (flags & ExcludeFiles)
     {
-        m_mainUserControl.TglBtnIncludeFiles().IsChecked(false);
+        m_mainUserControl.ToggleButtonIncludeFiles().IsChecked(false);
     }
     if (flags & ExcludeFolders)
     {
-        m_mainUserControl.TglBtnIncludeFolders().IsChecked(false);
+        m_mainUserControl.ToggleButtonIncludeFolders().IsChecked(false);
     }
     if (flags & ExcludeSubfolders)
     {
-        m_mainUserControl.TglBtnIncludeSubfolders().IsChecked(false);
+        m_mainUserControl.ToggleButtonIncludeSubfolders().IsChecked(false);
     }
     if (flags & NameOnly)
     {
@@ -727,19 +727,19 @@ void AppWindow::SetCheckboxesFromFlags(DWORD flags)
     }
     if (flags & Uppercase)
     {
-        m_mainUserControl.TglBtnUpperCase().IsChecked(true);
+        m_mainUserControl.ToggleButtonUpperCase().IsChecked(true);
     }
     else if (flags & Lowercase)
     {
-        m_mainUserControl.TglBtnLowerCase().IsChecked(true);
+        m_mainUserControl.ToggleButtonLowerCase().IsChecked(true);
     }
     else if (flags & Titlecase)
     {
-        m_mainUserControl.TglBtnTitleCase().IsChecked(true);
+        m_mainUserControl.ToggleButtonTitleCase().IsChecked(true);
     }
     else if (flags & Capitalized)
     {
-        m_mainUserControl.TglBtnCapitalize().IsChecked(true);
+        m_mainUserControl.ToggleButtonCapitalize().IsChecked(true);
     }
 }
 
@@ -769,7 +769,7 @@ void AppWindow::UpdateCounts()
         // Update counts UI elements if/when added
 
         // Update Rename button state
-        m_mainUserControl.UIUpdatesItem().BtnRenameEnabled(renamingCount > 0);
+        m_mainUserControl.UIUpdatesItem().ButtonRenameEnabled(renamingCount > 0);
     }
 }
 
@@ -786,8 +786,8 @@ HRESULT AppWindow::OnUpdate(_In_ IPowerRenameItem* renameItem) {
         hr = renameItem->GetNewName(&newName);
         if (SUCCEEDED(hr))
         {
-            hstring newNamehs = newName == nullptr ? hstring{} : newName;
-            m_mainUserControl.UpdateExplorerItem(id, newNamehs);
+            hstring newNameStr = newName == nullptr ? hstring{} : newName;
+            m_mainUserControl.UpdateExplorerItem(id, newNameStr);
         }
     }
 
@@ -805,8 +805,8 @@ HRESULT AppWindow::OnRename(_In_ IPowerRenameItem* renameItem)
         hr = renameItem->GetOriginalName(&newName);
         if (SUCCEEDED(hr))
         {
-            hstring newNamehs = newName == nullptr ? hstring{} : newName;
-            m_mainUserControl.UpdateRenamedExplorerItem(id, newNamehs);
+            hstring newNameStr = newName == nullptr ? hstring{} : newName;
+            m_mainUserControl.UpdateRenamedExplorerItem(id, newNameStr);
         }
     }
 

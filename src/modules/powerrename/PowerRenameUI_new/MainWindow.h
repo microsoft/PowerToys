@@ -24,26 +24,26 @@ namespace winrt::PowerRenameUI_new::implementation
         Windows::UI::Xaml::Controls::AutoSuggestBox AutoSuggestBoxSearch();
         Windows::UI::Xaml::Controls::AutoSuggestBox AutoSuggestBoxReplace();
 
-        Windows::UI::Xaml::Controls::CheckBox ChckBoxRegex();
-        Windows::UI::Xaml::Controls::CheckBox ChckBoxCaseSensitive();
-        Windows::UI::Xaml::Controls::CheckBox ChckBoxMatchAll();
+        Windows::UI::Xaml::Controls::CheckBox CheckBoxRegex();
+        Windows::UI::Xaml::Controls::CheckBox CheckBoxCaseSensitive();
+        Windows::UI::Xaml::Controls::CheckBox CheckBoxMatchAll();
 
         Windows::UI::Xaml::Controls::ComboBox ComboBoxRenameParts();
 
-        Windows::UI::Xaml::Controls::Primitives::ToggleButton TglBtnIncludeFiles();
-        Windows::UI::Xaml::Controls::Primitives::ToggleButton TglBtnIncludeFolders();
-        Windows::UI::Xaml::Controls::Primitives::ToggleButton TglBtnIncludeSubfolders();
+        Windows::UI::Xaml::Controls::Primitives::ToggleButton ToggleButtonIncludeFiles();
+        Windows::UI::Xaml::Controls::Primitives::ToggleButton ToggleButtonIncludeFolders();
+        Windows::UI::Xaml::Controls::Primitives::ToggleButton ToggleButtonIncludeSubfolders();
 
-        Windows::UI::Xaml::Controls::Primitives::ToggleButton TglBtnUpperCase();
-        Windows::UI::Xaml::Controls::Primitives::ToggleButton TglBtnLowerCase();
-        Windows::UI::Xaml::Controls::Primitives::ToggleButton TglBtnTitleCase();
-        Windows::UI::Xaml::Controls::Primitives::ToggleButton TglBtnCapitalize();
+        Windows::UI::Xaml::Controls::Primitives::ToggleButton ToggleButtonUpperCase();
+        Windows::UI::Xaml::Controls::Primitives::ToggleButton ToggleButtonLowerCase();
+        Windows::UI::Xaml::Controls::Primitives::ToggleButton ToggleButtonTitleCase();
+        Windows::UI::Xaml::Controls::Primitives::ToggleButton ToggleButtonCapitalize();
 
-        Windows::UI::Xaml::Controls::Primitives::ToggleButton TglBtnEnumerateItems();
+        Windows::UI::Xaml::Controls::Primitives::ToggleButton ToggleButtonEnumerateItems();
 
-        Windows::UI::Xaml::Controls::Button BtnSettings();
+        Windows::UI::Xaml::Controls::Button ButtonSettings();
 
-        Windows::UI::Xaml::Controls::CheckBox ChckBoxSelectAll();
+        Windows::UI::Xaml::Controls::CheckBox CheckBoxSelectAll();
 
         PowerRenameUI_new::UIUpdates UIUpdatesItem();
 
@@ -73,7 +73,7 @@ namespace winrt::PowerRenameUI_new::implementation
     public:
         void RegExItemClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::ItemClickEventArgs const& e);
         void DateTimeItemClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::ItemClickEventArgs const& e);
-        void btn_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const& sender, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const& args);
+        void button_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const& sender, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const& args);
         void MenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e);
         void OpenDocs(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e);
     };

@@ -8,7 +8,7 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     controls:BackdropMaterial.ApplyToRootOrPageBackground="True"
-    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -104,7 +104,7 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
           Padding="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="0"/> <!-- 48 if we need to draw the titlebar ourself -->
+            <RowDefinition Height="0"/> <!-- 48 if we need to draw the title bar ourself -->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -133,7 +133,7 @@
                 <ColumnDefinition Width="48" />
             </Grid.ColumnDefinitions>
 
-            <CheckBox x:Name="chckBox_selectAll" IsChecked="True"
+            <CheckBox x:Name="checkBox_selectAll" IsChecked="True"
                       Content=""
                       x:Uid="SelectAllCheckBox"
                       Margin="16,0,0,0"
@@ -162,19 +162,19 @@
                     Background="Transparent"
                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                     Height="32"
-                    x:Uid="FilterBtn"
+                    x:Uid="FilterButton"
                     Grid.Column="4"
                     BorderThickness="0"
                     HorizontalAlignment="Right"
                     Margin="0,0,8,0">
                 <Button.Flyout>
                     <MenuBarItemFlyout Placement="Bottom">
-                        <controls:RadioMenuFlyoutItem x:Name="btn_showAll"
+                        <controls:RadioMenuFlyoutItem x:Name="button_showAll"
                                                       Click="ShowAll"
                                                       x:Uid="ShowAll"
                                                       IsChecked="True"
                                                       GroupName="Filter"/>
-                        <controls:RadioMenuFlyoutItem x:Name="btn_showRenamed"
+                        <controls:RadioMenuFlyoutItem x:Name="button_showRenamed"
                                                       Click="ShowRenamed"
                                                       x:Uid="ShowOnly"
                                                       GroupName="Filter"/>
@@ -241,10 +241,10 @@
 
                     <Button FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             VerticalAlignment="Center"
-                            Visibility="{Binding ElementName=chckBox_regex, Path=IsChecked}"
+                            Visibility="{Binding ElementName=checkBox_regex, Path=IsChecked}"
                             MinHeight="32"
                             Margin="4"
-                            x:Uid="RegExBtn"
+                            x:Uid="RegExButton"
                             Background="Transparent"
                             BorderBrush="Transparent"
                             Content="&#xE946;"
@@ -304,14 +304,14 @@
                 </Grid>
 
 
-                <CheckBox x:Name="chckBox_regex"
-                          x:Uid="ChckBox_RegEx"
+                <CheckBox x:Name="checkBox_regex"
+                          x:Uid="CheckBox_RegEx"
                           Margin="2,12,0,0" />
-                <CheckBox x:Name="chckBox_matchAll"
-                          x:Uid="ChckBox_MatchAll"
+                <CheckBox x:Name="checkBox_matchAll"
+                          x:Uid="CheckBox_MatchAll"
                           Margin="2,4,0,0" />
-                <CheckBox x:Name="chckBox_case"
-                          x:Uid="ChckBox_Case"
+                <CheckBox x:Name="checkBox_case"
+                          x:Uid="CheckBox_Case"
                           Margin="2,4,0,0" />
 
                 <Rectangle Height="1"
@@ -331,7 +331,7 @@
                             VerticalAlignment="Center"
                             MinHeight="32"
                             Margin="4"
-                            x:Uid="FileCreationBtn"
+                            x:Uid="FileCreationButton"
                             Background="Transparent"
                             BorderBrush="Transparent"
                             Content="&#xE946;"
@@ -406,26 +406,26 @@
                         <x:String>Extension only</x:String>
                     </ComboBox>
                     <AppBarSeparator Margin="5,0,5,0" />
-                    <ToggleButton x:Name="tglBtn_includeFiles"
+                    <ToggleButton x:Name="toggleButton_includeFiles"
                                   Content="&#xE160;"
                                   MinHeight="32"
                                   IsChecked="True"
                                   FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                  x:Uid="TglButton_IncludeFiles"
+                                  x:Uid="ToggleButton_IncludeFiles"
                                   Style="{StaticResource CustomToggleButtonStyle}"/>
-                    <ToggleButton x:Name="tglBtn_includeFolders"
+                    <ToggleButton x:Name="toggleButton_includeFolders"
                                   Content="&#xE8B7;"
                                   MinHeight="32"
                                   IsChecked="True"
                                   FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                  x:Uid="TglButton_IncludeFolders"
+                                  x:Uid="ToggleButton_IncludeFolders"
                                   Style="{StaticResource CustomToggleButtonStyle}"/>
-                    <ToggleButton x:Name="tglBtn_includeSubfolders"
+                    <ToggleButton x:Name="toggleButton_includeSubfolders"
                                   Content="&#xE12F;"
                                   MinHeight="32"
                                   IsChecked="True"
                                   FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                  x:Uid="TglButton_IncludeSubFolders"
+                                  x:Uid="ToggleButton_IncludeSubFolders"
                                   Style="{StaticResource CustomToggleButtonStyle}"/>
                 </StackPanel>
 
@@ -438,37 +438,37 @@
 
                 <StackPanel Orientation="Horizontal"
                             Spacing="4">
-                    <ToggleButton x:Name="tglBtn_lowerCase"
+                    <ToggleButton x:Name="toggleButton_lowerCase"
                                   Content="aa"
                                   FontWeight="Medium"
                                   MinHeight="32"
-                                  x:Uid="TglButton_Lowercase"
+                                  x:Uid="ToggleButton_Lowercase"
                                   Style="{StaticResource CustomToggleButtonStyle}" />
-                    <ToggleButton x:Name="tglBtn_upperCase"
+                    <ToggleButton x:Name="toggleButton_upperCase"
                                   Content="AA"
                                   FontWeight="Medium"
                                   MinHeight="32"
-                                  x:Uid="TglButton_Uppercase"
+                                  x:Uid="ToggleButton_Uppercase"
                                   Style="{StaticResource CustomToggleButtonStyle}" />
-                    <ToggleButton x:Name="tglBtn_titleCase"
+                    <ToggleButton x:Name="toggleButton_titleCase"
                                   Content="Aa"
                                   FontWeight="Medium"
                                   MinHeight="32"
-                                  x:Uid="TglButton_TitleCase"
+                                  x:Uid="ToggleButton_TitleCase"
                                   Style="{StaticResource CustomToggleButtonStyle}" />
-                    <ToggleButton x:Name="tglBtn_capitalize"
+                    <ToggleButton x:Name="toggleButton_capitalize"
                                   Content="Aa Aa"
                                   FontWeight="Medium"
                                   MinHeight="32"
-                                  x:Uid="TglButton_Capitalize"
+                                  x:Uid="ToggleButton_Capitalize"
                                   Style="{StaticResource CustomToggleButtonStyle}" />
                     <AppBarSeparator Margin="5,0,5,0" />
                     
-                    <ToggleButton x:Name="tglBtn_enumItems"
+                    <ToggleButton x:Name="toggleButton_enumItems"
                                   Content="&#xEA40;"
                                   FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                   MinHeight="32"
-                                  x:Uid="TglButton_EnumItems"
+                                  x:Uid="ToggleButton_EnumItems"
                                   Style="{StaticResource CustomToggleButtonStyle}" />
                 </StackPanel>
             </StackPanel>
@@ -491,9 +491,9 @@
                         VerticalAlignment="Bottom"
                         HorizontalAlignment="Left">
                 
-                <Button x:Name="btn_settings"
+                <Button x:Name="button_settings"
                         Height="32"
-                        x:Uid="TxtBlock_BtnSettings"
+                        x:Uid="TxtBlock_ButtonSettings"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         Grid.Row="5"
                         Padding="6"
@@ -503,7 +503,7 @@
                     <Button.Content>
                         <controls:AnimatedIcon x:Name="SearchAnimatedIcon">
                             <controls:AnimatedIcon.Source>
-                                <animatedvisuals:AnimatedSettingsVisualSource />
+                                <animatedVisuals:AnimatedSettingsVisualSource />
                             </controls:AnimatedIcon.Source>
                             <controls:AnimatedIcon.FallbackIconSource>
                                 <controls:SymbolIconSource Symbol="Setting" />
@@ -513,10 +513,10 @@
                     </Button.Content>
                 </Button>
 
-                <Button x:Name="btn_docs"
+                <Button x:Name="button_docs"
                         Content="&#xE11B;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        x:Uid="DocsBtn"
+                        x:Uid="DocsButton"
                         Background="Transparent"
                         BorderBrush="Transparent"
                         Grid.Row="1"
@@ -548,25 +548,25 @@
 
             <muxc:SplitButton Grid.Row="1"
                               Style="{StaticResource SplitAccentButtonStyle}"
-                              x:Name="btn_rename"
+                              x:Name="button_rename"
                               Margin="0,0,20,0"
-                              x:Uid="BtnApply"
-                              Click="btn_rename_Click"
+                              x:Uid="ButtonApply"
+                              Click="button_rename_Click"
                               HorizontalAlignment="Right"
                               VerticalAlignment="Bottom"
-                              IsEnabled="{x:Bind UIUpdatesItem.BtnRenameEnabled, Mode=OneWay}">
+                              IsEnabled="{x:Bind UIUpdatesItem.ButtonRenameEnabled, Mode=OneWay}">
                 <muxc:SplitButton.Content>
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE13E;"
                                   FontSize="14"
                                   VerticalAlignment="Center"
                                   Margin="0,2,10,0" />
-                        <TextBlock x:Uid="TxtBlock_BtnApply" />
+                        <TextBlock x:Uid="TxtBlock_ButtonApply" />
                     </StackPanel>
                 </muxc:SplitButton.Content>
                 <muxc:SplitButton.Flyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem x:Uid="TxtBlock_BtnApplyAndClose" Click="MenuFlyoutItem_Click"/>
+                        <MenuFlyoutItem x:Uid="TxtBlock_ButtonApplyAndClose" Click="MenuFlyoutItem_Click"/>
                     </MenuFlyout>
                 </muxc:SplitButton.Flyout>
             </muxc:SplitButton>

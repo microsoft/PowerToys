@@ -12,7 +12,7 @@ namespace PowerRenameUI_new
         void ToggleAll();
         Boolean CloseUIWindow();
         void CloseUIWindow(Boolean closeUIWindow);
-        Boolean BtnRenameEnabled;
+        Boolean ButtonRenameEnabled;
         void Rename();
     }
 
@@ -30,25 +30,25 @@ namespace PowerRenameUI_new
         Windows.UI.Xaml.Controls.AutoSuggestBox AutoSuggestBoxSearch { get; };
         Windows.UI.Xaml.Controls.AutoSuggestBox AutoSuggestBoxReplace { get; };
 
-        Windows.UI.Xaml.Controls.CheckBox ChckBoxRegex { get; };
-        Windows.UI.Xaml.Controls.CheckBox ChckBoxCaseSensitive { get; };
-        Windows.UI.Xaml.Controls.CheckBox ChckBoxMatchAll { get; };
-        Windows.UI.Xaml.Controls.Primitives.ToggleButton TglBtnEnumerateItems { get; };
+        Windows.UI.Xaml.Controls.CheckBox CheckBoxRegex { get; };
+        Windows.UI.Xaml.Controls.CheckBox CheckBoxCaseSensitive { get; };
+        Windows.UI.Xaml.Controls.CheckBox CheckBoxMatchAll { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonEnumerateItems { get; };
 
         Windows.UI.Xaml.Controls.ComboBox ComboBoxRenameParts { get; };
 
-        Windows.UI.Xaml.Controls.Primitives.ToggleButton TglBtnIncludeFiles { get; };
-        Windows.UI.Xaml.Controls.Primitives.ToggleButton TglBtnIncludeFolders { get; };
-        Windows.UI.Xaml.Controls.Primitives.ToggleButton TglBtnIncludeSubfolders { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonIncludeFiles { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonIncludeFolders { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonIncludeSubfolders { get; };
 
-        Windows.UI.Xaml.Controls.Button BtnSettings { get; };
+        Windows.UI.Xaml.Controls.Button ButtonSettings { get; };
 
-        Windows.UI.Xaml.Controls.CheckBox ChckBoxSelectAll { get; };
+        Windows.UI.Xaml.Controls.CheckBox CheckBoxSelectAll { get; };
 
-        Windows.UI.Xaml.Controls.Primitives.ToggleButton TglBtnUpperCase { get; };
-        Windows.UI.Xaml.Controls.Primitives.ToggleButton TglBtnLowerCase { get; };
-        Windows.UI.Xaml.Controls.Primitives.ToggleButton TglBtnTitleCase { get; };
-        Windows.UI.Xaml.Controls.Primitives.ToggleButton TglBtnCapitalize { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonUpperCase { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonLowerCase { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonTitleCase { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonCapitalize { get; };
 
         void AddExplorerItem(Int32 id, String original, String renamed, Int32 type, Int32 parentId, Boolean checked);
         void UpdateExplorerItem(Int32 id, String newName);

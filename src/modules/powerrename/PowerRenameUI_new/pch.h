@@ -1,8 +1,9 @@
 ﻿#pragma once
 #include <windows.h>
 #include <unknwn.h>
-#include <restrictederrorinfo.h>
+#include <RestrictedErrorInfo.h>
 #include <hstring.h>
+#include <WinUser.h>
 
 #include <winrt/Windows.ApplicationModel.Activation.h>
 #include <winrt/Windows.ApplicationModel.Resources.h>

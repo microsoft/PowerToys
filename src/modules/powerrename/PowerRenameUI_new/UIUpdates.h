@@ -18,8 +18,8 @@ namespace winrt::PowerRenameUI_new::implementation
         void ToggleAll();
         bool CloseUIWindow();
         void CloseUIWindow(bool closeUIWindow);
-        bool BtnRenameEnabled();
-        void BtnRenameEnabled(bool value);
+        bool ButtonRenameEnabled();
+        void ButtonRenameEnabled(bool value);
         void Rename();
 
     private:
@@ -27,7 +27,7 @@ namespace winrt::PowerRenameUI_new::implementation
         int32_t m_changedItemId;
         bool m_checked;
         bool m_closeUIWindow;
-        bool m_btnRenameEnabled;
+        bool m_buttonRenameEnabled;
         winrt::event<Windows::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
     };
 }
