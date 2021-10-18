@@ -568,13 +568,13 @@
     <value>Hide icon in context menu</value>
   </data>
   <data name="PowerRename_Toggle_ContextMenu.Header" xml:space="preserve">
-    <value>Show in</value>
+    <value>Show PowerRename in</value>
   </data>
 	<data name="PowerRename_Toggle_ContextMenu.Description" xml:space="preserve">
     <value>Press shift + right-click on files to open the extended menu</value>
   </data>
 	<data name="PowerRename_Toggle_StandardContextMenu.Content" xml:space="preserve">
-    <value>Standard context menu</value>
+    <value>Default and extended context menu</value>
   </data>
 	<data name="PowerRename_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
     <value>Extended context menu only</value>
@@ -912,7 +912,7 @@
     <value>File modified timestamp</value>
   </data>
   <data name="ImageResizer_FileModifiedDate.Description" xml:space="preserve">
-    <value>This timestamp is used as the modified timestamp in the file meta data</value>
+    <value>Used as the 'modified timestamp' in the file properties</value>
   </data>
 	<data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
     <value>Original file timestamp</value>
