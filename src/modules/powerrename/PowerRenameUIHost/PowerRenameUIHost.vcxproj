@@ -20,7 +20,6 @@
     <RootNamespace>PowerRenameUIHost</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <TargetPlatformMinVersion>$(WindowsTargetPlatformVersion)</TargetPlatformMinVersion>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
