@@ -175,6 +175,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool findMyMouse = true;
+
+        [JsonPropertyName("FindMyMouse")]
+        public bool FindMyMouse
+        {
+            get => findMyMouse;
+            set
+            {
+                if (findMyMouse != value)
+                {
+                    LogTelemetryEvent(value);
+                    findMyMouse = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

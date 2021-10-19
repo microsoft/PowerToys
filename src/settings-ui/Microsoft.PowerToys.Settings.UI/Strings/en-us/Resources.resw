@@ -248,6 +248,10 @@
     <value>Keyboard Manager</value>
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
+  <data name="Shell_MouseUtilities.Content" xml:space="preserve">
+    <value>Mouse Utilities</value>
+    <comment>Product name: Navigation view item name for Mouse Utilities</comment>
+  </data>
   <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
     <value>Navigation closed</value>
     <comment>Accessibility announcement when the navigation pane collapses</comment>
@@ -1636,5 +1640,19 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="Awake_TimeBeforeAwake.Header" xml:space="preserve">
     <value>Time before returning to the previous awakeness state</value>
+  </data>
+  <data name="MouseUtils.ModuleTitle" xml:space="preserve">
+    <value>Mouse Utilities</value>
+  </data>
+  <data name="MouseUtils.ModuleDescription" xml:space="preserve">
+    <value>A collection of mouse utilities.</value>
+  </data>
+  <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
+    <value>Enable Find My Mouse</value>
+    <comment>"Find My Mouse" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_Enable_FindMyMouse.Description" xml:space="preserve">
+    <value>Press the Left Control key twice to focus the mouse pointer.</value>
+    <comment>"Left Control" is a keyboard key.</comment>
   </data>
 </root>

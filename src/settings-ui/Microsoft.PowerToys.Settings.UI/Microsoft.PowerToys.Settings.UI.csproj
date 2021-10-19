@@ -193,6 +193,9 @@
     <Compile Include="Views\KeyboardManagerPage.xaml.cs">
       <DependentUpon>KeyboardManagerPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\MouseUtilsPage.xaml.cs">
+      <DependentUpon>MouseUtilsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\PowerLauncherPage.xaml.cs">
       <DependentUpon>PowerLauncherPage.xaml</DependentUpon>
     </Compile>
@@ -427,6 +430,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\KeyboardManagerPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MouseUtilsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
