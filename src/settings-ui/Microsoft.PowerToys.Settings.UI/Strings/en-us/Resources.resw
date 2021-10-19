@@ -401,8 +401,11 @@
   <data name="PowerLauncher_IgnoreHotkeysInFullScreen.Content" xml:space="preserve">
     <value>Ignore shortcuts in fullscreen mode</value>
   </data>
-  <data name="PowerLauncher_UseCentralizedKeyboardHook.Content" xml:space="preserve">
-    <value>Use centralized keyboard hook (try it if there are issues with the shortcut)</value>
+  <data name="PowerLauncher_UseCentralizedKeyboardHook.Header" xml:space="preserve">
+    <value>Use centralized keyboard hook</value>
+  </data>
+	<data name="PowerLauncher_UseCentralizedKeyboardHook.Description" xml:space="preserve">
+    <value>Try this if there are issues with the shortcut</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
@@ -913,7 +916,7 @@
 Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the OS</comment>
   </data>
-  <data name="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Text" xml:space="preserve">
+  <data name="FancyZones_SpanZonesAcrossMonitors.Header" xml:space="preserve">
     <value>Allow zones to span across monitors</value>
   </data>
   <data name="ImageResizer_Formatting_ActualHeight.Text" xml:space="preserve">
@@ -1627,7 +1630,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
   </data>
-  <data name="FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" xml:space="preserve">
+  <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>
   </data>
   <data name="ImageResizer_DefaultSize_NewSizePrefix" xml:space="preserve">
