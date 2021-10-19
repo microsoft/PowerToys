@@ -90,7 +90,9 @@ private:
 
 private:
     static constexpr auto className = L"FindMyMouse";
-    static constexpr auto windowTitle = L"FindMyMouse";
+
+    // Use the runner name for the Window title. Otherwise, since Find My Mouse has an actual visual, its Window name will be the one shown in Task Manager after being shown.
+    static constexpr auto windowTitle = L"PowerToys Runner";
 
     static LRESULT CALLBACK s_WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
