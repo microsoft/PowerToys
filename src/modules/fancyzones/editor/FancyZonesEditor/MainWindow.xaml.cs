@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -256,7 +254,7 @@ namespace FancyZonesEditor
 
         private void Announce(string name, string message)
         {
-            if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
+            if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened) && _createLayoutAnnounce != null)
             {
                 var peer = UIElementAutomationPeer.FromElement(_createLayoutAnnounce);
                 AutomationProperties.SetName(_createLayoutAnnounce, name + " " + message);
@@ -516,7 +514,10 @@ namespace FancyZonesEditor
         private void TextBox_GotKeyboardFocus(object sender, RoutedEventArgs e)
         {
             TextBox tb = sender as TextBox;
-            tb.SelectionStart = tb.Text.Length;
+            if (tb != null)
+            {
+                tb.SelectionStart = tb.Text.Length;
+            }
         }
 
         private void CancelLayoutChanges()
