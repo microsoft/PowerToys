@@ -4,6 +4,7 @@
 #include "trace.h"
 #include "FindMyMouse.h"
 #include <thread>
+#include <common/utils/logger_helper.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -46,6 +47,7 @@ public:
     // Constructor
     FindMyMouse()
     {
+        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::findMyMouseLoggerName);
         init_settings();
     };
 

@@ -15,3 +15,5 @@
 
 #include <winrt/Windows.Foundation.Collections.h>
 #include <ProjectTelemetry.h>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/logger/logger.h>

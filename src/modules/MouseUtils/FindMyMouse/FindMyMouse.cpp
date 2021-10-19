@@ -326,6 +326,7 @@ void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
 template<typename D>
 void SuperSonar<D>::StartSonar()
 {
+    Logger::info("Focusing the sonar on the mouse cursor.");
     // Cover the entire virtual screen.
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN), GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
     m_sonarPos = ptNowhere;
@@ -755,6 +756,7 @@ void FindMyMouseDisable()
 {
     if (m_sonar != nullptr)
     {
+        Logger::info("Terminating a sonar instance.");
         m_sonar->Terminate();
     }
 }
@@ -767,18 +769,21 @@ bool FindMyMouseIsEnabled()
 // Based on SuperSonar's original wWinMain.
 int FindMyMouseMain(HINSTANCE hinst)
 {
+    Logger::info("Starting a sonar instance.");
     if (m_sonar != nullptr)
     {
+        Logger::error("A sonar instance was still working when trying to start a new one.");
         return 0;
     }
 
     CompositionSpotlight sonar;
     if (!sonar.Initialize(hinst))
     {
+        Logger::error("Couldn't initialize a sonar instance.");
         return 0;
     }
-
     m_sonar = &sonar;
+    Logger::info("Initialized the sonar instance.");
 
     MSG msg;
 
@@ -789,6 +794,7 @@ int FindMyMouseMain(HINSTANCE hinst)
         DispatchMessage(&msg);
     }
 
+    Logger::info("Sonar message loop ended.");
     m_sonar = nullptr;
 
     return (int)msg.wParam;
