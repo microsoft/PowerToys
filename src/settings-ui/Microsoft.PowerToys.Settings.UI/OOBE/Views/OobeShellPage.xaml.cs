@@ -203,7 +203,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Image = "ms-appx:///Assets/Modules/MouseUtils.png",
                 Description = loader.GetString("Oobe_MouseUtils_Description"),
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/MouseUtils.gif",
-                Link = "https://aka.ms/PowerToysOverview_MouseUtilites", // TODO: Add correct link after it's been created.
+                Link = "https://aka.ms/PowerToysOverview_MouseUtilities", // TODO: Add correct link after it's been created.
             });
         }
 
