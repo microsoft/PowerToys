@@ -68,7 +68,6 @@ private:
     static constexpr DWORD IdlePeriod = 1000;
 
     // Activate sonar: Hit LeftControl twice.
-    // Exit Sonar: hit LeftControl twice, then RightControl once.
     enum class SonarState
     {
         Idle,
@@ -252,10 +251,15 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
     // Deal with rightCtrl first.
     if (rightCtrl)
     {
+        /*
+        * SuperSonar originally exited when pressing right control after pressing left control twice.
+        * We take care of exiting FindMyMouse through module disabling in PowerToys settings instead.
         if (m_sonarState == SonarState::ControlUp2)
         {
             Terminate();
         }
+        */
+        StopSonar();
         return;
     }
 
