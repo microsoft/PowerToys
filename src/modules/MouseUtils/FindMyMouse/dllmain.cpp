@@ -108,6 +108,7 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        Trace::EnableFindMyMouse(true);
         std::thread([]() { FindMyMouseMain(m_hModule); }).detach();
     }
 
@@ -115,6 +116,7 @@ public:
     virtual void disable()
     {
         m_enabled = false;
+        Trace::EnableFindMyMouse(false);
         FindMyMouseDisable();
     }
 

@@ -2,6 +2,7 @@
 //
 #include "pch.h"
 #include "FindMyMouse.h"
+#include "trace.h"
 
 #ifdef COMPOSITION
 namespace winrt
@@ -327,6 +328,7 @@ template<typename D>
 void SuperSonar<D>::StartSonar()
 {
     Logger::info("Focusing the sonar on the mouse cursor.");
+    Trace::MousePointerFocused();
     // Cover the entire virtual screen.
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN), GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
     m_sonarPos = ptNowhere;
