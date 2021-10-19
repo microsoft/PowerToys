@@ -89,8 +89,8 @@ private:
     bool m_isSnoopingMouse = false;
 
 private:
-    static constexpr auto className = L"SuperSonar";
-    static constexpr auto windowTitle = L"SuperSonar";
+    static constexpr auto className = L"FindMyMouse";
+    static constexpr auto windowTitle = L"FindMyMouse";
 
     static LRESULT CALLBACK s_WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
