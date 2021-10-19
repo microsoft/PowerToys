@@ -147,7 +147,8 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
             L"modules/ColorPicker/ColorPicker.dll",
-            L"modules/Awake/AwakeModuleInterface.dll"
+            L"modules/Awake/AwakeModuleInterface.dll",
+            L"modules/MouseUtils/FindMyMouse.dll"
 
         };
         const auto VCM_PATH = L"modules/VideoConference/VideoConferenceModule.dll";
