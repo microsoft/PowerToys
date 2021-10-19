@@ -234,6 +234,7 @@
     <Content Include="Assets\FluentIcons\FluentIconsFileExplorerPreview.png" />
     <Content Include="Assets\FluentIcons\FluentIconsImageResizer.png" />
     <Content Include="Assets\FluentIcons\FluentIconsKeyboardManager.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsMouseUtils.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerRename.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerToys.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerToysRun.png" />

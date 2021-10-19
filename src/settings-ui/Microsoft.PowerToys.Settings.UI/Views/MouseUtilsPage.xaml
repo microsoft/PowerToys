@@ -14,10 +14,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
 
-                <controls:Setting x:Uid="MouseUtils_Enable_FindMyMouse">
-                    <controls:Setting.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToys.png" ShowAsMonochrome="False" />
-                    </controls:Setting.Icon>
+                <controls:Setting x:Uid="MouseUtils_Enable_FindMyMouse" Icon="&#xF272;">
                     <controls:Setting.ActionContent>
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" HorizontalAlignment="Right"/>
                     </controls:Setting.ActionContent>

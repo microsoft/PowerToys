@@ -131,7 +131,7 @@
                 <muxc:NavigationViewItem x:Uid="Shell_MouseUtilities"
                                          helpers:NavHelper.NavigateTo="views:MouseUtilsPage">
                     <muxc:NavigationViewItem.Icon>
-                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToys.png"
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseUtils.png"
                                     ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>

@@ -199,7 +199,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Tag = "MouseUtils",
                 IsNew = true,
                 Icon = "\uE962",
-                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsPowerToys.png",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsMouseUtils.png",
                 Image = "ms-appx:///Assets/Modules/MouseUtils.png",
                 Description = loader.GetString("Oobe_MouseUtils_Description"),
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/MouseUtils.gif",
