@@ -3,6 +3,7 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
 #include "FindMyMouse.h"
+#include <thread>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -206,19 +207,21 @@ public:
     virtual void enable()
     {
         m_enabled = true;
-        FindMyMouseMain(m_hModule);
+        std::thread([]() { FindMyMouseMain(m_hModule); }).detach();
     }
 
     // Disable the powertoy
     virtual void disable()
     {
         m_enabled = false;
+        FindMyMouseDisable();
     }
 
     // Returns if the powertoys is enabled
     virtual bool is_enabled() override
     {
         return m_enabled;
+        // return FindMyMouseIsEnabled();
     }
 };
 

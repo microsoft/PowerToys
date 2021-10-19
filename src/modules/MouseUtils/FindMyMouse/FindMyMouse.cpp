@@ -23,6 +23,7 @@ template<typename D>
 struct SuperSonar
 {
     bool Initialize(HINSTANCE hinst);
+    void Terminate();
 
 protected:
     // You are expected to override these, as appropriate.
@@ -102,7 +103,6 @@ private:
 
     void StartSonar();
     void StopSonar();
-    void Terminate();
 
     void UpdateMouseSnooping();
 };
@@ -114,16 +114,19 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
 
     WNDCLASS wc{};
 
-    wc.lpfnWndProc = s_WndProc;
-    wc.hInstance = hinst;
-    wc.hIcon = LoadIcon(hinst, IDI_APPLICATION);
-    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
-    wc.lpszClassName = className;
-
-    if (!RegisterClassW(&wc))
+    if (!GetClassInfoW(hinst, className, &wc))
     {
-        return false;
+        wc.lpfnWndProc = s_WndProc;
+        wc.hInstance = hinst;
+        wc.hIcon = LoadIcon(hinst, IDI_APPLICATION);
+        wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+        wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
+        wc.lpszClassName = className;
+
+        if (!RegisterClassW(&wc))
+        {
+            return false;
+        }
     }
 
     m_hwndOwner = CreateWindow(L"static", nullptr, WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
@@ -742,14 +745,36 @@ struct GdiCrosshairs : GdiSonar<GdiCrosshairs>
 
 #pragma region Super_Sonar_API
 
+CompositionSpotlight* m_sonar = nullptr;
+
+void FindMyMouseDisable()
+{
+    if (m_sonar != nullptr)
+    {
+        m_sonar->Terminate();
+    }
+}
+
+bool FindMyMouseIsEnabled()
+{
+    return (m_sonar != nullptr);
+}
+
 // Based on SuperSonar's original wWinMain.
 int FindMyMouseMain(HINSTANCE hinst)
 {
+    if (m_sonar != nullptr)
+    {
+        return 0;
+    }
+
     CompositionSpotlight sonar;
     if (!sonar.Initialize(hinst))
     {
         return 0;
     }
+
+    m_sonar = &sonar;
 
     MSG msg;
 
@@ -759,6 +784,8 @@ int FindMyMouseMain(HINSTANCE hinst)
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+    m_sonar = nullptr;
 
     return (int)msg.wParam;
 }
