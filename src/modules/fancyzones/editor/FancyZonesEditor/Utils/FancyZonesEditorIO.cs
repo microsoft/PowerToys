@@ -399,8 +399,9 @@ namespace FancyZonesEditor.Utils
                     App.Overlay.Monitors.Add(monitor);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError("Invalid command line arguments: " + args[1], ex);
                 MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                 ((App)Application.Current).Shutdown();
             }
@@ -471,6 +472,7 @@ namespace FancyZonesEditor.Utils
                 }
                 catch (Exception ex)
                 {
+                    Logger.LogError("Editor params parsing error", ex);
                     return new ParsingResult(false, ex.Message, data);
                 }
 
@@ -498,6 +500,7 @@ namespace FancyZonesEditor.Utils
                 }
                 catch (Exception ex)
                 {
+                    Logger.LogError("Zone settings parsing error", ex);
                     return new ParsingResult(false, ex.Message, settingsString);
                 }
 
@@ -515,6 +518,7 @@ namespace FancyZonesEditor.Utils
                 }
                 catch (Exception ex)
                 {
+                    Logger.LogError("Zone settings parsing error", ex);
                     return new ParsingResult(false, ex.Message, settingsString);
                 }
             }
@@ -680,8 +684,9 @@ namespace FancyZonesEditor.Utils
 
                         zoneSettings.QuickLayoutKeys.Add(wrapper);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        Logger.LogError("Serialize quick layout keys error", ex);
                     }
                 }
             }
@@ -693,6 +698,7 @@ namespace FancyZonesEditor.Utils
             }
             catch (Exception ex)
             {
+                Logger.LogError("Serialize zone settings error", ex);
                 App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
             }
         }
@@ -791,9 +797,10 @@ namespace FancyZonesEditor.Utils
                         layout = ParseGridInfo(zoneSet);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     result = false;
+                    Logger.LogError("Parse custom layout error", ex);
                     continue;
                 }
 
