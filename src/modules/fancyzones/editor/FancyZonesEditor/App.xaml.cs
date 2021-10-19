@@ -61,17 +61,7 @@ namespace FancyZonesEditor
             Overlay = new Overlay();
             MainWindowSettings = new MainWindowSettingsModel();
 
-            new Thread(() =>
-            {
-                _eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, interop.Constants.FZEExitEvent());
-                if (_eventHandle.WaitOne())
-                {
-                    Logger.LogInfo("FancyZones disabled, exit");
-                    Environment.Exit(0);
-                }
-            }).Start();
-
-            Logger.LogInfo("FancyZones Editor started");
+            new Thread(App_WaitExit).Start();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
@@ -138,6 +128,15 @@ namespace FancyZonesEditor
             }
 
             Logger.LogInfo("FancyZones Editor exited");
+        }
+
+        private void App_WaitExit()
+        {
+            _eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, interop.Constants.FZEExitEvent());
+            if (_eventHandle.WaitOne())
+            {
+                Environment.Exit(0);
+            }
         }
 
         public void App_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)

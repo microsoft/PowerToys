@@ -41,20 +41,7 @@ namespace FancyZonesEditor
             DataContext = _settings;
 
             KeyUp += MainWindow_KeyUp;
-
-            // Prevent closing the dialog with enter
-            PreviewKeyDown += (object sender, KeyEventArgs e) =>
-            {
-                if (e.Key == Key.Enter && _openedDialog != null && _openedDialog.IsVisible)
-                {
-                    var source = e.OriginalSource as RadioButton;
-                    if (source != null && source.IsChecked != true)
-                    {
-                        source.IsChecked = true;
-                        e.Handled = true;
-                    }
-                }
-            };
+            PreviewKeyDown += MainWindow_PreviewKeyDown;
 
             if (spanZonesAcrossMonitors)
             {
@@ -81,6 +68,20 @@ namespace FancyZonesEditor
             if (e.Key == Key.Escape)
             {
                 CloseDialog(sender);
+            }
+        }
+
+        // Prevent closing the dialog with enter
+        private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && _openedDialog != null && _openedDialog.IsVisible)
+            {
+                var source = e.OriginalSource as RadioButton;
+                if (source != null && source.IsChecked != true)
+                {
+                    source.IsChecked = true;
+                    e.Handled = true;
+                }
             }
         }
 
