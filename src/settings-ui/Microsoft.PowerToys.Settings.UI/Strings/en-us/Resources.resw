@@ -493,10 +493,16 @@
     <value>Move newly created windows to the current active monitor (Experimental)</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Header" xml:space="preserve">
-    <value>Launch editor where mouse cursor is</value>
+    <value>Launch editor on the display</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Description" xml:space="preserve">
-    <value>When using multiple screens, the editor will launch on the screen where the mouse cursor is</value>
+    <value>When using multiple displays</value>
+  </data>
+	<data name="FancyZones_LaunchPositionMouse.Content" xml:space="preserve">
+    <value>Where the mouse pointer is</value>
+  </data>
+	<data name="FancyZones_LaunchPositionScreen.Content" xml:space="preserve">
+    <value>With active focus</value>
   </data>
   <data name="FancyZones_ZoneBehavior_GroupSettings.Header" xml:space="preserve">
     <value>Zone behavior</value>
@@ -561,11 +567,20 @@
   <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
     <value>Settings theme</value>
   </data>
-  <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
-    <value>Show icon on context menu</value>
+  <data name="PowerRename_Toggle_HideIcon.Content" xml:space="preserve">
+    <value>Hide icon in context menu</value>
   </data>
-  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
-    <value>Appear only in extended context menu</value>
+  <data name="PowerRename_Toggle_ContextMenu.Header" xml:space="preserve">
+    <value>Show PowerRename in</value>
+  </data>
+	<data name="PowerRename_Toggle_ContextMenu.Description" xml:space="preserve">
+    <value>Press shift + right-click on files to open the extended menu</value>
+  </data>
+	<data name="PowerRename_Toggle_StandardContextMenu.Content" xml:space="preserve">
+    <value>Default and extended context menu</value>
+  </data>
+	<data name="PowerRename_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
+    <value>Extended context menu only</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Description" xml:space="preserve">
     <value>Press Shift + right-click on files to open the extended menu</value>
@@ -896,11 +911,17 @@
   <data name="ImageResizer_FilenameFormatHeader.Header" xml:space="preserve">
     <value>Filename format</value>
   </data>
-  <data name="ImageResizer_UseOriginalDate.Header" xml:space="preserve">
-    <value>Use original date modified</value>
+  <data name="ImageResizer_FileModifiedDate.Header" xml:space="preserve">
+    <value>File modified timestamp</value>
   </data>
-  <data name="ImageResizer_UseOriginalDate.Description" xml:space="preserve">
-    <value>Keep the original modified date of the file (instead of the resize date)</value>
+  <data name="ImageResizer_FileModifiedDate.Description" xml:space="preserve">
+    <value>Used as the 'modified timestamp' in the file properties</value>
+  </data>
+	<data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
+    <value>Original file timestamp</value>
+  </data>
+	<data name="ImageResizer_UseResizeDate.Content" xml:space="preserve">
+    <value>Timestamp of resize action</value>
   </data>
   <data name="Encoding.Header" xml:space="preserve">
     <value>Encoding</value>
@@ -1157,7 +1178,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Plugins</value>
   </data>
   <data name="Run_PluginUseDescription.Description" xml:space="preserve">
-    <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options</value>
+    <value>Include or remove plugins from the global results, change the direct activation phrase and configure additional options</value>
   </data>
   <data name="Run_PositionAppearance_GroupSettings.Header" xml:space="preserve">
     <value>Position &amp; appearance</value>
@@ -1198,7 +1219,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Enable quick layout switch</value>
   </data>
   <data name="FancyZones_QuickLayoutSwitch.Description" xml:space="preserve">
-    <value>You can configure layout-specific shortcuts in the editor</value>
+    <value>Layout-specific shortcuts can be configured in the editor</value>
   </data>
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
