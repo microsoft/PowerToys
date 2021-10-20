@@ -35,8 +35,8 @@ public:
         };
 
         static void KeyUp(WPARAM wparam) noexcept;
-        static void MoveSizeEnter(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept;
-        static void MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept;
+        static void MoveOrResizeStarted(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept;
+        static void MoveOrResizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept;
         static void CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> activeSet, InputMode mode) noexcept;
     };
 };

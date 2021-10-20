@@ -17,8 +17,8 @@
 #define EventZoneWindowKeyUpKey "FancyZones_ZoneWindowKeyUp"
 #define EventSnapNewWindowIntoZone "FancyZones_SnapNewWindowIntoZone"
 #define EventKeyboardSnapWindowToZone "FancyZones_KeyboardSnapWindowToZone"
-#define EventMoveSizeEnterKey "FancyZones_MoveSizeEnter"
-#define EventMoveSizeEndKey "FancyZones_MoveSizeEnd"
+#define EventMoveOrResizeStartedKey "FancyZones_MoveOrResizeStarted"
+#define EventMoveOrResizeEndedKey "FancyZones_MoveOrResizeEnded"
 #define EventCycleActiveZoneSetKey "FancyZones_CycleActiveZoneSet"
 #define EventQuickLayoutSwitchKey "FancyZones_QuickLayoutSwitch"
 
@@ -339,12 +339,12 @@ void Trace::WorkArea::KeyUp(WPARAM wParam) noexcept
         TraceLoggingValue(wParam, KeyboardValueKey));
 }
 
-void Trace::WorkArea::MoveSizeEnter(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
+void Trace::WorkArea::MoveOrResizeStarted(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWrite(
         g_hProvider,
-        EventMoveSizeEnterKey,
+        EventMoveOrResizeStartedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), ActiveSetKey),
@@ -352,12 +352,12 @@ void Trace::WorkArea::MoveSizeEnter(_In_opt_ winrt::com_ptr<IZoneSet> activeSet)
         TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
 }
 
-void Trace::WorkArea::MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
+void Trace::WorkArea::MoveOrResizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWrite(
         g_hProvider,
-        EventMoveSizeEndKey,
+        EventMoveOrResizeEndedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), ActiveSetKey),
