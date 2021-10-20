@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -316,6 +317,8 @@ namespace FancyZonesEditor
 
         private void OnSplit(object sender, SplitEventArgs args)
         {
+            Logger.LogTrace();
+
             MergeCancelClick(null, null);
 
             var zonePanel = sender as GridZone;
@@ -488,6 +491,7 @@ namespace FancyZonesEditor
 
         private void OnMergeComplete(object o, MouseButtonEventArgs e)
         {
+            Logger.LogTrace();
             _inMergeDrag = false;
 
             var selectedIndices = new List<int>();

@@ -9,7 +9,7 @@ using System.IO;
 using System.IO.Abstractions;
 using interop;
 
-namespace FancyZonesEditor.Utils
+namespace FancyZonesEditor.Logs
 {
     public static class Logger
     {
@@ -69,17 +69,20 @@ namespace FancyZonesEditor.Utils
             Log(message, Debug);
         }
 
-        public static void LogTrace(string message)
+        public static void LogTrace()
         {
-            Log(message, TraceFlag);
+            Log(string.Empty, TraceFlag);
         }
 
         private static void Log(string message, string type)
         {
-            Trace.WriteLine(type + ": " + DateTime.Now.TimeOfDay);
+            Trace.WriteLine("[" + DateTime.Now.TimeOfDay + "] [" + type + "] " + GetCallerInfo());
             Trace.Indent();
-            Trace.WriteLine(GetCallerInfo());
-            Trace.WriteLine(message);
+            if (message != string.Empty)
+            {
+                Trace.WriteLine(message);
+            }
+
             Trace.Unindent();
         }
 

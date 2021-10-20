@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
 using Microsoft.PowerToys.Common.UI;
@@ -169,12 +170,6 @@ namespace FancyZonesEditor
             }
 
             MessageBox.Show(fullMessage, FancyZonesEditor.Properties.Resources.Error_Exception_Message_Box_Title);
-        }
-
-        public static void ShowExceptionReportMessageBox(string reportData)
-        {
-            Logger.LogError(reportData);
-            ShowReportMessageBox();
         }
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
