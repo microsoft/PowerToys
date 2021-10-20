@@ -125,6 +125,8 @@ namespace FancyZonesEditor
 
         private void OnExit(object sender, ExitEventArgs e)
         {
+            Dispose();
+
             if (_eventHandle != null)
             {
                 _eventHandle.Set();
