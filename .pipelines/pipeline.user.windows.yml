@@ -175,7 +175,6 @@ build:
             - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
             - 'modules\VideoConference\VideoConferenceModule.dll'
             - 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
-            - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
             - 'Settings\ManagedTelemetry.dll'
             - 'Settings\Microsoft.PowerToys.Settings.UI.exe'
             - 'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
