@@ -13,10 +13,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         FileExplorer,
         ImageResizer,
         KBM,
+        MouseUtils,
         PowerRename,
         Run,
         ShortcutGuide,
         VideoConference,
-        MouseUtils,
     }
 }
