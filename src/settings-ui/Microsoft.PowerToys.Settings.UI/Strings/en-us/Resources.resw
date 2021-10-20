@@ -1621,6 +1621,9 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="ImageResizer.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
   </data>
+  <data name="MouseUtils.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
   <data name="PowerLauncher.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
   </data>
