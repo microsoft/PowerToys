@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties":
+    {
+        "TimeZones":
+        {
+            "type": "array",
+            "items":
+            {
+                "type": "object",
+                "additionalProperties": false,
+                "properties":
+                {
+                    "Offset":
+                    {
+                        "type": "string"
+                    },
+                    "Name":
+                    {
+                        "type": "string"
+                    },
+                    "Shortcut":
+                    {
+                        "type": "string"
+                    },
+                    "DaylightSavingTime":
+                    {
+                        "type": "boolean"
+                    },
+                    "Countries":
+                    {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items":
+                        {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,799 @@
+{
+    "$schema": "./timezone.schema.json",
+    "TimeZones":
+    [
+        {
+            "Offset": "-12:00",
+            "DaylightSavingTime": false,
+            "Name": "International Date Line",
+            "Countries": [
+                "Baker Island",
+                "Howland Island"
+            ]
+        },
+        {
+            "Offset": "-11:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "American Samoa",
+                "Jarvis Island",
+                "Kingman Reef",
+                "Midway Atoll",
+                "Niue",
+                "Palmyra Atoll"
+            ]
+        },
+        {
+            "Offset": "-10:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Cook Islands",
+                "French Polynesia (most)",
+                "Johnston Atoll",
+                "United States: Hawaii"
+            ]
+        },
+        {
+            "Offset": "-10:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "United States: Andreanof Islands",
+                "United States: Islands of Four Mountains",
+                "United States: Near Islands",
+                "United States: Rat Islands (Aleutian Islands, Alaska)"
+            ]
+        },
+        {
+            "Offset": "−09:30",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "French Polynesia: Marquesas Islands"
+            ]
+        },
+        {
+            "Offset": "−09:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "French Polynesia: Gambier Islands"
+            ]
+        },
+        {
+            "Offset": "−09:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "United States: Alaska (most)"
+            ]
+        },
+        {
+            "Offset": "−08:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Clipperton Island",
+                "Pitcairn Islands"
+            ]
+        },
+        {
+            "Offset": "−08:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Canada: British Columbia (most)",
+                "Mexico: Baja California",
+                "United States: California",
+                "United States: Idaho (north)",
+                "United States: Nevada",
+                "United States: Oregon (most)",
+                "United States: Washington"
+            ]
+        },
+        {
+            "Offset": "−07:00",
+            "DaylightSavingTime": false,
+            "Name": "Mountain Time Zone",
+            "Countries": [
+                "Canada: British Columbia (northeast)",
+                "Canada: Yukon",
+                "Mexico: Sonora",
+                "United States: Arizona (most)"
+            ]
+        },
+        {
+            "Offset": "−07:00",
+            "DaylightSavingTime": false,
+            "Name": "Pacific Time Zone",
+            "Countries": [
+                "Canada: Alberta",
+                "Canada: British Columbia (southeast)",
+                "Canada: Northwest Territories",
+                "Canada: Nunavut (west)",
+                "Mexico: Baja California Sur",
+                "Mexico: Chihuahua",
+                "Mexico: Nayarit (most)",
+                "Mexico: Sinaloa",
+                "United States: Colorado",
+                "United States: Idaho (most)",
+                "United States: Montana",
+                "United States: New Mexico",
+                "United States: Utah",
+                "United States: Wyoming"
+            ]
+        },
+        {
+            "Offset": "−06:00",
+            "DaylightSavingTime": false,
+            "Name": "Central Time Zone",
+            "Countries": [
+                "Belize",
+                "Canada: Saskatchewan (most)",
+                "Costa Rica",
+                "Ecuador: Galápagos",
+                "El Salvador",
+                "Guatemala",
+                "Honduras",
+                "Nicaragua"
+            ]
+        },
+        {
+            "Offset": "−06:00",
+            "DaylightSavingTime": true,
+            "Name": "Mountain Time Zone",
+            "Countries": [
+                "Canada: Manitoba",
+                "Canada: Nunavut (central)",
+                "Canada: Ontario (west)",
+                "Chile: Easter Island",
+                "Mexico (most)",
+                "United States: Alabama",
+                "United States: Arkansas",
+                "United States: Illinois",
+                "United States: Iowa",
+                "United States: Kansas (most)",
+                "United States: Louisiana",
+                "United States: Minnesota",
+                "United States: Mississippi",
+                "United States: Missouri",
+                "United States: Nebraska (most)",
+                "United States: North Dakota (most)",
+                "United States: Oklahoma",
+                "United States: South Dakota (most)",
+                "United States: Tennessee (most)",
+                "United States: Texas (most)",
+                "United States: Wisconsin"
+            ]
+        },
+        {
+            "Offset": "−05:00",
+            "DaylightSavingTime": false,
+            "Name": "Eastern Time Zone",
+            "Countries": [
+                "Brazil: Acre",
+                "Canada: Atikokan",
+                "Canada: Mishkeegogamang",
+                "Canada: Southampton Island",
+                "Cayman Islands",
+                "Colombia",
+                "Ecuador (most)",
+                "Jamaica",
+                "Mexico: Quintana Roo",
+                "Navassa Island",
+                "Panama",
+                "Peru"
+            ]
+        },
+        {
+            "Offset": "−05:00",
+            "DaylightSavingTime": true,
+            "Name": "Central Time Zone",
+            "Countries": [
+                "Bahamas",
+                "Canada: Nunavut (east)",
+                "Canada: Ontario (most)",
+                "Canada: Quebec (most)",
+                "Cuba",
+                "Haiti",
+                "Turks and Caicos Islands",
+                "United States: Connecticut",
+                "United States: Delaware",
+                "United States: District of Columbia",
+                "United States: Florida (most)",
+                "United States: Georgia",
+                "United States: Indiana (most)",
+                "United States: Kentucky (most)",
+                "United States: Maine",
+                "United States: Maryland",
+                "United States: Massachusetts",
+                "United States: Michigan (most)",
+                "United States: New Hampshire",
+                "United States: New Jersey",
+                "United States: New York",
+                "United States: North Carolina",
+                "United States: Ohio",
+                "United States: Pennsylvania",
+                "United States: Rhode Island",
+                "United States: South Carolina",
+                "United States: Vermont",
+                "United States: Virginia",
+                "United States: West Virginia"
+            ]
+        },
+        {
+            "Offset": "−04:00",
+            "DaylightSavingTime": false,
+            "Name": "Atlantic Time Zone",
+            "Countries": [
+                "Anguilla",
+                "Antigua and Barbuda",
+                "Aruba",
+                "Barbados",
+                "Bolivia",
+                "Brazil: Amazonas (most)",
+                "Brazil: Mato Grosso",
+                "Brazil: Mato Grosso do Sul",
+                "Brazil: Rondônia",
+                "Brazil: Roraima",
+                "British Virgin Islands",
+                "Canada: Quebec (east)",
+                "Caribbean Netherlands",
+                "Curaçao",
+                "Dominica",
+                "Dominican Republic",
+                "Grenada",
+                "Guadeloupe",
+                "Guyana",
+                "Martinique",
+                "Montserrat",
+                "Puerto Rico",
+                "Saint Barthélemy",
+                "Saint Kitts and Nevis",
+                "Saint Lucia",
+                "Saint Martin",
+                "Saint Vincent and the Grenadines",
+                "Sint Maarten",
+                "Trinidad and Tobago",
+                "U.S. Virgin Islands",
+                "Venezuela"
+            ]
+        },
+        {
+            "Offset": "−04:00",
+            "DaylightSavingTime": true,
+            "Name": "Eastern Time Zone",
+            "Countries": [
+                "Bermuda",
+                "Canada: Labrador (most)",
+                "Canada: New Brunswick",
+                "Canada: Nova Scotia",
+                "Canada: Prince Edward Island",
+                "Chile (most)",
+                "Greenland: Thule Air Base",
+                "Paraguay"
+            ]
+        },
+        {
+            "Offset": "−03:30",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Canada: Newfoundland",
+                "Canada: Labrador (southeast)"
+            ]
+        },
+        {
+            "Offset": "−03:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Argentina",
+                "Brazil (most)",
+                "Chile: Magallanes",
+                "Falkland Islands",
+                "French Guiana",
+                "Suriname",
+                "Uruguay"
+            ]
+        },
+        {
+            "Offset": "−03:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Greenland (most)",
+                "Saint Pierre and Miquelon"
+            ]
+        },
+        {
+            "Offset": "−02:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Brazil: Fernando de Noronha",
+                "South Georgia and the South Sandwich Islands"
+            ]
+        },
+        {
+            "Offset": "−01:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Cape Verde"
+            ]
+        },
+        {
+            "Offset": "−01:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Greenland: Ittoqqortoormiit",
+                "Portugal: Azores"
+            ]
+        },
+        {
+            "Offset": "00:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Ascension and Tristan da Cunha",
+                "Burkina Faso",
+                "Danmarkshavn",
+                "Gambia",
+                "Ghana",
+                "Guinea-Bissau",
+                "Guinea",
+                "Iceland",
+                "Ivory Coast",
+                "Liberia",
+                "Mali",
+                "Mauritania",
+                "Saint Helena",
+                "São Tomé and Príncipe",
+                "Senegal",
+                "Sierra Leone",
+                "Togo"
+            ]
+        },
+        {
+            "Offset": "00:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Canary Islands",
+                "Faroe Islands",
+                "Guernsey",
+                "Ireland",
+                "Isle of Man",
+                "Jersey",
+                "Portugal (most)",
+                "United Kingdom"
+            ]
+        },
+        {
+            "Offset": "01:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Algeria",
+                "Angola",
+                "Benin",
+                "Cameroon",
+                "Central African Republic",
+                "Chad",
+                "Congo",
+                "Democratic Republic of the Congo: Équateur",
+                "Democratic Republic of the Congo: Kinshasa",
+                "Democratic Republic of the Congo: Kongo Central",
+                "Democratic Republic of the Congo: Kwango",
+                "Democratic Republic of the Congo: Kwilu",
+                "Democratic Republic of the Congo: Mai-Ndombe",
+                "Democratic Republic of the Congo: Mongala",
+                "Democratic Republic of the Congo: Nord-Ubangi",
+                "Democratic Republic of the Congo: Sud-Ubangi",
+                "Democratic Republic of the Congo: Tshuapa",
+                "Equatorial Guinea",
+                "Gabon",
+                "Morocco",
+                "Niger",
+                "Nigeria",
+                "Tunisia",
+                "Weste"
+            ]
+        },
+        {
+            "Offset": "01:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Albania",
+                "Andorra",
+                "Austria",
+                "Belgium",
+                "Bosnia and Herzegovina",
+                "Croatia",
+                "Czech Republic",
+                "Denmark",
+                "France (metropolitan)",
+                "Germany",
+                "Gibraltar",
+                "Hungary",
+                "Italy",
+                "Kosovo",
+                "Liechtenstein",
+                "Luxembourg",
+                "Malta",
+                "Monaco",
+                "Montenegro",
+                "Netherlands (European)",
+                "North Macedonia",
+                "Norway",
+                "Poland",
+                "San Marino",
+                "Serbia",
+                "Slovakia",
+                "Slovenia",
+                "Spain (most)",
+                "Sweden",
+                "Switzerland",
+                "Vatican City"
+            ]
+        },
+        {
+            "Offset": "02:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Botswana",
+                "Burundi",
+                "Democratic Republic of the Congo (most)",
+                "Egypt",
+                "Eswatini",
+                "Lesotho",
+                "Libya",
+                "Malawi",
+                "Mozambique",
+                "Namibia",
+                "Russia: Kaliningrad",
+                "Rwanda",
+                "South Africa (most)",
+                "South Sudan",
+                "Sudan",
+                "Zambia",
+                "Zimbabwe"
+            ]
+        },
+        {
+            "Offset": "02:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Akrotiri and Dhekelia",
+                "Bulgaria",
+                "Cyprus",
+                "Estonia",
+                "Finland",
+                "Greece",
+                "Israel",
+                "Jordan",
+                "Latvia",
+                "Lebanon",
+                "Lithuania",
+                "Moldova",
+                "Northern Cyprus",
+                "Palestine",
+                "Romania",
+                "Transnistria",
+                "Syria"
+            ]
+        },
+        {
+            "Offset": "03:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Abkhazia",
+                "Bahrain",
+                "Belarus",
+                "Comoros",
+                "Crimea",
+                "Djibouti",
+                "Donetsk PR",
+                "Eritrea",
+                "Ethiopia",
+                "French Southern and Antarctic Lands: Scattered Islands",
+                "Iraq",
+                "Kenya",
+                "Kuwait",
+                "Luhansk PR",
+                "Madagascar",
+                "Mayotte",
+                "Qatar",
+                "Russia (most of European part)",
+                "Saudi Arabia",
+                "Somalia",
+                "Somaliland",
+                "South Africa: Prince Edward Islands",
+                "South Ossetia",
+                "Tanzania",
+                "Turkey",
+                "Uganda",
+                "Yemen"
+            ]
+        },
+        {
+            "Offset": "03:30",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Iran"
+            ]
+        },
+        {
+            "Offset": "04:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Armenia",
+                "Artsakh",
+                "Azerbaijan",
+                "French Southern and Antarctic Lands: Crozet Islands",
+                "Georgia",
+                "Mauritius",
+                "Oman",
+                "Russia: Astrakhan",
+                "Russia: Samara",
+                "Russia: Saratov",
+                "Russia: Udmurtia",
+                "Russia: Ulyanovsk",
+                "Réunion",
+                "Seychelles",
+                "United Arab Emirates"
+            ]
+        },
+        {
+            "Offset": "04:30",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Afghanistan"
+            ]
+        },
+        {
+            "Offset": "05:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "French Southern and Antarctic Lands: Amsterdam Island",
+                "French Southern and Antarctic Lands: Kerguelen Islands",
+                "French Southern and Antarctic Lands: Saint Paul Island",
+                "Heard Island and McDonald Islands",
+                "Kazakhstan: Aktobe",
+                "Kazakhstan: Atyrau",
+                "Kazakhstan: Baikonur",
+                "Kazakhstan: Kyzylorda",
+                "Kazakhstan: Mangystau",
+                "Kazakhstan: West Kazakhstan",
+                "Maldives",
+                "Pakistan",
+                "Russia: Bashkortostan",
+                "Russia: Chelyabinsk",
+                "Russia: Khanty-Mansi",
+                "Russia: Kurgan",
+                "Russia: Orenburg",
+                "Russia: Perm",
+                "Russia: Sverdlovsk",
+                "Russia: Tyumen",
+                "Russia: Yamalia",
+                "Tajikistan",
+                "Turkmenistan",
+                "Uzbekistan"
+            ]
+        },
+        {
+            "Offset": "05:30",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "India",
+                "Sri Lanka"
+            ]
+        },
+        {
+            "Offset": "05:45",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Nepal"
+            ]
+        },
+        {
+            "Offset": "06:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Bangladesh",
+                "Bhutan",
+                "British Indian Ocean Territory",
+                "Kazakhstan (most)",
+                "Kyrgyzstan",
+                "Russia: Omsk"
+            ]
+        },
+        {
+            "Offset": "06:30",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Cocos Islands",
+                "Myanmar"
+            ]
+        },
+        {
+            "Offset": "07:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Cambodia",
+                "Christmas Island",
+                "Indonesia: Central Kalimantan",
+                "Indonesia: Java",
+                "Indonesia: Sumatra",
+                "Indonesia: West Kalimantan",
+                "Laos",
+                "Mongolia: Bayan-Ölgii",
+                "Mongolia: Khovd",
+                "Mongolia: Uvs",
+                "Russia: Altai Krai",
+                "Russia: Altai Republic",
+                "Russia: Kemerovo",
+                "Russia: Khakassia",
+                "Russia: Krasnoyarsk",
+                "Russia: Novosibirsk",
+                "Russia: Tomsk",
+                "Russia: Tuva",
+                "Thailand",
+                "Vietnam"
+            ]
+        },
+        {
+            "Offset": "08:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Australia: Western Australia (most)",
+                "Brunei",
+                "China",
+                "Hong Kong",
+                "Indonesia: Bali",
+                "Indonesia: East Kalimantan",
+                "Indonesia: East Nusa Tenggara",
+                "Indonesia: North Kalimantan",
+                "Indonesia: South Kalimantan",
+                "Indonesia: Sulawesi",
+                "Indonesia: West Nusa Tenggara",
+                "Macau",
+                "Malaysia",
+                "Mongolia (most)",
+                "Philippines",
+                "Russia: Buryatia",
+                "Russia: Irkutsk",
+                "Singapore",
+                "Taiwan"
+            ]
+        },
+        {
+            "Offset": "08:45",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Eucla"
+            ]
+        },
+        {
+            "Offset": "09:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "East Timor",
+                "Indonesia: Maluku",
+                "Indonesia: North Maluku",
+                "Indonesia: Papua",
+                "Indonesia: West Papua",
+                "Japan",
+                "North Korea",
+                "Palau",
+                "Russia: Amur",
+                "Russia: Sakha (most)",
+                "Russia: Zabaykalsky",
+                "South Korea"
+            ]
+        },
+        {
+            "Offset": "09:30",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Northern Territory"
+            ]
+        },
+        {
+            "Offset": "09:30",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Australia: South Australia"
+            ]
+        },
+        {
+            "Offset": "10:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Australia: Queensland",
+                "Guam",
+                "Micronesia: Chuuk",
+                "Micronesia: Yap",
+                "Northern Mariana Islands",
+                "Papua New Guinea (most)",
+                "Russia: Jewish",
+                "Russia: Khabarovsk",
+                "Russia: Primorsky",
+                "Russia: Sakha (central-east)"
+            ]
+        },
+        {
+            "Offset": "10:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Australia: Australian Capital Territory",
+                "Australia: Jervis Bay Territory",
+                "Australia: New South Wales (most)",
+                "Australia: Tasmania",
+                "Australia: Victoria"
+            ]
+        },
+        {
+            "Offset": "10:30",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Australia: Lord Howe Island"
+            ]
+        },
+        {
+            "Offset": "11:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Micronesia: Kosrae",
+                "Micronesia: Pohnpei",
+                "New Caledonia",
+                "Papua New Guinea: Bougainville",
+                "Russia: Magadan",
+                "Russia: Sakha (east)",
+                "Russia: Sakhalin",
+                "Solomon Islands",
+                "Vanuatu"
+            ]
+        },
+        {
+            "Offset": "11:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "Norfolk Island"
+            ]
+        },
+        {
+            "Offset": "12:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Fiji",
+                "Kiribati: Gilbert Islands",
+                "Marshall Islands",
+                "Nauru",
+                "Russia: Chukotka",
+                "Russia: Kamchatka",
+                "Tuvalu",
+                "Wake Island",
+                "Wallis and Futuna"
+            ]
+        },
+        {
+            "Offset": "12:00",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "New Zealand"
+            ]
+        },
+        {
+            "Offset": "12:45",
+            "DaylightSavingTime": true,
+            "Countries": [
+                "New Zealand: Chatham Islands"
+            ]
+        },
+        {
+            "Offset": "13:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Kiribati: Phoenix Islands",
+                "Samoa",
+                "Tokelau",
+                "Tonga"
+            ]
+        },
+        {
+            "Offset": "14:00",
+            "DaylightSavingTime": false,
+            "Countries": [
+                "Kiribati: Line Islands"
+            ]
+        }
+    ]
+}

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ManagedCommon;
+using Microsoft.PowerToys.Run.Plugin.TimeZone.Classes;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Helper;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Wox.Plugin;
@@ -35,9 +36,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         /// </summary>
         private bool _disposed;
 
-        public string Name => Resources.PluginTitle;
-
-        public string Description => Resources.PluginDescription;
+        /// <summary>
+        /// A class that contain all possible timezones.
+        /// </summary>
+        private TimeZoneList? _timezones;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Main"/> class.
@@ -46,18 +48,29 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         {
             _assemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? GetTranslatedPluginTitle();
             _defaultIconPath = "Images/reg.light.png";
-            ResultHelper.CollectAllTimeZones();
         }
 
-/// <summary>
-/// Initialize the plugin with the given <see cref="PluginInitContext"/>
-/// </summary>
-/// <param name="context">The <see cref="PluginInitContext"/> for this plugin</param>
+        /// <summary>
+        /// Gets the localized name.
+        /// </summary>
+        public string Name => Resources.PluginTitle;
+
+        /// <summary>
+        /// Gets the localized description.
+        /// </summary>
+        public string Description => Resources.PluginDescription;
+
+        /// <summary>
+        /// Initialize the plugin with the given <see cref="PluginInitContext"/>
+        /// </summary>
+        /// <param name="context">The <see cref="PluginInitContext"/> for this plugin</param>
         public void Init(PluginInitContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(_context.API.GetCurrentTheme());
+
+            _timezones = JsonSettingsListHelper.ReadAllPossibleTimezones();
         }
 
         /// <summary>
@@ -67,12 +80,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         /// <returns>A filtered list, can be empty when nothing was found</returns>
         public List<Result> Query(Query query)
         {
+            if (_timezones?.TimeZones is null)
+            {
+                return new List<Result>(0);
+            }
+
             if (query is null)
             {
                 return new List<Result>(0);
             }
 
-            var results = ResultHelper.GetResults(query, _defaultIconPath).ToList();
+            var results = ResultHelper.GetResults(_timezones.TimeZones, query.Search, _defaultIconPath).ToList();
             return results;
         }
 

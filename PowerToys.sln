@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.452
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31815.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "runner", "src\runner\runner.vcxproj", "{9412D5C6-2CF2-4FC2-A601-B55508EA9B27}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -920,6 +920,14 @@ Global
 		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.ActiveCfg = Release|x64
 		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.Build.0 = Release|x64
 		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x86.ActiveCfg = Release|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Debug|x64.ActiveCfg = Debug|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Debug|x64.Build.0 = Debug|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Debug|x86.ActiveCfg = Debug|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Debug|x86.Build.0 = Debug|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Release|x64.ActiveCfg = Release|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Release|x64.Build.0 = Release|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Release|x86.ActiveCfg = Release|x64
+		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Release|x86.Build.0 = Release|x64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Debug|x64.ActiveCfg = Debug|x64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Debug|x64.Build.0 = Debug|x64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Debug|x86.ActiveCfg = Debug|x64
@@ -1058,6 +1066,7 @@ Global
 		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x64.Build.0 = Release|x64
 		{9F94B303-5E21-4364-9362-64426F8DB932}.Release|x86.ActiveCfg = Release|x64
 <<<<<<< HEAD
+<<<<<<< HEAD
 		{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E}.Debug|x64.ActiveCfg = Debug|x64
 		{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E}.Debug|x64.Build.0 = Debug|x64
 		{EAE14C0E-7A6B-45DA-9080-A7D8C077BA6E}.Debug|x86.ActiveCfg = Debug|x64
@@ -1088,6 +1097,8 @@ Global
 		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Release|x64.ActiveCfg = Release|x64
 		{F44934A8-36F3-49B0-9465-3831BE041CDE}.Release|x64.Build.0 = Release|x64
 >>>>>>> f5e943784 (Initial commit - simple idea for a time zone plugin)
+=======
+>>>>>>> 6811ff503 (Use timezone Data only from JSON)
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
