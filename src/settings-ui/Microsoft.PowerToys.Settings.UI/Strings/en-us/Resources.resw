@@ -249,8 +249,8 @@
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
   <data name="Shell_MouseUtilities.Content" xml:space="preserve">
-    <value>Mouse Utilities</value>
-    <comment>Product name: Navigation view item name for Mouse Utilities</comment>
+    <value>Mouse utilities</value>
+    <comment>Product name: Navigation view item name for Mouse utilities</comment>
   </data>
   <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
     <value>Navigation closed</value>
@@ -1552,8 +1552,8 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Keyboard Manager is a product name, do not loc</comment>
   </data>
   <data name="LearnMore_MouseUtils.Text" xml:space="preserve">
-    <value>Learn more about Mouse Utilities</value>
-    <comment>Mouse Utilities is a product name, do not loc</comment>
+    <value>Learn more about Mouse utilities</value>
+    <comment>Mouse utilities is a product name, do not loc</comment>
   </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
@@ -1580,7 +1580,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_MouseUtils" xml:space="preserve">
-    <value>Mouse Utilities</value>
+    <value>Mouse utilities</value>
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse.Text" xml:space="preserve">
@@ -1665,7 +1665,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Time before returning to the previous awakeness state</value>
   </data>
   <data name="MouseUtils.ModuleTitle" xml:space="preserve">
-    <value>Mouse Utilities</value>
+    <value>Mouse utilities</value>
   </data>
   <data name="MouseUtils.ModuleDescription" xml:space="preserve">
     <value>A collection of mouse utilities.</value>
