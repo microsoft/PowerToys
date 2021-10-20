@@ -15,6 +15,7 @@
         <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
         <toolkitconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed" />
+        <toolkitconverters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="0" FalseValue="1"/>
     </Page.Resources>
     <controls:SettingsPageControl x:Uid="ImageResizer"
                                     
@@ -263,9 +264,12 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="ImageResizer_UseOriginalDate">
+                    <controls:Setting x:Uid="ImageResizer_FileModifiedDate">
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified}" />
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate"/>
+                                <ComboBoxItem x:Uid="ImageResizer_UseResizeDate"/>
+                            </ComboBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>

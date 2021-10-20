@@ -184,6 +184,7 @@ Browsable
 bsd
 bstr
 bti
+btn
 BTNFACE
 Bto
 buf
@@ -867,6 +868,7 @@ IEasing
 IEnum
 IEnumerable
 IEnumerator
+IEnvironment
 IEquality
 IEquatable
 IEvent
@@ -1640,6 +1642,7 @@ pri
 PRINTCLIENT
 printf
 prm
+proactively
 PROCESSKEY
 PRODUCTVERSION
 PROGDLG
@@ -1829,6 +1832,7 @@ scancode
 scanled
 schedtasks
 Scn
+SCOOBE
 SCOPEID
 screenshot
 scrollable
@@ -2006,6 +2010,7 @@ stdlib
 STDMETHODCALLTYPE
 STDMETHODIMP
 stdout
+stefan
 STEPIT
 stgm
 STGMEDIUM

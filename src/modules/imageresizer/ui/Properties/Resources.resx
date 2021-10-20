@@ -277,4 +277,7 @@
   <data name="Width" xml:space="preserve">
     <value>Width</value>
   </data>
+  <data name="Open_settings" xml:space="preserve">
+    <value>Open settings</value>
+  </data>
 </root>
