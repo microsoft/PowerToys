@@ -65,7 +65,7 @@ private:
 
     static constexpr POINT ptNowhere = { -1, -1 };
 
-    static constexpr DWORD IDT_TRACK = 100;
+    static constexpr DWORD TIMER_ID_TRACK = 100;
     static constexpr DWORD IdlePeriod = 1000;
 
     // Activate sonar: Hit LeftControl twice.
@@ -98,7 +98,7 @@ private:
 
     BOOL OnSonarCreate();
     void OnSonarDestroy();
-    void OnSonarInput(WPARAM flags, HRAWINPUT hinput);
+    void OnSonarInput(WPARAM flags, HRAWINPUT hInput);
     void OnSonarKeyboardInput(RAWINPUT const& input);
     void OnSonarMouseInput(RAWINPUT const& input);
     void OnMouseTimer();
@@ -187,7 +187,7 @@ LRESULT SuperSonar<D>::BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) n
     case WM_TIMER:
         switch (wParam)
         {
-        case IDT_TRACK:
+        case TIMER_ID_TRACK:
             OnMouseTimer();
             break;
         }
@@ -218,11 +218,11 @@ void SuperSonar<D>::OnSonarDestroy()
 }
 
 template<typename D>
-void SuperSonar<D>::OnSonarInput(WPARAM flags, HRAWINPUT hinput)
+void SuperSonar<D>::OnSonarInput(WPARAM flags, HRAWINPUT hInput)
 {
     RAWINPUT input;
     UINT size = sizeof(input);
-    auto result = GetRawInputData(hinput, RID_INPUT, &input, &size, sizeof(RAWINPUTHEADER));
+    auto result = GetRawInputData(hInput, RID_INPUT, &input, &size, sizeof(RAWINPUTHEADER));
     if ((int)result < sizeof(RAWINPUTHEADER))
     {
         return;
@@ -346,7 +346,7 @@ void SuperSonar<D>::StopSonar()
     {
         m_sonarStart = NoSonar;
         Shim()->SetSonarVisibility(false);
-        KillTimer(m_hwnd, IDT_TRACK);
+        KillTimer(m_hwnd, TIMER_ID_TRACK);
     }
     m_sonarState = SonarState::Idle;
     UpdateMouseSnooping();
@@ -384,7 +384,7 @@ void SuperSonar<D>::OnMouseTimer()
             // Initial call, mark sonar as active but waiting for first mouse-move.
             now = SonarWaitingForMouseMove;
         }
-        SetTimer(m_hwnd, IDT_TRACK, IdlePeriod, nullptr);
+        SetTimer(m_hwnd, TIMER_ID_TRACK, IdlePeriod, nullptr);
         Shim()->BeforeMoveSonar();
         m_sonarPos = ptCursor;
         m_sonarStart = now;
@@ -418,7 +418,7 @@ void SuperSonar<D>::UpdateMouseSnooping()
 
 struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
 {
-    static constexpr UINT WM_OPACITYANIMATIONCOMPLETED = WM_APP;
+    static constexpr UINT WM_OPACITY_ANIMATION_COMPLETED = WM_APP;
     static constexpr float SonarRadiusFloat = static_cast<float>(SonarRadius);
 
     DWORD GetExtendedStyle()
@@ -438,7 +438,7 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
         case WM_CREATE:
             return OnCompositionCreate() && BaseWndProc(message, wParam, lParam);
 
-        case WM_OPACITYANIMATIONCOMPLETED:
+        case WM_OPACITY_ANIMATION_COMPLETED:
             OnOpacityAnimationCompleted();
             break;
         }
@@ -449,7 +449,7 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
     {
         m_batch = m_compositor.GetCommitBatch(winrt::CompositionBatchTypes::Animation);
         m_batch.Completed([hwnd = m_hwnd](auto&&, auto&&) {
-            PostMessage(hwnd, WM_OPACITYANIMATIONCOMPLETED, 0, 0);
+            PostMessage(hwnd, WM_OPACITY_ANIMATION_COMPLETED, 0, 0);
         });
         m_root.Opacity(visible ? static_cast<float>(FinalAlphaNumerator) / FinalAlphaDenominator : 0.0f);
         if (visible)
@@ -567,7 +567,7 @@ struct GdiSonar : SuperSonar<D>
         case WM_TIMER:
             switch (wParam)
             {
-            case IDT_FADE:
+            case TIMER_ID_FADE:
                 OnFadeTimer();
                 break;
             }
@@ -587,7 +587,7 @@ struct GdiSonar : SuperSonar<D>
     {
         m_alphaTarget = visible ? MaxAlpha : 0;
         m_fadeStart = GetTickCount() - FadeFramePeriod;
-        SetTimer(this->m_hwnd, IDT_FADE, FadeFramePeriod, nullptr);
+        SetTimer(this->m_hwnd, TIMER_ID_FADE, FadeFramePeriod, nullptr);
         OnFadeTimer();
     }
 
@@ -613,7 +613,7 @@ struct GdiSonar : SuperSonar<D>
         this->Shim()->InvalidateSonar();
         if (m_alpha == m_alphaTarget)
         {
-            KillTimer(this->m_hwnd, IDT_FADE);
+            KillTimer(this->m_hwnd, TIMER_ID_FADE);
             if (m_alpha == 0)
             {
                 ShowWindow(this->m_hwnd, SW_HIDE);
@@ -636,7 +636,7 @@ protected:
 private:
     static constexpr DWORD FadeFramePeriod = 10;
     static constexpr int MaxAlpha = SuperSonar<D>::FinalAlphaNumerator * 255 / SuperSonar<D>::FinalAlphaDenominator;
-    static constexpr DWORD IDT_FADE = 101;
+    static constexpr DWORD TIMER_ID_FADE = 101;
 
 private:
     int m_alpha = 0;
