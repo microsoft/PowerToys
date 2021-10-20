@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
+using System.Reflection;
 using interop;
 
 namespace FancyZonesEditor.Logs
@@ -14,7 +15,9 @@ namespace FancyZonesEditor.Logs
     public static class Logger
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
-        private static readonly string ApplicationLogPath = Path.Combine(Constants.AppDataPath(), "FancyZones\\Editor\\Logs");
+        private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
+        public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
+        private static readonly string ApplicationLogPath = Path.Combine(Constants.AppDataPath(), "FancyZones\\Editor\\Logs\\", Version);
 
         private static readonly string Error = "Error";
         private static readonly string Warning = "Warning";
