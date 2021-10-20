@@ -37,6 +37,8 @@ namespace FancyZonesEditor
 
         private EventWaitHandle _eventHandle;
 
+        private Thread _exitWaitThread;
+
         public static bool DebugMode
         {
             get
@@ -61,7 +63,8 @@ namespace FancyZonesEditor
             Overlay = new Overlay();
             MainWindowSettings = new MainWindowSettingsModel();
 
-            new Thread(App_WaitExit).Start();
+            _exitWaitThread = new Thread(App_WaitExit);
+            _exitWaitThread.Start();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
@@ -126,6 +129,8 @@ namespace FancyZonesEditor
             {
                 _eventHandle.Set();
             }
+
+            _exitWaitThread.Join();
 
             Logger.LogInfo("FancyZones Editor exited");
         }
