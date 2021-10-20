@@ -9,6 +9,7 @@
 #ifdef COMPOSITION
 #include <windows.ui.composition.interop.h>
 #include <DispatcherQueue.h>
+#include <winrt/Windows.System.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Composition.Desktop.h>
 #endif

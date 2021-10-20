@@ -56,6 +56,7 @@ protected:
     static constexpr DWORD FadeDuration = 500;
     static constexpr int FinalAlphaNumerator = 1;
     static constexpr int FinalAlphaDenominator = 2;
+    winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
 private:
     static bool IsEqual(POINT const& p1, POINT const& p2)
@@ -140,7 +141,14 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
 template<typename D>
 void SuperSonar<D>::Terminate()
 {
-    DestroyWindow(m_hwndOwner);
+    auto dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
+    bool enqueueSucceeded = dispatcherQueue.TryEnqueue([=]() {
+        DestroyWindow(m_hwndOwner);
+    });
+    if (!enqueueSucceeded)
+    {
+        Logger::error("Couldn't enqueue message to destroy the sonar Window.");
+    }
 }
 
 template<typename D>
@@ -546,7 +554,6 @@ private:
 private:
     winrt::Compositor m_compositor{ nullptr };
     winrt::Desktop::DesktopWindowTarget m_target{ nullptr };
-    winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
     winrt::ContainerVisual m_root{ nullptr };
     winrt::CompositionEllipseGeometry m_circleGeometry{ nullptr };
     winrt::ShapeVisual m_spotlight{ nullptr };
