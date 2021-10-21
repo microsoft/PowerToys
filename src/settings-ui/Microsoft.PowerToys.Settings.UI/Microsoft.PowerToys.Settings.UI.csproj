@@ -96,6 +96,9 @@
     <Compile Include="Behaviors\NavigationViewHeaderBehavior.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderMode.cs" />
     <Compile Include="Controls\CheckBoxWithDescriptionControl.cs" />
+    <Compile Include="Controls\ColorPickerButton.xaml.cs">
+      <DependentUpon>ColorPickerButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\IsEnabledTextBlock\IsEnabledTextBlock.cs" />
     <Compile Include="Controls\SettingsGroup\SettingsGroupAutomationPeer.cs" />
     <Compile Include="Controls\ShortcutControl\ShortcutControl.xaml.cs">
@@ -305,6 +308,10 @@
     <PRIResource Include="Strings\en-us\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\ColorPickerButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\IsEnabledTextBlock\IsEnabledTextBlock.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
