@@ -84,7 +84,7 @@ Our goals for the [v0.47 release cycle](https://github.com/microsoft/PowerToys/i
 
 Notably, based on the community feedback received, PowerToys has re-introduced the highly-requested ability to activate Shortcut Guide via holding the <kbd>Win</kbd> key. PowerToys also now allows various commands in PowerToys Run to be used in either the universal English phrasing or system-localized translation. The great feedback the community provides is invaluable in helping PowerToys continually grow and improve as a product.
 
-An experimental version of PowerToys (v0.48) will be released the week of October 4th, introducing improvements to our Video Conference Mute utility! All updates from the v0.47.1 release will still apply in v0.48.
+An experimental version of PowerToys ([v0.48.1](https://github.com/microsoft/PowerToys/releases/tag/v0.48.1)) is also available, introducing improvements to our Video Conference Mute utility! All updates from the v0.47.1 release apply in v0.48.1.
 
 #### Highlights from v0.47
 
