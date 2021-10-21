@@ -1,7 +1,7 @@
 import "ExplorerItem.idl";
 import "PatternSnippet.idl";
 
-namespace PowerRenameUI_new
+namespace PowerRenameUILib
 {
     runtimeclass UIUpdates : Windows.UI.Xaml.Data.INotifyPropertyChanged
     {

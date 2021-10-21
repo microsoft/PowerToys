@@ -2,7 +2,7 @@
 #include "UIUpdates.h"
 #include "UIUpdates.g.cpp"
 
-namespace winrt::PowerRenameUI_new::implementation
+namespace winrt::PowerRenameUILib::implementation
 {
     UIUpdates::UIUpdates() :
         m_showAll{ true }, m_changedItemId{ -1 }, m_checked{ true }, m_closeUIWindow{ false }, m_buttonRenameEnabled{ false }

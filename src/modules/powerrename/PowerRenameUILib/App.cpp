@@ -3,7 +3,7 @@
 #include "App.g.cpp"
 using namespace winrt;
 using namespace Windows::UI::Xaml;
-namespace winrt::PowerRenameUI_new::implementation
+namespace winrt::PowerRenameUILib::implementation
 {
     App::App()
     {

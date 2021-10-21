@@ -22,7 +22,7 @@
 #include <winrt/Windows.ui.xaml.media.h>
 #include <winrt/Windows.ui.xaml.data.h>
 #include <winrt/Windows.UI.Core.h>
-#include <winrt/PowerRenameUI_new.h>
+#include <winrt/PowerRenameUILib.h>
 
 using namespace winrt;
 using namespace Windows::UI;
@@ -31,7 +31,6 @@ using namespace Windows::UI::Composition;
 using namespace Windows::UI::Xaml::Hosting;
 using namespace Windows::Foundation::Numerics;
 using namespace Windows::UI::Xaml::Controls;
-
 
 class AppWindow : public DesktopWindowT<AppWindow>
 {
@@ -133,12 +132,11 @@ private:
     HRESULT OnRenameStarted();
     HRESULT OnRenameCompleted(bool closeUIWindowAfterRenaming);
 
-
     wil::unique_haccel m_accelerators;
     const HINSTANCE m_instance;
     HWND m_xamlIsland{};
     HWND m_window{};
-    winrt::PowerRenameUI_new::MainWindow m_mainUserControl{ nullptr };
+    winrt::PowerRenameUILib::MainWindow m_mainUserControl{ nullptr };
 
     bool m_disableCountUpdate = false;
     CComPtr<IPowerRenameManager> m_prManager;

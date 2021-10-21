@@ -7,7 +7,7 @@
 using namespace winrt;
 using namespace Windows::UI::Xaml;
 
-namespace winrt::PowerRenameUI_new::implementation
+namespace winrt::PowerRenameUILib::implementation
 {
     MainWindow::MainWindow() :
         m_allSelected{ true }
@@ -15,40 +15,40 @@ namespace winrt::PowerRenameUI_new::implementation
         m_searchMRU = winrt::single_threaded_observable_vector<hstring>();
         m_replaceMRU = winrt::single_threaded_observable_vector<hstring>();
 
-        m_explorerItems = winrt::single_threaded_observable_vector<PowerRenameUI_new::ExplorerItem>();
+        m_explorerItems = winrt::single_threaded_observable_vector<PowerRenameUILib::ExplorerItem>();
 
-        m_searchRegExShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI_new::PatternSnippet>();
+        m_searchRegExShortcuts = winrt::single_threaded_observable_vector<PowerRenameUILib::PatternSnippet>();
         auto resourceLoader{ Windows::ApplicationModel::Resources::ResourceLoader::GetForCurrentView() };
 
-        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"\\.", resourceLoader.GetString(L"RegExCheatSheet_MatchAny")));
-        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"\\d", resourceLoader.GetString(L"RegExCheatSheet_MatchDigit")));
-        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"\\D", resourceLoader.GetString(L"RegExCheatSheet_MatchNonDigit")));
-        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"\\w", resourceLoader.GetString(L"RegExCheatSheet_MatchNonWS")));
-        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"\\S", resourceLoader.GetString(L"RegExCheatSheet_MatchWordChar")));
-        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"\\S+", resourceLoader.GetString(L"RegExCheatSheet_MatchSeveralWS")));
-        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"\\b", resourceLoader.GetString(L"RegExCheatSheet_MatchWordBoundary")));
+        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\.", resourceLoader.GetString(L"RegExCheatSheet_MatchAny")));
+        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\d", resourceLoader.GetString(L"RegExCheatSheet_MatchDigit")));
+        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\D", resourceLoader.GetString(L"RegExCheatSheet_MatchNonDigit")));
+        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\w", resourceLoader.GetString(L"RegExCheatSheet_MatchNonWS")));
+        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\S", resourceLoader.GetString(L"RegExCheatSheet_MatchWordChar")));
+        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\S+", resourceLoader.GetString(L"RegExCheatSheet_MatchSeveralWS")));
+        m_searchRegExShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"\\b", resourceLoader.GetString(L"RegExCheatSheet_MatchWordBoundary")));
 
-        m_dateTimeShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI_new::PatternSnippet>();
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$YYYY", resourceLoader.GetString(L"DateTimeCheatSheet_FullYear")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$YY", resourceLoader.GetString(L"DateTimeCheatSheet_YearLastTwoDigits")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$Y", resourceLoader.GetString(L"DateTimeCheatSheet_YearLastDigit")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$MMMM", resourceLoader.GetString(L"DateTimeCheatSheet_MonthName")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$MMM", resourceLoader.GetString(L"DateTimeCheatSheet_MonthNameAbbr")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$MM", resourceLoader.GetString(L"DateTimeCheatSheet_MonthDigitLZero")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$M", resourceLoader.GetString(L"DateTimeCheatSheet_MonthDigit")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$DDDD", resourceLoader.GetString(L"DateTimeCheatSheet_DayName")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$DDD", resourceLoader.GetString(L"DateTimeCheatSheet_DayNameAbbr")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$DD", resourceLoader.GetString(L"DateTimeCheatSheet_DayDigitLZero")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$D", resourceLoader.GetString(L"DateTimeCheatSheet_DayDigit")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$hh", resourceLoader.GetString(L"DateTimeCheatSheet_HoursLZero")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$h", resourceLoader.GetString(L"DateTimeCheatSheet_Hours")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$mm", resourceLoader.GetString(L"DateTimeCheatSheet_MinutesLZero")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$m", resourceLoader.GetString(L"DateTimeCheatSheet_Minutes")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$ss", resourceLoader.GetString(L"DateTimeCheatSheet_SecondsLZero")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$s", resourceLoader.GetString(L"DateTimeCheatSheet_Seconds")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$fff", resourceLoader.GetString(L"DateTimeCheatSheet_MilliSeconds3D")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$ff", resourceLoader.GetString(L"DateTimeCheatSheet_MilliSeconds2D")));
-        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUI_new::implementation::PatternSnippet>(L"$f", resourceLoader.GetString(L"DateTimeCheatSheet_MilliSeconds1D")));
+        m_dateTimeShortcuts = winrt::single_threaded_observable_vector<PowerRenameUILib::PatternSnippet>();
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$YYYY", resourceLoader.GetString(L"DateTimeCheatSheet_FullYear")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$YY", resourceLoader.GetString(L"DateTimeCheatSheet_YearLastTwoDigits")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$Y", resourceLoader.GetString(L"DateTimeCheatSheet_YearLastDigit")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$MMMM", resourceLoader.GetString(L"DateTimeCheatSheet_MonthName")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$MMM", resourceLoader.GetString(L"DateTimeCheatSheet_MonthNameAbbr")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$MM", resourceLoader.GetString(L"DateTimeCheatSheet_MonthDigitLZero")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$M", resourceLoader.GetString(L"DateTimeCheatSheet_MonthDigit")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$DDDD", resourceLoader.GetString(L"DateTimeCheatSheet_DayName")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$DDD", resourceLoader.GetString(L"DateTimeCheatSheet_DayNameAbbr")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$DD", resourceLoader.GetString(L"DateTimeCheatSheet_DayDigitLZero")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$D", resourceLoader.GetString(L"DateTimeCheatSheet_DayDigit")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$hh", resourceLoader.GetString(L"DateTimeCheatSheet_HoursLZero")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$h", resourceLoader.GetString(L"DateTimeCheatSheet_Hours")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$mm", resourceLoader.GetString(L"DateTimeCheatSheet_MinutesLZero")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$m", resourceLoader.GetString(L"DateTimeCheatSheet_Minutes")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$ss", resourceLoader.GetString(L"DateTimeCheatSheet_SecondsLZero")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$s", resourceLoader.GetString(L"DateTimeCheatSheet_Seconds")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$fff", resourceLoader.GetString(L"DateTimeCheatSheet_MilliSeconds3D")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$ff", resourceLoader.GetString(L"DateTimeCheatSheet_MilliSeconds2D")));
+        m_dateTimeShortcuts.Append(winrt::make<PowerRenameUILib::implementation::PatternSnippet>(L"$f", resourceLoader.GetString(L"DateTimeCheatSheet_MilliSeconds1D")));
 
         InitializeComponent();
     }
@@ -63,17 +63,17 @@ namespace winrt::PowerRenameUI_new::implementation
         return m_replaceMRU;
     }
     
-    winrt::Windows::Foundation::Collections::IObservableVector<winrt::PowerRenameUI_new::ExplorerItem> MainWindow::ExplorerItems()
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::PowerRenameUILib::ExplorerItem> MainWindow::ExplorerItems()
     {
         return m_explorerItems;
     }
 
-    winrt::Windows::Foundation::Collections::IObservableVector<winrt::PowerRenameUI_new::PatternSnippet> MainWindow::SearchRegExShortcuts()
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::PowerRenameUILib::PatternSnippet> MainWindow::SearchRegExShortcuts()
     {
         return m_searchRegExShortcuts;
     }
 
-    winrt::Windows::Foundation::Collections::IObservableVector<winrt::PowerRenameUI_new::PatternSnippet> MainWindow::DateTimeShortcuts()
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::PowerRenameUILib::PatternSnippet> MainWindow::DateTimeShortcuts()
     {
         return m_dateTimeShortcuts;
     }
@@ -158,14 +158,14 @@ namespace winrt::PowerRenameUI_new::implementation
         return checkBox_selectAll();
     }
 
-    PowerRenameUI_new::UIUpdates MainWindow::UIUpdatesItem()
+    PowerRenameUILib::UIUpdates MainWindow::UIUpdatesItem()
     {
         return m_uiUpdatesItem;
     }
 
     void MainWindow::AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, int32_t parentId, bool checked)
     {
-        auto newItem = winrt::make<PowerRenameUI_new::implementation::ExplorerItem>(id, original, renamed, type, checked);
+        auto newItem = winrt::make<PowerRenameUILib::implementation::ExplorerItem>(id, original, renamed, type, checked);
         if (parentId == 0)
         {
             m_explorerItems.Append(newItem);
@@ -206,14 +206,14 @@ namespace winrt::PowerRenameUI_new::implementation
         m_replaceMRU.Append(value);
     }
 
-    PowerRenameUI_new::ExplorerItem MainWindow::FindById(int32_t id)
+    PowerRenameUILib::ExplorerItem MainWindow::FindById(int32_t id)
     {
-        auto fakeRoot = winrt::make<PowerRenameUI_new::implementation::ExplorerItem>(0, L"Fake", L"", 0, false);
+        auto fakeRoot = winrt::make<PowerRenameUILib::implementation::ExplorerItem>(0, L"Fake", L"", 0, false);
         fakeRoot.Children(m_explorerItems);
         return FindById(fakeRoot, id);
     }
 
-    PowerRenameUI_new::ExplorerItem MainWindow::FindById(PowerRenameUI_new::ExplorerItem& root, int32_t id)
+    PowerRenameUILib::ExplorerItem MainWindow::FindById(PowerRenameUILib::ExplorerItem& root, int32_t id)
     {
         if (root.Id() == id)
             return root;
@@ -231,7 +231,7 @@ namespace winrt::PowerRenameUI_new::implementation
         return NULL;
     }
 
-    void MainWindow::ToggleAll(PowerRenameUI_new::ExplorerItem node, bool checked)
+    void MainWindow::ToggleAll(PowerRenameUILib::ExplorerItem node, bool checked)
     {
         if (node == NULL)
             return;
@@ -263,7 +263,7 @@ namespace winrt::PowerRenameUI_new::implementation
     {
         if (checkBox_selectAll().IsChecked().GetBoolean() != m_allSelected)
         {
-            auto fakeRoot = winrt::make<PowerRenameUI_new::implementation::ExplorerItem>(0, L"Fake", L"", 0, false);
+            auto fakeRoot = winrt::make<PowerRenameUILib::implementation::ExplorerItem>(0, L"Fake", L"", 0, false);
             fakeRoot.Children(m_explorerItems);
             ToggleAll(fakeRoot, checkBox_selectAll().IsChecked().GetBoolean());
             m_uiUpdatesItem.ToggleAll();

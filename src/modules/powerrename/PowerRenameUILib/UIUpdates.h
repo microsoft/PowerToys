@@ -1,7 +1,7 @@
 #pragma once
 #include "UIUpdates.g.h"
 
-namespace winrt::PowerRenameUI_new::implementation
+namespace winrt::PowerRenameUILib::implementation
 {
     struct UIUpdates : UIUpdatesT<UIUpdates>
     {
@@ -31,7 +31,7 @@ namespace winrt::PowerRenameUI_new::implementation
         winrt::event<Windows::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
     };
 }
-namespace winrt::PowerRenameUI_new::factory_implementation
+namespace winrt::PowerRenameUILib::factory_implementation
 {
     struct UIUpdates : UIUpdatesT<UIUpdates, implementation::UIUpdates>
     {

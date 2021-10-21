@@ -1,7 +1,7 @@
 #pragma once
 #include "ExplorerItemTemplateSelector.g.h"
 
-namespace winrt::PowerRenameUI_new::implementation
+namespace winrt::PowerRenameUILib::implementation
 {
     struct ExplorerItemTemplateSelector : ExplorerItemTemplateSelectorT<ExplorerItemTemplateSelector>
     {
@@ -20,7 +20,7 @@ namespace winrt::PowerRenameUI_new::implementation
         Windows::UI::Xaml::DataTemplate m_fileTemplate{ nullptr };
     };
 }
-namespace winrt::PowerRenameUI_new::factory_implementation
+namespace winrt::PowerRenameUILib::factory_implementation
 {
     struct ExplorerItemTemplateSelector : ExplorerItemTemplateSelectorT<ExplorerItemTemplateSelector, implementation::ExplorerItemTemplateSelector>
     {

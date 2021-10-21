@@ -98,7 +98,7 @@ void AppWindow::CreateAndShowWindow()
 
 bool AppWindow::OnCreate(HWND, LPCREATESTRUCT) noexcept
 {
-    m_mainUserControl = winrt::PowerRenameUI_new::MainWindow();
+    m_mainUserControl = winrt::PowerRenameUILib::MainWindow();
     m_xamlIsland = CreateDesktopWindowsXamlSource(WS_TABSTOP, m_mainUserControl);
 
     PopulateExplorerItems();
@@ -350,7 +350,7 @@ void AppWindow::ValidateFlags(PowerRenameFlags flag)
             m_mainUserControl.ToggleButtonUpperCase().IsChecked(false);
             m_mainUserControl.ToggleButtonLowerCase().IsChecked(false);
             m_mainUserControl.ToggleButtonTitleCase().IsChecked(false);
-        }    
+        }
     }
 
     m_flagValidationInProgress = true;
@@ -363,7 +363,7 @@ void AppWindow::UpdateFlag(PowerRenameFlags flag, UpdateFlagCommand command)
 
     if (command == UpdateFlagCommand::Set)
     {
-        flags |= flag;        
+        flags |= flag;
     }
     else if (command == UpdateFlagCommand::Reset)
     {
@@ -465,7 +465,8 @@ void AppWindow::SetHandlers()
 
     // ComboBox RenameParts
     m_mainUserControl.ComboBoxRenameParts().SelectionChanged([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        if (m_mainUserControl.ComboBoxRenameParts().SelectedIndex() == 0) { // Filename + extension
+        if (m_mainUserControl.ComboBoxRenameParts().SelectedIndex() == 0)
+        { // Filename + extension
             UpdateFlag(NameOnly, UpdateFlagCommand::Reset);
             UpdateFlag(ExtensionOnly, UpdateFlagCommand::Reset);
         }
@@ -529,8 +530,7 @@ void AppWindow::SetHandlers()
     });
 
     // ButtonSettings
-    m_mainUserControl.ButtonSettings().Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&)
-    {
+    m_mainUserControl.ButtonSettings().Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         OpenSettingsApp();
     });
 }
@@ -640,7 +640,8 @@ HRESULT AppWindow::WriteSettings()
     return S_OK;
 }
 
-HRESULT AppWindow::OpenSettingsApp() {
+HRESULT AppWindow::OpenSettingsApp()
+{
     std::wstring path = get_module_folderpath(g_hostHInst);
     path += L"\\..\\..\\PowerToys.exe";
 
@@ -773,11 +774,13 @@ void AppWindow::UpdateCounts()
     }
 }
 
-HRESULT AppWindow::OnItemAdded(_In_ IPowerRenameItem* renameItem) {
+HRESULT AppWindow::OnItemAdded(_In_ IPowerRenameItem* renameItem)
+{
     return S_OK;
 }
 
-HRESULT AppWindow::OnUpdate(_In_ IPowerRenameItem* renameItem) {
+HRESULT AppWindow::OnUpdate(_In_ IPowerRenameItem* renameItem)
+{
     int id;
     HRESULT hr = renameItem->GetId(&id);
     if (SUCCEEDED(hr))
@@ -814,19 +817,23 @@ HRESULT AppWindow::OnRename(_In_ IPowerRenameItem* renameItem)
     return S_OK;
 }
 
-HRESULT AppWindow::OnError(_In_ IPowerRenameItem* renameItem) {
+HRESULT AppWindow::OnError(_In_ IPowerRenameItem* renameItem)
+{
     return S_OK;
 }
 
-HRESULT AppWindow::OnRegExStarted(_In_ DWORD threadId) {
+HRESULT AppWindow::OnRegExStarted(_In_ DWORD threadId)
+{
     return S_OK;
 }
 
-HRESULT AppWindow::OnRegExCanceled(_In_ DWORD threadId) {
+HRESULT AppWindow::OnRegExCanceled(_In_ DWORD threadId)
+{
     return S_OK;
 }
 
-HRESULT AppWindow::OnRegExCompleted(_In_ DWORD threadId) {
+HRESULT AppWindow::OnRegExCompleted(_In_ DWORD threadId)
+{
     if (m_flagValidationInProgress)
     {
         m_flagValidationInProgress = false;
@@ -845,7 +852,8 @@ HRESULT AppWindow::OnRegExCompleted(_In_ DWORD threadId) {
     return S_OK;
 }
 
-HRESULT AppWindow::OnRenameStarted() {
+HRESULT AppWindow::OnRenameStarted()
+{
     return S_OK;
 }
 
@@ -865,18 +873,18 @@ HRESULT AppWindow::OnRenameCompleted(bool closeUIWindowAfterRenaming)
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+                      _In_opt_ HINSTANCE hPrevInstance,
+                      _In_ LPWSTR lpCmdLine,
+                      _In_ int nCmdShow)
 {
-#define BUFSIZE 4096*4 
+#define BUFSIZE 4096 * 4
 
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     if (hStdin == INVALID_HANDLE_VALUE)
         ExitProcess(1);
     BOOL bSuccess;
     WCHAR chBuf[BUFSIZE];
-    DWORD dwRead; 
+    DWORD dwRead;
     std::vector<std::wstring> files;
     for (;;)
     {
@@ -898,12 +906,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         if (!bSuccess)
             break;
-    } 
+    }
 
     g_hostHInst = hInstance;
     winrt::init_apartment(winrt::apartment_type::single_threaded);
 
-    winrt::PowerRenameUI_new::App app;
+    winrt::PowerRenameUILib::App app;
     const auto result = AppWindow::Show(hInstance, files);
     app.Close();
 }

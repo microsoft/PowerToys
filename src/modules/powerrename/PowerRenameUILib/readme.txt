@@ -1,5 +1,5 @@
 ========================================================================
-    C++/WinRT PowerRenameUI_new Project Overview
+    C++/WinRT PowerRenameUILib Project Overview
 ========================================================================
 
 This project demonstrates how to get started writing XAML apps directly

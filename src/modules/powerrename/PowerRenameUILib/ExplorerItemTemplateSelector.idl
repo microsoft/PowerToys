@@ -1,4 +1,4 @@
-namespace PowerRenameUI_new
+namespace PowerRenameUILib
 {
     [bindable]
         [default_interface] runtimeclass ExplorerItemTemplateSelector : Windows.UI.Xaml.Controls.DataTemplateSelector

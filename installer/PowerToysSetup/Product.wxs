@@ -695,8 +695,8 @@
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.Toolkit.Win32.UI.XamlHost.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\msvcp140_app.dll" />
-		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameUI_new.dll" />
-		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameUIHost.exe" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameUILib.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRename.exe" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\resources.pri" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_1_app.dll" />
 		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_app.dll" />

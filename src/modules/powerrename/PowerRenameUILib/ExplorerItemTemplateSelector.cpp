@@ -2,7 +2,7 @@
 #include "ExplorerItemTemplateSelector.h"
 #include "ExplorerItemTemplateSelector.g.cpp"
 
-namespace winrt::PowerRenameUI_new::implementation
+namespace winrt::PowerRenameUILib::implementation
 {
     Windows::UI::Xaml::DataTemplate ExplorerItemTemplateSelector::SelectTemplateCore(IInspectable const& item)
     {

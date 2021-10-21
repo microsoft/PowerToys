@@ -367,7 +367,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUIHost", "src\mo
 		{4642D596-723F-4BFC-894C-46811219AC4A} = {4642D596-723F-4BFC-894C-46811219AC4A}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUI_new", "src\modules\powerrename\PowerRenameUI_new\PowerRenameUI_new.vcxproj", "{4642D596-723F-4BFC-894C-46811219AC4A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUILib", "src\modules\powerrename\PowerRenameUILib\PowerRenameUILib.vcxproj", "{4642D596-723F-4BFC-894C-46811219AC4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

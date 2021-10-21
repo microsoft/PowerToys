@@ -8,8 +8,8 @@
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <MinimalCoreWin>true</MinimalCoreWin>
     <ProjectGuid>{4642d596-723f-4bfc-894c-46811219ac4a}</ProjectGuid>
-    <ProjectName>PowerRenameUI_new</ProjectName>
-    <RootNamespace>PowerRenameUI_new</RootNamespace>
+    <ProjectName>PowerRenameUILib</ProjectName>
+    <RootNamespace>PowerRenameUILib</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
@@ -54,8 +54,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings"></ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -203,10 +202,9 @@
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.210922.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.210922.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.UI.Xaml.2.7.0-prerelease.210913003\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.UI.Xaml.2.7.0-prerelease.210913003\build\native\Microsoft.UI.Xaml.targets'))" />
   </Target>
-  <Target Name="AddWildCardItems"
-      AfterTargets="BuildGenerateSources">
+  <Target Name="AddWildCardItems" AfterTargets="BuildGenerateSources">
     <ItemGroup>
-    <PRIResource Include="@(_WildCardPRIResource)" />
+      <PRIResource Include="@(_WildCardPRIResource)" />
     </ItemGroup>
   </Target>
 </Project>

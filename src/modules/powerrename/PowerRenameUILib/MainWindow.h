@@ -9,7 +9,7 @@
 #include "ExplorerItem.h"
 #include "ExplorerItemTemplateSelector.h"
 
-namespace winrt::PowerRenameUI_new::implementation
+namespace winrt::PowerRenameUILib::implementation
 {
     struct MainWindow : MainWindowT<MainWindow>
     {
@@ -17,9 +17,9 @@ namespace winrt::PowerRenameUI_new::implementation
 
         Windows::Foundation::Collections::IObservableVector<hstring> SearchMRU();
         Windows::Foundation::Collections::IObservableVector<hstring> ReplaceMRU();
-        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI_new::ExplorerItem> ExplorerItems();
-        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI_new::PatternSnippet> SearchRegExShortcuts();
-        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI_new::PatternSnippet> DateTimeShortcuts();
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::ExplorerItem> ExplorerItems();
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::PatternSnippet> SearchRegExShortcuts();
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::PatternSnippet> DateTimeShortcuts();
 
         Windows::UI::Xaml::Controls::AutoSuggestBox AutoSuggestBoxSearch();
         Windows::UI::Xaml::Controls::AutoSuggestBox AutoSuggestBoxReplace();
@@ -45,7 +45,7 @@ namespace winrt::PowerRenameUI_new::implementation
 
         Windows::UI::Xaml::Controls::CheckBox CheckBoxSelectAll();
 
-        PowerRenameUI_new::UIUpdates UIUpdatesItem();
+        PowerRenameUILib::UIUpdates UIUpdatesItem();
 
         void AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, int32_t parentId, bool checked);
         void UpdateExplorerItem(int32_t id, hstring const& newName);
@@ -57,18 +57,19 @@ namespace winrt::PowerRenameUI_new::implementation
         void SelectAll(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e);
         void ShowAll(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e);
         void ShowRenamed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e);
+
     private:
         bool m_allSelected;
-        PowerRenameUI_new::UIUpdates m_uiUpdatesItem;
-        PowerRenameUI_new::ExplorerItem FindById(int32_t id);
-        PowerRenameUI_new::ExplorerItem FindById(PowerRenameUI_new::ExplorerItem& root, int32_t id);
-        void ToggleAll(PowerRenameUI_new::ExplorerItem node, bool checked);
+        PowerRenameUILib::UIUpdates m_uiUpdatesItem;
+        PowerRenameUILib::ExplorerItem FindById(int32_t id);
+        PowerRenameUILib::ExplorerItem FindById(PowerRenameUILib::ExplorerItem& root, int32_t id);
+        void ToggleAll(PowerRenameUILib::ExplorerItem node, bool checked);
 
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_searchMRU;
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_replaceMRU;
-        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI_new::ExplorerItem> m_explorerItems;
-        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI_new::PatternSnippet> m_searchRegExShortcuts;
-        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI_new::PatternSnippet> m_dateTimeShortcuts;
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::ExplorerItem> m_explorerItems;
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::PatternSnippet> m_searchRegExShortcuts;
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::PatternSnippet> m_dateTimeShortcuts;
 
     public:
         void RegExItemClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::ItemClickEventArgs const& e);
@@ -79,7 +80,7 @@ namespace winrt::PowerRenameUI_new::implementation
     };
 }
 
-namespace winrt::PowerRenameUI_new::factory_implementation
+namespace winrt::PowerRenameUILib::factory_implementation
 {
     struct MainWindow : MainWindowT<MainWindow, implementation::MainWindow>
     {

@@ -2,7 +2,7 @@
 #include "PatternSnippet.h"
 #include "PatternSnippet.g.cpp"
 
-namespace winrt::PowerRenameUI_new::implementation
+namespace winrt::PowerRenameUILib::implementation
 {
     PatternSnippet::PatternSnippet(hstring const& code, hstring const& description) :
         m_code{ code }, m_description{ description }

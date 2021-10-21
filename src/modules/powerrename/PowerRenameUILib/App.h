@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "App.g.h"
 #include "App.base.h"
-namespace winrt::PowerRenameUI_new::implementation
+namespace winrt::PowerRenameUILib::implementation
 {
     class App : public AppT2<App>
     {
@@ -10,7 +10,7 @@ namespace winrt::PowerRenameUI_new::implementation
         ~App();
     };
 }
-namespace winrt::PowerRenameUI_new::factory_implementation
+namespace winrt::PowerRenameUILib::factory_implementation
 {
     class App : public AppT<App, implementation::App>
     {
