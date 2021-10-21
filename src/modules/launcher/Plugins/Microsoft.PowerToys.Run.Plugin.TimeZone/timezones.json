@@ -98,7 +98,7 @@
         },
         {
             "Offset": "−07:00",
-            "DaylightSavingTime": false,
+            "DaylightSavingTime": true,
             "Name": "Pacific Time Zone",
             "Countries": [
                 "Canada: Alberta",
