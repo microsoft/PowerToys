@@ -45,12 +45,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="timezones.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">
       <Link>GlobalSuppressions.cs</Link>
     </Compile>
     <AdditionalFiles Include="..\..\..\..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="timezones.json" />
   </ItemGroup>
 
   <ItemGroup>

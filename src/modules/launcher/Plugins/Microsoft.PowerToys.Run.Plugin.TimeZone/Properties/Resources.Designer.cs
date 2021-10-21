@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -70,29 +70,38 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Current time.
+        ///   Looks up a localized string similar to Countries.
         /// </summary>
-        internal static string CurrentTime {
+        internal static string Countries {
             get {
-                return ResourceManager.GetString("CurrentTime", resourceCulture);
+                return ResourceManager.GetString("Countries", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Daylight name.
+        ///   Looks up a localized string similar to Daylight saving time.
         /// </summary>
-        internal static string DaylightName {
+        internal static string DaylightSavingTime {
             get {
-                return ResourceManager.GetString("DaylightName", resourceCulture);
+                return ResourceManager.GetString("DaylightSavingTime", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Display name.
+        ///   Looks up a localized string similar to Name.
         /// </summary>
-        internal static string DisplayName {
+        internal static string Name {
             get {
-                return ResourceManager.GetString("DisplayName", resourceCulture);
+                return ResourceManager.GetString("Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No.
+        /// </summary>
+        internal static string No {
+            get {
+                return ResourceManager.GetString("No", resourceCulture);
             }
         }
         
@@ -124,11 +133,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Standard name.
+        ///   Looks up a localized string similar to Yes.
         /// </summary>
-        internal static string StandardName {
+        internal static string Yes {
             get {
-                return ResourceManager.GetString("StandardName", resourceCulture);
+                return ResourceManager.GetString("Yes", resourceCulture);
             }
         }
     }

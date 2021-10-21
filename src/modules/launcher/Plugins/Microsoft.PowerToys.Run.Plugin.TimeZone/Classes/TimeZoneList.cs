@@ -11,9 +11,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
     {
         public TimeZoneList()
         {
-            TimeZones = Enumerable.Empty<TimeZone>();
+            TimeZones = Enumerable.Empty<OneTimeZone>();
         }
 
-        public IEnumerable<TimeZone> TimeZones { get; set; }
+        public IEnumerable<OneTimeZone> TimeZones { get; set; }
     }
 }

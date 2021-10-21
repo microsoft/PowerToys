@@ -7,9 +7,9 @@ using System.Linq;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
 {
-    public sealed class TimeZone
+    public sealed class OneTimeZone
     {
-        public TimeZone()
+        public OneTimeZone()
         {
             Offset = "0:00";
             Name = string.Empty;

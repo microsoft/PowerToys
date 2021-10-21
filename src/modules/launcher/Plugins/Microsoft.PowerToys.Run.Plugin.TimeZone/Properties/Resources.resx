@@ -120,14 +120,17 @@
   <data name="CopyTime" xml:space="preserve">
     <value>Copy time</value>
   </data>
-  <data name="CurrentTime" xml:space="preserve">
-    <value>Current time</value>
+  <data name="Countries" xml:space="preserve">
+    <value>Countries</value>
   </data>
-  <data name="DaylightName" xml:space="preserve">
-    <value>Daylight name</value>
+  <data name="DaylightSavingTime" xml:space="preserve">
+    <value>Daylight saving time</value>
   </data>
-  <data name="DisplayName" xml:space="preserve">
-    <value>Display name</value>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
   </data>
   <data name="Offset" xml:space="preserve">
     <value>Offset</value>
@@ -138,7 +141,7 @@
   <data name="PluginTitle" xml:space="preserve">
     <value>Time zone</value>
   </data>
-  <data name="StandardName" xml:space="preserve">
-    <value>Standard name</value>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
   </data>
 </root>

@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Classes;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Mono.Collections.Generic;
@@ -23,7 +22,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// </summary>
         /// <param name="search">The <see cref="Query"/> to filter the <see cref="Results"/>.</param>
         /// <returns>A list with <see cref="Result"/>s.</returns>
-        internal static IEnumerable<Result> GetResults(IEnumerable<Classes.TimeZone> timeZones, string search, string iconPath)
+        internal static IEnumerable<Result> GetResults(IEnumerable<OneTimeZone> timeZones, string search, string iconPath)
         {
             var results = new Collection<Result>();
             var utcNow = DateTime.UtcNow;
@@ -32,7 +31,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             {
                 if (TimeZoneInfoMatchQuery(timeZone, search))
                 {
-                    var result = GetResult(timeZone, utcNow, iconPath);
+                    var result = GetResult(timeZone, utcNow, search, iconPath);
                     results.Add(result);
                 }
             }
@@ -47,7 +46,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <param name="timeZone">The <see cref="TimeZoneInfoExtended"/> to check.</param>
         /// <param name="search">The <see cref="Query"/> that should match.</param>
         /// <returns><see langword="true"/> if it's match, otherwise <see langword="false"/>.</returns>
-        private static bool TimeZoneInfoMatchQuery(Classes.TimeZone timeZone, string search)
+        private static bool TimeZoneInfoMatchQuery(OneTimeZone timeZone, string search)
         {
             if (timeZone.Offset.Contains(search, StringComparison.InvariantCultureIgnoreCase))
             {
@@ -80,36 +79,93 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <param name="timeZone">The <see cref="TimeZoneInfoExtended"/> that contain the information for the <see cref="Result"/>.</param>
         /// <param name="utcNow">The current time in UTC for the <see cref="Result"/>.</param>
         /// <returns>A <see cref="Result"/>.</returns>
-        private static Result GetResult(Classes.TimeZone timeZone, DateTime utcNow, string iconPath)
+        private static Result GetResult(OneTimeZone timeZone, DateTime utcNow, string search, string iconPath)
         {
-            // TODO: respect DST on time calculation
-            // TODO: DST into SubTitle and toolTip
             // TODO: add timezones
             // TODO: add shortcuts
-
-            var timeInZoneTime = GetTimeInTimeZone(timeZone, utcNow);
-
-            var title = string.IsNullOrWhiteSpace(timeZone.Name) ? timeZone.Offset : timeZone.Name;
-
-            var toolTip = $"{Environment.NewLine}{Resources.StandardName}: {timeZone.Name}"
-                        + $"{Environment.NewLine}{Resources.Offset}: {timeZone.Offset}";
+            var title = GetTitle(timeZone, utcNow);
 
             var result = new Result
             {
                 ContextData = timeZone,
                 IcoPath = iconPath,
-                SubTitle = $"{Resources.CurrentTime}: {timeInZoneTime:HH:mm:ss}",
+                SubTitle = GetCountires(timeZone, search, maxLength: 100),
                 Title = title,
-                ToolTipData = new ToolTipData(title, toolTip),
+                ToolTipData = new ToolTipData(title, GetToolTip(timeZone)),
             };
 
             return result;
         }
 
-        private static DateTime GetTimeInTimeZone(Classes.TimeZone timeZone, DateTime utcNow)
+        private static DateTime GetTimeInTimeZone(OneTimeZone timeZone, DateTime utcNow)
+        {
+            DateTime result;
+
+            var (hours, minutes) = GetHoursAndMinutes(timeZone);
+
+            if (timeZone.Offset.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
+            {
+                result = utcNow.AddHours(-hours).AddMinutes(-minutes);
+            }
+            else
+            {
+                result = utcNow.AddHours(hours).AddMinutes(minutes);
+            }
+
+            if (timeZone.DaylightSavingTime)
+            {
+                result = result.AddHours(1);
+            }
+
+            return result;
+        }
+
+        private static string GetTitle(OneTimeZone timeZone, DateTime utcNow)
+        {
+            string result;
+
+            var (hours, minutes) = GetHoursAndMinutes(timeZone);
+            var timeInZoneTime = GetTimeInTimeZone(timeZone, utcNow);
+
+            if (timeZone.DaylightSavingTime)
+            {
+                hours += 1;
+            }
+
+            if (timeZone.Offset.StartsWith('-'))
+            {
+                result = $"{timeInZoneTime:HH:mm:ss} - UTC-{hours}:{minutes:00}";
+            }
+            else
+            {
+                result = $"{timeInZoneTime:HH:mm:ss} - UTC+{hours}:{minutes:00}";
+            }
+
+            if (timeZone.DaylightSavingTime)
+            {
+                result = $"{result} - {Resources.DaylightSavingTime}";
+            }
+
+            return result;
+        }
+
+        private static string GetToolTip(OneTimeZone timeZone)
+        {
+            var useDst = timeZone.DaylightSavingTime ? Resources.Yes : Resources.No;
+
+            var countires = GetCountires(timeZone, search: string.Empty, maxLength: int.MaxValue);
+
+            var result = $"{Environment.NewLine}{Resources.Name}: {timeZone.Name}"
+                       + $"{Environment.NewLine}{Resources.Offset}: {timeZone.Offset}"
+                       + $"{Environment.NewLine}{Resources.DaylightSavingTime}:{useDst}"
+                       + $"{Environment.NewLine}{Resources.Countries}:{countires}";
+
+            return result;
+        }
+
+        private static (byte hours, byte minutes) GetHoursAndMinutes(OneTimeZone timeZone)
         {
             string offset;
-            DateTime result;
 
             if (timeZone.Offset.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -122,16 +178,45 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             var offsetSplit = offset.Split(':');
 
-            int.TryParse(offsetSplit.FirstOrDefault(), out var hours);
-            int.TryParse(offsetSplit.LastOrDefault(), out var minutes);
+            byte.TryParse(offsetSplit.FirstOrDefault(), out var hours);
+            byte.TryParse(offsetSplit.LastOrDefault(), out var minutes);
 
-            if (timeZone.Offset.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
+            return (hours, minutes);
+        }
+
+        private static string GetCountires(OneTimeZone timeZone, string search, int maxLength)
+        {
+            IEnumerable<string> countries;
+
+            // TODO: translate country names
+            if (string.IsNullOrWhiteSpace(search))
             {
-                result = utcNow.AddHours(-hours).AddMinutes(-minutes);
+                countries = timeZone.Countries;
             }
             else
             {
-                result = utcNow.AddHours(hours).AddMinutes(minutes);
+                // INFO: I'm not sure if "CurrentCultureIgnoreCase" is correct here
+                countries = timeZone.Countries.Where(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase));
+                if (!countries.Any())
+                {
+                    countries = timeZone.Countries;
+                }
+            }
+
+            var result = countries.Aggregate(string.Empty, (current, next)
+                                    => current.Length == 0 ? next : $"{current}, {next}");
+
+            // To many countries => reduce length, first pass
+            if (result.Length > maxLength)
+            {
+                result = countries.Aggregate(string.Empty, (current, next)
+                                    => current.Length == 0 ? $"{next[..3]}..." : $"{current}, {next[..3]}...");
+            }
+
+            // To many countries => reduce length, second pass
+            if (result.Length > maxLength)
+            {
+                result = $"{result[..maxLength]}...";
             }
 
             return result;
