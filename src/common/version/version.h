@@ -35,3 +35,12 @@ inline std::wstring get_product_version()
 
     return version;
 }
+
+inline std::wstring get_std_product_version()
+{
+    static std::wstring version = L"v" + std::to_wstring(VERSION_MAJOR) +
+                                  L"." + std::to_wstring(VERSION_MINOR) +
+                                  L"." + std::to_wstring(VERSION_REVISION) + L".0";
+
+    return version;
+}
