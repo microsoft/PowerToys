@@ -101,71 +101,20 @@
 
                                 <controls:Setting  x:Uid="FancyZones_ZoneHighlightColor" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:DropDownButton Padding="4,4,8,4">
-                                            <Border Width="48" CornerRadius="2" Height="24">
-                                                <Border.Background>
-                                                    <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}"/>
-                                                </Border.Background>
-                                            </Border>
-                                            <muxc:DropDownButton.Flyout>
-                                                <Flyout>
-                                                    <muxc:ColorPicker IsColorSliderVisible="True"
-                                                                      IsColorChannelTextInputVisible="True"
-                                                                      IsHexInputVisible="True"
-                                                                      IsAlphaEnabled="False"
-                                                                      IsAlphaSliderVisible="False"
-                                                                      IsAlphaTextInputVisible="False"
-                                                                      Color="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
-                                                </Flyout>
-                                            </muxc:DropDownButton.Flyout>
-                                        </muxc:DropDownButton>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
 
 
                                 <controls:Setting  x:Uid="FancyZones_InActiveColor" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:DropDownButton Padding="4,4,8,4">
-                                            <Border Width="48" CornerRadius="2" Height="24">
-                                                <Border.Background>
-                                                    <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}"/>
-                                                </Border.Background>
-                                            </Border>
-                                            <muxc:DropDownButton.Flyout>
-                                                <Flyout>
-                                                    <muxc:ColorPicker IsColorSliderVisible="True"
-                                                                      IsColorChannelTextInputVisible="True"
-                                                                      IsHexInputVisible="True"
-                                                                      IsAlphaEnabled="False"
-                                                                      IsAlphaSliderVisible="False"
-                                                                      IsAlphaTextInputVisible="False"
-                                                                      Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
-                                                </Flyout>
-                                            </muxc:DropDownButton.Flyout>
-                                        </muxc:DropDownButton>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
 
                                 <controls:Setting  x:Uid="FancyZones_BorderColor" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:DropDownButton Padding="4,4,8,4">
-                                            <Border Width="48" CornerRadius="2" Height="24">
-                                                <Border.Background>
-                                                    <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}"/>
-                                                </Border.Background>
-                                            </Border>
-                                            <muxc:DropDownButton.Flyout>
-                                                <Flyout>
-                                                    <muxc:ColorPicker IsColorSliderVisible="True"
-                                                                      IsColorChannelTextInputVisible="True"
-                                                                      IsHexInputVisible="True"
-                                                                      IsAlphaEnabled="False"
-                                                                      IsAlphaSliderVisible="False"
-                                                                      IsAlphaTextInputVisible="False"
-                                                                      Color="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
-                                                </Flyout>
-                                            </muxc:DropDownButton.Flyout>
-                                        </muxc:DropDownButton>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
 

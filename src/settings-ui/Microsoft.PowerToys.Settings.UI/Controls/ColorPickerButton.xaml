@@ -5,11 +5,34 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
     <Grid>
-
+        <muxc:DropDownButton Padding="4,4,8,4">
+            <Border x:Name="ColorPreviewBorder"
+                    Width="48"
+                    CornerRadius="2"
+                    Height="24"
+                    BorderBrush="{ThemeResource CardBorderBrush}"
+                    BorderThickness="{ThemeResource CardBorderThickness}">
+                <Border.Background>
+                    <SolidColorBrush Color="{x:Bind SelectedColor, Mode=OneWay}"/>
+                </Border.Background>
+            </Border>
+            <muxc:DropDownButton.Flyout>
+                <Flyout>
+                    <muxc:ColorPicker IsColorSliderVisible="True"
+                                      IsColorChannelTextInputVisible="True"
+                                      IsHexInputVisible="True"
+                                      IsAlphaEnabled="False"
+                                      IsAlphaSliderVisible="False"
+                                      IsAlphaTextInputVisible="False"
+                                      Color="{x:Bind SelectedColor, Mode=TwoWay}" />
+                </Flyout>
+            </muxc:DropDownButton.Flyout>
+        </muxc:DropDownButton>
     </Grid>
 </UserControl>
