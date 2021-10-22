@@ -5,6 +5,7 @@ abcdef
 abcdefgh
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 abgr
+abi
 ABlocked
 Abug
 accctrl
@@ -382,6 +383,7 @@ CXVIRTUALSCREEN
 cxx
 cxxopts
 CYSMICON
+CYVIRTUALSCREEN
 cziplib
 Dac
 dacl
@@ -493,6 +495,8 @@ DPICHANGED
 DPolicy
 DPopup
 DPSAPI
+DQTAT
+DQTYPE
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
@@ -788,6 +792,7 @@ hotspot
 HPAINTBUFFER
 hpj
 hpp
+HRAWINPUT
 hread
 HREDRAW
 href
@@ -807,6 +812,7 @@ Htmdid
 html
 htt
 http
+HTTRANSPARENT
 hwb
 HWINEVENTHOOK
 hwnd
@@ -840,6 +846,7 @@ ICollection
 IColor
 ICommand
 IComparer
+ICompositor
 ICONERROR
 ICONINFORMATION
 IContext
@@ -854,6 +861,7 @@ IDesktop
 IDictionary
 IDirectory
 IDispatch
+IDispatcher
 IDisposable
 idl
 IDLIST
@@ -941,6 +949,7 @@ INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
 INPUTMOUSE
+INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
 INSTALLDIR
@@ -1702,6 +1711,9 @@ Radiobuttons
 RAII
 RAlt
 randyrants
+RAWINPUT
+RAWINPUTDEVICE
+RAWINPUTHEADER
 RAWPATH
 rbegin
 Rbp
@@ -1786,6 +1798,7 @@ rgs
 rhs
 ricardosantos
 Richtext
+RIDEV
 RIGHTSCROLLBAR
 riid
 riverar
@@ -2165,7 +2178,9 @@ tsx
 TYMED
 typedef
 TYPEKEY
+TYPEKEYBOARD
 TYPELIB
+TYPEMOUSE
 typename
 typeof
 typeparam
@@ -2468,6 +2483,7 @@ XSmall
 XStr
 XToolset
 xunit
+XVIRTUALSCREEN
 Yaml
 YDiff
 YIncrement
@@ -2478,6 +2494,7 @@ YStr
 YUY
 yuyoyuppe
 YUYV
+YVIRTUALSCREEN
 YVU
 YVYU
 ZEROINIT

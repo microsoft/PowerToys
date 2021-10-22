@@ -248,6 +248,10 @@
     <value>Keyboard Manager</value>
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
+  <data name="Shell_MouseUtilities.Content" xml:space="preserve">
+    <value>Mouse utilities</value>
+    <comment>Product name: Navigation view item name for Mouse utilities</comment>
+  </data>
   <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
     <value>Navigation closed</value>
     <comment>Accessibility announcement when the navigation pane collapses</comment>
@@ -1275,6 +1279,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_VideoConference_Description" xml:space="preserve">
     <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
   </data>
+  <data name="Oobe_MouseUtils_Description" xml:space="preserve">
+    <value>A collection of utilities to enhance your mouse.</value>
+    <comment>Mouse as in the hardware peripheral</comment>
+  </data>
   <data name="Oobe_Overview_Description.Text" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
     
@@ -1567,6 +1575,10 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Learn more about Keyboard Manager</value>
     <comment>Keyboard Manager is a product name, do not loc</comment>
   </data>
+  <data name="LearnMore_MouseUtils.Text" xml:space="preserve">
+    <value>Learn more about Mouse utilities</value>
+    <comment>Mouse utilities is a product name, do not loc</comment>
+  </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
     <comment>File Explorer is a product name, do not loc</comment>
@@ -1590,6 +1602,18 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="Oobe_FileExplorer" xml:space="preserve">
     <value>File Explorer add-ons</value>
     <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_MouseUtils" xml:space="preserve">
+    <value>Mouse utilities</value>
+    <comment>Mouse as in the hardware peripheral</comment>
+  </data>
+  <data name="Oobe_MouseUtils_FindMyMouse.Text" xml:space="preserve">
+    <value>Find My Mouse</value>
+    <comment>Mouse as in the hardware peripheral</comment>
+  </data>
+  <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
+    <value>Click twice on the Left Control key to focus on your mouse.</value>
+    <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Launch PowerToys Run</value>
@@ -1619,6 +1643,9 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Related information</value>
   </data>
   <data name="ImageResizer.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="MouseUtils.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
   </data>
   <data name="PowerLauncher.SecondaryLinksHeader" xml:space="preserve">
@@ -1660,5 +1687,19 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="Awake_TimeBeforeAwake.Header" xml:space="preserve">
     <value>Time before returning to the previous awakeness state</value>
+  </data>
+  <data name="MouseUtils.ModuleTitle" xml:space="preserve">
+    <value>Mouse utilities</value>
+  </data>
+  <data name="MouseUtils.ModuleDescription" xml:space="preserve">
+    <value>A collection of mouse utilities.</value>
+  </data>
+  <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
+    <value>Enable Find My Mouse</value>
+    <comment>"Find My Mouse" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_Enable_FindMyMouse.Description" xml:space="preserve">
+    <value>Press the Left Control key twice to focus the mouse pointer.</value>
+    <comment>"Left Control" is a keyboard key.</comment>
   </data>
 </root>

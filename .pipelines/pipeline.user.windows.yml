@@ -170,6 +170,7 @@ build:
             - 'modules\launcher\Wox.dll'
             - 'modules\launcher\Wox.Infrastructure.dll'
             - 'modules\launcher\Wox.Plugin.dll'
+            - 'modules\MouseUtils\FindMyMouse.dll'
             - 'modules\PowerRename\PowerRenameExt.dll'
             - 'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
             - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'

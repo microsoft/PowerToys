@@ -11,6 +11,7 @@ enum class ESettingsWindowNames
     Run,
     ImageResizer,
     KBM,
+    MouseUtils,
     PowerRename,
     FileExplorer,
     ShortcutGuide,
