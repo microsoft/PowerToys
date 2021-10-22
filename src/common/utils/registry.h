@@ -114,7 +114,7 @@ namespace registry
                                   valueSize) == ERROR_SUCCESS;
         }
 
-        bool unapply() const
+        bool unApply() const
         {
             HKEY key{};
             if (RegOpenKeyExW(scope, path.c_str(), 0, KEY_ALL_ACCESS, &key) != ERROR_SUCCESS)
@@ -207,7 +207,7 @@ namespace registry
         }
     };
 
-    struct Changeset
+    struct ChangeSet
     {
         std::vector<ValueChange> changes;
 
@@ -233,12 +233,12 @@ namespace registry
             return ok;
         }
 
-        bool unapply() const
+        bool unApply() const
         {
             bool ok = true;
             for (const auto& c : changes)
             {
-                ok = c.unapply() && ok;
+                ok = c.unApply() && ok;
             }
             return ok;
         }
@@ -256,7 +256,7 @@ namespace registry
             thumbnail
         };
 
-        inline registry::Changeset generatePreviewHandler(const PreviewHandlerType handlerType,
+        inline registry::ChangeSet generatePreviewHandler(const PreviewHandlerType handlerType,
                                                           const bool perUser,
                                                           std::wstring handlerClsid,
                                                           std::wstring powertoysVersion,
@@ -323,7 +323,7 @@ namespace registry
                 changes.push_back({ scope, previewHandlerListPath, handlerClsid, displayName });
             }
 
-            return registry::Changeset{ .changes = std::move(changes) };
+            return registry::ChangeSet{ .changes = std::move(changes) };
         }
     }
 }

@@ -204,6 +204,7 @@ CANRENAME
 Captureascreenshot
 CAPTURECHANGED
 CASESENSITIVE
+cassert
 CAtl
 CCDDEE
 ccf
@@ -999,7 +1000,6 @@ IRepository
 IResult
 ISavable
 isbi
-iss
 ISearch
 IService
 isetting
@@ -1008,6 +1008,7 @@ IShell
 ISingle
 ISmart
 isocpp
+iss
 IStorage
 IStream
 istreambuf
@@ -1018,9 +1019,9 @@ ITab
 ITask
 ITemplate
 ITEMSTATEICONCLICK
+ITerminal
 ITest
 ith
-ITerminal
 IThrottled
 IThumbnail
 ITrigger
@@ -1327,6 +1328,7 @@ msedge
 MSGFLT
 mshtmdid
 msi
+msiexec
 MSIFASTINSTALL
 MSIHANDLE
 MSIINSTALLER

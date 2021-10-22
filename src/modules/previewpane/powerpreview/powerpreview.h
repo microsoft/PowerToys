@@ -12,7 +12,7 @@ struct FileExplorerModule
 {
     std::wstring settingName;
     std::wstring settingDescription;
-    registry::Changeset registryChanges;
+    registry::ChangeSet registryChanges;
 };
 
 // Implement the PowerToy Module Interface and all the required methods.

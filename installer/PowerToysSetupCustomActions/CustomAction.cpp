@@ -52,11 +52,11 @@ UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Failed to initialize");
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installfolder.");
-    for (const auto& changeset : getAllModulesChangesets(installationFolder, false))
+    for (const auto& changeSet : getAllModulesChangeSets(installationFolder, false))
     {
-        if (!changeset.apply())
+        if (!changeSet.apply())
         {
-            WcaLog(LOGMSG_STANDARD, "Couldn't apply registry changeset");
+            WcaLog(LOGMSG_STANDARD, "Couldn't apply registry changeSet");
         }
     }
 
@@ -77,9 +77,9 @@ UINT __stdcall UnApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Failed to initialize");
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installfolder.");
-    for (const auto& changeset : getAllModulesChangesets(installationFolder, false))
+    for (const auto& changeSet : getAllModulesChangeSets(installationFolder, false))
     {
-        changeset.unapply();
+        changeSet.unApply();
     }
 
     ExitOnFailure(hr, "Failed to extract msix");
