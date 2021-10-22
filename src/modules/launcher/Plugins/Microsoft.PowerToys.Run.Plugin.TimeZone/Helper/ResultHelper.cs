@@ -122,24 +122,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
         private static string GetTitle(OneTimeZone timeZone, DateTime utcNow)
         {
-            string result;
-
-            var (hours, minutes) = GetHoursAndMinutes(timeZone);
             var timeInZoneTime = GetTimeInTimeZone(timeZone, utcNow);
 
-            if (timeZone.DaylightSavingTime)
-            {
-                hours += 1;
-            }
-
-            if (timeZone.Offset.StartsWith('-'))
-            {
-                result = $"{timeInZoneTime:HH:mm:ss} - UTC-{hours}:{minutes:00}";
-            }
-            else
-            {
-                result = $"{timeInZoneTime:HH:mm:ss} - UTC+{hours}:{minutes:00}";
-            }
+            var result = $"{timeInZoneTime:HH:mm:ss} - UTC{GetFullOffset(timeZone)}";
 
             if (timeZone.DaylightSavingTime)
             {
@@ -156,7 +141,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             var countires = GetCountires(timeZone, search: string.Empty, maxLength: int.MaxValue);
 
             var result = $"{Environment.NewLine}{Resources.Name}: {timeZone.Name}"
-                       + $"{Environment.NewLine}{Resources.Offset}: {timeZone.Offset}"
+                       + $"{Environment.NewLine}{Resources.Offset}: {GetFullOffset(timeZone)}"
                        + $"{Environment.NewLine}{Resources.DaylightSavingTime}:{useDst}"
                        + $"{Environment.NewLine}{Resources.Countries}:{countires}";
 
@@ -217,6 +202,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             if (result.Length > maxLength)
             {
                 result = $"{result[..maxLength]}...";
+            }
+
+            return result;
+        }
+
+        private static string GetFullOffset(OneTimeZone timeZone)
+        {
+            var (hours, minutes) = GetHoursAndMinutes(timeZone);
+
+            string result;
+
+            if (timeZone.Offset.StartsWith('-'))
+            {
+                result = "-{hours}:{minutes:00}";
+            }
+            else
+            {
+                result = $"+{hours}:{minutes:00}";
             }
 
             return result;
