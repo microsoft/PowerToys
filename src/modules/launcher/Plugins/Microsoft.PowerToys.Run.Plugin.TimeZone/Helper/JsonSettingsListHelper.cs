@@ -50,9 +50,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
                 settings = JsonSerializer.Deserialize<TimeZoneList>(text, options);
             }
+            catch (JsonException exception)
+            {
+                Log.Exception("Error loading settings JSON file", exception, typeof(JsonSettingsListHelper));
+            }
             catch (Exception exception)
             {
                 Log.Exception("Error loading settings JSON file", exception, typeof(JsonSettingsListHelper));
+                throw;
             }
 
             return settings ?? new TimeZoneList();

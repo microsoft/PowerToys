@@ -173,10 +173,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             var offsetSplit = offset.Split(':');
 
-            byte.TryParse(offsetSplit.FirstOrDefault(), out var hours);
-            byte.TryParse(offsetSplit.LastOrDefault(), out var minutes);
+            if (byte.TryParse(offsetSplit.FirstOrDefault(), out var hours) && byte.TryParse(offsetSplit.LastOrDefault(), out var minutes))
+            {
+                return (hours, minutes);
+            }
 
-            return (hours, minutes);
+            return (0, 0);
         }
 
         private static string GetCountries(OneTimeZone timeZone, string search, int maxLength)
