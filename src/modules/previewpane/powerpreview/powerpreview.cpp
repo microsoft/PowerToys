@@ -20,23 +20,23 @@ PowerPreviewModule::PowerPreviewModule() :
     const bool installPerUser = false;
     m_fileExplorerModules.push_back({ .settingName = L"svg-previewer-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
-                                      .registryChanges = getSvgPreviewHandlerChangset(installationDir, installPerUser) });
+                                      .registryChanges = getSvgPreviewHandlerChangeSet(installationDir, installPerUser) });
 
     m_fileExplorerModules.push_back({ .settingName = L"md-previewer-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
-                                      .registryChanges = getMdPreviewHandlerChangset(installationDir, installPerUser) });
+                                      .registryChanges = getMdPreviewHandlerChangeSet(installationDir, installPerUser) });
 
     m_fileExplorerModules.push_back({ .settingName = L"pdf-previewer-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_PDF_SETTINGS_DESCRIPTION),
-                                      .registryChanges = getPdfPreviewHandlerChangset(installationDir, installPerUser) });
+                                      .registryChanges = getPdfPreviewHandlerChangeSet(installationDir, installPerUser) });
 
     m_fileExplorerModules.push_back({ .settingName = L"svg-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
-                                      .registryChanges = getSvgThumbnailHandlerChangset(installationDir, installPerUser) });
+                                      .registryChanges = getSvgThumbnailHandlerChangeSet(installationDir, installPerUser) });
 
     m_fileExplorerModules.push_back({ .settingName = L"pdf-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PDF_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
-                                      .registryChanges = getPdfThumbnailHandlerChangset(installationDir, installPerUser) });
+                                      .registryChanges = getPdfThumbnailHandlerChangeSet(installationDir, installPerUser) });
 
     try
     {
@@ -133,7 +133,7 @@ void PowerPreviewModule::disable()
     {
         for (auto& fileExplorerModule : m_fileExplorerModules)
         {
-            fileExplorerModule.registryChanges.unapply();
+            fileExplorerModule.registryChanges.unApply();
         }
     }
     else
@@ -197,7 +197,7 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
         }
 
         // (Un)Apply registry changes depending on the new setting value
-        const bool updated = *toggle ? fileExplorerModule.registryChanges.apply() : fileExplorerModule.registryChanges.unapply();
+        const bool updated = *toggle ? fileExplorerModule.registryChanges.apply() : fileExplorerModule.registryChanges.unApply();
 
         if (updated)
         {

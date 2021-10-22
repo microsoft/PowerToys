@@ -6,7 +6,7 @@
 
 namespace fs = std::filesystem;
 
-inline registry::Changeset getSvgPreviewHandlerChangset(const std::wstring installationDir, const bool perUser)
+inline registry::ChangeSet getSvgPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
 {
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::preview,
@@ -22,7 +22,7 @@ inline registry::Changeset getSvgPreviewHandlerChangset(const std::wstring insta
                                   L".svg");
 }
 
-inline registry::Changeset getMdPreviewHandlerChangset(const std::wstring installationDir, const bool perUser)
+inline registry::ChangeSet getMdPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
 {
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::preview,
@@ -36,7 +36,7 @@ inline registry::Changeset getMdPreviewHandlerChangset(const std::wstring instal
                                   L".md");
 }
 
-inline registry::Changeset getPdfPreviewHandlerChangset(const std::wstring installationDir, const bool perUser)
+inline registry::ChangeSet getPdfPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
 {
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::preview,
@@ -50,7 +50,7 @@ inline registry::Changeset getPdfPreviewHandlerChangset(const std::wstring insta
                                   L".pdf");
 }
 
-inline registry::Changeset getSvgThumbnailHandlerChangset(const std::wstring installationDir, const bool perUser)
+inline registry::ChangeSet getSvgThumbnailHandlerChangeSet(const std::wstring installationDir, const bool perUser)
 {
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::thumbnail,
@@ -64,7 +64,7 @@ inline registry::Changeset getSvgThumbnailHandlerChangset(const std::wstring ins
                                   L".svg");
 }
 
-inline registry::Changeset getPdfThumbnailHandlerChangset(const std::wstring installationDir, const bool perUser)
+inline registry::ChangeSet getPdfThumbnailHandlerChangeSet(const std::wstring installationDir, const bool perUser)
 {
     using namespace registry::shellex;
     return generatePreviewHandler(PreviewHandlerType::thumbnail,
@@ -78,11 +78,11 @@ inline registry::Changeset getPdfThumbnailHandlerChangset(const std::wstring ins
                                   L".pdf");
 }
 
-inline std::vector<registry::Changeset> getAllModulesChangesets(const std::wstring installationDir, const bool perUser)
+inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstring installationDir, const bool perUser)
 {
-    return { getSvgPreviewHandlerChangset(installationDir, perUser),
-             getMdPreviewHandlerChangset(installationDir, perUser),
-             getPdfPreviewHandlerChangset(installationDir, perUser),
-             getSvgThumbnailHandlerChangset(installationDir, perUser),
-             getPdfThumbnailHandlerChangset(installationDir, perUser) };
+    return { getSvgPreviewHandlerChangeSet(installationDir, perUser),
+             getMdPreviewHandlerChangeSet(installationDir, perUser),
+             getPdfPreviewHandlerChangeSet(installationDir, perUser),
+             getSvgThumbnailHandlerChangeSet(installationDir, perUser),
+             getPdfThumbnailHandlerChangeSet(installationDir, perUser) };
 }
