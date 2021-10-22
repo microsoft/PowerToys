@@ -248,6 +248,10 @@
     <value>Keyboard Manager</value>
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
+  <data name="Shell_MouseUtilities.Content" xml:space="preserve">
+    <value>Mouse utilities</value>
+    <comment>Product name: Navigation view item name for Mouse utilities</comment>
+  </data>
   <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
     <value>Navigation closed</value>
     <comment>Accessibility announcement when the navigation pane collapses</comment>
@@ -401,8 +405,11 @@
   <data name="PowerLauncher_IgnoreHotkeysInFullScreen.Content" xml:space="preserve">
     <value>Ignore shortcuts in fullscreen mode</value>
   </data>
-  <data name="PowerLauncher_UseCentralizedKeyboardHook.Content" xml:space="preserve">
-    <value>Use centralized keyboard hook (try it if there are issues with the shortcut)</value>
+  <data name="PowerLauncher_UseCentralizedKeyboardHook.Header" xml:space="preserve">
+    <value>Use centralized keyboard hook</value>
+  </data>
+	<data name="PowerLauncher_UseCentralizedKeyboardHook.Description" xml:space="preserve">
+    <value>Try this if there are issues with the shortcut</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
@@ -490,10 +497,16 @@
     <value>Move newly created windows to the current active monitor (Experimental)</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Header" xml:space="preserve">
-    <value>Launch editor where mouse cursor is</value>
+    <value>Launch editor on the display</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Description" xml:space="preserve">
-    <value>When using multiple screens, the editor will launch on the screen where the mouse cursor is</value>
+    <value>When using multiple displays</value>
+  </data>
+	<data name="FancyZones_LaunchPositionMouse.Content" xml:space="preserve">
+    <value>Where the mouse pointer is</value>
+  </data>
+	<data name="FancyZones_LaunchPositionScreen.Content" xml:space="preserve">
+    <value>With active focus</value>
   </data>
   <data name="FancyZones_ZoneBehavior_GroupSettings.Header" xml:space="preserve">
     <value>Zone behavior</value>
@@ -558,11 +571,20 @@
   <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
     <value>Settings theme</value>
   </data>
-  <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
-    <value>Show icon on context menu</value>
+  <data name="PowerRename_Toggle_HideIcon.Content" xml:space="preserve">
+    <value>Hide icon in context menu</value>
   </data>
-  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
-    <value>Appear only in extended context menu</value>
+  <data name="PowerRename_Toggle_ContextMenu.Header" xml:space="preserve">
+    <value>Show PowerRename in</value>
+  </data>
+	<data name="PowerRename_Toggle_ContextMenu.Description" xml:space="preserve">
+    <value>Press shift + right-click on files to open the extended menu</value>
+  </data>
+	<data name="PowerRename_Toggle_StandardContextMenu.Content" xml:space="preserve">
+    <value>Default and extended context menu</value>
+  </data>
+	<data name="PowerRename_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
+    <value>Extended context menu only</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Description" xml:space="preserve">
     <value>Press Shift + right-click on files to open the extended menu</value>
@@ -893,11 +915,17 @@
   <data name="ImageResizer_FilenameFormatHeader.Header" xml:space="preserve">
     <value>Filename format</value>
   </data>
-  <data name="ImageResizer_UseOriginalDate.Header" xml:space="preserve">
-    <value>Use original date modified</value>
+  <data name="ImageResizer_FileModifiedDate.Header" xml:space="preserve">
+    <value>File modified timestamp</value>
   </data>
-  <data name="ImageResizer_UseOriginalDate.Description" xml:space="preserve">
-    <value>Keep the original modified date of the file (instead of the resize date)</value>
+  <data name="ImageResizer_FileModifiedDate.Description" xml:space="preserve">
+    <value>Used as the 'modified timestamp' in the file properties</value>
+  </data>
+	<data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
+    <value>Original file timestamp</value>
+  </data>
+	<data name="ImageResizer_UseResizeDate.Content" xml:space="preserve">
+    <value>Timestamp of resize action</value>
   </data>
   <data name="Encoding.Header" xml:space="preserve">
     <value>Encoding</value>
@@ -913,7 +941,7 @@
 Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the OS</comment>
   </data>
-  <data name="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Text" xml:space="preserve">
+  <data name="FancyZones_SpanZonesAcrossMonitors.Header" xml:space="preserve">
     <value>Allow zones to span across monitors</value>
   </data>
   <data name="ImageResizer_Formatting_ActualHeight.Text" xml:space="preserve">
@@ -1154,7 +1182,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Plugins</value>
   </data>
   <data name="Run_PluginUseDescription.Description" xml:space="preserve">
-    <value>You can include or remove each plugin from the global results, change the direct activation phrase and configure additional options</value>
+    <value>Include or remove plugins from the global results, change the direct activation phrase and configure additional options</value>
   </data>
   <data name="Run_PositionAppearance_GroupSettings.Header" xml:space="preserve">
     <value>Position &amp; appearance</value>
@@ -1195,7 +1223,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Enable quick layout switch</value>
   </data>
   <data name="FancyZones_QuickLayoutSwitch.Description" xml:space="preserve">
-    <value>You can configure layout-specific shortcuts in the editor</value>
+    <value>Layout-specific shortcuts can be configured in the editor</value>
   </data>
   <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
     <value>Quick layout switch</value>
@@ -1250,6 +1278,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Oobe_VideoConference_Description" xml:space="preserve">
     <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
+  </data>
+  <data name="Oobe_MouseUtils_Description" xml:space="preserve">
+    <value>A collection of utilities to enhance your mouse.</value>
+    <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_Overview_Description.Text" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
@@ -1543,6 +1575,10 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Learn more about Keyboard Manager</value>
     <comment>Keyboard Manager is a product name, do not loc</comment>
   </data>
+  <data name="LearnMore_MouseUtils.Text" xml:space="preserve">
+    <value>Learn more about Mouse utilities</value>
+    <comment>Mouse utilities is a product name, do not loc</comment>
+  </data>
   <data name="LearnMore_PowerPreview.Text" xml:space="preserve">
     <value>Learn more about File Explorer add-ons</value>
     <comment>File Explorer is a product name, do not loc</comment>
@@ -1566,6 +1602,18 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="Oobe_FileExplorer" xml:space="preserve">
     <value>File Explorer add-ons</value>
     <comment>Do not localize this string</comment>
+  </data>
+  <data name="Oobe_MouseUtils" xml:space="preserve">
+    <value>Mouse utilities</value>
+    <comment>Mouse as in the hardware peripheral</comment>
+  </data>
+  <data name="Oobe_MouseUtils_FindMyMouse.Text" xml:space="preserve">
+    <value>Find My Mouse</value>
+    <comment>Mouse as in the hardware peripheral</comment>
+  </data>
+  <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
+    <value>Click twice on the Left Control key to focus on your mouse.</value>
+    <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Launch PowerToys Run</value>
@@ -1595,6 +1643,9 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Related information</value>
   </data>
   <data name="ImageResizer.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="MouseUtils.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
   </data>
   <data name="PowerLauncher.SecondaryLinksHeader" xml:space="preserve">
@@ -1627,7 +1678,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
   </data>
-  <data name="FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" xml:space="preserve">
+  <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>
   </data>
   <data name="ImageResizer_DefaultSize_NewSizePrefix" xml:space="preserve">
@@ -1636,5 +1687,19 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="Awake_TimeBeforeAwake.Header" xml:space="preserve">
     <value>Time before returning to the previous awakeness state</value>
+  </data>
+  <data name="MouseUtils.ModuleTitle" xml:space="preserve">
+    <value>Mouse utilities</value>
+  </data>
+  <data name="MouseUtils.ModuleDescription" xml:space="preserve">
+    <value>A collection of mouse utilities.</value>
+  </data>
+  <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
+    <value>Enable Find My Mouse</value>
+    <comment>"Find My Mouse" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_Enable_FindMyMouse.Description" xml:space="preserve">
+    <value>Press the Left Control key twice to focus the mouse pointer.</value>
+    <comment>"Left Control" is a keyboard key.</comment>
   </data>
 </root>

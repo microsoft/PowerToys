@@ -25,6 +25,7 @@
 | PowerToysOverview_FileExplorerAddOns | https://docs.microsoft.com/windows/powertoys/file-explorer |
 | PowerToysOverview_ImageResizer | https://docs.microsoft.com/windows/powertoys/image-resizer |
 | PowerToysOverview_KeyboardManager | https://docs.microsoft.com/windows/powertoys/keyboard-manager |
+| PowerToysOverview_MouseUtilities | https://docs.microsoft.com/windows/powertoys/mouse-utilities |
 | PowerToysOverview_PowerRename | https://docs.microsoft.com/windows/powertoys/powerrename |
 | PowerToysOverview_PowerToysRun | https://docs.microsoft.com/windows/powertoys/run |
 | PowerToysOverview_ShortcutGuide | https://docs.microsoft.com/windows/powertoys/shortcut-guide |

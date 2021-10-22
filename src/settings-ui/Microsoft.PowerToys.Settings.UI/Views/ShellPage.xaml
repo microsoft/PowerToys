@@ -95,6 +95,14 @@
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
 
+                <muxc:NavigationViewItem x:Uid="Shell_MouseUtilities"
+                                         helpers:NavHelper.NavigateTo="views:MouseUtilsPage">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseUtils.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+
                 <muxc:NavigationViewItem x:Uid="Shell_PowerRename"
                                          helpers:NavHelper.NavigateTo="views:PowerRenamePage">
                     <muxc:NavigationViewItem.Icon>
@@ -119,15 +127,14 @@
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
 
-                <!--TODO(yuyoyuppe): uncomment when VCM should be enabled-->
-                <!--<muxc:NavigationViewItem x:Uid="Shell_VideoConference"
+                <muxc:NavigationViewItem x:Uid="Shell_VideoConference"
                                          helpers:NavHelper.NavigateTo="views:VideoConferencePage"
                                          IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png"
                                     ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>-->
+                </muxc:NavigationViewItem>
 
             </muxc:NavigationView.MenuItems>
             <muxc:NavigationView.PaneFooter>

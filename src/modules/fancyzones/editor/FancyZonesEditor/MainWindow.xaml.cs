@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -11,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
+using Microsoft.PowerToys.Common.UI;
 using ModernWpf.Controls;
 
 namespace FancyZonesEditor
@@ -214,7 +217,7 @@ namespace FancyZonesEditor
                 name = name.TrimEnd();
             }
 
-            AnnounceSuccessfulLayoutCreation(name);
+            Announce(name, FancyZonesEditor.Properties.Resources.Layout_Creation_Announce);
             int maxCustomIndex = 0;
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
@@ -246,12 +249,12 @@ namespace FancyZonesEditor
             App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
-        private void AnnounceSuccessfulLayoutCreation(string name)
+        private void Announce(string name, string message)
         {
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
             {
                 var peer = UIElementAutomationPeer.FromElement(_createLayoutAnnounce);
-                AutomationProperties.SetName(_createLayoutAnnounce, name + " " + FancyZonesEditor.Properties.Resources.Layout_Creation_Announce);
+                AutomationProperties.SetName(_createLayoutAnnounce, name + " " + message);
                 peer?.RaiseAutomationEvent(AutomationEvents.MenuOpened);
             }
         }
@@ -451,6 +454,7 @@ namespace FancyZonesEditor
 
         private void Dialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
+            Announce(sender.Name, FancyZonesEditor.Properties.Resources.Edit_Layout_Open_Announce);
             _openedDialog = sender;
         }
 
@@ -515,6 +519,11 @@ namespace FancyZonesEditor
             numberBox.ApplyTemplate(); // Apply template to be able to change child's property.
             var numberBoxTextBox = numberBox.Template.FindName(numberBoxTextBoxName, numberBox) as TextBox;
             numberBoxTextBox.SetValue(AutomationProperties.NameProperty, numberBox.GetValue(AutomationProperties.NameProperty));
+        }
+
+        private void SettingsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.FancyZones);
         }
     }
 }

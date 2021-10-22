@@ -5,6 +5,7 @@ abcdef
 abcdefgh
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 abgr
+abi
 ABlocked
 ABOUTBOX
 Abug
@@ -185,6 +186,7 @@ Browsable
 bsd
 bstr
 bti
+btn
 BTNFACE
 Bto
 buf
@@ -382,6 +384,7 @@ CXVIRTUALSCREEN
 cxx
 cxxopts
 CYSMICON
+CYVIRTUALSCREEN
 cziplib
 Dac
 dacl
@@ -493,6 +496,8 @@ DPICHANGED
 DPolicy
 DPopup
 DPSAPI
+DQTAT
+DQTYPE
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
@@ -788,6 +793,7 @@ hotspot
 HPAINTBUFFER
 hpj
 hpp
+HRAWINPUT
 hread
 HREDRAW
 href
@@ -807,6 +813,7 @@ Htmdid
 html
 htt
 http
+HTTRANSPARENT
 hwb
 HWINEVENTHOOK
 hwnd
@@ -840,6 +847,7 @@ ICollection
 IColor
 ICommand
 IComparer
+ICompositor
 ICONERROR
 ICONINFORMATION
 IContext
@@ -854,6 +862,7 @@ IDesktop
 IDictionary
 IDirectory
 IDispatch
+IDispatcher
 IDisposable
 idl
 IDLIST
@@ -868,6 +877,7 @@ IEasing
 IEnum
 IEnumerable
 IEnumerator
+IEnvironment
 IEquality
 IEquatable
 IEvent
@@ -940,6 +950,7 @@ INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
 INPUTMOUSE
+INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
 INSTALLDIR
@@ -1647,6 +1658,7 @@ pri
 PRINTCLIENT
 printf
 prm
+proactively
 PROCESSKEY
 PRODUCTVERSION
 PROGDLG
@@ -1706,6 +1718,9 @@ Radiobuttons
 RAII
 RAlt
 randyrants
+RAWINPUT
+RAWINPUTDEVICE
+RAWINPUTHEADER
 RAWPATH
 rbegin
 Rbp
@@ -1790,6 +1805,7 @@ rgs
 rhs
 ricardosantos
 Richtext
+RIDEV
 RIGHTSCROLLBAR
 riid
 riverar
@@ -1836,6 +1852,7 @@ scancode
 scanled
 schedtasks
 Scn
+SCOOBE
 SCOPEID
 screenshot
 scrollable
@@ -2013,6 +2030,7 @@ stdlib
 STDMETHODCALLTYPE
 STDMETHODIMP
 stdout
+stefan
 STEPIT
 stgm
 STGMEDIUM
@@ -2167,7 +2185,9 @@ tsx
 TYMED
 typedef
 TYPEKEY
+TYPEKEYBOARD
 TYPELIB
+TYPEMOUSE
 typename
 typeof
 typeparam
@@ -2470,6 +2490,7 @@ XSmall
 XStr
 XToolset
 xunit
+XVIRTUALSCREEN
 Yaml
 YDiff
 YIncrement
@@ -2480,6 +2501,7 @@ YStr
 YUY
 yuyoyuppe
 YUYV
+YVIRTUALSCREEN
 YVU
 YVYU
 ZEROINIT
