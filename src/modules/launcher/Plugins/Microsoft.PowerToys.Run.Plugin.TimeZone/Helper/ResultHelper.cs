@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Classes;
+using Microsoft.PowerToys.Run.Plugin.TimeZone.Extensions;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Mono.Collections.Generic;
 using Wox.Plugin;
@@ -48,6 +50,25 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <returns><see langword="true"/> if it's match, otherwise <see langword="false"/>.</returns>
         private static bool TimeZoneInfoMatchQuery(OneTimeZone timeZone, string search)
         {
+            // allow search for "-x:xx"
+            if (search.StartsWith('-') && timeZone.Offset.StartsWith('-'))
+            {
+                if (timeZone.Offset.ElementAtOrDefault(1) == '0')
+                {
+                    if (timeZone.Offset.Substring(2).StartsWith(search.Substring(1), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            // allow search for "+xx:xx"
+            if (search.StartsWith('+') && timeZone.Offset.StartsWith(search.Substring(1), StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            // "-1x:xx" match here
             if (timeZone.Offset.Contains(search, StringComparison.InvariantCultureIgnoreCase))
             {
                 return true;
@@ -58,8 +79,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 return true;
             }
 
-            if (timeZone.Shortcut != null
-            && timeZone.Shortcut.Contains(search, StringComparison.InvariantCultureIgnoreCase))
+            if (timeZone.Shortcut.Contains(search, StringComparison.InvariantCultureIgnoreCase))
             {
                 return true;
             }
@@ -147,15 +167,18 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         private static string GetToolTip(OneTimeZone timeZone)
         {
             var useDst = timeZone.DaylightSavingTime ? Resources.Yes : Resources.No;
-
+            var fullTimeOffset = GetFullOffset(timeZone);
             var countries = GetCountries(timeZone, search: string.Empty, maxLength: int.MaxValue);
 
-            var result = $"{Environment.NewLine}{Resources.Name}: {timeZone.Name}"
-                       + $"{Environment.NewLine}{Resources.Offset}: {GetFullOffset(timeZone)}"
-                       + $"{Environment.NewLine}{Resources.DaylightSavingTime}:{useDst}"
-                       + $"{Environment.NewLine}{Resources.Countries}:{countries}";
+            var stringBuilder = new StringBuilder();
 
-            return result;
+            stringBuilder.Append(Resources.Name).Append(':').Append(' ').AppendLine(timeZone.Name);
+            stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(fullTimeOffset);
+            stringBuilder.Append(Resources.DaylightSavingTime).Append(':').Append(' ').AppendLine(useDst);
+            stringBuilder.AppendLine(string.Empty);
+            stringBuilder.Append(Resources.Countries).Append(':').Append(' ').AppendLine(countries);
+
+            return stringBuilder.ToString();
         }
 
         private static (byte hours, byte minutes) GetHoursAndMinutes(OneTimeZone timeZone)
@@ -164,7 +187,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             if (timeZone.Offset.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
             {
-                offset = timeZone.Offset.Substring(1);
+                offset = timeZone.Offset[1..];
             }
             else
             {
@@ -192,7 +215,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             }
             else
             {
-                // INFO: I'm not sure if "CurrentCultureIgnoreCase" is correct here
                 countries = timeZone.Countries.Where(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase));
                 if (!countries.Any())
                 {
@@ -200,23 +222,78 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 }
             }
 
-            var result = countries.Aggregate(string.Empty, (current, next)
-                                    => current.Length == 0 ? next : $"{current}, {next}");
+            var stringBuilder = new StringBuilder();
+            var lastEntry = countries.LastOrDefault();
 
-            // To many countries => reduce length, first pass
-            if (result.Length > maxLength)
+            foreach (var country in countries)
             {
-                result = countries.Aggregate(string.Empty, (current, next)
-                                    => current.Length == 0 ? $"{next[..3]}..." : $"{current}, {next[..3]}...");
+                stringBuilder.Append(country);
+
+                if (country != lastEntry)
+                {
+                    stringBuilder.Append(',');
+                    stringBuilder.Append(' ');
+                }
             }
 
-            // To many countries => reduce length, second pass
-            if (result.Length > maxLength)
+            // To many countries (first pass) => remove extra info
+            if (stringBuilder.Length > maxLength)
             {
-                result = $"{result[..maxLength]}...";
+                stringBuilder.Clear();
+
+                foreach (var country in countries)
+                {
+                    var extraInfoStart = country.IndexOf('(', StringComparison.InvariantCultureIgnoreCase);
+                    if (extraInfoStart > 0)
+                    {
+                        stringBuilder.Append(country[..extraInfoStart]);
+                    }
+                    else
+                    {
+                        stringBuilder.Append(country);
+                    }
+
+                    if (country != lastEntry)
+                    {
+                        stringBuilder.Append(',');
+                        stringBuilder.Append(' ');
+                    }
+                }
             }
 
-            return result;
+            // To many countries (second pass) => remove extra info and cut country length
+            if (stringBuilder.Length > maxLength)
+            {
+                foreach (var country in countries)
+                {
+                    var extraInfoStart = country.IndexOf('(', StringComparison.InvariantCultureIgnoreCase);
+                    if (extraInfoStart > 0)
+                    {
+                        stringBuilder.SaveAppend(country[..extraInfoStart], maxLength: 5);
+                    }
+                    else
+                    {
+                        stringBuilder.SaveAppend(country, maxLength: 5);
+                    }
+
+                    if (country != lastEntry)
+                    {
+                        stringBuilder.Append(',');
+                        stringBuilder.Append(' ');
+                    }
+                }
+            }
+
+            // To many countries (third pass) => cut text length
+            if (stringBuilder.Length > maxLength)
+            {
+                stringBuilder.Length = maxLength - 3;
+                stringBuilder.Append('.');
+                stringBuilder.Append('.');
+                stringBuilder.Append('.');
+            }
+
+            return stringBuilder.ToString();
         }
 
         private static string GetFullOffset(OneTimeZone timeZone)
@@ -227,7 +304,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             if (timeZone.Offset.StartsWith('-'))
             {
-                result = "-{hours}:{minutes:00}";
+                result = $"-{hours}:{minutes:00}";
             }
             else
             {
