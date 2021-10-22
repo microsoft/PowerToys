@@ -1,5 +1,5 @@
 {
-    "$schema": "./timezone.schema.json",
+    "$schema": "./timeZones.schema.json",
     "TimeZones":
     [
         {

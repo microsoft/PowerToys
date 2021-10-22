@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <returns>A <see cref="Result"/>.</returns>
         private static Result GetResult(OneTimeZone timeZone, DateTime utcNow, string search, string iconPath)
         {
-            // TODO: revisit timezone names, maybe a list of time zone names
+            // TODO: revisit time zone names, maybe a list of time zone names
             // TODO: add standard and DST time zone names
             // TODO: add shortcuts
             var title = GetTitle(timeZone, utcNow);
@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             {
                 ContextData = timeZone,
                 IcoPath = iconPath,
-                SubTitle = GetCountires(timeZone, search, maxLength: 100),
+                SubTitle = GetCountries(timeZone, search, maxLength: 100),
                 Title = title,
                 ToolTipData = new ToolTipData(title, GetToolTip(timeZone)),
             };
@@ -148,12 +148,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         {
             var useDst = timeZone.DaylightSavingTime ? Resources.Yes : Resources.No;
 
-            var countires = GetCountires(timeZone, search: string.Empty, maxLength: int.MaxValue);
+            var countries = GetCountries(timeZone, search: string.Empty, maxLength: int.MaxValue);
 
             var result = $"{Environment.NewLine}{Resources.Name}: {timeZone.Name}"
                        + $"{Environment.NewLine}{Resources.Offset}: {GetFullOffset(timeZone)}"
                        + $"{Environment.NewLine}{Resources.DaylightSavingTime}:{useDst}"
-                       + $"{Environment.NewLine}{Resources.Countries}:{countires}";
+                       + $"{Environment.NewLine}{Resources.Countries}:{countries}";
 
             return result;
         }
@@ -179,7 +179,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             return (hours, minutes);
         }
 
-        private static string GetCountires(OneTimeZone timeZone, string search, int maxLength)
+        private static string GetCountries(OneTimeZone timeZone, string search, int maxLength)
         {
             IEnumerable<string> countries;
 

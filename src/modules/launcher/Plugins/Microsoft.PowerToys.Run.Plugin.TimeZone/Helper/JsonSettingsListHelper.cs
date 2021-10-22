@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -22,7 +20,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <summary>
         /// The name of the file that contains all settings for the query
         /// </summary>
-        private const string _settingsFile = "timezones.json";
+        private const string _settingsFile = "timeZones.json";
 
         /// <summary>
         /// Read all possible Windows settings.
@@ -31,7 +29,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         internal static TimeZoneList ReadAllPossibleTimezones()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var type = assembly.GetTypes().FirstOrDefault(x => x.Name == nameof(Main));
+            var type = Array.Find(assembly.GetTypes(), x => x.Name == nameof(Main));
 
             TimeZoneList? settings = null;
 

@@ -37,9 +37,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         private bool _disposed;
 
         /// <summary>
-        /// A class that contain all possible timezones.
+        /// A class that contain all possible time zones.
         /// </summary>
-        private TimeZoneList? _timezones;
+        private TimeZoneList? _timeZoneList;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Main"/> class.
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(_context.API.GetCurrentTheme());
 
-            _timezones = JsonSettingsListHelper.ReadAllPossibleTimezones();
+            _timeZoneList = JsonSettingsListHelper.ReadAllPossibleTimezones();
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         /// <returns>A filtered list, can be empty when nothing was found</returns>
         public List<Result> Query(Query query)
         {
-            if (_timezones?.TimeZones is null)
+            if (_timeZoneList?.TimeZones is null)
             {
                 return new List<Result>(0);
             }
@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
                 return new List<Result>(0);
             }
 
-            var results = ResultHelper.GetResults(_timezones.TimeZones, query.Search, _defaultIconPath).ToList();
+            var results = ResultHelper.GetResults(_timeZoneList.TimeZones, query.Search, _defaultIconPath).ToList();
             return results;
         }
 
