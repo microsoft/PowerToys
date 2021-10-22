@@ -217,7 +217,7 @@ namespace FancyZonesEditor
                 name = name.TrimEnd();
             }
 
-            AnnounceSuccessfulLayoutCreation(name);
+            Announce(name, FancyZonesEditor.Properties.Resources.Layout_Creation_Announce);
             int maxCustomIndex = 0;
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
@@ -249,12 +249,12 @@ namespace FancyZonesEditor
             App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
-        private void AnnounceSuccessfulLayoutCreation(string name)
+        private void Announce(string name, string message)
         {
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
             {
                 var peer = UIElementAutomationPeer.FromElement(_createLayoutAnnounce);
-                AutomationProperties.SetName(_createLayoutAnnounce, name + " " + FancyZonesEditor.Properties.Resources.Layout_Creation_Announce);
+                AutomationProperties.SetName(_createLayoutAnnounce, name + " " + message);
                 peer?.RaiseAutomationEvent(AutomationEvents.MenuOpened);
             }
         }
@@ -454,6 +454,7 @@ namespace FancyZonesEditor
 
         private void Dialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
+            Announce(sender.Name, FancyZonesEditor.Properties.Resources.Edit_Layout_Open_Announce);
             _openedDialog = sender;
         }
 

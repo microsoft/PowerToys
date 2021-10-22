@@ -374,6 +374,9 @@
   <data name="Edit_Layout" xml:space="preserve">
     <value>Edit layout</value>
   </data>
+  <data name="Edit_Layout_Open_Announce" xml:space="preserve">
+    <value>opened</value>
+  </data>
   <data name="Layout_Creation_Announce" xml:space="preserve">
     <value>custom layout was created successfully.</value>
   </data>
