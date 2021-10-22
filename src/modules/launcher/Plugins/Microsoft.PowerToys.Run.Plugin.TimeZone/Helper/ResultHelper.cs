@@ -81,7 +81,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <returns>A <see cref="Result"/>.</returns>
         private static Result GetResult(OneTimeZone timeZone, DateTime utcNow, string search, string iconPath)
         {
-            // TODO: add timezones
+            // TODO: revisit timezone names, maybe a list of time zone names
+            // TODO: add standard and DST time zone names
             // TODO: add shortcuts
             var title = GetTitle(timeZone, utcNow);
 
@@ -122,16 +123,25 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
         private static string GetTitle(OneTimeZone timeZone, DateTime utcNow)
         {
-            var timeInZoneTime = GetTimeInTimeZone(timeZone, utcNow);
+            string timeZoneName;
 
-            var result = $"{timeInZoneTime:HH:mm:ss} - UTC{GetFullOffset(timeZone)}";
-
-            if (timeZone.DaylightSavingTime)
+            if (string.IsNullOrEmpty(timeZone.Name))
             {
-                result = $"{result} - {Resources.DaylightSavingTime}";
+                timeZoneName = $"UTC{GetFullOffset(timeZone)}";
+
+                if (timeZone.DaylightSavingTime)
+                {
+                    timeZoneName = $"{timeZoneName} - {Resources.DaylightSavingTime}";
+                }
+            }
+            else
+            {
+                timeZoneName = timeZone.Name;
             }
 
-            return result;
+            var timeInZoneTime = GetTimeInTimeZone(timeZone, utcNow);
+
+            return $"{timeInZoneTime:HH:mm:ss} - {timeZoneName}";
         }
 
         private static string GetToolTip(OneTimeZone timeZone)
