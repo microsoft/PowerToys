@@ -33,7 +33,7 @@
                 "Cook Islands",
                 "French Polynesia (most)",
                 "Johnston Atoll",
-                "United States: Hawaii"
+                "Hawaii (United States)"
             ]
         },
         {
@@ -41,37 +41,37 @@
             "DaylightSavingTime": true,
             "Name": "Hawaii–Aleutian Time Zone",
             "Countries": [
-                "United States: Andreanof Islands",
-                "United States: Islands of Four Mountains",
-                "United States: Near Islands",
-                "United States: Rat Islands (Aleutian Islands, Alaska)"
+                "Andreanof Islands (United States)",
+                "Islands of Four Mountains (United States)",
+                "Near Islands (United States)",
+                "Rat Islands (Aleutian Islands, Alaska, United States)"
             ]
         },
         {
-            "Offset": "−09:30",
+            "Offset": "-09:30",
             "DaylightSavingTime": false,
             "Countries": [
-                "French Polynesia: Marquesas Islands"
+                "Marquesas Islands (French Polynesia)"
             ]
         },
         {
-            "Offset": "−09:00",
+            "Offset": "-09:00",
             "DaylightSavingTime": false,
             "Name": "Alaska Time Zone",
             "Countries": [
-                "French Polynesia: Gambier Islands"
+                "Gambier Islands (French Polynesia)"
             ]
         },
         {
-            "Offset": "−09:00",
+            "Offset": "-09:00",
             "DaylightSavingTime": true,
             "Name": "Alaska Time Zone",
             "Countries": [
-                "United States: Alaska (most)"
+                "Alaska (most, United States)"
             ]
         },
         {
-            "Offset": "−08:00",
+            "Offset": "-08:00",
             "DaylightSavingTime": false,
             "Name": "Pacific Time Zone",
             "Countries": [
@@ -80,58 +80,58 @@
             ]
         },
         {
-            "Offset": "−08:00",
+            "Offset": "-08:00",
             "DaylightSavingTime": true,
             "Name": "Alaska Time Zone",
             "Countries": [
-                "Canada: British Columbia (most)",
-                "Mexico: Baja California",
-                "United States: California",
-                "United States: Idaho (north)",
-                "United States: Nevada",
-                "United States: Oregon (most)",
-                "United States: Washington"
+                "British Columbia (most, Canada)",
+                "Baja California (Mexico)",
+                "California (United States)",
+                "Idaho (north, United States)",
+                "Nevada (United States)",
+                "Oregon (most, United States)",
+                "Washington (United States)"
             ]
         },
         {
-            "Offset": "−07:00",
+            "Offset": "-07:00",
             "DaylightSavingTime": false,
             "Name": "Mountain Time Zone",
             "Countries": [
-                "Canada: British Columbia (northeast)",
-                "Canada: Yukon",
-                "Mexico: Sonora",
-                "United States: Arizona (most)"
+                "British Columbia (northeast, Canada)",
+                "Yukon (Canada)",
+                "Sonora (Mexico)",
+                "Arizona (most, United States)"
             ]
         },
         {
-            "Offset": "−07:00",
+            "Offset": "-07:00",
             "DaylightSavingTime": true,
             "Name": "Mountain Time Zone",
             "Countries": [
-                "Canada: Alberta",
-                "Canada: British Columbia (southeast)",
-                "Canada: Northwest Territories",
-                "Canada: Nunavut (west)",
-                "Mexico: Baja California Sur",
-                "Mexico: Chihuahua",
-                "Mexico: Nayarit (most)",
-                "Mexico: Sinaloa",
-                "United States: Colorado",
-                "United States: Idaho (most)",
-                "United States: Montana",
-                "United States: New Mexico",
-                "United States: Utah",
-                "United States: Wyoming"
+                "Alberta (Canada)",
+                "British Columbia (southeast, Canada)",
+                "Northwest Territories (Canada)",
+                "Nunavut (west, Canada)",
+                "Baja California Sur (Mexico)",
+                "Chihuahua (Mexico)",
+                "Nayarit (most, Mexico)",
+                "Sinaloa (Mexico)",
+                "Colorado (United States)",
+                "Idaho (most, United States)",
+                "Montana (United States)",
+                "New Mexico (United States)",
+                "Utah (United States)",
+                "Wyoming (United States)"
             ]
         },
         {
-            "Offset": "−06:00",
+            "Offset": "-06:00",
             "DaylightSavingTime": false,
             "Name": "Central Time Zone",
             "Countries": [
                 "Belize",
-                "Canada: Saskatchewan (most)",
+                "Saskatchewan (most, Canada)",
                 "Costa Rica",
                 "Ecuador: Galápagos",
                 "El Salvador",
@@ -141,90 +141,90 @@
             ]
         },
         {
-            "Offset": "−06:00",
+            "Offset": "-06:00",
             "DaylightSavingTime": true,
             "Name": "Central Time Zone",
             "Countries": [
-                "Canada: Manitoba",
-                "Canada: Nunavut (central)",
-                "Canada: Ontario (west)",
-                "Chile: Easter Island",
+                "Manitoba (Canada)",
+                "Nunavut (central, Canada)",
+                "Ontario (west, Canada)",
+                "Easter Island (Chile)",
                 "Mexico (most)",
-                "United States: Alabama",
-                "United States: Arkansas",
-                "United States: Illinois",
-                "United States: Iowa",
-                "United States: Kansas (most)",
-                "United States: Louisiana",
-                "United States: Minnesota",
-                "United States: Mississippi",
-                "United States: Missouri",
-                "United States: Nebraska (most)",
-                "United States: North Dakota (most)",
-                "United States: Oklahoma",
-                "United States: South Dakota (most)",
-                "United States: Tennessee (most)",
-                "United States: Texas (most)",
-                "United States: Wisconsin"
+                "Alabama (United States)",
+                "Arkansas (United States)",
+                "Illinois (United States)",
+                "Iowa (United States)",
+                "Kansas (most, United States)",
+                "Louisiana (United States)",
+                "Minnesota (United States)",
+                "Mississippi (United States)",
+                "Missouri (United States)",
+                "Nebraska (most, United States)",
+                "North Dakota (most, United States)",
+                "Oklahoma, United States",
+                "South Dakota (most, United States)",
+                "Tennessee (most, United States)",
+                "Texas (most, United States)",
+                "Wisconsin (United States)"
             ]
         },
         {
-            "Offset": "−05:00",
+            "Offset": "-05:00",
             "DaylightSavingTime": false,
             "Name": "Eastern Time Zone",
             "Countries": [
-                "Brazil: Acre",
-                "Canada: Atikokan",
-                "Canada: Mishkeegogamang",
-                "Canada: Southampton Island",
+                "Acre (Brazil)",
+                "Atikokan (Canada)",
+                "Mishkeegogamang (Canada)",
+                "Southampton Island (Canada)",
                 "Cayman Islands",
                 "Colombia",
                 "Ecuador (most)",
                 "Jamaica",
-                "Mexico: Quintana Roo",
+                "Quintana Roo (Mexico)",
                 "Navassa Island",
                 "Panama",
                 "Peru"
             ]
         },
         {
-            "Offset": "−05:00",
+            "Offset": "-05:00",
             "DaylightSavingTime": true,
             "Name": "Eastern Time Zone",
             "Countries": [
                 "Bahamas",
-                "Canada: Nunavut (east)",
-                "Canada: Ontario (most)",
-                "Canada: Quebec (most)",
+                "Nunavut (east, Canada)",
+                "Ontario (most, Canada)",
+                "Quebec (most, Canada)",
                 "Cuba",
                 "Haiti",
                 "Turks and Caicos Islands",
-                "United States: Connecticut",
-                "United States: Delaware",
-                "United States: District of Columbia",
-                "United States: Florida (most)",
-                "United States: Georgia",
-                "United States: Indiana (most)",
-                "United States: Kentucky (most)",
-                "United States: Maine",
-                "United States: Maryland",
-                "United States: Massachusetts",
-                "United States: Michigan (most)",
-                "United States: New Hampshire",
-                "United States: New Jersey",
-                "United States: New York",
-                "United States: North Carolina",
-                "United States: Ohio",
-                "United States: Pennsylvania",
-                "United States: Rhode Island",
-                "United States: South Carolina",
-                "United States: Vermont",
-                "United States: Virginia",
-                "United States: West Virginia"
+                "Connecticut (United States)",
+                "Delaware (United States)",
+                "District of Columbia (United States)",
+                "Florida (most, United States))",
+                "Georgia (United States)",
+                "Indiana (most, United States))",
+                "Kentucky (most, United States))",
+                "Maine (United States)",
+                "Maryland (United States)",
+                "Massachusetts",
+                "Michigan (most, United States))",
+                "New Hampshire (United States)",
+                "New Jersey (United States)",
+                "New York (United States)",
+                "North Carolina (United States)",
+                "Ohio (United States)",
+                "Pennsylvania (United States)",
+                "Rhode Island (United States)",
+                "South Carolina (United States)",
+                "Vermont (United States)",
+                "Virginia (United States)",
+                "West Virginia (United States)"
             ]
         },
         {
-            "Offset": "−04:00",
+            "Offset": "-04:00",
             "DaylightSavingTime": false,
             "Name": "Atlantic Time Zone",
             "Countries": [
@@ -233,13 +233,13 @@
                 "Aruba",
                 "Barbados",
                 "Bolivia",
-                "Brazil: Amazonas (most)",
-                "Brazil: Mato Grosso",
-                "Brazil: Mato Grosso do Sul",
-                "Brazil: Rondônia",
-                "Brazil: Roraima",
+                "Amazonas (most, Brazil)",
+                "Mato Grosso (Brazil)",
+                "Mato Grosso do Sul (Brazil)",
+                "Rondônia (Brazil)",
+                "Roraima (Brazil)",
                 "British Virgin Islands",
-                "Canada: Quebec (east)",
+                "Quebec (east, Canada)",
                 "Caribbean Netherlands",
                 "Curaçao",
                 "Dominica",
@@ -262,44 +262,44 @@
             ]
         },
         {
-            "Offset": "−04:00",
+            "Offset": "-04:00",
             "DaylightSavingTime": true,
             "Name": "Atlantic Time Zone",
             "Countries": [
                 "Bermuda",
-                "Canada: Labrador (most)",
-                "Canada: New Brunswick",
-                "Canada: Nova Scotia",
-                "Canada: Prince Edward Island",
+                "Labrador (most, Canada)",
+                "New Brunswick (Canada)",
+                "Nova Scotia (Canada)",
+                "Prince Edward Island (Canada)",
                 "Chile (most)",
-                "Greenland: Thule Air Base",
+                "Thule Air Base (Greenland)",
                 "Paraguay"
             ]
         },
         {
-            "Offset": "−03:30",
+            "Offset": "-03:30",
             "DaylightSavingTime": true,
             "Name": "Newfoundland Time Zone",
             "Countries": [
-                "Canada: Newfoundland",
-                "Canada: Labrador (southeast)"
+                "Newfoundland (Canada)",
+                "Labrador (southeast, Canada)"
             ]
         },
         {
-            "Offset": "−03:00",
+            "Offset": "-03:00",
             "DaylightSavingTime": false,
             "Countries": [
                 "Argentina",
                 "Brazil (most)",
-                "Chile: Magallanes",
+                "Magallanes (Chile)",
                 "Falkland Islands",
                 "French Guiana",
-                "SuriName",
+                "Suriname",
                 "Uruguay"
             ]
         },
         {
-            "Offset": "−03:00",
+            "Offset": "-03:00",
             "DaylightSavingTime": true,
             "Countries": [
                 "Greenland (most)",
@@ -307,26 +307,26 @@
             ]
         },
         {
-            "Offset": "−02:00",
+            "Offset": "-02:00",
             "DaylightSavingTime": false,
             "Countries": [
-                "Brazil: Fernando de Noronha",
+                "Fernando de Noronha (Brazil)",
                 "South Georgia and the South Sandwich Islands"
             ]
         },
         {
-            "Offset": "−01:00",
+            "Offset": "-01:00",
             "DaylightSavingTime": false,
             "Countries": [
                 "Cape Verde"
             ]
         },
         {
-            "Offset": "−01:00",
+            "Offset": "-01:00",
             "DaylightSavingTime": true,
             "Countries": [
-                "Greenland: Ittoqqortoormiit",
-                "Portugal: Azores"
+                "Ittoqqortoormiit (Greenland)",
+                "Azores (Portugal)"
             ]
         },
         {
@@ -380,16 +380,16 @@
                 "Central African Republic",
                 "Chad",
                 "Congo",
-                "Democratic Republic of the Congo: Équateur",
-                "Democratic Republic of the Congo: Kinshasa",
-                "Democratic Republic of the Congo: Kongo Central",
-                "Democratic Republic of the Congo: Kwango",
-                "Democratic Republic of the Congo: Kwilu",
-                "Democratic Republic of the Congo: Mai-Ndombe",
-                "Democratic Republic of the Congo: Mongala",
-                "Democratic Republic of the Congo: Nord-Ubangi",
-                "Democratic Republic of the Congo: Sud-Ubangi",
-                "Democratic Republic of the Congo: Tshuapa",
+                "Équateur (Democratic Republic of the Congo)",
+                "Kinshasa (Democratic Republic of the Congo)",
+                "Kongo Central (Democratic Republic of the Congo)",
+                "Kwango (Democratic Republic of the Congo)",
+                "Kwilu (Democratic Republic of the Congo)",
+                "Mai-Ndombe (Democratic Republic of the Congo)",
+                "Mongala (Democratic Republic of the Congo)",
+                "Nord-Ubangi (Democratic Republic of the Congo)",
+                "Sud-Ubangi (Democratic Republic of the Congo)",
+                "Tshuapa (Democratic Republic of the Congo)",
                 "Equatorial Guinea",
                 "Gabon",
                 "Morocco",
@@ -452,7 +452,7 @@
                 "Malawi",
                 "Mozambique",
                 "Namibia",
-                "Russia: Kaliningrad",
+                "Kaliningrad (Russia)",
                 "Rwanda",
                 "South Africa (most)",
                 "South Sudan",
@@ -499,7 +499,7 @@
                 "Donetsk PR",
                 "Eritrea",
                 "Ethiopia",
-                "French Southern and Antarctic Lands: Scattered Islands",
+                "Scattered Islands (French Southern and Antarctic Lands)",
                 "Iraq",
                 "Kenya",
                 "Kuwait",
@@ -511,7 +511,7 @@
                 "Saudi Arabia",
                 "Somalia",
                 "Somaliland",
-                "South Africa: Prince Edward Islands",
+                "Prince Edward Islands (South Africa)",
                 "South Ossetia",
                 "Tanzania",
                 "Turkey",
@@ -535,15 +535,15 @@
                 "Armenia",
                 "Artsakh",
                 "Azerbaijan",
-                "French Southern and Antarctic Lands: Crozet Islands",
+                "Crozet Islands (French Southern and Antarctic Lands)",
                 "Georgia",
                 "Mauritius",
                 "Oman",
-                "Russia: Astrakhan",
-                "Russia: Samara",
-                "Russia: Saratov",
-                "Russia: Udmurtia",
-                "Russia: Ulyanovsk",
+                "Astrakhan (Russia)",
+                "Samara (Russia)",
+                "Saratov (Russia)",
+                "Udmurtia (Russia)",
+                "Ulyanovsk (Russia)",
                 "Réunion",
                 "Seychelles",
                 "United Arab Emirates"
@@ -562,27 +562,27 @@
             "DaylightSavingTime": false,
             "Name": "Pakistan Standard Time",
             "Countries": [
-                "French Southern and Antarctic Lands: Amsterdam Island",
-                "French Southern and Antarctic Lands: Kerguelen Islands",
-                "French Southern and Antarctic Lands: Saint Paul Island",
+                "Amsterdam Island (French Southern and Antarctic Lands)",
+                "Kerguelen Islands (French Southern and Antarctic Lands)",
+                "Saint Paul Island (French Southern and Antarctic Lands)",
                 "Heard Island and McDonald Islands",
-                "Kazakhstan: Aktobe",
-                "Kazakhstan: Atyrau",
-                "Kazakhstan: Baikonur",
-                "Kazakhstan: Kyzylorda",
-                "Kazakhstan: Mangystau",
-                "Kazakhstan: West Kazakhstan",
+                "Aktobe (Kazakhstan)",
+                "Atyrau (Kazakhstan)",
+                "Baikonur (Kazakhstan)",
+                "Kyzylorda (Kazakhstan)",
+                "Mangystau (Kazakhstan)",
+                "West Kazakhstan (Kazakhstan)",
                 "Maldives",
                 "Pakistan",
-                "Russia: Bashkortostan",
-                "Russia: Chelyabinsk",
-                "Russia: Khanty-Mansi",
-                "Russia: Kurgan",
-                "Russia: Orenburg",
-                "Russia: Perm",
-                "Russia: Sverdlovsk",
-                "Russia: Tyumen",
-                "Russia: Yamalia",
+                "Bashkortostan (Russia)",
+                "Chelyabinsk (Russia)",
+                "Khanty-Mansi (Russia)",
+                "Kurgan (Russia)",
+                "Orenburg (Russia)",
+                "Perm (Russia)",
+                "Sverdlovsk (Russia)",
+                "Tyumen (Russia)",
+                "Yamalia (Russia)",
                 "Tajikistan",
                 "Turkmenistan",
                 "Uzbekistan"
@@ -615,7 +615,7 @@
                 "British Indian Ocean Territory",
                 "Kazakhstan (most)",
                 "Kyrgyzstan",
-                "Russia: Omsk"
+                "Omsk (Russia)"
             ]
         },
         {
@@ -634,22 +634,22 @@
             "Countries": [
                 "Cambodia",
                 "Christmas Island",
-                "Indonesia: Central Kalimantan",
-                "Indonesia: Java",
-                "Indonesia: Sumatra",
-                "Indonesia: West Kalimantan",
+                "Central Kalimantan (Indonesia)",
+                "Java (Indonesia)",
+                "Sumatra (Indonesia)",
+                "West Kalimantan (Indonesia)",
                 "Laos",
-                "Mongolia: Bayan-Ölgii",
-                "Mongolia: Khovd",
-                "Mongolia: Uvs",
-                "Russia: Altai Krai",
-                "Russia: Altai Republic",
-                "Russia: Kemerovo",
-                "Russia: Khakassia",
-                "Russia: Krasnoyarsk",
-                "Russia: Novosibirsk",
-                "Russia: Tomsk",
-                "Russia: Tuva",
+                "Bayan-Ölgii (Mongolia)",
+                "Khovd (Mongolia)",
+                "Uvs (Mongolia)",
+                "Altai Krai (Russia)",
+                "Altai Republic (Russia)",
+                "Kemerovo (Russia)",
+                "Khakassia (Russia)",
+                "Krasnoyarsk (Russia)",
+                "Novosibirsk (Russia)",
+                "Tomsk (Russia)",
+                "Tuva (Russia)",
                 "Thailand",
                 "Vietnam"
             ]
@@ -663,19 +663,19 @@
                 "Brunei",
                 "China",
                 "Hong Kong",
-                "Indonesia: Bali",
-                "Indonesia: East Kalimantan",
-                "Indonesia: East Nusa Tenggara",
-                "Indonesia: North Kalimantan",
-                "Indonesia: South Kalimantan",
-                "Indonesia: Sulawesi",
-                "Indonesia: West Nusa Tenggara",
+                "Bali (Indonesia)",
+                "East Kalimantan (Indonesia)",
+                "East Nusa Tenggara (Indonesia)",
+                "North Kalimantan (Indonesia)",
+                "South Kalimantan (Indonesia)",
+                "Sulawesi (Indonesia)",
+                "West Nusa Tenggara (Indonesia)",
                 "Macau",
                 "Malaysia",
                 "Mongolia (most)",
                 "Philippines",
-                "Russia: Buryatia",
-                "Russia: Irkutsk",
+                "Buryatia (Russia)",
+                "Irkutsk (Russia)",
                 "Singapore",
                 "Taiwan"
             ]
@@ -694,16 +694,16 @@
             "Name": "Eastern Indonesian Time",
             "Countries": [
                 "East Timor",
-                "Indonesia: Maluku",
-                "Indonesia: North Maluku",
-                "Indonesia: Papua",
-                "Indonesia: West Papua",
+                "Maluku (Indonesia)",
+                "North Maluku (Indonesia)",
+                "Papua (Indonesia)",
+                "West Papua (Indonesia)",
                 "Japan",
                 "North Korea",
                 "Palau",
-                "Russia: Amur",
-                "Russia: Sakha (most)",
-                "Russia: Zabaykalsky",
+                "Amur (Russia)",
+                "Sakha (most, Russia)",
+                "Zabaykalsky (Russia)",
                 "South Korea"
             ]
         },
@@ -720,23 +720,23 @@
             "DaylightSavingTime": true,
             "Name": "Central Standard Time",
             "Countries": [
-                "Australia: South Australia"
+                "South Australia (Australia)"
             ]
         },
         {
             "Offset": "10:00",
             "DaylightSavingTime": false,
             "Countries": [
-                "Australia: Queensland",
+                "Queensland (Australia)",
                 "Guam",
-                "Micronesia: Chuuk",
-                "Micronesia: Yap",
+                "Chuuk (Micronesia)",
+                "Yap (Micronesia)",
                 "Northern Mariana Islands",
                 "Papua New Guinea (most)",
-                "Russia: Jewish",
-                "Russia: Khabarovsk",
-                "Russia: Primorsky",
-                "Russia: Sakha (central-east)"
+                "Jewish (Russia)",
+                "Khabarovsk (Russia)",
+                "Primorsky (Russia)",
+                "Sakha (central-east, Russia)"
             ]
         },
         {
@@ -744,18 +744,18 @@
             "DaylightSavingTime": true,
             "Name": "Vladivostok Time",
             "Countries": [
-                "Australia: Australian Capital Territory",
-                "Australia: Jervis Bay Territory",
-                "Australia: New South Wales (most)",
-                "Australia: Tasmania",
-                "Australia: Victoria"
+                "Australian Capital Territory (Australia)",
+                "Jervis Bay Territory (Australia)",
+                "New South Wales (most, Australia)",
+                "Tasmania (Australia)",
+                "Victoria (Australia)"
             ]
         },
         {
             "Offset": "10:30",
             "DaylightSavingTime": true,
             "Countries": [
-                "Australia: Lord Howe Island"
+                "Lord Howe Island (Australia)"
             ]
         },
         {
@@ -763,13 +763,13 @@
             "DaylightSavingTime": false,
             "Name": "Magadan Time",
             "Countries": [
-                "Micronesia: Kosrae",
-                "Micronesia: Pohnpei",
+                "Kosrae (Micronesia)",
+                "Pohnpei (Micronesia)",
                 "New Caledonia",
-                "Papua New Guinea: Bougainville",
-                "Russia: Magadan",
-                "Russia: Sakha (east)",
-                "Russia: Sakhalin",
+                "Bougainville (Papua New Guinea)",
+                "Magadan (Russia)",
+                "Sakha (east, Russia)",
+                "Sakhalin (Russia)",
                 "Solomon Islands",
                 "Vanuatu"
             ]
@@ -787,11 +787,11 @@
             "Name": "Kamchatka Time",
             "Countries": [
                 "Fiji",
-                "Kiribati: Gilbert Islands",
+                "Gilbert Islands (Kiribati)",
                 "Marshall Islands",
                 "Nauru",
-                "Russia: Chukotka",
-                "Russia: Kamchatka",
+                "Chukotka (Russia)",
+                "Kamchatka (Russia)",
                 "Tuvalu",
                 "Wake Island",
                 "Wallis and Futuna"
@@ -809,7 +809,7 @@
             "DaylightSavingTime": true,
             "Name": "Chatham Standard Time",
             "Countries": [
-                "New Zealand: Chatham Islands"
+                "Chatham Islands (New Zealand)"
             ]
         },
         {
@@ -817,7 +817,7 @@
             "DaylightSavingTime": false,
             "Name": "",
             "Countries": [
-                "Kiribati: Phoenix Islands",
+                "Phoenix Islands (Kiribati)",
                 "Samoa",
                 "Tokelau",
                 "Tonga"
@@ -827,7 +827,7 @@
             "Offset": "14:00",
             "DaylightSavingTime": false,
             "Countries": [
-                "Kiribati: Line Islands"
+                "Line Islands (Kiribati)"
             ]
         }
     ]
