@@ -182,7 +182,7 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// Returns the variables for the specified target. Errors taht occurs will be catched and logged.
+        /// Returns the variables for the specified target. Errors that occurs will be catched and logged.
         /// </summary>
         /// <param name="target">The target variable source of the type <see cref="EnvironmentVariableTarget"/> </param>
         /// <returns>A dictionary with the variable or an empty dictionary on errors.</returns>
