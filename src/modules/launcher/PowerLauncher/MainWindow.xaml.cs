@@ -126,16 +126,7 @@ namespace PowerLauncher
         private void OnSourceInitialized(object sender, EventArgs e)
         {
             // Initialize protected environment variables before register the WindowMessage
-            try
-            {
-                EnvironmentHelper.GetProtectedEnvironmentVariables();
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                Log.Exception("ErrorReporting", ex, typeof(EnvironmentHelper));
-            }
+            EnvironmentHelper.GetProtectedEnvironmentVariables();
 
             _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
             _hwndSource.AddHook(ProcessWindowMessages);

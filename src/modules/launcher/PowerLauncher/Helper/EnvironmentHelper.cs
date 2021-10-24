@@ -33,7 +33,7 @@ namespace PowerLauncher.Helper
             IDictionary processVars;
             var machineAndUserVars = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            Stopwatch.Normal("EnvironmentHelper.GetProtectedEnvironmentVariables() - Duration cost", () =>
+            Stopwatch.Normal("EnvironmentHelper.GetProtectedEnvironmentVariables - Duration cost", () =>
             {
                 // Adding some well known variables that must kept unchanged on process level.
                 // Changes of this variables may lead to incorrect values
@@ -72,7 +72,7 @@ namespace PowerLauncher.Helper
         /// </summary>
         internal static void UpdateEnvironment()
         {
-            Stopwatch.Normal("EnvironmentHelper.UpdateEnvironment() - Duration cost", () =>
+            Stopwatch.Normal("EnvironmentHelper.UpdateEnvironment - Duration cost", () =>
             {
                 // Getting updated environment variables
                 var newEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -182,7 +182,7 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// Returns the varbiables for the specified target. Occuring errors will be catched and logged.
+        /// Returns the variables for the specified target. Errors taht occurs will be catched and logged.
         /// </summary>
         /// <param name="target">The target variable source of the type <see cref="EnvironmentVariableTarget"/> </param>
         /// <returns>A dictionary with the variable or an empty dictionary on errors.</returns>
