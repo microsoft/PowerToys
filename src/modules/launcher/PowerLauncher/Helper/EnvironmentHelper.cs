@@ -33,7 +33,7 @@ namespace PowerLauncher.Helper
             IDictionary processVars;
             var machineAndUserVars = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            Stopwatch.Normal("EnvironmentHelper.GetProtectedEnvironmentVariables - Duration cost", () =>
+            Stopwatch.Normal("EnvironmentHelper.GetProtectedEnvironmentVariables() - Duration cost", () =>
             {
                 // Adding some well known variables that must kept unchanged on process level.
                 // Changes of this variables may lead to incorrect values
@@ -41,8 +41,8 @@ namespace PowerLauncher.Helper
                 protectedProcessVariables.Add("PROCESSOR_ARCHITECTURE");
 
                 // Getting environment variables
-                processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
-                GetMachineAndUserVariables(machineAndUserVars);
+                processVars = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.Process);
+                GetMergedMachineAndUserVariables(machineAndUserVars);
 
                 // Adding names of variables that are different on process level or existing only on process level
                 foreach (DictionaryEntry pVar in processVars)
@@ -72,50 +72,55 @@ namespace PowerLauncher.Helper
         /// </summary>
         internal static void UpdateEnvironment()
         {
-            // Getting updated environment variables
-            var newEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            GetMachineAndUserVariables(newEnvironment);
-            GetDeletedMachineAndUserVariables(newEnvironment);
-
-            foreach (KeyValuePair<string, string> kv in newEnvironment)
+            Stopwatch.Normal("EnvironmentHelper.UpdateEnvironment() - Duration cost", () =>
             {
-                // Initialize variables for length of environment variable name and value. Using this variables prevent us from null value exceptions.
-                int varNameLength = kv.Key == null ? 0 : kv.Key.Length;
-                int varValueLength = kv.Value == null ? 0 : kv.Value.Length;
+                // Getting updated environment variables
+                var newEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                GetMergedMachineAndUserVariables(newEnvironment);
+                GetDeletedMachineAndUserVariables(newEnvironment);
 
-                // The name of environment variables must not be null, empty or have a length of zero.
-                // But if the value of the environment variable is null or an empty string then the variable is explicit defined for deletion. => Here we don't need to check anything.
-                if (!string.IsNullOrEmpty(kv.Key) & varNameLength > 0)
+                foreach (KeyValuePair<string, string> kv in newEnvironment)
                 {
-                    try
+                    // Initialize variables for length of environment variable name and value. Using this variables prevent us from null value exceptions.
+                    int varNameLength = kv.Key == null ? 0 : kv.Key.Length;
+                    int varValueLength = kv.Value == null ? 0 : kv.Value.Length;
+
+                    // The name of environment variables must not be null, empty or have a length of zero.
+                    // But if the value of the environment variable is null or an empty string then the variable is explicit defined for deletion. => Here we don't need to check anything.
+                    if (!string.IsNullOrEmpty(kv.Key) & varNameLength > 0)
                     {
-                        /// If the variable is not listed as protected/don't override on process level, then update it (<see cref="GetProtectedEnvironmentVariables"/>).
-                        if (!protectedProcessVariables.Contains(kv.Key))
+                        try
                         {
-                            /// <summary>
-                            /// That we can update the case sensitivity of the variable name too, we have to delete the variable first.
-                            /// The variables that we have to delete are marked with a null value in <see cref="kv.Value"/>. That we don't try to delete a not existing variable, we check the values against null or empty string.
-                            /// The dotnet method doesn't throw an exception if the deleted variable doesn't exist.
-                            /// </summary>
-                            Environment.SetEnvironmentVariable(kv.Key, null, EnvironmentVariableTarget.Process);
-                            if (!string.IsNullOrEmpty(kv.Value))
+                            /// If the variable is not listed as protected/don't override on process level, then update it (<see cref="GetProtectedEnvironmentVariables"/>).
+                            if (!protectedProcessVariables.Contains(kv.Key))
                             {
-                                Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
+                                /// <summary>
+                                /// That we can update the case sensitivity of the variable name too, we have to delete the variable first.
+                                /// The variables that we have to delete are marked with a null value in <see cref="kv.Value"/>. That we don't try to delete a not existing variable, we check the values against null or empty string.
+                                /// The dotnet method doesn't throw an exception if the deleted variable doesn't exist.
+                                /// </summary>
+                                Environment.SetEnvironmentVariable(kv.Key, null, EnvironmentVariableTarget.Process);
+                                if (!string.IsNullOrEmpty(kv.Value))
+                                {
+                                    Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
+                                }
                             }
                         }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                        {
+                            // The dotnet method <see cref="System.Environment.SetEnvironmentVariable"/> has it's own internal method to check the input parameters. Here we catch the exceptions that we don't check before updating the environment variable and log it to avoid crashes of PT Run.
+                            Log.Exception($"Unhandled exception while updating the environment variable [{kv.Key}] for the PT Run process. (The variable value has a length of [{varValueLength}].)", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
+                        }
                     }
-                    catch (ArgumentException ex)
+                    else
                     {
-                        // The dotnet method <see cref="System.Environment.SetEnvironmentVariable"/> has it's own internal method to check the input parameters. Here we catch the exceptions that we don't check before updating the environment variable and log it to avoid crashes of PT Run.
-                        Log.Exception($"Unhandled exception while updating the environment variable [{kv.Key}] for the PT Run process. (The variable value has a length of [{varValueLength}].)", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
+                        // Log the error when variable value is null, empty or has a length of zero.
+                        Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. Their name is null or empty. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
                     }
                 }
-                else
-                {
-                    // Log the error when variable value is null, empty or has a length of zero.
-                    Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. Their name is null or empty. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
-                }
-            }
+            });
         }
 
         /// <summary>
@@ -125,7 +130,7 @@ namespace PowerLauncher.Helper
         /// <param name="environment">The dictionary of variable on which the deleted variables should be listed/added.</param>
         private static void GetDeletedMachineAndUserVariables(Dictionary<string, string> environment)
         {
-            IDictionary processVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+            IDictionary processVars = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.Process);
 
             foreach (DictionaryEntry pVar in processVars)
             {
@@ -142,10 +147,10 @@ namespace PowerLauncher.Helper
         /// This method returns a Dictionary with a merged set of machine and user environment variables. If we run as "system" only machine variables are returned.
         /// </summary>
         /// <param name="environment">The dictionary that should be filled with the merged variables.</param>
-        private static void GetMachineAndUserVariables(Dictionary<string, string> environment)
+        private static void GetMergedMachineAndUserVariables(Dictionary<string, string> environment)
         {
             // Getting machine variables
-            IDictionary machineVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+            IDictionary machineVars = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.Machine);
             foreach (DictionaryEntry mVar in machineVars)
             {
                 environment[(string)mVar.Key] = (string)mVar.Value;
@@ -154,7 +159,7 @@ namespace PowerLauncher.Helper
             // Getting user variables and merge it
             if (!IsRunningAsSystem())
             {
-                IDictionary userVars = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
+                IDictionary userVars = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.User);
                 foreach (DictionaryEntry uVar in userVars)
                 {
                     string uVarKey = (string)uVar.Key;
@@ -173,6 +178,26 @@ namespace PowerLauncher.Helper
                         environment[uVarKey] = newPathValue;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Returns the varbiables for the specified target. Occuring errors will be catched and logged.
+        /// </summary>
+        /// <param name="target">The target variable source of the type <see cref="EnvironmentVariableTarget"/> </param>
+        /// <returns>A dictionary with the variable or an empty dictionary on errors.</returns>
+        private static IDictionary GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget target)
+        {
+            try
+            {
+                return Environment.GetEnvironmentVariables(target);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Log.Exception($"Unhandled exception while getting the environment variables for target '{target}'.", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
+                return new Hashtable();
             }
         }
 
