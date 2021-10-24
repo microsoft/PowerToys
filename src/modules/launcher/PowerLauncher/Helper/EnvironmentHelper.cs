@@ -95,8 +95,8 @@ namespace PowerLauncher.Helper
                             if (!protectedProcessVariables.Contains(kv.Key))
                             {
                                 /// <summary>
-                                /// That we can update the case sensitivity of the variable name too, we have to delete the variable first.
-                                /// The variables that we have to delete are marked with a null value in <see cref="kv.Value"/>. That we don't try to delete a not existing variable, we check the values against null or empty string.
+                                /// We have to delete the variables first that we can update the casing of the variable name too.
+                                /// The variables that we have to delete are marked with a null value in <see cref="kv.Value"/>. We check the values against null or empty string that we don't try to delete a not existing variable.
                                 /// The dotnet method doesn't throw an exception if the deleted variable doesn't exist.
                                 /// </summary>
                                 Environment.SetEnvironmentVariable(kv.Key, null, EnvironmentVariableTarget.Process);
