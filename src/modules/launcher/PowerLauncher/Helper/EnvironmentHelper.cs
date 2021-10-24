@@ -15,7 +15,7 @@ namespace PowerLauncher.Helper
     {
         // <Note>
         // On Windows operating system the name of environment variables is case insensitive. This means if we have a user and machine variable with differences in their name casing (eg. test vs Test), the name casing from machine level is used and won't be overwritten by the user var.
-        // Example for Window's behavior: test=ValueMachine (Machine level) + TEST=ValueUser (User level) = test=ValueUser (merged)
+        // Example for Window's behavior: test=ValueMachine (Machine level) + TEST=ValueUser (User level) => test=ValueUser (merged)
         // To get the same behavior we use the "StringComparer.OrdinalIgnoreCase" for the HashSet and Dictionaries where we merge machine and user variable names.
         // </Note>
 
@@ -89,12 +89,12 @@ namespace PowerLauncher.Helper
                 {
                     try
                     {
-                        // If the variable is not listed as protected/don't override on process level, then update it (<see cref="GetProtectedEnvironmentVariables"/>).
+                        /// If the variable is not listed as protected/don't override on process level, then update it (<see cref="GetProtectedEnvironmentVariables"/>).
                         if (!protectedProcessVariables.Contains(kv.Key))
                         {
                             /// <summary>
                             /// That we can update the case sensitivity of the variable name too, we have to delete the variable first.
-                            /// The variables that we have to delete are marked with a null value in <see cref="kv.Value"/>. That we don't try to delete a not existing variable, we check the values.
+                            /// The variables that we have to delete are marked with a null value in <see cref="kv.Value"/>. That we don't try to delete a not existing variable, we check the values against null or empty string.
                             /// The dotnet method doesn't throw an exception if the deleted variable doesn't exist.
                             /// </summary>
                             Environment.SetEnvironmentVariable(kv.Key, null, EnvironmentVariableTarget.Process);
@@ -107,7 +107,7 @@ namespace PowerLauncher.Helper
                     catch (ArgumentException ex)
                     {
                         // The dotnet method <see cref="System.Environment.SetEnvironmentVariable"/> has it's own internal method to check the input parameters. Here we catch the exceptions that we don't check before updating the environment variable and log it to avoid crashes of PT Run.
-                        Log.Exception($"Unexpected exception while updating the environment variable [{kv.Key}] for the PT Run process. (The variable value has a length of [{varValueLength}].)", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
+                        Log.Exception($"Unhandled exception while updating the environment variable [{kv.Key}] for the PT Run process. (The variable value has a length of [{varValueLength}].)", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
                     }
                 }
                 else
@@ -160,7 +160,7 @@ namespace PowerLauncher.Helper
                     string uVarKey = (string)uVar.Key;
                     string uVarValue = (string)uVar.Value;
 
-                    // The variable name can "PATH" or "Path". So we have to compare case insensitive.
+                    // The variable name of the path variable can be upper case, lower case ore mixed case. So we have to compare case insensitive.
                     if (!uVarKey.Equals(PathVariable, StringComparison.OrdinalIgnoreCase))
                     {
                         environment[uVarKey] = uVarValue;
