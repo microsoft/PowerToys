@@ -89,10 +89,19 @@ namespace PowerLauncher.Helper
                 {
                     try
                     {
+                        // If the variable is not listed as protected/don't override on process level, then update it (<see cref="GetProtectedEnvironmentVariables"/>).
                         if (!protectedProcessVariables.Contains(kv.Key))
                         {
-                            /// If the variable is not listed as protected/don't override on process level, then update it (<see cref="GetProtectedEnvironmentVariables"/>).
-                            Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
+                            /// <summary>
+                            /// That we can update the case sensitivity of the variable name too, we have to delete the variable first.
+                            /// The variables that we have to delete are marked with a null value in <see cref="kv.Value"/>. That we don't try to delete a not existing variable, we check the values.
+                            /// The dotnet method doesn't throw an exception if the deleted variable doesn't exist.
+                            /// </summary>
+                            Environment.SetEnvironmentVariable(kv.Key, null, EnvironmentVariableTarget.Process);
+                            if (!string.IsNullOrEmpty(kv.Value))
+                            {
+                                Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
+                            }
                         }
                     }
                     catch (ArgumentException ex)
