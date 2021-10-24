@@ -13,9 +13,15 @@ namespace PowerLauncher.Helper
 {
     public static class EnvironmentHelper
     {
+        // <Note>
+        // On Windows the name of environment variables is case insensitive. This means if we have a user and machine variable with differences in their name casing (eg. test vs Test) the name casing from machine level is used and won't be overvritten by the user var.
+        // Example:  test=TESTVALUE (Machine level) + TEST=testvalue (User level) = test=testvalue (merged)
+        // To get the same behavior we use the "StringComparer.OrdinalIgnoreCase" for the HashSet and Dictionaries where we merge machine and user variable names.
+        // </Note>
+
         // The HashSet will contain the list of environment variables that will be skipped on update.
-        private const string PathVariable = "PATH";
-        private static HashSet<string> protectedProcessVariables = new HashSet<string>();
+        private const string PathVariable = "Path";
+        private static HashSet<string> protectedProcessVariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// This method is called from <see cref="MainWindow.OnSourceInitialized"/> to initialize a list of protected environment variables after process initialization.
@@ -25,7 +31,7 @@ namespace PowerLauncher.Helper
         internal static void GetProtectedEnvironmentVariables()
         {
             IDictionary processVars;
-            var machineAndUserVars = new Dictionary<string, string>();
+            var machineAndUserVars = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             Stopwatch.Normal("EnvironmentHelper.GetProtectedEnvironmentVariables - Duration cost", () =>
             {
@@ -67,7 +73,7 @@ namespace PowerLauncher.Helper
         internal static void UpdateEnvironment()
         {
             // Getting updated environment variables
-            var newEnvironment = new Dictionary<string, string>();
+            var newEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             GetMachineAndUserVariables(newEnvironment);
             GetDeletedMachineAndUserVariables(newEnvironment);
 
@@ -145,7 +151,7 @@ namespace PowerLauncher.Helper
                     string uVarKey = (string)uVar.Key;
                     string uVarValue = (string)uVar.Value;
 
-                    // The variable name can be "PATH" or "Path"
+                    // The variable name can "PATH" or "Path". So we have to compare case insensitive.
                     if (!uVarKey.Equals(PathVariable, StringComparison.OrdinalIgnoreCase))
                     {
                         environment[uVarKey] = uVarValue;
