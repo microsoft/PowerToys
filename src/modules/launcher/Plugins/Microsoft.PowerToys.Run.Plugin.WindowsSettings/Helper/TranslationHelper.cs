@@ -16,17 +16,17 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
     internal static class TranslationHelper
     {
         /// <summary>
-        /// Translate all settings of the given list with <see cref="WindowsSetting"/>.
+        /// Translate all settings of the settings list in the given <see cref="WindowsSettings"/> class.
         /// </summary>
-        /// <param name="settingsList">The list that contains <see cref="WindowsSetting"/> to translate.</param>
-        internal static void TranslateAllSettings(in IEnumerable<WindowsSetting>? settingsList)
+        /// <param name="windowsSettings">A class that contain all possible windows settings.</param>
+        internal static void TranslateAllSettings(in WindowsSettings windowsSettings)
         {
-            if (settingsList is null)
+            if (windowsSettings?.Settings is null)
             {
                 return;
             }
 
-            foreach (var settings in settingsList)
+            foreach (var settings in windowsSettings.Settings)
             {
                 // Translate Name
                 if (!string.IsNullOrWhiteSpace(settings.Name))

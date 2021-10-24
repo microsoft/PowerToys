@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "powertoy_module.h"
 #include "centralized_kb_hook.h"
-#include "CentralizedHotkeys.h"
+#include "centralized_hotkeys.h"
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
 
@@ -83,5 +83,20 @@ void PowertoyModule::UpdateHotkeyEx()
         };
 
         CentralizedHotkeys::AddHotkeyAction({ hotkey.modifiersMask, hotkey.vkCode }, { pt_module->get_key(), action });
+    }
+
+    // HACK:
+    // Just for enabling the shortcut guide legacy behavior of pressing the Windows Key.
+    // This is not the sort of behavior we'd like to have generalized on other modules.
+    // But this was a way to bring back the long windows key behavior that the community wanted back while maintaining the separate process.
+    if (pt_module->keep_track_of_pressed_win_key())
+    {
+        auto modulePtr = pt_module.get();
+        auto action = [modulePtr] {
+            modulePtr->OnHotkeyEx();
+            return false;
+        };
+        CentralizedKeyboardHook::AddPressedKeyAction(pt_module->get_key(), VK_LWIN, pt_module->milliseconds_win_key_must_be_pressed(), action);
+        CentralizedKeyboardHook::AddPressedKeyAction(pt_module->get_key(), VK_RWIN, pt_module->milliseconds_win_key_must_be_pressed(), action);
     }
 }

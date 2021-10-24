@@ -5,6 +5,7 @@ abcdef
 abcdefgh
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 abgr
+abi
 ABlocked
 Abug
 accctrl
@@ -128,6 +129,7 @@ AUTOSIZECOLUMNS
 AUTOUPDATE
 available
 AValid
+awakeness
 awakeversion
 AWAYMODE
 AYUV
@@ -183,6 +185,7 @@ Browsable
 bsd
 bstr
 bti
+btn
 BTNFACE
 Bto
 buf
@@ -230,10 +233,13 @@ CHILDACTIVATE
 CHILDWINDOW
 chrdavis
 chrisharris
+chromaticities
 chrono
 Chrzan
 chrzan
 CHT
+cielab
+CIEXYZ
 CImage
 cinttypes
 cla
@@ -289,6 +295,7 @@ comhost
 cominterop
 commandline
 commctrl
+companding
 Compat
 COMPOSITIONFULL
 comsupp
@@ -376,6 +383,7 @@ CXVIRTUALSCREEN
 cxx
 cxxopts
 CYSMICON
+CYVIRTUALSCREEN
 cziplib
 Dac
 dacl
@@ -403,6 +411,7 @@ ddd
 ddee
 ddf
 Deact
+debian
 DECLAR
 declspec
 decltype
@@ -424,6 +433,7 @@ Delimarsky
 delims
 dend
 DENORMAL
+Deondre
 depersist
 deprioritized
 deps
@@ -485,6 +495,8 @@ DPICHANGED
 DPolicy
 DPopup
 DPSAPI
+DQTAT
+DQTYPE
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
@@ -564,6 +576,7 @@ errc
 errorlevel
 ERRORMESSAGE
 ERRORTITLE
+ESettings
 esize
 estdir
 etcore
@@ -661,6 +674,7 @@ FRAMEDOWNLOAD
 franky
 Froml
 fstream
+ftp
 ftps
 FTYPE
 FULLNAME
@@ -778,6 +792,7 @@ hotspot
 HPAINTBUFFER
 hpj
 hpp
+HRAWINPUT
 hread
 HREDRAW
 href
@@ -797,6 +812,7 @@ Htmdid
 html
 htt
 http
+HTTRANSPARENT
 hwb
 HWINEVENTHOOK
 hwnd
@@ -830,6 +846,7 @@ ICollection
 IColor
 ICommand
 IComparer
+ICompositor
 ICONERROR
 ICONINFORMATION
 IContext
@@ -844,6 +861,7 @@ IDesktop
 IDictionary
 IDirectory
 IDispatch
+IDispatcher
 IDisposable
 idl
 IDLIST
@@ -858,6 +876,7 @@ IEasing
 IEnum
 IEnumerable
 IEnumerator
+IEnvironment
 IEquality
 IEquatable
 IEvent
@@ -930,6 +949,7 @@ INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
 INPUTMOUSE
+INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
 INSTALLDIR
@@ -989,6 +1009,7 @@ IRepository
 IResult
 ISavable
 isbi
+iss
 ISearch
 IService
 isetting
@@ -1009,6 +1030,7 @@ ITemplate
 ITEMSTATEICONCLICK
 ITest
 ith
+ITerminal
 IThrottled
 IThumbnail
 ITrigger
@@ -1058,6 +1080,7 @@ KBDLLHOOKSTRUCT
 kbm
 KERNELBASE
 KEYBDINPUT
+keybindings
 keyboardeventhandlers
 keyboardmanager
 keyboardmanagercommon
@@ -1265,6 +1288,7 @@ mii
 MIIM
 millis
 mimetype
+mindaro
 Minimizeallwindows
 MINIMIZEBOX
 miniz
@@ -1627,6 +1651,7 @@ pri
 PRINTCLIENT
 printf
 prm
+proactively
 PROCESSKEY
 PRODUCTVERSION
 PROGDLG
@@ -1686,6 +1711,9 @@ Radiobuttons
 RAII
 RAlt
 randyrants
+RAWINPUT
+RAWINPUTDEVICE
+RAWINPUTHEADER
 RAWPATH
 rbegin
 Rbp
@@ -1696,6 +1724,7 @@ RBUTTONUP
 rclsid
 RCONTROL
 RCtrl
+rdeveen
 RDW
 readme
 READMODE
@@ -1769,6 +1798,7 @@ rgs
 rhs
 ricardosantos
 Richtext
+RIDEV
 RIGHTSCROLLBAR
 riid
 riverar
@@ -1815,6 +1845,7 @@ scancode
 scanled
 schedtasks
 Scn
+SCOOBE
 SCOPEID
 screenshot
 scrollable
@@ -1958,6 +1989,7 @@ SRCCOPY
 sre
 sregex
 SResize
+SRGB
 srme
 srre
 srw
@@ -1991,6 +2023,7 @@ stdlib
 STDMETHODCALLTYPE
 STDMETHODIMP
 stdout
+stefan
 STEPIT
 stgm
 STGMEDIUM
@@ -2145,7 +2178,9 @@ tsx
 TYMED
 typedef
 TYPEKEY
+TYPEKEYBOARD
 TYPELIB
+TYPEMOUSE
 typename
 typeof
 typeparam
@@ -2448,6 +2483,7 @@ XSmall
 XStr
 XToolset
 xunit
+XVIRTUALSCREEN
 Yaml
 YDiff
 YIncrement
@@ -2458,6 +2494,7 @@ YStr
 YUY
 yuyoyuppe
 YUYV
+YVIRTUALSCREEN
 YVU
 YVYU
 ZEROINIT

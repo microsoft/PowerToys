@@ -284,6 +284,15 @@ namespace FancyZonesEditor.Properties {
                 return ResourceManager.GetString("Edit_Layout", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to opened.
+        /// </summary>
+        public static string Edit_Layout_Open_Announce {
+            get {
+                return ResourceManager.GetString("Edit_Layout_Open_Announce", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Edit zones.
@@ -593,6 +602,15 @@ namespace FancyZonesEditor.Properties {
         public static string NumberOfZones {
             get {
                 return ResourceManager.GetString("NumberOfZones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open settings.
+        /// </summary>
+        public static string OpenSettings {
+            get {
+                return ResourceManager.GetString("OpenSettings", resourceCulture);
             }
         }
         

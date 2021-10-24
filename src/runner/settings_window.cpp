@@ -23,6 +23,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/updating/updateState.h>
 #include <common/themes/windows_colors.h>
+#include "settings_window.h"
 
 #define BUFSIZE 1024
 
@@ -259,7 +260,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window(bool showOobeWindow)
+void run_settings_window(bool show_oobe_window, std::optional<std::wstring> settings_window)
 {
     g_isLaunchInProgress = true;
 
@@ -324,7 +325,7 @@ void run_settings_window(bool showOobeWindow)
     std::wstring settings_isUserAnAdmin = isAdmin ? L"true" : L"false";
 
     // Arg 8: should oobe window be shown
-    std::wstring settings_showOobe = showOobeWindow ? L"true" : L"false";
+    std::wstring settings_showOobe = show_oobe_window ? L"true" : L"false";
 
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
@@ -346,6 +347,12 @@ void run_settings_window(bool showOobeWindow)
     executable_args.append(settings_isUserAnAdmin);
     executable_args.append(L" ");
     executable_args.append(settings_showOobe);
+
+    if (settings_window.has_value())
+    {
+        executable_args.append(L" ");
+        executable_args.append(settings_window.value());
+    }
 
     BOOL process_created = false;
 
@@ -462,7 +469,7 @@ void bring_settings_to_front()
     EnumWindows(callback, 0);
 }
 
-void open_settings_window()
+void open_settings_window(std::optional<std::wstring> settings_window)
 {
     if (g_settings_process_id != 0)
     {
@@ -472,8 +479,8 @@ void open_settings_window()
     {
         if (!g_isLaunchInProgress)
         {
-            std::thread([]() {
-                run_settings_window(false);
+            std::thread([settings_window]() {
+                run_settings_window(false, settings_window);
             }).detach();
         }
     }
@@ -494,6 +501,102 @@ void close_settings_window()
 void open_oobe_window()
 {
     std::thread([]() {
-        run_settings_window(true);
+        run_settings_window(true, std::nullopt);
     }).detach();
+}
+
+std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
+{
+    switch (value)
+    {
+    case ESettingsWindowNames::Overview:
+        return "Overview";
+    case ESettingsWindowNames::Awake:
+        return "Awake";
+    case ESettingsWindowNames::ColorPicker:
+        return "ColorPicker";
+    case ESettingsWindowNames::FancyZones:
+        return "FancyZones";
+    case ESettingsWindowNames::Run:
+        return "Run";
+    case ESettingsWindowNames::ImageResizer:
+        return "ImageResizer";
+    case ESettingsWindowNames::KBM:
+        return "KBM";
+    case ESettingsWindowNames::MouseUtils:
+        return "MouseUtils";
+    case ESettingsWindowNames::PowerRename:
+        return "PowerRename";
+    case ESettingsWindowNames::FileExplorer:
+        return "FileExplorer";
+    case ESettingsWindowNames::ShortcutGuide:
+        return "ShortcutGuide";
+    case ESettingsWindowNames::VideoConference:
+        return "VideoConference";
+    default:
+    {
+        Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
+        assert(false);
+    }
+    }
+    return "";
+}
+
+ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
+{
+    if (value == "Overview")
+    {
+        return ESettingsWindowNames::Overview;
+    }
+    else if (value == "Awake")
+    {
+        return ESettingsWindowNames::Awake;
+    }
+    else if (value == "ColorPicker")
+    {
+        return ESettingsWindowNames::ColorPicker;
+    }
+    else if (value == "FancyZones")
+    {
+        return ESettingsWindowNames::FancyZones;
+    }
+    else if (value == "Run")
+    {
+        return ESettingsWindowNames::Run;
+    }
+    else if (value == "ImageResizer")
+    {
+        return ESettingsWindowNames::ImageResizer;
+    }
+    else if (value == "KBM")
+    {
+        return ESettingsWindowNames::KBM;
+    }
+    else if (value == "MouseUtils")
+    {
+        return ESettingsWindowNames::MouseUtils;
+    }
+    else if (value == "PowerRename")
+    {
+        return ESettingsWindowNames::PowerRename;
+    }
+    else if (value == "FileExplorer")
+    {
+        return ESettingsWindowNames::FileExplorer;
+    }
+    else if (value == "ShortcutGuide")
+    {
+        return ESettingsWindowNames::ShortcutGuide;
+    }
+    else if (value == "VideoConference")
+    {
+        return ESettingsWindowNames::VideoConference;
+    }
+    else
+    {
+        Logger::error(L"Can't convert string value={} to ESettingsWindowNames", winrt::to_hstring(value));
+        assert(false);
+    }
+
+    return ESettingsWindowNames::Overview;
 }

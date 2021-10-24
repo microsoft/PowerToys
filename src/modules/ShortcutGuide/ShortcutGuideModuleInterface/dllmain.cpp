@@ -64,7 +64,7 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            ParseHotkey(values);
+            ParseSettings(values);
         }
         catch (std::exception ex)
         {
@@ -119,6 +119,10 @@ public:
     virtual std::optional<HotkeyEx> GetHotkeyEx() override
     {
         Logger::trace("GetHotkeyEx()");
+        if (m_shouldReactToPressedWinKey)
+        {
+            return std::nullopt;
+        }
         return m_hotkey;
     }
 
@@ -154,6 +158,16 @@ public:
         }
     }
 
+    virtual bool keep_track_of_pressed_win_key() override
+    {
+        return m_shouldReactToPressedWinKey;
+    }
+
+    virtual UINT milliseconds_win_key_must_be_pressed() override
+    {
+        return m_millisecondsWinKeyShouldBePressed;
+    }
+
 private:
     std::wstring app_name;
     //contains the non localized key of the powertoy
@@ -163,6 +177,12 @@ private:
     
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
+
+    // If the module should be activated through the legacy pressing windows key behavior.
+    const UINT DEFAULT_MILLISECONDS_WIN_KEY_SHOULD_BE_PRESSED = 900;
+    bool m_shouldReactToPressedWinKey = false;
+    UINT m_millisecondsWinKeyShouldBePressed = DEFAULT_MILLISECONDS_WIN_KEY_SHOULD_BE_PRESSED;
+
     HANDLE exitEvent;
 
     bool StartProcess(std::wstring args = L"")
@@ -239,7 +259,7 @@ private:
             PowerToysSettings::PowerToyValues settings =
                 PowerToysSettings::PowerToyValues::load_from_settings_file(app_key);
 
-            ParseHotkey(settings);
+            ParseSettings(settings);
         }
         catch (std::exception ex)
         {
@@ -251,13 +271,17 @@ private:
         }
     }
 
-    void ParseHotkey(PowerToysSettings::PowerToyValues& settings)
+    void ParseSettings(PowerToysSettings::PowerToyValues& settings)
     {
+        m_shouldReactToPressedWinKey = false;
+        m_millisecondsWinKeyShouldBePressed = DEFAULT_MILLISECONDS_WIN_KEY_SHOULD_BE_PRESSED;
+
         auto settingsObject = settings.get_raw_json();
         if (settingsObject.GetView().Size())
         {
             try
             {
+                // Parse HotKey
                 auto jsonHotkeyObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"open_shortcutguide");
                 auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonHotkeyObject);
                 m_hotkey = HotkeyEx();
@@ -286,6 +310,18 @@ private:
             catch (...)
             {
                 Logger::warn("Failed to initialize Shortcut Guide start shortcut");
+            }
+            try
+            {
+                // Parse Legacy windows key press behavior settings
+                auto jsonUseLegacyWinKeyBehaviorObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"use_legacy_press_win_key_behavior");
+                m_shouldReactToPressedWinKey = (bool)jsonUseLegacyWinKeyBehaviorObject.GetNamedBoolean(L"value");
+                auto jsonPressTimeObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"press_time");
+                m_millisecondsWinKeyShouldBePressed = (UINT)jsonPressTimeObject.GetNamedNumber(L"value");
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to get legacy win key behavior settings");
             }
         }
         else

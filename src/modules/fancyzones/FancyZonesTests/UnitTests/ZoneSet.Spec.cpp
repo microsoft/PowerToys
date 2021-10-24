@@ -1046,8 +1046,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CustomZoneFromValidCanvasLayoutInfo)
                 {
                     //prepare device data
-                    const std::wstring zoneUuid = L"default_device_id";
-                    FancyZonesDataInstance().SetDeviceInfo(zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 });
+                    FancyZonesDataInstance().SetDeviceInfo(FancyZonesDataTypes::DeviceIdData{ L"default_device_id" }, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 });
 
                     //prepare expected data
                     wil::unique_cotaskmem_string uuid;
@@ -1072,8 +1071,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CustomZoneFromValidGridFullLayoutInfo)
                 {
                     //prepare device data
-                    const std::wstring zoneUuid = L"default_device_id";
-                    FancyZonesDataInstance().SetDeviceInfo(zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 });
+                    FancyZonesDataInstance().SetDeviceInfo(FancyZonesDataTypes::DeviceIdData{ L"default_device_id" }, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 });
 
                     //prepare expected data
                     wil::unique_cotaskmem_string uuid;

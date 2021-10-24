@@ -17,7 +17,7 @@
         BorderThickness="1"
         Title="Color Picker"
         Height="380"
-        Width="400"
+        Width="440"
         ResizeMode="NoResize"
         Topmost="True"
         WindowStartupLocation="CenterScreen">

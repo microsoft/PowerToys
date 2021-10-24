@@ -58,14 +58,25 @@ namespace PowerLauncher
             if (listView.SelectedItem != null)
             {
                 ListBoxItem listBoxItem = (ListBoxItem)listView.ItemContainerGenerator.ContainerFromItem(listView.SelectedItem);
-                ContentPresenter contentPresenter = FindVisualChild<ContentPresenter>(listBoxItem);
-                DataTemplate dataTemplate = contentPresenter.ContentTemplate;
-                Button button = (Button)dataTemplate.FindName("commandButton", contentPresenter);
-                ToolTip tooltip = button.ToolTip as ToolTip;
-                tooltip.PlacementTarget = button;
-                tooltip.Placement = System.Windows.Controls.Primitives.PlacementMode.Right;
-                tooltip.PlacementRectangle = new Rect(0, button.Height, 0, 0);
-                tooltip.IsOpen = true;
+                if (listBoxItem != null)
+                {
+                    ContentPresenter contentPresenter = FindVisualChild<ContentPresenter>(listBoxItem);
+                    DataTemplate dataTemplate = contentPresenter.ContentTemplate;
+                    Button button = (Button)dataTemplate.FindName("commandButton", contentPresenter);
+                    ToolTip tooltip = button.ToolTip as ToolTip;
+                    tooltip.PlacementTarget = button;
+                    tooltip.Placement = System.Windows.Controls.Primitives.PlacementMode.Right;
+                    tooltip.PlacementRectangle = new Rect(0, button.Height, 0, 0);
+                    tooltip.IsOpen = true;
+                }
+                else
+                {
+                    HideCurrentToolTip();
+                }
+            }
+            else
+            {
+                HideCurrentToolTip();
             }
         }
 

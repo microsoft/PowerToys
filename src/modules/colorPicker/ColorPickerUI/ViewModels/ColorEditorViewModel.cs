@@ -32,6 +32,7 @@ namespace ColorPicker.ViewModels
         public ColorEditorViewModel(IUserSettings userSettings)
         {
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
+            OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
             RemoveColorCommand = new RelayCommand(DeleteSelectedColor);
 
             SelectedColorChangedCommand = new RelayCommand((newColor) =>
@@ -47,7 +48,11 @@ namespace ColorPicker.ViewModels
 
         public event EventHandler OpenColorPickerRequested;
 
+        public event EventHandler OpenSettingsRequested;
+
         public ICommand OpenColorPickerCommand { get; }
+
+        public ICommand OpenSettingsCommand { get; }
 
         public ICommand RemoveColorCommand { get; }
 
@@ -196,6 +201,18 @@ namespace ColorPicker.ViewModels
                 {
                     FormatName = ColorRepresentationType.NCol.ToString(),
                     Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.NCol); },
+                });
+            _allColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = ColorRepresentationType.CIELAB.ToString(),
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIELAB); },
+                });
+            _allColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = ColorRepresentationType.CIEXYZ.ToString(),
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIEXYZ); },
                 });
 
             _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;

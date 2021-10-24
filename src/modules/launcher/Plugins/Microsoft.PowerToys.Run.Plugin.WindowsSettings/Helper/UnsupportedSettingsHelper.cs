@@ -19,15 +19,14 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         private const string _keyNameBuildNumber = "CurrentBuildNumber";
 
         /// <summary>
-        /// Remove all <see cref="WindowsSetting"/> of the given list that are not present on the current used Windows build.
+        /// Remove all <see cref="WindowsSetting"/> from the settings list in the given <see cref="WindowsSetting"/> class.
         /// </summary>
-        /// <param name="settingsList">The list with <see cref="WindowsSetting"/> to filter.</param>
-        /// <returns>A new list with <see cref="WindowsSetting"/> that only contain present Windows settings for this OS.</returns>
-        internal static IEnumerable<WindowsSetting> FilterByBuild(in IEnumerable<WindowsSetting>? settingsList)
+        /// <param name="windowsSettings">A class that contain all possible windows settings.</param>
+        internal static void FilterByBuild(in WindowsSettings windowsSettings)
         {
-            if (settingsList is null)
+            if (windowsSettings?.Settings is null)
             {
-                return Enumerable.Empty<WindowsSetting>();
+                return;
             }
 
             var currentBuild = GetNumericRegistryValue(_keyPath, _keyNameBuild);
@@ -48,13 +47,13 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 ? currentBuild
                 : currentBuildNumber;
 
-            var filteredSettingsList = settingsList.Where(found
+            var filteredSettingsList = windowsSettings.Settings.Where(found
                 => (found.DeprecatedInBuild == null || currentWindowsBuild < found.DeprecatedInBuild)
                 && (found.IntroducedInBuild == null || currentWindowsBuild >= found.IntroducedInBuild));
 
             filteredSettingsList = filteredSettingsList.OrderBy(found => found.Name);
 
-            return filteredSettingsList;
+            windowsSettings.Settings = filteredSettingsList;
         }
 
         /// <summary>

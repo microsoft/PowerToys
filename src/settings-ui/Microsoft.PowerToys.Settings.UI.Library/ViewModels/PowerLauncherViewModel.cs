@@ -275,6 +275,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool UseCentralizedKeyboardHook
+        {
+            get
+            {
+                return settings.Properties.UseCentralizedKeyboardHook;
+            }
+
+            set
+            {
+                if (settings.Properties.UseCentralizedKeyboardHook != value)
+                {
+                    settings.Properties.UseCentralizedKeyboardHook = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         public HotkeySettings OpenFileLocation
         {
             get

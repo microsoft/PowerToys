@@ -413,7 +413,7 @@
         <Str Cat="Text">
           <Val><![CDATA[]D;]A;     - [Shift]5D;+S to split currently focused zone.]D;]A;     - Ctrl+Tab to focus zones/resizers.]D;]A;     - Tab to cycle zones and resizers.]D;]A;     - Delete to remove the focused resizer.]D;]A;     - Arrows to move the focused resizer.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[]D;]A;     - [Shift]5D;+S om de zone in focus te splitsen.]D;]A;     - Ctrl+Tab om zones/formaataanpassingen te selecteren.]D;]A;     - Tab voor een eenvoudige cyclus van zones en formaataanpassingen.]D;]A;     - Delete om de formaataanpassing in focus te verwijderen.]D;]A;     - Pijlen om de formaataanpassing in focus te verplaatsen.]]></Val>
+            <Val><![CDATA[]D;]A;     - [Shift]5D;+S om de huidige zone in focus te splitsen.]D;]A;     - Ctrl+Tab om zones/formaataanpassingen in focus te selecteren.]D;]A;     - Tab voor een cyclus van zones en formaataanpassingen.]D;]A;     - Delete om de formaataanpassing in focus te verwijderen.]D;]A;     - Pijlen om de formaataanpassing in focus te verplaatsen.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

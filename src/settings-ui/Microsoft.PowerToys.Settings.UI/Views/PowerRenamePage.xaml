@@ -5,10 +5,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     AutomationProperties.LandmarkType="Main">
-
+    <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
+    </Page.Resources>
     <controls:SettingsPageControl x:Uid="PowerRename"
                                   ModuleImageSource="ms-appx:///Assets/Modules/PowerRename.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -26,17 +29,25 @@
                 </controls:Setting>
 
                 <controls:SettingsGroup x:Uid="PowerRename_ShellIntegration" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="PowerRename_Toggle_EnableOnContextMenu">
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="PowerRename_Toggle_ContextMenu" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
-                                    <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextMenu}"/>
+                                    <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                        <ComboBoxItem x:Uid="PowerRename_Toggle_StandardContextMenu" />
+                                        <ComboBoxItem x:Uid="PowerRename_Toggle_ExtendedContextMenu" />
+                                    </ComboBox>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
-
-                    <controls:Setting x:Uid="PowerRename_Toggle_EnableOnExtendedContextMenu">
-                        <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu}"/>
-                        </controls:Setting.ActionContent>
-                    </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel HorizontalAlignment="Stretch">
+                                <CheckBox x:Uid="PowerRename_Toggle_HideIcon"
+                                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextMenu, Converter={StaticResource BoolNegationConverter}}"
+                                          Margin="{StaticResource ExpanderSettingMargin}"/>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="PowerRename_AutoCompleteHeader" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">

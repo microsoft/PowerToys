@@ -239,11 +239,11 @@
                                   ShadowDepth="2" />
             </Grid.Effect>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="36" />
-                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="46" />
+                <ColumnDefinition Width="46" />
                 <ColumnDefinition Width="165" />
-                <ColumnDefinition Width="36" />
-                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="46" />
+                <ColumnDefinition Width="46" />
             </Grid.ColumnDefinitions>
 
             <Button x:Name="colorVariation1Button"
@@ -288,7 +288,7 @@
                     Background="Red"
                     Width="165"
                     Height="48"
-                    Margin="72,0,0,0"
+                    Margin="92,0,0,0"
                     AutomationProperties.Name="{x:Static p:Resources.Selected_color}"
                     AutomationProperties.HelpText="{x:Static p:Resources.Selected_color_helptext}"
                     ToolTipService.ToolTip="{x:Static p:Resources.Selected_color_tooltip}"
