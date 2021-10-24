@@ -14,8 +14,8 @@ namespace PowerLauncher.Helper
     public static class EnvironmentHelper
     {
         // <Note>
-        // On Windows the name of environment variables is case insensitive. This means if we have a user and machine variable with differences in their name casing (eg. test vs Test) the name casing from machine level is used and won't be overvritten by the user var.
-        // Example:  test=TESTVALUE (Machine level) + TEST=testvalue (User level) = test=testvalue (merged)
+        // On Windows operating system the name of environment variables is case insensitive. This means if we have a user and machine variable with differences in their name casing (eg. test vs Test), the name casing from machine level is used and won't be overwritten by the user var.
+        // Example for Window's behavior: test=ValueMachine (Machine level) + TEST=ValueUser (User level) = test=ValueUser (merged)
         // To get the same behavior we use the "StringComparer.OrdinalIgnoreCase" for the HashSet and Dictionaries where we merge machine and user variable names.
         // </Note>
 
@@ -158,8 +158,8 @@ namespace PowerLauncher.Helper
                     }
                     else
                     {
-                        // When we merging the PATH variable we can't simply override machine layer's value. The path variable must be joined by appending the user value to the machine value.
-                        // This is the official behavior and checked by trying it out the physical machine.
+                        // When we merging the PATH variables we can't simply overwrite machine layer's value. The path variable must be joined by appending the user value to the machine value.
+                        // This is the official behavior and checked by trying it out on the physical machine.
                         string newPathValue = environment[uVarKey].EndsWith(';') ? environment[uVarKey] + uVarValue : environment[uVarKey] + ';' + uVarValue;
                         environment[uVarKey] = newPathValue;
                     }
