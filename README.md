@@ -19,7 +19,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [Awake](https://aka.ms/PowerToysOverview_Awake) | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
 | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) |
 | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) |
-| [Video Conference Mute (Experimental)](https://aka.ms/PowerToysOverview_VideoConference) |  |  |
+| [Video Conference Mute (Experimental)](https://aka.ms/PowerToysOverview_VideoConference) | [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) |  |
 
 ## Installing and running Microsoft PowerToys
 
@@ -47,7 +47,7 @@ To install the Video Conference mute, please use the [v0.46 experimental version
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). To install PowerToys, run the following command from the command line / PowerShell:
 
 ```powershell
-WinGet install powertoys
+winget install Microsoft.PowerToys -s winget
 ```
 
 ### Other install methods
@@ -84,7 +84,7 @@ Our goals for the [v0.47 release cycle](https://github.com/microsoft/PowerToys/i
 
 Notably, based on the community feedback received, PowerToys has re-introduced the highly-requested ability to activate Shortcut Guide via holding the <kbd>Win</kbd> key. PowerToys also now allows various commands in PowerToys Run to be used in either the universal English phrasing or system-localized translation. The great feedback the community provides is invaluable in helping PowerToys continually grow and improve as a product.
 
-An experimental version of PowerToys (v0.48) will be released the week of October 4th, introducing improvements to our Video Conference Mute utility! All updates from the v0.47.1 release will still apply in v0.48.
+An experimental version of PowerToys ([v0.48.1](https://github.com/microsoft/PowerToys/releases/tag/v0.48.1)) is also available, introducing improvements to our Video Conference Mute utility! All updates from the v0.47.1 release apply in v0.48.1.
 
 #### Highlights from v0.47
 

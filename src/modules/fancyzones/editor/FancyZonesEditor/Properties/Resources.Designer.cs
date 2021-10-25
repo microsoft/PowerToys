@@ -151,20 +151,11 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error logged to .
-        /// </summary>
-        public static string Crash_Report_Message_Box_Text_Part1 {
-            get {
-                return ResourceManager.GetString("Crash_Report_Message_Box_Text_Part1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Please report the bug to .
         /// </summary>
-        public static string Crash_Report_Message_Box_Text_Part2 {
+        public static string Crash_Report_Message_Box_Text {
             get {
-                return ResourceManager.GetString("Crash_Report_Message_Box_Text_Part2", resourceCulture);
+                return ResourceManager.GetString("Crash_Report_Message_Box_Text", resourceCulture);
             }
         }
         
@@ -282,6 +273,15 @@ namespace FancyZonesEditor.Properties {
         public static string Edit_Layout {
             get {
                 return ResourceManager.GetString("Edit_Layout", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to opened.
+        /// </summary>
+        public static string Edit_Layout_Open_Announce {
+            get {
+                return ResourceManager.GetString("Edit_Layout_Open_Announce", resourceCulture);
             }
         }
         

@@ -96,6 +96,9 @@
     <Compile Include="Behaviors\NavigationViewHeaderBehavior.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderMode.cs" />
     <Compile Include="Controls\CheckBoxWithDescriptionControl.cs" />
+    <Compile Include="Controls\ColorPickerButton.xaml.cs">
+      <DependentUpon>ColorPickerButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\IsEnabledTextBlock\IsEnabledTextBlock.cs" />
     <Compile Include="Controls\SettingsGroup\SettingsGroupAutomationPeer.cs" />
     <Compile Include="Controls\ShortcutControl\ShortcutControl.xaml.cs">
@@ -155,6 +158,9 @@
     <Compile Include="OOBE\Views\OobeKBM.xaml.cs">
       <DependentUpon>OobeKBM.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OOBE\Views\OobeMouseUtils.xaml.cs">
+      <DependentUpon>OobeMouseUtils.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OOBE\Views\OobeOverview.xaml.cs">
       <DependentUpon>OobeOverview.xaml</DependentUpon>
     </Compile>
@@ -192,6 +198,9 @@
     <Compile Include="Views\KeyboardManagerPage.xaml.cs">
       <DependentUpon>KeyboardManagerPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\MouseUtilsPage.xaml.cs">
+      <DependentUpon>MouseUtilsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\PowerLauncherPage.xaml.cs">
       <DependentUpon>PowerLauncherPage.xaml</DependentUpon>
     </Compile>
@@ -227,6 +236,7 @@
     <Content Include="Assets\FluentIcons\FluentIconsFileExplorerPreview.png" />
     <Content Include="Assets\FluentIcons\FluentIconsImageResizer.png" />
     <Content Include="Assets\FluentIcons\FluentIconsKeyboardManager.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsMouseUtils.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerRename.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerToys.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerToysRun.png" />
@@ -239,12 +249,14 @@
     <Content Include="Assets\Modules\FancyZones.png" />
     <Content Include="Assets\Modules\ImageResizer.png" />
     <Content Include="Assets\Modules\KBM.png" />
+    <Content Include="Assets\Modules\MouseUtils.png" />
     <Content Include="Assets\Modules\OOBE\ColorPicker.gif" />
     <Content Include="Assets\Modules\OOBE\Awake.png" />
     <Content Include="Assets\Modules\OOBE\FancyZones.gif" />
     <Content Include="Assets\Modules\OOBE\FileExplorer.png" />
     <Content Include="Assets\Modules\OOBE\ImageResizer.gif" />
     <Content Include="Assets\Modules\OOBE\KBM.gif" />
+    <Content Include="Assets\Modules\OOBE\MouseUtils.gif" />
     <Content Include="Assets\Modules\OOBE\OOBEPTHero.png" />
     <Content Include="Assets\Modules\OOBE\PowerRename.gif" />
     <Content Include="Assets\Modules\OOBE\Run.gif" />
@@ -305,6 +317,10 @@
     <PRIResource Include="Strings\en-us\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\ColorPickerButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\IsEnabledTextBlock\IsEnabledTextBlock.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -362,6 +378,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="OOBE\Views\OobeKBM.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OOBE\Views\OobeMouseUtils.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -426,6 +446,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\KeyboardManagerPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MouseUtilsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

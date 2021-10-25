@@ -68,6 +68,7 @@ namespace PowerToys.Settings
                             case "Run": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage); break;
                             case "ImageResizer": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.ImageResizerPage); break;
                             case "KBM": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.KeyboardManagerPage); break;
+                            case "MouseUtils": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.MouseUtilsPage); break;
                             case "PowerRename": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.PowerRenamePage); break;
                             case "FileExplorer": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.PowerPreviewPage); break;
                             case "ShortcutGuide": app.StartupPage = typeof(Microsoft.PowerToys.Settings.UI.Views.ShortcutGuidePage); break;

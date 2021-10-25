@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Common.UI
             Run,
             ImageResizer,
             KBM,
+            MouseUtils,
             PowerRename,
             FileExplorer,
             ShortcutGuide,
@@ -43,6 +44,8 @@ namespace Microsoft.PowerToys.Common.UI
                     return "ImageResizer";
                 case SettingsWindow.KBM:
                     return "KBM";
+                case SettingsWindow.MouseUtils:
+                    return "MouseUtils";
                 case SettingsWindow.PowerRename:
                     return "PowerRename";
                 case SettingsWindow.FileExplorer:

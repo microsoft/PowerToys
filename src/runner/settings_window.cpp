@@ -523,6 +523,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "ImageResizer";
     case ESettingsWindowNames::KBM:
         return "KBM";
+    case ESettingsWindowNames::MouseUtils:
+        return "MouseUtils";
     case ESettingsWindowNames::PowerRename:
         return "PowerRename";
     case ESettingsWindowNames::FileExplorer:
@@ -569,6 +571,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "KBM")
     {
         return ESettingsWindowNames::KBM;
+    }
+    else if (value == "MouseUtils")
+    {
+        return ESettingsWindowNames::MouseUtils;
     }
     else if (value == "PowerRename")
     {

@@ -3,12 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
+using System.Drawing;
 using System.Windows;
+using System.Windows.Interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
+using PowerToys.Settings.Helpers;
 using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
 
@@ -27,8 +31,6 @@ namespace PowerToys.Settings
             bootTime.Start();
 
             this.InitializeComponent();
-
-            Utils.FitToScreen(this);
 
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
             Title = loader.GetString("SettingsWindow_Title");
@@ -53,6 +55,36 @@ namespace PowerToys.Settings
                 Activate();
                 ShellPage.Navigate(type);
             }
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+
+            Utils.FitToScreen(this);
+
+            var handle = new WindowInteropHelper(this).Handle;
+            NativeMethods.GetWindowPlacement(handle, out var startupPlacement);
+            var placement = Utils.DeserializePlacementOrDefault(handle);
+            NativeMethods.SetWindowPlacement(handle, ref placement);
+
+            var windowRect = new Rectangle((int)Left, (int)Top, (int)Width, (int)Height);
+            var screenRect = new Rectangle((int)SystemParameters.VirtualScreenLeft, (int)SystemParameters.VirtualScreenTop, (int)SystemParameters.VirtualScreenWidth, (int)SystemParameters.VirtualScreenHeight);
+            var intersection = Rectangle.Intersect(windowRect, screenRect);
+
+            // Restore default position if 1/4 of width or height of the window is offscreen
+            if (intersection.Width < (Width * 0.75) || intersection.Height < (Height * 0.75))
+            {
+                NativeMethods.SetWindowPlacement(handle, ref startupPlacement);
+            }
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+            var handle = new WindowInteropHelper(this).Handle;
+
+            Utils.SerializePlacement(handle);
         }
 
         private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)

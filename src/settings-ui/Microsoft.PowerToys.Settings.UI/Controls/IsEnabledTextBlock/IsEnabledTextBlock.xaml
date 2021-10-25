@@ -5,6 +5,7 @@
 
     <Style TargetType="local:IsEnabledTextBlock">
         <Setter Property="Foreground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:IsEnabledTextBlock">
