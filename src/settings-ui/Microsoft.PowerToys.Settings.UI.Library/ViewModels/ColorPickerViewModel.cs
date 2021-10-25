@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SelectableColorRepresentations = new Dictionary<ColorRepresentationType, string>
             {
                 { ColorRepresentationType.CMYK, "CMYK - cmyk(100%, 50%, 75%, 0%)" },
-                { ColorRepresentationType.HEX,  "HEX - #FFAA00" },
+                { ColorRepresentationType.HEX,  "HEX - FFAA00" },
                 { ColorRepresentationType.HSB,  "HSB - hsb(100, 50%, 75%)" },
                 { ColorRepresentationType.HSI,  "HSI - hsi(100, 50%, 75%)" },
                 { ColorRepresentationType.HSL,  "HSL - hsl(100, 50%, 75%)" },
@@ -55,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 { ColorRepresentationType.RGB,  "RGB - rgb(100, 50, 75)" },
                 { ColorRepresentationType.CIELAB, "CIE LAB - CIELab(76, 21, 80)" },
                 { ColorRepresentationType.CIEXYZ, "CIE XYZ - xyz(56, 50, 7)" },
+                { ColorRepresentationType.HEX2, "HEX - #ffaa00" },
             };
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
@@ -198,8 +199,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             var ncolFormatName = ColorRepresentationType.NCol.ToString();
             var cielabFormatName = ColorRepresentationType.CIELAB.ToString();
             var ciexyzFormatName = ColorRepresentationType.CIEXYZ.ToString();
+            var hex2FormatName = ColorRepresentationType.HEX2.ToString();
 
-            formatsUnordered.Add(new ColorFormatModel(hexFormatName, "#EF68FF", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName]));
+            formatsUnordered.Add(new ColorFormatModel(hexFormatName, "EF68FF", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName]));
             formatsUnordered.Add(new ColorFormatModel(rgbFormatName, "rgb(239, 104, 255)", visibleFormats.ContainsKey(rgbFormatName) && visibleFormats[rgbFormatName]));
             formatsUnordered.Add(new ColorFormatModel(hslFormatName, "hsl(294, 100%, 70%)", visibleFormats.ContainsKey(hslFormatName) && visibleFormats[hslFormatName]));
             formatsUnordered.Add(new ColorFormatModel(hsvFormatName, "hsv(294, 59%, 100%)", visibleFormats.ContainsKey(hsvFormatName) && visibleFormats[hsvFormatName]));
@@ -210,6 +212,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             formatsUnordered.Add(new ColorFormatModel(ncolFormatName, "R10, 50%, 75%", visibleFormats.ContainsKey(ncolFormatName) && visibleFormats[ncolFormatName]));
             formatsUnordered.Add(new ColorFormatModel(cielabFormatName, "CIELab(66, 72, -52)", visibleFormats.ContainsKey(cielabFormatName) && visibleFormats[cielabFormatName]));
             formatsUnordered.Add(new ColorFormatModel(ciexyzFormatName, "xyz(59, 35, 98)", visibleFormats.ContainsKey(ciexyzFormatName) && visibleFormats[ciexyzFormatName]));
+            formatsUnordered.Add(new ColorFormatModel(hex2FormatName, "#ef68ff", visibleFormats.ContainsKey(hex2FormatName) && visibleFormats[hex2FormatName]));
 
             foreach (var storedColorFormat in _colorPickerSettings.Properties.VisibleColorFormats)
             {

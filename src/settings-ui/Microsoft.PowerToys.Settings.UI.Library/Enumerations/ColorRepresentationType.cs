@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
     public enum ColorRepresentationType
     {
         /// <summary>
-        /// Color presentation as hexadecimal color value without the alpha-value (e.g. #0055FF)
+        /// Color presentation as hexadecimal color value without the alpha-value (e.g. 0055FF)
         /// </summary>
         HEX = 0,
 
@@ -65,5 +65,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         /// Color presentation as CIEXYZ color space (X[0..95], Y[0..100], Z[0..109]
         /// </summary>
         CIEXYZ = 10,
+
+        /// <summary>
+        /// Color presentation as hexadecimal color value without the alpha-value - lowercase and with # (e.g. #0055FF)
+        /// </summary>
+        HEX2 = 11,
     }
 }

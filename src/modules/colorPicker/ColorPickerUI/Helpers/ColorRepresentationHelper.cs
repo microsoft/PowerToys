@@ -46,6 +46,7 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.RGB => ColorToRGB(color),
                 ColorRepresentationType.CIELAB => ColorToCIELAB(color),
                 ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
+                ColorRepresentationType.HEX2 => ColorToHex2(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),
@@ -77,7 +78,7 @@ namespace ColorPicker.Helpers
         /// <param name="color">The see cref="Color"/> for the hexadecimal presentation</param>
         /// <returns>A hexadecimal <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToHex(Color color)
-            => $"#{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
+            => $"{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
              + $"{color.G.ToString("X2", CultureInfo.InvariantCulture)}"
              + $"{color.B.ToString("X2", CultureInfo.InvariantCulture)}";
 
@@ -234,5 +235,17 @@ namespace ColorPicker.Helpers
                    $", {y.ToString(CultureInfo.InvariantCulture)}" +
                    $", {z.ToString(CultureInfo.InvariantCulture)})";
         }
+
+        /// <summary>
+        /// Return a hexadecimal <see cref="string"/> representation of a RGB color in lowercase and # included
+        /// </summary>
+        /// <param name="color">The see cref="Color"/> for the hexadecimal presentation</param>
+        /// <returns>A hexadecimal <see cref="string"/> representation of a RGB color</returns>
+        private static string ColorToHex2(Color color)
+#pragma warning disable CA1304 // Specify CultureInfo
+            => $"#{color.R.ToString("X2", CultureInfo.InvariantCulture).ToLower()}"
+             + $"{color.G.ToString("X2", CultureInfo.InvariantCulture).ToLower()}"
+             + $"{color.B.ToString("X2", CultureInfo.InvariantCulture).ToLower()}";
+#pragma warning restore CA1304 // Specify CultureInfo
     }
 }
