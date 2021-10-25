@@ -95,7 +95,7 @@ namespace FancyZonesEditor.Logs
 
             var methodName = stackTrace.GetFrame(3)?.GetMethod();
             var className = methodName?.DeclaringType.Name;
-            return className + " :: " + methodName?.Name;
+            return className + "::" + methodName?.Name;
         }
     }
 }

@@ -142,6 +142,7 @@ namespace FancyZonesEditor
             _eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, interop.Constants.FZEExitEvent());
             if (_eventHandle.WaitOne())
             {
+                Logger.LogInfo("Exit event triggered");
                 Environment.Exit(0);
             }
         }
