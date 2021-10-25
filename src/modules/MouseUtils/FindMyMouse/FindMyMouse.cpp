@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "FindMyMouse.h"
 #include "trace.h"
+#include "common/utils/game_mode.h"
 
 #ifdef COMPOSITION
 namespace winrt
@@ -17,6 +18,8 @@ namespace ABI
     using namespace ABI::Windows::UI::Composition::Desktop;
 }
 #endif
+
+bool m_doNotActivateOnGameMode = true;
 
 #pragma region Super_Sonar_Base_Code
 
@@ -250,6 +253,12 @@ void SuperSonar<D>::OnSonarInput(WPARAM flags, HRAWINPUT hInput)
 template<typename D>
 void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
 {
+    // Don't activate if game mode is on.
+    if (m_doNotActivateOnGameMode && detect_game_mode())
+    {
+        return;
+    }
+
     if (input.data.keyboard.VKey != VK_CONTROL)
     {
         StopSonar();
@@ -775,6 +784,11 @@ void FindMyMouseDisable()
 bool FindMyMouseIsEnabled()
 {
     return (m_sonar != nullptr);
+}
+
+void FindMyMouseSetDoNotActivateOnGameMode(bool doNotActivate)
+{
+    m_doNotActivateOnGameMode = doNotActivate;
 }
 
 // Based on SuperSonar's original wWinMain.

@@ -3,4 +3,4 @@
 int FindMyMouseMain(HINSTANCE hinst);
 void FindMyMouseDisable();
 bool FindMyMouseIsEnabled();
-
+void FindMyMouseSetDoNotActivateOnGameMode(bool doNotActivate);
