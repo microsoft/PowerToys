@@ -25,6 +25,8 @@ steps:
     authKey: '$(TouchdownApplicationKey)'
     resourceFilePath: |
      **\Resources.resx
+     **\Resource.resx
+     **\Resources.resw
     outputDirectoryRoot: LocOutput
     appendRelativeDir: true
     pseudoSetting: Included
