@@ -76,7 +76,7 @@
 
   <!-- Global props -->
   <PropertyGroup Label="Globals" Condition="'$(OverrideWindowsTargetPlatformVersion)'!='True'">
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
 
   <!-- Props that are constant for both Debug and Release configurations -->
@@ -84,7 +84,6 @@
     <PlatformToolset Condition="'$(OverridePlatformToolset)'!='True'">v142</PlatformToolset>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
     <CharacterSet>Unicode</CharacterSet>
-    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
 
   <!-- Debug/Release props -->

@@ -14,7 +14,7 @@ public:
     IFACEMETHODIMP_(ULONG) Release();
 
     // ISmartRenameEnum
-    IFACEMETHODIMP Start();
+    IFACEMETHODIMP Start(_In_ IEnumShellItems* enumShellItems);
     IFACEMETHODIMP Cancel();
 
 public:

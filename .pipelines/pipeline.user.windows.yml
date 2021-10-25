@@ -172,6 +172,8 @@ build:
             - 'modules\launcher\Wox.Plugin.dll'
             - 'modules\MouseUtils\FindMyMouse.dll'
             - 'modules\PowerRename\PowerRenameExt.dll'
+            - 'modules\PowerRename\PowerRenameUILib.dll'
+            - 'modules\PowerRename\PowerRename.exe'
             - 'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
             - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
             - 'modules\VideoConference\VideoConferenceModule.dll'

@@ -7,6 +7,7 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ
 abgr
 abi
 ABlocked
+ABOUTBOX
 Abug
 accctrl
 Acceleratorkeys
@@ -1048,6 +1049,7 @@ IWeb
 IWIC
 IWindows
 IWork
+IXaml
 IXml
 ixx
 IYUV
@@ -1157,6 +1159,7 @@ lmcons
 LMEM
 LMENU
 lnk
+LOADSTRING
 LOCALAPPDATA
 LOCALDISPLAY
 localhost
@@ -1178,6 +1181,7 @@ lowlevel
 LOWORD
 lparam
 LPBYTE
+LPCITEMIDLIST
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
 LPCTSTR
@@ -1224,6 +1228,7 @@ LVS
 LVSIL
 LWA
 lwin
+LZero
 lzw
 mailto
 MAINICON
@@ -1579,6 +1584,7 @@ phwnd
 pici
 pid
 pidl
+PIDLIST
 PINDIR
 pinfo
 pinvoke
@@ -1611,6 +1617,7 @@ powerlauncher
 powerpreview
 powerrename
 POWERRENAMETEST
+POWERRENAMEUIHOST
 powershell
 powertoy
 powertoysinterop

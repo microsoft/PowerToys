@@ -236,7 +236,9 @@
           <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
-            <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
+            <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)">
+              <Directory Id="PowerRenameAssetsFolder" Name="Assets" />
+            </Directory>
             <Directory Id="ShortcutGuideInstallFolder" Name="ShortcutGuide">
               <Directory Id="ShortcutGuideExecutableInstallFolder" Name="ShortcutGuide">
                     <Directory Id="ShortcutGuideSvgsInstallFolder" Name="svgs"/>
@@ -694,7 +696,15 @@
     <!-- PowerRename -->
     <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.Toolkit.Win32.UI.XamlHost.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\msvcp140_app.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameUILib.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRename.exe" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\resources.pri" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_1_app.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_app.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
         <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
           <RegistryValue Type="string" Value="PowerRename Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
@@ -707,6 +717,12 @@
       </Component>
     </DirectoryRef>
 
+    <DirectoryRef Id="PowerRenameAssetsFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
+      <Component Id="Module_PowerRename_Assets" Guid="5976BEDF-64F5-4836-8674-EE7577C77508" Win64="yes">
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Assets\file.png" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Assets\folder.png" />
+      </Component>
+    </DirectoryRef>
     <!-- MouseUtils -->
     <DirectoryRef Id="MouseUtilsInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)">
       <Component Id="Module_FindMyMouse" Guid="60D0E4AE-188F-4403-BF06-1465AACC1BC5" Win64="yes">
@@ -1011,6 +1027,7 @@
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
+      <ComponentRef Id="Module_PowerRename_Assets" />
       <ComponentRef Id="Module_ImageResizer" />
       <ComponentRef Id="Module_ImageResizer_Registry" />
       <ComponentRef Id="Module_PowerPreview" />

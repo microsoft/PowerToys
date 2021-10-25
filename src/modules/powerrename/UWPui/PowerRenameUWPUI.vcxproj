@@ -63,9 +63,6 @@
     <ProjectReference Include="..\lib\PowerRenameLib.vcxproj">
       <Project>{51920f1f-c28c-4adf-8660-4238766796c2}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ui\PowerRenameUI.vcxproj">
-      <Project>{0e072714-d127-460b-afad-b4c40b412798}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\ui\PowerRename.ico" />

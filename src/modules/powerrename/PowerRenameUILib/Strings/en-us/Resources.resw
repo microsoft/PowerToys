@@ -1,0 +1,335 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search for</value>
+  </data>
+  <data name="RegExCheatSheet_Title.Text" xml:space="preserve">
+    <value>RegEx help</value>
+  </data>
+  <data name="RegExCheatSheet_MatchAny" xml:space="preserve">
+    <value>Matches any character</value>
+  </data>
+  <data name="RegExCheatSheet_MatchDigit" xml:space="preserve">
+    <value>Any digit, short for [0-9]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchNonDigit" xml:space="preserve">
+    <value>A non-digit, short for [^0-9]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchNonWS" xml:space="preserve">
+    <value>A non-whitespace character, short for [^\\s]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchWordChar" xml:space="preserve">
+    <value>A word character, short for [a-zA-Z_0-9]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchSeveralWS" xml:space="preserve">
+    <value>Several non-whitespace characters</value>
+  </data>
+  <data name="RegExCheatSheet_MatchWordBoundary" xml:space="preserve">
+    <value>Matches a word boundary where a word character is [a-zA-Z0-9_].</value>
+  </data>
+  <data name="RegExCheatSheet_LearnMore.Text" xml:space="preserve">
+    <value>Learn more about RegEx</value>
+  </data>
+  <data name="ReplaceBox.PlaceholderText" xml:space="preserve">
+    <value>Replace with</value>
+  </data>
+  <data name="DateTimeCheatSheet_Title.Text" xml:space="preserve">
+    <value>Replace using file creation date and time</value>
+  </data>
+  <data name="DateTimeCheatSheet_FullYear" xml:space="preserve">
+    <value>Year represented by a full four or five digits, depending on the calendar used.</value>
+  </data>
+  <data name="DateTimeCheatSheet_YearLastTwoDigits" xml:space="preserve">
+    <value>Year represented only by the last two digits. A leading zero is added for single-digit years.</value>
+  </data>
+  <data name="DateTimeCheatSheet_YearLastDigit" xml:space="preserve">
+    <value>Year represented only by the last digit.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthName" xml:space="preserve">
+    <value>Name of the month.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthNameAbbr" xml:space="preserve">
+    <value>Abbreviated name of the month.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthDigitLZero" xml:space="preserve">
+    <value>Month as digits with leading zeros for single-digit months.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthDigit" xml:space="preserve">
+    <value>Month as digits without leading zeros for single-digit months.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayName" xml:space="preserve">
+    <value>Name of the day of the week.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayNameAbbr" xml:space="preserve">
+    <value>Abbreviated name of the day of the week.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayDigitLZero" xml:space="preserve">
+    <value>Day of the month as digits with leading zeros for single-digit days.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayDigit" xml:space="preserve">
+    <value>Day of the month as digits without leading zeros for single-digit days.</value>
+  </data>
+  <data name="DateTimeCheatSheet_HoursLZero" xml:space="preserve">
+    <value>Hours with leading zeros for single-digit hours.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours" xml:space="preserve">
+    <value>Hours without leading zeros for single-digit hours.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MinutesLZero" xml:space="preserve">
+    <value>Minutes with leading zeros for single-digit minutes.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Minutes" xml:space="preserve">
+    <value>Minutes without leading zeros for single-digit minutes.</value>
+  </data>
+  <data name="DateTimeCheatSheet_SecondsLZero" xml:space="preserve">
+    <value>Seconds with leading zeros for single-digit seconds.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Seconds" xml:space="preserve">
+    <value>Seconds without leading zeros for single-digit seconds.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds3D" xml:space="preserve">
+    <value>Milliseconds represented by full three digits.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds2D" xml:space="preserve">
+    <value>Milliseconds represented only by the first two digit.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds1D" xml:space="preserve">
+    <value>Milliseconds represented only by the first digit.</value>
+  </data>
+  <data name="CheckBox_RegEx.Content" xml:space="preserve">
+    <value>Use regular expressions</value>
+  </data>
+  <data name="CheckBox_MatchAll.Content" xml:space="preserve">
+    <value>Match all occurences</value>
+  </data>
+  <data name="CheckBox_Case.Content" xml:space="preserve">
+    <value>Case sensitive</value>
+  </data>
+  <data name="TextBox_ApplyTo.Text" xml:space="preserve">
+    <value>Apply to</value>
+  </data>
+  <data name="DocsButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="DocsButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="ToggleButton_IncludeFiles.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Include files</value>
+  </data>
+  <data name="ToggleButton_IncludeFiles.AutomationProperties.Name" xml:space="preserve">
+    <value>Include files</value>
+  </data>
+  <data name="ToggleButton_IncludeFolders.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Include folders</value>
+  </data>
+  <data name="ToggleButton_IncludeFolders.AutomationProperties.Name" xml:space="preserve">
+    <value>Include folders</value>
+  </data>
+  <data name="ToggleButton_IncludeSubFolders.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Include subfolders</value>
+  </data>
+  <data name="ToggleButton_IncludeSubFolders.AutomationProperties.Name" xml:space="preserve">
+    <value>Include subfolders</value>
+  </data>
+  <data name="TextBlock_TextFormatting.Text" xml:space="preserve">
+    <value>Text formatting</value>
+  </data>
+  <data name="ToggleButton_Lowercase.ToolTipService.ToolTip" xml:space="preserve">
+    <value>lowercase</value>
+  </data>
+  <data name="ToggleButton_Lowercase.AutomationProperties.Name" xml:space="preserve">
+    <value>Lowercase</value>
+  </data>
+  <data name="ToggleButton_Uppercase.ToolTipService.ToolTip" xml:space="preserve">
+    <value>UPPERCASE</value>
+  </data>
+  <data name="ToggleButton_Uppercase.AutomationProperties.Name" xml:space="preserve">
+    <value>Uppercase</value>
+  </data>
+  <data name="ToggleButton_Titlecase.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Title case</value>
+  </data>
+  <data name="ToggleButton_Titlecase.AutomationProperties.Name" xml:space="preserve">
+    <value>Title case</value>
+  </data>
+  <data name="ToggleButton_Capitalize.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Capitalize Each Word</value>
+  </data>
+  <data name="ToggleButton_Capitalize.AutomationProperties.Name" xml:space="preserve">
+    <value>Capitalize each word</value>
+  </data>
+  <data name="ToggleButton_EnumItems.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Enumerate items</value>
+  </data>
+  <data name="ToggleButton_EnumItems.AutomationProperties.Name" xml:space="preserve">
+    <value>Enumerate items</value>
+  </data>
+  <data name="SelectAllCheckBox.AutomationProperties.Name" xml:space="preserve">
+    <value>Select or deselect all</value>
+  </data>
+  <data name="FilterButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="FilterButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="ShowAll.Text" xml:space="preserve">
+    <value>Show all files</value>
+  </data>
+  <data name="ShowOnly.Text" xml:space="preserve">
+    <value>Only show files that will be renamed</value>
+  </data>
+  <data name="TxtBlock_Original.Text" xml:space="preserve">
+    <value>Original</value>
+  </data>
+  <data name="TxtBlock_Renamed.Text" xml:space="preserve">
+    <value>Renamed</value>
+  </data>
+  <data name="TxtBlock_ButtonSettings.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TxtBlock_ButtonSettings.AutomationProperties.Name" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TxtBlock_ButtonApply.Text" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ButtonApply.AutomationProperties.Name" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="TxtBlock_ButtonApplyAndClose.Text" xml:space="preserve">
+    <value>Apply and close</value>
+  </data>
+  <data name="RegExButton.AutomationProperties.Name" xml:space="preserve">
+    <value>RegEx help</value>
+  </data>
+  <data name="RegExButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>RegEx help</value>
+  </data>
+  <data name="FileCreationButton.AutomationProperties.Name" xml:space="preserve">
+    <value>File creation date and time help</value>
+  </data>
+  <data name="FileCreationButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>File creation date and time help</value>
+  </data>
+
+
+</root>
