@@ -79,6 +79,10 @@ For any kinds of questions you may have that doesn't require submitting an issue
 Note: 
 Questions should not go indepth in spec'ing, design, documentation, or finding bugs as those should be listed as issues. 
 
+Links:
+(https://discord.com/)
+(https://slack.com/)
+
 ## What's Happening
 
 ### PowerToys Roadmap
