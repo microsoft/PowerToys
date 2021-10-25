@@ -1702,4 +1702,8 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Press the Left Control key twice to focus the mouse pointer.</value>
     <comment>"Left Control" is a keyboard key.</comment>
   </data>
+  <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+    <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
+  </data>
 </root>

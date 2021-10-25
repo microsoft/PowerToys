@@ -1713,6 +1713,7 @@ QUERYOPEN
 QUEUESYNC
 Quickime
 QUICKLAYOUTSWITCH
+QUNS
 qwertyuiopasdfghjklzxcvbnm
 qword
 qwrtyuiopsghjklzxvnm
