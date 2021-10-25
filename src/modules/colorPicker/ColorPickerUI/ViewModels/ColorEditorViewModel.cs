@@ -215,13 +215,6 @@ namespace ColorPicker.ViewModels
                     Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIEXYZ); },
                 });
 
-            _allColorRepresentations.Add(
-               new ColorFormatModel()
-               {
-                   FormatName = ColorRepresentationType.HEX2.ToString(),
-                   Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HEX2); },
-               });
-
             _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;
 
             // Any other custom format to be added here as well that are read from settings
