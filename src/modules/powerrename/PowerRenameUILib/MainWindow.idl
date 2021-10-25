@@ -1,0 +1,61 @@
+import "ExplorerItem.idl";
+import "PatternSnippet.idl";
+
+namespace PowerRenameUILib
+{
+    runtimeclass UIUpdates : Windows.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        UIUpdates();
+        Boolean ShowAll;
+        Int32 ChangedExplorerItemId;
+        Boolean Checked;
+        void ToggleAll();
+        Boolean CloseUIWindow();
+        void CloseUIWindow(Boolean closeUIWindow);
+        Boolean ButtonRenameEnabled;
+        void Rename();
+    }
+
+    [default_interface] runtimeclass MainWindow : Windows.UI.Xaml.Controls.UserControl
+    {
+        MainWindow();
+        
+        Windows.Foundation.Collections.IObservableVector<String> SearchMRU { get; };
+        Windows.Foundation.Collections.IObservableVector<String> ReplaceMRU { get; };
+
+        Windows.Foundation.Collections.IObservableVector<ExplorerItem> ExplorerItems { get; };
+        Windows.Foundation.Collections.IObservableVector<PatternSnippet> SearchRegExShortcuts { get; };
+        Windows.Foundation.Collections.IObservableVector<PatternSnippet> DateTimeShortcuts { get; };
+
+        Windows.UI.Xaml.Controls.AutoSuggestBox AutoSuggestBoxSearch { get; };
+        Windows.UI.Xaml.Controls.AutoSuggestBox AutoSuggestBoxReplace { get; };
+
+        Windows.UI.Xaml.Controls.CheckBox CheckBoxRegex { get; };
+        Windows.UI.Xaml.Controls.CheckBox CheckBoxCaseSensitive { get; };
+        Windows.UI.Xaml.Controls.CheckBox CheckBoxMatchAll { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonEnumerateItems { get; };
+
+        Windows.UI.Xaml.Controls.ComboBox ComboBoxRenameParts { get; };
+
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonIncludeFiles { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonIncludeFolders { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonIncludeSubfolders { get; };
+
+        Windows.UI.Xaml.Controls.Button ButtonSettings { get; };
+
+        Windows.UI.Xaml.Controls.CheckBox CheckBoxSelectAll { get; };
+
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonUpperCase { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonLowerCase { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonTitleCase { get; };
+        Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonCapitalize { get; };
+
+        void AddExplorerItem(Int32 id, String original, String renamed, Int32 type, Int32 parentId, Boolean checked);
+        void UpdateExplorerItem(Int32 id, String newName);
+        void UpdateRenamedExplorerItem(Int32 id, String newOriginalName);
+        void AppendSearchMRU(String value);
+        void AppendReplaceMRU(String value);
+
+        UIUpdates UIUpdatesItem { get; };
+    }
+}
