@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -82,6 +83,11 @@ namespace FancyZonesEditor
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             _model = (LayoutModel)DataContext;
+
+            if (_model != null)
+            {
+                Logger.LogInfo("Loaded " + _model.Name);
+            }
 
             RenderPreview();
         }

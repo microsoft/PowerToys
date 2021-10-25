@@ -11,6 +11,7 @@ using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor.Utils
@@ -247,6 +248,8 @@ namespace FancyZonesEditor.Utils
         // All strings in this function shouldn't be localized.
         public static void ParseCommandLineArguments()
         {
+            Logger.LogTrace();
+
             string[] args = Environment.GetCommandLineArgs();
 
             if (args.Length < 2 && !App.DebugMode)
@@ -399,8 +402,9 @@ namespace FancyZonesEditor.Utils
                     App.Overlay.Monitors.Add(monitor);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError("Invalid command line arguments: " + args[1], ex);
                 MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                 ((App)Application.Current).Shutdown();
             }
@@ -408,6 +412,8 @@ namespace FancyZonesEditor.Utils
 
         public ParsingResult ParseParams()
         {
+            Logger.LogTrace();
+
             if (_fileSystem.File.Exists(FancyZonesEditorParamsFile))
             {
                 string data = string.Empty;
@@ -471,6 +477,7 @@ namespace FancyZonesEditor.Utils
                 }
                 catch (Exception ex)
                 {
+                    Logger.LogError("Editor params parsing error", ex);
                     return new ParsingResult(false, ex.Message, data);
                 }
 
@@ -484,6 +491,8 @@ namespace FancyZonesEditor.Utils
 
         public ParsingResult ParseZoneSettings()
         {
+            Logger.LogTrace();
+
             _unusedDevices.Clear();
 
             if (_fileSystem.File.Exists(FancyZonesSettingsFile))
@@ -498,6 +507,7 @@ namespace FancyZonesEditor.Utils
                 }
                 catch (Exception ex)
                 {
+                    Logger.LogError("Zone settings parsing error", ex);
                     return new ParsingResult(false, ex.Message, settingsString);
                 }
 
@@ -515,6 +525,7 @@ namespace FancyZonesEditor.Utils
                 }
                 catch (Exception ex)
                 {
+                    Logger.LogError("Zone settings parsing error", ex);
                     return new ParsingResult(false, ex.Message, settingsString);
                 }
             }
@@ -524,6 +535,8 @@ namespace FancyZonesEditor.Utils
 
         public void SerializeZoneSettings()
         {
+            Logger.LogTrace();
+
             ZoneSettingsWrapper zoneSettings = new ZoneSettingsWrapper { };
             zoneSettings.Devices = new List<DeviceWrapper>();
             zoneSettings.CustomZoneSets = new List<CustomLayoutWrapper>();
@@ -680,8 +693,9 @@ namespace FancyZonesEditor.Utils
 
                         zoneSettings.QuickLayoutKeys.Add(wrapper);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        Logger.LogError("Serialize quick layout keys error", ex);
                     }
                 }
             }
@@ -693,12 +707,15 @@ namespace FancyZonesEditor.Utils
             }
             catch (Exception ex)
             {
+                Logger.LogError("Serialize zone settings error", ex);
                 App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
             }
         }
 
         private string ReadFile(string fileName)
         {
+            Logger.LogTrace();
+
             Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open);
             using (StreamReader reader = new StreamReader(inputStream))
             {
@@ -710,6 +727,8 @@ namespace FancyZonesEditor.Utils
 
         private bool SetDevices(List<DeviceWrapper> devices)
         {
+            Logger.LogTrace();
+
             if (devices == null)
             {
                 return false;
@@ -763,6 +782,8 @@ namespace FancyZonesEditor.Utils
 
         private bool SetCustomLayouts(List<CustomLayoutWrapper> customLayouts)
         {
+            Logger.LogTrace();
+
             if (customLayouts == null)
             {
                 return false;
@@ -791,9 +812,10 @@ namespace FancyZonesEditor.Utils
                         layout = ParseGridInfo(zoneSet);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     result = false;
+                    Logger.LogError("Parse custom layout error", ex);
                     continue;
                 }
 
@@ -813,6 +835,8 @@ namespace FancyZonesEditor.Utils
 
         private bool SetTemplateLayouts(List<TemplateLayoutWrapper> templateLayouts)
         {
+            Logger.LogTrace();
+
             if (templateLayouts == null)
             {
                 return false;
@@ -840,6 +864,8 @@ namespace FancyZonesEditor.Utils
 
         private bool SetQuickLayoutSwitchKeys(List<QuickLayoutKeysWrapper> quickSwitchKeys)
         {
+            Logger.LogTrace();
+
             if (quickSwitchKeys == null)
             {
                 return false;
@@ -970,51 +996,6 @@ namespace FancyZonesEditor.Utils
                 default:
                     return string.Empty;
             }
-        }
-
-        private static string ParsingCmdArgsErrorReport(string args, int count, string targetMonitorName, List<NativeMonitorData> monitorData, List<Monitor> monitors)
-        {
-            var sb = new StringBuilder();
-
-            sb.AppendLine();
-            sb.AppendLine("```");
-            sb.AppendLine(" ## Command-line arguments:");
-            sb.AppendLine();
-            sb.AppendLine(args);
-
-            sb.AppendLine();
-            sb.AppendLine("```");
-            sb.AppendLine(" ## Parsed command-line arguments:");
-            sb.AppendLine();
-
-            sb.Append("Span zones across monitors: ");
-            sb.AppendLine(App.Overlay.SpanZonesAcrossMonitors.ToString());
-
-            // using CultureInfo.InvariantCulture since this is for PowerToys team
-            sb.Append("Monitors count: ");
-            sb.AppendLine(count.ToString(CultureInfo.InvariantCulture));
-            sb.Append("Target monitor: ");
-            sb.AppendLine(targetMonitorName);
-
-            sb.AppendLine();
-            sb.AppendLine(" # Per monitor data:");
-            sb.AppendLine();
-            foreach (NativeMonitorData data in monitorData)
-            {
-                sb.AppendLine(data.ToString());
-            }
-
-            sb.AppendLine();
-            sb.AppendLine("```");
-            sb.AppendLine(" ## Monitors discovered:");
-            sb.AppendLine();
-
-            foreach (Monitor m in monitors)
-            {
-                sb.AppendLine(m.Device.ToString());
-            }
-
-            return sb.ToString();
         }
     }
 }

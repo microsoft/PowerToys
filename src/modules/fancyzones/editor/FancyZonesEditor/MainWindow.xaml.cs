@@ -11,6 +11,7 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
 using Microsoft.PowerToys.Common.UI;
@@ -164,6 +165,8 @@ namespace FancyZonesEditor
 
         private async void NewLayoutButton_Click(object sender, RoutedEventArgs e)
         {
+            Logger.LogTrace();
+
             if (_openedDialog != null)
             {
                 // another dialog already opened
@@ -195,6 +198,8 @@ namespace FancyZonesEditor
 
         private void DuplicateLayout_Click(object sender, RoutedEventArgs e)
         {
+            Logger.LogTrace();
+
             EditLayoutDialog.Hide();
 
             var mainEditor = App.Overlay;
@@ -261,6 +266,7 @@ namespace FancyZonesEditor
 
         private void Apply()
         {
+            Logger.LogTrace();
             var mainEditor = App.Overlay;
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
@@ -272,6 +278,7 @@ namespace FancyZonesEditor
 
         private void OnClosing(object sender, EventArgs e)
         {
+            Logger.LogTrace();
             CancelLayoutChanges();
 
             App.FancyZonesEditorIO.SerializeZoneSettings();
@@ -281,12 +288,15 @@ namespace FancyZonesEditor
 
         private void DeleteLayout_Click(object sender, RoutedEventArgs e)
         {
+            Logger.LogTrace();
             EditLayoutDialog.Hide();
             DeleteLayout((FrameworkElement)sender);
         }
 
         private async void EditLayout_Click(object sender, RoutedEventArgs e)
         {
+            Logger.LogTrace();
+
             // Avoid trying to open the same dialog twice.
             if (_openedDialog != null)
             {
@@ -310,6 +320,7 @@ namespace FancyZonesEditor
 
         private void EditZones_Click(object sender, RoutedEventArgs e)
         {
+            Logger.LogTrace();
             var dataContext = ((FrameworkElement)sender).DataContext;
             Select((LayoutModel)dataContext);
             EditLayoutDialog.Hide();
@@ -342,6 +353,8 @@ namespace FancyZonesEditor
 
         private void NewLayoutDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
         {
+            Logger.LogTrace();
+
             LayoutModel selectedLayoutModel;
 
             if (GridLayoutRadioButton.IsChecked == true)
@@ -393,6 +406,8 @@ namespace FancyZonesEditor
         // EditLayout: Save changes
         private void EditLayoutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            Logger.LogTrace();
+
             var mainEditor = App.Overlay;
             if (!(mainEditor.CurrentDataContext is LayoutModel model))
             {
@@ -415,6 +430,8 @@ namespace FancyZonesEditor
 
         private async void DeleteLayout(FrameworkElement element)
         {
+            Logger.LogTrace();
+
             var dialog = new ContentDialog()
             {
                 Title = Properties.Resources.Are_You_Sure,
