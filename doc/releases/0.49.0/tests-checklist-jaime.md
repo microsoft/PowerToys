@@ -148,17 +148,17 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 
 Find My Mouse:
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press any other key and verify the overlay disappears.
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press a mouse button and verify the overlay disappears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press any other key and verify the overlay disappears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press a mouse button and verify the overlay disappears.
   * Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice.
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
   * Enable the "Do not activate on game mode" option. Start playing a game that uses CG native full screen.
-    - [ ] Verify the overlay no longer appears when you press Left Ctrl twice.
+    - [x] Verify the overlay no longer appears when you press Left Ctrl twice.
   * Disable the "Do not activate on game mode" option. Start playing the same game.
-    - [ ] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
+    - [x] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
 
 ## Awake
- - [ ] Try out the features and see if they work, no list at this time.
+ - [x] Try out the features and see if they work, no list at this time.
