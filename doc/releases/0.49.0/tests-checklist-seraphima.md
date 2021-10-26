@@ -146,4 +146,4 @@ Find My Mouse:
     - [x] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
 
 ## Awake
- - [ ] Try out the features and see if they work, no list at this time.
+ - [x] Try out the features and see if they work, no list at this time.
