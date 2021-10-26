@@ -94,7 +94,7 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
     * File list filters.
         - [x] In the `preview` window uncheck some items to exclude them from renaming.
         - [x] Click on the `Renamed` column to filter results.
-        - [x] Click on the `Original` column to cycle between checked and unchecked items.
+        - [ ] Click on the `Original` column to cycle between checked and unchecked items.
 
 ## PowerToys Run
 
