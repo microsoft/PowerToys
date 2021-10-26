@@ -4,7 +4,7 @@ All:
 - Functional
 - General
 - Color Picker
-- Espresso
+- Awake
 - FZ Editor
 - FZ
 - File Explorer Add-ons
@@ -14,6 +14,7 @@ All:
 - PowerToys Run
 - Shortcut Guide
 - OOBE
+- Mouse Utils
 ```
 
 ```
@@ -25,6 +26,7 @@ Group 1:
 - FZ Editor
 - FZ
 - Shortcut Guide
+- VCM
 ```
 ```
 Group 2:
@@ -34,7 +36,8 @@ Group 2:
 - PowerRename
 - PowerToys Run
 - OOBE
-- Espresso
+- Mouse Utils
+- Awake
 ```
 ```
 Group 3:
@@ -44,7 +47,8 @@ Group 3:
 - FZ
 - File Explorer Add-ons
 - Keyboard Manager
-- Espresso
+- Mouse Utils
+- Awake
 ```
 ```
 Group 4:
@@ -55,4 +59,5 @@ Group 4:
 - PowerToys Run
 - Shortcut Guide
 - OOBE
+- VCM
 ```
