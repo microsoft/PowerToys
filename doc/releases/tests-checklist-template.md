@@ -122,6 +122,7 @@ Before testing
 - [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
 - [ ] Resize one image
 - [ ] Resize multiple images
+- [ ] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
 
 - [ ] Resize images with `Fill` option
 - [ ] Resize images with `Fit` option
