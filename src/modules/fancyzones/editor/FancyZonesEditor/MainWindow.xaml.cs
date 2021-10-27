@@ -439,7 +439,9 @@ namespace FancyZonesEditor
                 SecondaryButtonText = Properties.Resources.Cancel,
             };
 
+            Announce(FancyZonesEditor.Properties.Resources.Delete_Layout_Dialog_Announce, dialog.Content.ToString());
             var result = await dialog.ShowAsync();
+
             if (result == ContentDialogResult.Primary)
             {
                 LayoutModel model = element.DataContext as LayoutModel;

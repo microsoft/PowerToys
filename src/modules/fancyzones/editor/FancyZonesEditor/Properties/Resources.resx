@@ -285,6 +285,9 @@
   <data name="Settings" xml:space="preserve">
     <value>Template settings</value>
   </data>
+  <data name="Delete_Layout_Dialog_Announce" xml:space="preserve">
+    <value>Delete layout dialog.</value>
+  </data>
   <data name="Are_You_Sure" xml:space="preserve">
     <value>Are you sure?</value>
   </data>
