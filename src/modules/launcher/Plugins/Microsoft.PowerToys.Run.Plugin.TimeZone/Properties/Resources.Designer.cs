@@ -79,11 +79,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Daylight saving time.
+        ///   Looks up a localized string similar to Countires with daylight saving time.
         /// </summary>
-        internal static string DaylightSavingTime {
+        internal static string CountriesWithDst {
             get {
-                return ResourceManager.GetString("DaylightSavingTime", resourceCulture);
+                return ResourceManager.GetString("CountriesWithDst", resourceCulture);
             }
         }
         
@@ -129,6 +129,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         internal static string PluginTitle {
             get {
                 return ResourceManager.GetString("PluginTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use daylight saving time.
+        /// </summary>
+        internal static string UseDst {
+            get {
+                return ResourceManager.GetString("UseDst", resourceCulture);
             }
         }
         

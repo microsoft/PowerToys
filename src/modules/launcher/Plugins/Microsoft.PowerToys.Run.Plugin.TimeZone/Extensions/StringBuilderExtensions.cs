@@ -28,5 +28,18 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Extensions
                 stringBuilder.Append(value);
             }
         }
+
+        internal static void CutTooLong(this StringBuilder stringBuilder, int maxLength)
+        {
+            if (stringBuilder.Length <= maxLength)
+            {
+                return;
+            }
+
+            stringBuilder.Length = maxLength - 3;
+            stringBuilder.Append('.');
+            stringBuilder.Append('.');
+            stringBuilder.Append('.');
+        }
     }
 }

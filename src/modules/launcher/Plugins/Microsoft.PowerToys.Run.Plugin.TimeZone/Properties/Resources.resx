@@ -123,8 +123,8 @@
   <data name="Countries" xml:space="preserve">
     <value>Countries</value>
   </data>
-  <data name="DaylightSavingTime" xml:space="preserve">
-    <value>Daylight saving time</value>
+  <data name="CountriesWithDst" xml:space="preserve">
+    <value>Countires with daylight saving time</value>
   </data>
   <data name="Names" xml:space="preserve">
     <value>Names</value>
@@ -140,6 +140,9 @@
   </data>
   <data name="PluginTitle" xml:space="preserve">
     <value>Time zone</value>
+  </data>
+  <data name="UseDst" xml:space="preserve">
+    <value>Use daylight saving time</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
