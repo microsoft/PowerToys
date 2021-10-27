@@ -180,11 +180,7 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
 {
     const bool isElevated = is_process_elevated(false);
     bool notifyShell = false;
-    if (!isElevated)
-    {
-        show_update_warning_message();
-        return;
-    }
+    bool updatesNeeded = false;
 
     for (auto& fileExplorerModule : m_fileExplorerModules)
     {
@@ -194,6 +190,11 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
         if (!toggle.has_value() || *toggle == fileExplorerModule.registryChanges.isApplied())
         {
             continue;
+        }
+        else
+        {
+            // Mark that updates were to the registry were needed
+            updatesNeeded = true;
         }
 
         // (Un)Apply registry changes depending on the new setting value
@@ -208,6 +209,10 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
         {
             Trace::PowerPreviewSettingsUpdateFailed(fileExplorerModule.settingName.c_str(), !*toggle, *toggle, true);
         }
+    }
+    if (!isElevated && updatesNeeded)
+    {
+        show_update_warning_message();
     }
     if (notifyShell)
     {
