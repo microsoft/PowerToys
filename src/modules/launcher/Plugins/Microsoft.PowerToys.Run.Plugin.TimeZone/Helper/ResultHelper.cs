@@ -294,10 +294,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             }
             else
             {
-                names = timeZone.Countries.Where(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase));
+                names = timeZone.Names.Where(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase));
                 if (!names.Any())
                 {
-                    names = timeZone.Countries;
+                    names = timeZone.Names;
                 }
             }
 

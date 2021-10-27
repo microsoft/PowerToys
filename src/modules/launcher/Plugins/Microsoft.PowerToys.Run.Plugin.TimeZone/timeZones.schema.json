@@ -11,7 +11,7 @@
                     "Offset": {
                         "type": "string"
                     },
-                    "Name": {
+                    "Names": {
                         "type": "array",
                         "uniqueItems": true,
                         "items": {
