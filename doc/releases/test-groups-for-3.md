@@ -14,6 +14,7 @@ All:
 - PowerToys Run
 - Shortcut Guide
 - OOBE
+- VideoConference Mute
 ```
 
 ```
@@ -38,6 +39,7 @@ Group 2:
 - PowerToys Run
 - OOBE
 - Shortcut Guide
+- VideoConference Mute
 ```
 ```
 Group 3:
@@ -50,4 +52,5 @@ Group 3:
 - Keyboard Manager
 - PowerRename
 - OOBE
+- VideoConference Mute
 ```
