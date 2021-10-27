@@ -5,7 +5,7 @@
         {
             "Offset": "-12:00",
             "DaylightSavingTime": false,
-            "Name": "International Date Line",
+            "Name": [ "International Date Line" ],
             "Countries": [
                 "Baker Island",
                 "Howland Island"
@@ -14,7 +14,7 @@
         {
             "Offset": "-11:00",
             "DaylightSavingTime": false,
-            "Name": "Samoa Time Zone",
+            "Name": [ "Samoa Time Zone" ],
             "Countries":
             [
                 "American Samoa",
@@ -28,7 +28,7 @@
         {
             "Offset": "-10:00",
             "DaylightSavingTime": false,
-            "Name": "Hawaii–Aleutian Time Zone",
+            "Name": [ "Hawaii–Aleutian Time Zone" ],
             "Countries": [
                 "Cook Islands",
                 "French Polynesia (most)",
@@ -39,7 +39,7 @@
         {
             "Offset": "-10:00",
             "DaylightSavingTime": true,
-            "Name": "Hawaii–Aleutian Time Zone",
+            "Name": [ "Hawaii–Aleutian Time Zone" ],
             "Countries": [
                 "Andreanof Islands (United States)",
                 "Islands of Four Mountains (United States)",
@@ -57,7 +57,7 @@
         {
             "Offset": "-09:00",
             "DaylightSavingTime": false,
-            "Name": "Alaska Time Zone",
+            "Name": [ "Alaska Time Zone" ],
             "Countries": [
                 "Gambier Islands (French Polynesia)"
             ]
@@ -65,7 +65,7 @@
         {
             "Offset": "-09:00",
             "DaylightSavingTime": true,
-            "Name": "Alaska Time Zone",
+            "Name": [ "Alaska Time Zone" ],
             "Countries": [
                 "Alaska (most, United States)"
             ]
@@ -73,7 +73,7 @@
         {
             "Offset": "-08:00",
             "DaylightSavingTime": false,
-            "Name": "Pacific Time Zone",
+            "Name": [ "Pacific Time Zone" ],
             "Countries": [
                 "Clipperton Island",
                 "Pitcairn Islands"
@@ -82,7 +82,7 @@
         {
             "Offset": "-08:00",
             "DaylightSavingTime": true,
-            "Name": "Alaska Time Zone",
+            "Name": [ "Alaska Time Zone" ],
             "Countries": [
                 "British Columbia (most, Canada)",
                 "Baja California (Mexico)",
@@ -96,7 +96,7 @@
         {
             "Offset": "-07:00",
             "DaylightSavingTime": false,
-            "Name": "Mountain Time Zone",
+            "Name": [ "Mountain Time Zone" ],
             "Countries": [
                 "British Columbia (northeast, Canada)",
                 "Yukon (Canada)",
@@ -107,7 +107,7 @@
         {
             "Offset": "-07:00",
             "DaylightSavingTime": true,
-            "Name": "Mountain Time Zone",
+            "Name": [ "Mountain Time Zone" ],
             "Countries": [
                 "Alberta (Canada)",
                 "British Columbia (southeast, Canada)",
@@ -128,7 +128,7 @@
         {
             "Offset": "-06:00",
             "DaylightSavingTime": false,
-            "Name": "Central Time Zone",
+            "Name": [ "Central Time Zone" ],
             "Countries": [
                 "Belize",
                 "Saskatchewan (most, Canada)",
@@ -143,7 +143,7 @@
         {
             "Offset": "-06:00",
             "DaylightSavingTime": true,
-            "Name": "Central Time Zone",
+            "Name": [ "Central Time Zone" ],
             "Countries": [
                 "Manitoba (Canada)",
                 "Nunavut (central, Canada)",
@@ -171,7 +171,7 @@
         {
             "Offset": "-05:00",
             "DaylightSavingTime": false,
-            "Name": "Eastern Time Zone",
+            "Name": [ "Eastern Time Zone" ],
             "Countries": [
                 "Acre (Brazil)",
                 "Atikokan (Canada)",
@@ -190,7 +190,7 @@
         {
             "Offset": "-05:00",
             "DaylightSavingTime": true,
-            "Name": "Eastern Time Zone",
+            "Name": [ "Eastern Time Zone" ],
             "Countries": [
                 "Bahamas",
                 "Nunavut (east, Canada)",
@@ -226,7 +226,7 @@
         {
             "Offset": "-04:00",
             "DaylightSavingTime": false,
-            "Name": "Atlantic Time Zone",
+            "Name": [ "Atlantic Time Zone" ],
             "Countries": [
                 "Anguilla",
                 "Antigua and Barbuda",
@@ -264,7 +264,7 @@
         {
             "Offset": "-04:00",
             "DaylightSavingTime": true,
-            "Name": "Atlantic Time Zone",
+            "Name": [ "Atlantic Time Zone" ],
             "Countries": [
                 "Bermuda",
                 "Labrador (most, Canada)",
@@ -279,7 +279,7 @@
         {
             "Offset": "-03:30",
             "DaylightSavingTime": true,
-            "Name": "Newfoundland Time Zone",
+            "Name": [ "Newfoundland Time Zone" ],
             "Countries": [
                 "Newfoundland (Canada)",
                 "Labrador (southeast, Canada)"
@@ -332,7 +332,7 @@
         {
             "Offset": "00:00",
             "DaylightSavingTime": false,
-            "Name": "Western European Time",
+            "Name": [ "Western European Time" ],
             "Countries": [
                 "Ascension and Tristan da Cunha",
                 "Burkina Faso",
@@ -356,7 +356,7 @@
         {
             "Offset": "00:00",
             "DaylightSavingTime": true,
-            "Name": "Western European Time",
+            "Name": [ "Western European Time" ],
             "Countries": [
                 "Canary Islands",
                 "Faroe Islands",
@@ -371,7 +371,7 @@
         {
             "Offset": "01:00",
             "DaylightSavingTime": false,
-            "Name": "Central European Time",
+            "Name": [ "Central European Time" ],
             "Countries": [
                 "Algeria",
                 "Angola",
@@ -402,7 +402,7 @@
         {
             "Offset": "01:00",
             "DaylightSavingTime": true,
-            "Name": "Central European Time",
+            "Name": [ "Central European Time" ],
             "Countries": [
                 "Albania",
                 "Andorra",
@@ -440,7 +440,7 @@
         {
             "Offset": "02:00",
             "DaylightSavingTime": false,
-            "Name": "Eastern European Time",
+            "Name": [ "Eastern European Time" ],
             "Countries": [
                 "Botswana",
                 "Burundi",
@@ -464,7 +464,7 @@
         {
             "Offset": "02:00",
             "DaylightSavingTime": true,
-            "Name": "Eastern European Time",
+            "Name": [ "Eastern European Time" ],
             "Countries": [
                 "Akrotiri and Dhekelia",
                 "Bulgaria",
@@ -488,7 +488,7 @@
         {
             "Offset": "03:00",
             "DaylightSavingTime": false,
-            "Name": "Further-eastern European Time",
+            "Name": [ "Further-eastern European Time" ],
             "Countries": [
                 "Abkhazia",
                 "Bahrain",
@@ -522,7 +522,7 @@
         {
             "Offset": "03:30",
             "DaylightSavingTime": true,
-            "Name": "Iran Standard Time",
+            "Name": [ "Iran Standard Time" ],
             "Countries": [
                 "Iran"
             ]
@@ -530,7 +530,7 @@
         {
             "Offset": "04:00",
             "DaylightSavingTime": true,
-            "Name": "Samara Time",
+            "Name": [ "Samara Time" ],
             "Countries": [
                 "Armenia",
                 "Artsakh",
@@ -552,7 +552,7 @@
         {
             "Offset": "04:30",
             "DaylightSavingTime": false,
-            "Name": "Afghanistan Time",
+            "Name": [ "Afghanistan Time" ],
             "Countries": [
                 "Afghanistan"
             ]
@@ -560,7 +560,7 @@
         {
             "Offset": "05:00",
             "DaylightSavingTime": false,
-            "Name": "Pakistan Standard Time",
+            "Name": [ "Pakistan Standard Time" ],
             "Countries": [
                 "Amsterdam Island (French Southern and Antarctic Lands)",
                 "Kerguelen Islands (French Southern and Antarctic Lands)",
@@ -591,7 +591,7 @@
         {
             "Offset": "05:30",
             "DaylightSavingTime": false,
-            "Name": "Indian Standard Time",
+            "Name": [ "Indian Standard Time" ],
             "Countries": [
                 "India",
                 "Sri Lanka"
@@ -600,7 +600,7 @@
         {
             "Offset": "05:45",
             "DaylightSavingTime": false,
-            "Name": "Nepal Standard Time",
+            "Name": [ "Nepal Standard Time" ],
             "Countries": [
                 "Nepal"
             ]
@@ -608,7 +608,7 @@
         {
             "Offset": "06:00",
             "DaylightSavingTime": false,
-            "Name": "Bangladesh Standard Time",
+            "Name": [ "Bangladesh Standard Time" ],
             "Countries": [
                 "Bangladesh",
                 "Bhutan",
@@ -621,7 +621,7 @@
         {
             "Offset": "06:30",
             "DaylightSavingTime": false,
-            "Name": "Myanmar Standard Time",
+            "Name": [ "Myanmar Standard Time" ],
             "Countries": [
                 "Cocos Islands",
                 "Myanmar"
@@ -630,7 +630,7 @@
         {
             "Offset": "07:00",
             "DaylightSavingTime": false,
-            "Name": "Western Indonesian Time",
+            "Name": [ "Western Indonesian Time" ],
             "Countries": [
                 "Cambodia",
                 "Christmas Island",
@@ -657,7 +657,7 @@
         {
             "Offset": "08:00",
             "DaylightSavingTime": false,
-            "Name": "Central Indonesian Time",
+            "Name": [ "Central Indonesian Time" ],
             "Countries": [
                 "Australia: Western Australia (most)",
                 "Brunei",
@@ -683,7 +683,7 @@
         {
             "Offset": "08:45",
             "DaylightSavingTime": false,
-            "Name": "Central Western Standard Time",
+            "Name": [ "Central Western Standard Time" ],
             "Countries": [
                 "Eucla"
             ]
@@ -691,7 +691,7 @@
         {
             "Offset": "09:00",
             "DaylightSavingTime": false,
-            "Name": "Eastern Indonesian Time",
+            "Name": [ "Eastern Indonesian Time" ],
             "Countries": [
                 "East Timor",
                 "Maluku (Indonesia)",
@@ -710,7 +710,7 @@
         {
             "Offset": "09:30",
             "DaylightSavingTime": false,
-            "Name": "Central Standard Time",
+            "Name": [ "Central Standard Time" ],
             "Countries": [
                 "Northern Territory"
             ]
@@ -718,7 +718,7 @@
         {
             "Offset": "09:30",
             "DaylightSavingTime": true,
-            "Name": "Central Standard Time",
+            "Name": [ "Central Standard Time" ],
             "Countries": [
                 "South Australia (Australia)"
             ]
@@ -742,7 +742,7 @@
         {
             "Offset": "10:00",
             "DaylightSavingTime": true,
-            "Name": "Vladivostok Time",
+            "Name": [ "Vladivostok Time" ],
             "Countries": [
                 "Australian Capital Territory (Australia)",
                 "Jervis Bay Territory (Australia)",
@@ -761,7 +761,7 @@
         {
             "Offset": "11:00",
             "DaylightSavingTime": false,
-            "Name": "Magadan Time",
+            "Name": [ "Magadan Time" ],
             "Countries": [
                 "Kosrae (Micronesia)",
                 "Pohnpei (Micronesia)",
@@ -784,7 +784,7 @@
         {
             "Offset": "12:00",
             "DaylightSavingTime": false,
-            "Name": "Kamchatka Time",
+            "Name": [ "Kamchatka Time" ],
             "Countries": [
                 "Fiji",
                 "Gilbert Islands (Kiribati)",
@@ -807,7 +807,7 @@
         {
             "Offset": "12:45",
             "DaylightSavingTime": true,
-            "Name": "Chatham Standard Time",
+            "Name": [ "Chatham Standard Time" ],
             "Countries": [
                 "Chatham Islands (New Zealand)"
             ]
@@ -815,7 +815,6 @@
         {
             "Offset": "13:00",
             "DaylightSavingTime": false,
-            "Name": "",
             "Countries": [
                 "Phoenix Islands (Kiribati)",
                 "Samoa",

@@ -43,9 +43,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         }
 
         /// <summary>
-        /// Check if the given <see cref="TimeZoneInfoExtended"/> contains a value that match the given <see cref="Query"/> .
+        /// Check if the given <see cref="OneTimeZone"/> contains a value that match the given <see cref="Query"/> .
         /// </summary>
-        /// <param name="timeZone">The <see cref="TimeZoneInfoExtended"/> to check.</param>
+        /// <param name="timeZone">The <see cref="OneTimeZone"/> to check.</param>
         /// <param name="search">The <see cref="Query"/> that should match.</param>
         /// <returns><see langword="true"/> if it's match, otherwise <see langword="false"/>.</returns>
         private static bool TimeZoneInfoMatchQuery(OneTimeZone timeZone, string search)
@@ -74,7 +74,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 return true;
             }
 
-            if (timeZone.Name.Contains(search, StringComparison.CurrentCultureIgnoreCase))
+            if (timeZone.Names != null
+            & timeZone.Names.Any(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase)))
             {
                 return true;
             }
@@ -94,17 +95,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         }
 
         /// <summary>
-        /// Return a <see cref="Result"/> based on the given <see cref="TimeZoneInfoExtended"/>.
+        /// Return a <see cref="Result"/> based on the given <see cref="OneTimeZone"/>.
         /// </summary>
-        /// <param name="timeZone">The <see cref="TimeZoneInfoExtended"/> that contain the information for the <see cref="Result"/>.</param>
+        /// <param name="timeZone">The <see cref="OneTimeZone"/> that contain the information for the <see cref="Result"/>.</param>
         /// <param name="utcNow">The current time in UTC for the <see cref="Result"/>.</param>
         /// <returns>A <see cref="Result"/>.</returns>
         private static Result GetResult(OneTimeZone timeZone, DateTime utcNow, string search, string iconPath)
         {
-            // TODO: revisit time zone names, maybe a list of time zone names
+            // TODO: revisit time zone names
             // TODO: add standard and DST time zone names
             // TODO: add shortcuts
-            var title = GetTitle(timeZone, utcNow);
+            var title = GetTitle(timeZone, search, utcNow);
 
             var result = new Result
             {
@@ -141,27 +142,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             return result;
         }
 
-        private static string GetTitle(OneTimeZone timeZone, DateTime utcNow)
+        private static string GetTitle(OneTimeZone timeZone, string search, DateTime utcNow)
         {
-            string timeZoneName;
-
-            if (string.IsNullOrEmpty(timeZone.Name))
-            {
-                timeZoneName = $"UTC{GetFullOffset(timeZone)}";
-
-                if (timeZone.DaylightSavingTime)
-                {
-                    timeZoneName = $"{timeZoneName} - {Resources.DaylightSavingTime}";
-                }
-            }
-            else
-            {
-                timeZoneName = timeZone.Name;
-            }
-
             var timeInZoneTime = GetTimeInTimeZone(timeZone, utcNow);
+            var timeZoneNames = GetNames(timeZone, search, maxLength: 50);
 
-            return $"{timeInZoneTime:HH:mm:ss} - {timeZoneName}";
+            return $"{timeInZoneTime:HH:mm:ss} - {timeZoneNames}";
         }
 
         private static string GetToolTip(OneTimeZone timeZone)
@@ -169,10 +155,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             var useDst = timeZone.DaylightSavingTime ? Resources.Yes : Resources.No;
             var fullTimeOffset = GetFullOffset(timeZone);
             var countries = GetCountries(timeZone, search: string.Empty, maxLength: int.MaxValue);
+            var names = GetNames(timeZone, search: string.Empty, maxLength: int.MaxValue);
 
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.Append(Resources.Name).Append(':').Append(' ').AppendLine(timeZone.Name);
+            stringBuilder.Append(Resources.Names).Append(':').Append(' ').AppendLine(names);
             stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(fullTimeOffset);
             stringBuilder.Append(Resources.DaylightSavingTime).Append(':').Append(' ').AppendLine(useDst);
             stringBuilder.AppendLine(string.Empty);
@@ -285,6 +272,65 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             }
 
             // To many countries (third pass) => cut text length
+            if (stringBuilder.Length > maxLength)
+            {
+                stringBuilder.Length = maxLength - 3;
+                stringBuilder.Append('.');
+                stringBuilder.Append('.');
+                stringBuilder.Append('.');
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        private static string GetNames(OneTimeZone timeZone, string search, int maxLength)
+        {
+            IEnumerable<string> names;
+
+            // TODO: translate country names
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                names = timeZone.Names;
+            }
+            else
+            {
+                names = timeZone.Countries.Where(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase));
+                if (!names.Any())
+                {
+                    names = timeZone.Countries;
+                }
+            }
+
+            var stringBuilder = new StringBuilder();
+            var lastEntry = names.LastOrDefault();
+
+            foreach (var name in names)
+            {
+                stringBuilder.Append(name);
+
+                if (name != lastEntry)
+                {
+                    stringBuilder.Append(',');
+                    stringBuilder.Append(' ');
+                }
+            }
+
+            // To many names (first pass) => cut name length
+            if (stringBuilder.Length > maxLength)
+            {
+                foreach (var country in names)
+                {
+                    stringBuilder.SaveAppend(country, maxLength: 5);
+
+                    if (country != lastEntry)
+                    {
+                        stringBuilder.Append(',');
+                        stringBuilder.Append(' ');
+                    }
+                }
+            }
+
+            // To many names (third pass) => cut text length
             if (stringBuilder.Length > maxLength)
             {
                 stringBuilder.Length = maxLength - 3;

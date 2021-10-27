@@ -88,11 +88,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name.
+        ///   Looks up a localized string similar to Names.
         /// </summary>
-        internal static string Name {
+        internal static string Names {
             get {
-                return ResourceManager.GetString("Name", resourceCulture);
+                return ResourceManager.GetString("Names", resourceCulture);
             }
         }
         

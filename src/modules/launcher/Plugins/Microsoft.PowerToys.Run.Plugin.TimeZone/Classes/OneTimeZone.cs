@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         public OneTimeZone()
         {
             Offset = "0:00";
-            Name = string.Empty;
+            Names = Enumerable.Empty<string>();
             Shortcut = string.Empty;
             Countries = Enumerable.Empty<string>();
         }
@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
 
         public bool DaylightSavingTime { get; set; }
 
-        public string Name { get; set; }
+        public IEnumerable<string> Names { get; set; }
 
         public IEnumerable<string> Countries { get; set; }
     }

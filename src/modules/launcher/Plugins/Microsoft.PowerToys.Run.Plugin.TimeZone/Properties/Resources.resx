@@ -126,8 +126,8 @@
   <data name="DaylightSavingTime" xml:space="preserve">
     <value>Daylight saving time</value>
   </data>
-  <data name="Name" xml:space="preserve">
-    <value>Name</value>
+  <data name="Names" xml:space="preserve">
+    <value>Names</value>
   </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
