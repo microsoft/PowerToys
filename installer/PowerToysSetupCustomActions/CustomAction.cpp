@@ -51,7 +51,7 @@ UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "ApplyModulesRegistryChangeSets");
     ExitOnFailure(hr, "Failed to initialize");
     hr = getInstallFolder(hInstall, installationFolder);
-    ExitOnFailure(hr, "Failed to get installfolder.");
+    ExitOnFailure(hr, "Failed to get installFolder.");
     for (const auto& changeSet : getAllModulesChangeSets(installationFolder, false))
     {
         if (!changeSet.apply())
@@ -76,7 +76,7 @@ UINT __stdcall UnApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "UndoModulesRegistryChangeSets"); // original func name is too long
     ExitOnFailure(hr, "Failed to initialize");
     hr = getInstallFolder(hInstall, installationFolder);
-    ExitOnFailure(hr, "Failed to get installfolder.");
+    ExitOnFailure(hr, "Failed to get installFolder.");
     for (const auto& changeSet : getAllModulesChangeSets(installationFolder, false))
     {
         changeSet.unApply();
