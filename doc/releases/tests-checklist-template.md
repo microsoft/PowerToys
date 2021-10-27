@@ -282,4 +282,4 @@ Find My Mouse:
  - [ ] Go to Control Panel -> Sound -> Recording -> select default mic -> open its properties -> Levels.  Now mute the microphone with a corresponding hotkey and verify that mute icon on the right side of volume slider reflects its muted status.
  - [ ] Verify that changing "toolbar position" setting works 
  - [ ] Select an overlay image and verify that muting camera now shows the image instead of black screen. (Don't forget to restart the application which uses the camera).
- - [] Try to select an overlay image when PT process is elevated. (Currently doesn't work)
+ - [ ] Try to select an overlay image when PT process is elevated. (Currently doesn't work)
