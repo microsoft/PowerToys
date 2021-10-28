@@ -50,11 +50,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         private static bool TimeZoneInfoMatchQuery(OneTimeZone timeZone, string search)
         {
             // allow search for "-x:xx"
-            if (search.StartsWith('-') && timeZone.Offset.StartsWith('-'))
+            if (search.StartsWith('-') && timeZone.OffsetString.StartsWith('-'))
             {
-                if (timeZone.Offset.ElementAtOrDefault(1) == '0')
+                if (timeZone.OffsetString.ElementAtOrDefault(1) == '0')
                 {
-                    if (timeZone.Offset.Substring(2).StartsWith(search.Substring(1), StringComparison.InvariantCultureIgnoreCase))
+                    if (timeZone.OffsetString[2..].StartsWith(search[1..], StringComparison.InvariantCultureIgnoreCase))
                     {
                         return true;
                     }
@@ -62,13 +62,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             }
 
             // allow search for "+xx:xx"
-            if (search.StartsWith('+') && timeZone.Offset.StartsWith(search.Substring(1), StringComparison.InvariantCultureIgnoreCase))
+            if (search.StartsWith('+') && timeZone.OffsetString.StartsWith(search[1..], StringComparison.InvariantCultureIgnoreCase))
             {
                 return true;
             }
 
             // "-1x:xx" match here
-            if (timeZone.Offset.Contains(search, StringComparison.InvariantCultureIgnoreCase))
+            if (timeZone.OffsetString.Contains(search, StringComparison.InvariantCultureIgnoreCase))
             {
                 return true;
             }
@@ -79,7 +79,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 return true;
             }
 
-            if (timeZone.Shortcut.Contains(search, StringComparison.InvariantCultureIgnoreCase))
+            if (timeZone.Shortcuts != null
+            && timeZone.Shortcuts.Any(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase)))
             {
                 return true;
             }
@@ -118,7 +119,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             var countires = GetCountries(timeZone, search, maxLength: 100);
             if (countires.Length > 0)
             {
-                var title = GetTitle(timeZone, search, utcNow);
+                var title = GetTitle(timeZone, search, utcNow, false);
 
                 results.Add(new Result
                 {
@@ -133,7 +134,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             var dstCountires = GetDstCountries(timeZone, search, maxLength: 100);
             if (dstCountires.Length > 0)
             {
-                var title = GetTitle(timeZone, search, utcNow.AddHours(1));
+                var title = GetTitle(timeZone, search, utcNow, true);
 
                 results.Add(new Result
                 {
@@ -148,27 +149,25 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             return results;
         }
 
-        private static DateTime GetTimeInTimeZone(OneTimeZone timeZone, DateTime utcNow)
+        private static DateTime GetTimeInTimeZone(OneTimeZone timeZone, DateTime utcNow, bool daylightSavingTime)
         {
-            DateTime result;
-
-            var (hours, minutes) = GetHoursAndMinutes(timeZone);
-
-            if (timeZone.Offset.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
+            foreach (var timeZoneInfo in TimeZoneInfo.GetSystemTimeZones())
             {
-                result = utcNow.AddHours(-hours).AddMinutes(-minutes);
-            }
-            else
-            {
-                result = utcNow.AddHours(hours).AddMinutes(minutes);
+                if (timeZoneInfo.BaseUtcOffset == timeZone.Offset
+                && timeZoneInfo.SupportsDaylightSavingTime == daylightSavingTime)
+                {
+                    return TimeZoneInfo.ConvertTime(utcNow, timeZoneInfo);
+                }
             }
 
+            // Fall-back
+            var result = utcNow + timeZone.Offset;
             return result;
         }
 
-        private static string GetTitle(OneTimeZone timeZone, string search, DateTime utcNow)
+        private static string GetTitle(OneTimeZone timeZone, string search, DateTime utcNow, bool daylightSavingTime)
         {
-            var timeInZoneTime = GetTimeInTimeZone(timeZone, utcNow);
+            var timeInZoneTime = GetTimeInTimeZone(timeZone, utcNow, daylightSavingTime);
             var timeZoneNames = GetNames(timeZone, search, maxLength: 50);
 
             return $"{timeInZoneTime:HH:mm:ss} - {timeZoneNames}";
@@ -176,13 +175,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
         private static string GetToolTip(OneTimeZone timeZone)
         {
-            var fullTimeOffset = GetFullOffset(timeZone);
             var countries = GetCountries(timeZone, search: string.Empty, maxLength: int.MaxValue);
             var names = GetNames(timeZone, search: string.Empty, maxLength: int.MaxValue);
 
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(fullTimeOffset);
+            stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(timeZone.OffsetString);
             stringBuilder.Append(Resources.UseDst).Append(':').Append(' ').AppendLine(Resources.No);
             stringBuilder.AppendLine(string.Empty);
             stringBuilder.Append(Resources.Names).Append(':').Append(' ').AppendLine(names);
@@ -194,13 +192,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
         private static string GetDstToolTip(OneTimeZone timeZone)
         {
-            var fullTimeOffset = GetFullOffset(timeZone);
             var dstCountries = GetDstCountries(timeZone, search: string.Empty, maxLength: int.MaxValue);
             var names = GetNames(timeZone, search: string.Empty, maxLength: int.MaxValue);
 
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(fullTimeOffset);
+            stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(timeZone.OffsetString);
             stringBuilder.Append(Resources.UseDst).Append(':').Append(' ').AppendLine(Resources.Yes);
             stringBuilder.AppendLine(string.Empty);
             stringBuilder.Append(Resources.Names).Append(':').Append(' ').AppendLine(names);
@@ -208,29 +205,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             stringBuilder.Append(Resources.CountriesWithDst).Append(':').Append(' ').AppendLine(dstCountries);
 
             return stringBuilder.ToString();
-        }
-
-        private static (byte hours, byte minutes) GetHoursAndMinutes(OneTimeZone timeZone)
-        {
-            string offset;
-
-            if (timeZone.Offset.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
-            {
-                offset = timeZone.Offset[1..];
-            }
-            else
-            {
-                offset = timeZone.Offset;
-            }
-
-            var offsetSplit = offset.Split(':');
-
-            if (byte.TryParse(offsetSplit.FirstOrDefault(), out var hours) && byte.TryParse(offsetSplit.LastOrDefault(), out var minutes))
-            {
-                return (hours, minutes);
-            }
-
-            return (0, 0);
         }
 
         private static string GetNames(OneTimeZone timeZone, string search, int maxLength)
@@ -445,24 +419,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             stringBuilder.CutTooLong(maxLength);
 
             return stringBuilder.ToString();
-        }
-
-        private static string GetFullOffset(OneTimeZone timeZone)
-        {
-            var (hours, minutes) = GetHoursAndMinutes(timeZone);
-
-            string result;
-
-            if (timeZone.Offset.StartsWith('-'))
-            {
-                result = $"-{hours}:{minutes:00}";
-            }
-            else
-            {
-                result = $"+{hours}:{minutes:00}";
-            }
-
-            return result;
         }
     }
 }
