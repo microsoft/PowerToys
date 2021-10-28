@@ -25,20 +25,20 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Requirements
 
-- ⚠️ PowerToys (v0.37.0 and newer) requires Windows 10 v1903 (18362) or newer.
-
-- Have [.NET Core 3.1.15 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.15-windows-x64-installer). The installer should handle this but we want to directly make people aware.
+- Windows 11 or Windows 10 v1903 (18362) or newer.
+- [.NET Core 3.1.15 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-desktop-3.1.15-windows-x64-installer) or a newer 3.1.x runtime. The installer will handle this if not present.
 
 ### Via GitHub with EXE [Recommended]
 
 #### Stable version
 
-Install from the [Microsoft Store's PowerToys page][microsoft-store-link] or use [Microsoft PowerToys GitHub releases page][github-release-link]. 
-
-- For GitHub, click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.49.0-x64.exe` to download the PowerToys installer.
-- For Microsoft Store, you must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which will be available for both Windows 11 and Windows 10.
+ [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.49.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
+
+### Via Microsoft Store
+
+Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which will be available for both Windows 11 and Windows 10.
 
 ### Via WinGet (Preview)
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). To install PowerToys, run the following command from the command line / PowerShell:
@@ -83,15 +83,16 @@ PowerRename's new UI brings a refreshed experience that reflects the modern UI t
 
 With the new mouse utility, PowerToys introduces functionality to quickly find your mouse position by double pressing the left <kbd>ctrl</kbd> key. This is ideal for large, high-resolution displays and low-vision users, with additional features and enhancements planned for future releases. Special thanks to [Raymond Chen](https://github.com/oldnewthing) for providing the base code PowerToys used to develop this feature. To learn more, check out our [Mouse Utilities documentation](https://aka.ms/PowerToysOverview_MouseUtilities) on Microsoft Docs!
 
-As Video Conference Mute becomes available in the stable releases, there are still known bugs that we are actively working to address. These bugs are [tracked on our GitHub](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+label%3A%22Product-Video+Conference+Mute%22), and we welcome any and all feedback as we work to isolate and resolve the cause.
+As Video Conference Mute becomes available in the stable releases, there are still known quirks that we are actively working to address. These bugs are [tracked on our GitHub](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+label%3A%22Product-Video+Conference+Mute%22), and we welcome any and all feedback as we work to isolate and resolve the cause.
 
-Additionally, Color Picker's HEX format will no longer have the `#` character. This addresses issues with various color inputs that only accept six characters cutting off the last value. We apologize for any inconvenience this causes as we understand it impacts users who may prefer having `#` included. However, we believe this is the best solution while the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development. 
+Color Picker's HEX format will no longer have the `#` character. This addresses issues with various color inputs that only accept six characters cutting off the last value. We apologize for any inconvenience this causes as we understand it impacts users who may prefer having `#` included. However, we believe this is the best solution while the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development. 
 
 Additional work in this release include stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
 
 #### Highlights from v0.49
 
 **General**
+- **Change of Behavior:** Color Picker's HEX format will no longer have the `#` character. Custom string functionality for color picker ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development and will allow someone to use this again.
 - Find My Mouse utility added! Utilize the functionality to quickly locate the cursor on your displays! Learn more on our [Mouse Utility docs](https://aka.ms/PowerToysOverview_MouseUtilities).
 - Accessibility and minor UI improvements to the settings page. Thanks [@niels9001](https://github.com/niels9001!
 - Added deep links to the Settings menus for various utilities within their respective editors. Thanks [@niels9001](https://github.com/niels9001)!
@@ -142,7 +143,6 @@ For [v0.51][github-next-release-work], we are planning to work on:
 - UI/UX investigations to adopt WinUI and improve accessibility
 - Stability and bug fixes
 - Update the PowerToys Build Pipeline to allow .NET 5 integration
-
 
 ## PowerToys Community
 
