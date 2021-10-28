@@ -205,16 +205,33 @@ namespace ImageResizer.Models
                 extension = supportedExtensions.FirstOrDefault();
             }
 
+            // Remove directory characters from the size's name.
+            string sizeNameSanitized = _settings.SelectedSize.Name;
+            sizeNameSanitized = sizeNameSanitized
+                .Replace('\\', '_')
+                .Replace('/', '_');
+
             // Using CurrentCulture since this is user facing
             var fileName = string.Format(
                 CultureInfo.CurrentCulture,
                 _settings.FileNameFormat,
                 originalFileName,
-                _settings.SelectedSize.Name,
+                sizeNameSanitized,
                 _settings.SelectedSize.Width,
                 _settings.SelectedSize.Height,
                 encoder.Frames[0].PixelWidth,
                 encoder.Frames[0].PixelHeight);
+
+            // Remove invalid characters from the final file name.
+            fileName = fileName
+                .Replace(':', '_')
+                .Replace('*', '_')
+                .Replace('?', '_')
+                .Replace('"', '_')
+                .Replace('<', '_')
+                .Replace('>', '_')
+                .Replace('|', '_');
+
             var path = _fileSystem.Path.Combine(directory, fileName + extension);
             var uniquifier = 1;
             while (_fileSystem.File.Exists(path))
