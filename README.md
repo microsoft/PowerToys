@@ -85,7 +85,7 @@ With the new mouse utility, PowerToys introduces functionality to quickly find y
 
 As Video Conference Mute becomes available in the stable releases, there are still known bugs that we are actively working to address. These bugs are [tracked on our GitHub](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+label%3A%22Product-Video+Conference+Mute%22), and we welcome any and all feedback as we work to isolate and resolve the cause.
 
-Additionally, Color Picker's HEX format will no longer have the <kbd>#</kbd> character. This addresses issues with various color inputs that only accept six characters cutting off the last value. We apologize for any inconvenience this causes as we understand it impacts users who may prefer having <kbd>#</kbd> included. However, we believe this is the best solution while the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development. 
+Additionally, Color Picker's HEX format will no longer have the `#` character. This addresses issues with various color inputs that only accept six characters cutting off the last value. We apologize for any inconvenience this causes as we understand it impacts users who may prefer having `#` included. However, we believe this is the best solution while the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development. 
 
 Additional work in this release include stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
 
