@@ -102,7 +102,7 @@ Additional work in this release include stability updates and optimizations, ins
 - Screen reader improvements for accessibility.
 
 **Color Picker**
-- Color Picker's HEX format was changed to remove the <kbd>#</kbd> character. Thanks @niels9001!
+- Color Picker's HEX format was changed to remove the `#` character. Thanks @niels9001!
 - Accessibility improvements for screen reader and UI to distinguish colors from the border when matching. Thanks @niels9001!
 
 **FancyZones**
