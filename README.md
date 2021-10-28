@@ -19,7 +19,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [Awake](https://aka.ms/PowerToysOverview_Awake) | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
 | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | 
 | [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | 
-| [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Video Conference Mute (Experimental)](https://aka.ms/PowerToysOverview_VideoConference) |  |
+| [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) |  |
 
 ## Installing and running Microsoft PowerToys
 
@@ -93,20 +93,20 @@ Additional work in this release include stability updates and optimizations, ins
 
 **General**
 - Find My Mouse utility added! Utilize the functionality to quickly locate the cursor on your displays! Learn more on our [Mouse Utility docs](https://aka.ms/PowerToysOverview_MouseUtilities).
-- Accessibility and minor UI improvements to the settings page. Thanks @niels9001!
-- Added deep links to the Settings menus for various utilities within their respective editors. Thanks @niels9001!
-- Settings improvements to improve clarity for various options. Thanks @niels9001!
-- Improved settings window to adjust size and position as needed when multi-monitor conditions change. Thanks @davidegiacometti!  
+- Accessibility and minor UI improvements to the settings page. Thanks [@niels9001](https://github.com/niels9001!
+- Added deep links to the Settings menus for various utilities within their respective editors. Thanks [@niels9001](https://github.com/niels9001)!
+- Settings improvements to improve clarity for various options. Thanks [@niels9001](https://github.com/niels9001)!
+- Improved settings window to adjust size and position as needed when multi-monitor conditions change. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!  
 
 **Awake**
 - Screen reader improvements for accessibility.
 
 **Color Picker**
-- Color Picker's HEX format was changed to remove the <kbd>#</kbd> character. Thanks @niels9001!
-- Accessibility improvements for screen reader and UI to distinguish colors from the border when matching. Thanks @niels9001!
+- Color Picker's HEX format was changed to remove the <kbd>#</kbd> character. Thanks [@niels9001](https://github.com/niels9001)!
+- Accessibility improvements for screen reader and UI to distinguish colors from the border when matching. Thanks [@niels9001](https://github.com/niels9001)!
 
 **FancyZones**
-- Fixed Color Picker and OOBE windows from being snapped by FancyZones. Thanks @davidegiacometti!
+- Fixed Color Picker and OOBE windows from being snapped by FancyZones. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Fixed regression with layouts not being changed via shortcuts.
 - Fixed crashing issue with FancyZones editor.
 - Fixed zone layouts resetting after screen locking.
@@ -116,12 +116,12 @@ Additional work in this release include stability updates and optimizations, ins
 - Fixed crashing issue when the editor is opened at high zoom on 4k monitors.
 
 **PowerRename**
-- New UI update! We hope you enjoy the modern experience and take advantage of new tool-tips to describe common regular expressions and text/file formatting. Thanks to @niels9001 for all the support on this redesign! 
+- New UI update! We hope you enjoy the modern experience and take advantage of new tool-tips to describe common regular expressions and text/file formatting. Thanks to [@niels9001](https://github.com/niels9001) for all the support on this redesign! 
 
 **PowerToys Run**
-- Windows Terminal Plugin added. Open shells through Windows Terminal via <kbd>_</kbd> activation command by default. Thanks @davidegiacometti!
-- Added environment variables to Folder plugin search. Thanks @davidegiacometti!
-- Fixed certain schemas that were overwritten with HTTPS. Thanks @franky920920!
+- Windows Terminal Plugin added. Open shells through Windows Terminal via <kbd>_</kbd> activation command by default. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Added environment variables to Folder plugin search. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed certain schemas that were overwritten with HTTPS. Thanks [@franky920920](https://github.com/franky920920)!
 - Fixed issue with program plugin getting caught in infinite loops as certain file paths are recursively searched.
 
 **Video Conference Mute**
