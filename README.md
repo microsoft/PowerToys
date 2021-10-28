@@ -40,9 +40,6 @@ Install from the [Microsoft Store's PowerToys page][microsoft-store-link] or use
 
 This is our preferred method.
 
-#### Experimental version
-To install the Video Conference mute, please use the [v0.46 experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.45 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
-
 ### Via WinGet (Preview)
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). To install PowerToys, run the following command from the command line / PowerShell:
 
@@ -80,20 +77,22 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.49 - October 2021 Update
 
-The [v0.49 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F25) introduces exciting new updates primarily centered around modernizing PowerRename's UI, adding brand new mouse utilities, and merging Video Conference Mute into the stable releases!
+The [v0.49 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F25) introduces exciting new updates primarily centered around modernizing PowerRename's UI, adding a brand new mouse utility, and merging Video Conference Mute into the stable releases!
 
 PowerRename's new UI brings a refreshed experience that reflects the modern UI theming of Windows 11, along with helpful regular expression guidance and file formatting tips. 
 
 With mouse utilities, PowerToys introduces functionality to quickly find your mouse position by double pressing the left <kbd>ctrl</kbd> key. This is ideal for large, high-resolution displays and low-vision users, with additional features and enhancements planned for future releases. Special thanks to [Raymond Chen](https://github.com/oldnewthing) for providing the base code PowerToys used to develop this feature. To learn more, check out our [Mouse Utilities documentation](https://aka.ms/PowerToysOverview_MouseUtilities) on Microsoft Docs!
 
-As Video Conference Mute becomes available in the stable releases, there are still known bugs that we are actively working to address. These bugs are tracked on [issue #6246](https://github.com/microsoft/PowerToys/issues/6246), and we welcome any and all feedback as we work to isolate and resolve the cause.
+As Video Conference Mute becomes available in the stable releases, there are still known bugs that we are actively working to address. These bugs are [tracked on our GitHub](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+label%3A%22Product-Video+Conference+Mute%22+admin), and we welcome any and all feedback as we work to isolate and resolve the cause.
+
+PowerToys has also changed Color Picker's HEX format to remove the <kbd>#</kbd> character from the copied value. This change was made to address several issues where color inputs for various applications that only accept six characters cut off the last value. We apologize for any inconvenience this change may cause as we understand this will likely impact users who prefer having <kbd>#</kbd> included, but we believe this is the best solution for the time being as we prepare the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) in future releases. 
 
 Additional work in this release include stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
 
 #### Highlights from v0.49
 
 **General**
-- Mouse utilities added! Utilize the new Find My Mouse feature to quickly locate your cursor on your displays! Learn more on our [Mouse Utility docs](https://aka.ms/PowerToysOverview_MouseUtilities).
+- Find My Mouse utility added! Utilize the functionality to quickly locate the cursor on your displays! Learn more on our [Mouse Utility docs](https://aka.ms/PowerToysOverview_MouseUtilities).
 - Accessibility and minor UI improvements to the settings page. Thanks @niels9001!
 - Added deep links to the Settings menus for various utilities within their respective editors. Thanks @niels9001!
 - Settings improvements to improve clarity for various options. Thanks @niels9001!
@@ -119,7 +118,7 @@ Additional work in this release include stability updates and optimizations, ins
 **PowerRename**
 - New UI update! We hope you enjoy the modern experience and take advantage of new tool-tips to describe common regular expressions and text/file formatting. Thanks to @niels9001 for all the support on this redesign! 
 
-**PT Run**
+**PowerToys Run**
 - Windows Terminal Plugin added. Open shells through Windows Terminal via <kbd>_</kbd> activation command by default. Thanks @davidegiacometti!
 - Added environment variables to Folder plugin search. Thanks @davidegiacometti!
 - Fixed certain schemas that were overwritten with HTTPS. Thanks @franky920920!
@@ -138,7 +137,7 @@ We'd like to directly mention certain contributors (in alphabetical order) for t
 
 For [v0.51][github-next-release-work], we are planning to work on:
 
-- Execution on new utilities and enhancements
+- Initial development of Always on Top utility to allow users to persist desired windows in the foreground of their displays
 - UI/UX investigations to adopt WinUI and improve accessibility
 - Stability and bug fixes
 - Upgrading PowerToys Run to .NET 5
@@ -169,4 +168,3 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F26
-[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.48.1
