@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         }
 
         /// <summary>
-        /// Gets or sets the time offset of this timezone (the gap from the UTC timezone)
+        /// Gets or sets the time offset of this time zone (the gap from the UTC time zone)
         /// </summary>
         public TimeSpan Offset { get; set; }
 

@@ -116,8 +116,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             // TODO: add shortcuts
             var results = new Collection<Result>();
 
-            var countires = GetCountries(timeZone, search, maxLength: 100);
-            if (countires.Length > 0)
+            var countries = GetCountries(timeZone, search, maxLength: 100);
+            if (countries.Length > 0)
             {
                 var title = GetTitle(timeZone, search, utcNow, false);
 
@@ -125,14 +125,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 {
                     ContextData = timeZone,
                     IcoPath = iconPath,
-                    SubTitle = countires,
+                    SubTitle = countries,
                     Title = title,
                     ToolTipData = new ToolTipData(title, GetToolTip(timeZone)),
                 });
             }
 
-            var dstCountires = GetDstCountries(timeZone, search, maxLength: 100);
-            if (dstCountires.Length > 0)
+            var dstCountries = GetDstCountries(timeZone, search, maxLength: 100);
+            if (dstCountries.Length > 0)
             {
                 var title = GetTitle(timeZone, search, utcNow, true);
 
@@ -140,7 +140,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 {
                     ContextData = timeZone,
                     IcoPath = iconPath,
-                    SubTitle = dstCountires,
+                    SubTitle = dstCountries,
                     Title = title,
                     ToolTipData = new ToolTipData(title, GetDstToolTip(timeZone)),
                 });

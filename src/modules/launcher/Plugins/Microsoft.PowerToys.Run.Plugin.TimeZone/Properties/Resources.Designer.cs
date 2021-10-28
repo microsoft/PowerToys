@@ -79,7 +79,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Countires with daylight saving time.
+        ///   Looks up a localized string similar to Countries with daylight saving time.
         /// </summary>
         internal static string CountriesWithDst {
             get {

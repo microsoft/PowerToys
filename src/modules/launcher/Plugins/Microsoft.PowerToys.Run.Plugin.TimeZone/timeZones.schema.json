@@ -11,7 +11,7 @@
                 "properties": {
                     "Offset": {
                         "type": "string",
-                        "description": "The time offset of this timezone (the gap from the UTC timezone, must convertible to a C# TimeSpan)"
+                        "description": "The time offset of this time zone (the gap from the UTC time zone, must convertible to a C# TimeSpan)"
                     },
                     "Names": {
                         "type": "array",
