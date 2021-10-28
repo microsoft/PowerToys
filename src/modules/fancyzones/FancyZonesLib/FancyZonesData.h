@@ -44,14 +44,13 @@ class FancyZonesData
 public:
     FancyZonesData();
 
-    std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
+    void SetVirtualDesktopCheckCallback(std::function<bool(GUID)> callback);
 
+    std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const FancyZonesDataTypes::DeviceIdData& id) const;
     std::optional<FancyZonesDataTypes::CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
 
     const JSONHelpers::TDeviceInfoMap& GetDeviceInfoMap() const;
-
     const JSONHelpers::TCustomZoneSetsMap& GetCustomZoneSetsMap() const;
-
     const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const;
 
     inline const JSONHelpers::TLayoutQuickKeysMap& GetLayoutQuickKeys() const
@@ -70,18 +69,18 @@ public:
         return settingsFileName;
     }
 
-    bool AddDevice(const std::wstring& deviceId);
-    void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
-    void UpdatePrimaryDesktopData(const std::wstring& desktopId);
-    void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);
+    bool AddDevice(const FancyZonesDataTypes::DeviceIdData& deviceId);
+    void CloneDeviceInfo(const FancyZonesDataTypes::DeviceIdData& source, const FancyZonesDataTypes::DeviceIdData& destination);
+    void SyncVirtualDesktops(GUID desktopId);
+    void RemoveDeletedDesktops(const std::vector<GUID>& activeDesktops);
 
-    bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const std::wstring_view& deviceId) const;
-    void UpdateProcessIdToHandleMap(HWND window, const std::wstring_view& deviceId);
-    ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
-    bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
-    bool SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet);
+    bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId) const;
+    void UpdateProcessIdToHandleMap(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId);
+    ZoneIndexSet GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId) const;
+    bool RemoveAppLastZone(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring_view& zoneSetId);
+    bool SetAppLastZones(HWND window, const FancyZonesDataTypes::DeviceIdData& deviceId, const std::wstring& zoneSetId, const ZoneIndexSet& zoneIndexSet);
 
-    void SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
+    void SetActiveZoneSet(const FancyZonesDataTypes::DeviceIdData& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
     json::JsonObject GetPersistFancyZonesJSON();
 
@@ -100,7 +99,7 @@ private:
     friend class FancyZonesUnitTests::WorkAreaCreationUnitTests;
     friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
 
-    inline void SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data)
+    inline void SetDeviceInfo(const FancyZonesDataTypes::DeviceIdData& deviceId, FancyZonesDataTypes::DeviceInfoData data)
     {
         deviceInfoMap[deviceId] = data;
     }
@@ -130,7 +129,7 @@ private:
         appZoneHistoryFileName = result + L"\\" + std::wstring(L"app-zone-history.json");
     }
 #endif
-    void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
+    void RemoveDesktopAppZoneHistory(GUID desktopId);
 
     // Maps app path to app's zone history data
     std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> appZoneHistoryMap{};
@@ -145,6 +144,8 @@ private:
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;
     std::wstring editorParametersFileName;
+
+    std::function<bool(GUID)> m_virtualDesktopCheckCallback;
 
     mutable std::recursive_mutex dataLock;
 };

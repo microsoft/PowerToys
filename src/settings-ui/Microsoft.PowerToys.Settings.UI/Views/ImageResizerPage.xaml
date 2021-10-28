@@ -15,6 +15,7 @@
         <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
         <toolkitconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed" />
+        <toolkitconverters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="0" FalseValue="1"/>
     </Page.Resources>
     <controls:SettingsPageControl x:Uid="ImageResizer"
                                     
@@ -33,7 +34,7 @@
 
 
                 <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="ImageResizer_CustomSizes" Icon="&#xE2B2;">
+                    <controls:Setting x:Uid="ImageResizer_Presets" Icon="&#xE2B2;">
                         <controls:Setting.ActionContent>
                             <Button x:Uid="ImageResizer_AddSizeButton" Click="AddSizeButton_Click" Style="{ThemeResource AccentButtonStyle}" />
                         </controls:Setting.ActionContent>
@@ -44,13 +45,10 @@
                       x:Uid="ImagesSizesListView"
                       ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
                       SelectionMode="None"
-                      ScrollViewer.HorizontalScrollMode="Enabled"
-                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                      ScrollViewer.IsHorizontalRailEnabled="True"
                       ContainerContentChanging="ImagesSizesListView_ContainerContentChanging">
                         <ListView.ItemTemplate>
                         <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
-                            <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                                <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
                                   HorizontalAlignment="Stretch"
                                   Background="{ThemeResource CardBackgroundBrush}"
                                   BorderThickness="{ThemeResource CardBorderThickness}"
@@ -58,12 +56,10 @@
                                   CornerRadius="{ThemeResource ControlCornerRadius}"
                                   Padding="0,0,16,0"
                                   MinHeight="68">
-
-
-                                <Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="56" />
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="52" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                             
                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center" Grid.Column="1" Margin="0,0,16,0">
@@ -179,13 +175,12 @@
 
                     <controls:Setting x:Uid="ImageResizer_Encoding">
                         <controls:Setting.ActionContent>
-                            <muxc:NumberBox
-                            Minimum="0"
-                            Maximum="100"
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Right"
+                            <Slider
+                                Minimum="0"
+                                Maximum="100"
+                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                HorizontalAlignment="Right"
                             />
                         </controls:Setting.ActionContent>
                     </controls:Setting>
@@ -218,19 +213,18 @@
 
 
                 <controls:SettingsGroup x:Uid="File" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingExpander IsExpanded="True">
-                        <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ImageResizer_FilenameFormatHeader" Style="{StaticResource ExpanderHeaderSettingStyle}">
-                                <controls:Setting.ActionContent>
-                                    <StackPanel Spacing="4" Orientation="Horizontal">
-                                        <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
+
+                    <controls:Setting x:Uid="ImageResizer_FilenameFormatHeader">
+                        <controls:Setting.ActionContent>
+                            <StackPanel Spacing="4" Orientation="Horizontal">
+                                <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
                                          HorizontalAlignment="Right"
                                          MinWidth="{StaticResource SettingActionControlMinWidth}"
                                          x:Uid="ImageResizer_FilenameFormatPlaceholder"/>
-                                        <Button Content="&#xE946;" FontFamily="{ThemeResource SymbolThemeFontFamily}">
-                                            <Button.Flyout>
-                                                <Flyout>
-                                                    <TextBlock x:Name="FileFormatTextBlock">
+                                <Button Content="&#xE946;" x:Uid="ImageResizer_FilenameParameters" Height="32" FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                    <Button.Flyout>
+                                        <Flyout>
+                                            <TextBlock x:Name="FileFormatTextBlock">
                                                 <Run x:Uid="ImageResizer_FileFormatDescription"/>
                                                 <LineBreak/>
                                                 <LineBreak/>
@@ -257,26 +251,23 @@
                                                 <Run Text="%6" FontWeight="Bold" />
                                                 <Run Text=" - "/>
                                                 <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
-                                                    </TextBlock>
-                                                </Flyout>
-                                            </Button.Flyout>
-                                        </Button>
-                                    </StackPanel>
+                                            </TextBlock>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </StackPanel>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-                                </controls:Setting.ActionContent>
-
-                            </controls:Setting>
-                        </controls:SettingExpander.Header>
-                        <controls:SettingExpander.Content>
-
-                            <CheckBox x:Uid="ImageResizer_UseOriginalDate"
-                                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified}"
-                                      Margin="16,8,0,8" />
-                        </controls:SettingExpander.Content>
-                    </controls:SettingExpander>
+                    <controls:Setting x:Uid="ImageResizer_FileModifiedDate">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate"/>
+                                <ComboBoxItem x:Uid="ImageResizer_UseResizeDate"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                 </controls:SettingsGroup>
-
-
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>

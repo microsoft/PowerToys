@@ -57,12 +57,12 @@
       </Item>
       <Item ItemId=";Input_Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[_Select a size]]></Val>
+          <Val><![CDATA[Select a size]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[_Selecteer een formaat]]></Val>
+            <Val><![CDATA[Een grootte selecteren]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[_Select a size.]]></Val>
+            <Val><![CDATA[_Select a size]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -326,7 +326,7 @@
         <Str Cat="Text">
           <Val><![CDATA[fills]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[vult aan]]></Val>
+            <Val><![CDATA[vult op]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -362,7 +362,7 @@
         <Str Cat="Text">
           <Val><![CDATA[stretches to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[uitgerekt tot]]></Val>
+            <Val><![CDATA[strekt uit over]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -380,7 +380,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Inches]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inch]]></Val>
+            <Val><![CDATA[Inches]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

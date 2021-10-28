@@ -9,15 +9,36 @@ public:
     VirtualDesktop(const std::function<void()>& vdInitCallback, const std::function<void()>& vdUpdatedCallback);
     ~VirtualDesktop() = default;
 
+    inline bool IsVirtualDesktopIdSavedInRegistry(GUID id) const
+    {
+        auto ids = GetVirtualDesktopIdsFromRegistry();
+        if (!ids.has_value())
+        {
+            return false;
+        }
+
+        for (const auto& regId : *ids)
+        {
+            if (regId == id)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void Init();
     void UnInit();
 
-    std::optional<GUID> GetWindowDesktopId(HWND topLevelWindow) const;
-    std::optional<GUID> GetCurrentVirtualDesktopId() const;
-    std::optional<std::vector<GUID>> GetVirtualDesktopIds() const;
+    std::optional<GUID> GetCurrentVirtualDesktopIdFromRegistry() const;
+    std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry() const;
 
     bool IsWindowOnCurrentDesktop(HWND window) const;
     std::optional<GUID> GetDesktopId(HWND window) const;
+    std::optional<GUID> GetDesktopIdByTopLevelWindows() const;
+
+    std::vector<std::pair<HWND, GUID>> GetWindowsRelatedToDesktops() const;
 
 private:
     std::function<void()> m_vdInitCallback;
@@ -28,7 +49,6 @@ private:
     OnThreadExecutor m_virtualDesktopTrackerThread;
     wil::unique_handle m_terminateVirtualDesktopTrackerEvent;
 
-    std::optional<std::vector<GUID>> GetVirtualDesktopIds(HKEY hKey) const;
-    std::optional<GUID> GetDesktopIdByTopLevelWindows() const;
+    std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry(HKEY hKey) const;
     void HandleVirtualDesktopUpdates();
 };

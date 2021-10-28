@@ -51,7 +51,29 @@ namespace PowerLauncher.Helper
 
             foreach (KeyValuePair<string, string> kv in environment)
             {
-                Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
+                // Initialize variables for length of environment variable name and value. Using this variables prevent us from null value exceptions.
+                int varNameLength = kv.Key == null ? 0 : kv.Key.Length;
+                int varValueLength = kv.Value == null ? 0 : kv.Value.Length;
+
+                // The name of environment variables must not be null, empty or have a length of zero.
+                // But if the value of the environment variable is null or empty then the variable is explicit defined for deletion. => Here we don't need to check anything.
+                if (!string.IsNullOrEmpty(kv.Key) & varNameLength > 0)
+                {
+                    try
+                    {
+                        Environment.SetEnvironmentVariable(kv.Key, kv.Value, EnvironmentVariableTarget.Process);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        // The dotnet method <see cref="System.Environment.SetEnvironmentVariable"/> has it's own internal method to check the input parameters. Here we catch the exceptions that we don't check before updating the environment variable and log it to avoid crashes of PT Run.
+                        Log.Exception($"Unexpected exception while updating the environment variable [{kv.Key}] for the PT Run process. (The variable value has a length of [{varValueLength}].)", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
+                    }
+                }
+                else
+                {
+                    // Log the error when variable value is null, empty or has a length of zero.
+                    Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. Their name is null or empty. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
+                }
             }
         }
 

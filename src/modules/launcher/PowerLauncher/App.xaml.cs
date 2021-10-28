@@ -40,6 +40,9 @@ namespace PowerLauncher
         private StringMatcher _stringMatcher;
         private SettingsReader _settingsReader;
 
+        // To prevent two disposals running at the same time.
+        private static readonly object _disposingLock = new object();
+
         [STAThread]
         public static void Main()
         {
@@ -90,6 +93,9 @@ namespace PowerLauncher
         private void OnStartup(object sender, StartupEventArgs e)
         {
             Log.Info("On Startup.", GetType());
+
+            // Fix for .net 3.1.19 making PowerToys Run not adapt to DPI changes.
+            PowerLauncher.Helper.NativeMethods.SetProcessDPIAware();
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
             Stopwatch.Normal("App.OnStartup - Startup cost", () =>
@@ -106,7 +112,7 @@ namespace PowerLauncher
 
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
-                _settings.UsePowerToysRunnerKeyboardHook = e.Args.Contains("--centralized-kb-hook");
+                _settings.StartedFromPowerToysRunner = e.Args.Contains("--started-from-runner");
 
                 _stringMatcher = new StringMatcher();
                 StringMatcher.Instance = _stringMatcher;
@@ -238,33 +244,44 @@ namespace PowerLauncher
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposed)
+            // Prevent two disposes at the same time.
+            lock (_disposingLock)
             {
-                Stopwatch.Normal("App.OnExit - Exit cost", () =>
+                if (!disposing)
                 {
-                    Log.Info("Start PowerToys Run Exit----------------------------------------------------  ", GetType());
-                    if (disposing)
-                    {
-                        if (_themeManager != null)
-                        {
-                            _themeManager.ThemeChanged -= OnThemeChanged;
-                        }
+                    return;
+                }
 
-                        API?.SaveAppAllSettings();
-                        PluginManager.Dispose();
-                        _mainWindow?.Dispose();
-                        API?.Dispose();
-                        _mainVM?.Dispose();
-                        _themeManager?.Dispose();
-                        _disposed = true;
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _disposed = true;
+            }
+
+            Stopwatch.Normal("App.OnExit - Exit cost", () =>
+            {
+                Log.Info("Start PowerToys Run Exit----------------------------------------------------  ", GetType());
+                if (disposing)
+                {
+                    if (_themeManager != null)
+                    {
+                        _themeManager.ThemeChanged -= OnThemeChanged;
                     }
 
-                    // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                    // TODO: set large fields to null
-                    _disposed = true;
-                    Log.Info("End PowerToys Run Exit ----------------------------------------------------  ", GetType());
-                });
-            }
+                    API?.SaveAppAllSettings();
+                    PluginManager.Dispose();
+                    _mainWindow?.Dispose();
+                    API?.Dispose();
+                    _mainVM?.Dispose();
+                    _themeManager?.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                Log.Info("End PowerToys Run Exit ----------------------------------------------------  ", GetType());
+            });
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources

@@ -23,12 +23,14 @@
                 <muxc:InfoBar Severity="Warning"
                                    x:Uid="FileExplorerPreview_RunAsAdminRequired"
                                    IsOpen="True"
+                                   IsTabStop="True"
                                    IsClosable="False"
                                    Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                 <muxc:InfoBar Severity="Informational"
                                    x:Uid="FileExplorerPreview_AffectsAllUsers"
                                    IsOpen="True"
+                                   IsTabStop="True"
                                    IsClosable="False"
                                    />
 
@@ -59,6 +61,7 @@
                     <muxc:InfoBar Severity="Informational"
                                    x:Uid="FileExplorerPreview_RebootRequired"
                                    IsOpen="True"
+                                   IsTabStop="True"
                                    IsClosable="False"
                                    />
                     <controls:Setting x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail" Icon="&#xE91B;">

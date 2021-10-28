@@ -38,7 +38,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;Pathcch.lib;comctl32.lib;$(SolutionDir)$(Platform)\$(Configuration)\obj\PowerRenameUI\PowerRenameUI.res;shlwapi.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;Pathcch.lib;comctl32.lib;shlwapi.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

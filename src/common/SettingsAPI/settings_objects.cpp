@@ -313,7 +313,7 @@ namespace PowerToysSettings
         return json::has(props, name) && json::has(props.GetNamedObject(name), L"value", type);
     }
 
-    std::optional<bool> PowerToyValues::get_bool_value(std::wstring_view property_name)
+    std::optional<bool> PowerToyValues::get_bool_value(std::wstring_view property_name) const
     {
         if (!has_property(m_json, property_name, json::JsonValueType::Boolean))
         {
@@ -322,7 +322,7 @@ namespace PowerToysSettings
         return m_json.GetNamedObject(L"properties").GetNamedObject(property_name).GetNamedBoolean(L"value");
     }
 
-    std::optional<int> PowerToyValues::get_int_value(std::wstring_view property_name)
+    std::optional<int> PowerToyValues::get_int_value(std::wstring_view property_name) const
     {
         if (!has_property(m_json, property_name, json::JsonValueType::Number))
         {
@@ -331,7 +331,7 @@ namespace PowerToysSettings
         return static_cast<int>(m_json.GetNamedObject(L"properties").GetNamedObject(property_name).GetNamedNumber(L"value"));
     }
 
-    std::optional<std::wstring> PowerToyValues::get_string_value(std::wstring_view property_name)
+    std::optional<std::wstring> PowerToyValues::get_string_value(std::wstring_view property_name) const
     {
         if (!has_property(m_json, property_name, json::JsonValueType::String))
         {
@@ -340,7 +340,7 @@ namespace PowerToysSettings
         return m_json.GetNamedObject(L"properties").GetNamedObject(property_name).GetNamedString(L"value").c_str();
     }
 
-    std::optional<json::JsonObject> PowerToyValues::get_json(std::wstring_view property_name)
+    std::optional<json::JsonObject> PowerToyValues::get_json(std::wstring_view property_name) const
     {
         if (!has_property(m_json, property_name, json::JsonValueType::Object))
         {

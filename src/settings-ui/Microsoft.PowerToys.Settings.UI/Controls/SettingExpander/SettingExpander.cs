@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation;
+using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {

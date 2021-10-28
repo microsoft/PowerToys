@@ -84,9 +84,19 @@ namespace PowerLauncher.ViewModel
         public void RegisterHotkey(IntPtr hwnd)
         {
             Log.Info("RegisterHotkey()", GetType());
+
+            // Allow OOBE to call PowerToys Run.
+            NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey);
+
+            if (_settings.StartedFromPowerToysRunner)
+            {
+                // Allow runner to call PowerToys Run from the centralized keyboard hook.
+                NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherCentralizedHookSharedEvent(), OnCentralizedKeyboardHookHotKey);
+            }
+
             _settings.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(PowerToysRunSettings.Hotkey))
+                if (e.PropertyName == nameof(PowerToysRunSettings.Hotkey) || e.PropertyName == nameof(PowerToysRunSettings.UseCentralizedKeyboardHook))
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
@@ -600,7 +610,6 @@ namespace PowerLauncher.ViewModel
                                                     currentCancellationToken.ThrowIfCancellationRequested();
                                                     numResults = Results.Results.Count;
                                                     Results.Sort();
-                                                    Results.SelectedItem = Results.Results.FirstOrDefault();
                                                 }
                                             }
 
@@ -737,26 +746,33 @@ namespace PowerLauncher.ViewModel
                     Log.Info("Unregistering previous low level key handler", GetType());
                 }
 
-                _globalHotKeyVK = hotkey.Key;
-                _globalHotKeyFSModifiers = VKModifiersFromHotKey(hotkey);
-                if (NativeMethods.RegisterHotKey(hwnd, _globalHotKeyId, _globalHotKeyFSModifiers, _globalHotKeyVK))
+                if (_settings.StartedFromPowerToysRunner && _settings.UseCentralizedKeyboardHook)
                 {
-                    // Using global hotkey registered through the native RegisterHotKey method.
-                    _globalHotKeyHwnd = hwnd;
-                    _usingGlobalHotKey = true;
-                    Log.Info("Registered global hotkey", GetType());
-                    return;
+                    Log.Info("Using the Centralized Keyboard Hook for the HotKey.", GetType());
                 }
-
-                Log.Warn("Registering global shortcut failed. Will use low-level keyboard hook instead.", GetType());
-
-                // Using fallback low-level keyboard hook through HotkeyManager.
-                if (HotkeyManager == null)
+                else
                 {
-                    HotkeyManager = new HotkeyManager();
-                }
+                    _globalHotKeyVK = hotkey.Key;
+                    _globalHotKeyFSModifiers = VKModifiersFromHotKey(hotkey);
+                    if (NativeMethods.RegisterHotKey(hwnd, _globalHotKeyId, _globalHotKeyFSModifiers, _globalHotKeyVK))
+                    {
+                        // Using global hotkey registered through the native RegisterHotKey method.
+                        _globalHotKeyHwnd = hwnd;
+                        _usingGlobalHotKey = true;
+                        Log.Info("Registered global hotkey", GetType());
+                        return;
+                    }
 
-                _hotkeyHandle = HotkeyManager.RegisterHotkey(hotkey, action);
+                    Log.Warn("Registering global shortcut failed. Will use low-level keyboard hook instead.", GetType());
+
+                    // Using fallback low-level keyboard hook through HotkeyManager.
+                    if (HotkeyManager == null)
+                    {
+                        HotkeyManager = new HotkeyManager();
+                    }
+
+                    _hotkeyHandle = HotkeyManager.RegisterHotkey(hotkey, action);
+                }
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
@@ -812,6 +828,14 @@ namespace PowerLauncher.ViewModel
             }
         }
         */
+
+        private void OnCentralizedKeyboardHookHotKey()
+        {
+            if (_settings.StartedFromPowerToysRunner && _settings.UseCentralizedKeyboardHook)
+            {
+                OnHotkey();
+            }
+        }
 
         private void OnHotkey()
         {

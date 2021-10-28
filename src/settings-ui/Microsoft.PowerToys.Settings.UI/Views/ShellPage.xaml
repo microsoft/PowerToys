@@ -27,7 +27,6 @@
                              IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
                              SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
                              IsSettingsVisible="False"
-                             OpenPaneLength="288"
                              CompactModeThresholdWidth="1007"
                              ExpandedModeThresholdWidth="1007"
                              PaneOpened="NavigationView_PaneOpened"
@@ -41,8 +40,7 @@
             </muxc:NavigationView.Resources>
             <muxc:NavigationView.MenuItems>
                 <muxc:NavigationViewItem x:Uid="Shell_General"
-                                         helpers:NavHelper.NavigateTo="views:GeneralPage"
-                                         Margin="0,0,12,0">
+                                         helpers:NavHelper.NavigateTo="views:GeneralPage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsSettings.png"
                                     ShowAsMonochrome="False" />
@@ -50,8 +48,7 @@
                 </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_Awake"
-                                         helpers:NavHelper.NavigateTo="views:AwakePage"
-                                         Margin="0,0,12,0">
+                                         helpers:NavHelper.NavigateTo="views:AwakePage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsAwake.png"
                                     ShowAsMonochrome="False" />
@@ -59,8 +56,7 @@
                 </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_ColorPicker"
-                                         helpers:NavHelper.NavigateTo="views:ColorPickerPage"
-                                         Margin="0,0,12,0">
+                                         helpers:NavHelper.NavigateTo="views:ColorPickerPage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsColorPicker.png"
                                     ShowAsMonochrome="False" />
@@ -68,8 +64,7 @@
                 </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_FancyZones"
-                                         helpers:NavHelper.NavigateTo="views:FancyZonesPage"
-                                         Margin="0,0,12,0">
+                                         helpers:NavHelper.NavigateTo="views:FancyZonesPage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFancyZones.png"
                                     ShowAsMonochrome="False" />
@@ -77,8 +72,7 @@
                 </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_PowerPreview"
-                                         helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
-                                         Margin="0,0,12,0">
+                                         helpers:NavHelper.NavigateTo="views:PowerPreviewPage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFileExplorerPreview.png"
                                     ShowAsMonochrome="False" />
@@ -86,8 +80,7 @@
                 </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_ImageResizer"
-                                         helpers:NavHelper.NavigateTo="views:ImageResizerPage"
-                                         Margin="0,0,12,0">
+                                         helpers:NavHelper.NavigateTo="views:ImageResizerPage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsImageResizer.png"
                                     ShowAsMonochrome="False" />
@@ -95,17 +88,23 @@
                 </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_KeyboardManager"
-                                         helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
-                                         Margin="0,0,12,0">
+                                         helpers:NavHelper.NavigateTo="views:KeyboardManagerPage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsKeyboardManager.png"
                                     ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
 
+                <muxc:NavigationViewItem x:Uid="Shell_MouseUtilities"
+                                         helpers:NavHelper.NavigateTo="views:MouseUtilsPage">
+                    <muxc:NavigationViewItem.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseUtils.png"
+                                    ShowAsMonochrome="False" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+
                 <muxc:NavigationViewItem x:Uid="Shell_PowerRename"
-                                         helpers:NavHelper.NavigateTo="views:PowerRenamePage"
-                                         Margin="0,0,12,0">
+                                         helpers:NavHelper.NavigateTo="views:PowerRenamePage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerRename.png"
                                     ShowAsMonochrome="False" />
@@ -113,8 +112,7 @@
                 </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_PowerLauncher"
-                                         helpers:NavHelper.NavigateTo="views:PowerLauncherPage"
-                                         Margin="0,0,12,0">
+                                         helpers:NavHelper.NavigateTo="views:PowerLauncherPage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsPowerToysRun.png"
                                     ShowAsMonochrome="False" />
@@ -122,38 +120,33 @@
                 </muxc:NavigationViewItem>
 
                 <muxc:NavigationViewItem x:Uid="Shell_ShortcutGuide"
-                                         helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
-                                         Margin="0,0,12,0">
+                                         helpers:NavHelper.NavigateTo="views:ShortcutGuidePage">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsShortcutGuide.png"
                                     ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
 
-                <!--TODO(yuyoyuppe): uncomment when VCM should be enabled-->
-                <!--<muxc:NavigationViewItem x:Uid="Shell_VideoConference"
+                <muxc:NavigationViewItem x:Uid="Shell_VideoConference"
                                          helpers:NavHelper.NavigateTo="views:VideoConferencePage"
-                                         IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}"
-                                         Margin="0,0,12,0">
+                                         IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}">
                     <muxc:NavigationViewItem.Icon>
                         <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConferenceMute.png"
                                     ShowAsMonochrome="False" />
                     </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>-->
+                </muxc:NavigationViewItem>
 
             </muxc:NavigationView.MenuItems>
             <muxc:NavigationView.PaneFooter>
                 <StackPanel Orientation="Vertical">
                     <muxc:NavigationViewItem x:Uid="OOBE_NavViewItem"
-                                             Tapped="OOBEItem_Tapped"
-                                             Margin="0,0,12,0">
+                                             Tapped="OOBEItem_Tapped">
                         <muxc:NavigationViewItem.Icon>
                             <FontIcon Glyph="&#xF133;"/>
                         </muxc:NavigationViewItem.Icon>
                     </muxc:NavigationViewItem>
                     <muxc:NavigationViewItem x:Uid="Feedback_NavViewItem"
-                                             Tapped="FeedbackItem_Tapped"
-                                             Margin="0,0,12,0">
+                                             Tapped="FeedbackItem_Tapped">
                         <muxc:NavigationViewItem.Icon>
                             <FontIcon Glyph="&#xED15;"/>
                         </muxc:NavigationViewItem.Icon>

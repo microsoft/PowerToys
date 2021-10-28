@@ -11,6 +11,7 @@
     AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
@@ -31,7 +32,7 @@
 
                 <controls:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <Button Style="{StaticResource SettingButtonStyle}" x:Uid="FancyZones_LaunchEditorButton_Accessible" Command="{x:Bind ViewModel.LaunchEditorEventHandler}">
-                        <controls:Setting x:Uid="FancyZones_LaunchEditorButtonControl" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xF246;">
+                        <controls:Setting x:Uid="FancyZones_LaunchEditorButtonControl" Style="{StaticResource ExpanderHeaderSettingStyle}" Icon="&#xEB3C;">
                             <!--<controls:Setting.Icon>
                                 <PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>
                             </controls:Setting.Icon>-->
@@ -40,29 +41,22 @@
                             </controls:Setting.ActionContent>
                         </controls:Setting>
                     </Button>
+                  
+                    <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;">
+                        <controls:Setting.ActionContent>
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                      HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-
-
-                    <controls:SettingExpander IsExpanded="True">
-                        <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
-                                <controls:Setting.ActionContent>
-                                    <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                                    HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"/>
-                                </controls:Setting.ActionContent>
-                            </controls:Setting>
-                        </controls:SettingExpander.Header>
-
-                        <controls:SettingExpander.Content>
-                            <StackPanel>
-                                <controls:Setting x:Uid="FancyZones_UseCursorPosEditorStartupScreen" Style="{StaticResource ExpanderContentSettingStyle}">
-                                    <controls:Setting.ActionContent>
-                                        <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen}"/>
-                                    </controls:Setting.ActionContent>
-                                </controls:Setting>
-                            </StackPanel>
-                        </controls:SettingExpander.Content>
-                    </controls:SettingExpander>
+                    <controls:Setting x:Uid="FancyZones_UseCursorPosEditorStartupScreen" Icon="&#xE7F9;">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="FancyZones_LaunchPositionScreen" />
+                                <ComboBoxItem x:Uid="FancyZones_LaunchPositionMouse" />
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
                 </controls:SettingsGroup>
 
 
@@ -80,20 +74,11 @@
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}" Margin="{StaticResource ExpanderSettingMargin}"  />
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <CheckBox IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}" 
-                                          Margin="{StaticResource ExpanderSettingMargin}"
-                                          AutomationProperties.Name="{Binding ElementName=SpanZonesAcrossMonitorsPrerequisitesTitle, Path=Text}">
-                                    <StackPanel Orientation="Vertical">
-                                        <TextBlock x:Name="SpanZonesAcrossMonitorsPrerequisitesTitle" x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl" />
-                                        <controls:TextBlockControl x:Uid="FancyZones_SpanZonesAcrossMonitorsPrerequisites"
-                                            FontSize="{StaticResource SecondaryTextFontSize}"
-                                            EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            DisabledForeground="{ThemeResource TextFillColorDisabledBrush}"
-                                            IsEnabled="{Binding ElementName=ZonesSettingsGroup, Path=IsEnabled, Mode=OneWay}"/>
-                                    </StackPanel>
-                                </CheckBox>
-                            
-                                <controls:Setting  x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:CheckBoxWithDescriptionControl IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}"
+                                                                 Margin="56, -2, 40, 14"
+                                                                 x:Uid="FancyZones_SpanZonesAcrossMonitors"/>
+
+                                <controls:Setting x:Uid="FancyZones_OverlappingZones" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <ComboBox SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}" MinWidth="{StaticResource SettingActionControlMinWidth}">
                                             <ComboBoxItem x:Uid="FancyZones_OverlappingZonesSmallest" />
@@ -116,71 +101,20 @@
 
                                 <controls:Setting  x:Uid="FancyZones_ZoneHighlightColor" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:DropDownButton Padding="4,4,8,4">
-                                            <Border Width="48" CornerRadius="2" Height="24">
-                                                <Border.Background>
-                                                    <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}"/>
-                                                </Border.Background>
-                                            </Border>
-                                            <muxc:DropDownButton.Flyout>
-                                                <Flyout>
-                                                    <muxc:ColorPicker IsColorSliderVisible="True"
-                                                                      IsColorChannelTextInputVisible="True"
-                                                                      IsHexInputVisible="True"
-                                                                      IsAlphaEnabled="False"
-                                                                      IsAlphaSliderVisible="False"
-                                                                      IsAlphaTextInputVisible="False"
-                                                                      Color="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
-                                                </Flyout>
-                                            </muxc:DropDownButton.Flyout>
-                                        </muxc:DropDownButton>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
 
 
                                 <controls:Setting  x:Uid="FancyZones_InActiveColor" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:DropDownButton Padding="4,4,8,4">
-                                            <Border Width="48" CornerRadius="2" Height="24">
-                                                <Border.Background>
-                                                    <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}"/>
-                                                </Border.Background>
-                                            </Border>
-                                            <muxc:DropDownButton.Flyout>
-                                                <Flyout>
-                                                    <muxc:ColorPicker IsColorSliderVisible="True"
-                                                                      IsColorChannelTextInputVisible="True"
-                                                                      IsHexInputVisible="True"
-                                                                      IsAlphaEnabled="False"
-                                                                      IsAlphaSliderVisible="False"
-                                                                      IsAlphaTextInputVisible="False"
-                                                                      Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
-                                                </Flyout>
-                                            </muxc:DropDownButton.Flyout>
-                                        </muxc:DropDownButton>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
 
                                 <controls:Setting  x:Uid="FancyZones_BorderColor" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <muxc:DropDownButton Padding="4,4,8,4">
-                                            <Border Width="48" CornerRadius="2" Height="24">
-                                                <Border.Background>
-                                                    <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}"/>
-                                                </Border.Background>
-                                            </Border>
-                                            <muxc:DropDownButton.Flyout>
-                                                <Flyout>
-                                                    <muxc:ColorPicker IsColorSliderVisible="True"
-                                                                      IsColorChannelTextInputVisible="True"
-                                                                      IsHexInputVisible="True"
-                                                                      IsAlphaEnabled="False"
-                                                                      IsAlphaSliderVisible="False"
-                                                                      IsAlphaTextInputVisible="False"
-                                                                      Color="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
-                                                </Flyout>
-                                            </muxc:DropDownButton.Flyout>
-                                        </muxc:DropDownButton>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
 
@@ -225,16 +159,29 @@
 
                         <controls:SettingExpander.Content>
                             <StackPanel>
-                                <RadioButton x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex"
-                                             IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnZoneIndex}"
-                                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"
-                                             GroupName="OverrideSnapGroup"
-                                             Margin="{StaticResource ExpanderSettingMargin}"/>
-                                <RadioButton x:Uid="FancyZones_MoveWindowBasedOnRelativePosition"
-                                             IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition}"
-                                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"
-                                             GroupName="OverrideSnapGroup"
-                                             Margin="{StaticResource ExpanderSettingMargin}"/>
+                                <controls:Setting x:Uid="FancyZones_MoveWindow" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinHeight="56" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                            <ComboBoxItem x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible">
+                                                <StackPanel Orientation="Vertical" Spacing="4">
+                                                    <controls:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex"/>
+                                                    <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
+                                                        <Run x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description" />
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Accessible">
+                                                <StackPanel Orientation="Vertical" Spacing="4">
+                                                    <controls:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowBasedOnRelativePosition"/>
+                                                    <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
+                                                        <Run x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Description" />
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </ComboBoxItem>
+                                        </ComboBox>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
                                           Margin="56,8,16,8"
@@ -271,7 +218,7 @@
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="FancyZones_ExcludeApps" Icon="&#xE103;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
+                            <controls:Setting x:Uid="FancyZones_ExcludeApps" Icon="&#xECE4;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"

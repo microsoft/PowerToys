@@ -86,7 +86,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use Boost library (provides extended features but may use different regex syntax).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Usar a Biblioteca de aumento (fornece recursos estendidos, mas pode usar uma sintaxe regex diferente).]]></Val>
+            <Val><![CDATA[Usar a biblioteca Aumentar (fornece recursos estendidos, mas pode usar uma sintaxe regex diferente).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

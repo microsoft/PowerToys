@@ -127,7 +127,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_EnableAwake.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_EnableAwake.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable Awake]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -145,7 +145,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_IndefiniteKeepAwakeContent.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_IndefiniteKeepAwake.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keep awake indefinitely]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -154,21 +154,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_IndefiniteKeepAwakeDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Keeps your PC awake until the setting is disabled]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mantém seu PC ativo até que a configuração seja desabilitada]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";Awake_Mode.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set the preferred behaviour or Awake]]></Val>
+          <Val><![CDATA[Manage the state of your device when Awake is active]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Definir o comportamento preferido ou Modo Ativo]]></Val>
+            <Val><![CDATA[Gerenciar o estado do seu dispositivo quando o Modo Ativo está ativo]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Set the preferred behaviour of Awake]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -181,41 +175,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_NoKeepAwakeContent.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_NoKeepAwake.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Inactive]]></Val>
+          <Val><![CDATA[Keep using the selected power plan]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inativo]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Off (Passive)]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Awake_NoKeepAwakeDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Your PC operates according to its current power plan]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Seu PC opera de acordo com seu atual plano de energia]]></Val>
+            <Val><![CDATA[Continuar usando o plano de energia selecionado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_TemporaryKeepAwakeContent.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_TemporaryKeepAwake.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keep awake temporarily]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Manter ativo temporariamente]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Awake_TemporaryKeepAwakeDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Keeps your PC awake until the set time elapses]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mantém seu PC ativo até que o tempo definido passe]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -238,6 +211,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Awake_TimeBeforeAwake.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Time before returning to the previous awakeness state]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tempo antes de retornar ao estado anterior de vigília]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ColorFormats.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Picker behavior]]></Val>
@@ -249,10 +231,13 @@
       </Item>
       <Item ItemId=";ColorModeHeader.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Choose a mode]]></Val>
+          <Val><![CDATA[App theme]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Escolha um modo]]></Val>
+            <Val><![CDATA[Tema do aplicativo]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Choose a mode]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -283,56 +268,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ColorPickerFirst.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";ColorPickerFirst.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
+          <Val><![CDATA[Pick a color and open editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Seletor de Cor com o modo de editor habilitado]]></Val>
+            <Val><![CDATA[Escolha uma cor e abra o editor]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ColorPickerFirst_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";ColorPickerOnly.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
+          <Val><![CDATA[Only pick a color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Seletor de Cor com o modo de editor habilitado]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerFirst_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Pick a color from the screen, copy formatted value to clipboard, then to the editor]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Escolha uma cor na tela, copie o valor formatado para a área de transferência e depois para o editor]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerOnly.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Color Picker only]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Somente o Seletor de Cor]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerOnly_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Color Picker only]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Seletor de Cores apenas]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerOnly_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Pick a color from the screen and copy formatted value to clipboard]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Escolha uma cor na tela e copie o valor formatado para a área de transferência]]></Val>
+            <Val><![CDATA[Escolha apenas uma cor]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -493,29 +442,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";EditorFirst.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";EditorFirst.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Editor]]></Val>
+          <Val><![CDATA[Open editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Editor]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";EditorFirst_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Editor]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Editor]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";EditorFirst_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Open directly into the editor mode]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abrir diretamente no modo de editor]]></Val>
+            <Val><![CDATA[Abrir o editor]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -733,20 +664,65 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_MoveWindow.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Win + Up/Down/Left/Right to move windows based on relative position]]></Val>
+          <Val><![CDATA[Move windows based on]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Win + Seta para Cima/para Baixo/para a Esquerda/para a Direita para mover as janelas com base na posição relativa]]></Val>
+            <Val><![CDATA[Mover janelas com base em]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Win + Left/Right to move windows based on zone index]]></Val>
+          <Val><![CDATA[Relative position]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Win + Seta para a Esquerda/Direita para mover as janelas com base no índice da zona]]></Val>
+            <Val><![CDATA[Posição relativa]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key + Up, down, left or right arrow key to move windows based on relative position]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tecla Windows + Tecla de seta para cima, para baixo, para a esquerda ou para a direita para mover as janelas com base na posição relativa]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key +    or ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tecla Windows +    ou ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Zone index]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Índice de zona]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key + Left or right arrow keys to move windows based on zone index]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tecla Windows + Teclas de seta para esquerda ou para a direita para mover as janelas com base no índice de zona]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key +  or ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tecla Windows +  ou ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -912,10 +888,13 @@
       </Item>
       <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.]]></Val>
+          <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Todos os monitores devem ter a mesma escala de DPI e serão tratados como um grande retângulo combinado que contém todos os monitores.]]></Val>
+            <Val><![CDATA[Todos os monitores devem ter a mesma escala de DPI e serão tratados como um grande retângulo combinado que contém todos os monitores]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1104,6 +1083,15 @@
           <Val><![CDATA[You need to run as administrator to modify these settings.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Você precisa executar como administrador para modificar essas configurações.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorerPreview_ToggleSwitch_PDF_Thumbnail.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable PDF (.pdf) thumbnails]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Habilitar as imagens em miniatura do PDF (.pdf)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1555,6 +1543,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ImageResizer_DefaultSize_NewSizePrefix" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[New size]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Novo tamanho]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ImageResizer_DefaultSize_Phone" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Phone]]></Val>
@@ -1726,6 +1723,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ImageResizer_FilenameFormatHeader.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This format is used as the filename for resized images]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Este formato é usado como o nome do arquivo para imagens redimensionadas]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ImageResizer_FilenameFormatHeader.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Filename format]]></Val>
@@ -1740,6 +1746,15 @@
           <Val><![CDATA[Example: %1 (%2)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Exemplo: %1 (%2)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_FilenameParameters.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Filename parameters]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Parâmetros de nome de arquivo]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1866,6 +1881,24 @@
           <Val><![CDATA[PNG interlacing]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Entrelaçamento de PNG]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_Presets.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Manage preset sizes that can be used in the editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gerenciar tamanhos predefinidos que podem ser usados no editor]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_Presets.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Presets]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Predefinições]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2005,7 +2038,16 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_UseOriginalDate.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_UseOriginalDate.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Keep the original modified date of the file (instead of the resize date)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Manter a data original modificada do arquivo (ao invés da data de redimensionamento)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_UseOriginalDate.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use original date modified]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -2493,10 +2535,13 @@
       </Item>
       <Item ItemId=";Oobe_ColorPicker_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows 10 that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
+          <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O Seletor de Cor é uma ferramenta de seleção de cor para todo o sistema para Windows 10 que permite escolher cores de qualquer aplicativo em execução no momento e o copia automaticamente em um formato configurável para a área de transferência.]]></Val>
+            <Val><![CDATA[O Seletor de Cor é uma ferramenta de seleção de cores para Windows que permite escolher cores de qualquer aplicativo em execução no momento e copiá-las automaticamente em um formato configurável para sua área de transferência.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows 10 that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2586,21 +2631,24 @@
       </Item>
       <Item ItemId=";Oobe_FileExplorer_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md) and SVG icons (.svg) to be viewed in the preview pane.]]></Val>
+          <Val><![CDATA[PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md), PDF files (.pdf) and SVG icons (.svg) to be viewed in the preview pane.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Os PowerToys apresentam complementos para o Explorador de Arquivos do Windows que habilitarão os arquivos Markdown (.md) e os ícones SVG (.svg) a serem exibidos no painel de visualização.]]></Val>
+            <Val><![CDATA[O PowerToys apresenta complementos para o Explorador de Arquivos do Windows que atualmente permitirão que arquivos Markdown (.md), arquivos PDF (.pdf) e ícones SVG (.svg) sejam exibidos no painel de visualização.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md) and SVG icons (.svg) to be viewed in the preview pane.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_FileExplorer_HowToEnable.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+          <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file, PDF file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abra o Explorador de Arquivos, ** selecione a guia View ** na faixa do Explorador de Arquivos e, em seguida, ** selecione Painel de Visualização **. ]D;]A;A partir daí, simplesmente clique em um arquivo Markdown ou ícone SVG no File Explorer e observe o conteúdo no painel de visualização!]]></Val>
+            <Val><![CDATA[Abra o Explorador de Arquivos, **selecione a guia Exibir** na faixa do Explorador de Arquivos, depois **selecione o Painel de Visualização**. ]D;]A;A partir daí, basta clicar em um arquivo Markdown, arquivo PDF ou ícone SVG no Explorador de Arquivos e observar o conteúdo no painel de visualização!]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Open File Explorer, {select the View tab} in the File Explorer ribbon, then {select Preview Pane}. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+            <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2675,7 +2723,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer is a Windows shell extension for simple bulk image-resizing.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O Redimensionador de Imagem é uma extensão do shell do Windows para redimensionamento de imagem em massa simples.]]></Val>
+            <Val><![CDATA[O Redimensionador de Imagem é uma extensão de shell do Windows que simplifica o redimensionamento de imagem em massa.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2778,12 +2826,12 @@
       </Item>
       <Item ItemId=";Oobe_Overview_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.]D;]A;    ]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation.]]></Val>
+          <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.]D;]A;    ]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O Microsoft PowerToys é um conjunto de utilitários para usuários avançados ajustar e otimizar sua experiência com o Windows 10 para maior produtividade.]D;]A;    ]D;]A;Reserve um momento para visualizar os vários utilitários listados ou consulte nossa documentação abrangente.]]></Val>
+            <Val><![CDATA[O Microsoft PowerToys é um conjunto de utilitários para que usuários avançados ajustem e otimizem sua experiência com o Windows para maior produtividade.]D;]A;    ]D;]A;.    Reserve um tempo para ver os vários utilitários listados ou consulte nossa documentação abrangente.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation on]]></Val>
+            <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.]D;]A;    ]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2855,7 +2903,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run is a quick launcher for power users that contains some additional features without sacrificing performance.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A PowerToys Run é um programa inicializador rápido para usuários avançados. Ela oferece alguns recursos adicionais sem afetar o desempenho.]]></Val>
+            <Val><![CDATA[O PowerToys Run é um inicializador rápido para usuários avançados. Ele oferece alguns recursos adicionais sem afetar o desempenho.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3100,7 +3148,16 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerLauncher_IncludeInGlobalResult.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";PowerLauncher_IncludeInGlobalResultDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show results on queries without direct activation command]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mostrar resultados em consultas sem comando de ativação direta]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PowerLauncher_IncludeInGlobalResultTitle.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Include in global result]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -3267,6 +3324,15 @@
           <Val><![CDATA[A string that is contained in the application]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Uma cadeia de caracteres contida no aplicativo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PowerLauncher_UseCentralizedKeyboardHook.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use centralized keyboard hook (try it if there are issues with the shortcut)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Usar o gancho de teclado centralizado. Tente isso se houver problemas com o atalho.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3441,6 +3507,24 @@
           <Val><![CDATA[Settings theme]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Tema de configurações]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Customized shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Atalho personalizado]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hold down Windows key]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mantenha a tecla Windows pressionada]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3813,10 +3897,13 @@
       </Item>
       <Item ItemId=";ShortcutGuide.ModuleDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
+          <Val><![CDATA[Shows a help overlay with Windows shortcuts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mostra uma sobreposição de ajuda com os atalhos do Windows quando a tecla Windows é pressionada.]]></Val>
+            <Val><![CDATA[Mostrar uma sobreposição de ajuda com atalhos do Windows.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3825,6 +3912,24 @@
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Guia de Atalhos]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_ActivationMethod.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use a shortcut or press the Windows key for some time to activate]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Use um atalho ou pressione a tecla Windows por algum tempo para ativar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_ActivationMethod.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Activation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Método de ativação]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3883,11 +3988,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ShortcutGuide_PressTime.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[How long to press the Windows key to activate the module]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Por quanto tempo é necessário pressionar a tecla Windows para ativar o módulo]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ShortcutGuide_PressTime.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Pressione a duração antes da exibição (ms)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_PressWinKeyWarning.Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[In some edge cases Shortcut Guide might not function correctly when using this activation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Em alguns casos extremos, o Guia de Atalhos pode não funcionar corretamente ao usar este método de ativação]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

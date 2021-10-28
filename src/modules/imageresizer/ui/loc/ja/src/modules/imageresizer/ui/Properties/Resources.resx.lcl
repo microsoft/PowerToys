@@ -57,12 +57,12 @@
       </Item>
       <Item ItemId=";Input_Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[_Select a size]]></Val>
+          <Val><![CDATA[Select a size]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[サイズを選択(_S)]]></Val>
+            <Val><![CDATA[サイズを選択してください]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[_Select a size.]]></Val>
+            <Val><![CDATA[_Select a size]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />

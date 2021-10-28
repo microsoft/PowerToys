@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             try
             {
-                ViewModel.AddRow();
+                ViewModel.AddRow(ResourceLoader.GetForCurrentView().GetString("ImageResizer_DefaultSize_NewSizePrefix"));
             }
             catch (Exception ex)
             {

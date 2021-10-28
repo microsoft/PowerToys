@@ -1,0 +1,7 @@
+namespace PowerRenameUILib
+{
+    [default_interface] runtimeclass App : Microsoft.Toolkit.Win32.UI.XamlHost.XamlApplication
+    {
+        App();
+    }
+}

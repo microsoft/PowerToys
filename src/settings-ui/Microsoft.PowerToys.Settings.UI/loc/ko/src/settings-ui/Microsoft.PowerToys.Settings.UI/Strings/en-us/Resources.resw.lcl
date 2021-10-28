@@ -127,7 +127,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_EnableAwake.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_EnableAwake.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable Awake]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -145,7 +145,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_IndefiniteKeepAwakeContent.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_IndefiniteKeepAwake.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keep awake indefinitely]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -154,21 +154,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_IndefiniteKeepAwakeDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Keeps your PC awake until the setting is disabled]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[설정을 사용하지 않도록 설정할 때까지 PC를 절전 모드로 유지]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";Awake_Mode.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set the preferred behaviour or Awake]]></Val>
+          <Val><![CDATA[Manage the state of your device when Awake is active]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[기본 동작 설정 또는 해제]]></Val>
+            <Val><![CDATA[절전 모드 해제가 활성 상태일 때 장치 상태 관리]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Set the preferred behaviour of Awake]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -181,41 +175,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_NoKeepAwakeContent.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_NoKeepAwake.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Inactive]]></Val>
+          <Val><![CDATA[Keep using the selected power plan]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[비활성]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Off (Passive)]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Awake_NoKeepAwakeDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Your PC operates according to its current power plan]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PC는 현재 전원 설정에 따라 작동합니다.]]></Val>
+            <Val><![CDATA[선택한 전원 계획을 계속 사용]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_TemporaryKeepAwakeContent.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_TemporaryKeepAwake.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keep awake temporarily]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[일시적으로 절전 모드 해제 유지]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Awake_TemporaryKeepAwakeDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Keeps your PC awake until the set time elapses]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[설정된 시간이 경과할 때까지 PC를 활성 상태로 유지]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -238,6 +211,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Awake_TimeBeforeAwake.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Time before returning to the previous awakeness state]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이전 절전 모드 해제 상태로 돌아가기 전의 시간]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ColorFormats.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Picker behavior]]></Val>
@@ -249,10 +231,13 @@
       </Item>
       <Item ItemId=";ColorModeHeader.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Choose a mode]]></Val>
+          <Val><![CDATA[App theme]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[모드 선택]]></Val>
+            <Val><![CDATA[앱 테마]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Choose a mode]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -283,56 +268,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ColorPickerFirst.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";ColorPickerFirst.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
+          <Val><![CDATA[Pick a color and open editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[편집기 모드가 사용하도록 설정된 Color Picker]]></Val>
+            <Val><![CDATA[색을 선택하고 편집기 열기]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ColorPickerFirst_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";ColorPickerOnly.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
+          <Val><![CDATA[Only pick a color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[편집기 모드가 사용하도록 설정된 Color Picker]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerFirst_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Pick a color from the screen, copy formatted value to clipboard, then to the editor]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[화면에서 색을 선택하고 서식이 지정된 값을 클립보드에 복사한 다음, 편집기에 복사합니다.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerOnly.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Color Picker only]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Color Picker 전용]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerOnly_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Color Picker only]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Color Picker 전용]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerOnly_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Pick a color from the screen and copy formatted value to clipboard]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[화면에서 색을 선택하고 서식이 지정된 값을 클립보드에 복사합니다.]]></Val>
+            <Val><![CDATA[색만 선택]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -493,29 +442,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";EditorFirst.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";EditorFirst.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Editor]]></Val>
+          <Val><![CDATA[Open editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[편집기]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";EditorFirst_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Editor]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[편집기]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";EditorFirst_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Open directly into the editor mode]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[편집기 모드로 직접 열기]]></Val>
+            <Val><![CDATA[편집기 열기]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -733,20 +664,65 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_MoveWindow.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Win + Up/Down/Left/Right to move windows based on relative position]]></Val>
+          <Val><![CDATA[Move windows based on]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[상대적 위치를 기준으로 창을 이동하려면 Win+위쪽/아래쪽/왼쪽/오른쪽]]></Val>
+            <Val><![CDATA[다음을 기반으로 창 이동]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Win + Left/Right to move windows based on zone index]]></Val>
+          <Val><![CDATA[Relative position]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[영역 인덱스를 기준으로 창을 이동하려면 Win+왼쪽/오른쪽]]></Val>
+            <Val><![CDATA[상대 위치]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key + Up, down, left or right arrow key to move windows based on relative position]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows 키 + 위쪽, 아래쪽, 왼쪽 또는 오른쪽 화살표 키로 창을 상대 위치에 따라 이동]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key +    or ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows 키 +    또는 ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Zone index]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[영역 인덱스]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key + Left or right arrow keys to move windows based on zone index]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows 키 + 왼쪽 또는 오른쪽 화살표 키로 영역 인덱스에 따라 창을 이동]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key +  or ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows 키 +  또는 ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -912,10 +888,13 @@
       </Item>
       <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.]]></Val>
+          <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[모든 모니터는 동일한 DPI 조정을 사용해야 하며, 모든 모니터를 포함 하는 하나의 큰 결합 된 사각형으로 처리됩니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1104,6 +1083,15 @@
           <Val><![CDATA[You need to run as administrator to modify these settings.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[해당 설정을 수정하려면 관리자 권한으로 실행해야 합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorerPreview_ToggleSwitch_PDF_Thumbnail.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable PDF (.pdf) thumbnails]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PDF(.pdf) 미리 보기 사용]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1555,6 +1543,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ImageResizer_DefaultSize_NewSizePrefix" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[New size]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[새 크기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ImageResizer_DefaultSize_Phone" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Phone]]></Val>
@@ -1726,6 +1723,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ImageResizer_FilenameFormatHeader.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This format is used as the filename for resized images]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이 형식은 크기가 조정된 이미지의 파일 이름으로 사용됩니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ImageResizer_FilenameFormatHeader.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Filename format]]></Val>
@@ -1740,6 +1746,15 @@
           <Val><![CDATA[Example: %1 (%2)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[예: %1(%2)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_FilenameParameters.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Filename parameters]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Filename 매개 변수]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1866,6 +1881,24 @@
           <Val><![CDATA[PNG interlacing]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[PNG 인터레이스]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_Presets.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Manage preset sizes that can be used in the editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[편집기에서 사용할 수 있는 미리 설정된 크기 관리]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_Presets.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Presets]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[미리 설정]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2005,7 +2038,16 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_UseOriginalDate.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_UseOriginalDate.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Keep the original modified date of the file (instead of the resize date)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[파일의 원래 수정 날짜 유지(크기 조정 날짜 대신)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_UseOriginalDate.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use original date modified]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -2493,10 +2535,13 @@
       </Item>
       <Item ItemId=";Oobe_ColorPicker_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows 10 that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
+          <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Color Picker는 현재 실행 중인 애플리케이션에서 색을 선택하고 구성 가능한 형식으로 자동으로 클립보드에 복사할 수 있는 Windows 10용 시스템 차원 색 선택 도구입니다.]]></Val>
+            <Val><![CDATA[Color Picker는 현재 실행 중인 애플리케이션에서 색을 선택하고 구성 가능한 형식으로 자동으로 클립보드에 복사할 수 있는 Windows용 시스템 차원 색 선택 도구입니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows 10 that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2586,21 +2631,24 @@
       </Item>
       <Item ItemId=";Oobe_FileExplorer_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md) and SVG icons (.svg) to be viewed in the preview pane.]]></Val>
+          <Val><![CDATA[PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md), PDF files (.pdf) and SVG icons (.svg) to be viewed in the preview pane.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys는 현재 Markdown 파일(.md) 및 SVG 아이콘(.svg)을 미리 보기 창에서 볼 수 있는 추가 기능을 Windows 파일 탐색기에 도입합니다.]]></Val>
+            <Val><![CDATA[PowerToys는 현재 Markdown 파일(.md), PDF 파일(.pdf) 및 SVG 아이콘(.svg)을 미리 보기 창에서 볼 수 있는 추가 기능을 Windows 파일 탐색기에 도입합니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md) and SVG icons (.svg) to be viewed in the preview pane.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_FileExplorer_HowToEnable.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+          <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file, PDF file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[파일 탐색기를 열고 파일 탐색기 리본에서 **보기 탭을 선택**한 다음, **미리 보기 창을 선택**합니다. ]D;]A;파일 탐색기에서 Markdown 파일 또는 SVG 아이콘을 클릭하고 미리 보기 창에서 콘텐츠를 확인하기만 하면 됩니다.]]></Val>
+            <Val><![CDATA[파일 탐색기를 열고 파일 탐색기 리본에서 **보기 탭을 선택**한 다음, **미리 보기 창을 선택**합니다. ]D;]A;파일 탐색기에서 Markdown 파일, PDF 파일 또는 SVG 아이콘을 클릭하고 미리 보기 창에서 콘텐츠를 확인하기만 하면 됩니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Open File Explorer, {select the View tab} in the File Explorer ribbon, then {select Preview Pane}. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+            <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2778,12 +2826,12 @@
       </Item>
       <Item ItemId=";Oobe_Overview_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.]D;]A;    ]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation.]]></Val>
+          <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.]D;]A;    ]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft PowerToys는 고급 사용자가 생산성을 높이기 위해 Windows 10 환경을 조정하고 간소화할 수 있는 유틸리티 세트입니다.]D;]A;    ]D;]A;잠시 시간을 내어 나열된 다양한 유틸리티를 미리 보거나 포괄적인 설명서를 확인하세요.]]></Val>
+            <Val><![CDATA[Microsoft PowerToys는 고급 사용자가 생산성을 높이기 위해 Windows 환경을 조정하고 간소화할 수 있는 유틸리티 세트입니다.]D;]A;    ]D;]A;잠시 시간을 내어 나열된 다양한 유틸리티를 미리 보거나 포괄적인 설명서를 확인하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation on]]></Val>
+            <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.]D;]A;    ]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3100,7 +3148,16 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerLauncher_IncludeInGlobalResult.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";PowerLauncher_IncludeInGlobalResultDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show results on queries without direct activation command]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[직접 활성화 명령 없이 쿼리에 대한 결과 표시]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PowerLauncher_IncludeInGlobalResultTitle.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Include in global result]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -3267,6 +3324,15 @@
           <Val><![CDATA[A string that is contained in the application]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[애플리케이션에 포함된 문자열입니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PowerLauncher_UseCentralizedKeyboardHook.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use centralized keyboard hook (try it if there are issues with the shortcut)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[중앙 키보드 후크 사용(바로 가기에 문제가 있는 경우 시도)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3441,6 +3507,24 @@
           <Val><![CDATA[Settings theme]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[설정 테마]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Customized shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[사용자 지정된 바로 가기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hold down Windows key]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows 키 길게 누르기]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3813,10 +3897,13 @@
       </Item>
       <Item ItemId=";ShortcutGuide.ModuleDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
+          <Val><![CDATA[Shows a help overlay with Windows shortcuts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Windows 키를 누를 때 Windows 바로 가기와 함께 도움말 오버레이를 표시합니다.]]></Val>
+            <Val><![CDATA[Windows 바로 가기를 사용하여 도움말 오버레이를 표시합니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3825,6 +3912,24 @@
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Shortcut Guide]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_ActivationMethod.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use a shortcut or press the Windows key for some time to activate]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[활성화를 위해 잠시 바로 가기를 사용하거나 Windows 키를 누릅니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_ActivationMethod.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Activation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[활성화 방법]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3883,11 +3988,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ShortcutGuide_PressTime.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[How long to press the Windows key to activate the module]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[모듈을 활성화하기 위해 Windows 키를 누를 시간]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ShortcutGuide_PressTime.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[표시하기 전 누르기 지속 시간(ms)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_PressWinKeyWarning.Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[In some edge cases Shortcut Guide might not function correctly when using this activation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[일부 에지의 경우 이 활성화 방법을 사용할 때 바로 가기 가이드가 제대로 작동하지 않을 수 있습니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

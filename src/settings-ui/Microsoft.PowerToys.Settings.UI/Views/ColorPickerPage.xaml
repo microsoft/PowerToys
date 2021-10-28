@@ -34,45 +34,20 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                <controls:SettingExpander IsExpanded="True" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:SettingExpander.Header>
-                        <controls:Setting x:Uid="ColorPicker_ActivationAction" Icon="&#xEC4E;" Style="{StaticResource ExpanderHeaderSettingStyle}" />
-                    </controls:SettingExpander.Header>
-                    <controls:SettingExpander.Content>
-                        <StackPanel Padding="56,16,16,24" Spacing="12">
-                            <RadioButton x:Uid="ColorPickerFirst_Accessible" IsChecked="{Binding ActivationOpensColorPickerAndEditor, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
-                                <RadioButton.Content>
-                                    <StackPanel>
-                                        <TextBlock x:Uid="ColorPickerFirst"/>
-                                        <TextBlock x:Uid="ColorPickerFirst_Description" Style="{StaticResource SecondaryTextStyle}"/>
-                                    </StackPanel>
-                                </RadioButton.Content>
-                            </RadioButton>
-
-                            <RadioButton x:Uid="EditorFirst_Accessible" IsChecked="{Binding ActivationOpensEditor, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
-                                <RadioButton.Content>
-                                    <StackPanel>
-                                        <TextBlock x:Uid="EditorFirst"/>
-                                        <TextBlock x:Uid="EditorFirst_Description" Style="{StaticResource SecondaryTextStyle}"/>
-                                    </StackPanel>
-                                </RadioButton.Content>
-                            </RadioButton>
-
-                            <RadioButton x:Uid="ColorPickerOnly_Accessible" IsChecked="{Binding ActivationOpensColorPickerOnly, Mode=TwoWay}" GroupName="ColorPickerActivationAction">
-                                <RadioButton.Content>
-                                    <StackPanel>
-                                        <TextBlock x:Uid="ColorPickerOnly"/>
-                                        <TextBlock x:Uid="ColorPickerOnly_Description" Style="{StaticResource SecondaryTextStyle}"/>
-                                    </StackPanel>
-                                </RadioButton.Content>
-                            </RadioButton>
-                        </StackPanel>
-                    </controls:SettingExpander.Content>
-                </controls:SettingExpander>
+                            <controls:Setting x:Uid="ColorPicker_ActivationAction" Icon="&#xEC4E;" >
+                                <controls:Setting.ActionContent>
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                      SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}" >
+                                        <ComboBoxItem x:Uid="EditorFirst"/>
+                                        <ComboBoxItem x:Uid="ColorPickerFirst"/>
+                                        <ComboBoxItem x:Uid="ColorPickerOnly"/>
+                                    </ComboBox>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
-                    <controls:Setting x:Uid="ColorPicker_CopiedColorRepresentation" Icon="&#xEF3C;">
+                    <controls:Setting x:Uid="ColorPicker_CopiedColorRepresentation" Icon="&#xF0E3;">
                                 <controls:Setting.ActionContent>
                                     <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
                                               x:Name="ColorPicker_ComboBox"

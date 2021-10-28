@@ -6,174 +6,120 @@
              xmlns:p="clr-namespace:ImageResizer.Properties"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              MinWidth="350">
-    <UserControl.Resources>
-        <Style x:Key="DisabledWhenUnselectedComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                    <Setter Property="IsEnabled" Value="True"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False">
-                    <Setter Property="IsEnabled" Value="False"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="DisabledWhenUnselectedTextBoxStyle"
-               TargetType="ui:NumberBox"
-               >
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                    <Setter Property="IsEnabled" Value="True"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False">
-                    <Setter Property="IsEnabled" Value="False"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>
-    
-    
-    
-    <StackPanel Background="{DynamicResource PrimaryBackgroundBrush}">
-        <Label Margin="12,12,12,0"
-               FontSize="16"
-               Content="{x:Static p:Resources.Input_Content}"
-               Target="{Binding ElementName=_selectedSizeListBox}"/>
-        
-        <ListBox Margin="12,24,12,0"
-                 BorderThickness="0"
-                 Background="Transparent"
-                 AutomationProperties.Name="Sizes listbox"
-                 ItemsSource="{Binding Settings.AllSizes}"
-                 Name="_selectedSizeListBox"
-                 SelectedIndex="{Binding Settings.SelectedSizeIndex}">
-            
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="ListBoxItem">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="ListBoxItem">
-                                <RadioButton Margin="0,4,0,0"
-                                             VerticalAlignment="Center"
-                                             VerticalContentAlignment="Top"
-                                             AutomationProperties.Name="{Binding Name}"
-                                             Focusable="False"
-                                             IsChecked="{Binding IsSelected,RelativeSource={RelativeSource TemplatedParent}}">
-                                    <ContentPresenter/>
-                                </RadioButton>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="AutomationProperties.Name" Value="{Binding Name}"/>
-                </Style>
-            </ListBox.ItemContainerStyle>
-            
-            <ListBox.Resources>
+
+    <Grid Background="{DynamicResource PrimaryBackgroundBrush}">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" MinHeight="84"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ComboBox x:Name="SizeComboBox"
+                  ItemsSource="{Binding Settings.AllSizes}"
+                  HorizontalAlignment="Stretch"
+                  Margin="12"
+                  SelectedIndex="{Binding Settings.SelectedSizeIndex}"
+                  ui:ControlHelper.Header="{x:Static p:Resources.Input_Content}">
+            <ComboBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
-                    <Grid Margin="0,0,0,4">
+                    <Grid Margin="0,6,0,0" AutomationProperties.Name="{Binding Name}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="20" />
                             <RowDefinition Height="24" />
-
                         </Grid.RowDefinitions>
                         <TextBlock Text="{Binding Name}"
                                    FontWeight="SemiBold"
-                                   FontSize="16"
-                                   Margin="0,-2,0,0"
+                                   FontSize="14"
+                                   Margin="0,0,0,0"
                                    VerticalAlignment="Top"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
                         <StackPanel Orientation="Horizontal"
                                     Grid.Row="1"
                                     VerticalAlignment="Top">
-                            <TextBlock Text="{Binding Fit,Converter={StaticResource EnumValueConverter},ConverterParameter=ThirdPersonSingular}" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Text="{Binding Width,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Text="&#xE711;" FontSize="11" FontFamily="Segoe MDL2 Assets" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,5,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Text="{Binding Height,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                            <TextBlock Text="{Binding Unit,Converter={StaticResource EnumValueConverter},ConverterParameter=ToLower}"
+                            <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" FontSize="12" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBlock Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" FontWeight="SemiBold" FontSize="12" Margin="3,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="10" Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" Margin="4,4,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBlock Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" FontSize="12" Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" FontWeight="SemiBold" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            <TextBlock Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" FontSize="12"
                                        Margin="4,0,0,0"
                                        Foreground="{DynamicResource SecondaryForegroundBrush}" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
-                
-                <DataTemplate DataType="{x:Type m:CustomSize}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="32" />
-                            <RowDefinition Height="*" />
-                            
-                        </Grid.RowDefinitions>
-                        <TextBlock VerticalAlignment="Top"
-                                   Text="{Binding Name}"
-                                   FontSize="16"
-                                   Margin="0,-2,0,0"
-                                   Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                   FontWeight="SemiBold" />
-                  
-                    <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,-8,0,0">
-                  
-                        <ComboBox Margin="0,0,0,0"
-                                  ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
-                                  Style="{StaticResource DisabledWhenUnselectedComboBoxStyle}"
-                                  AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
-                                  SelectedItem="{Binding Fit}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type m:ResizeFit}">
-                                    <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                            <ui:NumberBox SpinButtonPlacementMode="Compact"
-                                          Minimum="0"
-                                          Width="102"
-                                          Style="{StaticResource DisabledWhenUnselectedTextBoxStyle}"
-                                          AutomationProperties.Name="{x:Static p:Resources.Width}"
-                                          Margin="8,0,0,0">
-                                <ui:NumberBox.Value>
-                                    <Binding Path="Width"
-                                             UpdateSourceTrigger="PropertyChanged">
-                                    </Binding>
-                                </ui:NumberBox.Value>
-                            </ui:NumberBox>
-                            <TextBlock VerticalAlignment="Center"
-                                   Text="&#xE711;"
-                                   FontFamily="Segoe MDL2 Assets"
-                                   Width="25"
-                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                   Name="Times_Symbol"
-                                   AutomationProperties.Name="{x:Static p:Resources.Times_Symbol}"
-                                   TextAlignment="Center"
-                                   Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}"/>
 
-                            <ui:NumberBox Style="{StaticResource DisabledWhenUnselectedTextBoxStyle}"
-                                          SpinButtonPlacementMode="Compact"
-                                          Minimum="0"
-                                          Width="102"
-                                          AutomationProperties.Name="{x:Static p:Resources.Height}"
-                                          Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
-                                <ui:NumberBox.Value>
-                                    <Binding Path="Height"
-                                             UpdateSourceTrigger="PropertyChanged">
-                                    </Binding>
-                                </ui:NumberBox.Value>
-                            </ui:NumberBox>
-                            <ComboBox Margin="8,0,0,0"
-                                  ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
-                                  Style="{StaticResource DisabledWhenUnselectedComboBoxStyle}"
-                                  AutomationProperties.Name="{x:Static p:Resources.Unit}"
-                                  SelectedItem="{Binding Unit}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type m:ResizeUnit}">
-                                    <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </StackPanel>
+                <DataTemplate DataType="{x:Type m:CustomSize}">
+                    <Grid Height="50"
+                          AutomationProperties.Name="{Binding Name}">
+
+                        <TextBlock Text="{Binding Name}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Margin="0,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource PrimaryForegroundBrush}" />
                     </Grid>
                 </DataTemplate>
-            </ListBox.Resources>
-        </ListBox>
-        
-        <CheckBox Margin="12,36,12,0"
+            </ComboBox.Resources>
+        </ComboBox>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="12,0,12,12" Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue, Converter={StaticResource SizeTypeToVisibilityConverter}}">
+            <ComboBox ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
+                      AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
+                      Height="56"
+                      MinWidth="120"
+                      ui:ControlHelper.Header="{x:Static p:Resources.Resize_Type}"
+                      Text="{Binding ElementName=SizeComboBox, Path= SelectedValue.Fit, Mode=TwoWay}"/>
+
+            <ui:NumberBox SpinButtonPlacementMode="Compact"
+                          Minimum="0"
+                          Width="102"
+                          AutomationProperties.Name="{x:Static p:Resources.Width}"
+                          Margin="8,0,0,0">
+                <ui:ControlHelper.Header>
+                    <TextBlock Text="{x:Static p:Resources.Width}" Margin="0,0,0,-1" />
+                </ui:ControlHelper.Header>
+                <ui:NumberBox.Value>
+                    <Binding ElementName="SizeComboBox" Path="SelectedValue.Width" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
+                </ui:NumberBox.Value>
+            </ui:NumberBox>
+            <TextBlock VerticalAlignment="Center"
+                       Text="&#xE711;"
+                       FontFamily="Segoe MDL2 Assets"
+                       Width="25"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                       Name="Times_Symbol"
+                       AutomationProperties.Name="{x:Static p:Resources.Times_Symbol}"
+                       TextAlignment="Center"
+                       Margin="0,8,0,0"
+                       Visibility="{Binding ElementName=SizeComboBox, Path= SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}"/>
+
+            <ui:NumberBox DataContext="{Binding ElementName=SizeComboBox, Path=SelectedItem}" 
+                          SpinButtonPlacementMode="Compact"
+                          Minimum="0"
+                          Width="102"
+                          AutomationProperties.Name="{x:Static p:Resources.Height}"
+                          Visibility="{Binding ElementName=SizeComboBox, Path= SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}">
+                <ui:ControlHelper.Header>
+                    <TextBlock Text="{x:Static p:Resources.Height}" Margin="0,0,0,-1" />
+                </ui:ControlHelper.Header>
+                <ui:NumberBox.Value>
+                    <Binding ElementName="SizeComboBox" Path="SelectedValue.Height" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
+                </ui:NumberBox.Value>
+            </ui:NumberBox>
+            <ComboBox Margin="8,0,0,0"
+                      Height="56"
+                      ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
+                      AutomationProperties.Name="{x:Static p:Resources.Unit}"
+                      ui:ControlHelper.Header="{x:Static p:Resources.Unit}"
+                      Text="{Binding ElementName=SizeComboBox, Path= SelectedValue.Unit, Mode=TwoWay}"/>
+        </StackPanel>
+
+
+        <StackPanel Grid.Row="2" Orientation="Vertical">
+
+        <CheckBox Margin="12,4,12,0"
                   Content="{x:Static p:Resources.Input_ShrinkOnly}"
                   IsChecked="{Binding Settings.ShrinkOnly}"/>
         <!-- TODO: This option doesn't make much sense when resizing into a directory. We should swap it for an option
@@ -185,27 +131,43 @@
         <CheckBox Margin="12,4,12,0"
                   Content="{x:Static p:Resources.Input_IgnoreOrientation}"
                   IsChecked="{Binding Settings.IgnoreOrientation}"/>
-        <Border Margin="0,24,0,0"
+
+            <TextBlock Grid.Column="0"
+                           FontWeight="Bold"
+                           Text="{x:Static p:Resources.Input_GifWarning}"
+                           TextWrapping="Wrap"
+                       Margin="12,12,12,0"
+                           HorizontalAlignment="Right"
+                           TextAlignment="Left"
+                           Foreground="{ui:ThemeResource SystemControlErrorTextForegroundBrush}"
+                           Visibility="{Binding TryingToResizeGifFiles, Converter={StaticResource BoolValueConverter}}"
+                           />
+        </StackPanel>
+    
+        <Border Margin="0,12,0,0"
                 Background="{DynamicResource SecondaryBackgroundBrush}"
                 BorderBrush="{DynamicResource PrimaryBorderBrush}"
                 BorderThickness="0,1,0,0"
-                Padding="12">
+                Padding="12"
+                Grid.Row="3">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0"
-                           FontWeight="Bold"
-                           Text="{x:Static p:Resources.Input_GifWarning}"
-                           TextWrapping="Wrap"
-                           MaxWidth="250"
-                           HorizontalAlignment="Left"
-                           TextAlignment="Left"
-                           Foreground="{ui:ThemeResource SystemControlErrorTextForegroundBrush}"
-                           Visibility="{Binding TryingToResizeGifFiles, Converter={StaticResource BoolValueConverter}}"
-                           />
+                <Button Width="36"
+                    Command="{Binding OpenSettingsCommand}"
+                    Height="36"
+                    Margin="-8,0,0,0"
+                    Content="&#xE713;"
+                    Background="Transparent"
+                    FontFamily="Segoe MDL2 Assets"
+                        FontSize="16"
+                    HorizontalAlignment="Left"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
+                    AutomationProperties.Name="{x:Static p:Resources.Open_settings}" />
+
                 <Button Grid.Column="1"
                         Style="{StaticResource AccentButtonStyle}"
                         MinWidth="76"
@@ -224,5 +186,5 @@
                         IsCancel="True"/>
             </Grid>
         </Border>
-    </StackPanel>
+    </Grid>
 </UserControl>

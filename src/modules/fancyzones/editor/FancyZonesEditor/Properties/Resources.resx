@@ -135,10 +135,7 @@
   <data name="Grid_Layout_Editor" xml:space="preserve">
     <value>Grid layout editor</value>
   </data>
-  <data name="Crash_Report_Message_Box_Text_Part1" xml:space="preserve">
-    <value>Error logged to </value>
-  </data>
-  <data name="Crash_Report_Message_Box_Text_Part2" xml:space="preserve">
+  <data name="Crash_Report_Message_Box_Text" xml:space="preserve">
     <value>Please report the bug to </value>
   </data>
   <data name="Custom" xml:space="preserve">
@@ -288,6 +285,9 @@
   <data name="Settings" xml:space="preserve">
     <value>Template settings</value>
   </data>
+  <data name="Delete_Layout_Dialog_Announce" xml:space="preserve">
+    <value>Delete layout dialog.</value>
+  </data>
   <data name="Are_You_Sure" xml:space="preserve">
     <value>Are you sure?</value>
   </data>
@@ -338,7 +338,7 @@
   </data>
   <data name="KeyboardControlsName" xml:space="preserve">
     <value>Keyboard Navigation:</value>
-  </data>    
+  </data>
   <data name="KeyboardControlsDescription" xml:space="preserve">
     <value>
      - [Shift]+S to split currently focused zone.
@@ -346,7 +346,7 @@
      - Tab to cycle zones and resizers.
      - Delete to remove the focused resizer.
      - Arrows to move the focused resizer.</value>
-  </data>        
+  </data>
   <data name="SplitterDescription" xml:space="preserve">
     <value>Hold Shift key for vertical split.</value>
     <comment>A segmenter visual for splitting one item into two.  This would be the vertical line. Shift key is referring to key on keyboard</comment>
@@ -374,7 +374,13 @@
   <data name="Edit_Layout" xml:space="preserve">
     <value>Edit layout</value>
   </data>
-    <data name="Layout_Creation_Announce" xml:space="preserve">
+  <data name="Edit_Layout_Open_Announce" xml:space="preserve">
+    <value>opened</value>
+  </data>
+  <data name="Layout_Creation_Announce" xml:space="preserve">
     <value>custom layout was created successfully.</value>
+  </data>
+  <data name="OpenSettings" xml:space="preserve">
+    <value>Open settings</value>
   </data>
 </root>

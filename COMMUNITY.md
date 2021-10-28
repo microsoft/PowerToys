@@ -9,6 +9,9 @@ Names are in alphabetical order based on first name.
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
 Davide has helped fix multiple bugs, added new features, as well as help us with the ARM64 effort by porting applications to .NET Core.
 
+### [@htcfreek](https://github.com/htcfreek) - Heiko
+Heiko has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes to PowerToys Run.
+
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 Helping keep our spelling correct :)
 
@@ -68,6 +71,10 @@ PowerToys Awake is a tool to keep your computer awake.
 ### [@martinchrzan](https://github.com/martinchrzan/) - Martin Chrzan
 
 Color Picker is from Martin.
+
+### [@oldnewthing](https://github.com/oldnewthing) - Raymond Chen
+
+Find My Mouse is based on Raymond Chen's SuperSonar.
 
 ### Microsoft InVEST team
 

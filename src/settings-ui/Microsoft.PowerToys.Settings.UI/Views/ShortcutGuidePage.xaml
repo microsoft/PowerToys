@@ -12,6 +12,9 @@
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
+        <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+        <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="ShortcutGuide"
@@ -29,17 +32,49 @@
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
-                    <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    <controls:Setting x:Uid="ShortcutGuide_ActivationMethod">
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut"/>
+                                <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource FalseToVisibleConverter}}">
                         <controls:Setting.ActionContent>
                             <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}"
                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
+
+                    <controls:Setting x:Uid="ShortcutGuide_PressTime" Icon="&#xE916;" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior, Converter={StaticResource TrueToVisibleConverter}}">
+                        <controls:Setting.ActionContent>
+                            <muxc:NumberBox
+                                Minimum="100"
+                                Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                SpinButtonPlacementMode="Compact"
+                                HorizontalAlignment="Left"
+                                SmallChange="50"
+                                LargeChange="100"
+                            />
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+
+                    <muxc:InfoBar
+                        x:Uid="ShortcutGuide_PressWinKeyWarning"
+                        Severity="Warning"
+                        IsTabStop="True"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.UseLegacyPressWinKeyBehavior}"
+                        IsClosable="False"
+                    />
+
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ShortcutGuide_Appearance_Behavior" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
-                            <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;">
+                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE790;">
                                 <controls:Setting.Description>
                                     <HyperlinkButton Click="OpenColorsSettings_Click"
                                                      x:Uid="Windows_Color_Settings"/>
@@ -67,7 +102,7 @@
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
-                            <controls:Setting x:Uid="ShortcutGuide_DisabledApps" Icon="&#xE103;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
+                            <controls:Setting x:Uid="ShortcutGuide_DisabledApps" Icon="&#xECE4;" Style="{StaticResource ExpanderHeaderSettingStyle}"/>
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <TextBox x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"

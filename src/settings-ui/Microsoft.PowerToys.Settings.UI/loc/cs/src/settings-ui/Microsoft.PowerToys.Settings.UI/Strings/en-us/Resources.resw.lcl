@@ -127,7 +127,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_EnableAwake.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_EnableAwake.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable Awake]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -145,7 +145,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_IndefiniteKeepAwakeContent.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_IndefiniteKeepAwake.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keep awake indefinitely]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -154,21 +154,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_IndefiniteKeepAwakeDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Keeps your PC awake until the setting is disabled]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ponechá počítač v probuzeném stavu, dokud toto nastavení nevypnete.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";Awake_Mode.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set the preferred behaviour or Awake]]></Val>
+          <Val><![CDATA[Manage the state of your device when Awake is active]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nastavení upřednostňovaného chování nebo Awake]]></Val>
+            <Val><![CDATA[Spravovat stav zařízení, když je aktivní stav probuzení]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Set the preferred behaviour of Awake]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -181,41 +175,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_NoKeepAwakeContent.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_NoKeepAwake.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Inactive]]></Val>
+          <Val><![CDATA[Keep using the selected power plan]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Neaktivní]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Off (Passive)]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Awake_NoKeepAwakeDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Your PC operates according to its current power plan]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Váš počítač funguje podle svého aktuálního schématu napájení.]]></Val>
+            <Val><![CDATA[Dál používat vybrané schéma napájení]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Awake_TemporaryKeepAwakeContent.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Awake_TemporaryKeepAwake.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keep awake temporarily]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Dočasně ponechat v probuzeném stavu]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Awake_TemporaryKeepAwakeDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Keeps your PC awake until the set time elapses]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Udržuje počítač v probuzeném stavu až do uplynutí nastaveného času.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -238,6 +211,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Awake_TimeBeforeAwake.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Time before returning to the previous awakeness state]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Čas před návratem do předchozího stavu probuzení]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ColorFormats.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Picker behavior]]></Val>
@@ -249,10 +231,13 @@
       </Item>
       <Item ItemId=";ColorModeHeader.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Choose a mode]]></Val>
+          <Val><![CDATA[App theme]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zvolte režim]]></Val>
+            <Val><![CDATA[Motiv aplikace]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Choose a mode]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -283,56 +268,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ColorPickerFirst.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";ColorPickerFirst.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
+          <Val><![CDATA[Pick a color and open editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Výběr barvy s povoleným režimem editoru]]></Val>
+            <Val><![CDATA[Vybrat barvu a otevřít editor]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ColorPickerFirst_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";ColorPickerOnly.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
+          <Val><![CDATA[Only pick a color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Výběr barvy s povoleným režimem editoru]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerFirst_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Pick a color from the screen, copy formatted value to clipboard, then to the editor]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vyberte barvu na obrazovce a zkopírujte formátovanou hodnotu do schránky a pak do editoru.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerOnly.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Color Picker only]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Jen Výběr barvy]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerOnly_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Color Picker only]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Jen Výběr barvy]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";ColorPickerOnly_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Pick a color from the screen and copy formatted value to clipboard]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vyberte barvu na obrazovce a zkopírujte formátovanou hodnotu do schránky.]]></Val>
+            <Val><![CDATA[Pouze výběr barvy]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -493,29 +442,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";EditorFirst.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";EditorFirst.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Editor]]></Val>
+          <Val><![CDATA[Open editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Editor]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";EditorFirst_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Editor]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Editor]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";EditorFirst_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Open directly into the editor mode]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Otevřít přímo v režimu editoru]]></Val>
+            <Val><![CDATA[Otevřít editor]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -733,20 +664,65 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_MoveWindow.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Win + Up/Down/Left/Right to move windows based on relative position]]></Val>
+          <Val><![CDATA[Move windows based on]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kombinace Win + šipka nahoru/dolů/vlevo/vpravo přesune okna na základě relativní pozice.]]></Val>
+            <Val><![CDATA[Přesun oken na základě]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Win + Left/Right to move windows based on zone index]]></Val>
+          <Val><![CDATA[Relative position]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kombinace Win + šipka vlevo/vpravo přesune okna podle indexu zóny.]]></Val>
+            <Val><![CDATA[Relativní pozice]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key + Up, down, left or right arrow key to move windows based on relative position]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Klávesa Windows + šipka nahoru, dolů, vlevo nebo vpravo pro přesun oken na základě relativní pozice]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key +    or ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Klávesa Windows +    nebo ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Zone index]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Index zóny]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key + Left or right arrow keys to move windows based on zone index]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Klávesa Windows + šipka vlevo nebo vpravo pro přesun oken na základě indexu zóny]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows key +  or ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Klávesa Windows +  nebo ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -912,10 +888,13 @@
       </Item>
       <Item ItemId=";FancyZones_SpanZonesAcrossMonitorsPrerequisites.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.]]></Val>
+          <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Všechny monitory musí mít stejné přizpůsobení rozlišení DPI a budou se považovat za jeden velký kombinovaný obdélník, který obsahuje všechny monitory.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1104,6 +1083,15 @@
           <Val><![CDATA[You need to run as administrator to modify these settings.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Abyste mohli tato nastavení upravit, musíte spuštění provést jako správce.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorerPreview_ToggleSwitch_PDF_Thumbnail.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable PDF (.pdf) thumbnails]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Povolení miniatur souborů PDF (.pdf)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1555,6 +1543,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ImageResizer_DefaultSize_NewSizePrefix" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[New size]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nová velikost]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ImageResizer_DefaultSize_Phone" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Phone]]></Val>
@@ -1726,6 +1723,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ImageResizer_FilenameFormatHeader.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This format is used as the filename for resized images]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tento formát se používá jako název souboru pro obrázky se změněnou velikostí.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ImageResizer_FilenameFormatHeader.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Filename format]]></Val>
@@ -1740,6 +1746,15 @@
           <Val><![CDATA[Example: %1 (%2)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Příklad: %1 (%2)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_FilenameParameters.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Filename parameters]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Parametry názvu souboru]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1866,6 +1881,24 @@
           <Val><![CDATA[PNG interlacing]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Prokládání PNG]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_Presets.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Manage preset sizes that can be used in the editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Umožňuje spravovat přednastavené velikosti, které se dají použít v editoru.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_Presets.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Presets]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Předvolby]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2005,7 +2038,16 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_UseOriginalDate.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_UseOriginalDate.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Keep the original modified date of the file (instead of the resize date)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Umožňuje zachovat původní datum změny souboru (namísto data změny velikosti).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_UseOriginalDate.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use original date modified]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -2493,10 +2535,13 @@
       </Item>
       <Item ItemId=";Oobe_ColorPicker_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows 10 that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
+          <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Výběr barvy je nástroj pro výběr barvy dostupný v celém systému Windows 10, který vám umožňuje vybírat barvy z jakékoli aktuálně spuštěné aplikace. Barva se pak zkopíruje v konfigurovatelném formátu do schránky.]]></Val>
+            <Val><![CDATA[Výběr barvy je nástroj pro výběr barvy dostupný v celém systému Windows, který vám umožňuje vybírat barvy z jakékoli aktuálně spuštěné aplikace. Barva se pak zkopíruje v konfigurovatelném formátu do schránky.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Color Picker is a system-wide color selection tool for Windows 10 that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2586,21 +2631,24 @@
       </Item>
       <Item ItemId=";Oobe_FileExplorer_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md) and SVG icons (.svg) to be viewed in the preview pane.]]></Val>
+          <Val><![CDATA[PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md), PDF files (.pdf) and SVG icons (.svg) to be viewed in the preview pane.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys nabízí doplňky Průzkumníka souborů Windows, které v současné době umožní zobrazovat soubory Markdown (.md) a ikony SVG (.svg) v podokně náhledu.]]></Val>
+            <Val><![CDATA[PowerToys nabízí doplňky Průzkumníka souborů Windows, které v současné době umožní zobrazovat soubory Markdown (.md), soubory PDF (.pdf) a ikony SVG (.svg) v podokně náhledu.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[PowerToys introduces add-ons to the Window’s File Explorer that will currently enable Markdown files (.md) and SVG icons (.svg) to be viewed in the preview pane.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Oobe_FileExplorer_HowToEnable.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+          <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file, PDF file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Otevřete Průzkumníka souborů, na jeho pásu karet **vyberte kartu Zobrazení** a pak **vyberte Podokno náhledu**. ]D;]A;Tam stačí kliknout na soubor Markdown nebo ikonu SVG a jejich obsah se zobrazí v podokně náhledu.]]></Val>
+            <Val><![CDATA[Otevřete Průzkumníka souborů, na jeho pásu karet **vyberte kartu Zobrazení** a pak **vyberte Podokno náhledu**. ]D;]A;Tam stačí kliknout na soubor Markdown nebo PDF nebo ikonu SVG a jejich obsah se zobrazí v podokně náhledu!]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Open File Explorer, {select the View tab} in the File Explorer ribbon, then {select Preview Pane}. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
+            <Val><![CDATA[Open File Explorer, **select the View tab** in the File Explorer ribbon, then **select Preview Pane**. ]D;]A;From there, simply click on a Markdown file or SVG icon in the File Explorer and observe the content on the preview pane!]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2778,12 +2826,12 @@
       </Item>
       <Item ItemId=";Oobe_Overview_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.]D;]A;    ]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation.]]></Val>
+          <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.]D;]A;    ]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft PowerToys je sada nástrojů, se kterými můžou zkušení uživatelé optimalizovat a zjednodušit prostředí Windows 10, aby mohli být produktivnější.]D;]A;    ]D;]A;Věnujte chvíli a prohlédněte si různé uvedené nástroje, případně si přečtěte naši ucelenou dokumentaci.]]></Val>
+            <Val><![CDATA[Microsoft PowerToys je sada nástrojů, se kterými můžou zkušení uživatelé optimalizovat a zjednodušit prostředí Windows, aby mohli být produktivnější.]D;]A;    ]D;]A;Prohlédněte si různé uvedené nástroje, případně si přečtěte naši ucelenou dokumentaci.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation on]]></Val>
+            <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity.]D;]A;    ]D;]A;Take a moment to preview the various utilities listed or view our comprehensive documentation.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3100,7 +3148,16 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerLauncher_IncludeInGlobalResult.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";PowerLauncher_IncludeInGlobalResultDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Show results on queries without direct activation command]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Umožňuje zobrazit výsledky dotazů bez příkazu pro přímou aktivaci.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PowerLauncher_IncludeInGlobalResultTitle.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Include in global result]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -3267,6 +3324,15 @@
           <Val><![CDATA[A string that is contained in the application]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Řetězec, který je obsažený v aplikaci]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";PowerLauncher_UseCentralizedKeyboardHook.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use centralized keyboard hook (try it if there are issues with the shortcut)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Použití centralizovaného hooku klávesnice (zkuste to, pokud dojde k problémům s klávesovou zkratkou)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3441,6 +3507,24 @@
           <Val><![CDATA[Settings theme]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Motiv nastavení]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Customized shortcut]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Přizpůsobená klávesová zkratka]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hold down Windows key]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Podržte stisknutou klávesu Windows.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3813,10 +3897,13 @@
       </Item>
       <Item ItemId=";ShortcutGuide.ModuleDescription" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
+          <Val><![CDATA[Shows a help overlay with Windows shortcuts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Umožňuje zobrazit při stisknutí klávesy Windows překryvnou nápovědu s klávesovými zkratkami systému Windows.]]></Val>
+            <Val><![CDATA[Umožňuje zobrazit překryvnou nápovědu s klávesovými zkratkami systému Windows.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3825,6 +3912,24 @@
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Průvodce klávesovými zkratkami]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_ActivationMethod.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use a shortcut or press the Windows key for some time to activate]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Použijte klávesovou zkratku nebo stiskněte klávesu Windows a chvíli ji podržte, pokud chcete provést aktivaci.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_ActivationMethod.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Activation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Metoda aktivace]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3883,11 +3988,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ShortcutGuide_PressTime.Description" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[How long to press the Windows key to activate the module]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Jak dlouho je potřeba podržet stisknutou klávesu Windows, aby byl modul aktivován]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ShortcutGuide_PressTime.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Doba trvání stisknutí před zobrazením (ms)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ShortcutGuide_PressWinKeyWarning.Title" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[In some edge cases Shortcut Guide might not function correctly when using this activation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[V některých hraničních případech nemusí Průvodce klávesovými zkratkami při používání této metody aktivace fungovat správně.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

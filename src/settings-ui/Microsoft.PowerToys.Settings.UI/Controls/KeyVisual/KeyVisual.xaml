@@ -25,10 +25,10 @@
                                 <VisualState x:Name="Normal"/>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <!--<Setter Target="ContentHolder.Fill" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
+                                        <Setter Target="ContentHolder.Fill" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
                                         <Setter Target="ContentHolder.Stroke" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
-                                        <Setter Target="ContentHolder.StrokeThickness" Value="{TemplateBinding BorderThickness}" />-->
+                                        <!--<Setter Target="ContentHolder.StrokeThickness" Value="{TemplateBinding BorderThickness}" />-->
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

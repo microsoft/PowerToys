@@ -5,17 +5,19 @@ abcdef
 abcdefgh
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 abgr
+abi
 ABlocked
+ABOUTBOX
 Abug
 accctrl
 Acceleratorkeys
 ACCEPTFILES
 accessibile
 accessibilityinsights
+Accessible
 Acl
 aclapi
 AColumn
-Accessible
 acos
 acrt
 Actioncenter
@@ -126,8 +128,9 @@ AUTOMATIONPROPERTIES
 Autorun
 AUTOSIZECOLUMNS
 AUTOUPDATE
-AValid
 available
+AValid
+awakeness
 awakeversion
 AWAYMODE
 AYUV
@@ -183,6 +186,7 @@ Browsable
 bsd
 bstr
 bti
+btn
 BTNFACE
 Bto
 buf
@@ -202,6 +206,7 @@ CANRENAME
 Captureascreenshot
 CAPTURECHANGED
 CASESENSITIVE
+cassert
 CAtl
 CCDDEE
 ccf
@@ -230,10 +235,13 @@ CHILDACTIVATE
 CHILDWINDOW
 chrdavis
 chrisharris
+chromaticities
 chrono
 Chrzan
 chrzan
 CHT
+cielab
+CIEXYZ
 CImage
 cinttypes
 cla
@@ -289,6 +297,7 @@ comhost
 cominterop
 commandline
 commctrl
+companding
 Compat
 COMPOSITIONFULL
 comsupp
@@ -376,6 +385,7 @@ CXVIRTUALSCREEN
 cxx
 cxxopts
 CYSMICON
+CYVIRTUALSCREEN
 cziplib
 Dac
 dacl
@@ -403,6 +413,7 @@ ddd
 ddee
 ddf
 Deact
+debian
 DECLAR
 declspec
 decltype
@@ -424,6 +435,7 @@ Delimarsky
 delims
 dend
 DENORMAL
+Deondre
 depersist
 deprioritized
 deps
@@ -485,6 +497,8 @@ DPICHANGED
 DPolicy
 DPopup
 DPSAPI
+DQTAT
+DQTYPE
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
@@ -564,6 +578,7 @@ errc
 errorlevel
 ERRORMESSAGE
 ERRORTITLE
+ESettings
 esize
 estdir
 etcore
@@ -640,6 +655,7 @@ finalizer
 findfast
 findstr
 FIXEDFILEINFO
+FFAA
 FLASHZONES
 FLASHZONESONQUICKSWITCH
 flt
@@ -661,6 +677,7 @@ FRAMEDOWNLOAD
 franky
 Froml
 fstream
+ftp
 ftps
 FTYPE
 FULLNAME
@@ -736,6 +753,7 @@ HDN
 hdrop
 HDS
 HEB
+Heiko
 helptext
 HEVC
 hfile
@@ -777,6 +795,7 @@ hotspot
 HPAINTBUFFER
 hpj
 hpp
+HRAWINPUT
 hread
 HREDRAW
 href
@@ -796,6 +815,7 @@ Htmdid
 html
 htt
 http
+HTTRANSPARENT
 hwb
 HWINEVENTHOOK
 hwnd
@@ -829,6 +849,7 @@ ICollection
 IColor
 ICommand
 IComparer
+ICompositor
 ICONERROR
 ICONINFORMATION
 IContext
@@ -843,6 +864,7 @@ IDesktop
 IDictionary
 IDirectory
 IDispatch
+IDispatcher
 IDisposable
 idl
 IDLIST
@@ -857,6 +879,7 @@ IEasing
 IEnum
 IEnumerable
 IEnumerator
+IEnvironment
 IEquality
 IEquatable
 IEvent
@@ -929,6 +952,7 @@ INPUTHARDWARE
 INPUTKEYBOARD
 INPUTLANGCHANGED
 INPUTMOUSE
+INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
 INSTALLDIR
@@ -996,6 +1020,7 @@ IShell
 ISingle
 ISmart
 isocpp
+iss
 IStorage
 IStream
 istreambuf
@@ -1006,6 +1031,7 @@ ITab
 ITask
 ITemplate
 ITEMSTATEICONCLICK
+ITerminal
 ITest
 ith
 IThrottled
@@ -1025,6 +1051,7 @@ IWeb
 IWIC
 IWindows
 IWork
+IXaml
 IXml
 ixx
 IYUV
@@ -1057,6 +1084,7 @@ KBDLLHOOKSTRUCT
 kbm
 KERNELBASE
 KEYBDINPUT
+keybindings
 keyboardeventhandlers
 keyboardmanager
 keyboardmanagercommon
@@ -1133,6 +1161,7 @@ lmcons
 LMEM
 LMENU
 lnk
+LOADSTRING
 LOCALAPPDATA
 LOCALDISPLAY
 localhost
@@ -1154,6 +1183,7 @@ lowlevel
 LOWORD
 lparam
 LPBYTE
+LPCITEMIDLIST
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
 LPCTSTR
@@ -1200,6 +1230,7 @@ LVS
 LVSIL
 LWA
 lwin
+LZero
 lzw
 mailto
 MAINICON
@@ -1264,6 +1295,7 @@ mii
 MIIM
 millis
 mimetype
+mindaro
 Minimizeallwindows
 MINIMIZEBOX
 miniz
@@ -1312,6 +1344,7 @@ msedge
 MSGFLT
 mshtmdid
 msi
+msiexec
 MSIFASTINSTALL
 MSIHANDLE
 MSIINSTALLER
@@ -1320,6 +1353,7 @@ msiquery
 MSIRESTARTMANAGERCONTROL
 msix
 msixbundle
+MSIXCA
 MSIXVERSION
 MSLLHOOKSTRUCT
 Mso
@@ -1553,6 +1587,7 @@ phwnd
 pici
 pid
 pidl
+PIDLIST
 PINDIR
 pinfo
 pinvoke
@@ -1585,6 +1620,7 @@ powerlauncher
 powerpreview
 powerrename
 POWERRENAMETEST
+POWERRENAMEUIHOST
 powershell
 powertoy
 powertoysinterop
@@ -1625,6 +1661,7 @@ pri
 PRINTCLIENT
 printf
 prm
+proactively
 PROCESSKEY
 PRODUCTVERSION
 PROGDLG
@@ -1677,6 +1714,7 @@ QUERYOPEN
 QUEUESYNC
 Quickime
 QUICKLAYOUTSWITCH
+QUNS
 qwertyuiopasdfghjklzxcvbnm
 qword
 qwrtyuiopsghjklzxvnm
@@ -1684,6 +1722,9 @@ Radiobuttons
 RAII
 RAlt
 randyrants
+RAWINPUT
+RAWINPUTDEVICE
+RAWINPUTHEADER
 RAWPATH
 rbegin
 Rbp
@@ -1694,6 +1735,7 @@ RBUTTONUP
 rclsid
 RCONTROL
 RCtrl
+rdeveen
 RDW
 readme
 READMODE
@@ -1767,6 +1809,7 @@ rgs
 rhs
 ricardosantos
 Richtext
+RIDEV
 RIGHTSCROLLBAR
 riid
 riverar
@@ -1813,6 +1856,7 @@ scancode
 scanled
 schedtasks
 Scn
+SCOOBE
 SCOPEID
 screenshot
 scrollable
@@ -1956,6 +2000,7 @@ SRCCOPY
 sre
 sregex
 SResize
+SRGB
 srme
 srre
 srw
@@ -1989,6 +2034,7 @@ stdlib
 STDMETHODCALLTYPE
 STDMETHODIMP
 stdout
+stefan
 STEPIT
 stgm
 STGMEDIUM
@@ -2133,6 +2179,7 @@ traies
 transcoded
 transparrent
 TRAYMOUSEMESSAGE
+triaging
 TRK
 trl
 trunc
@@ -2142,7 +2189,9 @@ tsx
 TYMED
 typedef
 TYPEKEY
+TYPEKEYBOARD
 TYPELIB
+TYPEMOUSE
 typename
 typeof
 typeparam
@@ -2445,6 +2494,7 @@ XSmall
 XStr
 XToolset
 xunit
+XVIRTUALSCREEN
 Yaml
 YDiff
 YIncrement
@@ -2455,6 +2505,7 @@ YStr
 YUY
 yuyoyuppe
 YUYV
+YVIRTUALSCREEN
 YVU
 YVYU
 ZEROINIT

@@ -68,26 +68,17 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <!-- To do: replace with InfoBadge once we move towards WinUI 2.7 -->
-                    <Grid VerticalAlignment="Center" Margin="2,0,12,0" AutomationProperties.AccessibilityView="Raw">
-                        <TextBlock x:Name="IconBackground"
-                                                                        VerticalAlignment="Center"
-                                                                       FontSize="{StaticResource InfoBarIconFontSize}"
-                                                                       Text="{StaticResource InfoBarIconBackgroundGlyph}"
-                                                                       Foreground="{ThemeResource InfoBarErrorSeverityIconBackground}"
-                                                                       FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                                       AutomationProperties.AccessibilityView="Raw" />
 
-                        <TextBlock x:Name="StandardIcon"
-                                                                       FontSize="{StaticResource InfoBarIconFontSize}"
-                                                                       Text="{StaticResource InfoBarErrorIconGlyph}"
-                                                                       Foreground="{ThemeResource InfoBarErrorSeverityIconForeground}"
-                                                                       FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
-                    </Grid>
-
+                        <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
+                                        Margin="2,0,12,0"
+                                        Style="{StaticResource CriticalIconInfoBadgeStyle}" />
+                    
+                        
 
                     <TextBlock x:Name="InvalidShortcutWarningLabel"
                                x:Uid="InvalidShortcut"
+                               VerticalAlignment="Center"
+                               Margin="0,-1,0,0"
                                Foreground="{ThemeResource InfoBarTitleForeground}"
                                FontWeight="{ThemeResource InfoBarTitleFontWeight}"
                                Grid.Column="1" />

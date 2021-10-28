@@ -49,9 +49,9 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         private bool _disposed;
 
         /// <summary>
-        /// List that contain all settings.
+        /// A class that contain all possible windows settings.
         /// </summary>
-        private IEnumerable<WindowsSetting>? _settingsList;
+        private WindowsSettings? _windowsSettings;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Main"/> class.
@@ -82,11 +82,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(_context.API.GetCurrentTheme());
 
-            _settingsList = JsonSettingsListHelper.ReadAllPossibleSettings();
-            _settingsList = UnsupportedSettingsHelper.FilterByBuild(_settingsList);
+            _windowsSettings = JsonSettingsListHelper.ReadAllPossibleSettings();
 
-            TranslationHelper.TranslateAllSettings(_settingsList);
-            WindowsSettingsPathHelper.GenerateSettingsPathValues(_settingsList);
+            UnsupportedSettingsHelper.FilterByBuild(_windowsSettings);
+
+            TranslationHelper.TranslateAllSettings(_windowsSettings);
+            WindowsSettingsPathHelper.GenerateSettingsPathValues(_windowsSettings);
         }
 
         /// <summary>
@@ -95,13 +96,13 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         /// <param name="query">The query to filter the list.</param>
         /// <returns>A filtered list, can be empty when nothing was found.</returns>
         public List<Result> Query(Query query)
-         {
-            if (_settingsList is null)
+        {
+            if (_windowsSettings?.Settings is null)
             {
                 return new List<Result>(0);
             }
 
-            var filteredList = _settingsList
+            var filteredList = _windowsSettings.Settings
                 .Where(Predicate)
                 .OrderBy(found => found.Name);
 
@@ -110,6 +111,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
 
             bool Predicate(WindowsSetting found)
             {
+                if (string.IsNullOrWhiteSpace(query.Search))
+                {
+                    // If no search string is entered skip query comparison.
+                    return true;
+                }
+
                 if (found.Name.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return true;
@@ -143,6 +150,12 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
                             return true;
                         }
                     }
+                }
+
+                // Search by key char '>' for app name and settings path
+                if (query.Search.Contains('>'))
+                {
+                    return ResultHelper.FilterBySettingsPath(found, query.Search);
                 }
 
                 return false;

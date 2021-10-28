@@ -27,9 +27,10 @@
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="OOBE_Settings"
                             Click="SettingsLaunchButton_Click"/>
-                    <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}" Style="{StaticResource HyperlinkButtonStyle}">
+                    <HyperlinkButton NavigateUri="{x:Bind ViewModel.Link}"
+                                     Style="{StaticResource TextButtonStyle}">
                         <TextBlock x:Uid="LearnMore_Awake"
-                               TextWrapping="Wrap" />
+                                   TextWrapping="Wrap" />
                     </HyperlinkButton>
                 </StackPanel>
             </StackPanel>

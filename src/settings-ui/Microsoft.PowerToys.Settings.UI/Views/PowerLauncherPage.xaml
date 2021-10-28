@@ -39,13 +39,19 @@
                             <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
-                                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                                                              MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
-                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" Margin="{StaticResource ExpanderSettingMargin}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook"
+                                                                 IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}"
+                                                                 Margin="56, 0, 40, 16"/>
+                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
+                                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}"
+                                          Margin="{StaticResource ExpanderSettingMargin}" />
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
@@ -136,7 +142,7 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE771;">
+                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE790;">
                         <controls:Setting.Description>
                             <HyperlinkButton Click="OpenColorsSettings_Click"
                                              x:Uid="Windows_Color_Settings"/>
@@ -167,7 +173,11 @@
                             </AutoSuggestBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
-                    <muxc:InfoBar x:Uid="Run_AllPluginsDisabled" Severity="Error" IsOpen="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}" IsClosable="False" />
+                    <muxc:InfoBar x:Uid="Run_AllPluginsDisabled"
+                                  Severity="Error"
+                                  IsTabStop="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
+                                  IsOpen="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
+                                  IsClosable="False" />
 
                     <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.ShowPluginsLoadingMessage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <muxc:ProgressRing IsActive="True" Width="20" Height="20" Margin="18,18" />
@@ -191,25 +201,11 @@
                                                 </controls:Setting.Icon>
                                                 <controls:Setting.ActionContent>
                                                     <StackPanel Orientation="Horizontal" Spacing="16">
-                                                        <!-- To do: replace with InfoBadge once we move towards WinUI 2.7 -->
-                                                        <Grid VerticalAlignment="Center"
-                                                              AutomationProperties.AccessibilityView="Raw"
-                                                              Visibility="{x:Bind ShowNotAccessibleWarning}">
-                                                            <TextBlock x:Name="IconBackground"
-                                                                        VerticalAlignment="Center"
-                                                                       FontSize="{StaticResource InfoBarIconFontSize}"
-                                                                       Text="{StaticResource InfoBarIconBackgroundGlyph}"
-                                                                       Foreground="{ThemeResource InfoBarErrorSeverityIconBackground}"
-                                                                       FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                                       AutomationProperties.AccessibilityView="Raw" />
-                                                            
-                                                            <TextBlock x:Name="StandardIcon"
-                                                                       FontSize="{StaticResource InfoBarIconFontSize}"
-                                                                       Text="{StaticResource InfoBarErrorIconGlyph}"
-                                                                       Foreground="{ThemeResource InfoBarErrorSeverityIconForeground}"
-                                                                       FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
-                                                        </Grid>
 
+                                                        <muxc:InfoBadge AutomationProperties.AccessibilityView="Raw"
+                                                                        Visibility="{x:Bind ShowNotAccessibleWarning}"
+                                                                        Style="{StaticResource CriticalIconInfoBadgeStyle}" />
+                                                     
                                                         <ToggleSwitch x:Uid="PowerLauncher_EnablePluginToggle"
                                                                       IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}"/>
                                                     </StackPanel>
@@ -226,17 +222,29 @@
                                                     </controls:Setting.ActionContent>
                                                 </controls:Setting>
                                                 <muxc:InfoBar Severity="Error" x:Uid="Run_NotAccessibleWarning"
+                                                              IsTabStop="True"
                                                               IsOpen="{x:Bind ShowNotAccessibleWarning}"
                                                               IsClosable="False" />
                                                 <muxc:InfoBar Severity="Error"
                                                               x:Uid="Run_NotAllowedActionKeyword"
+                                                              IsTabStop="True"
                                                               IsOpen="{x:Bind ShowNotAllowedKeywordWarning}"
                                                               IsClosable="False" />
                                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                                <CheckBox x:Uid="PowerLauncher_IncludeInGlobalResult"
+                                                <CheckBox 
+                                                           AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                           IsChecked="{x:Bind Path=IsGlobal, Mode=TwoWay}"
                                                           IsEnabled="{x:Bind Enabled, Mode=OneWay}"
-                                                          Margin="{StaticResource ExpanderSettingMargin}"/>
+                                                            Margin="56, 0, 40, 16">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock x:Name="IncludeInGlobalResultTitle"
+                                                                   Margin="0,10,0,0"
+                                                                   x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
+                                                        <controls:IsEnabledTextBlock x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
+                                                                                   FontSize="{StaticResource SecondaryTextFontSize}"
+                                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                    </StackPanel>
+                                                </CheckBox>
                                                
                                                 <ListView ItemsSource="{x:Bind Path=AdditionalOptions}"
                                                           SelectionMode="None"

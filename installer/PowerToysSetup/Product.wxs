@@ -10,6 +10,7 @@
   <?define ColorPickerProjectName="ColorPicker"?>
   <?define VideoConferenceProjectName="VideoConference"?>
   <?define AwakeProjectName="Awake"?>
+  <?define MouseUtilsProjectName="MouseUtils"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX32Dir="$(var.RepoDir)x86\$(var.Configuration)\" ?>
@@ -77,30 +78,39 @@
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
     <Property Id="WixShellExecTarget" Value="[#PowerToys_ActionRunner.exe]" />
 
-    <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
-      <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
-    </Property>
-    <Property Id ="EXISTINGIMAGERESIZERPATH">
-      <RegistrySearch Id="ExistingImageResizerPath" Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32" Type="raw"/>
-    </Property>
-
     <InstallUISequence>
       <Custom Action="DetectPrevInstallPath" After="CostFinalize" />
     </InstallUISequence>
     <InstallExecuteSequence>
       <Custom Action="SetRegisterPowerToysSchTaskParam" Before="RegisterPowerToysSchTask" />
+      <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
+      <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
         NOT Installed and CREATESCHEDULEDTASK = 1
       </Custom>
+      <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
+        NOT Installed
+      </Custom>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
+      <!-- TODO: Use to activate embedded MSIX -->
+      <!--<Custom Action="InstallEmbeddedMSIXTask" After="InstallFinalize">
+        NOT Installed
+      </Custom>-->
       <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize">
         NOT Installed
       </Custom>
       <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize">
         Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
+      <Custom Action="UnApplyModulesRegistryChangeSets" Before="InstallFinalize">
+        Installed AND (REMOVE="ALL")
+      </Custom>
 
+      <!-- TODO: Use to activate embedded MSIX -->
+      <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
+        Installed AND (REMOVE="ALL")
+      </Custom>-->
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
 
     </InstallExecuteSequence>
@@ -116,7 +126,15 @@
                   Property="RegisterPowerToysSchTask"
                   Value="[#PowerToys.exe]" />
 
-    <!-- Needs to Impersonate="no" and Execute="deferred" in order to run elevated. -->
+    <CustomAction Id="SetApplyModulesRegistryChangeSetsParam"
+                    Property="ApplyModulesRegistryChangeSets"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetUnApplyModulesRegistryChangeSetsParam"
+                    Property="UnApplyModulesRegistryChangeSets"
+                    Value="[INSTALLFOLDER]" />
+
+        <!-- Needs to Impersonate="no" and Execute="deferred" in order to run elevated. -->
     <CustomAction Id="RegisterPowerToysSchTask"
                   Return="ignore"
                   Impersonate="no"
@@ -133,7 +151,21 @@
                   DllEntry="RemoveScheduledTasksCA"
                    />
 
-    <CustomAction Id="TelemetryLogInstallSuccess"
+    <CustomAction Id="InstallEmbeddedMSIXTask"
+                  Return="ignore"
+                  Impersonate="yes"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="InstallEmbeddedMSIXCA"
+                   />
+
+    <CustomAction Id="UninstallEmbeddedMSIXTask"
+                  Return="ignore"
+                  Impersonate="yes"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="UninstallEmbeddedMSIXCA"
+                   />
+
+        <CustomAction Id="TelemetryLogInstallSuccess"
                   Return="ignore"
                   Impersonate="yes"
                   BinaryKey="PTCustomActions"
@@ -196,6 +228,23 @@
                   DllEntry="DetectPrevInstallPathCA"
                   />
 
+    <CustomAction Id="ApplyModulesRegistryChangeSets"
+                  Return="check"
+                  Impersonate="no"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="ApplyModulesRegistryChangeSetsCA"
+                  />
+
+    <CustomAction Id="UnApplyModulesRegistryChangeSets"
+                  Return="check"
+                  Impersonate="no"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="UnApplyModulesRegistryChangeSetsCA"
+                  />
+
+
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
     <Property Id="MSIFASTINSTALL" Value="DisableShutdown" />
@@ -214,17 +263,18 @@
           <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
-            <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
+            <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)">
+              <Directory Id="PowerRenameAssetsFolder" Name="Assets" />
+            </Directory>
             <Directory Id="ShortcutGuideInstallFolder" Name="ShortcutGuide">
               <Directory Id="ShortcutGuideExecutableInstallFolder" Name="ShortcutGuide">
                     <Directory Id="ShortcutGuideSvgsInstallFolder" Name="svgs"/>
                 </Directory>
                 <Directory Id="ShortcutGuideModuleInterfaceInstallFolder" Name="ShortcutGuideModuleInterface"/>
                 </Directory>
-            <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled                 -->
-            <!-- <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
+             <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
               <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
-            </Directory>                 -->
+            </Directory>                 
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="AwakeInstallFolder" Name="$(var.AwakeProjectName)">
@@ -248,6 +298,10 @@
             <!-- Color Picker -->
             <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
               <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
+            </Directory>
+
+            <!-- Mouse Utils -->
+            <Directory Id="MouseUtilsInstallFolder" Name="$(var.MouseUtilsProjectName)">
             </Directory>
 
             <!-- Launcher -->
@@ -300,6 +354,9 @@
                 </Directory>
                 <Directory Id="ServicePluginFolder" Name="Service">
                   <Directory Id="ServiceImagesFolder" Name="Images" />
+                </Directory>
+                <Directory Id="WindowsTerminalPluginFolder" Name="WindowsTerminal">
+                  <Directory Id="WindowsTerminalImagesFolder" Name="Images" />
                 </Directory>
                 <Directory Id="SystemPluginFolder" Name="System">
                   <Directory Id="SystemImagesFolder" Name="Images" />
@@ -457,109 +514,7 @@
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
 
-      <Component Id="Module_PowerPreview_PerUserRegistry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
-        <!-- Added a separate component for Per-User registry changes -->
-        <!-- Registry Key for Class Registration of Svg Preview Handler -->
-        <RegistryKey Root="HKCR" Key="CLSID\{ddee2b8a-6807-48a6-bb20-2338174ff779}">
-          <RegistryValue Type="string" Value="Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler" />
-          <RegistryValue Type="string" Name="DisplayName" Value="Svg Preview Handler" />
-          <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
-          <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
-          <RegistryValue Type="string" Key="InprocServer32" Value="[FileExplorerPreviewInstallFolder]SvgPreviewHandler.comhost.dll" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler" />
-        </RegistryKey>
-        <!-- Registry Key for Class Registration of Svg Thumbnail Provider -->
-        <RegistryKey Root="HKCR" Key="CLSID\{36B27788-A8BB-4698-A756-DF9F11F64F84}">
-            <RegistryValue Type="string" Value="Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider" />
-            <RegistryValue Type="string" Name="DisplayName" Value="Svg Thumbnail Provider" />
-            <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
-            <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
-            <RegistryValue Type="string" Key="InprocServer32" Value="[FileExplorerPreviewInstallFolder]SvgThumbnailProvider.comhost.dll" />
-            <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="SvgThumbnailProvider, Version=$(var.Version).0, Culture=neutral" />
-            <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider" />
-            <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
-            <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgThumbnailProvider, Version=$(var.Version).0, Culture=neutral" />
-            <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider" />
-        </RegistryKey>
-        <!-- Registry Key for Class Registration of Markdown Preview Handler -->
-        <RegistryKey Root="HKCR" Key="CLSID\{45769bcc-e8fd-42d0-947e-02beef77a1f5}">
-          <RegistryValue Type="string" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
-          <RegistryValue Type="string" Name="DisplayName" Value="Markdown Preview Handler" />
-          <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
-          <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value="" />
-          <RegistryValue Type="string" Key="InprocServer32" Value="[FileExplorerPreviewInstallFolder]MarkdownPreviewHandler.comhost.dll" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
-        </RegistryKey>
-        <!-- Registry Key for Class Registration of Pdf Preview Handler -->
-        <RegistryKey Root="HKCR" Key="CLSID\{07665729-6243-4746-95b7-79579308d1b2}">
-          <RegistryValue Type="string" Value="Microsoft.PowerToys.PreviewHandler.Pdf.PdfPreviewHandler" />
-          <RegistryValue Type="string" Name="DisplayName" Value="Pdf Preview Handler" />
-          <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
-          <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value="" />
-          <RegistryValue Type="string" Key="InprocServer32" Value="[FileExplorerPreviewInstallFolder]PdfPreviewHandler.comhost.dll" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="PdfPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Pdf.PdfPreviewHandler" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="PdfPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Pdf.PdfPreviewHandler" />
-        </RegistryKey>
-        <!-- Registry Key for Class Registration of Pdf Thumbnail Provider -->
-        <RegistryKey Root="HKCR" Key="CLSID\{BCC13D15-9720-4CC4-8371-EA74A274741E}">
-          <RegistryValue Type="string" Value="Microsoft.PowerToys.ThumbnailHandler.Pdf.PdfThumbnailProvider" />
-          <RegistryValue Type="string" Name="DisplayName" Value="Pdf Thumbnail Provider" />
-          <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
-          <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
-          <RegistryValue Type="string" Key="InprocServer32" Value="[FileExplorerPreviewInstallFolder]PdfThumbnailProvider.comhost.dll" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="PdfThumbnailProvider, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.ThumbnailHandler.Pdf.PdfThumbnailProvider" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="PdfThumbnailProvider, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.ThumbnailHandler.Pdf.PdfThumbnailProvider" />
-        </RegistryKey>
-        <!-- Registry Key for AppID registration -->
-        <RegistryKey Root="HKCR" Key="AppID\{CF142243-F059-45AF-8842-DBBE9783DB14}">
-          <RegistryValue Type="expandable" Name="DllSurrogate" Value="%SystemRoot%\system32\prevhost.exe" />
-        </RegistryKey>
-        <!-- Add Svg preview handler to preview handlers list -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\PreviewHandlers">
-          <RegistryValue Type="string" Name="{ddee2b8a-6807-48a6-bb20-2338174ff779}" Value="Svg Preview Handler" />
-        </RegistryKey>
-        <!-- Add Markdown preview handler to preview handlers list -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\PreviewHandlers">
-          <RegistryValue Type="string" Name="{45769bcc-e8fd-42d0-947e-02beef77a1f5}" Value="Markdown Preview Handler" />
-        </RegistryKey>
-        <!-- Add Pdf preview handler to preview handlers list -->
-        <RegistryKey Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\PreviewHandlers">
-          <RegistryValue Type="string" Name="{07665729-6243-4746-95b7-79579308d1b2}" Value="Pdf Preview Handler" />
-        </RegistryKey>
-        <!-- Add file type association for Svg Preview Handler -->
-        <RegistryKey Root="HKCR" Key=".svg\shellex">
-          <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{ddee2b8a-6807-48a6-bb20-2338174ff779}" />
-        </RegistryKey>
-        <!-- Add file type association for Svg Thumbnail Provider -->
-        <RegistryKey Root="HKCR" Key=".svg\shellex">
-            <RegistryValue Type="string" Key="{E357FCCD-A995-4576-B01F-234630154E96}" Value="{36B27788-A8BB-4698-A756-DF9F11F64F84}" />
-        </RegistryKey>
-        <!-- Add file type association for Markdown Preview Handler -->
-        <RegistryKey Root="HKCR" Key=".md\shellex">
-          <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{45769bcc-e8fd-42d0-947e-02beef77a1f5}" />
-        </RegistryKey>
-        <!-- Add file type association for Pdf Preview Handler -->
-        <RegistryKey Root="HKCR" Key=".pdf\shellex">
-          <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{07665729-6243-4746-95b7-79579308d1b2}" />
-        </RegistryKey>
-        <!-- Add file type association for Pdf Thumbnail Provider -->
-        <RegistryKey Root="HKCR" Key=".pdf\shellex">
-          <RegistryValue Type="string" Key="{E357FCCD-A995-4576-B01F-234630154E96}" Value="{BCC13D15-9720-4CC4-8371-EA74A274741E}" />
-        </RegistryKey>
+      <Component Id="Module_PowerPreview_Registry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
         <!-- Update Key to use IE11 for prevhost.exe -->
         <RegistryKey Root="HKLM" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
           <RegistryValue Type="integer" Name="prevhost.exe" Value="11000" />
@@ -666,7 +621,15 @@
     <!-- PowerRename -->
     <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.Toolkit.Win32.UI.XamlHost.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Microsoft.UI.Xaml.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\msvcp140_app.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameUILib.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRename.exe" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\resources.pri" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_1_app.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\vcruntime140_app.dll" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
         <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
           <RegistryValue Type="string" Value="PowerRename Shell Extension" />
           <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
@@ -679,6 +642,19 @@
       </Component>
     </DirectoryRef>
 
+    <DirectoryRef Id="PowerRenameAssetsFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
+      <Component Id="Module_PowerRename_Assets" Guid="5976BEDF-64F5-4836-8674-EE7577C77508" Win64="yes">
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Assets\file.png" />
+		    <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\Assets\folder.png" />
+      </Component>
+    </DirectoryRef>
+    <!-- MouseUtils -->
+    <DirectoryRef Id="MouseUtilsInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)">
+      <Component Id="Module_FindMyMouse" Guid="60D0E4AE-188F-4403-BF06-1465AACC1BC5" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\FindMyMouse.dll" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
     <!-- Shortcut guide -->
     <DirectoryRef Id="ShortcutGuideModuleInterfaceInstallFolder" FileSource="$(var.ShortcutGuideModuleInterface)">
       <Component Id="Module_ShortcutGuideModuleInterface" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
@@ -686,8 +662,7 @@
       </Component>
     </DirectoryRef>
 
-    <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled -->
-    <!-- <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
+     <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
      <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
       <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
       <File SelfRegCost="1" Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceProxyFilter_x64.dll" KeyPath="yes">
@@ -715,7 +690,7 @@
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Dark.png" />
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Light.png" />
      </Component>
-    </DirectoryRef> -->
+    </DirectoryRef> 
 
     <DirectoryRef Id="ShortcutGuideExecutableInstallFolder" FileSource="$(var.ShortcutGuideExecutable)">
       <Component Id="Module_ShortcutGuideExecutable" Guid="DA6E5710-F1DF-44EB-A316-300FA39544E9" Win64="yes">
@@ -881,21 +856,21 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules">
       <Component Id="SettingsV2AssetsModules" Guid="A0B961A9-77D0-4223-88A9-E3B41BD9C329" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png?>
+        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;ImageResizer.png;KBM.png;MouseUtils.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png?>
           <File Id="SettingsV2AssetsModules_$(var.File)" Source="$(var.BinX64Dir)Settings\Assets\Modules\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\Modules\OOBE">
       <Component Id="SettingsV2OOBEAssetsModules" Guid="E2360A83-6694-4B33-B5F6-641A906359EE" Win64="yes">
-        <?foreach File in ColorPicker.gif;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
+        <?foreach File in ColorPicker.gif;Awake.png;FancyZones.gif;FileExplorer.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;PowerRename.gif;Run.gif;OOBEShortcutGuide.png;VideoConferenceMute.png;OOBEPTHero.png?>
           <File Id="SettingsV2OOBEAssetsModules_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\Modules\OOBE\$(var.File)" />
         <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.BinX64Dir)Settings\Assets\FluentIcons">
       <Component Id="SettingsV2OOBEAssetsFluentIcons" Guid="6A380D5A-DA63-45B5-B68F-06D57CDD1B9C" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;FileExplorerPreview.png;ImageResizer.png;KeyboardManager.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png ?>
+        <?foreach File in ColorPicker.png;FancyZones.png;Awake.png;FileExplorerPreview.png;ImageResizer.png;KeyboardManager.png;MouseUtils.png;PowerRename.png;PowerToys.png;PowerToysRun.png;Settings.png;ShortcutGuide.png;VideoConferenceMute.png ?>
           <File Id="SettingsV2OOBEAssetsFluentIcons_$(var.File)"  Source="$(var.BinX64Dir)Settings\Assets\FluentIcons\FluentIcons$(var.File)" />
         <?endforeach?>
       </Component>
@@ -972,16 +947,16 @@
       <ComponentRef Id="ShortcutGuideSvgs" />
       <ComponentRef Id="Module_ShortcutGuideModuleInterface" />
       <ComponentRef Id="Module_ShortcutGuideExecutable" />
-      <!-- TODO(yuyoyuppe): uncomment when VCM should be enabled -->
-      <!-- <ComponentRef Id="Module_VideoConference" />
-      <ComponentRef Id="Module_VideoConferenceIcons" /> -->
+      <ComponentRef Id="Module_VideoConference" />
+      <ComponentRef Id="Module_VideoConferenceIcons" /> 
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
+      <ComponentRef Id="Module_PowerRename_Assets" />
       <ComponentRef Id="Module_ImageResizer" />
       <ComponentRef Id="Module_ImageResizer_Registry" />
       <ComponentRef Id="Module_PowerPreview" />
-      <ComponentRef Id="Module_PowerPreview_PerUserRegistry" />
+      <ComponentRef Id="Module_PowerPreview_Registry" />
       <ComponentRef Id="Module_KeyboardManager" />
       <ComponentRef Id="Module_KeyboardManager_Editor" />
       <ComponentRef Id="Module_KeyboardManager_Engine" />
@@ -991,6 +966,7 @@
       <ComponentRef Id="Module_Awake_runtime_netstandard20"/>
       <ComponentRef Id="Module_Awake_runtime_netcoreapp30"/>
       <ComponentRef Id="Module_Awake_runtime_netcoreapp21"/>
+      <ComponentRef Id="Module_FindMyMouse"/>
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2AssetsModules" />
@@ -1014,7 +990,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;WindowsSettingsPluginFolder?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder?>
             <DirectoryRef Id="$(var.ParentDirectory)">
                 <!-- Resource file directories -->
                 <?foreach Language in $(var.LocLanguageList)?>
@@ -1108,9 +1084,14 @@
                 <Component Id="Launcher_System_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder">
                     <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
                 </Component>
-                <!--<Component Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
+                <Component Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
                     <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
-                </Component>-->
+                </Component>
+                <!-- Uncomment after Plugin receives the localization files.
+                <Component Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
+                    <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
+                </Component>
+                -->
                 <?undef IdSafeLanguage?>
             <?endforeach?>
         <?endif?>
@@ -1304,6 +1285,17 @@
           <File Id="WindowsSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Images\WindowsSettings.light.png" />
       </Component>
 
+      <!-- WindowsTerminal Plugin -->
+      <Component Id="WindowsTerminalComponent" Directory="WindowsTerminalPluginFolder" Guid="5392FD11-9A69-4409-A711-748C225F1A18">
+        <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;ManagedTelemetry.dll?>
+          <File Id="WindowsTerminal_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="WindowsTerminalImagesComponent" Directory="WindowsTerminalImagesFolder" Guid="CDD21BEB-E2F3-4138-A1F8-72FD3B52706A">
+        <File Id="WindowsTerminalDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.dark.png" />
+        <File Id="WindowsTerminalLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsTerminal\Images\WindowsTerminal.light.png" />
+      </Component>
+      
     </ComponentGroup>
   </Fragment>
 </Wix>

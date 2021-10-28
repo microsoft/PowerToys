@@ -44,6 +44,8 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.HWB => ColorToHWB(color),
                 ColorRepresentationType.NCol => ColorToNCol(color),
                 ColorRepresentationType.RGB => ColorToRGB(color),
+                ColorRepresentationType.CIELAB => ColorToCIELAB(color),
+                ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),
@@ -75,7 +77,7 @@ namespace ColorPicker.Helpers
         /// <param name="color">The see cref="Color"/> for the hexadecimal presentation</param>
         /// <returns>A hexadecimal <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToHex(Color color)
-            => $"#{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
+            => $"{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
              + $"{color.G.ToString("X2", CultureInfo.InvariantCulture)}"
              + $"{color.B.ToString("X2", CultureInfo.InvariantCulture)}";
 
@@ -191,11 +193,46 @@ namespace ColorPicker.Helpers
         /// <summary>
         /// Return a <see cref="string"/> representation of a RGB color
         /// </summary>
-        /// <param name="color">The see cref="Color"/> for the RGB color presentation</param>
+        /// <param name="color">The <see cref="Color"/> for the RGB color presentation</param>
         /// <returns>A <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToRGB(Color color)
             => $"rgb({color.R.ToString(CultureInfo.InvariantCulture)}"
              + $", {color.G.ToString(CultureInfo.InvariantCulture)}"
              + $", {color.B.ToString(CultureInfo.InvariantCulture)})";
+
+        /// <summary>
+        /// Returns a <see cref="string"/> representation of a CIE LAB color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the CIE LAB color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a CIE LAB color</returns>
+        private static string ColorToCIELAB(Color color)
+        {
+            var (lightness, chromaticityA, chromaticityB) = ColorHelper.ConvertToCIELABColor(color);
+            lightness = Math.Round(lightness, 2);
+            chromaticityA = Math.Round(chromaticityA, 2);
+            chromaticityB = Math.Round(chromaticityB, 2);
+
+            return $"CIELab({lightness.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {chromaticityA.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {chromaticityB.ToString(CultureInfo.InvariantCulture)})";
+        }
+
+        /// <summary>
+        /// Returns a <see cref="string"/> representation of a CIE XYZ color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the CIE XYZ color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a CIE XYZ color</returns>
+        private static string ColorToCIEXYZ(Color color)
+        {
+            var (x, y, z) = ColorHelper.ConvertToCIEXYZColor(color);
+
+            x = Math.Round(x * 100, 4);
+            y = Math.Round(y * 100, 4);
+            z = Math.Round(z * 100, 4);
+
+            return $"xyz({x.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {y.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {z.ToString(CultureInfo.InvariantCulture)})";
+        }
     }
 }
