@@ -119,7 +119,7 @@ Additional work in this release include stability updates and optimizations, ins
 - New UI update! We hope you enjoy the modern experience and take advantage of new tool-tips to describe common regular expressions and text/file formatting. Thanks to @niels9001 for all the support on this redesign! 
 
 **PowerToys Run**
-- Windows Terminal Plugin added. Open shells through Windows Terminal via <kbd>_</kbd> activation command by default. Thanks @davidegiacometti!
+- Windows Terminal Plugin added. Open shells through Windows Terminal via `_` activation command by default. Thanks @davidegiacometti!
 - Added environment variables to Folder plugin search. Thanks @davidegiacometti!
 - Fixed certain schemas that were overwritten with HTTPS. Thanks @franky920920!
 - Fixed issue with program plugin getting caught in infinite loops as certain file paths are recursively searched.
