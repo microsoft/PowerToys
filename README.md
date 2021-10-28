@@ -85,7 +85,7 @@ With the new mouse utility, PowerToys introduces functionality to quickly find y
 
 As Video Conference Mute becomes available in the stable releases, there are still known bugs that we are actively working to address. These bugs are [tracked on our GitHub](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+label%3A%22Product-Video+Conference+Mute%22), and we welcome any and all feedback as we work to isolate and resolve the cause.
 
-Additionally, Color Picker's HEX format will no longer have the <kbd>#</kbd> character. This addresses issues with various color inputs that only accept six characters cutting off the last value. We apologize for any inconvenience this causes as we understand it impacts users who may prefer having <kbd>#</kbd> included. However, we believe this is the best solution while the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development. 
+Additionally, Color Picker's HEX format will no longer have the `#` character. This addresses issues with various color inputs that only accept six characters cutting off the last value. We apologize for any inconvenience this causes as we understand it impacts users who may prefer having `#` included. However, we believe this is the best solution while the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development. 
 
 Additional work in this release include stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
 
@@ -98,11 +98,11 @@ Additional work in this release include stability updates and optimizations, ins
 - Settings improvements to improve clarity for various options. Thanks [@niels9001](https://github.com/niels9001)!
 - Improved settings window to adjust size and position as needed when multi-monitor conditions change. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!  
 
-**Awake**
+**PowerToys Awake**
 - Screen reader improvements for accessibility.
 
 **Color Picker**
-- Color Picker's HEX format was changed to remove the <kbd>#</kbd> character. Thanks [@niels9001](https://github.com/niels9001)!
+- Color Picker's HEX format was changed to remove the `#` character. Thanks [@niels9001](https://github.com/niels9001)!
 - Accessibility improvements for screen reader and UI to distinguish colors from the border when matching. Thanks [@niels9001](https://github.com/niels9001)!
 
 **FancyZones**
@@ -119,7 +119,7 @@ Additional work in this release include stability updates and optimizations, ins
 - New UI update! We hope you enjoy the modern experience and take advantage of new tool-tips to describe common regular expressions and text/file formatting. Thanks to [@niels9001](https://github.com/niels9001) for all the support on this redesign! 
 
 **PowerToys Run**
-- Windows Terminal Plugin added. Open shells through Windows Terminal via <kbd>_</kbd> activation command by default. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Windows Terminal Plugin added. Open shells through Windows Terminal via `_` activation command by default. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Added environment variables to Folder plugin search. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 - Fixed certain schemas that were overwritten with HTTPS. Thanks [@franky920920](https://github.com/franky920920)!
 - Fixed issue with program plugin getting caught in infinite loops as certain file paths are recursively searched.
