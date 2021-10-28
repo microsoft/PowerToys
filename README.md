@@ -81,11 +81,11 @@ The [v0.49 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Ao
 
 PowerRename's new UI brings a refreshed experience that reflects the modern UI theming of Windows 11, along with helpful regular expression guidance and file formatting tips. 
 
-With mouse utilities, PowerToys introduces functionality to quickly find your mouse position by double pressing the left <kbd>ctrl</kbd> key. This is ideal for large, high-resolution displays and low-vision users, with additional features and enhancements planned for future releases. Special thanks to [Raymond Chen](https://github.com/oldnewthing) for providing the base code PowerToys used to develop this feature. To learn more, check out our [Mouse Utilities documentation](https://aka.ms/PowerToysOverview_MouseUtilities) on Microsoft Docs!
+With the new mouse utility, PowerToys introduces functionality to quickly find your mouse position by double pressing the left <kbd>ctrl</kbd> key. This is ideal for large, high-resolution displays and low-vision users, with additional features and enhancements planned for future releases. Special thanks to [Raymond Chen](https://github.com/oldnewthing) for providing the base code PowerToys used to develop this feature. To learn more, check out our [Mouse Utilities documentation](https://aka.ms/PowerToysOverview_MouseUtilities) on Microsoft Docs!
 
-As Video Conference Mute becomes available in the stable releases, there are still known bugs that we are actively working to address. These bugs are [tracked on our GitHub](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+label%3A%22Product-Video+Conference+Mute%22+admin), and we welcome any and all feedback as we work to isolate and resolve the cause.
+As Video Conference Mute becomes available in the stable releases, there are still known bugs that we are actively working to address. These bugs are [tracked on our GitHub](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+label%3A%22Product-Video+Conference+Mute%22), and we welcome any and all feedback as we work to isolate and resolve the cause.
 
-PowerToys has also changed Color Picker's HEX format to remove the <kbd>#</kbd> character from the copied value. This change was made to address several issues where color inputs for various applications that only accept six characters cut off the last value. We apologize for any inconvenience this change may cause as we understand this will likely impact users who prefer having <kbd>#</kbd> included, but we believe this is the best solution for the time being as we prepare the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) in future releases. 
+Additionally, Color Picker's HEX format will no longer have the <kbd>#</kbd> character. This addresses issues with various color inputs that only accept six characters cutting off the last value. We apologize for any inconvenience this causes as we understand it impacts users who may prefer having <kbd>#</kbd> included. However, we believe this is the best solution while the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development. 
 
 Additional work in this release include stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
 
@@ -102,7 +102,7 @@ Additional work in this release include stability updates and optimizations, ins
 - Screen reader improvements for accessibility.
 
 **Color Picker**
-- Updated the HEX format to exclude the <kbd>#</kbd> character from the copied string. This change addresses several issues where color inputs for various applications that only accept six characters cut off the last value. We apologize for any inconvenience this change may cause as we understand this will likely impact users who prefer having <kbd>#</kbd> included, but we believe this is the best solution for the time being as we prepare the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) in future releases. 
+- Color Picker's HEX format was changed to remove the <kbd>#</kbd> character. Thanks @niels9001!
 - Accessibility improvements for screen reader and UI to distinguish colors from the border when matching. Thanks @niels9001!
 
 **FancyZones**
@@ -138,9 +138,10 @@ We'd like to directly mention certain contributors (in alphabetical order) for t
 For [v0.51][github-next-release-work], we are planning to work on:
 
 - Initial development of Always on Top utility to allow users to persist desired windows in the foreground of their displays
+- We are working to heavily reduce / remove the UAC prompt over the next few releases on install. This is a big shift so it is spanning multiple releases so we can isolate issues if they do occur. Work is tracked in [#10126](https://github.com/microsoft/PowerToys/issues/10126)
 - UI/UX investigations to adopt WinUI and improve accessibility
 - Stability and bug fixes
-- Upgrading PowerToys Run to .NET 5
+- Update the PowerToys Build Pipeline to allow .NET 5 integration
 
 
 ## PowerToys Community
