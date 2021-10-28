@@ -98,7 +98,7 @@ Additional work in this release include stability updates and optimizations, ins
 - Settings improvements to improve clarity for various options. Thanks @niels9001!
 - Improved settings window to adjust size and position as needed when multi-monitor conditions change. Thanks @davidegiacometti!  
 
-**Awake**
+**PowerToys Awake**
 - Screen reader improvements for accessibility.
 
 **Color Picker**
