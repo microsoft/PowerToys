@@ -1660,6 +1660,7 @@ prgms
 pri
 PRINTCLIENT
 printf
+pritudev
 prm
 proactively
 PROCESSKEY
