@@ -323,6 +323,10 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
             else
             {
                 m_sonarState = SonarState::ControlDown1;
+                m_lastKeyTime = GetTickCount();
+                m_lastKeyPos = {};
+                GetCursorPos(&m_lastKeyPos);
+                UpdateMouseSnooping();
             }
             Logger::info("Detecting double left control click with {} ms interval.", doubleClickInterval);
             m_lastKeyTime = now;
