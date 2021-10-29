@@ -277,7 +277,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use localized system commands instead of english ones.
+        ///   Looks up a localized string similar to Use localized system commands instead of English ones.
         /// </summary>
         internal static string Use_localized_system_commands {
             get {
