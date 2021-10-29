@@ -18,7 +18,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 return false;
             }
 
-            // Handling URL with only scheme, typically mailto or applicatiion uri.
+            // Handling URL with only scheme, typically mailto or application uri.
             // Do nothing, return the result without urlBuilder
             if ((input.EndsWith(":", StringComparison.OrdinalIgnoreCase) || input.EndsWith(":/", StringComparison.OrdinalIgnoreCase)) &&
                 !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
