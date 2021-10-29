@@ -94,7 +94,7 @@ Additional work in this release include stability updates and optimizations, ins
 **General**
 - **Change of Behavior:** Color Picker's HEX format will no longer have the `#` character. Custom string functionality for color picker ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development and will allow someone to use this again.
 - Find My Mouse utility added! Utilize the functionality to quickly locate the cursor on your displays! Learn more on our [Mouse Utility docs](https://aka.ms/PowerToysOverview_MouseUtilities).
-- Accessibility and minor UI improvements to the settings page. Thanks [@niels9001](https://github.com/niels9001!
+- Accessibility and minor UI improvements to the settings page. Thanks [@niels9001](https://github.com/niels9001)!
 - Added deep links to the Settings menus for various utilities within their respective editors. Thanks [@niels9001](https://github.com/niels9001)!
 - Settings improvements to improve clarity for various options. Thanks [@niels9001](https://github.com/niels9001)!
 - Improved settings window to adjust size and position as needed when multi-monitor conditions change. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!  
