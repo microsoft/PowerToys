@@ -213,6 +213,6 @@
     <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
   </data>
   <data name="Use_localized_system_commands" xml:space="preserve">
-    <value>Use localized system commands instead of english ones</value>
+    <value>Use localized system commands instead of English ones</value>
   </data>
 </root>
