@@ -54,6 +54,9 @@ protected:
     HWND m_hwnd;
     POINT m_sonarPos = ptNowhere;
 
+    // Only consider double left control click if at least 100ms passed between the clicks, to avoid keyboards that might be sending rapid clicks.
+    static const int MIN_DOUBLE_CLICK_TIME = 100;
+
     static constexpr int SonarRadius = 100;
     static constexpr int SonarZoomFactor = 9;
     static constexpr DWORD FadeDuration = 500;
@@ -304,23 +307,39 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
         break;
 
     case SonarState::ControlUp1:
-    case SonarState::ControlUp2:
         if (pressed)
         {
-            m_sonarState = SonarState::ControlDown2;
             auto now = GetTickCount();
+            auto doubleClickInterval = now - m_lastKeyTime;
             POINT ptCursor{};
             if (GetCursorPos(&ptCursor) &&
-                now - m_lastKeyTime <= GetDoubleClickTime() &&
+                doubleClickInterval >= MIN_DOUBLE_CLICK_TIME &&
+                doubleClickInterval <= GetDoubleClickTime() &&
                 IsEqual(m_lastKeyPos, ptCursor))
             {
+                m_sonarState = SonarState::ControlDown2;
                 StartSonar();
             }
+            else
+            {
+                m_sonarState = SonarState::ControlDown1;
+                m_lastKeyTime = GetTickCount();
+                m_lastKeyPos = {};
+                GetCursorPos(&m_lastKeyPos);
+                UpdateMouseSnooping();
+            }
+            Logger::info("Detecting double left control click with {} ms interval.", doubleClickInterval);
             m_lastKeyTime = now;
             m_lastKeyPos = ptCursor;
         }
         break;
-
+    case SonarState::ControlUp2:
+        // Also deactivate sonar with left control.
+        if (pressed)
+        {
+            StopSonar();
+        }
+        break;
     case SonarState::ControlDown2:
         if (!pressed)
         {
