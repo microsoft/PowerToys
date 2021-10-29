@@ -13,31 +13,43 @@
                         "type": "string",
                         "description": "The time offset of this time zone (the gap from the UTC time zone, must convertible to a C# TimeSpan)"
                     },
-                    "Names": {
-                        "type": "array",
-                        "description": "A list with names of this time zone.",
-                        "uniqueItems": true,
-                        "items": {
-                            "type": "string"
-                        }
+                    "Name": {
+                        "type": "string",
+                        "description": "The name of this time zone."
+                    },
+                    "MilitaryName": {
+                        "type": "string",
+                        "description": "The military name of this time zone."
                     },
                     "Shortcut": {
+                        "type": "string",
+                        "description": "A shortcut for the names this time zone."
+                    },
+                    "TimeNamesStandard": {
                         "type": "array",
-                        "description": "A list with shortcuts of the names this time zone.",
+                        "description": "A list with names for the standard time.",
                         "uniqueItems": true,
                         "items": {
                             "type": "string"
                         }
                     },
-                    "Countries": {
+                    "TimeNamesDaylight": {
                         "type": "array",
-                        "description": "A list with all countries in this time zone that don't use a daylight saving time.",
+                        "description": "A list with names for the daylight saving time.",
                         "uniqueItems": true,
                         "items": {
                             "type": "string"
                         }
                     },
-                    "DstCountries": {
+                    "CountriesStandard": {
+                        "type": "array",
+                        "description": "A list with all countries in this time zone that use a standard time.",
+                        "uniqueItems": true,
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "CountriesDaylight": {
                         "type": "array",
                         "description": "A list with all countries in this time zone that use a daylight saving time.",
                         "uniqueItems": true,

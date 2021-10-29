@@ -13,10 +13,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
     {
         public OneTimeZone()
         {
-            Shortcuts = Enumerable.Empty<string>();
-            Names = Enumerable.Empty<string>();
-            Countries = Enumerable.Empty<string>();
-            DstCountries = Enumerable.Empty<string>();
+            Name = string.Empty;
+            MilitaryName = string.Empty;
+            Shortcut = string.Empty;
+
+            TimeNamesStandard = Enumerable.Empty<string>();
+            TimeNamesDaylight = Enumerable.Empty<string>();
+            CountriesStandard = Enumerable.Empty<string>();
+            CountriesDaylight = Enumerable.Empty<string>();
         }
 
         /// <summary>
@@ -25,24 +29,39 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         public TimeSpan Offset { get; set; }
 
         /// <summary>
-        /// Gets or sets a list with names of this time zone.
+        /// Gets or sets the name of this time zone.
         /// </summary>
-        public IEnumerable<string> Names { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a list with shortcuts of the names this time zone.
+        /// Gets or sets the military name of this time zone.
         /// </summary>
-        public IEnumerable<string> Shortcuts { get; set; }
+        public string MilitaryName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shortcuts of the name this time zone.
+        /// </summary>
+        public string Shortcut { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list with names for the standard time.
+        /// </summary>
+        public IEnumerable<string> TimeNamesStandard { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list with names for the daylight saving time.
+        /// </summary>
+        public IEnumerable<string> TimeNamesDaylight { get; set; }
 
         /// <summary>
         /// Gets or sets a list with all countries in this time zone that don't use a daylight saving time.
         /// </summary>
-        public IEnumerable<string> Countries { get; set; }
+        public IEnumerable<string> CountriesStandard { get; set; }
 
         /// <summary>
         /// Gets or sets a list with all countries in this time zone that use a daylight saving time.
         /// </summary>
-        public IEnumerable<string> DstCountries { get; set; }
+        public IEnumerable<string> CountriesDaylight { get; set; }
 
         internal string OffsetString => Offset.ToString("-hh:mm", CultureInfo.InvariantCulture);
     }

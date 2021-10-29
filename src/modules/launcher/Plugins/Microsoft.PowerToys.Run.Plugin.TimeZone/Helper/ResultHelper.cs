@@ -73,26 +73,41 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 return true;
             }
 
-            if (timeZone.Names != null
-            & timeZone.Names.Any(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase)))
+            if (timeZone.Name.Contains(search, StringComparison.CurrentCultureIgnoreCase))
             {
                 return true;
             }
 
-            if (timeZone.Shortcuts != null
-            && timeZone.Shortcuts.Any(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase)))
+            if (timeZone.MilitaryName.Contains(search, StringComparison.CurrentCultureIgnoreCase))
             {
                 return true;
             }
 
-            if (timeZone.Countries != null
-            && timeZone.Countries.Any(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase)))
+            if (timeZone.Shortcut.Contains(search, StringComparison.CurrentCultureIgnoreCase))
             {
                 return true;
             }
 
-            if (timeZone.DstCountries != null
-            && timeZone.DstCountries.Any(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase)))
+            if (timeZone.TimeNamesDaylight != null
+            && timeZone.TimeNamesDaylight.Any(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase)))
+            {
+                return true;
+            }
+
+            if (timeZone.TimeNamesStandard != null
+            && timeZone.TimeNamesStandard.Any(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase)))
+            {
+                return true;
+            }
+
+            if (timeZone.CountriesStandard != null
+            && timeZone.CountriesStandard.Any(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase)))
+            {
+                return true;
+            }
+
+            if (timeZone.CountriesDaylight != null
+            && timeZone.CountriesDaylight.Any(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase)))
             {
                 return true;
             }
@@ -109,17 +124,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         private static IEnumerable<Result> GetResults(OneTimeZone timeZone, DateTime utcNow, string search, string iconPath)
         {
             // TODO: revisit time zone names
-            // TODO: add time names
-            // TODO: don't mix time names with time zone names
-            // TODO: respect DST and none DST time names
-            // TODO: add standard and DST time zone names
-            // TODO: add shortcuts
+            // TODO: revisit standard time names
+            // TODO: revisit DST time names
+            // TODO: add time zone shortcuts
             var results = new Collection<Result>();
 
             var countries = GetCountries(timeZone, search, maxLength: 100);
             if (countries.Length > 0)
             {
-                var title = GetTitle(timeZone, search, utcNow, false);
+                var title = GetTitle(timeZone, utcNow, false);
 
                 results.Add(new Result
                 {
@@ -134,7 +147,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             var dstCountries = GetDstCountries(timeZone, search, maxLength: 100);
             if (dstCountries.Length > 0)
             {
-                var title = GetTitle(timeZone, search, utcNow, true);
+                var title = GetTitle(timeZone, utcNow, true);
 
                 results.Add(new Result
                 {
@@ -165,10 +178,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             return result;
         }
 
-        private static string GetTitle(OneTimeZone timeZone, string search, DateTime utcNow, bool daylightSavingTime)
+        private static string GetTitle(OneTimeZone timeZone, DateTime utcNow, bool daylightSavingTime)
         {
             var timeInZoneTime = GetTimeInTimeZone(timeZone, utcNow, daylightSavingTime);
-            var timeZoneNames = GetNames(timeZone, search, maxLength: 50);
+            var timeZoneNames = GetNames(timeZone, maxLength: 50);
 
             return $"{timeInZoneTime:HH:mm:ss} - {timeZoneNames}";
         }
@@ -176,7 +189,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         private static string GetToolTip(OneTimeZone timeZone)
         {
             var countries = GetCountries(timeZone, search: string.Empty, maxLength: int.MaxValue);
-            var names = GetNames(timeZone, search: string.Empty, maxLength: int.MaxValue);
+            var names = GetNames(timeZone, maxLength: int.MaxValue);
 
             var stringBuilder = new StringBuilder();
 
@@ -193,7 +206,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         private static string GetDstToolTip(OneTimeZone timeZone)
         {
             var dstCountries = GetDstCountries(timeZone, search: string.Empty, maxLength: int.MaxValue);
-            var names = GetNames(timeZone, search: string.Empty, maxLength: int.MaxValue);
+            var names = GetNames(timeZone, maxLength: int.MaxValue);
 
             var stringBuilder = new StringBuilder();
 
@@ -207,22 +220,28 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             return stringBuilder.ToString();
         }
 
-        private static string GetNames(OneTimeZone timeZone, string search, int maxLength)
+        private static string GetNames(OneTimeZone timeZone, int maxLength)
         {
-            IEnumerable<string> names;
+            var names = new List<string>();
 
-            // TODO: translate country names
-            if (string.IsNullOrWhiteSpace(search))
+            if (!string.IsNullOrWhiteSpace(timeZone.Name))
             {
-                names = timeZone.Names;
+                names.Add(timeZone.Name);
             }
-            else
+
+            if (!string.IsNullOrWhiteSpace(timeZone.MilitaryName))
             {
-                names = timeZone.Names.Where(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase));
-                if (!names.Any())
-                {
-                    names = timeZone.Names;
-                }
+                names.Add(timeZone.MilitaryName);
+            }
+
+            if (timeZone.TimeNamesStandard != null)
+            {
+                names.AddRange(timeZone.TimeNamesStandard);
+            }
+
+            if (timeZone.TimeNamesDaylight != null)
+            {
+                names.AddRange(timeZone.TimeNamesDaylight);
             }
 
             var stringBuilder = new StringBuilder();
@@ -266,11 +285,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             // TODO: translate country names
             if (string.IsNullOrWhiteSpace(search))
             {
-                countries = timeZone.Countries;
+                countries = timeZone.CountriesStandard;
             }
             else
             {
-                countries = timeZone.Countries.Where(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase));
+                countries = timeZone.CountriesStandard.Where(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase));
             }
 
             var stringBuilder = new StringBuilder();
@@ -347,11 +366,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             // TODO: translate country names
             if (string.IsNullOrWhiteSpace(search))
             {
-                countries = timeZone.DstCountries;
+                countries = timeZone.CountriesDaylight;
             }
             else
             {
-                countries = timeZone.DstCountries.Where(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase));
+                countries = timeZone.CountriesDaylight.Where(x => x.Contains(search, StringComparison.CurrentCultureIgnoreCase));
             }
 
             var stringBuilder = new StringBuilder();
