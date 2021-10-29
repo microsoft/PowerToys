@@ -249,8 +249,8 @@
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
   <data name="Shell_MouseUtilities.Content" xml:space="preserve">
-    <value>Mouse utilities</value>
-    <comment>Product name: Navigation view item name for Mouse utilities</comment>
+    <value>Mouse Utilities</value>
+    <comment>Product name: Navigation view item name for Mouse Utilities</comment>
   </data>
   <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
     <value>Navigation closed</value>
