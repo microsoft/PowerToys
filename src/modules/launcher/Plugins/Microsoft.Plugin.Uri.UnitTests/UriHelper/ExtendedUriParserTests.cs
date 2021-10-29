@@ -56,6 +56,10 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("tel:411", true, "tel:411")]
         [DataRow("ftp://example.com", true, "ftp://example.com/")]
         [DataRow("example.com:443", true, "example.com:443")]
+        [DataRow("mailto:", true, "mailto:")]
+        [DataRow("mailto:/", true, "mailto:/")]
+        [DataRow("ms-settings:", true, "ms-settings:")]
+        [DataRow("ms-settings:/", true, "ms-settings:/")]
 
         public void TryParseCanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
