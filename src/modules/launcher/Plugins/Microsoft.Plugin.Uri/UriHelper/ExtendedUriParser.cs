@@ -18,6 +18,16 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 return false;
             }
 
+            // Handling URL with only scheme, typically mailto or applicatiion uri.
+            // Do nothing, return the result without urlBuilder
+            if ((input.EndsWith(":", StringComparison.OrdinalIgnoreCase) || input.EndsWith(":/", StringComparison.OrdinalIgnoreCase)) &&
+                !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
+                !input.All(char.IsDigit))
+            {
+                result = new System.Uri(input);
+                return true;
+            }
+
             // Handle common cases UriBuilder does not handle
             // Using CurrentCulture since this is a user typed string
             if (input.EndsWith(":", StringComparison.CurrentCulture)
@@ -53,7 +63,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 result = urlBuilder.Uri;
                 return true;
             }
-            catch (System.UriFormatException)
+            catch (UriFormatException)
             {
                 result = default;
                 return false;
