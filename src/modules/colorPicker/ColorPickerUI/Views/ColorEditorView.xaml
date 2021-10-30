@@ -24,6 +24,7 @@
                          Grid.Row="1"
                          Padding="0"
                          TabIndex="2"
+                         KeyboardNavigation.DirectionalNavigation="Contained"
                          Width="64"
                          AutomationProperties.Name="{x:Static p:Resources.Color_History}"
                          HorizontalAlignment="Center"
@@ -68,6 +69,7 @@
               Height="32"
               Background="Transparent"
               VerticalAlignment="Top"
+              KeyboardNavigation.DirectionalNavigation="Contained"
               IsHitTestVisible="True">
             <e:Interaction.Behaviors>
                 <behaviors:DragWindowBehavior/>
@@ -118,8 +120,9 @@
                 <StackPanel>
                     <ItemsControl IsTabStop="False"
                                   TabIndex="4"
+                                  KeyboardNavigation.DirectionalNavigation="Contained"
                                   FocusManager.IsFocusScope="True"
-                                  KeyboardNavigation.TabNavigation="Continue"
+                                  KeyboardNavigation.TabNavigation="Once"
                                   ItemsSource="{Binding ColorRepresentations}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -145,6 +148,7 @@
                                          Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}"
                                          IsTabStop="True"
                                          TabIndex="2"
+                                         KeyboardNavigation.DirectionalNavigation="Contained"
                                          SelectedColor="{Binding SelectedColor}"
                                          SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
                                          Grid.Column="1"
