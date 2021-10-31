@@ -45,12 +45,12 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 var hadDefaultPort = urlBuilder.Uri.IsDefaultPort;
                 urlBuilder.Port = hadDefaultPort ? -1 : urlBuilder.Port;
 
-                if (input.Contains("HTTP://", StringComparison.OrdinalIgnoreCase))
+                if (input.StartsWith("HTTP://", StringComparison.OrdinalIgnoreCase))
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttp;
                 }
                 else if (input.Contains(":", StringComparison.OrdinalIgnoreCase) &&
-                        !input.Contains("http", StringComparison.OrdinalIgnoreCase) &&
+                        !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
                         !input.Contains("[", StringComparison.OrdinalIgnoreCase))
                 {
                     // Do nothing, leave unchanged
