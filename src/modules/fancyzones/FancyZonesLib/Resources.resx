@@ -263,7 +263,7 @@
   <data name="Setting_Description_FlashZonesOnQuickSwitch" xml:space="preserve">
     <value>Flash zones when switching layout</value>
   </data>
-  <data name="Setting_Description_SystemTheme" xml:space="preserve">
+  <data name="Setting_Description_System_Theme" xml:space="preserve">
     <value>Use system theme</value>
   </data>
 </root>
