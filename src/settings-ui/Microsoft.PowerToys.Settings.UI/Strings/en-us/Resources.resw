@@ -1015,12 +1015,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ImageResizer_FilenameParameters.AutomationProperties.Name" xml:space="preserve">
     <value>Filename parameters</value>
   </data>
-  <data name="ColorModeHeader.Header" xml:space="preserve">
-    <value>Zone appearance</value>
-  </data>
-	<data name="ColorModeHeader.Description" xml:space="preserve">
-    <value>Customize the way zones look</value>
-  </data>
   <data name="Radio_Theme_Dark.Content" xml:space="preserve">
     <value>Dark</value>
     <comment>Dark refers to color, not weight</comment>
@@ -1732,5 +1726,14 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   </data>
   <data name="FancyZones_Radio_Default_Theme.Content" xml:space="preserve">
     <value>Windows default</value>
+  </data>
+  <data name="ColorModeHeader.Header" xml:space="preserve">
+    <value>App theme</value>
+  </data>
+  <data name="FancyZones_Zone_Appearance.Description" xml:space="preserve">
+    <value>Customize the way zones look</value>
+  </data>
+  <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
+    <value>Zone appearance</value>
   </data>
 </root>
