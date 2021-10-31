@@ -11,22 +11,21 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher.Helper
 {
+    /// <Note>
+    /// On Windows operating system the name of environment variables is case insensitive. This means if we have a user and machine variable with differences in their name casing (eg. test vs Test), the name casing from machine level is used and won't be overwritten by the user var.
+    /// Example for Window's behavior: test=ValueMachine (Machine level) + TEST=ValueUser (User level) => test=ValueUser (merged)
+    /// To get the same behavior we use "StringComparer.OrdinalIgnoreCase" as compare property for the HashSet and Dictionaries where we merge machine and user variable names.
+    /// </Note>
     public static class EnvironmentHelper
     {
-        // <Note>
-        // On Windows operating system the name of environment variables is case insensitive. This means if we have a user and machine variable with differences in their name casing (eg. test vs Test), the name casing from machine level is used and won't be overwritten by the user var.
-        // Example for Window's behavior: test=ValueMachine (Machine level) + TEST=ValueUser (User level) => test=ValueUser (merged)
-        // To get the same behavior we use the "StringComparer.OrdinalIgnoreCase" for the HashSet and Dictionaries where we merge machine and user variable names.
-        // </Note>
-
         // The HashSet will contain the list of environment variables that will be skipped on update.
         private const string PathVariable = "Path";
         private static HashSet<string> protectedProcessVariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// This method is called from <see cref="MainWindow.OnSourceInitialized"/> to initialize a list of protected environment variables after process initialization.
+        /// This method is called from <see cref="MainWindow.OnSourceInitialized"/> to initialize a list of protected environment variables right after the PT Run process has been invoked.
         /// Protected variables are environment variables that must not be changed on process level when updating the environment variables with changes on machine and/or user level.
-        /// This method is used to fill the private variable <see cref="protectedProcessVariables"/>.
+        /// We chache the relevant variable names in the privat, readonly variable <see cref="protectedProcessVariables"/> of this class.
         /// </summary>
         internal static void GetProtectedEnvironmentVariables()
         {
@@ -82,23 +81,23 @@ namespace PowerLauncher.Helper
                 foreach (KeyValuePair<string, string> kv in newEnvironment)
                 {
                     // Initialize variables for length of environment variable name and value. Using this variables prevent us from null value exceptions.
+                    // => We added this because of the issue #13172 where a user reported System.ArgumentNullException from "Environment.SetEnvironmentVariable()".
                     int varNameLength = kv.Key == null ? 0 : kv.Key.Length;
                     int varValueLength = kv.Value == null ? 0 : kv.Value.Length;
 
                     // The name of environment variables must not be null, empty or have a length of zero.
                     // But if the value of the environment variable is null or an empty string then the variable is explicit defined for deletion. => Here we don't need to check anything.
+                    // => We added the if statement (next line) because of the issue #13172 where a user reported System.ArgumentNullException from "Environment.SetEnvironmentVariable()".
                     if (!string.IsNullOrEmpty(kv.Key) & varNameLength > 0)
                     {
                         try
                         {
-                            /// If the variable is not listed as protected/don't override on process level, then update it (<see cref="GetProtectedEnvironmentVariables"/>).
+                            // If the variable is not listed as protected/don't override on process level, then update it. (See method "GetProtectedEnvironmentVariables" of this class.)
                             if (!protectedProcessVariables.Contains(kv.Key))
                             {
-                                /// <summary>
-                                /// We have to delete the variables first that we can update the casing of the variable name too.
-                                /// The variables that we have to delete are marked with a null value in <see cref="kv.Value"/>. We check the values against null or empty string that we don't try to delete a not existing variable.
-                                /// The dotnet method doesn't throw an exception if the deleted variable doesn't exist.
-                                /// </summary>
+                                // We have to delete the variables first that we can update their name if changed by the user. (Exampel: "path" => "Path")
+                                // The machine and user variables that have been deleted by the user having an empty string as variable value. Because of this we chek the values of the variables in our dictionary against "null" and "string.Empty". This check prevents us from invoking a (second) delete command.
+                                // The dotnet method doesn't throw an exception if the variable which should be deleted doesn't exist.
                                 Environment.SetEnvironmentVariable(kv.Key, null, EnvironmentVariableTarget.Process);
                                 if (!string.IsNullOrEmpty(kv.Value))
                                 {
@@ -110,13 +109,13 @@ namespace PowerLauncher.Helper
                         catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                         {
-                            // The dotnet method <see cref="System.Environment.SetEnvironmentVariable"/> has it's own internal method to check the input parameters. Here we catch the exceptions that we don't check before updating the environment variable and log it to avoid crashes of PT Run.
+                            // The dotnet method "System.Environment.SetEnvironmentVariable" has it's own internal method to check the input parameters. Here we catch the exceptions that we don't check before updating the environment variable and log it to avoid crashes of PT Run.
                             Log.Exception($"Unhandled exception while updating the environment variable [{kv.Key}] for the PT Run process. (The variable value has a length of [{varValueLength}].)", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
                         }
                     }
                     else
                     {
-                        // Log the error when variable value is null, empty or has a length of zero.
+                        // Log the error when variable name is null, empty or has a length of zero.
                         Log.Error($"Failed to update the environment variable [{kv.Key}] for the PT Run process. Their name is null or empty. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
                     }
                 }
