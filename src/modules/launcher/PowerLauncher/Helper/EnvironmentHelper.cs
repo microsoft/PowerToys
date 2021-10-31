@@ -20,12 +20,12 @@ namespace PowerLauncher.Helper
     {
         // The HashSet will contain the list of environment variables that will be skipped on update.
         private const string PathVariable = "Path";
-        private static HashSet<string> protectedProcessVariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> _protectedProcessVariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// This method is called from <see cref="MainWindow.OnSourceInitialized"/> to initialize a list of protected environment variables right after the PT Run process has been invoked.
         /// Protected variables are environment variables that must not be changed on process level when updating the environment variables with changes on machine and/or user level.
-        /// We chache the relevant variable names in the privat, readonly variable <see cref="protectedProcessVariables"/> of this class.
+        /// We cache the relevant variable names in the private, static and readonly variable <see cref="_protectedProcessVariables"/> of this class.
         /// </summary>
         internal static void GetProtectedEnvironmentVariables()
         {
@@ -36,8 +36,8 @@ namespace PowerLauncher.Helper
             {
                 // Adding some well known variables that must kept unchanged on process level.
                 // Changes of this variables may lead to incorrect values
-                protectedProcessVariables.Add("USERNAME");
-                protectedProcessVariables.Add("PROCESSOR_ARCHITECTURE");
+                _protectedProcessVariables.Add("USERNAME");
+                _protectedProcessVariables.Add("PROCESSOR_ARCHITECTURE");
 
                 // Getting environment variables
                 processVars = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.Process);
@@ -54,13 +54,13 @@ namespace PowerLauncher.Helper
                         if (machineAndUserVars[pVarKey] != pVarValue)
                         {
                             // Variable value for this process differs form merged machine/user value.
-                            protectedProcessVariables.Add(pVarKey);
+                            _protectedProcessVariables.Add(pVarKey);
                         }
                     }
                     else
                     {
                         // Variable exists only for this process
-                        protectedProcessVariables.Add(pVarKey);
+                        _protectedProcessVariables.Add(pVarKey);
                     }
                 }
             });
@@ -93,10 +93,10 @@ namespace PowerLauncher.Helper
                         try
                         {
                             // If the variable is not listed as protected/don't override on process level, then update it. (See method "GetProtectedEnvironmentVariables" of this class.)
-                            if (!protectedProcessVariables.Contains(kv.Key))
+                            if (!_protectedProcessVariables.Contains(kv.Key))
                             {
-                                // We have to delete the variables first that we can update their name if changed by the user. (Exampel: "path" => "Path")
-                                // The machine and user variables that have been deleted by the user having an empty string as variable value. Because of this we chek the values of the variables in our dictionary against "null" and "string.Empty". This check prevents us from invoking a (second) delete command.
+                                // We have to delete the variables first that we can update their name if changed by the user. (Example: "path" => "Path")
+                                // The machine and user variables that have been deleted by the user having an empty string as variable value. Because of this we check the values of the variables in our dictionary against "null" and "string.Empty". This check prevents us from invoking a (second) delete command.
                                 // The dotnet method doesn't throw an exception if the variable which should be deleted doesn't exist.
                                 Environment.SetEnvironmentVariable(kv.Key, null, EnvironmentVariableTarget.Process);
                                 if (!string.IsNullOrEmpty(kv.Value))
@@ -201,9 +201,9 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// Checks wether this process is running under the system user/accout.
+        /// Checks wether this process is running under the system user/account.
         /// </summary>
-        /// <returns>A boolean value that indicates wether this process is running under system accout (true) or not (false).</returns>
+        /// <returns>A boolean value that indicates wether this process is running under system account (true) or not (false).</returns>
         private static bool IsRunningAsSystem()
         {
             using (var identity = WindowsIdentity.GetCurrent())
