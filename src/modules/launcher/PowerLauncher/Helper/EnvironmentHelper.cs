@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Principal;
 using Wox.Plugin.Logger;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
@@ -73,11 +74,36 @@ namespace PowerLauncher.Helper
         {
             Stopwatch.Normal("EnvironmentHelper.UpdateEnvironment - Duration cost", () =>
             {
-                // Getting updated environment variables
+                // Caching existing process environment and getting updated environment variables
+                IDictionary oldProcessEnvironment = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.Process);
                 var newEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 GetMergedMachineAndUserVariables(newEnvironment);
-                GetDeletedMachineAndUserVariables(newEnvironment);
 
+                // Determine deleted variables and add them with a "string.Empty" value as marker to the dictionary
+                foreach (DictionaryEntry pVar in oldProcessEnvironment)
+                {
+                    if (!newEnvironment.ContainsKey((string)pVar.Key))
+                    {
+                        newEnvironment.Add((string)pVar.Key, string.Empty);
+                    }
+                }
+
+                // Remove unchanged variables from the dictionary
+                // Later we only like to recreate the changed ones
+                var namesOfOldVars = (List<string>)oldProcessEnvironment.Keys;
+                foreach (string varName in newEnvironment.Keys.ToList())
+                {
+                    // To be able to detect changed names correctly we have to compare case sensitive
+                    if (namesOfOldVars.Contains(varName))
+                    {
+                        if (oldProcessEnvironment[varName].Equals(newEnvironment[varName]))
+                        {
+                            newEnvironment.Remove(varName);
+                        }
+                    }
+                }
+
+                // Update PT Run's process environment now
                 foreach (KeyValuePair<string, string> kv in newEnvironment)
                 {
                     // Initialize variables for length of environment variable name and value. Using this variables prevent us from null value exceptions.
@@ -120,26 +146,6 @@ namespace PowerLauncher.Helper
                     }
                 }
             });
-        }
-
-        /// <summary>
-        /// This method gets all deleted environment variables and adds them to a dictionary.
-        /// To delete variables with <see cref="Environment.SetEnvironmentVariable(string, string?)"/> the second parameter (value) must be null or an empty string (<see href="https://docs.microsoft.com/en-us/dotnet/api/system.environment.setenvironmentvariable"/>).
-        /// </summary>
-        /// <param name="environment">The dictionary of variable on which the deleted variables should be listed/added.</param>
-        private static void GetDeletedMachineAndUserVariables(Dictionary<string, string> environment)
-        {
-            IDictionary processVars = GetEnvironmentVariablesWithErrorLog(EnvironmentVariableTarget.Process);
-
-            foreach (DictionaryEntry pVar in processVars)
-            {
-                string pVarKey = (string)pVar.Key;
-
-                if (!environment.ContainsKey((string)pVarKey))
-                {
-                    environment.Add((string)pVarKey, string.Empty);
-                }
-            }
         }
 
         /// <summary>
