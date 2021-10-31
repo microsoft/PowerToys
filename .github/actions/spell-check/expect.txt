@@ -7,6 +7,7 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ
 abgr
 abi
 ABlocked
+ABOUTBOX
 Abug
 accctrl
 Acceleratorkeys
@@ -205,6 +206,7 @@ CANRENAME
 Captureascreenshot
 CAPTURECHANGED
 CASESENSITIVE
+cassert
 CAtl
 CCDDEE
 ccf
@@ -653,6 +655,7 @@ finalizer
 findfast
 findstr
 FIXEDFILEINFO
+FFAA
 FLASHZONES
 FLASHZONESONQUICKSWITCH
 flt
@@ -1010,7 +1013,6 @@ IRepository
 IResult
 ISavable
 isbi
-iss
 ISearch
 IService
 isetting
@@ -1019,6 +1021,7 @@ IShell
 ISingle
 ISmart
 isocpp
+iss
 IStorage
 IStream
 istreambuf
@@ -1029,9 +1032,9 @@ ITab
 ITask
 ITemplate
 ITEMSTATEICONCLICK
+ITerminal
 ITest
 ith
-ITerminal
 IThrottled
 IThumbnail
 ITrigger
@@ -1049,6 +1052,7 @@ IWeb
 IWIC
 IWindows
 IWork
+IXaml
 IXml
 ixx
 IYUV
@@ -1158,6 +1162,7 @@ lmcons
 LMEM
 LMENU
 lnk
+LOADSTRING
 LOCALAPPDATA
 LOCALDISPLAY
 localhost
@@ -1179,6 +1184,7 @@ lowlevel
 LOWORD
 lparam
 LPBYTE
+LPCITEMIDLIST
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
 LPCTSTR
@@ -1225,6 +1231,7 @@ LVS
 LVSIL
 LWA
 lwin
+LZero
 lzw
 mailto
 MAINICON
@@ -1338,6 +1345,7 @@ msedge
 MSGFLT
 mshtmdid
 msi
+msiexec
 MSIFASTINSTALL
 MSIHANDLE
 MSIINSTALLER
@@ -1580,6 +1588,7 @@ phwnd
 pici
 pid
 pidl
+PIDLIST
 PINDIR
 pinfo
 pinvoke
@@ -1612,6 +1621,7 @@ powerlauncher
 powerpreview
 powerrename
 POWERRENAMETEST
+POWERRENAMEUIHOST
 powershell
 powertoy
 powertoysinterop
@@ -1651,6 +1661,7 @@ prgms
 pri
 PRINTCLIENT
 printf
+pritudev
 prm
 proactively
 PROCESSKEY
@@ -1705,6 +1716,7 @@ QUERYOPEN
 QUEUESYNC
 Quickime
 QUICKLAYOUTSWITCH
+QUNS
 qwertyuiopasdfghjklzxcvbnm
 qword
 qwrtyuiopsghjklzxvnm

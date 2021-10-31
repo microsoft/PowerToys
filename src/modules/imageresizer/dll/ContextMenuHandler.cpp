@@ -2,11 +2,11 @@
 
 #include "pch.h"
 #include "ContextMenuHandler.h"
-#include "HDropIterator.h"
 #include "Settings.h"
 #include <common/themes/icon_helpers.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
+#include <common/utils/HDropIterator.h>
 
 #include "trace.h"
 

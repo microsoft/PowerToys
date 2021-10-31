@@ -14,7 +14,7 @@ namespace Microsoft.ColorPicker.UnitTests
     {
         [TestMethod]
         [DataRow(ColorRepresentationType.CMYK, "cmyk(0%, 0%, 0%, 100%)")]
-        [DataRow(ColorRepresentationType.HEX, "#000000")]
+        [DataRow(ColorRepresentationType.HEX, "000000")]
         [DataRow(ColorRepresentationType.NCol, "R0, 0%, 100%")]
         [DataRow(ColorRepresentationType.HSB, "hsb(0, 0%, 0%)")]
         [DataRow(ColorRepresentationType.HSI, "hsi(0, 0%, 0%)")]

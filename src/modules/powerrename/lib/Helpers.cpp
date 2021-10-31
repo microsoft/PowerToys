@@ -7,6 +7,13 @@
 
 namespace fs = std::filesystem;
 
+namespace
+{
+    const int MAX_INPUT_STRING_LEN = 1024;
+
+    const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\PowerRename";
+}
+
 HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
 {
     HRESULT hr = E_INVALIDARG;
@@ -544,4 +551,57 @@ HWND CreateMsgWindow(_In_ HINSTANCE hInst, _In_ WNDPROC pfnWndProc, _In_ void* p
     }
 
     return hwnd;
+}
+
+std::wstring GetRegString(const std::wstring& valueName, const std::wstring& subPath)
+{
+    wchar_t value[MAX_INPUT_STRING_LEN];
+    value[0] = L'\0';
+    DWORD type = REG_SZ;
+    DWORD size = MAX_INPUT_STRING_LEN * sizeof(wchar_t);
+    std::wstring completePath = std::wstring(c_rootRegPath) + subPath;
+    if (SHGetValue(HKEY_CURRENT_USER, completePath.c_str(), valueName.c_str(), &type, value, &size) == ERROR_SUCCESS)
+    {
+        return std::wstring(value);
+    }
+    return std::wstring{};
+}
+
+unsigned int GetRegNumber(const std::wstring& valueName, unsigned int defaultValue)
+{
+    DWORD type = REG_DWORD;
+    DWORD data = 0;
+    DWORD size = sizeof(DWORD);
+    if (SHGetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName.c_str(), &type, &data, &size) == ERROR_SUCCESS)
+    {
+        return data;
+    }
+    return defaultValue;
+}
+
+void SetRegNumber(const std::wstring& valueName, unsigned int value)
+{
+    SHSetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName.c_str(), REG_DWORD, &value, sizeof(value));
+}
+
+bool GetRegBoolean(const std::wstring& valueName, bool defaultValue)
+{
+    DWORD value = GetRegNumber(valueName.c_str(), defaultValue ? 1 : 0);
+    return (value == 0) ? false : true;
+}
+
+void SetRegBoolean(const std::wstring& valueName, bool value)
+{
+    SetRegNumber(valueName, value ? 1 : 0);
+}
+
+bool LastModifiedTime(const std::wstring& filePath, FILETIME* lpFileTime)
+{
+    WIN32_FILE_ATTRIBUTE_DATA attr{};
+    if (GetFileAttributesExW(filePath.c_str(), GetFileExInfoStandard, &attr))
+    {
+        *lpFileTime = attr.ftLastWriteTime;
+        return true;
+    }
+    return false;
 }

@@ -6,6 +6,14 @@
 #include <thread>
 #include <common/utils/logger_helper.h>
 
+
+namespace
+{
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_VALUE[] = L"value";
+    const wchar_t JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE[] = L"do_not_activate_on_game_mode";
+}
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 HMODULE m_hModule;
@@ -42,6 +50,9 @@ private:
 
     // Load initial settings from the persisted values.
     void init_settings();
+
+    // Helper function to extract the settings
+    void parse_settings(PowerToysSettings::PowerToyValues& settings);
 
 public:
     // Constructor
@@ -96,6 +107,8 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
+            parse_settings(values);
+
             values.save_to_settings_file();
         }
         catch (std::exception&)
@@ -135,12 +148,37 @@ void FindMyMouse::init_settings()
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(FindMyMouse::get_key());
+        parse_settings(settings);
     }
     catch (std::exception&)
     {
         // Error while loading from the settings file. Let default values stay as they are.
     }
 }
+
+void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
+{
+    FindMyMouseSetDoNotActivateOnGameMode(true);
+
+    auto settingsObject = settings.get_raw_json();
+    if (settingsObject.GetView().Size())
+    {
+        try
+        {
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE);
+            FindMyMouseSetDoNotActivateOnGameMode((bool)jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE));
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to get 'do not activate on game mode' setting");
+        }
+    }
+    else
+    {
+        Logger::info("Find My Mouse settings are empty");
+    }
+}
+
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

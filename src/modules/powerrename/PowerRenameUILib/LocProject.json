@@ -1,0 +1,14 @@
+{
+    "Projects": [
+        {
+            "LanguageSet": "Azure_Languages",
+            "LocItems": [
+                {
+                    "SourceFile": "src\\modules\\powerrename\\PowerRenameUILib\\Strings\\en-us\\Resources.resw",
+                    "CopyOption": "LangIDOnName",
+                    "OutputPath": "src\\modules\\powerrename\\PowerRenameUILib\\Strings"
+                }
+            ]
+        }
+    ]
+}

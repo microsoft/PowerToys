@@ -77,7 +77,7 @@ namespace ColorPicker.Helpers
         /// <param name="color">The see cref="Color"/> for the hexadecimal presentation</param>
         /// <returns>A hexadecimal <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToHex(Color color)
-            => $"#{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
+            => $"{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
              + $"{color.G.ToString("X2", CultureInfo.InvariantCulture)}"
              + $"{color.B.ToString("X2", CultureInfo.InvariantCulture)}";
 

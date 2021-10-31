@@ -1,6 +1,8 @@
 #pragma once
 
-#include <lib/PowerRenameInterfaces.h>
+#include "PowerRenameInterfaces.h"
+
+#include <string>
 
 HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source);
 HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, DWORD flags);
@@ -16,3 +18,10 @@ BOOL GetEnumeratedFileName(
     unsigned long ulMinLong,
     __inout unsigned long* pulNumUsed);
 HWND CreateMsgWindow(_In_ HINSTANCE hInst, _In_ WNDPROC pfnWndProc, _In_ void* p);
+
+std::wstring GetRegString(const std::wstring& valueName, const std::wstring& subPath);
+unsigned int GetRegNumber(const std::wstring& valueName, unsigned int defaultValue);
+void SetRegNumber(const std::wstring& valueName, unsigned int value);
+bool GetRegBoolean(const std::wstring& valueName, bool defaultValue);
+void SetRegBoolean(const std::wstring& valueName, bool value);
+bool LastModifiedTime(const std::wstring& filePath, FILETIME* lpFileTime);

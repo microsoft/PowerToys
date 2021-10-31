@@ -77,7 +77,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ContextMenuHandler.cpp" />
-    <ClCompile Include="HDropIterator.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(CIBuild)'!='true'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">
@@ -97,7 +96,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ContextMenuHandler.h" />
-    <ClInclude Include="HDropIterator.h" />
     <ClInclude Include="dllmain.h" />
     <None Include="resource.base.h" />
     <ClInclude Include="ImageResizerConstants.h" />
