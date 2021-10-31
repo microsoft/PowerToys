@@ -444,7 +444,7 @@
     <value>Excludes an application from snapping to zones and will only react to Windows Snap - add one application name per line</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
-    <value>Zone opacity</value>
+    <value>Opacity</value>
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
@@ -518,7 +518,7 @@
     <value>Zones</value>
   </data>
   <data name="FancyZones_ZoneHighlightColor.Header" xml:space="preserve">
-    <value>Zone highlight color</value>
+    <value>Highlight color</value>
   </data>
   <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
     <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>
@@ -628,10 +628,10 @@
     <value>Enable auto-complete for the search and replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Header" xml:space="preserve">
-    <value>Zone border color</value>
+    <value>Border color</value>
   </data>
   <data name="FancyZones_InActiveColor.Header" xml:space="preserve">
-    <value>Zone inactive color</value>
+    <value>Inactive color</value>
   </data>
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts.</value>
@@ -998,7 +998,10 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Filename parameters</value>
   </data>
   <data name="ColorModeHeader.Header" xml:space="preserve">
-    <value>App theme</value>
+    <value>Zone appearance</value>
+  </data>
+	<data name="ColorModeHeader.Description" xml:space="preserve">
+    <value>Customize the way zones look</value>
   </data>
   <data name="Radio_Theme_Dark.Content" xml:space="preserve">
     <value>Dark</value>
