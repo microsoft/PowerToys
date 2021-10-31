@@ -83,7 +83,7 @@ namespace PowerLauncher.Helper
                 foreach (DictionaryEntry pVar in oldProcessEnvironment)
                 {
                     // We must compare case insensitive (see dictionary assignment) to avoid false positives when the variable name has changed (Example: "path" -> "Path")
-                    if (!newEnvironment.ContainsKey((string)pVar.Key) & !_protectedProcessVariables.Contains(pVar.Key))
+                    if (!newEnvironment.ContainsKey((string)pVar.Key) & !_protectedProcessVariables.Contains((string)pVar.Key))
                     {
                         newEnvironment.Add((string)pVar.Key, string.Empty);
                     }
