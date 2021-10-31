@@ -82,6 +82,7 @@ namespace PowerLauncher.Helper
                 // Determine deleted variables and add them with a "string.Empty" value as marker to the dictionary
                 foreach (DictionaryEntry pVar in oldProcessEnvironment)
                 {
+                    // We must compare case insensitive (see dictionary assignment) to avoid false positives when the variable name has changed (Example: "path" -> "Path")
                     if (!newEnvironment.ContainsKey((string)pVar.Key))
                     {
                         newEnvironment.Add((string)pVar.Key, string.Empty);
