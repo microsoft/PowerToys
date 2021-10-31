@@ -60,6 +60,12 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [DataRow("mailto:/", true, "mailto:/")]
         [DataRow("ms-settings:", true, "ms-settings:")]
         [DataRow("ms-settings:/", true, "ms-settings:/")]
+        [DataRow("ms-settings:powersleep", true, "ms-settings:powersleep")]
+        [DataRow("microsoft-edge:http://google.com", true, "microsoft-edge:http://google.com")]
+        [DataRow("microsoft-edge:https://google.com", true, "microsoft-edge:https://google.com")]
+        [DataRow("microsoft-edge:google.com", true, "microsoft-edge:google.com")]
+        [DataRow("microsoft-edge:google.com/", true, "microsoft-edge:google.com/")]
+        [DataRow("microsoft-edge:https://google.com/", true, "microsoft-edge:https://google.com/")]
 
         public void TryParseCanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
