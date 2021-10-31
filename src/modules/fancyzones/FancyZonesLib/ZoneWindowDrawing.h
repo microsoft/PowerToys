@@ -20,6 +20,7 @@ class ZoneWindowDrawing
         D2D1_RECT_F rect;
         D2D1_COLOR_F borderColor;
         D2D1_COLOR_F fillColor;
+        D2D1_COLOR_F textColor;
         ZoneIndex id;
     };
 

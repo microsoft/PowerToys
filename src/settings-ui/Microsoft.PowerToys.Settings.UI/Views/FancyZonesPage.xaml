@@ -13,6 +13,7 @@
     <Page.Resources>
         <converters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="1" FalseValue="0"/>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" TrueValue="Collapsed" FalseValue="Visible"/>
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="FancyZones"
@@ -98,31 +99,44 @@
                                             HorizontalAlignment="Right"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-
-                                <controls:Setting  x:Uid="FancyZones_ZoneHighlightColor" Style="{StaticResource ExpanderContentSettingStyle}">
-                                    <controls:Setting.ActionContent>
-                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
-                                    </controls:Setting.ActionContent>
-                                </controls:Setting>
-
-
-                                <controls:Setting  x:Uid="FancyZones_InActiveColor" Style="{StaticResource ExpanderContentSettingStyle}">
-                                    <controls:Setting.ActionContent>
-                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
-                                    </controls:Setting.ActionContent>
-                                </controls:Setting>
-
-                                <controls:Setting  x:Uid="FancyZones_BorderColor" Style="{StaticResource ExpanderContentSettingStyle}">
-                                    <controls:Setting.ActionContent>
-                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
-                                    </controls:Setting.ActionContent>
-                                </controls:Setting>
-
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
-                </controls:SettingsGroup>
+                    
+                    <controls:Setting x:Uid="ColorModeHeader" Icon="&#xE790;">
+                        <controls:Setting.Description>
+                            <HyperlinkButton Click="OpenColorsSettings_Click"
+                                                x:Uid="Windows_Color_Settings"/>
+                        </controls:Setting.Description>
+                        <controls:Setting.ActionContent>
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.SystemTheme, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="FancyZones_Radio_Custom_Theme"/>
+                                <ComboBoxItem x:Uid="FancyZones_Radio_Default_Theme"/>
+                            </ComboBox>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
+                    <StackPanel>
+                        <controls:Setting x:Uid="FancyZones_ZoneHighlightColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}">
+                            <controls:Setting.ActionContent>
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
+                            </controls:Setting.ActionContent>
+                        </controls:Setting>
+
+
+                        <controls:Setting x:Uid="FancyZones_InActiveColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}">
+                            <controls:Setting.ActionContent>
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
+                            </controls:Setting.ActionContent>
+                        </controls:Setting>
+
+                        <controls:Setting x:Uid="FancyZones_BorderColor" Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}">
+                            <controls:Setting.ActionContent>
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
+                            </controls:Setting.ActionContent>
+                        </controls:Setting>
+                    </StackPanel>
+                </controls:SettingsGroup>
                 
                 <controls:SettingsGroup x:Uid="FancyZones_Windows" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
 
@@ -209,11 +223,6 @@
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                 </controls:SettingsGroup>
-
-
-
-
-
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                     <controls:SettingExpander IsExpanded="True">

@@ -37,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesExcludedApps = new StringProperty();
             FancyzonesInActiveColor = new StringProperty(ConfigDefaults.DefaultFancyZonesInActiveColor);
             FancyzonesBorderColor = new StringProperty(ConfigDefaults.DefaultFancyzonesBorderColor);
+            FancyzonesSystemTheme = new BoolProperty(true);
         }
 
         [JsonPropertyName("fancyzones_shiftDrag")]
@@ -107,6 +108,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("fancyzones_zoneColor")]
         public StringProperty FancyzonesInActiveColor { get; set; }
+
+        [JsonPropertyName("fancyzones_systemTheme")]
+        public BoolProperty FancyzonesSystemTheme { get; set; }
 
         // converts the current to a json string.
         public string ToJsonString()
