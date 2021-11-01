@@ -7,6 +7,6 @@ contact_links:
     url: https://github.com/microsoft/PowerToys/wiki
     about: Documentation for users of PowerToys utilities
   - name: "\U0001F4DA PowerToys dev documentation"
-    url: https://github.com/microsoft/PowerToys/tree/master/doc/devdocs
+    url: https://github.com/microsoft/PowerToys/tree/main/doc/devdocs
     about: Documentation for people interested in developing and contributing for PowerToys
  

@@ -53,7 +53,7 @@ bool ExamplePowertoy::get_config(wchar_t* buffer, int* buffer_size)
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
 ```
-The list of all the available settings elements and their description is [further in this doc](#available-settings-elements). New PowerToy icons need to be [added to the `settings-web` project](https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/settings-web.md#updating-the-icons).
+The list of all the available settings elements and their description is [further in this doc](#available-settings-elements). New PowerToy icons need to be [added to the `settings-web` project](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/settings-web.md#updating-the-icons).
 
 ## User changes settings
 When user closes the settings screen, the runner will call the [`get_config()`](modules/interface.md) method. Use [`PowerToyValues`](/src/common/settings_objects.h) class static `from_json_string` method to parse the settings. After that, the code is similar to loading the settings from disk:
