@@ -3,6 +3,6 @@
 
   <PropertyGroup>
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
-    <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
+    <ForceImportBeforeCppProps>$(debububuldollpelli)\Cpp.Build.props</ForceImportBeforeCppProps>
   </PropertyGroup>
 </Project>
