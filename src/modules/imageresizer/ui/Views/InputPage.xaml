@@ -120,8 +120,8 @@
         <StackPanel Grid.Row="2" Orientation="Vertical">
 
         <CheckBox Margin="12,4,12,0"
-                  Content="{x:Static p:Resources.Input_RemovePersonalMetadata}"
-                  IsChecked="{Binding Settings.RemovePersonalMetadata}"/>
+                  Content="{x:Static p:Resources.Input_RemoveMetadata}"
+                  IsChecked="{Binding Settings.RemoveMetadata}"/>
 
         <CheckBox Margin="12,4,12,0"
                   Content="{x:Static p:Resources.Input_ShrinkOnly}"

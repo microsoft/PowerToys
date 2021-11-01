@@ -83,7 +83,7 @@ namespace ImageResizer.Models
                         }
                     }
 
-                    if (_settings.RemovePersonalMetadata && metadata != null)
+                    if (_settings.RemoveMetadata && metadata != null)
                     {
                         // strip any metadata that doesn't affect rendering
                         var newMetadata = new BitmapMetadata(metadata.Format);

@@ -451,7 +451,7 @@ namespace ImageResizer.Models
                 Settings(
                     x =>
                     {
-                        x.RemovePersonalMetadata = true;
+                        x.RemoveMetadata = true;
                     }));
 
             operation.Execute();
