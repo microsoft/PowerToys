@@ -32,6 +32,8 @@ namespace PowerToys.Settings
 
             this.InitializeComponent();
 
+            Utils.FitToScreen(this);
+
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
             Title = loader.GetString("SettingsWindow_Title");
 
@@ -61,8 +63,6 @@ namespace PowerToys.Settings
         {
             base.OnSourceInitialized(e);
 
-            Utils.FitToScreen(this);
-
             var handle = new WindowInteropHelper(this).Handle;
             NativeMethods.GetWindowPlacement(handle, out var startupPlacement);
             var placement = Utils.DeserializePlacementOrDefault(handle);
@@ -72,8 +72,8 @@ namespace PowerToys.Settings
             var screenRect = new Rectangle((int)SystemParameters.VirtualScreenLeft, (int)SystemParameters.VirtualScreenTop, (int)SystemParameters.VirtualScreenWidth, (int)SystemParameters.VirtualScreenHeight);
             var intersection = Rectangle.Intersect(windowRect, screenRect);
 
-            // Restore default position if 1/4 of width or height of the window is offscreen
-            if (intersection.Width < (Width * 0.75) || intersection.Height < (Height * 0.75))
+            // Restore default position if 5% of width or height of the window is offscreen
+            if (intersection.Width < (Width * 0.95) || intersection.Height < (Height * 0.95))
             {
                 NativeMethods.SetWindowPlacement(handle, ref startupPlacement);
             }
