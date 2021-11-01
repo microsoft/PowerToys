@@ -20,9 +20,10 @@ namespace Microsoft.Plugin.Uri.UriHelper
 
             // Handling URL with only scheme, typically mailto or application uri.
             // Do nothing, return the result without urlBuilder
-            if ((input.EndsWith(":", StringComparison.OrdinalIgnoreCase) || input.EndsWith(":/", StringComparison.OrdinalIgnoreCase)) &&
-                !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
-                !input.All(char.IsDigit))
+            if (input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
+                && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                && !input.Contains("/", StringComparison.OrdinalIgnoreCase)
+                && !input.All(char.IsDigit))
             {
                 result = new System.Uri(input);
                 return true;
@@ -33,6 +34,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
             if (input.EndsWith(":", StringComparison.CurrentCulture)
                 || input.EndsWith(".", StringComparison.CurrentCulture)
                 || input.EndsWith(":/", StringComparison.CurrentCulture)
+                || input.EndsWith("://", StringComparison.CurrentCulture)
                 || input.All(char.IsDigit))
             {
                 result = default;
