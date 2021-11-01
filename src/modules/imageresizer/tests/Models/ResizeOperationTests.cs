@@ -464,6 +464,28 @@ namespace ImageResizer.Models
                 image => Assert.IsNotNull(((BitmapMetadata)image.Frames[0].Metadata).GetQuerySafe("System.Photo.Orientation")));
         }
 
+        [TestMethod]
+        public void StripMetadataWhenNoMetadataPresent()
+        {
+            var operation = new ResizeOperation(
+                "TestMetadataIssue1928_NoMetadata.jpg",
+                _directory,
+                Settings(
+                    x =>
+                    {
+                        x.RemoveMetadata = true;
+                    }));
+
+            operation.Execute();
+
+            AssertEx.Image(
+                _directory.File(),
+                image => Assert.IsNull(((BitmapMetadata)image.Frames[0].Metadata).DateTaken));
+            AssertEx.Image(
+                _directory.File(),
+                image => Assert.IsNull(((BitmapMetadata)image.Frames[0].Metadata).GetQuerySafe("System.Photo.Orientation")));
+        }
+
         private static Settings Settings(Action<Settings> action = null)
         {
             var settings = new Settings()
