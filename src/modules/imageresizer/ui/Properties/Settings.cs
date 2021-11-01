@@ -30,6 +30,7 @@ namespace ImageResizer.Properties
         private int _selectedSizeIndex;
         private bool _replace;
         private bool _ignoreOrientation;
+        private bool _removePersonalMetadata;
         private int _jpegQualityLevel;
         private PngInterlaceOption _pngInterlaceOption;
         private TiffCompressOption _tiffCompressOption;
@@ -44,6 +45,7 @@ namespace ImageResizer.Properties
             ShrinkOnly = false;
             Replace = false;
             IgnoreOrientation = true;
+            RemovePersonalMetadata = false;
             JpegQualityLevel = 90;
             PngInterlaceOption = System.Windows.Media.Imaging.PngInterlaceOption.Default;
             TiffCompressOption = System.Windows.Media.Imaging.TiffCompressOption.Default;
@@ -276,6 +278,18 @@ namespace ImageResizer.Properties
             set
             {
                 _ignoreOrientation = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_removePersonalMetadata")]
+        public bool RemovePersonalMetadata
+        {
+            get => _removePersonalMetadata;
+            set
+            {
+                _removePersonalMetadata = value;
                 NotifyPropertyChanged();
             }
         }

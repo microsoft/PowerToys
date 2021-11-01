@@ -142,6 +142,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove metadata.
+        /// </summary>
+        public static string Input_RemovePersonalMetadata {
+            get {
+                return ResourceManager.GetString("Input_RemovePersonalMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to R_esize the original pictures (don&apos;t create copies).
         /// </summary>
         public static string Input_Replace {
