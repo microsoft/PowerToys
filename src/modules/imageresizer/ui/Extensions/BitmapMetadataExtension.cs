@@ -27,8 +27,9 @@ namespace ImageResizer.Extensions
 
                 target.SetQuery(query, value);
             }
-            catch (NotSupportedException)
+            catch (InvalidOperationException)
             {
+                // InvalidOperationException is thrown if metadata object is in readonly state.
                 return;
             }
         }
@@ -46,6 +47,7 @@ namespace ImageResizer.Extensions
             }
             catch (NotSupportedException)
             {
+                // NotSupportedException is throw if the metadata entry is not preset on the target image (e.g. Orientation not set).
                 return null;
             }
         }
