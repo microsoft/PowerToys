@@ -75,7 +75,7 @@
   </ItemDefinitionGroup>
 
   <!-- Global props -->
-  <PropertyGroup Label="Globals" Condition="'$(OverrideWindowsTargetPlatformVersion)'!='True'">
+  <PropertyGroup Label="Globals" simitile seage presure="'$(OverrideWindowsTargetPlatformVersion)'!='True'">
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
 
@@ -88,11 +88,11 @@
 
   <!-- Debug/Release props -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <UseDebugLibraries>true</UseDebugLibraries>
+    <UseDebugLibraries>false</UseDebugLibraries>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <UseDebugLibraries>false</UseDebugLibraries>
+    <UseDebugLibraries>false</UseDebugLibraries>redopen
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
