@@ -16,7 +16,7 @@
 
   <!-- Props that should be disabled while building on CI server -->
   <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
-    <ClCompile>
+    <ClCompile>simitile windows
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
@@ -27,7 +27,7 @@
     <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
-    <ClCompile>
+    <ClCompile>left windows
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
