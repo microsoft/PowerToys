@@ -6,20 +6,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Classes;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Helper;
 using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone
 {
-    public class Main : IPlugin, IContextMenu, IPluginI18n, IDisposable
+    /// <summary>
+    /// A power launcher plugin to search across time zones.
+    /// </summary>
+    public class Main : IPlugin, IContextMenu, IPluginI18n, ISettingProvider, IDisposable
     {
         /// <summary>
         /// The name of this assembly
         /// </summary>
         private readonly string _assemblyName;
+
+        /// <summary>
+        /// The settings for this plugin.
+        /// </summary>
+        private readonly TimeZoneSettings _timeZoneSettings;
 
         /// <summary>
         /// The initial context for this plugin (contains API and meta-data)
@@ -48,6 +58,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         {
             _assemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? GetTranslatedPluginTitle();
             _defaultIconPath = "Images/reg.light.png";
+            _timeZoneSettings = new TimeZoneSettings();
         }
 
         /// <summary>
@@ -59,6 +70,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
         /// Gets the localized description.
         /// </summary>
         public string Description => Resources.PluginDescription;
+
+        /// <summary>
+        /// Gets the additional options for this plugin.
+        /// </summary>
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => _timeZoneSettings.GetAddtionalOptions();
 
         /// <summary>
         /// Initialize the plugin with the given <see cref="PluginInitContext"/>
@@ -90,8 +106,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
                 return new List<Result>(0);
             }
 
-            var results = ResultHelper.GetResults(_timeZoneList.TimeZones, query.Search, _defaultIconPath).ToList();
-            return results;
+            var results = ResultHelper.GetResults(_timeZoneList.TimeZones, _timeZoneSettings, query, _defaultIconPath);
+            return results.ToList();
         }
 
         /// <summary>
@@ -151,16 +167,40 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone
             _disposed = true;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Return the translated plugin title.
+        /// </summary>
+        /// <returns>A translated plugin title.</returns>
         public string GetTranslatedPluginTitle()
         {
             return Resources.PluginTitle;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Return the translated plugin description.
+        /// </summary>
+        /// <returns>A translated plugin description.</returns>
         public string GetTranslatedPluginDescription()
         {
             return Resources.PluginDescription;
+        }
+
+        /// <summary>
+        /// Return a additional setting panel for this plugin.
+        /// </summary>
+        /// <returns>A additional setting panel.</returns>
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Update the plugin settings
+        /// </summary>
+        /// <param name="settings">The settings for all power launcher plugins.</param>
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            _timeZoneSettings.UpdateSettings(settings);
         }
     }
 }

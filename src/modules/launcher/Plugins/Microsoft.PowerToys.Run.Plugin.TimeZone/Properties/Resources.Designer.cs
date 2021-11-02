@@ -133,6 +133,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show military time zone names.
+        /// </summary>
+        internal static string ShowMilitaryTimeZoneNames {
+            get {
+                return ResourceManager.GetString("ShowMilitaryTimeZoneNames", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show time names.
+        /// </summary>
+        internal static string ShowTimeNames {
+            get {
+                return ResourceManager.GetString("ShowTimeNames", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show time zone names.
+        /// </summary>
+        internal static string ShowTimeZoneNames {
+            get {
+                return ResourceManager.GetString("ShowTimeZoneNames", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use daylight saving time.
         /// </summary>
         internal static string UseDst {

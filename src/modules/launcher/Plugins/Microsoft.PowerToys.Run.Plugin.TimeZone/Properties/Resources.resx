@@ -141,6 +141,18 @@
   <data name="PluginTitle" xml:space="preserve">
     <value>Time zone</value>
   </data>
+  <data name="ShowMilitaryTimeZoneNames" xml:space="preserve">
+    <value>Show military time zone names</value>
+    <comment>PowerToysRun Option</comment>
+  </data>
+  <data name="ShowTimeNames" xml:space="preserve">
+    <value>Show time names</value>
+    <comment>PowerToysRun Option</comment>
+  </data>
+  <data name="ShowTimeZoneNames" xml:space="preserve">
+    <value>Show time zone names</value>
+    <comment>PowerToysRun Option</comment>
+  </data>
   <data name="UseDst" xml:space="preserve">
     <value>Use daylight saving time</value>
   </data>
