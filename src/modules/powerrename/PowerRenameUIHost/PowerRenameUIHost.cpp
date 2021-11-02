@@ -52,7 +52,7 @@ AppWindow::AppWindow(HINSTANCE hInstance, std::vector<std::wstring> files) noexc
         CComPtr<IShellItemArray> shellItemArray;
         // To test PowerRenameUIHost uncomment this line and update the path to
         // your local (absolute or relative) path which you want to see in PowerRename
-        //files.push_back(L"<path>");
+        // files.push_back(L"path");
 
         if (!files.empty())
         {
@@ -88,7 +88,8 @@ void AppWindow::CreateAndShowWindow()
     wchar_t title[64];
     LoadStringW(m_instance, IDS_APP_TITLE, title, ARRAYSIZE(title));
 
-    m_window = CreateWindowW(c_WindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, CW_USEDEFAULT, CW_USEDEFAULT, nullptr, nullptr, m_instance, this);
+    // hardcoded width and height (1200 x 600) - with WinUI 3, it should auto-scale to the content
+    m_window = CreateWindowW(c_WindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 1200, 600, nullptr, nullptr, m_instance, this);
     THROW_LAST_ERROR_IF(!m_window);
 
     ShowWindow(m_window, SW_SHOWNORMAL);
