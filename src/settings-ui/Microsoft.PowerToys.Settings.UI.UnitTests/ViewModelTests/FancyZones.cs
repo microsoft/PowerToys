@@ -241,7 +241,7 @@ namespace ViewModelTests
 
             // assert
             var expected = viewModel.MakeDraggedWindowsTransparent;
-            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesShiftDrag.Value;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             Assert.AreEqual(expected, actual);
         }
 
