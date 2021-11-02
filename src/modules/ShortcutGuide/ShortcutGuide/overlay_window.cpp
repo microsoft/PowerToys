@@ -464,8 +464,8 @@ void D2DOverlayWindow::init()
     colors.update();
     landscape.load(L"svgs\\overlay.svg", d2d_dc.get())
         .find_thumbnail(L"path-1")
-        .find_window_group(L"Group-1")
-        .recolor(0x000000, colors.start_color_menu);
+        .find_window_group(L"WindowControlsGroup")
+        .recolor(0x2582FB, colors.start_color_menu);
     portrait.load(L"svgs\\overlay_portrait.svg", d2d_dc.get())
         .find_thumbnail(L"path-1")
         .find_window_group(L"Group-1")
@@ -477,13 +477,22 @@ void D2DOverlayWindow::init()
         arrows[i].load(L"svgs\\" + std::to_wstring((i + 1) % 10) + L".svg", d2d_dc.get()).recolor(0x000000, colors.start_color_menu);
     }
     light_mode = (theme_setting == Light) || (theme_setting == System && colors.light_mode);
-    if (!light_mode)
+    if (light_mode)
     {
-        landscape.recolor(0x222222, 0xDDDDDD);
-        portrait.recolor(0x222222, 0xDDDDDD);
+        landscape.recolor(0x2E17FC, 0x000000);
+        portrait.recolor(0x2E17FC, 0x000000);
         for (auto& arrow : arrows)
         {
-            arrow.recolor(0x222222, 0xDDDDDD);
+            arrow.recolor(0x222222, 0x000000);
+        }
+    }
+    else
+    {
+        landscape.recolor(0x2E17FC, 0xFFFFFF);
+        portrait.recolor(0x2E17FC, 0xFFFFFF);
+        for (auto& arrow : arrows)
+        {
+            arrow.recolor(0x222222, 0xFFFFFF);
         }
     }
 }
@@ -496,13 +505,13 @@ void D2DOverlayWindow::resize()
     { // portrait is broke right now
         use_overlay = &landscape;
         no_active_scale = 0.3f;
-        font = 15.0f;
+        font = 12.0f;
     }
     else
     {
         use_overlay = &portrait;
         no_active_scale = 0.5f;
-        font = 16.0f;
+        font = 13.0f;
     }
     use_overlay->resize(0, 0, window_width, window_height, 0.8f);
     auto thumb_no_active_rect = use_overlay->get_thumbnail_rect_and_scale(0, 0, no_active.width(), no_active.height(), no_active_scale).rect;
