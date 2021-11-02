@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1258" height="544" viewBox="0 0 1258 544">
 	<defs>
-		<rect id="path-1" x="0" y="0" width="463" height="290"></rect>
+		<rect id="monitorRect" x="0" y="0" width="463" height="290"></rect>
 	</defs>
 	<g id="Shortcut_Guide_landscape" data-name="Shortcut Guide landscape" clip-path="url(#clip-Shortcut_Guide_landscape)">
 		<g id="WindowControlsGroup" transform="translate(164)">

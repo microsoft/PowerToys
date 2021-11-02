@@ -463,13 +463,13 @@ void D2DOverlayWindow::init()
 {
     colors.update();
     landscape.load(L"svgs\\overlay.svg", d2d_dc.get())
-        .find_thumbnail(L"path-1")
+        .find_thumbnail(L"monitorRect")
         .find_window_group(L"WindowControlsGroup")
         .recolor(0x2582FB, colors.start_color_menu);
     portrait.load(L"svgs\\overlay_portrait.svg", d2d_dc.get())
-        .find_thumbnail(L"path-1")
-        .find_window_group(L"Group-1")
-        .recolor(0x000000, colors.start_color_menu);
+        .find_thumbnail(L"monitorRect")
+        .find_window_group(L"WindowControlsGroup")
+        .recolor(0x2582FB, colors.start_color_menu);
     no_active.load(L"svgs\\no_active_window.svg", d2d_dc.get());
     arrows.resize(10);
     for (unsigned i = 0; i < arrows.size(); ++i)
