@@ -474,7 +474,7 @@ void D2DOverlayWindow::init()
     arrows.resize(10);
     for (unsigned i = 0; i < arrows.size(); ++i)
     {
-        arrows[i].load(L"svgs\\" + std::to_wstring((i + 1) % 10) + L".svg", d2d_dc.get()).recolor(0x000000, colors.start_color_menu);
+        arrows[i].load(L"svgs\\" + std::to_wstring((i + 1) % 10) + L".svg", d2d_dc.get()).recolor(0x2582FB, colors.start_color_menu);
     }
     light_mode = (theme_setting == Light) || (theme_setting == System && colors.light_mode);
     if (light_mode)
