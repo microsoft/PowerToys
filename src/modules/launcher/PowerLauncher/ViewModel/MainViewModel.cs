@@ -579,6 +579,8 @@ namespace PowerLauncher.ViewModel
                                 UpdateResultsListViewAfterQuery(queryText);
                             }
 
+                            bool noInitialResults = numResults == 0;
+
                             // Run the slower query of the DelayedExecution plugins
                             currentCancellationToken.ThrowIfCancellationRequested();
                             Parallel.ForEach(plugins, (plugin) =>
@@ -612,7 +614,7 @@ namespace PowerLauncher.ViewModel
                                                 }
 
                                                 currentCancellationToken.ThrowIfCancellationRequested();
-                                                UpdateResultsListViewAfterQuery(queryText, true);
+                                                UpdateResultsListViewAfterQuery(queryText, noInitialResults, true);
                                             }
                                         }
                                     }
@@ -654,7 +656,7 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        private void UpdateResultsListViewAfterQuery(string queryText, bool isDelayedInvoke = false)
+        private void UpdateResultsListViewAfterQuery(string queryText, bool noInitialResults = false, bool isDelayedInvoke = false)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -667,9 +669,13 @@ namespace PowerLauncher.ViewModel
                 if (Results.Results.Count > 0)
                 {
                     Results.Visibility = Visibility.Visible;
-                    if (!isDelayedInvoke)
+                    if (!isDelayedInvoke || noInitialResults)
                     {
                         Results.SelectedIndex = 0;
+                        if (noInitialResults)
+                        {
+                            Results.SelectedItem = Results.Results.FirstOrDefault();
+                        }
                     }
                 }
                 else
