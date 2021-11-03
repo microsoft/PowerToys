@@ -123,6 +123,17 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
             }
         }
     }
+
+    auto zoneWindow = zoneWindowMap.find(monitor);
+    if (zoneWindow != zoneWindowMap.end())
+    {
+        const auto zoneWindowPtr = zoneWindow->second;
+        const auto activeZoneSet = zoneWindowPtr->ActiveZoneSet();
+        if (activeZoneSet)
+        {
+            activeZoneSet->DismissWindow(window);
+        }
+    }
 }
 
 void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& zoneWindowMap) noexcept
@@ -273,11 +284,11 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
     }
 }
 
-void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, winrt::com_ptr<IWorkArea> zoneWindow) noexcept
+void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, winrt::com_ptr<IWorkArea> zoneWindow, bool suppressMove) noexcept
 {
     if (window != m_windowMoveSize)
     {
-        zoneWindow->MoveWindowIntoZoneByIndexSet(window, indexSet);
+        zoneWindow->MoveWindowIntoZoneByIndexSet(window, indexSet, suppressMove);
     }
 }
 

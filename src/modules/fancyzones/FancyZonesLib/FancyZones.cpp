@@ -147,7 +147,8 @@ protected:
 
 private:
     void UpdateZoneWindows() noexcept;
-    void UpdateWindowsPositions() noexcept;
+    void UpdateWindowsPositions(bool suppressMove = false) noexcept;
+    void CycleTabs(bool reverse) noexcept;
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
@@ -155,6 +156,7 @@ private:
 
     void RegisterVirtualDesktopUpdates() noexcept;
 
+    void UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept;
     void OnSettingsChanged() noexcept;
 
     std::pair<winrt::com_ptr<IWorkArea>, ZoneIndexSet> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept;
@@ -201,6 +203,14 @@ private:
         Exit,
         Terminate
     };
+
+    // IDs used to register hot keys (keyboard shortcuts).
+    enum class HotkeyId : int
+    {
+        Editor = 1,
+        NextTab = 2,
+        PrevTab = 3,
+    };
 };
 
 std::function<void()> FancyZones::disableModuleCallback = {};
@@ -224,7 +234,12 @@ FancyZones::Run() noexcept
         return;
     }
 
-    RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Editor), m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
+    if (m_settings->GetSettings()->windowSwitching)
+    {
+        RegisterHotKey(m_window, static_cast<int>(HotkeyId::NextTab), m_settings->GetSettings()->nextTabHotkey.get_modifiers(), m_settings->GetSettings()->nextTabHotkey.get_code());
+        RegisterHotKey(m_window, static_cast<int>(HotkeyId::PrevTab), m_settings->GetSettings()->prevTabHotkey.get_modifiers(), m_settings->GetSettings()->prevTabHotkey.get_code());
+    }
 
     m_virtualDesktop.Init();
 
@@ -639,9 +654,14 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     {
     case WM_HOTKEY:
     {
-        if (wparam == 1)
+        if (wparam == static_cast<WPARAM>(HotkeyId::Editor))
         {
             ToggleEditor();
+        }
+        else if (wparam == static_cast<WPARAM>(HotkeyId::NextTab) || wparam == static_cast<WPARAM>(HotkeyId::PrevTab))
+        {
+            bool reverse = wparam == static_cast<WPARAM>(HotkeyId::PrevTab);
+            CycleTabs(reverse);
         }
     }
     break;
@@ -787,6 +807,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 
     UpdateZoneWindows();
 
+
     if ((changeType == DisplayChangeType::WorkArea) || (changeType == DisplayChangeType::DisplayChange))
     {
         if (m_settings->GetSettings()->displayChange_moveWindows)
@@ -897,7 +918,7 @@ void FancyZones::UpdateZoneWindows() noexcept
     }
 }
 
-void FancyZones::UpdateWindowsPositions() noexcept
+void FancyZones::UpdateWindowsPositions(bool suppressMove) noexcept
 {
     for (const auto [window, desktopId] : m_virtualDesktop.GetWindowsRelatedToDesktops())
     {
@@ -905,8 +926,20 @@ void FancyZones::UpdateWindowsPositions() noexcept
         auto zoneWindow = m_workAreaHandler.GetWorkArea(window, desktopId);
         if (zoneWindow)
         {
-            m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
+            m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow, suppressMove);
         }
+    }
+}
+
+void FancyZones::CycleTabs(bool reverse) noexcept
+{
+    auto window = GetForegroundWindow();
+    HMONITOR current = WorkAreaKeyFromWindow(window);
+
+    auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, current);
+    if (workArea)
+    {
+        workArea->CycleTabs(window, reverse);
     }
 }
 
@@ -1135,21 +1168,36 @@ void FancyZones::RegisterVirtualDesktopUpdates() noexcept
     FancyZonesDataInstance().SyncVirtualDesktops(m_currentDesktopId);
 }
 
-void FancyZones::OnSettingsChanged() noexcept
+void FancyZones::UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept
 {
-    _TRACER_;
-    m_settings->ReloadSettings();
+    UnregisterHotKey(m_window, hotkeyId);
 
-    // Update the hotkey
-    UnregisterHotKey(m_window, 1);
-    auto modifiers = m_settings->GetSettings()->editorHotkey.get_modifiers();
-    auto code = m_settings->GetSettings()->editorHotkey.get_code();
-    auto result = RegisterHotKey(m_window, 1, modifiers, code);
+    if (!enable)
+    {
+        return;
+    }
+
+    auto modifiers = hotkeyObject.get_modifiers();
+    auto code = hotkeyObject.get_code();
+    auto result = RegisterHotKey(m_window, hotkeyId, modifiers, code);
 
     if (!result)
     {
         Logger::error(L"Failed to register hotkey: {}", get_last_error_or_default(GetLastError()));
     }
+}
+
+void FancyZones::OnSettingsChanged() noexcept
+{
+    _TRACER_;
+    m_settings->ReloadSettings();
+
+    // Update the hotkeys
+    UpdateHotkey(static_cast<int>(HotkeyId::Editor), m_settings->GetSettings()->editorHotkey, true);
+
+    auto windowSwitching = m_settings->GetSettings()->windowSwitching;
+    UpdateHotkey(static_cast<int>(HotkeyId::NextTab), m_settings->GetSettings()->nextTabHotkey, windowSwitching);
+    UpdateHotkey(static_cast<int>(HotkeyId::PrevTab), m_settings->GetSettings()->prevTabHotkey, windowSwitching);
 
     // Needed if we toggled spanZonesAcrossMonitors
     m_workAreaHandler.Clear();
@@ -1177,10 +1225,9 @@ void FancyZones::UpdateZoneSets() noexcept
     {
         workArea->UpdateActiveZoneSet();
     }
-    if (m_settings->GetSettings()->zoneSetChange_moveWindows)
-    {
-        UpdateWindowsPositions();
-    }
+
+    auto moveWindows = m_settings->GetSettings()->zoneSetChange_moveWindows;
+    UpdateWindowsPositions(!moveWindows);
 }
 
 bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
