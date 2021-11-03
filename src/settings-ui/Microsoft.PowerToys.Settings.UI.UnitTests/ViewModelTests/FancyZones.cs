@@ -230,10 +230,7 @@ namespace ViewModelTests
             Assert.AreEqual(expected, actual);
         }
 
-       /*
-        * Temporarily commented out
-        *
-       [TestMethod]
+        [TestMethod]
         public void MakeDraggedWindowsTransparentShouldSetValue2TrueWhenSuccessful()
         {
             Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
@@ -247,9 +244,9 @@ namespace ViewModelTests
 
             // assert
             var expected = viewModel.MakeDraggedWindowsTransparent;
-            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesShiftDrag.Value;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             Assert.AreEqual(expected, actual);
-        }*/
+        }
 
         [TestMethod]
         public void MouseSwitchShouldSetValue2TrueWhenSuccessful()
