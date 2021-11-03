@@ -52,7 +52,10 @@
 #define ZoneBorderColorKey "ZoneBorderColor"
 #define ZoneHighlightColorKey "ZoneHighlightColor"
 #define ZoneHighlightOpacityKey "ZoneHighlightOpacity"
-#define HotkeyKey "Hotkey"
+#define EditorHotkeyKey "EditorHotkey"
+#define WindowSwitchingToggleKey "WindowSwitchingToggle"
+#define NextTabHotkey "NextTabHotkey"
+#define PrevTabHotkey "PrevTabHotkey"
 #define ExcludedAppsCountKey "ExcludedAppsCount"
 #define KeyboardValueKey "KeyboardValue"
 #define ActiveSetKey "ActiveSet"
@@ -244,15 +247,21 @@ void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept
         TraceLoggingBoolean(shortcutUsed, QuickLayoutSwitchedWithShortcutUsed));
 }
 
+static std::wstring HotKeyToString(const PowerToysSettings::HotkeyObject& hotkey)
+{
+    return L"alt:" + std::to_wstring(hotkey.alt_pressed())
+        + L", ctrl:" + std::to_wstring(hotkey.ctrl_pressed())
+        + L", shift:" + std::to_wstring(hotkey.shift_pressed())
+        + L", win:" + std::to_wstring(hotkey.win_pressed())
+        + L", code:" + std::to_wstring(hotkey.get_code())
+        + L", keyFromCode:" + hotkey.get_key();
+}
+
 void Trace::SettingsTelemetry(const Settings& settings) noexcept
 {
-    const auto& editorHotkey = settings.editorHotkey;
-    std::wstring hotkeyStr = L"alt:" + std::to_wstring(editorHotkey.alt_pressed())
-        + L", ctrl:" + std::to_wstring(editorHotkey.ctrl_pressed())
-        + L", shift:" + std::to_wstring(editorHotkey.shift_pressed())
-        + L", win:" + std::to_wstring(editorHotkey.win_pressed())
-        + L", code:" + std::to_wstring(editorHotkey.get_code())
-        + L", keyFromCode:" + editorHotkey.get_key();
+    auto editorHotkeyStr = HotKeyToString(settings.editorHotkey);
+    auto nextTabHotkeyStr = HotKeyToString(settings.nextTabHotkey);
+    auto prevTabHotkeyStr = HotKeyToString(settings.prevTabHotkey);
 
     TraceLoggingWrite(
         g_hProvider,
@@ -281,7 +290,10 @@ void Trace::SettingsTelemetry(const Settings& settings) noexcept
         TraceLoggingWideString(settings.zoneHighlightColor.c_str(), ZoneHighlightColorKey),
         TraceLoggingInt32(settings.zoneHighlightOpacity, ZoneHighlightOpacityKey),
         TraceLoggingInt32((int)settings.overlappingZonesAlgorithm, OverlappingZonesAlgorithmKey),
-        TraceLoggingWideString(hotkeyStr.c_str(), HotkeyKey),
+        TraceLoggingWideString(editorHotkeyStr.c_str(), EditorHotkeyKey),
+        TraceLoggingBoolean(settings.windowSwitching, WindowSwitchingToggleKey),
+        TraceLoggingWideString(nextTabHotkeyStr.c_str(), NextTabHotkey),
+        TraceLoggingWideString(prevTabHotkeyStr.c_str(), PrevTabHotkey),
         TraceLoggingInt32(static_cast<int>(settings.excludedAppsArray.size()), ExcludedAppsCountKey));
 }
 

@@ -130,7 +130,7 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, HWND workAreaWindow, ZoneIndex index) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const ZoneIndexSet& indexSet) noexcept;
+    MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const ZoneIndexSet& indexSet, bool suppressMove = false) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND workAreaWindow, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
@@ -139,6 +139,10 @@ public:
     ExtendWindowByDirectionAndPosition(HWND window, HWND workAreaWindow, DWORD vkCode) noexcept;
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByPoint(HWND window, HWND workAreaWindow, POINT ptClient) noexcept;
+    IFACEMETHODIMP_(void)
+    DismissWindow(HWND window) noexcept;
+    IFACEMETHODIMP_(void)
+    CycleTabs(HWND window, bool reverse) noexcept;
     IFACEMETHODIMP_(bool)
     CalculateZones(RECT workArea, int zoneCount, int spacing) noexcept;
     IFACEMETHODIMP_(bool) IsZoneEmpty(ZoneIndex zoneIndex) const noexcept;
@@ -151,6 +155,8 @@ private:
     bool CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, int spacing) noexcept;
     bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
     bool CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing);
+    HWND GetNextTab(ZoneIndexSet indexSet, HWND current, bool reverse) noexcept;
+    void InsertTabIntoZone(HWND window, std::optional<size_t> tabSortKeyWithinZone, const ZoneIndexSet& indexSet);
     ZoneIndexSet ZoneSelectSubregion(const ZoneIndexSet& capturedZones, POINT pt) const;
     ZoneIndexSet ZoneSelectClosestCenter(const ZoneIndexSet& capturedZones, POINT pt) const;
 
@@ -160,6 +166,7 @@ private:
 
     ZonesMap m_zones;
     std::map<HWND, ZoneIndexSet> m_windowIndexSet;
+    std::map<ZoneIndexSet, std::vector<HWND>> m_windowsByIndexSets;
 
     // Needed for ExtendWindowByDirectionAndPosition
     std::map<HWND, ZoneIndexSet> m_windowInitialIndexSet;
@@ -289,7 +296,7 @@ ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND workAreaWindow, ZoneIndex i
 }
 
 IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const ZoneIndexSet& zoneIds) noexcept
+ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const ZoneIndexSet& zoneIds, bool suppressMove) noexcept
 {
     if (m_zones.empty())
     {
@@ -303,11 +310,13 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
         m_windowInitialIndexSet.erase(window);
     }
 
+    auto tabSortKeyWithinZone = GetTabSortKeyWithinZone(window);
+    DismissWindow(window);
+
     RECT size;
     bool sizeEmpty = true;
     Bitmask bitmask = 0;
-
-    m_windowIndexSet[window] = {};
+    auto& indexSet = m_windowIndexSet[window];
 
     for (ZoneIndex id : zoneIds)
     {
@@ -328,7 +337,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
                 sizeEmpty = false;
             }
 
-            m_windowIndexSet[window].push_back(id);
+            indexSet.push_back(id);
         }
 
         if (id < std::numeric_limits<ZoneIndex>::digits)
@@ -339,9 +348,14 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
 
     if (!sizeEmpty)
     {
-        SaveWindowSizeAndOrigin(window);
-        SizeWindowToRect(window, size);
+        if (!suppressMove)
+        {
+            SaveWindowSizeAndOrigin(window);
+            SizeWindowToRect(window, size);
+        }
+
         StampWindow(window, bitmask);
+        InsertTabIntoZone(window, tabSortKeyWithinZone, indexSet);
     }
 }
 
@@ -544,6 +558,110 @@ ZoneSet::MoveWindowIntoZoneByPoint(HWND window, HWND workAreaWindow, POINT ptCli
 {
     const auto& zones = ZonesFromPoint(ptClient);
     MoveWindowIntoZoneByIndexSet(window, workAreaWindow, zones);
+}
+
+void ZoneSet::DismissWindow(HWND window) noexcept
+{
+    auto& indexSet = m_windowIndexSet[window];
+    if (!indexSet.empty())
+    {
+        auto& windows = m_windowsByIndexSets[indexSet];
+        windows.erase(find(begin(windows), end(windows), window));
+        if (windows.empty())
+        {
+            m_windowsByIndexSets.erase(indexSet);
+        }
+
+        indexSet.clear();
+    }
+
+    SetTabSortKeyWithinZone(window, std::nullopt);
+}
+
+IFACEMETHODIMP_(void)
+ZoneSet::CycleTabs(HWND window, bool reverse) noexcept
+{
+    auto indexSet = GetZoneIndexSetFromWindow(window);
+
+    // Do nothing in case the window is not recognized
+    if (indexSet.empty())
+    {
+        return;
+    }
+
+    for (;;)
+    {
+        auto next = GetNextTab(indexSet, window, reverse);
+        if (next == NULL)
+        {
+            break;
+        }
+
+        auto success = SetForegroundWindow(next);
+        if (!success && GetLastError() == ERROR_INVALID_WINDOW_HANDLE)
+        {
+            // Dismiss the encountered window since it was probably closed
+            DismissWindow(next);
+            continue;
+        }
+
+        break;
+    }
+}
+
+HWND ZoneSet::GetNextTab(ZoneIndexSet indexSet, HWND current, bool reverse) noexcept
+{
+    const auto& tabs = m_windowsByIndexSets[indexSet];
+    auto tabIt = std::find(tabs.begin(), tabs.end(), current);
+    if (!reverse)
+    {
+        ++tabIt;
+        return tabIt == tabs.end() ? tabs.front() : *tabIt;
+    }
+    else
+    {
+        return tabIt == tabs.begin() ? tabs.back() : *(--tabIt);
+    }
+}
+
+void ZoneSet::InsertTabIntoZone(HWND window, std::optional<size_t> tabSortKeyWithinZone, const ZoneIndexSet& indexSet)
+{
+    if (tabSortKeyWithinZone.has_value())
+    {
+        // Insert the tab using the provided sort key
+        auto predicate = [tabSortKeyWithinZone](HWND tab) {
+            auto currentTabSortKeyWithinZone = GetTabSortKeyWithinZone(tab);
+            if (currentTabSortKeyWithinZone.has_value())
+            {
+                return currentTabSortKeyWithinZone.value() > tabSortKeyWithinZone;
+            }
+            else
+            {
+                return false;
+            }
+        };
+
+        auto position = std::find_if(m_windowsByIndexSets[indexSet].begin(), m_windowsByIndexSets[indexSet].end(), predicate);
+        m_windowsByIndexSets[indexSet].insert(position, window);
+    }
+    else
+    {
+        // Insert the tab at the end
+        tabSortKeyWithinZone = 0;
+        if (!m_windowsByIndexSets[indexSet].empty())
+        {
+            auto prevTab = m_windowsByIndexSets[indexSet].back();
+            auto prevTabSortKeyWithinZone = GetTabSortKeyWithinZone(prevTab);
+            if (prevTabSortKeyWithinZone.has_value())
+            {
+                tabSortKeyWithinZone = prevTabSortKeyWithinZone.value() + 1;
+            }
+        }
+
+        m_windowsByIndexSets[indexSet].push_back(window);
+    }
+
+    SetTabSortKeyWithinZone(window, tabSortKeyWithinZone);
 }
 
 IFACEMETHODIMP_(bool)

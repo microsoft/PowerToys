@@ -10,7 +10,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class FZConfigProperties
     {
         // in reality, this file needs to be kept in sync currently with src\modules\fancyzones\lib\Settings.h
-        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, false, false, true, 0xc0);
+        public const int VkOem3 = 0xc0;
+        public const int VkNext = 0x22;
+        public const int VkPrior = 0x21;
+
+        public static readonly HotkeySettings DefaultEditorHotkeyValue = new HotkeySettings(true, false, false, true, VkOem3);
+        public static readonly HotkeySettings DefaultNextTabHotkeyValue = new HotkeySettings(true, false, false, false, VkNext);
+        public static readonly HotkeySettings DefaultPrevTabHotkeyValue = new HotkeySettings(true, false, false, false, VkPrior);
 
         public FZConfigProperties()
         {
@@ -32,7 +38,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesSpanZonesAcrossMonitors = new BoolProperty();
             FancyzonesZoneHighlightColor = new StringProperty(ConfigDefaults.DefaultFancyZonesZoneHighlightColor);
             FancyzonesHighlightOpacity = new IntProperty(50);
-            FancyzonesEditorHotkey = new KeyboardKeysProperty(DefaultHotkeyValue);
+            FancyzonesEditorHotkey = new KeyboardKeysProperty(DefaultEditorHotkeyValue);
+            FancyzonesWindowSwitching = new BoolProperty(true);
+            FancyzonesNextTabHotkey = new KeyboardKeysProperty(DefaultNextTabHotkeyValue);
+            FancyzonesPrevTabHotkey = new KeyboardKeysProperty(DefaultPrevTabHotkeyValue);
             FancyzonesMakeDraggedWindowTransparent = new BoolProperty();
             FancyzonesExcludedApps = new StringProperty();
             FancyzonesInActiveColor = new StringProperty(ConfigDefaults.DefaultFancyZonesInActiveColor);
@@ -98,6 +107,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("fancyzones_editor_hotkey")]
         public KeyboardKeysProperty FancyzonesEditorHotkey { get; set; }
+
+        [JsonPropertyName("fancyzones_windowSwitching")]
+        public BoolProperty FancyzonesWindowSwitching { get; set; }
+
+        [JsonPropertyName("fancyzones_nextTab_hotkey")]
+        public KeyboardKeysProperty FancyzonesNextTabHotkey { get; set; }
+
+        [JsonPropertyName("fancyzones_prevTab_hotkey")]
+        public KeyboardKeysProperty FancyzonesPrevTabHotkey { get; set; }
 
         [JsonPropertyName("fancyzones_excluded_apps")]
         public StringProperty FancyzonesExcludedApps { get; set; }

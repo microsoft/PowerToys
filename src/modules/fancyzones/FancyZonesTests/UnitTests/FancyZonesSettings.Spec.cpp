@@ -41,6 +41,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.showZonesOnAllMonitors, actual.showZonesOnAllMonitors);
         Assert::AreEqual(expected.spanZonesAcrossMonitors, actual.spanZonesAcrossMonitors);
         Assert::AreEqual(expected.makeDraggedWindowTransparent, actual.makeDraggedWindowTransparent);
+        Assert::AreEqual(expected.windowSwitching, actual.windowSwitching);
         Assert::AreEqual(expected.zoneColor.c_str(), actual.zoneColor.c_str());
         Assert::AreEqual(expected.zoneBorderColor.c_str(), actual.zoneBorderColor.c_str());
         Assert::AreEqual(expected.zoneHighlightColor.c_str(), actual.zoneHighlightColor.c_str());
@@ -53,6 +54,8 @@ namespace FancyZonesUnitTests
         }
 
         compareHotkeyObjects(expected.editorHotkey, actual.editorHotkey);
+        compareHotkeyObjects(expected.nextTabHotkey, actual.nextTabHotkey);
+        compareHotkeyObjects(expected.prevTabHotkey, actual.prevTabHotkey);
     }
 
     TEST_CLASS (FancyZonesSettingsCreationUnitTest)
@@ -62,7 +65,6 @@ namespace FancyZonesUnitTests
         PCWSTR m_moduleKey = L"FancyZonesUnitTests";
         std::wstring m_tmpName;
 
-        const PowerToysSettings::HotkeyObject m_defaultHotkeyObject = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
         const Settings m_defaultSettings;
 
         TEST_METHOD_INITIALIZE(Init)
@@ -128,6 +130,9 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
+                    values.add_property(L"fancyzones_windowSwitching", expected.windowSwitching);
+                    values.add_property(L"fancyzones_nextTab_hotkey", expected.nextTabHotkey.get_json());
+                    values.add_property(L"fancyzones_prevTab_hotkey", expected.prevTabHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                     values.save_to_settings_file();
@@ -168,6 +173,9 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
+                    values.add_property(L"fancyzones_windowSwitching", expected.windowSwitching);
+                    values.add_property(L"fancyzones_nextTab_hotkey", expected.nextTabHotkey.get_json());
+                    values.add_property(L"fancyzones_prevTab_hotkey", expected.prevTabHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                     values.save_to_settings_file();
@@ -202,6 +210,8 @@ namespace FancyZonesUnitTests
                         .zoneHighlightColor = L"#00FFD7",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
+                        .nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_NEXT),
+                        .prevTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_PRIOR),
                         .excludedApps = L"app",
                         .excludedAppsArray = { L"APP" },
                     };
@@ -212,6 +222,9 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
+                    values.add_property(L"fancyzones_windowSwitching", expected.windowSwitching);
+                    values.add_property(L"fancyzones_nextTab_hotkey", expected.nextTabHotkey.get_json());
+                    values.add_property(L"fancyzones_prevTab_hotkey", expected.prevTabHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                     values.save_to_settings_file();
@@ -246,6 +259,9 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
+                    values.add_property(L"fancyzones_windowSwitching", expected.windowSwitching);
+                    values.add_property(L"fancyzones_nextTab_hotkey", expected.nextTabHotkey.get_json());
+                    values.add_property(L"fancyzones_prevTab_hotkey", expected.prevTabHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                     values.save_to_settings_file();
@@ -281,6 +297,9 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
+                    values.add_property(L"fancyzones_windowSwitching", expected.windowSwitching);
+                    values.add_property(L"fancyzones_nextTab_hotkey", expected.nextTabHotkey.get_json());
+                    values.add_property(L"fancyzones_prevTab_hotkey", expected.prevTabHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
                     values.save_to_settings_file();
@@ -354,6 +373,9 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
+                    values.add_property(L"fancyzones_windowSwitching", expected.windowSwitching);
+                    values.add_property(L"fancyzones_nextTab_hotkey", expected.nextTabHotkey.get_json());
+                    values.add_property(L"fancyzones_prevTab_hotkey", expected.prevTabHotkey.get_json());
 
                     values.save_to_settings_file();
 
@@ -416,6 +438,9 @@ namespace FancyZonesUnitTests
                 IDS_SETTING_LAUNCH_EDITOR_BUTTON,
                 IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION);
             ptSettings.add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, settings.editorHotkey);
+            ptSettings.add_bool_toggle(L"fancyzones_windowSwitching", IDS_SETTING_WINDOW_SWITCHING_TOGGLE_LABEL, settings.windowSwitching);
+            ptSettings.add_hotkey(L"fancyzones_nextTab_hotkey", IDS_SETTING_NEXT_TAB_HOTKEY_LABEL, settings.nextTabHotkey);
+            ptSettings.add_hotkey(L"fancyzones_prevTab_hotkey", IDS_SETTING_PREV_TAB_HOTKEY_LABEL, settings.prevTabHotkey);
             ptSettings.add_bool_toggle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, settings.shiftDrag);
             ptSettings.add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
@@ -517,6 +542,8 @@ namespace FancyZonesUnitTests
                         .zoneHighlightColor = L"#00AABB",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
+                        .nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_NEXT),
+                        .prevTabHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_PRIOR),
                         .excludedApps = L"app\r\napp2",
                         .excludedAppsArray = { L"APP", L"APP2" },
                     };

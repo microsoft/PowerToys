@@ -450,6 +450,24 @@
     <value>Open layout editor</value>
     <comment>Shortcut to launch the FancyZones layout editor application</comment>
   </data>
+	<data name="FancyZones_WindowSwitching_GroupSettings.Header" xml:space="preserve">
+    <value>Window switching</value>
+  </data>
+  <data name="FancyZones_WindowSwitching_GroupSettings.Description" xml:space="preserve">
+    <value>Shortcuts for switching between windows in the current zone</value>
+  </data>
+  <data name="FancyZones_HotkeyNextTabControl.Header" xml:space="preserve">
+    <value>Next window</value>
+  </data>
+  <data name="FancyZones_HotkeyNextTabControl.Description" xml:space="preserve">
+    <value>Shortcut for switching to the next window in the current zone</value>
+  </data>
+  <data name="FancyZones_HotkeyPrevTabControl.Header" xml:space="preserve">
+    <value>Previous window</value>
+  </data>
+  <data name="FancyZones_HotkeyPrevTabControl.Description" xml:space="preserve">
+    <value>Shortcut for switching to the previous window in the current zone</value>
+  </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut setting</value>
   </data>
