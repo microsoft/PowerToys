@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "WorkArea.h"
 
+#include <common/logger/call_tracer.h>
 #include <common/logger/logger.h>
 
 #include "FancyZonesData.h"
@@ -10,7 +11,6 @@
 #include "util.h"
 #include "on_thread_executor.h"
 #include "Settings.h"
-#include "CallTracer.h"
 
 #include <ShellScalingApi.h>
 #include <mutex>

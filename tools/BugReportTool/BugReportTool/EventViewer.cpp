@@ -23,7 +23,8 @@ namespace
         L"PowerToys.KeyboardManagerEngine.exe",
         L"PowerToys.KeyboardManagerEditor.exe",
         L"PowerLauncher.exe",
-        L"PowerToys.ShortcutGuide.exe"
+        L"PowerToys.ShortcutGuide.exe",
+        L"PowerRename.exe"
     };
 
     // Batch size for number of events queried at once

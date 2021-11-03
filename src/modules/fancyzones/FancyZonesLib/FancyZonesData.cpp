@@ -4,10 +4,10 @@
 #include "JsonHelpers.h"
 #include "ZoneSet.h"
 #include "Settings.h"
-#include "CallTracer.h"
 #include "GuidUtils.h"
 
 #include <common/Display/dpi_aware.h>
+#include <common/logger/call_tracer.h>
 #include <common/utils/json.h>
 #include <FancyZonesLib/util.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
