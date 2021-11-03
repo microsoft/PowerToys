@@ -450,7 +450,7 @@
     <value>Open layout editor</value>
     <comment>Shortcut to launch the FancyZones layout editor application</comment>
   </data>
-	<data name="FancyZones_WindowSwitching_GroupSettings.Header" xml:space="preserve">
+  <data name="FancyZones_WindowSwitching_GroupSettings.Header" xml:space="preserve">
     <value>Window switching</value>
   </data>
   <data name="FancyZones_WindowSwitching_GroupSettings.Description" xml:space="preserve">
@@ -1721,8 +1721,8 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Do not activate when Game Mode is on</value>
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
   </data>
-  <data name="FancyZones_Radio_Custom_Theme.Content" xml:space="preserve">
-    <value>Custom</value>
+  <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
+    <value>Custom colors</value>
   </data>
   <data name="FancyZones_Radio_Default_Theme.Content" xml:space="preserve">
     <value>Windows default</value>

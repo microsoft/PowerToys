@@ -101,7 +101,7 @@
                             <controls:Setting x:Uid="FancyZones_Zone_Appearance" Icon="&#xE790;" Style="{StaticResource ExpanderHeaderSettingStyle}" >
                                 <controls:Setting.ActionContent>
                                     <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.SystemTheme, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
-                                        <ComboBoxItem x:Uid="FancyZones_Radio_Custom_Theme"/>
+                                        <ComboBoxItem x:Uid="FancyZones_Radio_Custom_Colors"/>
                                         <ComboBoxItem x:Uid="FancyZones_Radio_Default_Theme"/>
                                     </ComboBox>
                                 </controls:Setting.ActionContent>
