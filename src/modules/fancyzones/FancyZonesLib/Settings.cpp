@@ -99,7 +99,7 @@ private:
         { NonLocalizable::SpanZonesAcrossMonitorsID, &m_settings.spanZonesAcrossMonitors, IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS },
         { NonLocalizable::MakeDraggedWindowTransparentID, &m_settings.makeDraggedWindowTransparent, IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT },
         { NonLocalizable::WindowSwitchingToggleID, &m_settings.windowSwitching, IDS_SETTING_WINDOW_SWITCHING_TOGGLE_LABEL },
-        { NonLocalizable::SystemTheme, &m_settings.systemTheme, IDS_SETTING_DESCRIPTION_SYSTEMTHEME },
+        { NonLocalizable::SystemTheme, &m_settings.systemTheme, IDS_SETTING_DESCRIPTION_SYSTEM_THEME },
     };
 };
 
