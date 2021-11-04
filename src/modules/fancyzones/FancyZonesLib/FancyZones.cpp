@@ -330,6 +330,10 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IWorkArea> zoneW
     auto& fancyZonesData = FancyZonesDataInstance();
     if (!fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window, zoneWindow->UniqueId()))
     {
+        if (zoneWindow)
+        {
+            Trace::FancyZones::SnapNewWindowIntoZone(zoneWindow->ActiveZoneSet());
+        }
         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
         fancyZonesData.UpdateProcessIdToHandleMap(window, zoneWindow->UniqueId());
     }
@@ -966,8 +970,10 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
         auto currMonitorInfo = std::find(std::begin(monitorInfo), std::end(monitorInfo), current);
         do
         {
-            if (m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, *currMonitorInfo)))
+            auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, *currMonitorInfo);
+            if (m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, zoneWindow))
             {
+                Trace::FancyZones::KeyboardSnapWindowToZone(zoneWindow->ActiveZoneSet());
                 return true;
             }
             // We iterated through all zones in current monitor zone layout, move on to next one (or previous depending on direction).
@@ -991,20 +997,30 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
     }
     else
     {
+        auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, current);
         // Single monitor environment, or combined multi-monitor environment.
         if (m_settings->GetSettings()->restoreSize)
         {
-            bool moved = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+            bool moved = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, zoneWindow);
             if (!moved)
             {
                 FancyZonesUtils::RestoreWindowOrigin(window);
                 FancyZonesUtils::RestoreWindowSize(window);
             }
-            return true;
+            else
+            {
+                Trace::FancyZones::KeyboardSnapWindowToZone(zoneWindow->ActiveZoneSet());
+            }
+            return moved;
         }
         else
         {
-            return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, true /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+            bool moved = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, true /* cycle through zones */, zoneWindow);
+            if (moved)
+            {
+                Trace::FancyZones::KeyboardSnapWindowToZone(zoneWindow->ActiveZoneSet());
+            }
+            return moved;
         }
     }
 
@@ -1078,6 +1094,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             // Moving to another monitor succeeded
             const auto& [trueZoneIdx, zoneWindow] = zoneRectsInfo[chosenIdx];
             m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, { trueZoneIdx }, zoneWindow);
+            Trace::FancyZones::KeyboardSnapWindowToZone(zoneWindow->ActiveZoneSet());
             return true;
         }
 
@@ -1122,6 +1139,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             // Moving to another monitor succeeded
             const auto& [trueZoneIdx, zoneWindow] = zoneRectsInfo[chosenIdx];
             m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, { trueZoneIdx }, zoneWindow);
+            Trace::FancyZones::KeyboardSnapWindowToZone(zoneWindow->ActiveZoneSet());
             return true;
         }
         else
@@ -1157,11 +1175,21 @@ bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle
     // Check whether Alt is used in the shortcut key combination
     if (GetAsyncKeyState(VK_MENU) & 0x8000)
     {
-        return m_windowMoveHandler.ExtendWindowByDirectionAndPosition(window, vkCode, zoneWindow);
+        bool result = m_windowMoveHandler.ExtendWindowByDirectionAndPosition(window, vkCode, zoneWindow);
+        if (result) 
+        {
+            Trace::FancyZones::KeyboardSnapWindowToZone(zoneWindow->ActiveZoneSet());
+        }
+        return result;
     }
     else
     {
-        return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle, zoneWindow);
+        bool result = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle, zoneWindow);
+        if (result)
+        {
+            Trace::FancyZones::KeyboardSnapWindowToZone(zoneWindow->ActiveZoneSet());
+        }
+        return result;
     }
 }
 

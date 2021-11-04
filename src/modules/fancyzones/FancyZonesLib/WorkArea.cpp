@@ -234,6 +234,7 @@ IFACEMETHODIMP WorkArea::MoveSizeEnter(HWND window) noexcept
     m_highlightZone = {};
     m_initialHighlightZone = {};
     ShowZoneWindow();
+    Trace::WorkArea::MoveOrResizeStarted(m_activeZoneSet);
     return S_OK;
 }
 
@@ -299,7 +300,7 @@ IFACEMETHODIMP WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcep
             SaveWindowProcessToZoneIndex(window);
         }
     }
-    Trace::WorkArea::MoveSizeEnd(m_activeZoneSet);
+    Trace::WorkArea::MoveOrResizeEnd(m_activeZoneSet);
 
     HideZoneWindow();
     m_windowMoveSize = nullptr;

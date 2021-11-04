@@ -15,7 +15,10 @@
 #define EventSettingsKey "FancyZones_Settings"
 #define EventDesktopChangedKey "FancyZones_VirtualDesktopChanged"
 #define EventZoneWindowKeyUpKey "FancyZones_ZoneWindowKeyUp"
-#define EventMoveSizeEndKey "FancyZones_MoveSizeEnd"
+#define EventSnapNewWindowIntoZone "FancyZones_SnapNewWindowIntoZone"
+#define EventKeyboardSnapWindowToZone "FancyZones_KeyboardSnapWindowToZone"
+#define EventMoveOrResizeStartedKey "FancyZones_MoveOrResizeStarted"
+#define EventMoveOrResizeEndedKey "FancyZones_MoveOrResizeEnded"
 #define EventCycleActiveZoneSetKey "FancyZones_CycleActiveZoneSet"
 #define EventQuickLayoutSwitchKey "FancyZones_QuickLayoutSwitch"
 
@@ -78,7 +81,8 @@ struct ZoneSetInfo
     size_t NumberOfWindows = 0;
 };
 
-ZoneSetInfo GetZoneSetInfo(_In_opt_ winrt::com_ptr<IZoneSet> set) noexcept
+
+ZoneSetInfo GetZoneSetInfo(_In_opt_ IZoneSet* set) noexcept
 {
     ZoneSetInfo info;
     if (set)
@@ -95,6 +99,11 @@ ZoneSetInfo GetZoneSetInfo(_In_opt_ winrt::com_ptr<IZoneSet> set) noexcept
         }
     }
     return info;
+}
+
+ZoneSetInfo GetZoneSetInfo(_In_opt_ winrt::com_ptr<IZoneSet> set) noexcept
+{
+    return GetZoneSetInfo(set.get());
 }
 
 void Trace::RegisterProvider() noexcept
@@ -247,6 +256,32 @@ void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept
         TraceLoggingBoolean(shortcutUsed, QuickLayoutSwitchedWithShortcutUsed));
 }
 
+void Trace::FancyZones::SnapNewWindowIntoZone(IZoneSet* activeSet) noexcept
+{
+    auto const zoneInfo = GetZoneSetInfo(activeSet);
+    TraceLoggingWrite(
+        g_hProvider,
+        EventSnapNewWindowIntoZone,
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingValue(reinterpret_cast<void*>(activeSet), ActiveSetKey),
+        TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
+        TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
+}
+
+void Trace::FancyZones::KeyboardSnapWindowToZone(IZoneSet* activeSet) noexcept
+{
+    auto const zoneInfo = GetZoneSetInfo(activeSet);
+    TraceLoggingWrite(
+        g_hProvider,
+        EventKeyboardSnapWindowToZone,
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingValue(reinterpret_cast<void*>(activeSet), ActiveSetKey),
+        TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
+        TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
+}
+
 static std::wstring HotKeyToString(const PowerToysSettings::HotkeyObject& hotkey)
 {
     return L"alt:" + std::to_wstring(hotkey.alt_pressed())
@@ -316,12 +351,25 @@ void Trace::WorkArea::KeyUp(WPARAM wParam) noexcept
         TraceLoggingValue(wParam, KeyboardValueKey));
 }
 
-void Trace::WorkArea::MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
+void Trace::WorkArea::MoveOrResizeStarted(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWrite(
         g_hProvider,
-        EventMoveSizeEndKey,
+        EventMoveOrResizeStartedKey,
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), ActiveSetKey),
+        TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
+        TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
+}
+
+void Trace::WorkArea::MoveOrResizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
+{
+    auto const zoneInfo = GetZoneSetInfo(activeSet);
+    TraceLoggingWrite(
+        g_hProvider,
+        EventMoveOrResizeEndedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), ActiveSetKey),
