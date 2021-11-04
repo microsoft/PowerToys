@@ -128,10 +128,10 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
     if (workArea != workAreaMap.end())
     {
         const auto workAreaPtr = workArea->second;
-        const auto activeZoneSet = workAreaPtr->ActiveZoneSet();
-        if (activeZoneSet)
+        const auto zoneSet = workAreaPtr->ZoneSet();
+        if (zoneSet)
         {
-            activeZoneSet->DismissWindow(window);
+            zoneSet->DismissWindow(window);
         }
     }
 }
@@ -255,11 +255,11 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
             if (workArea != workAreaMap.end())
             {
                 const auto workAreaPtr = workArea->second;
-                const auto activeZoneSet = workAreaPtr->ActiveZoneSet();
-                if (activeZoneSet)
+                const auto zoneSet = workAreaPtr->ZoneSet();
+                if (zoneSet)
                 {
                     wil::unique_cotaskmem_string guidString;
-                    if (SUCCEEDED_LOG(StringFromCLSID(activeZoneSet->Id(), &guidString)))
+                    if (SUCCEEDED_LOG(StringFromCLSID(zoneSet->Id(), &guidString)))
                     {
                         FancyZonesDataInstance().RemoveAppLastZone(window, workAreaPtr->UniqueId(), guidString.get());
                     }

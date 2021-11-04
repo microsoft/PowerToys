@@ -103,7 +103,7 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
     /**
      * @returns Active zone layout for this work area.
      */
-    IFACEMETHOD_(IZoneSet*, ActiveZoneSet)() const = 0;
+    IFACEMETHOD_(IZoneSet*, ZoneSet)() const = 0;
     /*
     * @returns Zone index of the window
     */

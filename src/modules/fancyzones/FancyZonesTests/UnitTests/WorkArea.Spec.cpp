@@ -81,10 +81,10 @@ namespace FancyZonesUnitTests
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
                 testWorkArea(workArea);
 
-                auto* activeZoneSet{ workArea->ActiveZoneSet() };
-                Assert::IsNotNull(activeZoneSet);
-                Assert::AreEqual(static_cast<int>(activeZoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(activeZoneSet->GetZones().size(), static_cast<size_t>(3));
+                auto* zoneSet{ workArea->ZoneSet() };
+                Assert::IsNotNull(zoneSet);
+                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
+                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
             }
 
             TEST_METHOD (CreateWorkAreaNoHinst)
@@ -92,10 +92,10 @@ namespace FancyZonesUnitTests
                 auto workArea = MakeWorkArea({}, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
                 testWorkArea(workArea);
 
-                auto* activeZoneSet{ workArea->ActiveZoneSet() };
-                Assert::IsNotNull(activeZoneSet);
-                Assert::AreEqual(static_cast<int>(activeZoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(activeZoneSet->GetZones().size(), static_cast<size_t>(3));
+                auto* zoneSet{ workArea->ZoneSet() };
+                Assert::IsNotNull(zoneSet);
+                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
+                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
             }
 
             TEST_METHOD (CreateWorkAreaNoHinstFlashZones)
@@ -103,10 +103,10 @@ namespace FancyZonesUnitTests
                 auto workArea = MakeWorkArea({}, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
                 testWorkArea(workArea);
 
-                auto* activeZoneSet{ workArea->ActiveZoneSet() };
-                Assert::IsNotNull(activeZoneSet);
-                Assert::AreEqual(static_cast<int>(activeZoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(activeZoneSet->GetZones().size(), static_cast<size_t>(3));
+                auto* zoneSet{ workArea->ZoneSet() };
+                Assert::IsNotNull(zoneSet);
+                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
+                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
             }
 
             TEST_METHOD (CreateWorkAreaNoMonitor)
@@ -138,10 +138,10 @@ namespace FancyZonesUnitTests
                 Assert::IsNotNull(workArea.get());
                 Assert::IsTrue(expectedUniqueId == workArea->UniqueId());
 
-                auto* activeZoneSet{ workArea->ActiveZoneSet() };
-                Assert::IsNotNull(activeZoneSet);
-                Assert::AreEqual(static_cast<int>(activeZoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(activeZoneSet->GetZones().size(), static_cast<size_t>(3));
+                auto* zoneSet{ workArea->ZoneSet() };
+                Assert::IsNotNull(zoneSet);
+                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
+                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
             }
 
             TEST_METHOD (CreateWorkAreaNoDesktopId)
@@ -164,10 +164,10 @@ namespace FancyZonesUnitTests
                 const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
                 Assert::IsNotNull(workArea.get());
 
-                auto* activeZoneSet{ workArea->ActiveZoneSet() };
-                Assert::IsNotNull(activeZoneSet);
-                Assert::AreEqual(static_cast<int>(activeZoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
-                Assert::AreEqual(activeZoneSet->GetZones().size(), static_cast<size_t>(3));
+                auto* zoneSet{ workArea->ZoneSet() };
+                Assert::IsNotNull(zoneSet);
+                Assert::AreEqual(static_cast<int>(zoneSet->LayoutType()), static_cast<int>(FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid));
+                Assert::AreEqual(zoneSet->GetZones().size(), static_cast<size_t>(3));
             }
 
         TEST_METHOD (CreateWorkAreaClonedFromParent)
@@ -187,7 +187,7 @@ namespace FancyZonesUnitTests
                 // newWorkArea = false - workArea won't be cloned from parent
                 auto actualWorkArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
 
-                Assert::IsNotNull(actualWorkArea->ActiveZoneSet());
+                Assert::IsNotNull(actualWorkArea->ZoneSet());
 
                 Assert::IsTrue(m_fancyZonesData.GetDeviceInfoMap().contains(m_uniqueId));
                 auto currentDeviceInfo = m_fancyZonesData.GetDeviceInfoMap().at(m_uniqueId);
@@ -299,7 +299,7 @@ namespace FancyZonesUnitTests
                 const auto actual = workArea->MoveSizeEnd(window, POINT{ 0, 0 });
                 Assert::AreEqual(expected, actual);
 
-                const auto zoneSet = workArea->ActiveZoneSet();
+                const auto zoneSet = workArea->ZoneSet();
                 zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
                 const auto actualZoneIndexSet = zoneSet->GetZoneIndexSetFromWindow(window);
                 Assert::IsFalse(std::vector<ZoneIndex>{} == actualZoneIndexSet);
@@ -316,7 +316,7 @@ namespace FancyZonesUnitTests
                 const auto actual = workArea->MoveSizeEnd(window, POINT{ -100, -100 });
                 Assert::AreEqual(expected, actual);
 
-                const auto zoneSet = workArea->ActiveZoneSet();
+                const auto zoneSet = workArea->ZoneSet();
                 const auto actualZoneIndexSet = zoneSet->GetZoneIndexSetFromWindow(window);
                 Assert::IsTrue(std::vector<ZoneIndex>{} == actualZoneIndexSet);
             }
@@ -355,7 +355,7 @@ namespace FancyZonesUnitTests
                 const auto actual = workArea->MoveSizeEnd(window, POINT{ -1, -1 });
                 Assert::AreEqual(expected, actual);
 
-                const auto zoneSet = workArea->ActiveZoneSet();
+                const auto zoneSet = workArea->ZoneSet();
                 zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
                 const auto actualZoneIndex = zoneSet->GetZoneIndexSetFromWindow(window);
                 Assert::IsFalse(std::vector<ZoneIndex>{} == actualZoneIndex); // with invalid point zone remains the same
@@ -364,17 +364,17 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByIndex)
             {
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
-                Assert::IsNotNull(workArea->ActiveZoneSet());
+                Assert::IsNotNull(workArea->ZoneSet());
 
                 workArea->MoveWindowIntoZoneByIndex(Mocks::Window(), 0);
 
-                const auto actual = workArea->ActiveZoneSet();
+                const auto actual = workArea->ZoneSet();
             }
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionAndIndex)
             {
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
-                Assert::IsNotNull(workArea->ActiveZoneSet());
+                Assert::IsNotNull(workArea->ZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
                 workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true);
@@ -389,7 +389,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByDirectionManyTimes)
             {
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
-                Assert::IsNotNull(workArea->ActiveZoneSet());
+                Assert::IsNotNull(workArea->ZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
                 workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true);
@@ -406,7 +406,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (SaveWindowProcessToZoneIndexNullptrWindow)
             {
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
-                Assert::IsNotNull(workArea->ActiveZoneSet());
+                Assert::IsNotNull(workArea->ZoneSet());
 
                 workArea->SaveWindowProcessToZoneIndex(nullptr);
 
@@ -417,11 +417,11 @@ namespace FancyZonesUnitTests
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAdded)
             {
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
-                Assert::IsNotNull(workArea->ActiveZoneSet());
+                Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
                 auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
-                workArea->ActiveZoneSet()->AddZone(zone);
+                workArea->ZoneSet()->AddZone(zone);
 
                 workArea->SaveWindowProcessToZoneIndex(window);
 
@@ -432,12 +432,12 @@ namespace FancyZonesUnitTests
             TEST_METHOD (SaveWindowProcessToZoneIndexNoWindowAddedWithFilledAppZoneHistory)
             {
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
-                Assert::IsNotNull(workArea->ActiveZoneSet());
+                Assert::IsNotNull(workArea->ZoneSet());
 
                 const auto window = Mocks::WindowCreate(m_hInst);
                 const auto processPath = get_process_path(window);
                 const auto deviceId = workArea->UniqueId();
-                const auto zoneSetId = workArea->ActiveZoneSet()->Id();
+                const auto zoneSetId = workArea->ZoneSet()->Id();
 
                 // fill app zone history map
                 Assert::IsTrue(m_fancyZonesData.SetAppLastZones(window, deviceId, Helpers::GuidToString(zoneSetId), { 0 }));
@@ -448,7 +448,7 @@ namespace FancyZonesUnitTests
 
                 // add zone without window
                 const auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
-                workArea->ActiveZoneSet()->AddZone(zone);
+                workArea->ZoneSet()->AddZone(zone);
 
                 workArea->SaveWindowProcessToZoneIndex(window);
                 Assert::AreEqual((size_t)1, m_fancyZonesData.GetAppZoneHistoryMap().size());
@@ -460,15 +460,15 @@ namespace FancyZonesUnitTests
             TEST_METHOD (SaveWindowProcessToZoneIndexWindowAdded)
             {
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
-                Assert::IsNotNull(workArea->ActiveZoneSet());
+                Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
                 const auto processPath = get_process_path(window);
                 const auto deviceId = workArea->UniqueId();
-                const auto zoneSetId = workArea->ActiveZoneSet()->Id();
+                const auto zoneSetId = workArea->ZoneSet()->Id();
 
                 auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
-                workArea->ActiveZoneSet()->AddZone(zone);
+                workArea->ZoneSet()->AddZone(zone);
                 workArea->MoveWindowIntoZoneByIndex(window, 0);
 
                 //fill app zone history map
@@ -482,7 +482,7 @@ namespace FancyZonesUnitTests
 
                 const auto& actualAppZoneHistory = m_fancyZonesData.GetAppZoneHistoryMap();
                 Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
-                const auto& expected = workArea->ActiveZoneSet()->GetZoneIndexSetFromWindow(window);
+                const auto& expected = workArea->ZoneSet()->GetZoneIndexSetFromWindow(window);
                 const auto& actual = appHistoryArray[0].zoneIndexSet;
                 Assert::IsTrue(expected == actual);
             }
@@ -490,7 +490,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (WhenWindowIsNotResizablePlacingItIntoTheZoneShouldNotResizeIt)
             {
                 auto workArea = MakeWorkArea(m_hInst, m_monitor, m_uniqueId, {}, m_zoneColors, m_overlappingAlgorithm);
-                Assert::IsNotNull(workArea->ActiveZoneSet());
+                Assert::IsNotNull(workArea->ZoneSet());
 
                 auto window = Mocks::WindowCreate(m_hInst);
 
@@ -501,7 +501,7 @@ namespace FancyZonesUnitTests
                 SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_SIZEBOX);
 
                 auto zone = MakeZone(RECT{ 50, 50, 300, 300 }, 1);
-                workArea->ActiveZoneSet()->AddZone(zone);
+                workArea->ZoneSet()->AddZone(zone);
 
                 workArea->MoveWindowIntoZoneByDirectionAndIndex(window, VK_LEFT, true);
 
