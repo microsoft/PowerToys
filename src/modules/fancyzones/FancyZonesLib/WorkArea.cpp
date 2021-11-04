@@ -165,7 +165,6 @@ private:
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
-    std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
     ZoneIndexSet m_initialHighlightZone;
     ZoneIndexSet m_highlightZone;
     WPARAM m_keyLast{};
