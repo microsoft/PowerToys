@@ -134,13 +134,16 @@
     <value>(auto)</value>
   </data>
   <data name="Input_Content" xml:space="preserve">
-    <value>_Select a size</value>
+    <value>Select a size</value>
   </data>
   <data name="Input_Custom" xml:space="preserve">
     <value>Custom</value>
   </data>
   <data name="Input_IgnoreOrientation" xml:space="preserve">
     <value>Ign_ore the orientation of pictures</value>
+  </data>
+  <data name="Input_GifWarning" xml:space="preserve">
+    <value>Gif files with animations may not be correctly resized.</value>
   </data>
   <data name="Input_Replace" xml:space="preserve">
     <value>R_esize the original pictures (don't create copies)</value>
@@ -273,5 +276,11 @@
   </data>
   <data name="Width" xml:space="preserve">
     <value>Width</value>
+  </data>
+  <data name="Open_settings" xml:space="preserve">
+    <value>Open settings</value>
+  </data>
+  <data name="Input_RemoveMetadata" xml:space="preserve">
+    <value>Remove metadata that doesn't affect rendering</value>
   </data>
 </root>

@@ -1,5 +1,7 @@
 #pragma once
 #include "pch.h"
+#include <string>
+#include <vector>
 
 enum PowerRenameFlags
 {
@@ -41,9 +43,9 @@ public:
     IFACEMETHOD(Advise)(_In_ IPowerRenameRegExEvents* regExEvents, _Out_ DWORD* cookie) = 0;
     IFACEMETHOD(UnAdvise)(_In_ DWORD cookie) = 0;
     IFACEMETHOD(GetSearchTerm)(_Outptr_ PWSTR* searchTerm) = 0;
-    IFACEMETHOD(PutSearchTerm)(_In_ PCWSTR searchTerm) = 0;
+    IFACEMETHOD(PutSearchTerm)(_In_ PCWSTR searchTerm, bool forceRenaming = false) = 0;
     IFACEMETHOD(GetReplaceTerm)(_Outptr_ PWSTR* replaceTerm) = 0;
-    IFACEMETHOD(PutReplaceTerm)(_In_ PCWSTR replaceTerm) = 0;
+    IFACEMETHOD(PutReplaceTerm)(_In_ PCWSTR replaceTerm, bool forceRenaming = false) = 0;
     IFACEMETHOD(GetFlags)(_Out_ DWORD* flags) = 0;
     IFACEMETHOD(PutFlags)(_In_ DWORD flags) = 0;
     IFACEMETHOD(PutFileTime)(_In_ SYSTEMTIME fileTime) = 0;
@@ -54,11 +56,13 @@ public:
 interface __declspec(uuid("C7F59201-4DE1-4855-A3A2-26FC3279C8A5")) IPowerRenameItem : public IUnknown
 {
 public:
-    IFACEMETHOD(GetPath)(_Outptr_ PWSTR* path) = 0;
+    IFACEMETHOD(PutPath)(_In_opt_ PCWSTR newPath) = 0;
+    IFACEMETHOD(GetPath)(_Outptr_ PWSTR * path) = 0;
     IFACEMETHOD(GetTime)(_Outptr_ SYSTEMTIME* time) = 0;
     IFACEMETHOD(GetShellItem)(_Outptr_ IShellItem** ppsi) = 0;
-    IFACEMETHOD(GetOriginalName)(_Outptr_ PWSTR* originalName) = 0;
-    IFACEMETHOD(GetNewName)(_Outptr_ PWSTR* newName) = 0;
+    IFACEMETHOD(GetOriginalName)(_Outptr_ PWSTR * originalName) = 0;
+    IFACEMETHOD(PutOriginalName)(_In_opt_ PCWSTR originalName) = 0;
+    IFACEMETHOD(GetNewName)(_Outptr_ PWSTR * newName) = 0;
     IFACEMETHOD(PutNewName)(_In_opt_ PCWSTR newName) = 0;
     IFACEMETHOD(GetIsFolder)(_Out_ bool* isFolder) = 0;
     IFACEMETHOD(GetIsSubFolderContent)(_Out_ bool* isSubFolderContent) = 0;
@@ -83,13 +87,14 @@ interface __declspec(uuid("87FC43F9-7634-43D9-99A5-20876AFCE4AD")) IPowerRenameM
 {
 public:
     IFACEMETHOD(OnItemAdded)(_In_ IPowerRenameItem* renameItem) = 0;
-    IFACEMETHOD(OnUpdate)(_In_ IPowerRenameItem* renameItem) = 0;
-    IFACEMETHOD(OnError)(_In_ IPowerRenameItem* renameItem) = 0;
+    IFACEMETHOD(OnUpdate)(_In_ IPowerRenameItem * renameItem) = 0;
+    IFACEMETHOD(OnRename)(_In_ IPowerRenameItem * renameItem) = 0;
+    IFACEMETHOD(OnError)(_In_ IPowerRenameItem * renameItem) = 0;
     IFACEMETHOD(OnRegExStarted)(_In_ DWORD threadId) = 0;
     IFACEMETHOD(OnRegExCanceled)(_In_ DWORD threadId) = 0;
     IFACEMETHOD(OnRegExCompleted)(_In_ DWORD threadId) = 0;
     IFACEMETHOD(OnRenameStarted)() = 0;
-    IFACEMETHOD(OnRenameCompleted)() = 0;
+    IFACEMETHOD(OnRenameCompleted)(_In_ bool closeUIWindowAfterRenaming) = 0;
 };
 
 interface __declspec(uuid("001BBD88-53D2-4FA6-95D2-F9A9FA4F9F70")) IPowerRenameManager : public IUnknown
@@ -101,8 +106,10 @@ public:
     IFACEMETHOD(Stop)() = 0;
     IFACEMETHOD(Reset)() = 0;
     IFACEMETHOD(Shutdown)() = 0;
-    IFACEMETHOD(Rename)(_In_ HWND hwndParent) = 0;
-    IFACEMETHOD(AddItem)(_In_ IPowerRenameItem* pItem) = 0;
+    IFACEMETHOD(Rename)(_In_ HWND hwndParent, _In_ bool closeWindow) = 0;
+    IFACEMETHOD(UpdateChildrenPath)(_In_ int parentId, _In_ size_t oldParentPathSize) = 0;
+    IFACEMETHOD(GetCloseUIWindowAfterRenaming)(_Out_ bool* closeUIWindowAfterRenaming) = 0;
+    IFACEMETHOD(AddItem)(_In_ IPowerRenameItem * pItem) = 0;
     IFACEMETHOD(GetItemByIndex)(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem) = 0;
     IFACEMETHOD(GetVisibleItemByIndex)(_In_ UINT index, _COM_Outptr_ IPowerRenameItem ** ppItem) = 0;
     IFACEMETHOD(SetVisible)() = 0;
@@ -113,7 +120,7 @@ public:
     IFACEMETHOD(GetRenameItemCount)(_Out_ UINT* count) = 0;
     IFACEMETHOD(GetFlags)(_Out_ DWORD* flags) = 0;
     IFACEMETHOD(PutFlags)(_In_ DWORD flags) = 0;
-    IFACEMETHOD(GetFilter)(_Out_ DWORD * filter) = 0;
+    IFACEMETHOD(GetFilter)(_Out_ DWORD* filter) = 0;
     IFACEMETHOD(SwitchFilter)(_In_ int columnNumber) = 0;
     IFACEMETHOD(GetRenameRegEx)(_COM_Outptr_ IPowerRenameRegEx** ppRegEx) = 0;
     IFACEMETHOD(PutRenameRegEx)(_In_ IPowerRenameRegEx* pRegEx) = 0;
@@ -121,23 +128,17 @@ public:
     IFACEMETHOD(PutRenameItemFactory)(_In_ IPowerRenameItemFactory* pItemFactory) = 0;
 };
 
-interface __declspec(uuid("E6679DEB-460D-42C1-A7A8-E25897061C99")) IPowerRenameUI : public IUnknown
-{
-public:
-    IFACEMETHOD(Show)(_In_opt_ HWND hwndParent) = 0;
-    IFACEMETHOD(Close)() = 0;
-    IFACEMETHOD(Update)() = 0;
-};
-
 interface __declspec(uuid("04AAFABE-B76E-4E13-993A-B5941F52B139")) IPowerRenameMRU : public IUnknown
 {
 public:
     IFACEMETHOD(AddMRUString)(_In_ PCWSTR entry) = 0;
+    IFACEMETHOD_(const std::vector<std::wstring>&, GetMRUStrings)() = 0;
 };
 
 interface __declspec(uuid("CE8C8616-C1A8-457A-9601-10570F5B9F1F")) IPowerRenameEnum : public IUnknown
 {
 public:
-    IFACEMETHOD(Start)() = 0;
+    IFACEMETHOD(Start)
+    (_In_ IEnumShellItems * enumShellItems) = 0;
     IFACEMETHOD(Cancel)() = 0;
 };

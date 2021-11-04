@@ -1,9 +1,17 @@
 #include "ZipFolder.h"
 #include "..\..\..\..\deps\cziplib\src\zip.h"
+#include <common/utils/timeutil.h>
 
 void ZipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
 {
-    struct zip_t* zip = zip_open(zipPath.string().c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
+    std::string reportFilename{ "PowerToysReport_" };
+    reportFilename += timeutil::format_as_local("%F-%H-%M-%S", timeutil::now());
+    reportFilename += ".zip";
+
+    auto tmpZipPath = std::filesystem::temp_directory_path();
+    tmpZipPath /= reportFilename;
+
+    struct zip_t* zip = zip_open(tmpZipPath.string().c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
     if (!zip)
     {
         printf("Can not open zip.");
@@ -25,4 +33,18 @@ void ZipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
     }
 
     zip_close(zip);
+
+    std::error_code err;
+    std::filesystem::copy(tmpZipPath, zipPath, err);
+    if (err.value() != 0)
+    {
+        wprintf_s(L"Failed to copy %s. Error code: %d\n", tmpZipPath.c_str(), err.value());
+    }
+
+    err = {};
+    std::filesystem::remove_all(tmpZipPath, err);
+    if (err.value() != 0)
+    {
+        wprintf_s(L"Failed to delete %s. Error code: %d\n", tmpZipPath.c_str(), err.value());
+    }
 }

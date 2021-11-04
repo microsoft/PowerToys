@@ -2,6 +2,7 @@
 #include <ShellScalingApi.h>
 #include <lmcons.h>
 #include <filesystem>
+#include <sstream>
 #include "tray_icon.h"
 #include "powertoy_module.h"
 #include "trace.h"
@@ -32,7 +33,7 @@
 #include <Psapi.h>
 #include <RestartManager.h>
 #include "centralized_kb_hook.h"
-#include "CentralizedHotkeys.h"
+#include "centralized_hotkeys.h"
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -69,10 +70,15 @@ inline wil::unique_mutex_nothrow create_msi_mutex()
     return createAppMutex(POWERTOYS_MSI_MUTEX_NAME);
 }
 
-void open_menu_from_another_instance()
+void open_menu_from_another_instance(std::optional<std::string> settings_window)
 {
     const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
-    PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, 0);
+    LPARAM msg = static_cast<LPARAM>(ESettingsWindowNames::Overview);
+    if (settings_window.has_value())
+    {
+        msg = static_cast<LPARAM>(ESettingsWindowNames_from_string(settings_window.value()));
+    }
+    PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, msg);
 }
 
 void debug_verify_launcher_assets()
@@ -99,7 +105,7 @@ void debug_verify_launcher_assets()
     }
 }
 
-int runner(bool isProcessElevated, bool openSettings, bool openOobe)
+int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe)
 {
     Logger::info("Runner is starting. Elevated={}", isProcessElevated);
     DPIAware::EnableDPIAwarenessForThisProcess();
@@ -141,16 +147,16 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.dll",
             L"modules/ColorPicker/ColorPicker.dll",
-            L"modules/Awake/AwakeModuleInterface.dll"
+            L"modules/Awake/AwakeModuleInterface.dll",
+            L"modules/MouseUtils/FindMyMouse.dll"
 
         };
-        // TODO(yuyoyuppe): uncomment when VCM should be enabled
-        //const auto VCM_PATH = L"modules/VideoConference/VideoConferenceModule.dll";
-        //if (const auto mf = LoadLibraryA("mf.dll"))
-        //{
-        //    FreeLibrary(mf);
-        //    knownModules.emplace_back(VCM_PATH);
-        //}
+        const auto VCM_PATH = L"modules/VideoConference/VideoConferenceModule.dll";
+        if (const auto mf = LoadLibraryA("mf.dll"))
+        {
+            FreeLibrary(mf);
+            knownModules.emplace_back(VCM_PATH);
+        }
 
         for (const auto& moduleSubdir : knownModules)
         {
@@ -176,7 +182,12 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
 
         if (openSettings)
         {
-            open_settings_window();
+            std::optional<std::wstring> window;
+            if (!settingsWindow.empty())
+            {
+                window = winrt::to_hstring(settingsWindow);
+            }
+            open_settings_window(window);
         }
 
         if (openOobe)
@@ -263,7 +274,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
     else if (param == open_settings)
     {
-        open_menu_from_another_instance();
+        open_menu_from_another_instance(std::nullopt);
         return toast_notification_handler_result::exit_success;
     }
     else
@@ -325,11 +336,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     logFilePath.append(LogSettings::runnerLogPath);
     Logger::init(LogSettings::runnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
+    const std::string cmdLine{ lpCmdLine };
+    auto open_settings_it = cmdLine.find("--open-settings");
+    const bool open_settings = open_settings_it != std::string::npos;
+    // Check if opening specific settings window
+    open_settings_it = cmdLine.find("--open-settings=");
+    std::string settings_window;
+    if (open_settings_it != std::string::npos)
+    {
+        std::string rest_of_cmd_line{ cmdLine, open_settings_it + std::string{ "--open-settings=" }.size() };
+        std::istringstream iss(rest_of_cmd_line);
+        iss >> settings_window;
+    }
+
     // Check if another instance is already running.
     wil::unique_mutex_nothrow msi_mutex = create_msi_mutex();
     if (!msi_mutex)
     {
-        open_menu_from_another_instance();
+        open_menu_from_another_instance(settings_window);
         return 0;
     }
 
@@ -355,7 +379,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         modules();
 
         auto general_settings = load_general_settings();
-        const bool openSettings = std::string(lpCmdLine).find("--open-settings") != std::string::npos;
 
         // Apply the general settings but don't save it as the modules() variable has not been loaded yet
         apply_general_settings(general_settings, false);
@@ -363,13 +386,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         const bool elevated = is_process_elevated();
         if ((elevated ||
              general_settings.GetNamedBoolean(L"run_elevated", false) == false ||
-             std::string(lpCmdLine).find("--dont-elevate") != std::string::npos))
+             cmdLine.find("--dont-elevate") != std::string::npos))
         {
-            result = runner(elevated, openSettings, openOobe);
+            result = runner(elevated, open_settings, settings_window, openOobe);
         }
         else
         {
-            schedule_restart_as_elevated(openSettings);
+            schedule_restart_as_elevated(open_settings);
             result = 0;
         }
     }

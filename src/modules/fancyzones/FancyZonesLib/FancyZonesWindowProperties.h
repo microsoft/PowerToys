@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <optional>
 
 #include <FancyZonesLib/Zone.h>
 
@@ -8,6 +9,7 @@
 namespace ZonedWindowProperties
 {
     const wchar_t PropertyMultipleZoneID[] = L"FancyZones_zones";
+    const wchar_t PropertySortKeyWithinZone[] = L"FancyZones_TabSortKeyWithinZone";
     const wchar_t PropertyRestoreSizeID[] = L"FancyZones_RestoreSize";
     const wchar_t PropertyRestoreOriginID[] = L"FancyZones_RestoreOrigin";
 
@@ -21,7 +23,7 @@ inline ZoneIndexSet GetZoneIndexSet(HWND window)
 
     std::array<int, 2> data;
     memcpy(data.data(), &handle, sizeof data);
-    uint64_t bitmask = ((uint64_t)data[0] << 32) + data[1];
+    uint64_t bitmask = ((uint64_t)data[1] << 32) + data[0];
     
     if (bitmask != 0)
     {
@@ -39,8 +41,33 @@ inline ZoneIndexSet GetZoneIndexSet(HWND window)
 
 inline void StampWindow(HWND window, Bitmask bitmask) noexcept
 {
-    std::array<int, 2> data = { (bitmask >> 32), static_cast<int>(bitmask) };
+    std::array<int, 2> data = { static_cast<int>(bitmask), (bitmask >> 32) };
     HANDLE rawData;
     memcpy(&rawData, data.data(), sizeof data);
     SetProp(window, ZonedWindowProperties::PropertyMultipleZoneID, rawData);
+}
+
+inline std::optional<size_t> GetTabSortKeyWithinZone(HWND window)
+{
+    auto rawTabSortKeyWithinZone = ::GetPropW(window, ZonedWindowProperties::PropertySortKeyWithinZone);
+    if (rawTabSortKeyWithinZone == NULL)
+    {
+        return std::nullopt;
+    }
+
+    auto tabSortKeyWithinZone = reinterpret_cast<uint64_t>(rawTabSortKeyWithinZone) - 1;
+    return tabSortKeyWithinZone;
+}
+
+inline void SetTabSortKeyWithinZone(HWND window, std::optional<size_t> tabSortKeyWithinZone)
+{
+    if (!tabSortKeyWithinZone.has_value())
+    {
+        ::RemovePropW(window, ZonedWindowProperties::PropertySortKeyWithinZone);
+    }
+    else
+    {
+        auto rawTabSortKeyWithinZone = reinterpret_cast<HANDLE>(tabSortKeyWithinZone.value() + 1);
+        ::SetPropW(window, ZonedWindowProperties::PropertySortKeyWithinZone, rawTabSortKeyWithinZone);
+    }
 }

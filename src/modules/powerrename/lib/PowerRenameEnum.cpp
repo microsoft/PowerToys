@@ -28,20 +28,10 @@ IFACEMETHODIMP CPowerRenameEnum::QueryInterface(_In_ REFIID riid, _Outptr_ void*
     return QISearch(this, qit, riid, ppv);
 }
 
-IFACEMETHODIMP CPowerRenameEnum::Start()
+IFACEMETHODIMP CPowerRenameEnum::Start(_In_ IEnumShellItems* enumShellItems)
 {
     m_canceled = false;
-    CComPtr<IShellItemArray> spsia;
-    HRESULT hr = GetShellItemArrayFromDataObject(m_spdo, &spsia);
-    if (SUCCEEDED(hr))
-    {
-        CComPtr<IEnumShellItems> spesi;
-        hr = spsia->EnumItems(&spesi);
-        if (SUCCEEDED(hr))
-        {
-            hr = _ParseEnumItems(spesi);
-        }
-    }
+    HRESULT hr = _ParseEnumItems(enumShellItems);
 
     return hr;
 }

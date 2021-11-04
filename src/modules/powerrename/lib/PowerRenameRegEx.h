@@ -20,9 +20,9 @@ public:
     IFACEMETHODIMP Advise(_In_ IPowerRenameRegExEvents* regExEvents, _Out_ DWORD* cookie);
     IFACEMETHODIMP UnAdvise(_In_ DWORD cookie);
     IFACEMETHODIMP GetSearchTerm(_Outptr_ PWSTR* searchTerm);
-    IFACEMETHODIMP PutSearchTerm(_In_ PCWSTR searchTerm);
+    IFACEMETHODIMP PutSearchTerm(_In_ PCWSTR searchTerm, bool forceRenaming);
     IFACEMETHODIMP GetReplaceTerm(_Outptr_ PWSTR* replaceTerm);
-    IFACEMETHODIMP PutReplaceTerm(_In_ PCWSTR replaceTerm);
+    IFACEMETHODIMP PutReplaceTerm(_In_ PCWSTR replaceTerm, bool forceRenaming);
     IFACEMETHODIMP GetFlags(_Out_ DWORD* flags);
     IFACEMETHODIMP PutFlags(_In_ DWORD flags);
     IFACEMETHODIMP PutFileTime(_In_ SYSTEMTIME fileTime);

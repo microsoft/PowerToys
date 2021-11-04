@@ -1,6 +1,6 @@
 # not using this but keeping around in case we need it in the future.  
 # good use case here could be to set up a new machine, we just point people at it.
-# https://github.com/microsoft/PowerToys/tree/master/doc/devdocs#prerequisites-for-compiling-powertoys
+# https://github.com/microsoft/PowerToys/tree/main/doc/devdocs#prerequisites-for-compiling-powertoys
 
 # improvements if this script is used to replace the snippet
 # Add in a param for passive versus quiet.  Could be a IsSettingUpDevComputer true/false flag

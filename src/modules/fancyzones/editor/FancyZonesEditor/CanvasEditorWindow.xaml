@@ -8,6 +8,7 @@
                     xmlns:props="clr-namespace:FancyZonesEditor.Properties"
                     mc:Ignorable="d"
                     Title=""
+                    Height="196"
                     MinWidth="360"
                     BorderThickness="0"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
@@ -17,8 +18,9 @@
                     Background="{DynamicResource PrimaryBackgroundBrush}"
                     ResizeMode="NoResize"
                     WindowStartupLocation="CenterOwner"
+                    ContentRendered="EditorWindow_ContentRendered"
                     Closed="OnClosed">
-    <Grid>
+    <Grid Height="160">
         <Grid Height="36"
               Background="{DynamicResource SecondaryBackgroundBrush}"
               Margin="0,-36,0,0"
@@ -31,7 +33,7 @@
                     VerticalAlignment="Center"
                     Margin="0,4,0,0" />
         </Grid>
-        <StackPanel Margin="16"
+        <StackPanel Margin="16" VerticalAlignment="Bottom"
                     FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
 
             <local:ClickAutomationEventButton x:Name="newZoneButton"
@@ -51,7 +53,7 @@
                     Click="OnAddZone"
                     OnClickAutomationValue="{x:Static props:Resources.New_zone_added}" />
 
-            <Grid Margin="0,24,0,0">
+            <Grid Margin="0,24,0,-4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="8" />

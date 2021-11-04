@@ -33,13 +33,14 @@ restore:
       name: 'Restore Installer'
       command: '.pipelines\restore-installer.cmd'
     - !!defaultcommand
+      name: 'Restore Installer BootStrapper'
+      command: '.pipelines\restore-bootstrapper.cmd'
+    - !!defaultcommand
       name: 'Restore Localization packages'
       command: '.pipelines\restore-localization.cmd'
     - !!defaultcommand
       name: 'Restore Tools packages'
       command: '.pipelines\restore-tools.cmd'
-
-
 
 build:
   commands:
@@ -61,11 +62,12 @@ build:
             - 'x64/**/*.pdb'
           exclude:
             - 'x64/Release/obj/**/*.pdb'
-        # TODO(yuyoyuppe): uncomment when VCM should be enabled
-        #- from: 'x86/Release'
-        #  to: 'Build_Output'
-        #  include:
-        #    - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
+        - from: 'x86/Release'
+          to: 'Build_Output'
+          include:
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
+          signing_options:
+            sign_inline: true  # This does signing as soon as this command completes            
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
@@ -108,6 +110,10 @@ build:
             - 'modules\FileExplorerPreview\ManagedTelemetry.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll'
+            - 'modules\FileExplorerPreview\PdfPreviewHandler.dll'
+            - 'modules\FileExplorerPreview\PdfPreviewHandler.comhost.dll'
+            - 'modules\FileExplorerPreview\PdfThumbnailProvider.dll'
+            - 'modules\FileExplorerPreview\PdfThumbnailProvider.comhost.dll'
             - 'modules\FileExplorerPreview\powerpreview.dll'
             - 'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
             - 'modules\FileExplorerPreview\SvgPreviewHandler.dll'
@@ -153,6 +159,8 @@ build:
             - 'modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll'
             - 'modules\launcher\Plugins\Service\Microsoft.PowerToys.Run.Plugin.Service.dll'
             - 'modules\launcher\Plugins\System\Microsoft.PowerToys.Run.Plugin.System.dll'
+            - 'modules\launcher\Plugins\WindowsTerminal\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll'
+            - 'modules\launcher\Plugins\WindowsTerminal\ManagedTelemetry.dll'
             - 'modules\launcher\PowerLauncher.dll'
             - 'modules\launcher\PowerLauncher.exe'
             - 'modules\launcher\PowerLauncher.Telemetry.dll'
@@ -162,12 +170,14 @@ build:
             - 'modules\launcher\Wox.dll'
             - 'modules\launcher\Wox.Infrastructure.dll'
             - 'modules\launcher\Wox.Plugin.dll'
+            - 'modules\MouseUtils\FindMyMouse.dll'
             - 'modules\PowerRename\PowerRenameExt.dll'
+            - 'modules\PowerRename\PowerRenameUILib.dll'
+            - 'modules\PowerRename\PowerRename.exe'
             - 'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
             - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
-            # TODO(yuyoyuppe): uncomment when VCM should be enabled
-            #- 'modules\VideoConference\VideoConferenceModule.dll'
-            #- 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
+            - 'modules\VideoConference\VideoConferenceModule.dll'
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
             - 'Settings\ManagedTelemetry.dll'
             - 'Settings\Microsoft.PowerToys.Settings.UI.exe'
             - 'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
@@ -222,7 +232,6 @@ build:
             - 'PowerToysSetup-*.exe'
           signing_options:
             sign_inline: true  # This does signing as soon as this command completes
-
 
 #package:
 #  commands:

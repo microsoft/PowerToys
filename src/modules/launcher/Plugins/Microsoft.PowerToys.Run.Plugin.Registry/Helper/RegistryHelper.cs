@@ -104,7 +104,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
                 if (result.Count == 0)
                 {
-                    return FindSubKey(subKey, string.Empty);
+                    // If a subKey can't be found, show no results.
+                    break;
                 }
 
                 if (result.Count == 1 && index < subKeysNames.Length)

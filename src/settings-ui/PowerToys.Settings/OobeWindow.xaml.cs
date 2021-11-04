@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows;
+using System.Windows.Interop;
 using interop;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
@@ -82,6 +83,13 @@ namespace PowerToys.Settings
             {
                 ((App)Application.Current).OpenSettingsWindow(type);
             });
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            var hwnd = new WindowInteropHelper(this).Handle;
+            NativeMethods.SetPopupStyle(hwnd);
         }
     }
 }

@@ -6,11 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Wox.Plugin
 {
-    [JsonObject(MemberSerialization.OptOut)]
     public class PluginMetadata : BaseModel
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
@@ -36,6 +35,7 @@ namespace Wox.Plugin
 
         public bool Disabled { get; set; }
 
+        [JsonInclude]
         public string ExecuteFilePath { get; private set; }
 
         public string ExecuteFileName { get; set; }

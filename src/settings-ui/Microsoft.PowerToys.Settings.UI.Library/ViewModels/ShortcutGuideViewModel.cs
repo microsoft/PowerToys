@@ -52,30 +52,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _isEnabled = GeneralSettingsConfig.Enabled.ShortcutGuide;
+            _useLegacyPressWinKeyBehavior = Settings.Properties.UseLegacyPressWinKeyBehavior.Value;
             _pressTime = Settings.Properties.PressTime.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
             _disabledApps = Settings.Properties.DisabledApps.Value;
 
-            string theme = Settings.Properties.Theme.Value;
-
-            if (theme == "dark")
+            switch (Settings.Properties.Theme.Value)
             {
-                _themeIndex = 0;
-            }
-
-            if (theme == "light")
-            {
-                _themeIndex = 1;
-            }
-
-            if (theme == "system")
-            {
-                _themeIndex = 2;
+                case "dark": _themeIndex = 0; break;
+                case "light": _themeIndex = 1; break;
+                case "system": _themeIndex = 2; break;
             }
         }
 
         private bool _isEnabled;
         private int _themeIndex;
+        private bool _useLegacyPressWinKeyBehavior;
         private int _pressTime;
         private int _opacity;
 
@@ -130,29 +122,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 if (_themeIndex != value)
                 {
-                    if (value == 0)
+                    switch (value)
                     {
-                        // set theme to dark.
-                        Settings.Properties.Theme.Value = "dark";
-                        _themeIndex = value;
-                        NotifyPropertyChanged();
+                        case 0: Settings.Properties.Theme.Value = "dark"; break;
+                        case 1: Settings.Properties.Theme.Value = "light"; break;
+                        case 2: Settings.Properties.Theme.Value = "system"; break;
                     }
 
-                    if (value == 1)
-                    {
-                        // set theme to light.
-                        Settings.Properties.Theme.Value = "light";
-                        _themeIndex = value;
-                        NotifyPropertyChanged();
-                    }
-
-                    if (value == 2)
-                    {
-                        // set theme to system default.
-                        Settings.Properties.Theme.Value = "system";
-                        _themeIndex = value;
-                        NotifyPropertyChanged();
-                    }
+                    _themeIndex = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -170,6 +148,42 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _opacity = value;
                     Settings.Properties.OverlayOpacity.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool UseLegacyPressWinKeyBehavior
+        {
+            get
+            {
+                return _useLegacyPressWinKeyBehavior;
+            }
+
+            set
+            {
+                if (_useLegacyPressWinKeyBehavior != value)
+                {
+                    _useLegacyPressWinKeyBehavior = value;
+                    Settings.Properties.UseLegacyPressWinKeyBehavior.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int PressTime
+        {
+            get
+            {
+                return _pressTime;
+            }
+
+            set
+            {
+                if (_pressTime != value)
+                {
+                    _pressTime = value;
+                    Settings.Properties.PressTime.Value = value;
                     NotifyPropertyChanged();
                 }
             }

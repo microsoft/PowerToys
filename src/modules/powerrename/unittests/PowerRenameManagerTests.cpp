@@ -16,7 +16,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 
-HINSTANCE g_hInst = HINST_THISCOMPONENT;
+HINSTANCE g_hostHInst = HINST_THISCOMPONENT;
 
 namespace PowerRenameManagerTests
 {
@@ -89,7 +89,7 @@ namespace PowerRenameManagerTests
             bool replaceSuccess = false;
             for (int step = 0; step < 20; step++)
             {
-                replaceSuccess = mgr->Rename(0) == S_OK;
+                replaceSuccess = mgr->Rename(0, true) == S_OK;
                 if (replaceSuccess)
                 {
                     break;

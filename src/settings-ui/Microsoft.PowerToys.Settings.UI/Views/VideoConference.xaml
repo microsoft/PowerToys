@@ -5,145 +5,140 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="About_VideoConference"
-                                  ModuleImageSource="ms-appx:///Assets/Modules/VideoConference.png"
-                                  ModuleImageLink="https://aka.ms/PowerToysOverview_VideoConference">
+    <controls:SettingsPageControl x:Uid="VideoConference"
+                                  ModuleImageSource="ms-appx:///Assets/Modules/VideoConference.png">
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel Orientation="Vertical">
 
-                <ToggleSwitch x:Uid="VideoConference_Enable"
-                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                          IsEnabled="{ Binding Mode=OneWay, Path=IsElevated }"
-                          />
+                <controls:Setting x:Uid="VideoConference_Enable" IsEnabled="{ Binding Mode=OneWay, Path=IsElevated }">
+                    <controls:Setting.Icon>
+                        <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsVideoConference.png" ShowAsMonochrome="False" />
+                    </controls:Setting.Icon>
+                    <controls:Setting.ActionContent>
+                        <ToggleSwitch IsOn="{Binding Mode=TwoWay, Path=IsEnabled}" />
+                    </controls:Setting.ActionContent>
+                </controls:Setting>
 
-                <TextBlock x:Uid="VideoConference_Shortcuts"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}" />
+                <controls:SettingsGroup x:Uid="VideoConference_Shortcuts" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
+                    <controls:Setting x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header">
+                        <controls:Setting.ActionContent>
+                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.CameraAndMicrophoneMuteHotkey, Mode=TwoWay}"
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-                <controls:HotkeySettingsControl 
-                                          x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header"
-                                          Width="240"
-                                          HorizontalAlignment="Left"
-                                          Margin="{StaticResource SmallTopMargin}"
-                                          Keys="Win, Ctrl, Alt, Shift"
-                                          HotkeySettings="{x:Bind Path=ViewModel.CameraAndMicrophoneMuteHotkey, Mode=TwoWay}"
-                                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                                          />
+                    <controls:Setting x:Uid="VideoConference_MicrophoneMuteHotkeyControl_Header">
+                        <controls:Setting.ActionContent>
+                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}"
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-                <controls:HotkeySettingsControl 
-                                          x:Uid="VideoConference_MicrophoneMuteHotkeyControl_Header"
-                                          Width="240"
-                                          HorizontalAlignment="Left"
-                                          Margin="{StaticResource SmallTopMargin}"
-                                          Keys="Win, Ctrl, Alt, Shift"
-                                          HotkeySettings="{x:Bind Path=ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}"
-                                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                                          />
+                    <controls:Setting x:Uid="VideoConference_CameraMuteHotkeyControl_Header">
+                        <controls:Setting.ActionContent>
+                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.CameraMuteHotkey, Mode=TwoWay}"
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
 
-                <controls:HotkeySettingsControl 
-                                          x:Uid="VideoConference_CameraMuteHotkeyControl_Header"
-                                          Width="240"
-                                          HorizontalAlignment="Left"
-                                          Margin="{StaticResource SmallTopMargin}"
-                                          Keys="Win, Ctrl, Alt, Shift"
-                                          HotkeySettings="{x:Bind Path=ViewModel.CameraMuteHotkey, Mode=TwoWay}"
-                                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                                          />
-                <TextBlock x:Uid="VideoConference_Microphone"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
+                </controls:SettingsGroup>
 
-                <ComboBox x:Uid="VideoConference_SelectedMicrophone"
-                      Width="240"
-                      HorizontalAlignment="Left"
-                      Margin="{StaticResource SmallTopMargin}"
-                      SelectedIndex="{Binding Path=SelectedMicrophoneIndex, Mode=TwoWay}"
-                      ItemsSource="{Binding MicrophoneNames, Mode=OneTime}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                <controls:SettingsGroup x:Uid="VideoConference_Microphone" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
 
-                <TextBlock x:Uid="VideoConference_Camera"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
+                    <controls:Setting x:Uid="VideoConference_SelectedMicrophone" Icon="&#xE720;">
+                        <controls:Setting.ActionContent>
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                      SelectedIndex="{Binding Path=SelectedMicrophoneIndex, Mode=TwoWay}"
+                                      ItemsSource="{Binding MicrophoneNames, Mode=OneTime}"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                </controls:SettingsGroup>
 
-                <ComboBox x:Uid="VideoConference_SelectedCamera"
-                      Width="240"
-                      HorizontalAlignment="Left"
-                      Margin="{StaticResource SmallTopMargin}"
-                      SelectedIndex="{Binding Path=SelectedCameraIndex, Mode=TwoWay}"
-                      ItemsSource="{Binding CameraNames, Mode=OneTime}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-                <TextBlock x:Uid="VideoConference_CameraOverlayImagePathHeader"
-                       Margin="{StaticResource SmallTopMargin}"/>
+                <controls:SettingsGroup x:Uid="VideoConference_Camera" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
 
-                <Border CornerRadius="4"
-                    HorizontalAlignment="Left"
-                    Margin="{StaticResource XXSmallTopMargin}">
-                    <Image Width="240"
-                       x:Uid="VideoConference_CameraOverlayImageAlt"
-                       ToolTipService.ToolTip="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"
-                       Source="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"/>
-                </Border>
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="VideoConference_SelectedCamera" Icon="&#xE960;">
+                                <controls:Setting.ActionContent>
+                                    <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                              SelectedIndex="{Binding Path=SelectedCameraIndex, Mode=TwoWay}"
+                                              ItemsSource="{Binding CameraNames, Mode=OneTime}"
+                                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel Orientation="Vertical">
+                                <controls:Setting x:Uid="VideoConference_CameraOverlayImagePathHeader" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Button x:Uid="VideoConference_CameraOverlayImageBrowse"
+                                                    Command="{Binding Mode=OneWay, Path=SelectOverlayImage}" />
 
-                <StackPanel Orientation="Horizontal"
-                        Padding="0"
-                        Spacing="8"
-                        Margin="{StaticResource SmallTopMargin}">
-                    <Button Height="32"
-                        IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                        x:Uid="VideoConference_CameraOverlayImageBrowse"
-                        Command="{Binding Mode=OneWay, Path=SelectOverlayImage}"
-                        HorizontalContentAlignment="Left"
-                        HorizontalAlignment="Left" />
+                                            <Button x:Uid="VideoConference_CameraOverlayImageClear"
+                                                    Command="{Binding Mode=OneWay, Path=ClearOverlayImage}"/>
+                                        </StackPanel>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <Border CornerRadius="4">
+                                    <Image Width="240"
+                                           x:Uid="VideoConference_CameraOverlayImageAlt"
+                                           ToolTipService.ToolTip="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"
+                                           Source="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"/>
+                                </Border>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
 
-                    <Button IsEnabled="{Binding Mode=TwoWay, Path=IsEnabled}"
-                        Height="32"
-                        x:Uid="VideoConference_CameraOverlayImageClear"
-                        Command="{Binding Mode=OneWay, Path=ClearOverlayImage}"
-                        HorizontalAlignment="Left" />
-                </StackPanel>
+                </controls:SettingsGroup>
 
-                <TextBlock x:Uid="VideoConference_Toolbar"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Opacity="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToOpacityConverter}}"/>
 
-                <ComboBox x:Uid="VideoConference_ToolbarPosition" 
-                      MinWidth="240"
-                      Margin="{StaticResource SmallTopMargin}"
-                      SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarPostionIndex}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                    <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopLeftCorner"/>
-                    <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopCenter"/>
-                    <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopRightCorner"/>
-                    <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_BottomLeftCorner"/>
-                    <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_BottomCenter"/>
-                    <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_BottomRightCorner"/>
-                </ComboBox>
 
-                <ComboBox x:Uid="VideoConference_ToolbarMonitor" 
-                      MinWidth="240"
-                      Margin="{StaticResource SmallTopMargin}"
-                      SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarMonitorIndex}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                    <ComboBoxItem x:Uid="VideoConference_ToolbarMonitor_Main"/>
-                    <ComboBoxItem x:Uid="VideoConference_ToolbarMonitor_All"/>
-                </ComboBox>
 
-                <CheckBox x:Uid="VideoConference_HideToolbarWhenUnmuted"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.HideToolbarWhenUnmuted}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      />
+                <controls:SettingsGroup x:Uid="VideoConference_Toolbar" IsEnabled="{Binding Mode=OneWay, Path=IsEnabled}">
+
+                    <controls:SettingExpander IsExpanded="True">
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="VideoConference_ToolbarPosition" Icon="&#xEC12;">
+                                <controls:Setting.ActionContent>
+                                    <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarPostionIndex}">
+                                        <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopLeftCorner"/>
+                                        <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopCenter"/>
+                                        <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopRightCorner"/>
+                                        <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_BottomLeftCorner"/>
+                                        <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_BottomCenter"/>
+                                        <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_BottomRightCorner"/>
+                                    </ComboBox>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel Orientation="Vertical">
+                                <controls:Setting x:Uid="VideoConference_ToolbarMonitor" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarMonitorIndex}">
+                                            <ComboBoxItem x:Uid="VideoConference_ToolbarMonitor_Main"/>
+                                            <ComboBoxItem x:Uid="VideoConference_ToolbarMonitor_All"/>
+                                        </ComboBox>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+
+                                <CheckBox x:Uid="VideoConference_HideToolbarWhenUnmuted" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.HideToolbarWhenUnmuted}" Margin="{StaticResource ExpanderSettingMargin}" />
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.ModuleLinks>
-            <controls:SidePanelLink x:Uid="Learn_More" Link="https://aka.ms/PowerToysOverview_VideoConference"/>
-            <controls:SidePanelLink x:Uid="Give_Feedback" Link="https://aka.ms/powerToysGiveFeedback"/>
-        </controls:SettingsPageControl.ModuleLinks>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_VCM" Link="https://aka.ms/PowerToysOverview_VideoConference"/>
+        </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

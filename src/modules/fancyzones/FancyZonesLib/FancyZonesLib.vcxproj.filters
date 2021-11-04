@@ -90,6 +90,9 @@
     <ClInclude Include="FancyZonesWindowProperties.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GuidUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

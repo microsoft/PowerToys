@@ -59,7 +59,7 @@ namespace ImageResizer.Properties {
                 resourceCulture = value;
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to All Files.
         /// </summary>
@@ -77,7 +77,7 @@ namespace ImageResizer.Properties {
                 return ResourceManager.GetString("Cancel", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Height.
         /// </summary>
@@ -106,7 +106,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _Select a size.
+        ///   Looks up a localized string similar to Select a size.
         /// </summary>
         public static string Input_Content {
             get {
@@ -124,11 +124,29 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Gif files with animations may not be correctly resized..
+        /// </summary>
+        public static string Input_GifWarning {
+            get {
+                return ResourceManager.GetString("Input_GifWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ign_ore the orientation of pictures.
         /// </summary>
         public static string Input_IgnoreOrientation {
             get {
                 return ResourceManager.GetString("Input_IgnoreOrientation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove metadata that doesn&apos;t affect rendering.
+        /// </summary>
+        public static string Input_RemoveMetadata {
+            get {
+                return ResourceManager.GetString("Input_RemoveMetadata", resourceCulture);
             }
         }
         
@@ -192,6 +210,15 @@ namespace ImageResizer.Properties {
         public static string OK_Tooltip {
             get {
                 return ResourceManager.GetString("OK_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open settings.
+        /// </summary>
+        public static string Open_settings {
+            get {
+                return ResourceManager.GetString("Open_settings", resourceCulture);
             }
         }
         

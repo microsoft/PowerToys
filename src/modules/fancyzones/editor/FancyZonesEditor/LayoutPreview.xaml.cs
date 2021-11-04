@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using FancyZonesEditor.Logs;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -37,7 +38,6 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             DataContextChanged += LayoutPreview_DataContextChanged;
-            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
         }
 
         public void UpdatePreview()
@@ -60,7 +60,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        public void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == PropertyZoneCountID)
             {
@@ -83,6 +83,11 @@ namespace FancyZonesEditor
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             _model = (LayoutModel)DataContext;
+
+            if (_model != null)
+            {
+                Logger.LogInfo("Loaded " + _model.Name);
+            }
 
             RenderPreview();
         }

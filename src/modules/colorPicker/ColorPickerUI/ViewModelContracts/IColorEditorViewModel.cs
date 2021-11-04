@@ -14,7 +14,11 @@ namespace ColorPicker.ViewModelContracts
     {
         event EventHandler OpenColorPickerRequested;
 
+        event EventHandler OpenSettingsRequested;
+
         ICommand OpenColorPickerCommand { get; }
+
+        ICommand OpenSettingsCommand { get; }
 
         ICommand RemoveColorCommand { get; }
 

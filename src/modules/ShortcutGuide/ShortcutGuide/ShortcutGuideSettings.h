@@ -7,4 +7,6 @@ struct ShortcutGuideSettings
     int overlayOpacity = 90;
     std::wstring theme = L"system";
     std::wstring disabledApps = L"";
+    bool shouldReactToPressedWinKey = false;
+    int windowsKeyPressTime = 900;
 };

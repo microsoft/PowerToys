@@ -232,16 +232,13 @@
                                 Margin="16,48,16,16">
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
-                            <Setter Property="Visibility"
-                                    Value="Collapsed" />
-                            <Style.Triggers>
-                                    <DataTrigger Binding="{Binding CustomModels.Count}"
-                                             Value="0">
-                                    <Setter Property="Visibility"
-                                            Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CustomModelsCount}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
                         </StackPanel.Style>
                         <controls:PathIcon
                             Foreground="{DynamicResource SecondaryForegroundBrush}"
@@ -330,6 +327,21 @@
                                  ItemsSource="{Binding MonitorInfoForViewModel}" />
                 </Grid>
             </ScrollViewer>
+            <Button Click="SettingsBtn_Click"
+                    x:Name="settingsBtn"
+                    Margin="8"
+                    Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    AutomationProperties.Name="{x:Static props:Resources.OpenSettings}"
+                    ToolTip="{x:Static props:Resources.OpenSettings}"
+                    Style="{StaticResource IconOnlyButtonStyle}">
+                <Button.Content>
+                    <TextBlock Text="&#xe713;"
+                               FontFamily="Segoe MDL2 Assets"
+                               AutomationProperties.Name="{x:Static props:Resources.OpenSettings}" />
+                </Button.Content>
+            </Button>
         </Grid>
 
         <ui:ContentDialog x:Name="EditLayoutDialog"

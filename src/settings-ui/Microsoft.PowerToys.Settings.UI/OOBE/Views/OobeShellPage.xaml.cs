@@ -5,9 +5,11 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Windows.ApplicationModel.Resources;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
@@ -53,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             DataContext = ViewModel;
             OobeShellHandler = this;
-
+            UpdateUITheme();
             Modules = new ObservableCollection<OobePowerToysModule>();
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
 
@@ -141,6 +143,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/KBM.gif",
                 Link = "https://aka.ms/PowerToysOverview_KeyboardManager",
             });
+            Modules.Insert((int)PowerToysModulesEnum.MouseUtils, new OobePowerToysModule()
+            {
+                ModuleName = loader.GetString("Oobe_MouseUtils"),
+                Tag = "MouseUtils",
+                IsNew = true,
+                Icon = "\uE962",
+                FluentIcon = "ms-appx:///Assets/FluentIcons/FluentIconsMouseUtils.png",
+                Image = "ms-appx:///Assets/Modules/MouseUtils.png",
+                Description = loader.GetString("Oobe_MouseUtils_Description"),
+                PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/MouseUtils.gif",
+                Link = "https://aka.ms/PowerToysOverview_MouseUtilities", // TODO: Add correct link after it's been created.
+            });
             Modules.Insert((int)PowerToysModulesEnum.PowerRename, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_PowerRename"),
@@ -177,7 +191,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/OOBEShortcutGuide.png",
                 Link = "https://aka.ms/PowerToysOverview_ShortcutGuide",
             });
-            /* Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
+
+            Modules.Insert((int)PowerToysModulesEnum.VideoConference, new OobePowerToysModule()
             {
                 ModuleName = loader.GetString("Oobe_VideoConference"),
                 Tag = "VideoConference",
@@ -188,7 +203,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Description = loader.GetString("Oobe_VideoConference_Description"),
                 PreviewImageSource = "ms-appx:///Assets/Modules/OOBE/VideoConferenceMute.png",
                 Link = "https://aka.ms/PowerToysOverview_VideoConference",
-            }); */
+            });
         }
 
         public void OnClosing()
@@ -225,6 +240,23 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                 case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
                 case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
+                case "MouseUtils": NavigationFrame.Navigate(typeof(OobeMouseUtils)); break;
+            }
+        }
+
+        public void UpdateUITheme()
+        {
+            switch (SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Theme.ToUpperInvariant())
+            {
+                case "LIGHT":
+                    this.RequestedTheme = ElementTheme.Light;
+                    break;
+                case "DARK":
+                    this.RequestedTheme = ElementTheme.Dark;
+                    break;
+                case "SYSTEM":
+                    this.RequestedTheme = ElementTheme.Default;
+                    break;
             }
         }
     }

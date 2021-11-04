@@ -113,22 +113,28 @@ namespace FancyZonesDataTypes
         ZoneSetLayoutType type;
     };
 
+    struct DeviceIdData
+    {
+        std::wstring deviceName = L"FallbackDevice";
+        int width;
+        int height;
+        GUID virtualDesktopId;
+        std::wstring monitorId;
+
+        static std::optional<DeviceIdData> ParseDeviceId(const std::wstring& str);
+        static bool IsValidDeviceId(const std::wstring& str);
+        
+        std::wstring toString() const;
+        bool isEqualWithNullVirtualDesktopId(const DeviceIdData& other) const;
+    };
+
     struct AppZoneHistoryData
     {
         std::unordered_map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
 
         std::wstring zoneSetUuid;
-        std::wstring deviceId;
+        DeviceIdData deviceId;
         ZoneIndexSet zoneIndexSet;
-    };
-
-    struct DeviceIdData
-    {
-        std::wstring deviceName;
-        int width;
-        int height;
-        GUID virtualDesktopId;
-        std::wstring monitorId;
     };
 
     struct DeviceInfoData
@@ -138,5 +144,42 @@ namespace FancyZonesDataTypes
         int spacing;
         int zoneCount;
         int sensitivityRadius;
+    };
+
+    inline bool operator==(const ZoneSetData& lhs, const ZoneSetData& rhs)
+    {
+        return lhs.type == rhs.type && lhs.uuid == rhs.uuid;
+    }
+
+    inline bool operator==(const DeviceIdData& lhs, const DeviceIdData& rhs)
+    {
+        return lhs.deviceName.compare(rhs.deviceName) == 0 && lhs.width == rhs.width && lhs.height == rhs.height && lhs.virtualDesktopId == rhs.virtualDesktopId && lhs.monitorId.compare(rhs.monitorId) == 0;
+    }
+
+    inline bool operator!=(const DeviceIdData& lhs, const DeviceIdData& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    inline bool operator<(const DeviceIdData& lhs, const DeviceIdData& rhs)
+    {
+        return lhs.deviceName.compare(rhs.deviceName) < 0 || lhs.width < rhs.width || lhs.height < rhs.height || lhs.monitorId.compare(rhs.monitorId) < 0;
+    }
+
+    inline bool operator==(const DeviceInfoData& lhs, const DeviceInfoData& rhs)
+    {
+        return lhs.activeZoneSet == rhs.activeZoneSet && lhs.showSpacing == rhs.showSpacing && lhs.spacing == rhs.spacing && lhs.zoneCount == rhs.zoneCount && lhs.sensitivityRadius == rhs.sensitivityRadius;
+    }
+}
+
+namespace std
+{
+    template<>
+    struct hash<FancyZonesDataTypes::DeviceIdData>
+    {
+        size_t operator()(const FancyZonesDataTypes::DeviceIdData& Value) const
+        {
+            return 0;
+        }
     };
 }

@@ -201,6 +201,10 @@
   <data name="AppColor" xml:space="preserve">
     <value>App color</value>
   </data>
+  <data name="AppControlPanel" xml:space="preserve">
+    <value>Control Panel</value>
+    <comment>Type of the setting is a "(legacy) Control Panel setting"</comment>
+  </data>
   <data name="AppDiagnostics" xml:space="preserve">
     <value>App diagnostics</value>
     <comment>Area Privacy</comment>
@@ -252,9 +256,6 @@
   </data>
   <data name="AreaClockAndRegion" xml:space="preserve">
     <value>Clock and Region</value>
-  </data>
-  <data name="AreaControlPanel" xml:space="preserve">
-    <value>Control Panel</value>
   </data>
   <data name="AreaCortana" xml:space="preserve">
     <value>Cortana</value>
@@ -466,10 +467,6 @@
   <data name="Contacts" xml:space="preserve">
     <value>Contacts</value>
     <comment>Area Privacy</comment>
-  </data>
-  <data name="ControlPanel" xml:space="preserve">
-    <value>Control Panel</value>
-    <comment>Type of the setting is a "(legacy) Control Panel setting"</comment>
   </data>
   <data name="CopyCommand" xml:space="preserve">
     <value>Copy command</value>
@@ -1448,10 +1445,6 @@
   <data name="StorageSense" xml:space="preserve">
     <value>Storage Sense</value>
     <comment>Area System</comment>
-  </data>
-  <data name="SubtitlePreposition" xml:space="preserve">
-    <value>in</value>
-    <comment>Example: Area "System" in System settings</comment>
   </data>
   <data name="SyncCenter" xml:space="preserve">
     <value>Sync center</value>

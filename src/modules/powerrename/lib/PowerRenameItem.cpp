@@ -32,6 +32,19 @@ IFACEMETHODIMP CPowerRenameItem::QueryInterface(_In_ REFIID riid, _Outptr_ void*
     return QISearch(this, qit, riid, ppv);
 }
 
+IFACEMETHODIMP CPowerRenameItem::PutPath(_In_opt_ PCWSTR newPath)
+{
+    CSRWSharedAutoLock lock(&m_lock);
+    CoTaskMemFree(m_path);
+    m_path = nullptr;
+    HRESULT hr = S_OK;
+    if (newPath != nullptr)
+    {
+        hr = SHStrDup(newPath, &m_path);
+    }
+    return hr;
+}
+
 IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
 {
     *path = nullptr;
@@ -47,7 +60,7 @@ IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
 IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = E_FAIL ;
+    HRESULT hr = E_FAIL;
 
     if (m_isTimeParsed)
     {
@@ -82,6 +95,19 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
 IFACEMETHODIMP CPowerRenameItem::GetShellItem(_Outptr_ IShellItem** ppsi)
 {
     return SHCreateItemFromParsingName(m_path, nullptr, IID_PPV_ARGS(ppsi));
+}
+
+IFACEMETHODIMP CPowerRenameItem::PutOriginalName(_In_opt_ PCWSTR originalName)
+{
+    CSRWSharedAutoLock lock(&m_lock);
+    CoTaskMemFree(m_originalName);
+    m_originalName = nullptr;
+    HRESULT hr = S_OK;
+    if (originalName != nullptr)
+    {
+        hr = SHStrDup(originalName, &m_originalName);
+    }
+    return hr;
 }
 
 IFACEMETHODIMP CPowerRenameItem::GetOriginalName(_Outptr_ PWSTR* originalName)
@@ -223,11 +249,11 @@ HRESULT CPowerRenameItem::s_CreateInstance(_In_opt_ IShellItem* psi, _In_ REFIID
 {
     *resultInterface = nullptr;
 
-    CPowerRenameItem *newRenameItem = new CPowerRenameItem();
+    CPowerRenameItem* newRenameItem = new CPowerRenameItem();
     HRESULT hr = E_OUTOFMEMORY;
     if (newRenameItem)
     {
-        hr = S_OK ;
+        hr = S_OK;
         if (psi != nullptr)
         {
             hr = newRenameItem->_Init(psi);

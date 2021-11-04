@@ -23,6 +23,7 @@ namespace FancyZonesEditor
         private const string GridZoneBackgroundBrushID = "GridZoneBackgroundBrush";
         private const string SecondaryForegroundBrushID = "SecondaryForegroundBrush";
         private const string AccentColorBrushID = "SystemControlBackgroundAccentBrush";
+        private const string CanvasCanvasZoneBorderBrushID = "CanvasCanvasZoneBorderBrush";
 
         public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
 
@@ -75,10 +76,37 @@ namespace FancyZonesEditor
 
             SizeChanged += GridZone_SizeChanged;
 
+            GotKeyboardFocus += GridZone_GotKeyboardFocus;
+            LostKeyboardFocus += GridZone_LostKeyboardFocus;
+
             _snapX = snapX;
             _snapY = snapY;
             _canSplit = canSplit;
             _zone = zone;
+        }
+
+        public int SnapAtHalfX()
+        {
+            var half = (_zone.Right - _zone.Left) / 2;
+            var pixelX = _snapX.DataToPixelWithoutSnapping(_zone.Left + half);
+            return _snapX.PixelToDataWithSnapping(pixelX, _zone.Left, _zone.Right);
+        }
+
+        public int SnapAtHalfY()
+        {
+            var half = (_zone.Bottom - _zone.Top) / 2;
+            var pixelY = _snapY.DataToPixelWithoutSnapping(_zone.Top + half);
+            return _snapY.PixelToDataWithSnapping(pixelY, _zone.Top, _zone.Bottom);
+        }
+
+        private void GridZone_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            Opacity = 1;
+        }
+
+        private void GridZone_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            Opacity = 0.5;
         }
 
         private void GridZone_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -241,7 +269,7 @@ namespace FancyZonesEditor
             MergeComplete?.Invoke(this, e);
         }
 
-        private void DoSplit(Orientation orientation, int offset)
+        public void DoSplit(Orientation orientation, int offset)
         {
             Split?.Invoke(this, new SplitEventArgs(orientation, offset));
         }

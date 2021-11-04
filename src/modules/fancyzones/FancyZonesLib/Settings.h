@@ -32,12 +32,16 @@ struct Settings
     bool showZonesOnAllMonitors = false;
     bool spanZonesAcrossMonitors = false;
     bool makeDraggedWindowTransparent = true;
+    bool systemTheme = true;
     std::wstring zoneColor = L"#AACDFF";
     std::wstring zoneBorderColor = L"#FFFFFF";
     std::wstring zoneHighlightColor = L"#008CFF";
     int zoneHighlightOpacity = 50;
     OverlappingZonesAlgorithm overlappingZonesAlgorithm = OverlappingZonesAlgorithm::Smallest;
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, VK_OEM_3);
+    bool windowSwitching = true;
+    PowerToysSettings::HotkeyObject nextTabHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_NEXT);
+    PowerToysSettings::HotkeyObject prevTabHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_PRIOR);
     std::wstring excludedApps = L"";
     std::vector<std::wstring> excludedAppsArray;
 };

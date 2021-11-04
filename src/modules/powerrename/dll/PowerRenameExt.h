@@ -49,6 +49,8 @@ public:
         return E_NOTIMPL;
     }
 
+    HRESULT RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray);
+
     // Inherited via IExplorerCommand
     virtual HRESULT __stdcall GetTitle(IShellItemArray* psiItemArray, LPWSTR* ppszName) override;
     virtual HRESULT __stdcall GetIcon(IShellItemArray* psiItemArray, LPWSTR* ppszIcon) override;
@@ -60,7 +62,6 @@ public:
     virtual HRESULT __stdcall EnumSubCommands(IEnumExplorerCommand** ppEnum) override;
 
     static HRESULT s_CreateInstance(_In_opt_ IUnknown* punkOuter, _In_ REFIID riid, _Outptr_ void** ppv);
-    static DWORD WINAPI s_PowerRenameUIThreadProc(_In_ void* pData);
 
     static bool SetEnabled(_In_ bool enabled);
     static bool IsEnabled();

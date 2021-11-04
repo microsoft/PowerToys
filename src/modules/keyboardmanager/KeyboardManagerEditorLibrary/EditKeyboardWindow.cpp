@@ -354,7 +354,14 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
     xamlContainer.Children().Append(header);
     xamlContainer.Children().Append(helperText);
     xamlContainer.Children().Append(scrollViewer);
-    xamlContainer.UpdateLayout();
+    try
+    {
+        // If a layout update has been triggered by other methods (e.g.: adapting to zoom level), this may throw an exception.
+        xamlContainer.UpdateLayout();
+    }
+    catch (...)
+    {
+    }
 
     desktopSource.Content(xamlContainer);
     ////End XAML Island section

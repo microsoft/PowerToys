@@ -230,7 +230,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zones over meerdere schermen toestaan (alle schermen moeten dezelfde DPI-schaal hebben)]]></Val>
+            <Val><![CDATA[Toestaan dat zones zich over meerdere schermen uitstrekken (alle schermen moeten dezelfde DPI-schaal hebben)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

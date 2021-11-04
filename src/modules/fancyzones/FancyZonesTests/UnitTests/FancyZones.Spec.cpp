@@ -70,6 +70,9 @@ namespace FancyZonesUnitTests
             PowerToysSettings::Settings ptSettings(HINSTANCE{}, L"FancyZonesUnitTests");
 
             ptSettings.add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, settings.editorHotkey);
+            ptSettings.add_bool_toggle(L"fancyzones_windowSwitching", IDS_SETTING_WINDOW_SWITCHING_TOGGLE_LABEL, settings.windowSwitching);
+            ptSettings.add_hotkey(L"fancyzones_nextTab_hotkey", IDS_SETTING_NEXT_TAB_HOTKEY_LABEL, settings.nextTabHotkey);
+            ptSettings.add_hotkey(L"fancyzones_prevTab_hotkey", IDS_SETTING_PREV_TAB_HOTKEY_LABEL, settings.prevTabHotkey);
             ptSettings.add_bool_toggle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, settings.shiftDrag);
             ptSettings.add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
