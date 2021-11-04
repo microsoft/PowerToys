@@ -66,9 +66,9 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
         return;
     }
 
-    m_moveSizeWindowInfo.hasNoVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
-    m_moveSizeWindowInfo.isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
-    m_inMoveSize = true;
+    m_draggedWindowInfo.hasNoVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
+    m_draggedWindowInfo.isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
+    m_inDragging = true;
 
     auto iter = workAreaMap.find(monitor);
     if (iter == end(workAreaMap))
@@ -76,7 +76,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
         return;
     }
 
-    m_windowMoveSize = window;
+    m_draggedWindow = window;
 
     if (m_settings->GetSettings()->mouseSwitch)
     {
@@ -94,16 +94,16 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
 
     if (m_dragEnabled)
     {
-        m_workAreaMoveSize = iter->second;
-        SetWindowTransparency(m_windowMoveSize);
-        m_workAreaMoveSize->MoveSizeEnter(m_windowMoveSize);
+        m_draggedWindowWorkArea = iter->second;
+        SetWindowTransparency(m_draggedWindow);
+        m_draggedWindowWorkArea->MoveSizeEnter(m_draggedWindow);
         if (m_settings->GetSettings()->showZonesOnAllMonitors)
         {
             for (auto [keyMonitor, workArea] : workAreaMap)
             {
-                // Skip calling ShowZoneWindow for iter->second (m_workAreaMoveSize) since it
+                // Skip calling ShowZoneWindow for iter->second (m_draggedWindowWorkArea) since it
                 // was already called in MoveSizeEnter
-                const bool moveSizeEnterCalled = workArea == m_workAreaMoveSize;
+                const bool moveSizeEnterCalled = workArea == m_draggedWindowWorkArea;
                 if (workArea && !moveSizeEnterCalled)
                 {
                     workArea->ShowZoneWindow();
@@ -111,10 +111,10 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
             }
         }
     }
-    else if (m_workAreaMoveSize)
+    else if (m_draggedWindowWorkArea)
     {
         ResetWindowTransparency();
-        m_workAreaMoveSize = nullptr;
+        m_draggedWindowWorkArea = nullptr;
         for (auto [keyMonitor, workArea] : workAreaMap)
         {
             if (workArea)
@@ -138,7 +138,7 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
 
 void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
 {
-    if (!m_inMoveSize)
+    if (!m_inDragging)
     {
         return;
     }
@@ -146,13 +146,13 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
     // This updates m_dragEnabled depending on if the shift key is being held down.
     UpdateDragState();
 
-    if (m_workAreaMoveSize)
+    if (m_draggedWindowWorkArea)
     {
         // Update the WorkArea already handling move/size
         if (!m_dragEnabled)
         {
             // Drag got disabled, tell it to cancel and hide all windows
-            m_workAreaMoveSize = nullptr;
+            m_draggedWindowWorkArea = nullptr;
             ResetWindowTransparency();
 
             for (auto [keyMonitor, workArea] : workAreaMap)
@@ -168,17 +168,17 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
             auto iter = workAreaMap.find(monitor);
             if (iter != workAreaMap.end())
             {
-                if (iter->second != m_workAreaMoveSize)
+                if (iter->second != m_draggedWindowWorkArea)
                 {
                     // The drag has moved to a different monitor.
-                    m_workAreaMoveSize->ClearSelectedZones();
+                    m_draggedWindowWorkArea->ClearSelectedZones();
                     if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                     {
-                        m_workAreaMoveSize->HideZoneWindow();
+                        m_draggedWindowWorkArea->HideZoneWindow();
                     }
 
-                    m_workAreaMoveSize = iter->second;
-                    m_workAreaMoveSize->MoveSizeEnter(m_windowMoveSize);
+                    m_draggedWindowWorkArea = iter->second;
+                    m_draggedWindowWorkArea->MoveSizeEnter(m_draggedWindow);
                 }
 
                 for (auto [keyMonitor, workArea] : workAreaMap)
@@ -191,8 +191,8 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
     else if (m_dragEnabled)
     {
         // We'll get here if the user presses/releases shift while dragging.
-        // Restart the drag on the WorkArea that m_windowMoveSize is on
-        MoveSizeStart(m_windowMoveSize, monitor, ptScreen, workAreaMap);
+        // Restart the drag on the WorkArea that m_draggedWindow is on
+        MoveSizeStart(m_draggedWindow, monitor, ptScreen, workAreaMap);
 
         // m_dragEnabled could get set to false if we're moving an elevated window.
         // In that case do not proceed.
@@ -205,7 +205,7 @@ void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, 
 
 void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IWorkArea>>& workAreaMap) noexcept
 {
-    if (window != m_windowMoveSize)
+    if (window != m_draggedWindow)
     {
         return;
     }
@@ -214,16 +214,16 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
     m_shiftKeyState.disable();
     m_ctrlKeyState.disable();
 
-    if (m_workAreaMoveSize)
+    if (m_draggedWindowWorkArea)
     {
-        auto workArea = std::move(m_workAreaMoveSize);
+        auto workArea = std::move(m_draggedWindowWorkArea);
         ResetWindowTransparency();
 
         bool hasNoVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
         bool isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
 
         if ((isStandardWindow == false && hasNoVisibleOwner == true &&
-             m_moveSizeWindowInfo.isStandardWindow == true && m_moveSizeWindowInfo.hasNoVisibleOwner == true) ||
+             m_draggedWindowInfo.isStandardWindow == true && m_draggedWindowInfo.hasNoVisibleOwner == true) ||
             FancyZonesUtils::IsWindowMaximized(window))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
@@ -231,7 +231,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
         }
         else
         {
-            workArea->MoveSizeEnd(m_windowMoveSize, ptScreen);
+            workArea->MoveSizeEnd(m_draggedWindow, ptScreen);
         }
     }
     else
@@ -269,10 +269,10 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
         ::RemoveProp(window, ZonedWindowProperties::PropertyMultipleZoneID);
     }
 
-    m_inMoveSize = false;
+    m_inDragging = false;
     m_dragEnabled = false;
     m_mouseState = false;
-    m_windowMoveSize = nullptr;
+    m_draggedWindow = nullptr;
 
     // Also, hide all windows (regardless of settings)
     for (auto [keyMonitor, workArea] : workAreaMap)
@@ -286,7 +286,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
 
 void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, winrt::com_ptr<IWorkArea> workArea, bool suppressMove) noexcept
 {
-    if (window != m_windowMoveSize)
+    if (window != m_draggedWindow)
     {
         workArea->MoveWindowIntoZoneByIndexSet(window, indexSet, suppressMove);
     }

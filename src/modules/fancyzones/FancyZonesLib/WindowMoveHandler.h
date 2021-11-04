@@ -34,9 +34,9 @@ public:
         return m_dragEnabled;
     }
 
-    inline bool InMoveSize() const noexcept
+    inline bool InDragging() const noexcept
     {
-        return m_inMoveSize;
+        return m_inDragging;
     }
 
 private:
@@ -66,10 +66,10 @@ private:
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
 
-    HWND m_windowMoveSize{}; // The window that is being moved/sized
-    bool m_inMoveSize{}; // Whether or not a move/size operation is currently active
-    MoveSizeWindowInfo m_moveSizeWindowInfo; // MoveSizeWindowInfo of the window at the moment when dragging started
-    winrt::com_ptr<IWorkArea> m_workAreaMoveSize; // "Active" WorkArea, where the move/size is happening. Will update as drag moves between monitors.
+    bool m_inDragging{}; // Whether or not a move/size operation is currently active
+    HWND m_draggedWindow{}; // The window that is being moved/sized
+    MoveSizeWindowInfo m_draggedWindowInfo; // MoveSizeWindowInfo of the window at the moment when dragging started
+    winrt::com_ptr<IWorkArea> m_draggedWindowWorkArea; // "Active" WorkArea, where the move/size is happening. Will update as drag moves between monitors.
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
 
     WindowTransparencyProperties m_windowTransparencyProperties;

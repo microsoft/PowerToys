@@ -480,7 +480,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
             digitPressed = info->vkCode - VK_NUMPAD0;
         }
 
-        bool dragging = m_windowMoveHandler.InMoveSize();
+        bool dragging = m_windowMoveHandler.InDragging();
         bool changeLayoutWhileNotDragging = !dragging && !shift && win && ctrl && alt && digitPressed != -1;
         bool changeLayoutWhileDragging = dragging && digitPressed != -1;
 
@@ -749,7 +749,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_LOCATIONCHANGE)
         {
-            if (m_windowMoveHandler.InMoveSize())
+            if (m_windowMoveHandler.InDragging())
             {
                 if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
                 {
