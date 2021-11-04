@@ -112,7 +112,7 @@ namespace monacoPreview
             var webViewOptions = new CoreWebView2EnvironmentOptions
             {
                 // Enable CORS for local file access.
-                AdditionalBrowserArguments = "--disable-web-security"
+                AdditionalBrowserArguments = "--disable-web-security --disable-web-security --user-data-dir=\"C:/\""
             };
 
             var env = await CoreWebView2Environment.CreateAsync(null, null, webViewOptions);

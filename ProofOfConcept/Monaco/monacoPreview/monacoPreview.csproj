@@ -39,5 +39,12 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>
+    <ItemGroup>
+      <Page Remove="PreviewWindow.xaml" />
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Remove="PreviewWindow.xaml.cs" />
+      <Compile Remove="MonacoPreviewHandlerInterfaces.cs" />
+    </ItemGroup>
 
 </Project>
