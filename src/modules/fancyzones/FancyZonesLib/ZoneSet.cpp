@@ -323,7 +323,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
         if (m_zones.contains(id))
         {
             const auto& zone = m_zones.at(id);
-            const RECT newSize = zone->ComputeActualZoneRect(window, workAreaWindow);
+            const RECT newSize = zone->GetZoneRect();
             if (!sizeEmpty)
             {
                 size.left = min(size.left, newSize.left);
@@ -351,7 +351,9 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const Zo
         if (!suppressMove)
         {
             SaveWindowSizeAndOrigin(window);
-            SizeWindowToRect(window, size);
+
+            auto rect = AdjustRectForSizeWindowToRect(window, size, workAreaWindow);
+            SizeWindowToRect(window, rect);
         }
 
         StampWindow(window, bitmask);

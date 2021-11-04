@@ -300,6 +300,38 @@ namespace FancyZonesUtils
         }
     }
 
+    RECT AdjustRectForSizeWindowToRect(HWND window, RECT rect, HWND windowOfRect) noexcept
+    {
+        RECT newWindowRect = rect;
+
+        RECT windowRect{};
+        ::GetWindowRect(window, &windowRect);
+
+        // Take care of borders
+        RECT frameRect{};
+        if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
+        {
+            LONG leftMargin = frameRect.left - windowRect.left;
+            LONG rightMargin = frameRect.right - windowRect.right;
+            LONG bottomMargin = frameRect.bottom - windowRect.bottom;
+            newWindowRect.left -= leftMargin;
+            newWindowRect.right -= rightMargin;
+            newWindowRect.bottom -= bottomMargin;
+        }
+
+        // Take care of windows that cannot be resized
+        if ((::GetWindowLong(window, GWL_STYLE) & WS_SIZEBOX) == 0)
+        {
+            newWindowRect.right = newWindowRect.left + (windowRect.right - windowRect.left);
+            newWindowRect.bottom = newWindowRect.top + (windowRect.bottom - windowRect.top);
+        }
+
+        // Convert to screen coordinates
+        MapWindowRect(windowOfRect, nullptr, &newWindowRect);
+
+        return newWindowRect;
+    }
+
     void SizeWindowToRect(HWND window, RECT rect) noexcept
     {
         WINDOWPLACEMENT placement{};
