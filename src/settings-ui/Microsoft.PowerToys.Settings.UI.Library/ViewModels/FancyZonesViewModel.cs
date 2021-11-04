@@ -88,6 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
+            _systemTheme = Settings.Properties.FancyzonesSystemTheme.Value;
             EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
             _windowSwitching = Settings.Properties.FancyzonesWindowSwitching.Value;
             NextTabHotkey = Settings.Properties.FancyzonesNextTabHotkey.Value;
@@ -126,6 +127,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
         private bool _makeDraggedWindowTransparent;
+        private bool _systemTheme;
 
         private int _highlightOpacity;
         private string _excludedApps;
@@ -515,6 +517,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _makeDraggedWindowTransparent = value;
                     Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool SystemTheme
+        {
+            get
+            {
+                return _systemTheme;
+            }
+
+            set
+            {
+                if (value != _systemTheme)
+                {
+                    _systemTheme = value;
+                    Settings.Properties.FancyzonesSystemTheme.Value = value;
                     NotifyPropertyChanged();
                 }
             }

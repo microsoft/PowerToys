@@ -28,6 +28,7 @@
 #include "CallTracer.h"
 
 #include <FancyZonesLib/SecondaryMouseButtonsHook.h>
+#include <winrt/Windows.UI.ViewManagement.h>
 
 enum class DisplayChangeType
 {
@@ -81,6 +82,13 @@ public:
         {
             monitor = NULL;
         }
+
+        // If accent color or theme is changed need to update colors for zones
+        if (m_settings->GetSettings()->systemTheme && GetSystemTheme())
+        {
+            m_workAreaHandler.UpdateZoneColors(GetZoneColors());
+        }
+
         m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
 
@@ -173,6 +181,7 @@ private:
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
 
+    bool GetSystemTheme() const noexcept;
     ZoneColors GetZoneColors() const noexcept;
 
     const HINSTANCE m_hinstance{};
@@ -214,6 +223,8 @@ private:
 };
 
 std::function<void()> FancyZones::disableModuleCallback = {};
+COLORREF currentAccentColor;
+COLORREF currentBackgroundColor;
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -1332,14 +1343,50 @@ HMONITOR FancyZones::WorkAreaKeyFromWindow(HWND window) noexcept
     }
 }
 
+bool FancyZones::GetSystemTheme() const noexcept
+{
+    winrt::Windows::UI::ViewManagement::UISettings settings;
+    auto accentValue = settings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Accent);
+    auto accentColor = RGB(accentValue.R, accentValue.G, accentValue.B);
+
+    auto backgroundValue = settings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Background);
+    auto backgroundColor = RGB(backgroundValue.R, backgroundValue.G, backgroundValue.B);
+
+    if (currentAccentColor != accentColor || currentBackgroundColor != backgroundColor)
+    {
+        currentAccentColor = accentColor;
+        currentBackgroundColor = backgroundColor;
+        return true;
+    }
+
+    return false;
+}
+
 ZoneColors FancyZones::GetZoneColors() const noexcept
 {
-    return ZoneColors {
-        .primaryColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor),
-        .borderColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor),
-        .highlightColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor),
-        .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
-    };
+    if (m_settings->GetSettings()->systemTheme)
+    {
+        GetSystemTheme();
+        auto textColor = currentBackgroundColor == RGB(0, 0, 0) ? RGB(255, 255, 255) : RGB(0, 0, 0);
+
+        return ZoneColors{
+            .primaryColor = currentBackgroundColor,
+            .borderColor = currentAccentColor,
+            .highlightColor = currentAccentColor,
+            .textColor = textColor,
+            .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
+        };
+    }
+    else
+    {
+        return ZoneColors{
+            .primaryColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor),
+            .borderColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor),
+            .highlightColor = FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor),
+            .textColor = RGB(0, 0, 0),
+            .highlightOpacity = m_settings->GetSettings()->zoneHighlightOpacity
+        };
+    } 
 }
 
 winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance,

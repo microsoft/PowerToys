@@ -408,7 +408,7 @@
   <data name="PowerLauncher_UseCentralizedKeyboardHook.Header" xml:space="preserve">
     <value>Use centralized keyboard hook</value>
   </data>
-	<data name="PowerLauncher_UseCentralizedKeyboardHook.Description" xml:space="preserve">
+  <data name="PowerLauncher_UseCentralizedKeyboardHook.Description" xml:space="preserve">
     <value>Try this if there are issues with the shortcut</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
@@ -444,13 +444,13 @@
     <value>Excludes an application from snapping to zones and will only react to Windows Snap - add one application name per line</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
-    <value>Zone opacity</value>
+    <value>Opacity</value>
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
     <comment>Shortcut to launch the FancyZones layout editor application</comment>
   </data>
-	<data name="FancyZones_WindowSwitching_GroupSettings.Header" xml:space="preserve">
+  <data name="FancyZones_WindowSwitching_GroupSettings.Header" xml:space="preserve">
     <value>Window switching</value>
   </data>
   <data name="FancyZones_WindowSwitching_GroupSettings.Description" xml:space="preserve">
@@ -520,10 +520,10 @@
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Description" xml:space="preserve">
     <value>When using multiple displays</value>
   </data>
-	<data name="FancyZones_LaunchPositionMouse.Content" xml:space="preserve">
+  <data name="FancyZones_LaunchPositionMouse.Content" xml:space="preserve">
     <value>Where the mouse pointer is</value>
   </data>
-	<data name="FancyZones_LaunchPositionScreen.Content" xml:space="preserve">
+  <data name="FancyZones_LaunchPositionScreen.Content" xml:space="preserve">
     <value>With active focus</value>
   </data>
   <data name="FancyZones_ZoneBehavior_GroupSettings.Header" xml:space="preserve">
@@ -536,7 +536,7 @@
     <value>Zones</value>
   </data>
   <data name="FancyZones_ZoneHighlightColor.Header" xml:space="preserve">
-    <value>Zone highlight color</value>
+    <value>Highlight color</value>
   </data>
   <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
     <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>
@@ -595,13 +595,13 @@
   <data name="PowerRename_Toggle_ContextMenu.Header" xml:space="preserve">
     <value>Show PowerRename in</value>
   </data>
-	<data name="PowerRename_Toggle_ContextMenu.Description" xml:space="preserve">
+  <data name="PowerRename_Toggle_ContextMenu.Description" xml:space="preserve">
     <value>Press shift + right-click on files to open the extended menu</value>
   </data>
-	<data name="PowerRename_Toggle_StandardContextMenu.Content" xml:space="preserve">
+  <data name="PowerRename_Toggle_StandardContextMenu.Content" xml:space="preserve">
     <value>Default and extended context menu</value>
   </data>
-	<data name="PowerRename_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
+  <data name="PowerRename_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
     <value>Extended context menu only</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Description" xml:space="preserve">
@@ -646,10 +646,10 @@
     <value>Enable auto-complete for the search and replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Header" xml:space="preserve">
-    <value>Zone border color</value>
+    <value>Border color</value>
   </data>
   <data name="FancyZones_InActiveColor.Header" xml:space="preserve">
-    <value>Zone inactive color</value>
+    <value>Inactive color</value>
   </data>
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts.</value>
@@ -939,10 +939,10 @@
   <data name="ImageResizer_FileModifiedDate.Description" xml:space="preserve">
     <value>Used as the 'modified timestamp' in the file properties</value>
   </data>
-	<data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
+  <data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
     <value>Original file timestamp</value>
   </data>
-	<data name="ImageResizer_UseResizeDate.Content" xml:space="preserve">
+  <data name="ImageResizer_UseResizeDate.Content" xml:space="preserve">
     <value>Timestamp of resize action</value>
   </data>
   <data name="Encoding.Header" xml:space="preserve">
@@ -1014,9 +1014,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="ImageResizer_FilenameParameters.AutomationProperties.Name" xml:space="preserve">
     <value>Filename parameters</value>
-  </data>
-  <data name="ColorModeHeader.Header" xml:space="preserve">
-    <value>App theme</value>
   </data>
   <data name="Radio_Theme_Dark.Content" xml:space="preserve">
     <value>Dark</value>
@@ -1723,5 +1720,20 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
+  </data>
+  <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
+    <value>Custom colors</value>
+  </data>
+  <data name="FancyZones_Radio_Default_Theme.Content" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
+  <data name="ColorModeHeader.Header" xml:space="preserve">
+    <value>App theme</value>
+  </data>
+  <data name="FancyZones_Zone_Appearance.Description" xml:space="preserve">
+    <value>Customize the way zones look</value>
+  </data>
+  <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
+    <value>Zone appearance</value>
   </data>
 </root>
