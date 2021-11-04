@@ -212,7 +212,7 @@ namespace FancyZonesUtils
     std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId);
     std::wstring TrimDeviceId(const std::wstring& deviceId);
 
-    RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept;
+    RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept;
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
 
     // If HWND is already dead, we assume it wasn't elevated

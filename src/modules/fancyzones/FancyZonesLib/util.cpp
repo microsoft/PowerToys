@@ -692,22 +692,22 @@ namespace FancyZonesUtils
         return closestIdx;
     }
 
-    RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept
+    RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept
     {
         LONG deltaX = 0, deltaY = 0;
         switch (vkCode)
         {
         case VK_UP:
-            deltaY = zoneWindowRect.bottom - zoneWindowRect.top;
+            deltaY = workAreaRect.bottom - workAreaRect.top;
             break;
         case VK_DOWN:
-            deltaY = zoneWindowRect.top - zoneWindowRect.bottom;
+            deltaY = workAreaRect.top - workAreaRect.bottom;
             break;
         case VK_LEFT:
-            deltaX = zoneWindowRect.right - zoneWindowRect.left;
+            deltaX = workAreaRect.right - workAreaRect.left;
             break;
         case VK_RIGHT:
-            deltaX = zoneWindowRect.left - zoneWindowRect.right;
+            deltaX = workAreaRect.left - workAreaRect.right;
         }
 
         windowRect.left += deltaX;

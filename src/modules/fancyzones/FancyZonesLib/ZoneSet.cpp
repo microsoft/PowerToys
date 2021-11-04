@@ -434,14 +434,14 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND workAreaWind
         }
     }
 
-    RECT windowRect, windowZoneRect;
-    if (GetWindowRect(window, &windowRect) && GetWindowRect(workAreaWindow, &windowZoneRect))
+    RECT windowRect, workAreaRect;
+    if (GetWindowRect(window, &windowRect) && GetWindowRect(workAreaWindow, &workAreaRect))
     {
         // Move to coordinates relative to windowZone
-        windowRect.top -= windowZoneRect.top;
-        windowRect.bottom -= windowZoneRect.top;
-        windowRect.left -= windowZoneRect.left;
-        windowRect.right -= windowZoneRect.left;
+        windowRect.top -= workAreaRect.top;
+        windowRect.bottom -= workAreaRect.top;
+        windowRect.left -= workAreaRect.left;
+        windowRect.right -= workAreaRect.left;
 
         auto result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
         if (result < zoneRects.size())
@@ -455,7 +455,7 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND workAreaWind
             // Consider all zones as available
             zoneRects.resize(m_zones.size());
             std::transform(m_zones.begin(), m_zones.end(), zoneRects.begin(), [](auto zone) { return zone.second->GetZoneRect(); });
-            windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, windowZoneRect, vkCode);
+            windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, workAreaRect, vkCode);
             result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
 
             if (result < zoneRects.size())
