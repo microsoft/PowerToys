@@ -5,6 +5,8 @@
 #include "PowerRenameUIHost.h"
 #include <settings.h>
 #include <trace.h>
+
+#include <exception>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -49,37 +51,47 @@ LRESULT AppWindow::MessageHandler(UINT message, WPARAM wParam, LPARAM lParam) no
 AppWindow::AppWindow(HINSTANCE hInstance, std::vector<std::wstring> files) noexcept :
     m_instance{ hInstance }, m_managerEvents{ this }
 {
-    HRESULT hr = CPowerRenameManager::s_CreateInstance(&m_prManager);
     // Create the factory for our items
-    CComPtr<IPowerRenameItemFactory> prItemFactory;
-    hr = CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&prItemFactory));
-    hr = m_prManager->PutRenameItemFactory(prItemFactory);
-    hr = m_prManager->Advise(&m_managerEvents, &m_cookie);
-
-    if (SUCCEEDED(hr))
+    if (SUCCEEDED(CPowerRenameManager::s_CreateInstance(&m_prManager)))
     {
-        CComPtr<IShellItemArray> shellItemArray;
-        // To test PowerRenameUIHost uncomment this line and update the path to
-        // your local (absolute or relative) path which you want to see in PowerRename
-        //files.push_back(L"<path>");
-
-        if (!files.empty())
+        CComPtr<IPowerRenameItemFactory> prItemFactory;
+        if (SUCCEEDED(CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&prItemFactory))))
         {
-            hr = CreateShellItemArrayFromPaths(files, &shellItemArray);
-            if (SUCCEEDED(hr))
+            if(SUCCEEDED(m_prManager->PutRenameItemFactory(prItemFactory)))
             {
-                CComPtr<IEnumShellItems> enumShellItems;
-                hr = shellItemArray->EnumItems(&enumShellItems);
-                if (SUCCEEDED(hr))
+                if (SUCCEEDED(m_prManager->Advise(&m_managerEvents, &m_cookie)))
                 {
-                    EnumerateShellItems(enumShellItems);
+                    CComPtr<IShellItemArray> shellItemArray;
+                    // To test PowerRenameUIHost uncomment this line and update the path to
+                    // your local (absolute or relative) path which you want to see in PowerRename
+                    //files.push_back(L"<path>");
+
+                    if (!files.empty())
+                    {
+                        if (SUCCEEDED(CreateShellItemArrayFromPaths(files, &shellItemArray)))
+                        {
+                            CComPtr<IEnumShellItems> enumShellItems;
+                            if (SUCCEEDED(shellItemArray->EnumItems(&enumShellItems)))
+                            {
+                                EnumerateShellItems(enumShellItems);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Logger::warn(L"No items selected to be renamed.");
+                    }
                 }
             }
         }
         else
         {
-            Logger::warn(L"No items selected to be renamed.");
+            Logger::error(L"Error creating PowerRenameItemFactory");
         }
+    }
+    else
+    {
+        Logger::error(L"Error creating PowerRenameManager");
     }
 }
 
@@ -118,9 +130,16 @@ bool AppWindow::OnCreate(HWND, LPCREATESTRUCT) noexcept
     m_mainUserControl = winrt::PowerRenameUILib::MainWindow();
     m_xamlIsland = CreateDesktopWindowsXamlSource(WS_TABSTOP, m_mainUserControl);
 
-    PopulateExplorerItems();
-    SetHandlers();
-    ReadSettings();
+    try
+    {
+        PopulateExplorerItems();
+        SetHandlers();
+        ReadSettings();
+    }
+    catch (std::exception e)
+    {
+        Logger::error("Exception thrown during explorer items population: {}", std::string{ e.what() });
+    }
 
     m_mainUserControl.UIUpdatesItem().ButtonRenameEnabled(false);
     InitAutoComplete();
@@ -586,8 +605,11 @@ void AppWindow::ToggleItem(int32_t id, bool checked)
     _TRACER_;
     Logger::debug(L"Toggling item with id = {}", id);
     CComPtr<IPowerRenameItem> spItem;
-    m_prManager->GetItemById(id, &spItem);
-    spItem->PutSelected(checked);
+
+    if (SUCCEEDED(m_prManager->GetItemById(id, &spItem)))
+    {
+        spItem->PutSelected(checked);
+    }
     UpdateCounts();
 }
 
@@ -949,7 +971,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     if (hStdin == INVALID_HANDLE_VALUE)
+    {
+        Logger::error(L"Invalid input handle.");
         ExitProcess(1);
+    }
+
     BOOL bSuccess;
     WCHAR chBuf[BUFSIZE];
     DWORD dwRead;
@@ -979,9 +1005,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Logger::debug(L"Starting PowerRename with {} files selected", files.size());
 
     g_hostHInst = hInstance;
-    winrt::init_apartment(winrt::apartment_type::single_threaded);
+    try
+    {
+        winrt::init_apartment(winrt::apartment_type::single_threaded);
 
-    winrt::PowerRenameUILib::App app;
-    const auto result = AppWindow::Show(hInstance, files);
-    app.Close();
+        winrt::PowerRenameUILib::App app;
+        const auto result = AppWindow::Show(hInstance, files);
+        app.Close();
+    }
+    catch (std::exception e)
+    {
+        Logger::error("Exception thrown during PowerRename UI initialization: {}", std::string{ e.what() });
+    }
 }
