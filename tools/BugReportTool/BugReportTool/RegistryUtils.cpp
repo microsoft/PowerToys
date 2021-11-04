@@ -4,6 +4,8 @@
 
 using namespace std;
 
+extern std::vector<std::wstring> processes;
+
 namespace
 {
     vector<pair<HKEY, wstring>> registryKeys = {
@@ -163,20 +165,8 @@ namespace
 
 void ReportCompatibilityTab(HKEY key, wofstream& report)
 {
-    vector<std::wstring> apps
-    {
-        L"PowerToys.exe",
-        L"ColorPickerUI.exe",
-        L"FancyZonesEditor.exe",
-        L"PowerToys.FancyZones.exe",
-        L"PowerToys.KeyboardManagerEngine.exe",
-        L"PowerToys.KeyboardManagerEditor.exe",
-        L"PowerLauncher.exe",
-        L"PowerToys.ShortcutGuide.exe"
-    };
-
     map<wstring, wstring> flags;
-    for (auto app : apps)
+    for (auto app : processes)
     {
         flags[app] = L"";
     }
@@ -190,7 +180,7 @@ void ReportCompatibilityTab(HKEY key, wofstream& report)
             auto values = QueryValues(outKey);
             for (auto value : values)
             {
-                for (auto app : apps)
+                for (auto app : processes)
                 {
                     if (value.first.find(app) != wstring::npos)
                     {
