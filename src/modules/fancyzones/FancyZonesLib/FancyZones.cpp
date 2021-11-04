@@ -1294,11 +1294,11 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
 void FancyZones::ApplyQuickLayout(int key) noexcept
 {
     std::wstring uuid;
-    for (auto [zoneUuid, hotkey] : FancyZonesDataInstance().GetLayoutQuickKeys())
+    for (auto [layoutUuid, hotkey] : FancyZonesDataInstance().GetLayoutQuickKeys())
     {
         if (hotkey == key)
         {
-            uuid = zoneUuid;
+            uuid = layoutUuid;
         }
     }
 
