@@ -40,7 +40,6 @@ public:
 private:
     RECT m_zoneRect{};
     const ZoneIndex m_id{};
-    std::map<HWND, RECT> m_windows{};
 };
 
 RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept
