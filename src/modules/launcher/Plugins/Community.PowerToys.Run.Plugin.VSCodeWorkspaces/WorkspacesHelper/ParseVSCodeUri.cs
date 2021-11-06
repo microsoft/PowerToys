@@ -16,6 +16,8 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
         private static readonly Regex CodespacesWorkspace = new Regex(@"^vscode-remote://vsonline\+(.+?(?=\/))(.+)$", RegexOptions.Compiled);
 
+        private static readonly Regex DevContainerWorkspace = new Regex(@"^vscode-remote://dev-container\+(.+?(?=\/))(.+)$", RegexOptions.Compiled);
+
         public static (TypeWorkspace? TypeWorkspace, string MachineName, string Path) GetTypeWorkspace(string uri)
         {
             if (LocalWorkspace.IsMatch(uri))
@@ -52,6 +54,15 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                 if (match.Groups.Count > 1)
                 {
                     return (TypeWorkspace.Codespaces, string.Empty, match.Groups[2].Value);
+                }
+            }
+            else if (DevContainerWorkspace.IsMatch(uri))
+            {
+                var match = DevContainerWorkspace.Match(uri);
+
+                if (match.Groups.Count > 1)
+                {
+                    return (TypeWorkspace.DevContainer, string.Empty, match.Groups[2].Value);
                 }
             }
 
