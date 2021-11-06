@@ -132,7 +132,11 @@ namespace PowerLauncher.Helper
                             }
                             else
                             {
-                                Log.Warn($"Skipping update of the environment variable [{kv.Key}] for the PT Run process. This variable is listed as protected process variable and changing them can cause unexpected behavior. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
+                                // Don't log for the variable "USERNAME" if the variable's value is "System". (Then it is a false positive because per default the variable only exists on machine level with the value "System".)
+                                if (!kv.Key.Equals("USERNAME", StringComparison.OrdinalIgnoreCase) & !kv.Value.Equals("System", StringComparison.Ordinal))
+                                {
+                                    Log.Warn($"Skipping update of the environment variable [{kv.Key}] for the PT Run process. This variable is listed as protected process variable and changing them can cause unexpected behavior. (The variable value has a length of [{varValueLength}].)", typeof(PowerLauncher.Helper.EnvironmentHelper));
+                                }
                             }
                         }
 #pragma warning disable CA1031 // Do not catch general exception types
