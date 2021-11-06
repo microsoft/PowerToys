@@ -63,11 +63,9 @@ namespace Microsoft.Plugin.Uri
             {
                 results.Add(new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_uri_default_browser,
+                    Title = Properties.Resources.Microsoft_plugin_uri_open,
                     SubTitle = BrowserPath,
-                    IcoPath = _uriSettings.ShowBrowserIcon
-                          ? BrowserIconPath
-                          : DefaultIconPath,
+                    IcoPath = DefaultIconPath,
                     Action = action =>
                     {
                         if (!Helper.OpenInShell(BrowserPath))
@@ -93,10 +91,8 @@ namespace Microsoft.Plugin.Uri
                 results.Add(new Result
                 {
                     Title = uriResultString,
-                    SubTitle = Properties.Resources.Microsoft_plugin_uri_website,
-                    IcoPath = _uriSettings.ShowBrowserIcon
-                        ? BrowserIconPath
-                        : DefaultIconPath,
+                    SubTitle = Properties.Resources.Microsoft_plugin_uri_open,
+                    IcoPath = DefaultIconPath,
                     Action = action =>
                     {
                         if (!Helper.OpenInShell(uriResultString))
