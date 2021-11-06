@@ -258,7 +258,6 @@
                         <ToggleButton x:Name="toggleButton_enumItems" Content="&#xEA40;" FontFamily="{ThemeResource SymbolThemeFontFamily}" MinHeight="32" x:Uid="ToggleButton_EnumItems" Style="{StaticResource CustomToggleButtonStyle}" />
                     </StackPanel>
                 </StackPanel>
-
             </ScrollViewer>
 
             <Rectangle Height="1" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" Margin="0,0,20,0" VerticalAlignment="Top" Grid.Row="1" />
@@ -304,6 +303,10 @@
             </StackPanel>
 
             <muxc:SplitButton Grid.Row="1" Style="{StaticResource SplitAccentButtonStyle}" x:Name="button_rename" Margin="0,0,20,0" x:Uid="ButtonApply" Click="button_rename_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsEnabled="{x:Bind UIUpdatesItem.ButtonRenameEnabled, Mode=OneWay}">
+                <muxc:SplitButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Enter" />
+                    <KeyboardAccelerator Key="Enter" Modifiers="Control" />
+                </muxc:SplitButton.KeyboardAccelerators>
                 <muxc:SplitButton.Content>
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE13E;" FontSize="14" VerticalAlignment="Center" Margin="0,2,10,0" />

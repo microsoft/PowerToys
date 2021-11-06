@@ -51,9 +51,9 @@ LRESULT AppWindow::MessageHandler(UINT message, WPARAM wParam, LPARAM lParam) no
 AppWindow::AppWindow(HINSTANCE hInstance, std::vector<std::wstring> files) noexcept :
     m_instance{ hInstance }, m_managerEvents{ this }
 {
-    // Create the factory for our items
     if (SUCCEEDED(CPowerRenameManager::s_CreateInstance(&m_prManager)))
     {
+        // Create the factory for our items
         CComPtr<IPowerRenameItemFactory> prItemFactory;
         if (SUCCEEDED(CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&prItemFactory))))
         {
@@ -115,7 +115,8 @@ void AppWindow::CreateAndShowWindow()
     wchar_t title[64];
     LoadStringW(m_instance, IDS_APP_TITLE, title, ARRAYSIZE(title));
 
-    m_window = CreateWindowW(c_WindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, CW_USEDEFAULT, CW_USEDEFAULT, nullptr, nullptr, m_instance, this);
+    // hardcoded width and height (1200 x 600) - with WinUI 3, it should auto-scale to the content
+    m_window = CreateWindowW(c_WindowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 1200, 600, nullptr, nullptr, m_instance, this);
     THROW_LAST_ERROR_IF(!m_window);
 
     ShowWindow(m_window, SW_SHOWNORMAL);
