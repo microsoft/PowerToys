@@ -39,6 +39,7 @@
     </ClCompile>
     <ClCompile Include="EventViewer.cpp" />
     <ClCompile Include="InstallationFolder.cpp" />
+    <ClCompile Include="ProcessesList.cpp" />
     <ClCompile Include="ReportMonitorInfo.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="RegistryUtils.cpp" />

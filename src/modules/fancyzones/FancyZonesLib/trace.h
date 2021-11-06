@@ -18,6 +18,8 @@ public:
         static void EditorLaunched(int value) noexcept;
         static void Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept;
         static void QuickLayoutSwitched(bool shortcutUsed) noexcept;
+        static void SnapNewWindowIntoZone(IZoneSet* activeSet) noexcept;
+        static void KeyboardSnapWindowToZone(IZoneSet* activeSet) noexcept;
     };
 
     static void SettingsTelemetry(const Settings& settings) noexcept;
@@ -33,7 +35,8 @@ public:
         };
 
         static void KeyUp(WPARAM wparam) noexcept;
-        static void MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept;
+        static void MoveOrResizeStarted(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept;
+        static void MoveOrResizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept;
         static void CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> activeSet, InputMode mode) noexcept;
     };
 };

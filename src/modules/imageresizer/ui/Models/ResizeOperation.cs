@@ -10,6 +10,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using ImageResizer.Extensions;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;
 using Microsoft.VisualBasic.FileIO;
@@ -82,11 +83,22 @@ namespace ImageResizer.Models
                         }
                     }
 
+                    if (_settings.RemoveMetadata && metadata != null)
+                    {
+                        // strip any metadata that doesn't affect rendering
+                        var newMetadata = new BitmapMetadata(metadata.Format);
+
+                        metadata.CopyMetadataPropertyTo(newMetadata, "System.Photo.Orientation");
+                        metadata.CopyMetadataPropertyTo(newMetadata, "System.Image.ColorSpace");
+
+                        metadata = newMetadata;
+                    }
+
                     encoder.Frames.Add(
                         BitmapFrame.Create(
                             Transform(originalFrame),
                             thumbnail: null,
-                            metadata, // TODO: Add an option to strip any metadata that doesn't affect rendering (issue #3)
+                            metadata,
                             colorContexts: null));
                 }
 

@@ -88,7 +88,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
+            _systemTheme = Settings.Properties.FancyzonesSystemTheme.Value;
             EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
+            _windowSwitching = Settings.Properties.FancyzonesWindowSwitching.Value;
+            NextTabHotkey = Settings.Properties.FancyzonesNextTabHotkey.Value;
+            PrevTabHotkey = Settings.Properties.FancyzonesPrevTabHotkey.Value;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -123,10 +127,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
         private bool _makeDraggedWindowTransparent;
+        private bool _systemTheme;
 
         private int _highlightOpacity;
         private string _excludedApps;
         private HotkeySettings _editorHotkey;
+        private bool _windowSwitching;
+        private HotkeySettings _nextTabHotkey;
+        private HotkeySettings _prevTabHotkey;
         private string _zoneInActiveColor;
         private string _zoneBorderColor;
         private string _zoneHighlightColor;
@@ -152,6 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
                     OnPropertyChanged(nameof(SnapHotkeysCategoryEnabled));
                     OnPropertyChanged(nameof(QuickSwitchEnabled));
+                    OnPropertyChanged(nameof(WindowSwitchingCategoryEnabled));
                 }
             }
         }
@@ -169,6 +178,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get
             {
                 return _isEnabled && _quickLayoutSwitch;
+            }
+        }
+
+        public bool WindowSwitchingCategoryEnabled
+        {
+            get
+            {
+                return _isEnabled && _windowSwitching;
             }
         }
 
@@ -505,6 +522,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool SystemTheme
+        {
+            get
+            {
+                return _systemTheme;
+            }
+
+            set
+            {
+                if (value != _systemTheme)
+                {
+                    _systemTheme = value;
+                    Settings.Properties.FancyzonesSystemTheme.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         // For the following setters we use OrdinalIgnoreCase string comparison since
         // we expect value to be a hex code.
         public string ZoneHighlightColor
@@ -604,7 +639,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     if (value == null || value.IsEmpty())
                     {
-                        _editorHotkey = FZConfigProperties.DefaultHotkeyValue;
+                        _editorHotkey = FZConfigProperties.DefaultEditorHotkeyValue;
                     }
                     else
                     {
@@ -612,6 +647,78 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     }
 
                     Settings.Properties.FancyzonesEditorHotkey.Value = _editorHotkey;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool WindowSwitching
+        {
+            get
+            {
+                return _windowSwitching;
+            }
+
+            set
+            {
+                if (value != _windowSwitching)
+                {
+                    _windowSwitching = value;
+
+                    Settings.Properties.FancyzonesWindowSwitching.Value = _windowSwitching;
+                    NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(WindowSwitchingCategoryEnabled));
+                }
+            }
+        }
+
+        public HotkeySettings NextTabHotkey
+        {
+            get
+            {
+                return _nextTabHotkey;
+            }
+
+            set
+            {
+                if (value != _nextTabHotkey)
+                {
+                    if (value == null || value.IsEmpty())
+                    {
+                        _nextTabHotkey = FZConfigProperties.DefaultNextTabHotkeyValue;
+                    }
+                    else
+                    {
+                        _nextTabHotkey = value;
+                    }
+
+                    Settings.Properties.FancyzonesNextTabHotkey.Value = _nextTabHotkey;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings PrevTabHotkey
+        {
+            get
+            {
+                return _prevTabHotkey;
+            }
+
+            set
+            {
+                if (value != _prevTabHotkey)
+                {
+                    if (value == null || value.IsEmpty())
+                    {
+                        _prevTabHotkey = FZConfigProperties.DefaultPrevTabHotkeyValue;
+                    }
+                    else
+                    {
+                        _prevTabHotkey = value;
+                    }
+
+                    Settings.Properties.FancyzonesPrevTabHotkey.Value = _prevTabHotkey;
                     NotifyPropertyChanged();
                 }
             }
