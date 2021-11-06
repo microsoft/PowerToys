@@ -68,7 +68,6 @@
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
-
                                 <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}" Margin="{StaticResource ExpanderSettingMargin}"  />
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
                                 <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseSwitch}" Margin="{StaticResource ExpanderSettingMargin}"  />
@@ -109,6 +108,10 @@
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
+                                <controls:FancyZonesPreviewControl HighlightOpacity="{x:Bind Mode=OneWay, Path=ViewModel.HighlightOpacity}" IsSystemTheme="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme}" CustomHighlightColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=OneWay}"
+                                    CustomBorderColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=OneWay}"
+                                    CustomInActiveColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=OneWay}"
+                                    />
                                 <StackPanel Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}" >
                                     <controls:Setting x:Uid="FancyZones_ZoneHighlightColor" Style="{StaticResource ExpanderContentSettingStyle}">
                                         <controls:Setting.ActionContent>
@@ -119,7 +122,7 @@
 
                                     <controls:Setting x:Uid="FancyZones_InActiveColor" Style="{StaticResource ExpanderContentSettingStyle}">
                                         <controls:Setting.ActionContent>
-                                            <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
+                                            <controls:ColorPickerButton x:Name="InActiveColorButton"  SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
                                         </controls:Setting.ActionContent>
                                     </controls:Setting>
                                     <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
