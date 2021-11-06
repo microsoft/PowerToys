@@ -71,7 +71,7 @@ namespace Microsoft.Plugin.Uri
                         if (!Helper.OpenInShell(BrowserPath))
                         {
                             var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
-                            var message = $"{Properties.Resources.Microsoft_plugin_default_browser_open_failed}: ";
+                            var message = $"{Properties.Resources.Microsoft_plugin_uri_open_failed}: ";
                             Context.API.ShowMsg(title, message);
                             return false;
                         }
