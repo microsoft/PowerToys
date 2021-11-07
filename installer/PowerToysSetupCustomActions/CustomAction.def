@@ -1,6 +1,7 @@
 LIBRARY "PowerToysSetupCustomActions"
 
 EXPORTS
+	ApplyModulesRegistryChangeSetsCA
 	CreateScheduledTaskCA
 	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA
@@ -17,5 +18,6 @@ EXPORTS
 	CertifyVirtualCameraDriverCA
 	InstallVirtualCameraDriverCA
 	InstallEmbeddedMSIXCA
+	UnApplyModulesRegistryChangeSetsCA
 	UninstallVirtualCameraDriverCA
 	UninstallEmbeddedMSIXCA

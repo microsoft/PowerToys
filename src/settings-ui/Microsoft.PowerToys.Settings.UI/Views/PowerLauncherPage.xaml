@@ -39,15 +39,19 @@
                             <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" Style="{StaticResource ExpanderHeaderSettingStyle}">
                                 <controls:Setting.ActionContent>
                                     <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
-                                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                                                              MinWidth="{StaticResource SettingActionControlMinWidth}"/>
                                 </controls:Setting.ActionContent>
                             </controls:Setting>
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
-                                <CheckBox x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}" Margin="{StaticResource ExpanderSettingMargin}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook"
+                                                                 IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCentralizedKeyboardHook}"
+                                                                 Margin="56, 0, 40, 16"/>
                                 <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
-                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}" Margin="{StaticResource ExpanderSettingMargin}" />
+                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
+                                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}"
+                                          Margin="{StaticResource ExpanderSettingMargin}" />
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
@@ -171,7 +175,7 @@
                     </controls:Setting>
                     <muxc:InfoBar x:Uid="Run_AllPluginsDisabled"
                                   Severity="Error"
-                                  IsTabStop="True"
+                                  IsTabStop="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
                                   IsOpen="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
                                   IsClosable="False" />
 
@@ -236,10 +240,9 @@
                                                         <TextBlock x:Name="IncludeInGlobalResultTitle"
                                                                    Margin="0,10,0,0"
                                                                    x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
-                                                        <controls:TextBlockControl x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
-                                                                                   FontSize="{StaticResource SecondaryTextFontSize}" 
-                                                                                   EnabledForeground="{ThemeResource TextFillColorSecondaryBrush}" 
-                                                                                   DisabledForeground="{ThemeResource TextFillColorDisabledBrush}" />
+                                                        <controls:IsEnabledTextBlock x:Uid="PowerLauncher_IncludeInGlobalResultDescription" 
+                                                                                   FontSize="{StaticResource SecondaryTextFontSize}"
+                                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                                     </StackPanel>
                                                 </CheckBox>
                                                

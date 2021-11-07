@@ -15,6 +15,7 @@
         <converters:ImageResizerFitToStringConverter x:Key="ImageResizerFitToStringConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
         <toolkitconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed" />
+        <toolkitconverters:BoolToObjectConverter x:Key="BoolToComboBoxIndexConverter" TrueValue="0" FalseValue="1"/>
     </Page.Resources>
     <controls:SettingsPageControl x:Uid="ImageResizer"
                                     
@@ -44,13 +45,10 @@
                       x:Uid="ImagesSizesListView"
                       ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
                       SelectionMode="None"
-                      ScrollViewer.HorizontalScrollMode="Enabled"
-                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                      ScrollViewer.IsHorizontalRailEnabled="True"
                       ContainerContentChanging="ImagesSizesListView_ContainerContentChanging">
                         <ListView.ItemTemplate>
                         <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
-                            <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                                <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
                                   HorizontalAlignment="Stretch"
                                   Background="{ThemeResource CardBackgroundBrush}"
                                   BorderThickness="{ThemeResource CardBorderThickness}"
@@ -58,12 +56,10 @@
                                   CornerRadius="{ThemeResource ControlCornerRadius}"
                                   Padding="0,0,16,0"
                                   MinHeight="68">
-
-
-                                <Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="56" />
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="52" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                             
                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center" Grid.Column="1" Margin="0,0,16,0">
@@ -263,9 +259,12 @@
                         </controls:Setting.ActionContent>
                     </controls:Setting>
 
-                    <controls:Setting x:Uid="ImageResizer_UseOriginalDate">
+                    <controls:Setting x:Uid="ImageResizer_FileModifiedDate">
                         <controls:Setting.ActionContent>
-                            <ToggleSwitch IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified}" />
+                            <ComboBox SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified, Converter={StaticResource BoolToComboBoxIndexConverter}}" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate"/>
+                                <ComboBoxItem x:Uid="ImageResizer_UseResizeDate"/>
+                            </ComboBox>
                         </controls:Setting.ActionContent>
                     </controls:Setting>
                 </controls:SettingsGroup>

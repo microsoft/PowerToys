@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <optional>
 
 #include <FancyZonesLib/Zone.h>
 
@@ -8,6 +9,7 @@
 namespace ZonedWindowProperties
 {
     const wchar_t PropertyMultipleZoneID[] = L"FancyZones_zones";
+    const wchar_t PropertySortKeyWithinZone[] = L"FancyZones_TabSortKeyWithinZone";
     const wchar_t PropertyRestoreSizeID[] = L"FancyZones_RestoreSize";
     const wchar_t PropertyRestoreOriginID[] = L"FancyZones_RestoreOrigin";
 
@@ -43,4 +45,29 @@ inline void StampWindow(HWND window, Bitmask bitmask) noexcept
     HANDLE rawData;
     memcpy(&rawData, data.data(), sizeof data);
     SetProp(window, ZonedWindowProperties::PropertyMultipleZoneID, rawData);
+}
+
+inline std::optional<size_t> GetTabSortKeyWithinZone(HWND window)
+{
+    auto rawTabSortKeyWithinZone = ::GetPropW(window, ZonedWindowProperties::PropertySortKeyWithinZone);
+    if (rawTabSortKeyWithinZone == NULL)
+    {
+        return std::nullopt;
+    }
+
+    auto tabSortKeyWithinZone = reinterpret_cast<uint64_t>(rawTabSortKeyWithinZone) - 1;
+    return tabSortKeyWithinZone;
+}
+
+inline void SetTabSortKeyWithinZone(HWND window, std::optional<size_t> tabSortKeyWithinZone)
+{
+    if (!tabSortKeyWithinZone.has_value())
+    {
+        ::RemovePropW(window, ZonedWindowProperties::PropertySortKeyWithinZone);
+    }
+    else
+    {
+        auto rawTabSortKeyWithinZone = reinterpret_cast<HANDLE>(tabSortKeyWithinZone.value() + 1);
+        ::SetPropW(window, ZonedWindowProperties::PropertySortKeyWithinZone, rawTabSortKeyWithinZone);
+    }
 }

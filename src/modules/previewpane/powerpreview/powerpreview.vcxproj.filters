@@ -10,19 +10,7 @@
     <ClCompile Include="powerpreview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="registry_wrapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="settings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="trace.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="preview_handler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="thumbnail_provider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -37,22 +25,7 @@
     <ClInclude Include="powerpreview.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="registry_wrapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="registry_wrapper_interface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="settings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="trace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="preview_handler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="thumbnail_provider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="powerpreviewConstants.h" />

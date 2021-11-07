@@ -64,8 +64,9 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * @param   workAreaWindow The m_window of a WorkArea, it's a hidden window representing the
      *                         current monitor desktop work area.
      * @param   indexSet       The set of zone indices within zone layout.
+     * @param   suppressMove   Whether we should just update the records or move window to the zone.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, HWND workAreaWindow, const ZoneIndexSet& indexSet) = 0;
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, HWND workAreaWindow, const ZoneIndexSet& indexSet, bool suppressMove = false) = 0;
     /**
      * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow), based on zone index numbers,
      * not their on-screen position.
@@ -119,6 +120,21 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      */
     IFACEMETHOD_(void, MoveWindowIntoZoneByPoint)
     (HWND window, HWND workAreaWindow, POINT ptClient) = 0;
+    /**
+     * Dismiss window from zone.
+     *
+     * @param   window         Handle of window which should be dismissed from zone.
+     */
+    IFACEMETHOD_(void, DismissWindow)
+    (HWND window) = 0;
+    /**
+     * Cycle through tabs in the zone that the window is in.
+     *
+     * @param   window       Handle of window which is cycled from (the current tab).
+     * @param   reverse      Whether to cycle in reverse order (to the previous tab) or to move to the next tab.
+     */
+    IFACEMETHOD_(void, CycleTabs)
+    (HWND window, bool reverse) = 0;
     /**
      * Calculate zone coordinates within zone layout based on number of zones and spacing.
      *

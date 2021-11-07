@@ -122,15 +122,19 @@
         <CheckBox Margin="12,4,12,0"
                   Content="{x:Static p:Resources.Input_ShrinkOnly}"
                   IsChecked="{Binding Settings.ShrinkOnly}"/>
+            
+        <CheckBox Margin="12,4,12,0"
+                  Content="{x:Static p:Resources.Input_IgnoreOrientation}"
+                  IsChecked="{Binding Settings.IgnoreOrientation}"/>
         <!-- TODO: This option doesn't make much sense when resizing into a directory. We should swap it for an option
                    to overwrite any files in the directory instead (issue #88) -->
         <CheckBox Margin="12,4,12,0"
                   Content="{x:Static p:Resources.Input_Replace}"
                   IsChecked="{Binding Settings.Replace}"/>
-        
+
         <CheckBox Margin="12,4,12,0"
-                  Content="{x:Static p:Resources.Input_IgnoreOrientation}"
-                  IsChecked="{Binding Settings.IgnoreOrientation}"/>
+                  Content="{x:Static p:Resources.Input_RemoveMetadata}"
+                  IsChecked="{Binding Settings.RemoveMetadata}"/>
 
             <TextBlock Grid.Column="0"
                            FontWeight="Bold"

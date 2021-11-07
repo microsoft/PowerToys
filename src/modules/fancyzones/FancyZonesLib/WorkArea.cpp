@@ -117,7 +117,7 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept;
+    MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool suppressMove = false) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
@@ -138,6 +138,8 @@ public:
     HideZoneWindow() noexcept;
     IFACEMETHODIMP_(void)
     UpdateActiveZoneSet() noexcept;
+    IFACEMETHODIMP_(void)
+    CycleTabs(HWND window, bool reverse) noexcept;
     IFACEMETHODIMP_(void)
     ClearSelectedZones() noexcept;
     IFACEMETHODIMP_(void)
@@ -232,6 +234,7 @@ IFACEMETHODIMP WorkArea::MoveSizeEnter(HWND window) noexcept
     m_highlightZone = {};
     m_initialHighlightZone = {};
     ShowZoneWindow();
+    Trace::WorkArea::MoveOrResizeStarted(m_activeZoneSet);
     return S_OK;
 }
 
@@ -297,7 +300,7 @@ IFACEMETHODIMP WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcep
             SaveWindowProcessToZoneIndex(window);
         }
     }
-    Trace::WorkArea::MoveSizeEnd(m_activeZoneSet);
+    Trace::WorkArea::MoveOrResizeEnd(m_activeZoneSet);
 
     HideZoneWindow();
     m_windowMoveSize = nullptr;
@@ -311,11 +314,11 @@ WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
 }
 
 IFACEMETHODIMP_(void)
-WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet) noexcept
+WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool suppressMove) noexcept
 {
     if (m_activeZoneSet)
     {
-        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet);
+        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet, suppressMove);
     }
 }
 
@@ -428,6 +431,15 @@ WorkArea::UpdateActiveZoneSet() noexcept
     {
         m_highlightZone.clear();
         m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
+    }
+}
+
+IFACEMETHODIMP_(void)
+WorkArea::CycleTabs(HWND window, bool reverse) noexcept
+{
+    if (m_activeZoneSet)
+    {
+        m_activeZoneSet->CycleTabs(window, reverse);
     }
 }
 

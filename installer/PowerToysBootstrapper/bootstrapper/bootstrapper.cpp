@@ -165,6 +165,51 @@ std::optional<InstalledVersionInfo> get_installed_powertoys_version()
     };
 }
 
+void ReLaunchElevatedAndExit()
+{
+    std::wstring params;
+    int nCmdArgs = 0;
+    LPWSTR* argList = CommandLineToArgvW(GetCommandLineW(), &nCmdArgs);
+    for (int i = 1; i < nCmdArgs; ++i)
+    {
+        if (std::wstring_view{ argList[i] }.find(L' ') != std::wstring_view::npos)
+        {
+            params += L'"';
+            params += argList[i];
+            params += L'"';
+        }
+        else
+        {
+            params += argList[i];
+        }
+
+        if (i != nCmdArgs - 1)
+        {
+            params += L' ';
+        }
+    }
+
+    const auto processHandle = run_elevated(argList[0], params.c_str());
+    if (!processHandle)
+    {
+        spdlog::error("Couldn't restart elevated: ({})", GetLastError());
+        return;
+    }
+
+    if (WaitForSingleObject(processHandle, 3600000) == WAIT_OBJECT_0)
+    {
+        DWORD exitCode = 0;
+        GetExitCodeProcess(processHandle, &exitCode);
+        std::exit(exitCode);
+    }
+    else
+    {
+        spdlog::error("Elevated setup process timed out after 60m: ({})", GetLastError());
+        TerminateProcess(processHandle, 0);
+        std::exit(1);
+    }
+}
+
 int Bootstrapper(HINSTANCE hInstance)
 {
     winrt::init_apartment();
@@ -299,7 +344,14 @@ int Bootstrapper(HINSTANCE hInstance)
         }
     }
 
-    // Setup MSI UI visibility and restart as elevated if required
+    // Always elevate bootstrapper process since it invokes msiexec multiple times, 
+    // so we can avoid multiple UAC confirmations
+    if (!is_process_elevated())
+    {
+        ReLaunchElevatedAndExit();
+    }
+
+    // Setup MSI UI visibility
     if (!noFullUI)
     {
         MsiSetInternalUI(INSTALLUILEVEL_FULL, nullptr);
@@ -307,58 +359,7 @@ int Bootstrapper(HINSTANCE hInstance)
 
     if (g_Silent)
     {
-        if (is_process_elevated())
-        {
-            MsiSetInternalUI(INSTALLUILEVEL_NONE, nullptr);
-        }
-        else
-        {
-            spdlog::debug("MSI doesn't support silent mode without elevation => restarting elevated");
-            // MSI fails to run in silent mode due to a suppressed UAC w/o elevation,
-            // so we restart ourselves elevated with the same args
-            std::wstring params;
-            int nCmdArgs = 0;
-            LPWSTR* argList = CommandLineToArgvW(GetCommandLineW(), &nCmdArgs);
-            for (int i = 1; i < nCmdArgs; ++i)
-            {
-                if (std::wstring_view{ argList[i] }.find(L' ') != std::wstring_view::npos)
-                {
-                    params += L'"';
-                    params += argList[i];
-                    params += L'"';
-                }
-                else
-                {
-                    params += argList[i];
-                }
-
-                if (i != nCmdArgs - 1)
-                {
-                    params += L' ';
-                }
-            }
-
-            const auto processHandle = run_elevated(argList[0], params.c_str());
-            if (!processHandle)
-            {
-                spdlog::error("Couldn't restart elevated to enable silent mode! ({})", GetLastError());
-                return 1;
-            }
-
-            if (WaitForSingleObject(processHandle, 3600000) == WAIT_OBJECT_0)
-            {
-                DWORD exitCode = 0;
-                GetExitCodeProcess(processHandle, &exitCode);
-                return exitCode;
-            }
-            else
-            {
-                spdlog::error("Elevated setup process timed out after 60m => using basic MSI UI ({})", GetLastError());
-                // Couldn't install using the completely silent mode in an hour, use basic UI.
-                TerminateProcess(processHandle, 0);
-                MsiSetInternalUI(INSTALLUILEVEL_BASIC, nullptr);
-            }
-        }
+        MsiSetInternalUI(INSTALLUILEVEL_NONE, nullptr);
     }
 
     // Try killing PowerToys and prevent future processes launch by acquiring app mutex
