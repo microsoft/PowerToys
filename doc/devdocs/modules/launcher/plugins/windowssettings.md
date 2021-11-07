@@ -87,7 +87,7 @@ Each score will decreased by one when a condition match.
 | x.       | no condition match                                                | Low score    |
 
 ### Remarks
-* For each score condition we check if the property "ShowAsFirstResult" of the setting is true. If yes we use the firstResultScore insted of condition`s score.
+* For each score condition we check if the property "ShowAsFirstResult" of the setting is true. If yes we use the firstResultScore instead of condition`s score.
 
 ## Important for developers
 
