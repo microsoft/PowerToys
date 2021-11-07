@@ -53,7 +53,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                 if (match.Groups.Count > 1)
                 {
-                    return (TypeWorkspace.Codespaces, string.Empty, match.Groups[2].Value);
+                    return (TypeWorkspace.Codespaces, null, match.Groups[2].Value);
                 }
             }
             else if (DevContainerWorkspace.IsMatch(uri))
@@ -62,7 +62,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                 if (match.Groups.Count > 1)
                 {
-                    return (TypeWorkspace.DevContainer, string.Empty, match.Groups[2].Value);
+                    return (TypeWorkspace.DevContainer, null, match.Groups[2].Value);
                 }
             }
 
