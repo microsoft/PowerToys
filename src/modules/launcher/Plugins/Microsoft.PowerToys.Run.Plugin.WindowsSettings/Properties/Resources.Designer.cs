@@ -2500,7 +2500,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Control Panel (Application&apos;s mainpage).
+        ///   Looks up a localized string similar to Control Panel (Application homepage).
         /// </summary>
         internal static string OpenControlPanel {
             get {
@@ -2509,7 +2509,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings (Application&apos;s mainpage).
+        ///   Looks up a localized string similar to Settings (Application homepage).
         /// </summary>
         internal static string OpenSettingsApp {
             get {

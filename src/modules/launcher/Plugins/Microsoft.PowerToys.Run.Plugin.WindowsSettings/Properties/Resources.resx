@@ -1120,11 +1120,11 @@
     <value>On-Screen</value>
   </data>
   <data name="OpenControlPanel" xml:space="preserve">
-    <value>Control Panel (Application's mainpage)</value>
+    <value>Control Panel (Application homepage)</value>
     <comment>'Control Panel' is here the name of the legacy settings app.</comment>
   </data>
   <data name="OpenSettingsApp" xml:space="preserve">
-    <value>Settings (Application's mainpage)</value>
+    <value>Settings (Application homepage)</value>
     <comment>'Settings' is here the name of the modern settings app.</comment>
   </data>
   <data name="Os" xml:space="preserve">
