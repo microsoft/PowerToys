@@ -399,12 +399,6 @@
         "Command": "ms-settings:gaming-xboxnetworking"
     },
     {
-        "Name": "SettingsHomePage",
-        "Areas": [ "AreaHomePage" ],
-        "Type": "AppSettingsApp",
-        "Command": "ms-settings:"
-    },
-    {
         "Name": "AudioAndSpeech",
         "Areas": [ "AreaMixedReality" ],
         "Type": "AppSettingsApp",
@@ -1759,7 +1753,7 @@
         "Name": "EditSystemEnvironmentVariables",
         "Areas": [ "AreaSystemAndSecurity", "AreaSystemPropertiesAdvanced" ],
         "Type": "AppControlPanel",
-        "AltNames": [ "EditEnvironmentVariables", "SystemVariables", "sysdm.cpl" ],
+        "AltNames": [ "EditEnvironmentVariables", "SystemVariables", "EnvVars", "SystemEnvVars", "sysdm.cpl" ],
         "Command": "SystemPropertiesAdvanced.exe",
         "Note": "NoteEditingRequireAdminPrivileges"
     },
@@ -1767,7 +1761,7 @@
         "Name": "EditUserEnvironmentVariables",
         "Areas": [ "AreaSystemAndSecurity", "AreaSystemPropertiesAdvanced" ],
         "Type": "AppControlPanel",
-        "AltNames": [ "UserEnvironmentVariables", "UserVariables", "sysdm.cpl" ],
+      "AltNames": [ "UserEnvironmentVariables", "UserVariables", "EnvVars", "UserEnvVars", "sysdm.cpl" ],
         "Command": "rundll32.exe sysdm.cpl,EditEnvironmentVariables"
     }
 ]}

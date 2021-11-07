@@ -448,15 +448,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Home page.
-        /// </summary>
-        internal static string AreaHomePage {
-            get {
-                return ResourceManager.GetString("AreaHomePage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Mixed reality.
         /// </summary>
         internal static string AreaMixedReality {
@@ -1326,6 +1317,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Environment {
             get {
                 return ResourceManager.GetString("Environment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Env vars.
+        /// </summary>
+        internal static string EnvVars {
+            get {
+                return ResourceManager.GetString("EnvVars", resourceCulture);
             }
         }
         
@@ -2500,7 +2500,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open Control Panel.
+        ///   Looks up a localized string similar to Control Panel (Application&apos;s mainpage).
         /// </summary>
         internal static string OpenControlPanel {
             get {
@@ -2509,7 +2509,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open Settings.
+        ///   Looks up a localized string similar to Settings (Application&apos;s mainpage).
         /// </summary>
         internal static string OpenSettingsApp {
             get {
@@ -3184,15 +3184,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings home page.
-        /// </summary>
-        internal static string SettingsHomePage {
-            get {
-                return ResourceManager.GetString("SettingsHomePage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Set up a kiosk.
         /// </summary>
         internal static string SetUpKiosk {
@@ -3387,6 +3378,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string System {
             get {
                 return ResourceManager.GetString("System", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System env vars.
+        /// </summary>
+        internal static string SystemEnvVars {
+            get {
+                return ResourceManager.GetString("SystemEnvVars", resourceCulture);
             }
         }
         
@@ -3666,6 +3666,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string UserEnvironmentVariables {
             get {
                 return ResourceManager.GetString("UserEnvironmentVariables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User env vars.
+        /// </summary>
+        internal static string UserEnvVars {
+            get {
+                return ResourceManager.GetString("UserEnvVars", resourceCulture);
             }
         }
         

@@ -275,9 +275,6 @@
   <data name="AreaHardwareAndSound" xml:space="preserve">
     <value>Hardware and Sound</value>
   </data>
-  <data name="AreaHomePage" xml:space="preserve">
-    <value>Home page</value>
-  </data>
   <data name="AreaMixedReality" xml:space="preserve">
     <value>Mixed reality</value>
   </data>
@@ -639,6 +636,10 @@
   <data name="Environment" xml:space="preserve">
     <value>Environment</value>
     <comment>Area MixedReality, only available if the Mixed Reality Portal app is installed.</comment>
+  </data>
+  <data name="EnvVars" xml:space="preserve">
+    <value>Env vars</value>
+    <comment>Short english form. Don't translate!</comment>
   </data>
   <data name="Ethernet" xml:space="preserve">
     <value>Ethernet</value>
@@ -1119,12 +1120,12 @@
     <value>On-Screen</value>
   </data>
   <data name="OpenControlPanel" xml:space="preserve">
-    <value>Open Control Panel</value>
-    <comment>'Open' is the verb and 'Control Panel' is here the name of the legacy settings app.</comment>
+    <value>Control Panel (Application's mainpage)</value>
+    <comment>'Control Panel' is here the name of the legacy settings app.</comment>
   </data>
   <data name="OpenSettingsApp" xml:space="preserve">
-    <value>Open Settings</value>
-    <comment>'Open' is the verb and 'Settings' is here the name of the modern settings app.</comment>
+    <value>Settings (Application's mainpage)</value>
+    <comment>'Settings' is here the name of the modern settings app.</comment>
   </data>
   <data name="Os" xml:space="preserve">
     <value>OS</value>
@@ -1408,10 +1409,6 @@
   <data name="SettingsApp" xml:space="preserve">
     <value>Settings app</value>
   </data>
-  <data name="SettingsHomePage" xml:space="preserve">
-    <value>Settings home page</value>
-    <comment>Area Home, Overview-page for all areas of settings </comment>
-  </data>
   <data name="SetUpKiosk" xml:space="preserve">
     <value>Set up a kiosk</value>
     <comment>Area UserAccounts</comment>
@@ -1496,6 +1493,10 @@
   <data name="System" xml:space="preserve">
     <value>System</value>
     <comment>Area Control Panel (legacy settings)</comment>
+  </data>
+  <data name="SystemEnvVars" xml:space="preserve">
+    <value>System env vars</value>
+    <comment>Short english form. Don't translate!</comment>
   </data>
   <data name="SystemPropertiesAndAddNewHardwareWizard" xml:space="preserve">
     <value>System properties and Add New Hardware wizard</value>
@@ -1612,6 +1613,10 @@
   </data>
   <data name="UserEnvironmentVariables" xml:space="preserve">
     <value>User environment variables</value>
+  </data>
+  <data name="UserEnvVars" xml:space="preserve">
+    <value>User env vars</value>
+    <comment>Short english form. Don't translate!</comment>
   </data>
   <data name="UserVariables" xml:space="preserve">
     <value>User variables</value>
