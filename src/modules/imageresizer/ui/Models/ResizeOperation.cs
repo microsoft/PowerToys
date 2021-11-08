@@ -26,6 +26,14 @@ namespace ImageResizer.Models
         private readonly string _destinationDirectory;
         private readonly Settings _settings;
 
+        // Filenames to avoid according to https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#file-and-directory-names
+        private static readonly string[] _avoidFilenames =
+            {
+                "CON", "PRN", "AUX", "NUL",
+                "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+                "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+            };
+
         public ResizeOperation(string file, string destinationDirectory, Settings settings)
         {
             _file = file;
@@ -231,6 +239,12 @@ namespace ImageResizer.Models
                 .Replace('<', '_')
                 .Replace('>', '_')
                 .Replace('|', '_');
+
+            // Avoid creating not recommended filenames
+            if (_avoidFilenames.Contains(fileName.ToUpperInvariant()))
+            {
+                fileName = fileName + "_";
+            }
 
             var path = _fileSystem.Path.Combine(directory, fileName + extension);
             var uniquifier = 1;
