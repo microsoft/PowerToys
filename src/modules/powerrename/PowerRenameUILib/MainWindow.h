@@ -7,7 +7,6 @@
 #include "MainWindow.g.h"
 #include "PatternSnippet.h"
 #include "ExplorerItem.h"
-#include "ExplorerItemTemplateSelector.h"
 
 namespace winrt::PowerRenameUILib::implementation
 {

@@ -8,8 +8,8 @@ namespace PowerRenameUILib
         String Original;
         String Renamed;
         Double Indentation { get; };
+        String ImagePath { get; };
         Int32 Type;
         Boolean Checked;
-        Windows.Foundation.Collections.IObservableVector<ExplorerItem> Children;
     }
 }
