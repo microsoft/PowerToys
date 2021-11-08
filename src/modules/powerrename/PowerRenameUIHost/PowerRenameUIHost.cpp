@@ -64,7 +64,7 @@ AppWindow::AppWindow(HINSTANCE hInstance, std::vector<std::wstring> files) noexc
                     CComPtr<IShellItemArray> shellItemArray;
                     // To test PowerRenameUIHost uncomment this line and update the path to
                     // your local (absolute or relative) path which you want to see in PowerRename
-                    //files.push_back(L"<path>");
+                    files.push_back(L"C:\\Users\\stefa\\Projects\\Xaml-Controls-Gallery");
 
                     if (!files.empty())
                     {
@@ -246,11 +246,6 @@ void AppWindow::PopulateExplorerItems()
     m_prManager->GetVisibleItemCount(&count);
     Logger::debug(L"Number of visible items: {}", count);
 
-    UINT currDepth = 0;
-    std::stack<UINT> parents{};
-    UINT prevId = 0;
-    parents.push(0);
-
     for (UINT i = 0; i < count; ++i)
     {
         CComPtr<IPowerRenameItem> renameItem;
@@ -274,23 +269,8 @@ void AppWindow::PopulateExplorerItems()
             bool isSubFolderContent = false;
             winrt::check_hresult(renameItem->GetIsFolder(&isFolder));
 
-            if (depth > currDepth)
-            {
-                parents.push(prevId);
-                currDepth = depth;
-            }
-            else
-            {
-                while (currDepth > depth)
-                {
-                    parents.pop();
-                    currDepth--;
-                }
-                currDepth = depth;
-            }
             m_mainUserControl.AddExplorerItem(
-                id, originalName, newName == nullptr ? hstring{} : hstring{ newName }, isFolder ? 0 : 1, parents.top(), selected);
-            prevId = id;
+                id, originalName, newName == nullptr ? hstring{} : hstring{ newName }, isFolder ? 0 : 1, depth, selected);
         }
     }
 }

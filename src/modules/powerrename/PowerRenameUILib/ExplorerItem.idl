@@ -2,11 +2,12 @@ namespace PowerRenameUILib
 {
     runtimeclass ExplorerItem : Windows.UI.Xaml.Data.INotifyPropertyChanged
     {
-        ExplorerItem(Int32 id, String original, String renamed, Int32 type, Boolean checked);
+        ExplorerItem(Int32 id, String original, String renamed, Int32 type, UInt32 depth, Boolean checked);
         Int32 Id { get; };
         String IdStr { get; };
         String Original;
         String Renamed;
+        UInt32 Depth { get; };
         Int32 Type;
         Boolean Checked;
         Windows.Foundation.Collections.IObservableVector<ExplorerItem> Children;

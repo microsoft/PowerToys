@@ -163,18 +163,10 @@ namespace winrt::PowerRenameUILib::implementation
         return m_uiUpdatesItem;
     }
 
-    void MainWindow::AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, int32_t parentId, bool checked)
+    void MainWindow::AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked)
     {
-        auto newItem = winrt::make<PowerRenameUILib::implementation::ExplorerItem>(id, original, renamed, type, checked);
-        if (parentId == 0)
-        {
-            m_explorerItems.Append(newItem);
-        }
-        else
-        {
-            auto parent = FindById(parentId);
-            parent.Children().Append(newItem);
-        }
+        auto newItem = winrt::make<PowerRenameUILib::implementation::ExplorerItem>(id, original, renamed, type, depth, checked);
+        m_explorerItems.Append(newItem);
     }
 
     void MainWindow::UpdateExplorerItem(int32_t id, hstring const& newName)
@@ -208,42 +200,15 @@ namespace winrt::PowerRenameUILib::implementation
 
     PowerRenameUILib::ExplorerItem MainWindow::FindById(int32_t id)
     {
-        auto fakeRoot = winrt::make<PowerRenameUILib::implementation::ExplorerItem>(0, L"Fake", L"", 0, false);
-        fakeRoot.Children(m_explorerItems);
-        return FindById(fakeRoot, id);
+        auto it = std::find_if(m_explorerItems.begin(), m_explorerItems.end(), [id](const auto& item) { return item.Id() == id; });
+        return it != m_explorerItems.end() ? *it : NULL;
     }
 
-    PowerRenameUILib::ExplorerItem MainWindow::FindById(PowerRenameUILib::ExplorerItem& root, int32_t id)
+    void MainWindow::ToggleAll(bool checked)
     {
-        if (root.Id() == id)
-            return root;
-
-        if (root.Type() == static_cast<UINT>(ExplorerItem::ExplorerItemType::Folder))
+        for (auto item : m_explorerItems)
         {
-            for (auto c : root.Children())
-            {
-                auto result = FindById(c, id);
-                if (result != NULL)
-                    return result;
-            }
-        }
-
-        return NULL;
-    }
-
-    void MainWindow::ToggleAll(PowerRenameUILib::ExplorerItem node, bool checked)
-    {
-        if (node == NULL)
-            return;
-
-        node.Checked(checked);
-
-        if (node.Type() == static_cast<UINT>(ExplorerItem::ExplorerItemType::Folder))
-        {
-            for (auto c : node.Children())
-            {
-                ToggleAll(c, checked);
-            }
+            item.Checked(checked);
         }
     }
 
@@ -263,9 +228,7 @@ namespace winrt::PowerRenameUILib::implementation
     {
         if (checkBox_selectAll().IsChecked().GetBoolean() != m_allSelected)
         {
-            auto fakeRoot = winrt::make<PowerRenameUILib::implementation::ExplorerItem>(0, L"Fake", L"", 0, false);
-            fakeRoot.Children(m_explorerItems);
-            ToggleAll(fakeRoot, checkBox_selectAll().IsChecked().GetBoolean());
+            ToggleAll(checkBox_selectAll().IsChecked().GetBoolean());
             m_uiUpdatesItem.ToggleAll();
             m_allSelected = !m_allSelected;
         }

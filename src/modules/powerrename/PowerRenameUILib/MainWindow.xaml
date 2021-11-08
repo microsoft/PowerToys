@@ -3,53 +3,41 @@
     <UserControl.Resources>
 
         <local:ExplorerItemTemplateSelector x:Key="ExplorerItemTemplateSelector" FolderTemplate="{StaticResource FolderTemplate}" FileTemplate="{StaticResource FileTemplate}" />
-        <local:ExplorerItemTemplateSelector x:Key="RenamedExplorerItemTemplateSelector" FolderTemplate="{StaticResource RenamedFolderTemplate}" FileTemplate="{StaticResource RenamedFileTemplate}" />
+        <!--<local:ExplorerItemTemplateSelector x:Key="RenamedExplorerItemTemplateSelector" FolderTemplate="{StaticResource RenamedFolderTemplate}" FileTemplate="{StaticResource RenamedFileTemplate}" />-->
 
         <DataTemplate x:Key="FileTemplate" x:DataType="local:ExplorerItem">
             <Grid Height="24" Margin="0,4,0,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="36" />
-                    <ColumnDefinition Width="36" />
-                    <ColumnDefinition Width="300" />
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <CheckBox TabIndex="0" Grid.Column="0" XYFocusKeyboardNavigation="Enabled" Checked="Checked_ids" IsTabStop="True" Unchecked="Checked_ids" Content="" Name="{x:Bind IdStr}" AutomationProperties.Name="{x:Bind Original}" AutomationProperties.HelpText="{x:Bind Renamed}" IsChecked="{x:Bind Checked, Mode=TwoWay}" />
-                <Image Width="16" Source="ms-appx:///Assets/file.png" HorizontalAlignment="Left" Grid.Column="1" />
-
-                <TextBlock Text="{x:Bind Original, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" FontSize="12" Grid.Column="2" />
+                <StackPanel Orientation="Horizontal" Grid.Column="0">
+                    <CheckBox TabIndex="0" XYFocusKeyboardNavigation="Enabled" Checked="Checked_ids" IsTabStop="True" Unchecked="Checked_ids" Content="" Name="{x:Bind IdStr}" AutomationProperties.Name="{x:Bind Original}" AutomationProperties.HelpText="{x:Bind Renamed}" IsChecked="{x:Bind Checked, Mode=TwoWay}" />
+                    <Image Width="16" Source="ms-appx:///Assets/file.png" HorizontalAlignment="Left" />
+                    <TextBlock Text="{x:Bind Original, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" FontSize="12" />
+                </StackPanel>
+                <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" Grid.Column="1" FontWeight="Bold" VerticalAlignment="Center" FontSize="14" />
             </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="FolderTemplate" x:DataType="local:ExplorerItem">
             <Grid Margin="0,4,0,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="36" />
-                    <ColumnDefinition Width="36" />
-                    <ColumnDefinition Width="300" />
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="24" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
 
-                <CheckBox TabIndex="0" IsTabStop="True" XYFocusKeyboardNavigation="Enabled" Grid.Row="0" Grid.Column="0" Checked="Checked_ids" Unchecked="Checked_ids" Content="" Name="{x:Bind IdStr}" AutomationProperties.Name="{x:Bind Original}" AutomationProperties.HelpText="{x:Bind Renamed}" IsChecked="{x:Bind Checked, Mode=TwoWay}" />
-                <Image Width="16" Source="ms-appx:///Assets/folder.png" HorizontalAlignment="Left" Grid.Column="1" />
-
-                <TextBlock Text="{x:Bind Original, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" FontSize="12" Grid.Column="2" />
-
-                <ListView Grid.ColumnSpan="3" IsTabStop="false" XYFocusKeyboardNavigation="Enabled" SelectionMode="None" IsItemClickEnabled="False" ItemsSource="{x:Bind Children}" Grid.Row="1" ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="IsTabStop" Value="False" />
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                </ListView>
+                <StackPanel Orientation="Horizontal" Grid.Column="0">
+                    <CheckBox TabIndex="0" IsTabStop="True" XYFocusKeyboardNavigation="Enabled" Grid.Row="0" Grid.Column="0" Checked="Checked_ids" Unchecked="Checked_ids" Content="" Name="{x:Bind IdStr}" AutomationProperties.Name="{x:Bind Original}" AutomationProperties.HelpText="{x:Bind Renamed}" IsChecked="{x:Bind Checked, Mode=TwoWay}" />
+                    <Image Width="16" Source="ms-appx:///Assets/folder.png" HorizontalAlignment="Left" Grid.Column="1" />
+                    <TextBlock Text="{x:Bind Original, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" FontSize="12" Grid.Column="2" />
+                </StackPanel>
+                <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" Grid.Column="1" FontWeight="Bold" VerticalAlignment="Center" FontSize="14" />
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="RenamedFileTemplate" x:DataType="local:ExplorerItem">
+        <!--<DataTemplate x:Key="RenamedFileTemplate" x:DataType="local:ExplorerItem">
             <Grid Height="24" Margin="0,4,0,0">
                 <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="14" />
             </Grid>
@@ -69,7 +57,7 @@
                     </ListView.ItemContainerStyle>
                 </ListView>
             </Grid>
-        </DataTemplate>
+        </DataTemplate>-->
     </UserControl.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="20">
@@ -112,34 +100,32 @@
             </Button>
 
             <Rectangle Height="1" Grid.ColumnSpan="5" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
-            <ScrollViewer Grid.ColumnSpan="6" HorizontalScrollMode="Enabled" Grid.Row="1">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" MinWidth="286" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <ListView IsTabStop="false" SelectionMode="None" XYFocusKeyboardNavigation="Enabled" IsItemClickEnabled="False" ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}" Margin="4,0,0,0" ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="IsTabStop" Value="False" />
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                    </ListView>
-                    <!--<controls:ItemsRepeater ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
-                                            Margin="16,0,0,0"
-                                            ItemTemplate="{StaticResource ExplorerItemTemplateSelector}" />-->
-                    <ListView Grid.Column="1" IsTabStop="false" SelectionMode="None" IsItemClickEnabled="False" ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}" ItemTemplateSelector="{StaticResource RenamedExplorerItemTemplateSelector}">
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="IsTabStop" Value="False" />
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                    </ListView>
-                    <!--<controls:ItemsRepeater ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
-                                            Grid.Column="1"
-                                            ItemTemplate="{StaticResource RenamedExplorerItemTemplateSelector}" />-->
-                </Grid>
-            </ScrollViewer>
+            <Grid Grid.ColumnSpan="6" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" MinWidth="286" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ListView IsTabStop="false" SelectionMode="None" XYFocusKeyboardNavigation="Enabled" IsItemClickEnabled="False" ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}" Margin="4,0,0,0" ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="IsTabStop" Value="False" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
+                <!--<controls:ItemsRepeater ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
+                                        Margin="16,0,0,0"
+                                        ItemTemplate="{StaticResource ExplorerItemTemplateSelector}" />-->
+                <!--<ListView Grid.Column="1" IsTabStop="false" SelectionMode="None" IsItemClickEnabled="False" ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}" ItemTemplateSelector="{StaticResource RenamedExplorerItemTemplateSelector}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="IsTabStop" Value="False" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>-->
+                <!--<controls:ItemsRepeater ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
+                                        Grid.Column="1"
+                                        ItemTemplate="{StaticResource RenamedExplorerItemTemplateSelector}" />-->
+            </Grid>
         </Grid>
 
         <Grid Grid.Column="0" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
