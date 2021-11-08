@@ -13,9 +13,23 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal" Grid.Column="0">
-                    <CheckBox TabIndex="0" XYFocusKeyboardNavigation="Enabled" Checked="Checked_ids" IsTabStop="True" Unchecked="Checked_ids" Content="" Name="{x:Bind IdStr}" AutomationProperties.Name="{x:Bind Original}" AutomationProperties.HelpText="{x:Bind Renamed}" IsChecked="{x:Bind Checked, Mode=TwoWay}" />
+                    <CheckBox TabIndex="0"
+                              MinWidth="36"
+                              XYFocusKeyboardNavigation="Enabled"
+                              Checked="Checked_ids"
+                              IsTabStop="True"
+                              Unchecked="Checked_ids"
+                              Content=""
+                              Name="{x:Bind IdStr}"
+                              AutomationProperties.Name="{x:Bind Original}"
+                              AutomationProperties.HelpText="{x:Bind Renamed}"
+                              IsChecked="{x:Bind Checked, Mode=TwoWay}" />
                     <Image Width="16" Source="ms-appx:///Assets/file.png" HorizontalAlignment="Left" />
-                    <TextBlock Text="{x:Bind Original, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" FontSize="12" />
+                    <TextBlock Margin="20,0,0,0"
+                               Text="{x:Bind Original, Mode=OneWay}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               FontSize="12" />
                 </StackPanel>
                 <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" Grid.Column="1" FontWeight="Bold" VerticalAlignment="Center" FontSize="14" />
             </Grid>
@@ -29,9 +43,21 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal" Grid.Column="0">
-                    <CheckBox TabIndex="0" IsTabStop="True" XYFocusKeyboardNavigation="Enabled" Grid.Row="0" Grid.Column="0" Checked="Checked_ids" Unchecked="Checked_ids" Content="" Name="{x:Bind IdStr}" AutomationProperties.Name="{x:Bind Original}" AutomationProperties.HelpText="{x:Bind Renamed}" IsChecked="{x:Bind Checked, Mode=TwoWay}" />
+                    <CheckBox TabIndex="0"
+                              IsTabStop="True"
+                              XYFocusKeyboardNavigation="Enabled"
+                              Grid.Row="0"
+                              MinWidth="36"
+                              Grid.Column="0"
+                              Checked="Checked_ids"
+                              Unchecked="Checked_ids"
+                              Content=""
+                              Name="{x:Bind IdStr}"
+                              AutomationProperties.Name="{x:Bind Original}"
+                              AutomationProperties.HelpText="{x:Bind Renamed}"
+                              IsChecked="{x:Bind Checked, Mode=TwoWay}" />
                     <Image Width="16" Source="ms-appx:///Assets/folder.png" HorizontalAlignment="Left" Grid.Column="1" />
-                    <TextBlock Text="{x:Bind Original, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" FontSize="12" Grid.Column="2" />
+                    <TextBlock Text="{x:Bind Original, Mode=OneWay}" Margin="20,0,0,0"  Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" FontSize="12" Grid.Column="2" />
                 </StackPanel>
                 <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" Grid.Column="1" FontWeight="Bold" VerticalAlignment="Center" FontSize="14" />
             </Grid>
@@ -77,20 +103,20 @@
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="36" />
-                <ColumnDefinition Width="48" />
-                <ColumnDefinition Width="Auto" MinWidth="324" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="48" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <CheckBox x:Name="checkBox_selectAll" IsChecked="True" Content="" x:Uid="SelectAllCheckBox" Margin="16,0,0,0" Checked="SelectAll" Unchecked="SelectAll" />
-            <Image Width="16" Grid.Column="1" Source="ms-appx:///Assets/file.png" HorizontalAlignment="Center" />
+            <StackPanel Orientation="Horizontal">
+                <CheckBox x:Name="checkBox_selectAll" IsChecked="True" MinWidth="36" Content="" x:Uid="SelectAllCheckBox" Margin="16,0,0,0" Checked="SelectAll" Unchecked="SelectAll" />
+                <Image Width="16" Margin="0,0,0,0" Grid.Column="1" Source="ms-appx:///Assets/file.png" HorizontalAlignment="Center" />
 
-            <TextBlock x:Uid="TxtBlock_Original" Grid.Column="2" FontWeight="Medium" Margin="2,-2,0,0" VerticalAlignment="Center" />
-            <AppBarSeparator Grid.Column="3" Margin="-6,4,0,4" HorizontalAlignment="Left" />
-            <TextBlock x:Uid="TxtBlock_Renamed" FontWeight="Medium" Grid.Column="3" Margin="4,-2,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" />
-            <Button Content="&#xE16E;" Background="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Height="32" x:Uid="FilterButton" Grid.Column="4" BorderThickness="0" HorizontalAlignment="Right" Margin="0,0,8,0">
+            <TextBlock x:Uid="TxtBlock_Original" Grid.Column="2" FontWeight="Medium" Margin="18,-2,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+            <AppBarSeparator Margin="-6,4,0,4" HorizontalAlignment="Right" />
+            
+                <TextBlock x:Uid="TxtBlock_Renamed" FontWeight="Medium" Grid.Column="1" Margin="4,-2,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <Button Content="&#xE16E;" Background="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Height="32" x:Uid="FilterButton" Grid.Column="1" BorderThickness="0" HorizontalAlignment="Right" Margin="0,0,8,0">
                 <Button.Flyout>
                     <MenuBarItemFlyout Placement="Bottom">
                         <controls:RadioMenuFlyoutItem x:Name="button_showAll" Click="ShowAll" x:Uid="ShowAll" IsChecked="True" GroupName="Filter" />
@@ -100,15 +126,19 @@
             </Button>
 
             <Rectangle Height="1" Grid.ColumnSpan="5" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
-            <Grid Grid.ColumnSpan="6" Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" MinWidth="286" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <ListView IsTabStop="false" SelectionMode="None" XYFocusKeyboardNavigation="Enabled" IsItemClickEnabled="False" ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}" Margin="4,0,0,0" ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
+            <ListView IsTabStop="false"
+                          SelectionMode="None"
+                          XYFocusKeyboardNavigation="Enabled"
+                          IsItemClickEnabled="False"
+                          Grid.ColumnSpan="6" 
+                          ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
+                          Margin="4,0,0,0"
+                          Grid.Row="1"
+                          ItemTemplateSelector="{StaticResource ExplorerItemTemplateSelector}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="IsTabStop" Value="False" />
+                            <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
                         </Style>
                     </ListView.ItemContainerStyle>
                 </ListView>
@@ -125,7 +155,7 @@
                 <!--<controls:ItemsRepeater ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
                                         Grid.Column="1"
                                         ItemTemplate="{StaticResource RenamedExplorerItemTemplateSelector}" />-->
-            </Grid>
+ 
         </Grid>
 
         <Grid Grid.Column="0" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
