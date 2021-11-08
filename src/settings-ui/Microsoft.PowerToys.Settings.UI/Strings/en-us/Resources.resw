@@ -125,7 +125,7 @@
     <value>Enable Video Conference Mute</value>
   </data>
   <data name="VideoConference.ModuleDescription" xml:space="preserve">
-    <value>Video Conference Mute is a quick and easy way to do an global "mute" of both your microphone and webcam. Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
+    <value>Video Conference Mute is a quick and easy way to do a global "mute" of both your microphone and webcam. Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
   </data>
   <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
     <value>Mute camera &amp; microphone</value>
