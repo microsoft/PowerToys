@@ -31,12 +31,14 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="call_tracer.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="logger_settings.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="call_tracer.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="logger_settings.cpp" />
     <ClCompile Include="pch.cpp">

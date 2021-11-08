@@ -4,6 +4,7 @@
 #include <common/display/dpi_aware.h>
 #include <common/interop/shared_constants.h>
 #include <common/logger/logger.h>
+#include <common/logger/call_tracer.h>
 #include <common/utils/EventWaiter.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
@@ -25,7 +26,6 @@
 #include "VirtualDesktop.h"
 #include "MonitorWorkAreaHandler.h"
 #include "util.h"
-#include "CallTracer.h"
 
 #include <FancyZonesLib/SecondaryMouseButtonsHook.h>
 #include <winrt/Windows.UI.ViewManagement.h>

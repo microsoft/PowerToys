@@ -5,13 +5,22 @@
 #include "PowerRenameUIHost.h"
 #include <settings.h>
 #include <trace.h>
+
+#include <exception>
 #include <string>
 #include <sstream>
 #include <vector>
+
+#include <common/logger/call_tracer.h>
+#include <common/logger/logger.h>
+#include <common/utils/logger_helper.h>
 #include <common/utils/process_path.h>
 
 #define MAX_LOADSTRING 100
 
+// Non-localizable
+const std::wstring moduleName = L"PowerRename";
+const std::wstring internalPath = L"";
 const wchar_t c_WindowClass[] = L"PowerRename";
 HINSTANCE g_hostHInst;
 
@@ -19,6 +28,8 @@ int AppWindow::Show(HINSTANCE hInstance, std::vector<std::wstring> files)
 {
     auto window = AppWindow(hInstance, files);
     window.CreateAndShowWindow();
+    Logger::debug(L"PowerRename UI created. Starting the message loop.");
+
     return window.MessageLoop(window.m_accelerators.get());
 }
 
@@ -40,38 +51,54 @@ LRESULT AppWindow::MessageHandler(UINT message, WPARAM wParam, LPARAM lParam) no
 AppWindow::AppWindow(HINSTANCE hInstance, std::vector<std::wstring> files) noexcept :
     m_instance{ hInstance }, m_managerEvents{ this }
 {
-    HRESULT hr = CPowerRenameManager::s_CreateInstance(&m_prManager);
-    // Create the factory for our items
-    CComPtr<IPowerRenameItemFactory> prItemFactory;
-    hr = CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&prItemFactory));
-    hr = m_prManager->PutRenameItemFactory(prItemFactory);
-    hr = m_prManager->Advise(&m_managerEvents, &m_cookie);
-
-    if (SUCCEEDED(hr))
+    if (SUCCEEDED(CPowerRenameManager::s_CreateInstance(&m_prManager)))
     {
-        CComPtr<IShellItemArray> shellItemArray;
-        // To test PowerRenameUIHost uncomment this line and update the path to
-        // your local (absolute or relative) path which you want to see in PowerRename
-        // files.push_back(L"path");
-
-        if (!files.empty())
+        // Create the factory for our items
+        CComPtr<IPowerRenameItemFactory> prItemFactory;
+        if (SUCCEEDED(CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&prItemFactory))))
         {
-            hr = CreateShellItemArrayFromPaths(files, &shellItemArray);
-            if (SUCCEEDED(hr))
+            if(SUCCEEDED(m_prManager->PutRenameItemFactory(prItemFactory)))
             {
-                CComPtr<IEnumShellItems> enumShellItems;
-                hr = shellItemArray->EnumItems(&enumShellItems);
-                if (SUCCEEDED(hr))
+                if (SUCCEEDED(m_prManager->Advise(&m_managerEvents, &m_cookie)))
                 {
-                    EnumerateShellItems(enumShellItems);
+                    CComPtr<IShellItemArray> shellItemArray;
+                    // To test PowerRenameUIHost uncomment this line and update the path to
+                    // your local (absolute or relative) path which you want to see in PowerRename
+                    //files.push_back(L"<path>");
+
+                    if (!files.empty())
+                    {
+                        if (SUCCEEDED(CreateShellItemArrayFromPaths(files, &shellItemArray)))
+                        {
+                            CComPtr<IEnumShellItems> enumShellItems;
+                            if (SUCCEEDED(shellItemArray->EnumItems(&enumShellItems)))
+                            {
+                                EnumerateShellItems(enumShellItems);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Logger::warn(L"No items selected to be renamed.");
+                    }
                 }
             }
         }
+        else
+        {
+            Logger::error(L"Error creating PowerRenameItemFactory");
+        }
+    }
+    else
+    {
+        Logger::error(L"Error creating PowerRenameManager");
     }
 }
 
 void AppWindow::CreateAndShowWindow()
 {
+    _TRACER_;
+
     m_accelerators.reset(LoadAcceleratorsW(m_instance, MAKEINTRESOURCE(IDC_POWERRENAMEUIHOST)));
 
     WNDCLASSEXW wcex = { sizeof(wcex) };
@@ -99,12 +126,21 @@ void AppWindow::CreateAndShowWindow()
 
 bool AppWindow::OnCreate(HWND, LPCREATESTRUCT) noexcept
 {
+    _TRACER_;
+
     m_mainUserControl = winrt::PowerRenameUILib::MainWindow();
     m_xamlIsland = CreateDesktopWindowsXamlSource(WS_TABSTOP, m_mainUserControl);
 
-    PopulateExplorerItems();
-    SetHandlers();
-    ReadSettings();
+    try
+    {
+        PopulateExplorerItems();
+        SetHandlers();
+        ReadSettings();
+    }
+    catch (std::exception e)
+    {
+        Logger::error("Exception thrown during explorer items population: {}", std::string{ e.what() });
+    }
 
     m_mainUserControl.UIUpdatesItem().ButtonRenameEnabled(false);
     InitAutoComplete();
@@ -143,11 +179,15 @@ void AppWindow::OnCommand(HWND, int id, HWND hwndControl, UINT codeNotify) noexc
 
 void AppWindow::OnDestroy(HWND hwnd) noexcept
 {
+    _TRACER_;
+
     base_type::OnDestroy(hwnd);
 }
 
 void AppWindow::OnResize(HWND, UINT state, int cx, int cy) noexcept
 {
+    _TRACER_;
+
     SetWindowPos(m_xamlIsland, NULL, 0, 0, cx, cy, SWP_SHOWWINDOW);
 }
 
@@ -155,6 +195,8 @@ HRESULT AppWindow::CreateShellItemArrayFromPaths(
     std::vector<std::wstring> files,
     IShellItemArray** shellItemArray)
 {
+    _TRACER_;
+
     *shellItemArray = nullptr;
     PIDLIST_ABSOLUTE* itemList = nullptr;
     itemList = new (std::nothrow) PIDLIST_ABSOLUTE[files.size()];
@@ -174,14 +216,21 @@ HRESULT AppWindow::CreateShellItemArrayFromPaths(
     if (SUCCEEDED(hr) && itemsCnt > 0)
     {
         hr = SHCreateShellItemArrayFromIDLists(itemsCnt, const_cast<LPCITEMIDLIST*>(itemList), shellItemArray);
-
-        for (UINT i = 0; i < itemsCnt; i++)
+        if (SUCCEEDED(hr))
         {
-            CoTaskMemFree(itemList[i]);
+            for (UINT i = 0; i < itemsCnt; i++)
+            {
+                CoTaskMemFree(itemList[i]);
+            }
+        }
+        else
+        {
+            Logger::error(L"Creating ShellItemArray from path list failed.");
         }
     }
     else
     {
+        Logger::error(L"Parsing path list display names failed.");
         hr = E_FAIL;
     }
 
@@ -191,8 +240,11 @@ HRESULT AppWindow::CreateShellItemArrayFromPaths(
 
 void AppWindow::PopulateExplorerItems()
 {
+    _TRACER_;
+
     UINT count = 0;
     m_prManager->GetVisibleItemCount(&count);
+    Logger::debug(L"Number of visible items: {}", count);
 
     UINT currDepth = 0;
     std::stack<UINT> parents{};
@@ -245,6 +297,8 @@ void AppWindow::PopulateExplorerItems()
 
 HRESULT AppWindow::InitAutoComplete()
 {
+    _TRACER_;
+
     HRESULT hr = S_OK;
     if (CSettingsInstance().GetMRUEnabled())
     {
@@ -281,6 +335,8 @@ HRESULT AppWindow::InitAutoComplete()
 
 HRESULT AppWindow::EnumerateShellItems(_In_ IEnumShellItems* enumShellItems)
 {
+    _TRACER_;
+
     HRESULT hr = S_OK;
     // Enumerate the data object and populate the manager
     if (m_prManager)
@@ -303,6 +359,9 @@ HRESULT AppWindow::EnumerateShellItems(_In_ IEnumShellItems* enumShellItems)
 
 void AppWindow::SearchReplaceChanged(bool forceRenaming)
 {
+    _TRACER_;
+
+    Logger::debug(L"Forced renaming - {}", forceRenaming);
     // Pass updated search and replace terms to the IPowerRenameRegEx handler
     CComPtr<IPowerRenameRegEx> prRegEx;
     if (m_prManager && SUCCEEDED(m_prManager->GetRenameRegEx(&prRegEx)))
@@ -359,6 +418,8 @@ void AppWindow::ValidateFlags(PowerRenameFlags flag)
 
 void AppWindow::UpdateFlag(PowerRenameFlags flag, UpdateFlagCommand command)
 {
+    _TRACER_;
+
     DWORD flags{};
     m_prManager->GetFlags(&flags);
 
@@ -371,6 +432,8 @@ void AppWindow::UpdateFlag(PowerRenameFlags flag, UpdateFlagCommand command)
         flags &= ~flag;
     }
 
+    Logger::debug(L"Flag {} " + std::wstring{ command == UpdateFlagCommand::Set ? L"set" : L"reset" }, flag);
+
     // Ensure we update flags
     if (m_prManager)
     {
@@ -380,6 +443,8 @@ void AppWindow::UpdateFlag(PowerRenameFlags flag, UpdateFlagCommand command)
 
 void AppWindow::SetHandlers()
 {
+    _TRACER_;
+
     m_mainUserControl.UIUpdatesItem().PropertyChanged([&](winrt::Windows::Foundation::IInspectable const& sender, Data::PropertyChangedEventArgs const& e) {
         std::wstring property{ e.PropertyName() };
         if (property == L"ShowAll")
@@ -538,14 +603,21 @@ void AppWindow::SetHandlers()
 
 void AppWindow::ToggleItem(int32_t id, bool checked)
 {
+    _TRACER_;
+    Logger::debug(L"Toggling item with id = {}", id);
     CComPtr<IPowerRenameItem> spItem;
-    m_prManager->GetItemById(id, &spItem);
-    spItem->PutSelected(checked);
+
+    if (SUCCEEDED(m_prManager->GetItemById(id, &spItem)))
+    {
+        spItem->PutSelected(checked);
+    }
     UpdateCounts();
 }
 
 void AppWindow::ToggleAll()
 {
+    _TRACER_;
+
     UINT itemCount = 0;
     m_prManager->GetItemCount(&itemCount);
     bool selected = m_mainUserControl.CheckBoxSelectAll().IsChecked().GetBoolean();
@@ -562,12 +634,16 @@ void AppWindow::ToggleAll()
 
 void AppWindow::SwitchView()
 {
+    _TRACER_;
+
     m_prManager->SwitchFilter(0);
     PopulateExplorerItems();
 }
 
 void AppWindow::Rename(bool closeWindow)
 {
+    _TRACER_;
+
     if (m_prManager)
     {
         m_prManager->Rename(m_window, closeWindow);
@@ -581,10 +657,15 @@ void AppWindow::Rename(bool closeWindow)
 
 HRESULT AppWindow::ReadSettings()
 {
+    _TRACER_;
+
+    bool persistState{ CSettingsInstance().GetPersistState() };
+    Logger::debug(L"ReadSettings with persistState = {}", persistState);
+
     // Check if we should read flags from settings
     // or the defaults from the manager.
     DWORD flags = 0;
-    if (CSettingsInstance().GetPersistState())
+    if (persistState)
     {
         flags = CSettingsInstance().GetFlags();
 
@@ -604,6 +685,8 @@ HRESULT AppWindow::ReadSettings()
 
 HRESULT AppWindow::WriteSettings()
 {
+    _TRACER_;
+
     // Check if we should store our settings
     if (CSettingsInstance().GetPersistState())
     {
@@ -835,6 +918,8 @@ HRESULT AppWindow::OnRegExCanceled(_In_ DWORD threadId)
 
 HRESULT AppWindow::OnRegExCompleted(_In_ DWORD threadId)
 {
+    _TRACER_;
+
     if (m_flagValidationInProgress)
     {
         m_flagValidationInProgress = false;
@@ -860,6 +945,9 @@ HRESULT AppWindow::OnRenameStarted()
 
 HRESULT AppWindow::OnRenameCompleted(bool closeUIWindowAfterRenaming)
 {
+    _TRACER_;
+
+    Logger::debug(L"Renaming completed. Close UI window - {}", closeUIWindowAfterRenaming);
     if (closeUIWindowAfterRenaming)
     {
         // Close the window
@@ -878,11 +966,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                       _In_ LPWSTR lpCmdLine,
                       _In_ int nCmdShow)
 {
+    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::powerRenameLoggerName);
+
 #define BUFSIZE 4096 * 4
 
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     if (hStdin == INVALID_HANDLE_VALUE)
+    {
+        Logger::error(L"Invalid input handle.");
         ExitProcess(1);
+    }
+
     BOOL bSuccess;
     WCHAR chBuf[BUFSIZE];
     DWORD dwRead;
@@ -909,10 +1003,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             break;
     }
 
-    g_hostHInst = hInstance;
-    winrt::init_apartment(winrt::apartment_type::single_threaded);
+    Logger::debug(L"Starting PowerRename with {} files selected", files.size());
 
-    winrt::PowerRenameUILib::App app;
-    const auto result = AppWindow::Show(hInstance, files);
-    app.Close();
+    g_hostHInst = hInstance;
+    try
+    {
+        winrt::init_apartment(winrt::apartment_type::single_threaded);
+
+        winrt::PowerRenameUILib::App app;
+        const auto result = AppWindow::Show(hInstance, files);
+        app.Close();
+    }
+    catch (std::exception e)
+    {
+        Logger::error("Exception thrown during PowerRename UI initialization: {}", std::string{ e.what() });
+    }
 }

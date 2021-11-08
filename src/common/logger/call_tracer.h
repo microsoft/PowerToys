@@ -1,6 +1,8 @@
 #pragma once
 
-#include "common/logger/logger.h"
+#include <string>
+
+#include "logger.h"
 
 #define _TRACER_ CallTracer callTracer(__FUNCTION__)
 
