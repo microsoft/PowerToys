@@ -5,7 +5,7 @@
 namespace winrt::PowerRenameUILib::implementation
 {
     ExplorerItem::ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked) :
-        m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_depth{ depth }, m_checked{ checked }
+        m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_indentation{ depth * 20 }, m_checked{ checked }
     {
         if (m_type == static_cast<UINT>(ExplorerItemType::Folder))
         {
@@ -51,8 +51,8 @@ namespace winrt::PowerRenameUILib::implementation
         }
     }
 
-    uint32_t ExplorerItem::Depth() {
-        return m_depth;
+    double ExplorerItem::Indentation() {
+        return m_indentation;
     }
 
     int32_t ExplorerItem::Type()

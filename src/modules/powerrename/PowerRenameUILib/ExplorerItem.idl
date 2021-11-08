@@ -7,7 +7,7 @@ namespace PowerRenameUILib
         String IdStr { get; };
         String Original;
         String Renamed;
-        UInt32 Depth { get; };
+        Double Indentation { get; };
         Int32 Type;
         Boolean Checked;
         Windows.Foundation.Collections.IObservableVector<ExplorerItem> Children;

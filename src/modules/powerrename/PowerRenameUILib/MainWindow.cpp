@@ -206,10 +206,7 @@ namespace winrt::PowerRenameUILib::implementation
 
     void MainWindow::ToggleAll(bool checked)
     {
-        for (auto item : m_explorerItems)
-        {
-            item.Checked(checked);
-        }
+        std::for_each(m_explorerItems.begin(), m_explorerItems.end(), [checked](auto item) { item.Checked(checked); });
     }
 
     void MainWindow::Checked_ids(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const&)
@@ -217,7 +214,7 @@ namespace winrt::PowerRenameUILib::implementation
         auto checkbox = sender.as<Windows::UI::Xaml::Controls::CheckBox>();
         auto id = std::stoi(std::wstring{ checkbox.Name() });
         auto item = FindById(id);
-        if (checkbox.IsChecked().GetBoolean() != item.Checked())
+        if (item != NULL && checkbox.IsChecked().GetBoolean() != item.Checked())
         {
             m_uiUpdatesItem.Checked(checkbox.IsChecked().GetBoolean());
             m_uiUpdatesItem.ChangedExplorerItemId(id);

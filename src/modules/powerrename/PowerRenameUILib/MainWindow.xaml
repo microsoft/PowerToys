@@ -13,6 +13,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal" Grid.Column="0">
+                    <StackPanel MinWidth="{x:Bind Indentation}"/>
                     <CheckBox TabIndex="0"
                               MinWidth="36"
                               XYFocusKeyboardNavigation="Enabled"
@@ -43,6 +44,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal" Grid.Column="0">
+                    <StackPanel MinWidth="{x:Bind Indentation}"/>
                     <CheckBox TabIndex="0"
                               IsTabStop="True"
                               XYFocusKeyboardNavigation="Enabled"

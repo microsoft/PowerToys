@@ -20,7 +20,7 @@ namespace winrt::PowerRenameUILib::implementation
         void Original(hstring const& value);
         hstring Renamed();
         void Renamed(hstring const& value);
-        uint32_t Depth();
+        double Indentation();
         int32_t Type();
         void Type(int32_t value);
         bool Checked();
@@ -35,7 +35,7 @@ namespace winrt::PowerRenameUILib::implementation
         hstring m_idStr;
         winrt::hstring m_original;
         winrt::hstring m_renamed;
-        uint32_t m_depth;
+        uint32_t m_indentation;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::ExplorerItem> m_children;
         int32_t m_type;
         bool m_checked;
