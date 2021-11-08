@@ -55,6 +55,7 @@ protected:
     POINT m_sonarPos = ptNowhere;
 
     // Only consider double left control click if at least 100ms passed between the clicks, to avoid keyboards that might be sending rapid clicks.
+    // At actual check, time a fifth of the current double click setting might be used instead to take into account users who might have low values.
     static const int MIN_DOUBLE_CLICK_TIME = 100;
 
     static constexpr int SonarRadius = 100;
@@ -312,9 +313,10 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
             auto now = GetTickCount();
             auto doubleClickInterval = now - m_lastKeyTime;
             POINT ptCursor{};
+            auto doubleClickTimeSetting = GetDoubleClickTime();
             if (GetCursorPos(&ptCursor) &&
-                doubleClickInterval >= MIN_DOUBLE_CLICK_TIME &&
-                doubleClickInterval <= GetDoubleClickTime() &&
+                doubleClickInterval >= min(MIN_DOUBLE_CLICK_TIME, doubleClickTimeSetting / 5) &&
+                doubleClickInterval <= doubleClickTimeSetting &&
                 IsEqual(m_lastKeyPos, ptCursor))
             {
                 m_sonarState = SonarState::ControlDown2;
