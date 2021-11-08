@@ -13,7 +13,7 @@
         <SolidColorBrush x:Key="DefaultAccentBrush" Color="{ThemeResource SystemAccentColor}"/>
         <SolidColorBrush x:Key="DefaultBorderBrush" Color="{ThemeResource SystemAccentColor}"/>
     </UserControl.Resources>
-        <Grid Width="320" Height="180" Margin="20" CornerRadius="4" BorderBrush="Black" BorderThickness="8" HorizontalAlignment="Center">
+        <Grid CornerRadius="4" BorderBrush="Black" BorderThickness="6" HorizontalAlignment="Center">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
