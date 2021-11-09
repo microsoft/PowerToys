@@ -11,12 +11,20 @@
 #include <common/utils/os-detect.h>
 #include <common/utils/process_path.h>
 
+#include <SettingsAPI/settings_helpers.h>
+
 // Constructor
 PowerPreviewModule::PowerPreviewModule() :
     m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
     app_key(powerpreviewConstants::ModuleKey)
 {
     const std::wstring installationDir = get_module_folderpath();
+
+    std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
+    logFilePath.append(LogSettings::fileExplorerLogPath);
+    Logger::init(LogSettings::fileExplorerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+
+    Logger::info("Initializing PowerPreviewModule");
     const bool installPerUser = false;
     m_fileExplorerModules.push_back({ .settingName = L"svg-previewer-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
@@ -133,7 +141,10 @@ void PowerPreviewModule::disable()
     {
         for (auto& fileExplorerModule : m_fileExplorerModules)
         {
-            fileExplorerModule.registryChanges.unApply();
+            if (!fileExplorerModule.registryChanges.unApply())
+            {
+                Logger::error(L"Couldn't disable file explorer module {} during module disable() call", fileExplorerModule.settingName);
+            }
         }
     }
     else
@@ -207,6 +218,7 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
         }
         else
         {
+            Logger::error(L"Couldn't {} file explorer module {} during apply_settings", *toggle ? L"enable " : L"disable", fileExplorerModule.settingName);
             Trace::PowerPreviewSettingsUpdateFailed(fileExplorerModule.settingName.c_str(), !*toggle, *toggle, true);
         }
     }

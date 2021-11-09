@@ -631,6 +631,7 @@ Farbraum
 FARPROC
 fdw
 feimage
+FFAA
 ffcd
 FFDDDDDD
 fff
@@ -655,7 +656,6 @@ finalizer
 findfast
 findstr
 FIXEDFILEINFO
-FFAA
 FLASHZONES
 FLASHZONESONQUICKSWITCH
 flt
@@ -2439,6 +2439,7 @@ workaround
 Workflow
 workspaces
 wostream
+wostringstream
 wox
 wparam
 wpf
