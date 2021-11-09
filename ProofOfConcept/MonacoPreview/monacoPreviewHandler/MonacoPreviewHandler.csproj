@@ -9,6 +9,7 @@
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
         <Platforms>AnyCPU</Platforms>
+        <EnableComHosting>true</EnableComHosting>
     </PropertyGroup>
 
     <ItemGroup>
