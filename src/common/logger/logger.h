@@ -13,6 +13,7 @@ public:
     Logger() = delete;
 
     static void init(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath);
+    static void init(std::vector<spdlog::sink_ptr> sinks);
 
     // log message should not be localized
     template<typename FormatString, typename... Args>

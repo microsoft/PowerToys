@@ -27,6 +27,7 @@
 #include <psapi.h>
 #include <vector>
 #include <array>
+#include <mutex>
 
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
