@@ -10,11 +10,12 @@ namespace Microsoft.Plugin.Uri.UriHelper
 {
     public class ExtendedUriParser : IUriParser
     {
-        public bool TryParse(string input, out System.Uri result)
+        public bool TryParse(string input, out System.Uri result, out bool isWebUri)
         {
             if (string.IsNullOrEmpty(input))
             {
                 result = default;
+                isWebUri = false;
                 return false;
             }
 
@@ -26,6 +27,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 && !input.All(char.IsDigit))
             {
                 result = new System.Uri(input);
+                isWebUri = false;
                 return true;
             }
 
@@ -38,6 +40,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 || input.All(char.IsDigit))
             {
                 result = default;
+                isWebUri = false;
                 return false;
             }
 
@@ -50,16 +53,19 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 if (input.StartsWith("HTTP://", StringComparison.OrdinalIgnoreCase))
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttp;
+                    isWebUri = true;
                 }
                 else if (input.Contains(":", StringComparison.OrdinalIgnoreCase) &&
                         !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
                         !input.Contains("[", StringComparison.OrdinalIgnoreCase))
                 {
                     // Do nothing, leave unchanged
+                    isWebUri = false;
                 }
                 else
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttps;
+                    isWebUri = true;
                 }
 
                 result = urlBuilder.Uri;
@@ -68,6 +74,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
             catch (UriFormatException)
             {
                 result = default;
+                isWebUri = false;
                 return false;
             }
         }
