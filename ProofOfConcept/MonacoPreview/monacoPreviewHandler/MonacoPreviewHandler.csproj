@@ -6,8 +6,9 @@
         <Copyright>Copyright (C) 2021 Microsoft Corporation</Copyright>
         <Company>Microsoft Corporation</Company>
         <Product>PowerToys</Product>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+        <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,7 +27,34 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Update="MonacoPreviewHandlerControl.cs" />
+    </ItemGroup>
+    
+    <ItemGroup>
       <ProjectReference Include="..\..\..\src\modules\previewpane\common\PreviewHandlerCommon.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="x64\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="x64\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="x64\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="index.html">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <None Update="monacoSRC\**\*.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>
