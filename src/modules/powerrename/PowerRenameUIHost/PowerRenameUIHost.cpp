@@ -64,7 +64,7 @@ AppWindow::AppWindow(HINSTANCE hInstance, std::vector<std::wstring> files) noexc
                     CComPtr<IShellItemArray> shellItemArray;
                     // To test PowerRenameUIHost uncomment this line and update the path to
                     // your local (absolute or relative) path which you want to see in PowerRename
-                    files.push_back(L"C:\\Users\\stefa\\Projects\\Xaml-Controls-Gallery");
+                    files.push_back(L"C:\\Test_Dir");
 
                     if (!files.empty())
                     {

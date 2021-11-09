@@ -1,18 +1,26 @@
 ﻿<UserControl x:Class="PowerRenameUILib.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:PowerRenameUILib" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:Microsoft.UI.Xaml.Controls" xmlns:muxc="using:Microsoft.UI.Xaml.Controls" controls:BackdropMaterial.ApplyToRootOrPageBackground="True" xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals" mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="20">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="0" /> <!-- 48 if we need to draw the title bar ourself -->
             <RowDefinition Height="*" />
+            <RowDefinition Height="56" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Row="1" Grid.Column="1" Background="{ThemeResource LayerFillColorDefaultBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" CornerRadius="8" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+        <Grid Grid.Row="1"
+              Grid.Column="1"
+              Background="{ThemeResource LayerFillColorDefaultBrush}"
+              VerticalAlignment="Stretch"
+              HorizontalAlignment="Stretch"
+              CornerRadius="8"
+              BorderThickness="1"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="48" />
+                <RowDefinition Height="40" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -22,10 +30,10 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Orientation="Horizontal">
-                <CheckBox x:Name="checkBox_selectAll" IsChecked="True" MinWidth="36" Content="" x:Uid="SelectAllCheckBox" Margin="16,0,0,0" Checked="SelectAll" Unchecked="SelectAll" />
-                <Image Width="16" Margin="0,0,0,0" Grid.Column="1" Source="ms-appx:///Assets/file.png" HorizontalAlignment="Center" />
+                <CheckBox x:Name="checkBox_selectAll" IsChecked="True" MinWidth="0" Content="" x:Uid="SelectAllCheckBox" Margin="10,0,0,0" Checked="SelectAll" Unchecked="SelectAll" />
+                <Image Width="16" Margin="4,0,0,0" Source="ms-appx:///Assets/file.png" HorizontalAlignment="Left" />
 
-            <TextBlock x:Uid="TxtBlock_Original" Grid.Column="2" FontWeight="Medium" Margin="18,-2,0,0" VerticalAlignment="Center" />
+            <TextBlock x:Uid="TxtBlock_Original" Grid.Column="2" FontWeight="Medium" Margin="6,-2,0,0" VerticalAlignment="Center" />
             </StackPanel>
             <AppBarSeparator Margin="-6,4,0,4" HorizontalAlignment="Right" />
             
@@ -51,7 +59,21 @@
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="IsTabStop" Value="False" />
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="MinHeight" Value="0"/>
                         <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <StackPanel Orientation="Vertical">
+                                        <ContentPresenter />
+                                        <Rectangle Height="1" Margin="0,4,0,0"  Grid.ColumnSpan="5" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
+
+                                    </StackPanel>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
@@ -97,7 +119,7 @@
             <ScrollViewer>
                 <StackPanel Orientation="Vertical" Padding="0,0,0,16" Margin="0,0,20,0">
                     <Grid>
-                        <AutoSuggestBox x:Name="textBox_search" x:Uid="SearchBox" Height="48" VerticalContentAlignment="Center" ItemsSource="{x:Bind SearchMRU}" />
+                        <AutoSuggestBox x:Name="textBox_search" x:Uid="SearchBox" Height="40" VerticalContentAlignment="Center" ItemsSource="{x:Bind SearchMRU}" />
 
                         <Button FontFamily="{ThemeResource SymbolThemeFontFamily}" VerticalAlignment="Center" Visibility="{Binding ElementName=checkBox_regex, Path=IsChecked}" MinHeight="32" Margin="4" x:Uid="RegExButton" Background="Transparent" BorderBrush="Transparent" Content="&#xE946;" HorizontalAlignment="Right">
                             <Button.Flyout>
@@ -136,13 +158,13 @@
                     </Grid>
 
 
-                    <CheckBox x:Name="checkBox_regex" x:Uid="CheckBox_RegEx" Margin="2,12,0,0" />
-                    <CheckBox x:Name="checkBox_matchAll" x:Uid="CheckBox_MatchAll" Margin="2,4,0,0" />
-                    <CheckBox x:Name="checkBox_case" x:Uid="CheckBox_Case" Margin="2,4,0,0" />
+                    <CheckBox x:Name="checkBox_regex" x:Uid="CheckBox_RegEx" Margin="2,6,0,0" />
+                    <CheckBox x:Name="checkBox_matchAll" x:Uid="CheckBox_MatchAll" Margin="2,0,0,0" />
+                    <CheckBox x:Name="checkBox_case" x:Uid="CheckBox_Case" Margin="2,0,0,0" />
 
                     <Rectangle Height="1" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" Margin="0,16,0,20" />
                     <Grid>
-                        <AutoSuggestBox x:Name="textBox_replace" Margin="0,0,0,0" x:Uid="ReplaceBox" Height="48" VerticalContentAlignment="Center" Padding="12,12,0,0" ItemsSource="{x:Bind ReplaceMRU}" />
+                        <AutoSuggestBox x:Name="textBox_replace" Margin="0,0,0,0" x:Uid="ReplaceBox" Height="40" VerticalContentAlignment="Center" Padding="12,12,0,0" ItemsSource="{x:Bind ReplaceMRU}" />
 
                         <Button FontFamily="{ThemeResource SymbolThemeFontFamily}" VerticalAlignment="Center" MinHeight="32" Margin="4" x:Uid="FileCreationButton" Background="Transparent" BorderBrush="Transparent" Content="&#xE946;" HorizontalAlignment="Right">
                             <Button.Flyout>
@@ -177,7 +199,7 @@
                         </Button>
                     </Grid>
 
-                    <TextBlock x:Uid="TextBox_ApplyTo" x:Name="ApplyToLabel" FontSize="12" Margin="0,20,0,8" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock x:Uid="TextBox_ApplyTo" x:Name="ApplyToLabel" FontSize="12" Margin="0,12,0,8" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
                     <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="4" Grid.Row="1">
                         <ComboBox x:Name="comboBox_renameParts" SelectedIndex="0" Width="200" AutomationProperties.LabeledBy="{Binding ElementName=ApplyToLabel}" HorizontalAlignment="Stretch" Grid.Column="0" Grid.Row="1">
@@ -192,7 +214,7 @@
                     </StackPanel>
 
 
-                    <TextBlock x:Uid="TextBlock_TextFormatting" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,20,0,8" />
+                    <TextBlock x:Uid="TextBlock_TextFormatting" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,12,0,8" />
 
 
                     <StackPanel Orientation="Horizontal" Spacing="4">
@@ -210,26 +232,35 @@
             <Rectangle Height="1" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" Margin="0,0,20,0" VerticalAlignment="Top" Grid.Row="1" />
 
 
-            <StackPanel Orientation="Horizontal" Grid.Row="1" Spacing="8" Margin="0" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+      
+        </Grid>
 
-                <Button x:Name="button_settings" Height="32" x:Uid="TxtBlock_ButtonSettings" FontFamily="{ThemeResource SymbolThemeFontFamily}" Grid.Row="5" Padding="6" Background="Transparent" BorderBrush="Transparent" Grid.Column="1">
-                    <Button.Content>
-                        <controls:AnimatedIcon x:Name="SearchAnimatedIcon">
-                            <controls:AnimatedIcon.Source>
-                                <animatedVisuals:AnimatedSettingsVisualSource />
-                            </controls:AnimatedIcon.Source>
-                            <controls:AnimatedIcon.FallbackIconSource>
-                                <controls:SymbolIconSource Symbol="Setting" />
-                            </controls:AnimatedIcon.FallbackIconSource>
-                        </controls:AnimatedIcon>
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="2"
+                    Spacing="8"
+                    Margin="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Left">
 
-                    </Button.Content>
-                </Button>
+            <Button x:Name="button_settings" Height="32" x:Uid="TxtBlock_ButtonSettings" FontFamily="{ThemeResource SymbolThemeFontFamily}" Grid.Row="5" Padding="6" Background="Transparent" BorderBrush="Transparent" Grid.Column="1">
+                <Button.Content>
+                    <controls:AnimatedIcon x:Name="SearchAnimatedIcon">
+                        <controls:AnimatedIcon.Source>
+                            <animatedVisuals:AnimatedSettingsVisualSource />
+                        </controls:AnimatedIcon.Source>
+                        <controls:AnimatedIcon.FallbackIconSource>
+                            <controls:SymbolIconSource Symbol="Setting" />
+                        </controls:AnimatedIcon.FallbackIconSource>
+                    </controls:AnimatedIcon>
 
-                <Button x:Name="button_docs" Content="&#xE11B;" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="DocsButton" Background="Transparent" BorderBrush="Transparent" Grid.Row="1" Height="32" VerticalAlignment="Bottom" HorizontalAlignment="Left" Click="OpenDocs" />
+                </Button.Content>
+            </Button>
+
+            <Button x:Name="button_docs" Content="&#xE11B;" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="DocsButton" Background="Transparent" BorderBrush="Transparent" Grid.Row="1" Height="32" VerticalAlignment="Bottom" HorizontalAlignment="Left" Click="OpenDocs" />
 
 
-                <!--<Button Content="&#xE728;"
+            <!--<Button Content="&#xE728;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         ToolTipService.ToolTip="Presets"
                         Background="Transparent"
@@ -247,26 +278,25 @@
                     </Button.Flyout>
                 </Button>-->
 
-            </StackPanel>
+        </StackPanel>
 
-            <muxc:SplitButton Grid.Row="1" Style="{StaticResource SplitAccentButtonStyle}" x:Name="button_rename" Margin="0,0,20,0" x:Uid="ButtonApply" Click="button_rename_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsEnabled="{x:Bind UIUpdatesItem.ButtonRenameEnabled, Mode=OneWay}">
-                <muxc:SplitButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="Enter" />
-                    <KeyboardAccelerator Key="Enter" Modifiers="Control" />
-                </muxc:SplitButton.KeyboardAccelerators>
-                <muxc:SplitButton.Content>
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon Glyph="&#xE13E;" FontSize="14" VerticalAlignment="Center" Margin="0,2,10,0" />
-                        <TextBlock x:Uid="TxtBlock_ButtonApply" />
-                    </StackPanel>
-                </muxc:SplitButton.Content>
-                <muxc:SplitButton.Flyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem x:Uid="TxtBlock_ButtonApplyAndClose" Click="MenuFlyoutItem_Click" />
-                    </MenuFlyout>
-                </muxc:SplitButton.Flyout>
-            </muxc:SplitButton>
-        </Grid>
+        <muxc:SplitButton Grid.Row="2" Style="{StaticResource SplitAccentButtonStyle}" Grid.Column="1"  x:Name="button_rename" Margin="0,0,20,0" x:Uid="ButtonApply" Click="button_rename_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsEnabled="{x:Bind UIUpdatesItem.ButtonRenameEnabled, Mode=OneWay}">
+            <muxc:SplitButton.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Enter" />
+                <KeyboardAccelerator Key="Enter" Modifiers="Control" />
+            </muxc:SplitButton.KeyboardAccelerators>
+            <muxc:SplitButton.Content>
+                <StackPanel Orientation="Horizontal">
+                    <FontIcon Glyph="&#xE13E;" FontSize="14" VerticalAlignment="Center" Margin="0,2,10,0" />
+                    <TextBlock x:Uid="TxtBlock_ButtonApply" />
+                </StackPanel>
+            </muxc:SplitButton.Content>
+            <muxc:SplitButton.Flyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem x:Uid="TxtBlock_ButtonApplyAndClose" Click="MenuFlyoutItem_Click" />
+                </MenuFlyout>
+            </muxc:SplitButton.Flyout>
+        </muxc:SplitButton>
 
         <!--<StackPanel x:Name="TitleBar" Orientation="Horizontal">
             <Image Source="Assets/PowerRename.png" Width="16" Height="16" VerticalAlignment="Top" Margin="20,9,0,0"/>
