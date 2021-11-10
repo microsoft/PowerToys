@@ -486,6 +486,41 @@ namespace ImageResizer.Models
                 image => Assert.IsNull(((BitmapMetadata)image.Frames[0].Metadata).GetQuerySafe("System.Photo.Orientation")));
         }
 
+        [TestMethod]
+        public void VerifyFileNameIsSanitized()
+        {
+            var operation = new ResizeOperation(
+                "Test.png",
+                _directory,
+                Settings(
+                    s =>
+                    {
+                        s.FileName = @"Directory\%1:*?""<>|(%2)";
+                        s.SelectedSize.Name = "Test\\/";
+                    }));
+
+            operation.Execute();
+
+            Assert.IsTrue(File.Exists(_directory + @"\Directory\Test_______(Test__).png"));
+        }
+
+        [TestMethod]
+        public void VerifyNotRecommendedNameIsChanged()
+        {
+            var operation = new ResizeOperation(
+                "Test.png",
+                _directory,
+                Settings(
+                    s =>
+                    {
+                        s.FileName = @"nul";
+                    }));
+
+            operation.Execute();
+
+            Assert.IsTrue(File.Exists(_directory + @"\nul_.png"));
+        }
+
         private static Settings Settings(Action<Settings> action = null)
         {
             var settings = new Settings()
