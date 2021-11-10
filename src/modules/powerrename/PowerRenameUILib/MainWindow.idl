@@ -14,6 +14,8 @@ namespace PowerRenameUILib
         void CloseUIWindow(Boolean closeUIWindow);
         Boolean ButtonRenameEnabled;
         void Rename();
+        String OriginalCount;
+        String RenamedCount;
     }
 
     [default_interface] runtimeclass MainWindow : Windows.UI.Xaml.Controls.UserControl

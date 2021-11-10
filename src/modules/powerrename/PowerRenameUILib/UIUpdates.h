@@ -21,6 +21,10 @@ namespace winrt::PowerRenameUILib::implementation
         bool ButtonRenameEnabled();
         void ButtonRenameEnabled(bool value);
         void Rename();
+        hstring OriginalCount();
+        void OriginalCount(hstring value);
+        hstring RenamedCount();
+        void RenamedCount(hstring value);
 
     private:
         bool m_showAll;
@@ -28,6 +32,8 @@ namespace winrt::PowerRenameUILib::implementation
         bool m_checked;
         bool m_closeUIWindow;
         bool m_buttonRenameEnabled;
+        hstring m_originalCount;
+        hstring m_renamedCount;
         winrt::event<Windows::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
     };
 }

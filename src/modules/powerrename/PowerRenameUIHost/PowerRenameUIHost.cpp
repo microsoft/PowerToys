@@ -64,7 +64,7 @@ AppWindow::AppWindow(HINSTANCE hInstance, std::vector<std::wstring> files) noexc
                     CComPtr<IShellItemArray> shellItemArray;
                     // To test PowerRenameUIHost uncomment this line and update the path to
                     // your local (absolute or relative) path which you want to see in PowerRename
-                    files.push_back(L"C:\\Test_Dir");
+                    // files.push_back(path);
 
                     if (!files.empty())
                     {
@@ -134,6 +134,7 @@ bool AppWindow::OnCreate(HWND, LPCREATESTRUCT) noexcept
     try
     {
         PopulateExplorerItems();
+        UpdateCounts();
         SetHandlers();
         ReadSettings();
     }
@@ -618,6 +619,7 @@ void AppWindow::SwitchView()
 
     m_prManager->SwitchFilter(0);
     PopulateExplorerItems();
+    UpdateCounts();
 }
 
 void AppWindow::Rename(bool closeWindow)
@@ -831,11 +833,12 @@ void AppWindow::UpdateCounts()
         m_selectedCount = selectedCount;
         m_renamingCount = renamingCount;
 
-        // Update counts UI elements if/when added
-
         // Update Rename button state
         m_mainUserControl.UIUpdatesItem().ButtonRenameEnabled(renamingCount > 0);
     }
+
+    m_mainUserControl.UIUpdatesItem().OriginalCount(std::to_wstring(m_mainUserControl.ExplorerItems().Size()));
+    m_mainUserControl.UIUpdatesItem().RenamedCount(std::to_wstring(m_renamingCount));
 }
 
 HRESULT AppWindow::OnItemAdded(_In_ IPowerRenameItem* renameItem)
@@ -912,6 +915,7 @@ HRESULT AppWindow::OnRegExCompleted(_In_ DWORD threadId)
         {
             m_mainUserControl.ExplorerItems().Clear();
             PopulateExplorerItems();
+            UpdateCounts();
         }
     }
 
