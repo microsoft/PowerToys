@@ -54,7 +54,7 @@ namespace winrt::PowerRenameUILib::implementation
     }
 
     double ExplorerItem::Indentation() {
-        return static_cast<double>(m_depth) * 25;
+        return static_cast<double>(m_depth) * 12;
     }
 
     hstring ExplorerItem::ImagePath()

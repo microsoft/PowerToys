@@ -4,7 +4,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="0" /> <!-- 48 if we need to draw the title bar ourself -->
             <RowDefinition Height="*" />
-            <RowDefinition Height="56" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -33,11 +32,22 @@
                 <CheckBox x:Name="checkBox_selectAll" IsChecked="True" MinWidth="0" Content="" x:Uid="SelectAllCheckBox" Margin="10,0,0,0" Checked="SelectAll" Unchecked="SelectAll" />
                 <Image Width="16" Margin="4,0,0,0" Source="ms-appx:///Assets/file.png" HorizontalAlignment="Left" />
 
-            <TextBlock x:Uid="TxtBlock_Original" Grid.Column="2" FontWeight="Medium" Margin="6,-2,0,0" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="2" Margin="6,-2,0,0" >
+                    <TextBlock x:Uid="TxtBlock_Original" FontWeight="Medium" />
+                    <TextBlock FontWeight="Medium" Margin="4,0,0,0" >
+                        <Run Text="(" /><Run Text="10" /><Run Text=")" />
+                    </TextBlock>
+                </StackPanel>
             </StackPanel>
             <AppBarSeparator Margin="-6,4,0,4" HorizontalAlignment="Right" />
             
-                <TextBlock x:Uid="TxtBlock_Renamed" FontWeight="Medium" Grid.Column="1" Margin="4,-2,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="2" Margin="4,-2,0,0" >
+                <TextBlock x:Uid="TxtBlock_Renamed" FontWeight="Medium" />
+                <TextBlock FontWeight="Medium" Margin="4,0,0,0" >
+                        <Run Text="(" /><Run Text="9" /><Run Text=")" />
+                </TextBlock>
+            </StackPanel>
+            
             <Button Content="&#xE16E;" Background="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Height="32" x:Uid="FilterButton" Grid.Column="1" BorderThickness="0" HorizontalAlignment="Right" Margin="0,0,8,0">
                 <Button.Flyout>
                     <MenuBarItemFlyout Placement="Bottom">
@@ -54,7 +64,7 @@
                         IsItemClickEnabled="False"
                         Grid.ColumnSpan="6" 
                         ItemsSource="{x:Bind ExplorerItems, Mode=OneWay}"
-                        Margin="4,0,0,0"
+                        Margin="0,0,0,0"
                         Grid.Row="1">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -68,7 +78,7 @@
                                 <ControlTemplate TargetType="ListViewItem">
                                     <StackPanel Orientation="Vertical">
                                         <ContentPresenter />
-                                        <Rectangle Height="1" Margin="0,4,0,0"  Grid.ColumnSpan="5" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
+                                        <Rectangle Height="1" Margin="0,4,0,0" Opacity="0.8" Grid.ColumnSpan="5" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
 
                                     </StackPanel>
                                 </ControlTemplate>
@@ -78,7 +88,7 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:Name="ExplorerItemTemplate" x:DataType="local:ExplorerItem">
-                        <Grid Height="24" Margin="0,4,0,0">
+                        <Grid Height="24" Margin="10,4,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
@@ -87,7 +97,7 @@
                             <StackPanel Orientation="Horizontal" Grid.Column="0">
                                 <StackPanel MinWidth="{x:Bind Indentation}"/>
                                 <CheckBox TabIndex="0"
-                              MinWidth="36"
+                             MinWidth="0"
                               XYFocusKeyboardNavigation="Enabled"
                               Checked="Checked_ids"
                               IsTabStop="True"
@@ -97,27 +107,27 @@
                               AutomationProperties.Name="{x:Bind Original}"
                               AutomationProperties.HelpText="{x:Bind Renamed}"
                               IsChecked="{x:Bind Checked, Mode=TwoWay}" />
-                                <Image Width="16" Source="{x:Bind ImagePath}" HorizontalAlignment="Left" />
-                                <TextBlock Margin="20,0,0,0"
+                                <Image Width="16" Margin="4,0,0,0" Source="{x:Bind ImagePath}" HorizontalAlignment="Left" />
+                                <TextBlock Margin="6,0,0,0"
                                Text="{x:Bind Original, Mode=OneWay}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"
                                FontSize="12" />
                             </StackPanel>
-                            <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" Grid.Column="1" FontWeight="Bold" VerticalAlignment="Center" FontSize="14" />
+                            <TextBlock Text="{x:Bind Renamed, Mode=OneWay}" Grid.Column="1" FontWeight="Bold" VerticalAlignment="Center" FontSize="12" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
         </Grid>
 
-        <Grid Grid.Column="0" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+        <Grid Grid.Column="0" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="48" />
             </Grid.RowDefinitions>
             <ScrollViewer>
-                <StackPanel Orientation="Vertical" Padding="0,0,0,16" Margin="0,0,20,0">
+                <StackPanel Orientation="Vertical" Padding="0,0,0,16" Margin="0,0,12,0">
                     <Grid>
                         <AutoSuggestBox x:Name="textBox_search" x:Uid="SearchBox" Height="40" VerticalContentAlignment="Center" ItemsSource="{x:Bind SearchMRU}" />
 
@@ -208,9 +218,9 @@
                             <x:String>Extension only</x:String>
                         </ComboBox>
                         <AppBarSeparator Margin="5,0,5,0" />
-                        <ToggleButton x:Name="toggleButton_includeFiles" Content="&#xE160;" MinHeight="32" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeFiles" Style="{StaticResource CustomToggleButtonStyle}" />
-                        <ToggleButton x:Name="toggleButton_includeFolders" Content="&#xE8B7;" MinHeight="32" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeFolders" Style="{StaticResource CustomToggleButtonStyle}" />
-                        <ToggleButton x:Name="toggleButton_includeSubfolders" Content="&#xE12F;" MinHeight="32" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeSubFolders" Style="{StaticResource CustomToggleButtonStyle}" />
+                        <ToggleButton x:Name="toggleButton_includeFiles" Content="&#xE160;" MinHeight="0" Height="31" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeFiles" Style="{StaticResource CustomToggleButtonStyle}" />
+                        <ToggleButton x:Name="toggleButton_includeFolders" Content="&#xE8B7;" MinHeight="0" Height="31" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeFolders" Style="{StaticResource CustomToggleButtonStyle}" />
+                        <ToggleButton x:Name="toggleButton_includeSubfolders" Content="&#xE12F;" MinHeight="0" Height="31" IsChecked="True" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ToggleButton_IncludeSubFolders" Style="{StaticResource CustomToggleButtonStyle}" />
                     </StackPanel>
 
 
@@ -218,10 +228,10 @@
 
 
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <ToggleButton x:Name="toggleButton_lowerCase" Content="aa" FontWeight="Medium" MinHeight="32" x:Uid="ToggleButton_Lowercase" Style="{StaticResource CustomToggleButtonStyle}" />
-                        <ToggleButton x:Name="toggleButton_upperCase" Content="AA" FontWeight="Medium" MinHeight="32" x:Uid="ToggleButton_Uppercase" Style="{StaticResource CustomToggleButtonStyle}" />
-                        <ToggleButton x:Name="toggleButton_titleCase" Content="Aa" FontWeight="Medium" MinHeight="32" x:Uid="ToggleButton_TitleCase" Style="{StaticResource CustomToggleButtonStyle}" />
-                        <ToggleButton x:Name="toggleButton_capitalize" Content="Aa Aa" FontWeight="Medium" MinHeight="32" x:Uid="ToggleButton_Capitalize" Style="{StaticResource CustomToggleButtonStyle}" />
+                        <ToggleButton x:Name="toggleButton_lowerCase" Content="aa" FontWeight="Medium" MinHeight="0" Height="31" x:Uid="ToggleButton_Lowercase" Style="{StaticResource CustomToggleButtonStyle}" />
+                        <ToggleButton x:Name="toggleButton_upperCase" Content="AA" FontWeight="Medium" MinHeight="0" Height="31" x:Uid="ToggleButton_Uppercase" Style="{StaticResource CustomToggleButtonStyle}" />
+                        <ToggleButton x:Name="toggleButton_titleCase" Content="Aa" FontWeight="Medium" MinHeight="0" Height="31" x:Uid="ToggleButton_TitleCase" Style="{StaticResource CustomToggleButtonStyle}" />
+                        <ToggleButton x:Name="toggleButton_capitalize" Content="Aa Aa" FontWeight="Medium" MinHeight="0" Height="31" x:Uid="ToggleButton_Capitalize" Style="{StaticResource CustomToggleButtonStyle}" />
                         <AppBarSeparator Margin="5,0,5,0" />
 
                         <ToggleButton x:Name="toggleButton_enumItems" Content="&#xEA40;" FontFamily="{ThemeResource SymbolThemeFontFamily}" MinHeight="32" x:Uid="ToggleButton_EnumItems" Style="{StaticResource CustomToggleButtonStyle}" />
@@ -229,7 +239,7 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <Rectangle Height="1" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" Margin="0,0,20,0" VerticalAlignment="Top" Grid.Row="1" />
+            <Rectangle Height="1" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" Margin="0,0,12,0" VerticalAlignment="Top" Grid.Row="1" />
 
 
       
@@ -280,7 +290,9 @@
 
         </StackPanel>
 
-        <muxc:SplitButton Grid.Row="2" Style="{StaticResource SplitAccentButtonStyle}" Grid.Column="1"  x:Name="button_rename" Margin="0,0,20,0" x:Uid="ButtonApply" Click="button_rename_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsEnabled="{x:Bind UIUpdatesItem.ButtonRenameEnabled, Mode=OneWay}">
+    
+       
+        <muxc:SplitButton Grid.Row="2" Style="{StaticResource SplitAccentButtonStyle}" Grid.Column="0" Margin="0,0,12,1" x:Name="button_rename" x:Uid="ButtonApply" Click="button_rename_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsEnabled="{x:Bind UIUpdatesItem.ButtonRenameEnabled, Mode=OneWay}">
             <muxc:SplitButton.KeyboardAccelerators>
                 <KeyboardAccelerator Key="Enter" />
                 <KeyboardAccelerator Key="Enter" Modifiers="Control" />
