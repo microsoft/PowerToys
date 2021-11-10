@@ -33,17 +33,21 @@ namespace MonacoPreviewHandler
             
             
             
-            _browser = new WebBrowserExt
+            InvokeOnControlThread(() => 
             {
-                DocumentText = fileText,
-                Dock = DockStyle.Fill,
-                IsWebBrowserContextMenuEnabled = false,
-                ScriptErrorsSuppressed = true,
-                ScrollBarsEnabled = true,
-                AllowNavigation = false,
-            };
-            
-            Controls.Add(_browser);
+                _browser = new WebBrowserExt
+                {
+                    DocumentText = fileText,
+                    Dock = DockStyle.Fill,
+                    IsWebBrowserContextMenuEnabled = false,
+                    ScriptErrorsSuppressed = true,
+                    ScrollBarsEnabled = true,
+                    AllowNavigation = false,
+                };
+
+                Controls.Add(_browser);
+            });
+
 
             base.DoPreview(dataSource);
             }
