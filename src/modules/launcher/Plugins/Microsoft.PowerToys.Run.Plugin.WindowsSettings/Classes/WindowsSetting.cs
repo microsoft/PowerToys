@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
             Name = string.Empty;
             Command = string.Empty;
             Type = string.Empty;
+            ShowAsFirstResult = false;
         }
 
         /// <summary>
@@ -61,6 +62,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings
         /// Gets or sets the Windows build since this settings is not longer present.
         /// </summary>
         public uint? DeprecatedInBuild { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to use a higher score as normal for this setting to show it as one of the first results.
+        /// </summary>
+        public bool ShowAsFirstResult { get; set; }
 
         /// <summary>
         /// Gets or sets the the value with the generated area path as string.
