@@ -733,6 +733,7 @@ Hardlines
 HARDWAREINPUT
 hashcode
 Hashset
+Hashtable
 HASHVAL
 hbitmap
 hbmp
