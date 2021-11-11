@@ -178,7 +178,7 @@ namespace FancyZonesDataTypes
         }
 
         /*
-        Refer to ZoneWindowUtils::GenerateUniqueId parts contain:
+        Refer to FancyZonesUtils::GenerateUniqueId parts contain:
         1. monitor id [string]
         2. width of device [int]
         3. height of device [int]
@@ -258,7 +258,7 @@ namespace FancyZonesDataTypes
         }
 
         /*
-        Refer to ZoneWindowUtils::GenerateUniqueId parts contain:
+        Refer to FancyZonesUtils::GenerateUniqueId parts contain:
         1. monitor id [string]
         2. width of device [int]
         3. height of device [int]

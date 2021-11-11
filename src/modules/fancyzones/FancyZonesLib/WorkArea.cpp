@@ -129,7 +129,7 @@ public:
     IFACEMETHODIMP_(void)
     SaveWindowProcessToZoneIndex(HWND window) noexcept;
     IFACEMETHODIMP_(IZoneSet*)
-    ActiveZoneSet() const noexcept { return m_activeZoneSet.get(); }
+    ZoneSet() const noexcept { return m_zoneSet.get(); }
     IFACEMETHODIMP_(ZoneIndexSet)
     GetWindowZoneIndexes(HWND window) const noexcept;
     IFACEMETHODIMP_(void)
@@ -164,8 +164,7 @@ private:
     FancyZonesDataTypes::DeviceIdData m_uniqueId;
     HWND m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
-    winrt::com_ptr<IZoneSet> m_activeZoneSet;
-    std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
+    winrt::com_ptr<IZoneSet> m_zoneSet;
     ZoneIndexSet m_initialHighlightZone;
     ZoneIndexSet m_highlightZone;
     WPARAM m_keyLast{};
@@ -234,7 +233,7 @@ IFACEMETHODIMP WorkArea::MoveSizeEnter(HWND window) noexcept
     m_highlightZone = {};
     m_initialHighlightZone = {};
     ShowZoneWindow();
-    Trace::WorkArea::MoveOrResizeStarted(m_activeZoneSet);
+    Trace::WorkArea::MoveOrResizeStarted(m_zoneSet);
     return S_OK;
 }
 
@@ -257,7 +256,7 @@ IFACEMETHODIMP WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled,
             }
             else
             {
-                highlightZone = m_activeZoneSet->GetCombinedZoneRange(m_initialHighlightZone, highlightZone);
+                highlightZone = m_zoneSet->GetCombinedZoneRange(m_initialHighlightZone, highlightZone);
             }
         }
         else
@@ -276,7 +275,7 @@ IFACEMETHODIMP WorkArea::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled,
 
     if (redraw)
     {
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_zoneSet->GetZones(), m_highlightZone, m_zoneColors);
     }
 
     return S_OK;
@@ -289,18 +288,18 @@ IFACEMETHODIMP WorkArea::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcep
         return E_INVALIDARG;
     }
 
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
         POINT ptClient = ptScreen;
         MapWindowPoints(nullptr, m_window, &ptClient, 1);
-        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, m_highlightZone);
+        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, m_highlightZone);
 
         if (FancyZonesUtils::HasNoVisibleOwner(window))
         {
             SaveWindowProcessToZoneIndex(window);
         }
     }
-    Trace::WorkArea::MoveOrResizeEnd(m_activeZoneSet);
+    Trace::WorkArea::MoveOrResizeEnd(m_zoneSet);
 
     HideZoneWindow();
     m_windowMoveSize = nullptr;
@@ -316,18 +315,18 @@ WorkArea::MoveWindowIntoZoneByIndex(HWND window, ZoneIndex index) noexcept
 IFACEMETHODIMP_(void)
 WorkArea::MoveWindowIntoZoneByIndexSet(HWND window, const ZoneIndexSet& indexSet, bool suppressMove) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet, suppressMove);
+        m_zoneSet->MoveWindowIntoZoneByIndexSet(window, m_window, indexSet, suppressMove);
     }
 }
 
 IFACEMETHODIMP_(bool)
 WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window, vkCode, cycle))
+        if (m_zoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window, vkCode, cycle))
         {
             if (FancyZonesUtils::HasNoVisibleOwner(window))
             {
@@ -342,9 +341,9 @@ WorkArea::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool 
 IFACEMETHODIMP_(bool)
 WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndPosition(window, m_window, vkCode, cycle))
+        if (m_zoneSet->MoveWindowIntoZoneByDirectionAndPosition(window, m_window, vkCode, cycle))
         {
             SaveWindowProcessToZoneIndex(window);
             return true;
@@ -356,9 +355,9 @@ WorkArea::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bo
 IFACEMETHODIMP_(bool)
 WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        if (m_activeZoneSet->ExtendWindowByDirectionAndPosition(window, m_window, vkCode))
+        if (m_zoneSet->ExtendWindowByDirectionAndPosition(window, m_window, vkCode))
         {
             SaveWindowProcessToZoneIndex(window);
             return true;
@@ -370,13 +369,13 @@ WorkArea::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept
 IFACEMETHODIMP_(void)
 WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        auto zoneIndexSet = m_activeZoneSet->GetZoneIndexSetFromWindow(window);
+        auto zoneIndexSet = m_zoneSet->GetZoneIndexSetFromWindow(window);
         if (zoneIndexSet.size())
         {
             OLECHAR* guidString;
-            if (StringFromCLSID(m_activeZoneSet->Id(), &guidString) == S_OK)
+            if (StringFromCLSID(m_zoneSet->Id(), &guidString) == S_OK)
             {
                 FancyZonesDataInstance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
             }
@@ -389,10 +388,10 @@ WorkArea::SaveWindowProcessToZoneIndex(HWND window) noexcept
 IFACEMETHODIMP_(ZoneIndexSet)
 WorkArea::GetWindowZoneIndexes(HWND window) const noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
         wil::unique_cotaskmem_string zoneSetId;
-        if (SUCCEEDED(StringFromCLSID(m_activeZoneSet->Id(), &zoneSetId)))
+        if (SUCCEEDED(StringFromCLSID(m_zoneSet->Id(), &zoneSetId)))
         {
             return FancyZonesDataInstance().GetAppLastZoneIndexSet(window, m_uniqueId, zoneSetId.get());
         }
@@ -406,7 +405,7 @@ WorkArea::ShowZoneWindow() noexcept
     if (m_window)
     {
         SetAsTopmostWindow();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_zoneSet->GetZones(), m_highlightZone, m_zoneColors);
         m_zoneWindowDrawing->Show();
     }
 }
@@ -430,16 +429,16 @@ WorkArea::UpdateActiveZoneSet() noexcept
     if (m_window)
     {
         m_highlightZone.clear();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_zoneSet->GetZones(), m_highlightZone, m_zoneColors);
     }
 }
 
 IFACEMETHODIMP_(void)
 WorkArea::CycleTabs(HWND window, bool reverse) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        m_activeZoneSet->CycleTabs(window, reverse);
+        m_zoneSet->CycleTabs(window, reverse);
     }
 }
 
@@ -449,7 +448,7 @@ WorkArea::ClearSelectedZones() noexcept
     if (m_highlightZone.size())
     {
         m_highlightZone.clear();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_zoneColors);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_zoneSet->GetZones(), m_highlightZone, m_zoneColors);
     }
 }
 
@@ -459,7 +458,7 @@ WorkArea::FlashZones() noexcept
     if (m_window)
     {
         SetAsTopmostWindow();
-        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), {}, m_zoneColors);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_zoneSet->GetZones(), {}, m_zoneColors);
         m_zoneWindowDrawing->Flash();
     }
 }
@@ -555,16 +554,16 @@ void WorkArea::CalculateZoneSet(OverlappingZonesAlgorithm overlappingAlgorithm) 
 
 void WorkArea::UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept
 {
-    m_activeZoneSet.copy_from(zoneSet);
+    m_zoneSet.copy_from(zoneSet);
 
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
         wil::unique_cotaskmem_string zoneSetId;
-        if (SUCCEEDED_LOG(StringFromCLSID(m_activeZoneSet->Id(), &zoneSetId)))
+        if (SUCCEEDED_LOG(StringFromCLSID(m_zoneSet->Id(), &zoneSetId)))
         {
             FancyZonesDataTypes::ZoneSetData data{
                 .uuid = zoneSetId.get(),
-                .type = m_activeZoneSet->LayoutType()
+                .type = m_zoneSet->LayoutType()
             };
             FancyZonesDataInstance().SetActiveZoneSet(m_uniqueId, data);
         }
@@ -595,9 +594,9 @@ LRESULT WorkArea::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
 
 ZoneIndexSet WorkArea::ZonesFromPoint(POINT pt) noexcept
 {
-    if (m_activeZoneSet)
+    if (m_zoneSet)
     {
-        return m_activeZoneSet->ZonesFromPoint(pt);
+        return m_zoneSet->ZonesFromPoint(pt);
     }
     return {};
 }

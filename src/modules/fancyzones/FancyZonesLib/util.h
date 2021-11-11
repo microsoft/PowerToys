@@ -189,6 +189,9 @@ namespace FancyZonesUtils
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept;
     void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
 
+    // Parameter rect is in windowOfRect coordinates
+    RECT AdjustRectForSizeWindowToRect(HWND window, RECT rect, HWND windowOfRect) noexcept;
+
     // Parameter rect must be in screen coordinates (e.g. obtained from GetWindowRect)
     void SizeWindowToRect(HWND window, RECT rect) noexcept;
 
@@ -209,7 +212,7 @@ namespace FancyZonesUtils
     std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId);
     std::wstring TrimDeviceId(const std::wstring& deviceId);
 
-    RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept;
+    RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept;
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
 
     // If HWND is already dead, we assume it wasn't elevated

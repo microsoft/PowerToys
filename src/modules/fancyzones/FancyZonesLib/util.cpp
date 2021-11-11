@@ -300,6 +300,38 @@ namespace FancyZonesUtils
         }
     }
 
+    RECT AdjustRectForSizeWindowToRect(HWND window, RECT rect, HWND windowOfRect) noexcept
+    {
+        RECT newWindowRect = rect;
+
+        RECT windowRect{};
+        ::GetWindowRect(window, &windowRect);
+
+        // Take care of borders
+        RECT frameRect{};
+        if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
+        {
+            LONG leftMargin = frameRect.left - windowRect.left;
+            LONG rightMargin = frameRect.right - windowRect.right;
+            LONG bottomMargin = frameRect.bottom - windowRect.bottom;
+            newWindowRect.left -= leftMargin;
+            newWindowRect.right -= rightMargin;
+            newWindowRect.bottom -= bottomMargin;
+        }
+
+        // Take care of windows that cannot be resized
+        if ((::GetWindowLong(window, GWL_STYLE) & WS_SIZEBOX) == 0)
+        {
+            newWindowRect.right = newWindowRect.left + (windowRect.right - windowRect.left);
+            newWindowRect.bottom = newWindowRect.top + (windowRect.bottom - windowRect.top);
+        }
+
+        // Convert to screen coordinates
+        MapWindowRect(windowOfRect, nullptr, &newWindowRect);
+
+        return newWindowRect;
+    }
+
     void SizeWindowToRect(HWND window, RECT rect) noexcept
     {
         WINDOWPLACEMENT placement{};
@@ -660,22 +692,22 @@ namespace FancyZonesUtils
         return closestIdx;
     }
 
-    RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept
+    RECT PrepareRectForCycling(RECT windowRect, RECT workAreaRect, DWORD vkCode) noexcept
     {
         LONG deltaX = 0, deltaY = 0;
         switch (vkCode)
         {
         case VK_UP:
-            deltaY = zoneWindowRect.bottom - zoneWindowRect.top;
+            deltaY = workAreaRect.bottom - workAreaRect.top;
             break;
         case VK_DOWN:
-            deltaY = zoneWindowRect.top - zoneWindowRect.bottom;
+            deltaY = workAreaRect.top - workAreaRect.bottom;
             break;
         case VK_LEFT:
-            deltaX = zoneWindowRect.right - zoneWindowRect.left;
+            deltaX = workAreaRect.right - workAreaRect.left;
             break;
         case VK_RIGHT:
-            deltaX = zoneWindowRect.left - zoneWindowRect.right;
+            deltaX = workAreaRect.left - workAreaRect.right;
         }
 
         windowRect.left += deltaX;

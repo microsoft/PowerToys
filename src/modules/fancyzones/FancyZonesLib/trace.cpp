@@ -14,7 +14,7 @@
 #define EventEditorLaunchKey "FancyZones_EditorLaunch"
 #define EventSettingsKey "FancyZones_Settings"
 #define EventDesktopChangedKey "FancyZones_VirtualDesktopChanged"
-#define EventZoneWindowKeyUpKey "FancyZones_ZoneWindowKeyUp"
+#define EventWorkAreaKeyUpKey "FancyZones_ZoneWindowKeyUp"
 #define EventSnapNewWindowIntoZone "FancyZones_SnapNewWindowIntoZone"
 #define EventKeyboardSnapWindowToZone "FancyZones_KeyboardSnapWindowToZone"
 #define EventMoveOrResizeStartedKey "FancyZones_MoveOrResizeStarted"
@@ -345,7 +345,7 @@ void Trace::WorkArea::KeyUp(WPARAM wParam) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        EventZoneWindowKeyUpKey,
+        EventWorkAreaKeyUpKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(wParam, KeyboardValueKey));
