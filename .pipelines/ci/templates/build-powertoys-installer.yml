@@ -10,9 +10,6 @@ jobs:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
   pool:
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPoolOSS-L
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: WinDevPool-L
   timeoutInMinutes: 120
   strategy:
