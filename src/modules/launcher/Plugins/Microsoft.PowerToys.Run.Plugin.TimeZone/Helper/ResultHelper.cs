@@ -12,6 +12,10 @@ using Microsoft.PowerToys.Run.Plugin.TimeZone.Properties;
 using Mono.Collections.Generic;
 using Wox.Plugin;
 
+// TODO: revisit time zone names
+// TODO: revisit standard time names
+// TODO: revisit DST time names
+// TODO: add time zone shortcuts
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 {
     /// <summary>
@@ -34,7 +38,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             foreach (var timeZone in timeZones)
             {
-                results.AddRange(GetResults(timeZone, options, query, iconPath, utcNow));
+                if (MatchNames(timeZone, query)
+                || MatchStandardNames(timeZone, query)
+                || MatchDaylightNames(timeZone, query)
+                || MatchStandardCountries(timeZone, query)
+                || MatchDaylightCountries(timeZone, query)
+                || MatchOffset(timeZone, query))
+                {
+                    results.AddRange(GetResults(timeZone, options, query, iconPath, utcNow));
+                }
             }
 
             var orderResults = results.OrderBy(result => result.Title);
@@ -52,39 +64,46 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <returns>A list with <see cref="Result"/>.</returns>
         private static IEnumerable<Result> GetResults(OneTimeZone timeZone, TimeZoneSettings options, Query query, string iconPath, DateTime utcNow)
         {
-            // TODO: revisit time zone names
-            // TODO: revisit standard time names
-            // TODO: revisit DST time names
-            // TODO: add time zone shortcuts
             var results = new Collection<Result>();
 
-            var standardCountires = GetStandardCountries(timeZone, query, maxLength: 100);
-            if (standardCountires.Length > 0 || MatchStandardNames(timeZone, query) || MatchNames(timeZone, query) || MatchOffset(timeZone, query))
-            {
-                var title = GetTitle(timeZone, options, utcNow, false);
+            var standardTitle = GetTitle(timeZone, options, utcNow, false);
+            var daylightTitle = GetTitle(timeZone, options, utcNow, true);
 
+            if (standardTitle == daylightTitle)
+            {
                 results.Add(new Result
                 {
                     ContextData = timeZone,
                     IcoPath = iconPath,
-                    SubTitle = standardCountires,
-                    Title = title,
-                    ToolTipData = new ToolTipData(title, GetToolTip(timeZone, options)),
+                    Title = standardTitle,
+                    SubTitle = GetAllCountries(timeZone, query, maxLength: 100),
+                    ToolTipData = new ToolTipData(standardTitle, GetAllToolTip(timeZone, options)),
+                });
+
+                return results;
+            }
+
+            if (MatchStandardCountries(timeZone, query) || MatchStandardNames(timeZone, query) || MatchNames(timeZone, query) || MatchOffset(timeZone, query))
+            {
+                results.Add(new Result
+                {
+                    ContextData = timeZone,
+                    IcoPath = iconPath,
+                    SubTitle = GetStandardCountries(timeZone, query, maxLength: 100),
+                    Title = standardTitle,
+                    ToolTipData = new ToolTipData(standardTitle, GetStandardToolTip(timeZone, options)),
                 });
             }
 
-            var dstCountries = GetDstCountries(timeZone, query, maxLength: 100);
-            if (dstCountries.Length > 0 || MatchDaylightNames(timeZone, query) || MatchNames(timeZone, query) || MatchOffset(timeZone, query))
+            if (MatchDaylightCountries(timeZone, query) || MatchDaylightNames(timeZone, query) || MatchNames(timeZone, query) || MatchOffset(timeZone, query))
             {
-                var title = GetTitle(timeZone, options, utcNow, true);
-
                 results.Add(new Result
                 {
                     ContextData = timeZone,
                     IcoPath = iconPath,
-                    SubTitle = dstCountries,
-                    Title = title,
-                    ToolTipData = new ToolTipData(title, GetDstToolTip(timeZone, options)),
+                    SubTitle = GetDaylightCountries(timeZone, query, maxLength: 100),
+                    Title = daylightTitle,
+                    ToolTipData = new ToolTipData(daylightTitle, GetDaylightToolTip(timeZone, options)),
                 });
             }
 
@@ -136,7 +155,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <param name="timeZone">The time zone that contain all information.</param>
         /// <param name="options">Additional options to limit the results.</param>
         /// <returns>A tool-tip with countries that use the standard time.</returns>
-        private static string GetToolTip(OneTimeZone timeZone, TimeZoneSettings options)
+        private static string GetStandardToolTip(OneTimeZone timeZone, TimeZoneSettings options)
         {
             var countries = GetStandardCountries(timeZone, null, maxLength: int.MaxValue);
             var names = GetNames(timeZone, options, maxLength: int.MaxValue);
@@ -159,9 +178,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <param name="timeZone">The time zone that contain all information.</param>
         /// <param name="options">Additional options to limit the type of the names.</param>
         /// <returns>A tool-tip with countries that use the daylight saving time.</returns>
-        private static string GetDstToolTip(OneTimeZone timeZone, TimeZoneSettings options)
+        private static string GetDaylightToolTip(OneTimeZone timeZone, TimeZoneSettings options)
         {
-            var dstCountries = GetDstCountries(timeZone, null, maxLength: int.MaxValue);
+            var dstCountries = GetDaylightCountries(timeZone, null, maxLength: int.MaxValue);
             var names = GetNames(timeZone, options, maxLength: int.MaxValue);
 
             var stringBuilder = new StringBuilder();
@@ -170,6 +189,32 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             stringBuilder.Append(Resources.UseDst).Append(':').Append(' ').AppendLine(Resources.Yes);
             stringBuilder.AppendLine(string.Empty);
             stringBuilder.Append(Resources.Names).Append(':').Append(' ').AppendLine(names);
+            stringBuilder.AppendLine(string.Empty);
+            stringBuilder.Append(Resources.CountriesWithDst).Append(':').Append(' ').AppendLine(dstCountries);
+
+            return stringBuilder.ToString();
+        }
+
+        /// <summary>
+        /// Return a tool-tip for the given time zone with countries.
+        /// </summary>
+        /// <param name="timeZone">The time zone that contain all information.</param>
+        /// <param name="options">Additional options to limit the type of the names.</param>
+        /// <returns>A tool-tip with countries.</returns>
+        private static string GetAllToolTip(OneTimeZone timeZone, TimeZoneSettings options)
+        {
+            var countries = GetStandardCountries(timeZone, null, maxLength: int.MaxValue);
+            var dstCountries = GetDaylightCountries(timeZone, null, maxLength: int.MaxValue);
+            var names = GetNames(timeZone, options, maxLength: int.MaxValue);
+
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(timeZone.Offset);
+            stringBuilder.Append(Resources.UseDst).Append(':').Append(' ').AppendLine(Resources.Yes);
+            stringBuilder.AppendLine(string.Empty);
+            stringBuilder.Append(Resources.Names).Append(':').Append(' ').AppendLine(names);
+            stringBuilder.AppendLine(string.Empty);
+            stringBuilder.Append(Resources.Countries).Append(':').Append(' ').AppendLine(countries);
             stringBuilder.AppendLine(string.Empty);
             stringBuilder.Append(Resources.CountriesWithDst).Append(':').Append(' ').AppendLine(dstCountries);
 
@@ -344,7 +389,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         /// <param name="query">The <see cref="Query"/>v</param>
         /// <param name="maxLength">The maximum length of the result <see cref="string"/>.</param>
         /// <returns>A <see cref="string"/> with countries that use the daylight saving time.</returns>
-        private static string GetDstCountries(OneTimeZone timeZone, Query? query, int maxLength)
+        private static string GetDaylightCountries(OneTimeZone timeZone, Query? query, int maxLength)
         {
             IEnumerable<string> countries;
 
@@ -356,6 +401,95 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             else
             {
                 countries = timeZone.CountriesDaylight.Where(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            var stringBuilder = new StringBuilder();
+            var lastEntry = countries.LastOrDefault();
+
+            foreach (var country in countries)
+            {
+                stringBuilder.Append(country);
+
+                if (country != lastEntry)
+                {
+                    stringBuilder.Append(',');
+                    stringBuilder.Append(' ');
+                }
+            }
+
+            // To many countries (first pass) => remove extra info
+            if (stringBuilder.Length > maxLength)
+            {
+                stringBuilder.Clear();
+
+                foreach (var country in countries)
+                {
+                    var extraInfoStart = country.IndexOf('(', StringComparison.InvariantCultureIgnoreCase);
+                    if (extraInfoStart > 0)
+                    {
+                        stringBuilder.Append(country[..extraInfoStart]);
+                    }
+                    else
+                    {
+                        stringBuilder.Append(country);
+                    }
+
+                    if (country != lastEntry)
+                    {
+                        stringBuilder.Append(',');
+                        stringBuilder.Append(' ');
+                    }
+                }
+            }
+
+            // To many countries (second pass) => remove extra info and cut country length
+            if (stringBuilder.Length > maxLength)
+            {
+                foreach (var country in countries)
+                {
+                    var extraInfoStart = country.IndexOf('(', StringComparison.InvariantCultureIgnoreCase);
+                    if (extraInfoStart > 0)
+                    {
+                        stringBuilder.SaveAppend(country[..extraInfoStart], maxLength: 5);
+                    }
+                    else
+                    {
+                        stringBuilder.SaveAppend(country, maxLength: 5);
+                    }
+
+                    if (country != lastEntry)
+                    {
+                        stringBuilder.Append(',');
+                        stringBuilder.Append(' ');
+                    }
+                }
+            }
+
+            stringBuilder.CutTooLong(maxLength);
+
+            return stringBuilder.ToString();
+        }
+
+        /// <summary>
+        /// Return a <see cref="string"/> that contain all countries of the given time zone.
+        /// </summary>
+        /// <param name="timeZone">The time zone that contain the countries.</param>
+        /// <param name="query">The <see cref="Query"/>v</param>
+        /// <param name="maxLength">The maximum length of the result <see cref="string"/>.</param>
+        /// <returns>A <see cref="string"/> with countries.</returns>
+        private static string GetAllCountries(OneTimeZone timeZone, Query? query, int maxLength)
+        {
+            IEnumerable<string> countries;
+
+            // TODO: translate country names
+            if (query is null || string.IsNullOrWhiteSpace(query.Search))
+            {
+                countries = timeZone.CountriesDaylight.Concat(timeZone.CountriesStandard);
+            }
+            else
+            {
+                countries = timeZone.CountriesDaylight.Where(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
+                    .Concat(timeZone.CountriesStandard.Where(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)));
             }
 
             var stringBuilder = new StringBuilder();
@@ -466,6 +600,18 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             }
 
             return false;
+        }
+
+        private static bool MatchStandardCountries(OneTimeZone timeZone, Query query)
+        {
+            var result = timeZone.CountriesStandard?.Any(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)) == true;
+            return result;
+        }
+
+        private static bool MatchDaylightCountries(OneTimeZone timeZone, Query query)
+        {
+            var result = timeZone.CountriesDaylight?.Any(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)) == true;
+            return result;
         }
     }
 }
