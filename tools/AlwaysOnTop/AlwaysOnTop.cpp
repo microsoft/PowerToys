@@ -33,7 +33,7 @@ void AlwaysOnTop::Init()
         return;
     }
 
-    RegisterHotKey(hotKeyHandleWindow, 1, MOD_CONTROL | MOD_NOREPEAT, 32 /* space */);
+    RegisterHotKey(hotKeyHandleWindow, 1, MOD_CONTROL | MOD_NOREPEAT, 0x54 /* T */);
 }
 
 LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
