@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
@@ -13,6 +12,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
     {
         public OneTimeZone()
         {
+            Offset = "00:00";
             Name = string.Empty;
             MilitaryName = string.Empty;
             Shortcut = string.Empty;
@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         /// <summary>
         /// Gets or sets the time offset of this time zone (the gap from the UTC time zone)
         /// </summary>
-        public TimeSpan Offset { get; set; }
+        public string Offset { get; set; }
 
         /// <summary>
         /// Gets or sets the name of this time zone.
@@ -63,6 +63,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Classes
         /// </summary>
         public IEnumerable<string> CountriesDaylight { get; set; }
 
-        internal string OffsetString => Offset.ToString("-hh:mm", CultureInfo.InvariantCulture);
+        /// <summary>
+        /// Gets a compatible <see cref="TimeSpan"/> of the <see cref="Offset"/>.
+        /// </summary>
+        internal TimeSpan OffsetAsTimeSpan => TimeSpan.TryParse(Offset, out var result) ? result : new TimeSpan(0, 0, 0);
     }
 }

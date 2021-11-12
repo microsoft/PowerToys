@@ -53,11 +53,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         private static bool TimeZoneInfoMatchQuery(OneTimeZone timeZone, Query query)
         {
             // allow search for "-x:xx"
-            if (query.Search.StartsWith('-') && timeZone.OffsetString.StartsWith('-'))
+            if (query.Search.StartsWith('-') && timeZone.Offset.StartsWith('-'))
             {
-                if (timeZone.OffsetString.ElementAtOrDefault(1) == '0')
+                if (timeZone.Offset.ElementAtOrDefault(1) == '0')
                 {
-                    if (timeZone.OffsetString[2..].StartsWith(query.Search[1..], StringComparison.InvariantCultureIgnoreCase))
+                    if (timeZone.Offset[2..].StartsWith(query.Search[1..], StringComparison.InvariantCultureIgnoreCase))
                     {
                         return true;
                     }
@@ -65,13 +65,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             }
 
             // allow search for "+xx:xx"
-            if (query.Search.StartsWith('+') && timeZone.OffsetString.StartsWith(query.Search[1..], StringComparison.InvariantCultureIgnoreCase))
+            if (query.Search.StartsWith('+') && timeZone.Offset.StartsWith(query.Search[1..], StringComparison.InvariantCultureIgnoreCase))
             {
                 return true;
             }
 
             // "-1x:xx" match here
-            if (timeZone.OffsetString.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase))
+            if (timeZone.Offset.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase))
             {
                 return true;
             }
@@ -179,7 +179,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
         {
             foreach (var timeZoneInfo in TimeZoneInfo.GetSystemTimeZones())
             {
-                if (timeZoneInfo.BaseUtcOffset == timeZone.Offset
+                if (timeZoneInfo.BaseUtcOffset == timeZone.OffsetAsTimeSpan
                 && timeZoneInfo.SupportsDaylightSavingTime == daylightSavingTime)
                 {
                     return TimeZoneInfo.ConvertTime(utcNow, timeZoneInfo);
@@ -187,7 +187,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             }
 
             // Fall-back
-            var result = utcNow + timeZone.Offset;
+            var result = utcNow + timeZone.OffsetAsTimeSpan;
             return result;
         }
 
@@ -220,7 +220,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(timeZone.OffsetString);
+            stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(timeZone.Offset);
             stringBuilder.Append(Resources.UseDst).Append(':').Append(' ').AppendLine(Resources.No);
             stringBuilder.AppendLine(string.Empty);
             stringBuilder.Append(Resources.Names).Append(':').Append(' ').AppendLine(names);
@@ -243,7 +243,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(timeZone.OffsetString);
+            stringBuilder.Append(Resources.Offset).Append(':').Append(' ').AppendLine(timeZone.Offset);
             stringBuilder.Append(Resources.UseDst).Append(':').Append(' ').AppendLine(Resources.Yes);
             stringBuilder.AppendLine(string.Empty);
             stringBuilder.Append(Resources.Names).Append(':').Append(' ').AppendLine(names);
