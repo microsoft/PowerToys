@@ -34,88 +34,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
 
             foreach (var timeZone in timeZones)
             {
-                if (TimeZoneInfoMatchQuery(timeZone, query))
-                {
-                    results.AddRange(GetResults(timeZone, options, query, iconPath, utcNow));
-                }
+                results.AddRange(GetResults(timeZone, options, query, iconPath, utcNow));
             }
 
             var orderResults = results.OrderBy(result => result.Title);
             return orderResults;
-        }
-
-        /// <summary>
-        /// Check if the given time zone contains a value that match the given <see cref="Query"/>.
-        /// </summary>
-        /// <param name="timeZone">The time zone to check.</param>
-        /// <param name="query">The <see cref="Query"/> that should match.</param>
-        /// <returns><see langword="true"/> if it's match, otherwise <see langword="false"/>.</returns>
-        private static bool TimeZoneInfoMatchQuery(OneTimeZone timeZone, Query query)
-        {
-            // allow search for "-x:xx"
-            if (query.Search.StartsWith('-') && timeZone.Offset.StartsWith('-'))
-            {
-                if (timeZone.Offset.ElementAtOrDefault(1) == '0')
-                {
-                    if (timeZone.Offset[2..].StartsWith(query.Search[1..], StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            // allow search for "+xx:xx"
-            if (query.Search.StartsWith('+') && timeZone.Offset.StartsWith(query.Search[1..], StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            // "-1x:xx" match here
-            if (timeZone.Offset.Contains(query.Search, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (timeZone.Name.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (timeZone.MilitaryName.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (timeZone.Shortcut.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (timeZone.TimeNamesDaylight != null
-            && timeZone.TimeNamesDaylight.Any(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)))
-            {
-                return true;
-            }
-
-            if (timeZone.TimeNamesStandard != null
-            && timeZone.TimeNamesStandard.Any(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)))
-            {
-                return true;
-            }
-
-            if (timeZone.CountriesStandard != null
-            && timeZone.CountriesStandard.Any(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)))
-            {
-                return true;
-            }
-
-            if (timeZone.CountriesDaylight != null
-            && timeZone.CountriesDaylight.Any(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -135,8 +58,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             // TODO: add time zone shortcuts
             var results = new Collection<Result>();
 
-            var countries = GetStandardCountries(timeZone, query, maxLength: 100);
-            if (countries.Length > 0)
+            var standardCountires = GetStandardCountries(timeZone, query, maxLength: 100);
+            if (standardCountires.Length > 0 || MatchStandardNames(timeZone, query) || MatchNames(timeZone, query) || MatchOffset(timeZone, query))
             {
                 var title = GetTitle(timeZone, options, utcNow, false);
 
@@ -144,14 +67,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 {
                     ContextData = timeZone,
                     IcoPath = iconPath,
-                    SubTitle = countries,
+                    SubTitle = standardCountires,
                     Title = title,
                     ToolTipData = new ToolTipData(title, GetToolTip(timeZone, options)),
                 });
             }
 
             var dstCountries = GetDstCountries(timeZone, query, maxLength: 100);
-            if (dstCountries.Length > 0)
+            if (dstCountries.Length > 0 || MatchDaylightNames(timeZone, query) || MatchNames(timeZone, query) || MatchOffset(timeZone, query))
             {
                 var title = GetTitle(timeZone, options, utcNow, true);
 
@@ -298,7 +221,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 }
             }
 
-            // To many names (first pass) => use shortcut for "time" and "time zone"
+            // To many names (first pass) => use shortcuts
             if (stringBuilder.Length > maxLength)
             {
                 stringBuilder.Replace("Time Zone", "TZ");
@@ -500,6 +423,49 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
             stringBuilder.CutTooLong(maxLength);
 
             return stringBuilder.ToString();
+        }
+
+        private static bool MatchNames(OneTimeZone timeZone, Query query)
+        {
+            var result = timeZone.Name.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)
+                || timeZone.MilitaryName.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase);
+
+            return result;
+        }
+
+        private static bool MatchDaylightNames(OneTimeZone timeZone, Query query)
+        {
+            var result = timeZone.TimeNamesDaylight?.Any(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)) == true;
+            return result;
+        }
+
+        private static bool MatchStandardNames(OneTimeZone timeZone, Query query)
+        {
+            var result = timeZone.TimeNamesDaylight?.Any(x => x.Contains(query.Search, StringComparison.CurrentCultureIgnoreCase)) == true;
+            return result;
+        }
+
+        private static bool MatchOffset(OneTimeZone timeZone, Query query)
+        {
+            // allow search for "-x:xx"
+            if (query.Search.StartsWith('-') && timeZone.Offset.StartsWith('-'))
+            {
+                if (timeZone.Offset.ElementAtOrDefault(1) == '0')
+                {
+                    if (timeZone.Offset[2..].StartsWith(query.Search[1..], StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            // allow search for "+xx:xx"
+            if (query.Search.StartsWith('+') && timeZone.Offset.StartsWith(query.Search[1..], StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
