@@ -298,7 +298,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeZone.Helper
                 }
             }
 
-            // To many names (first pass) => cut name length
+            // To many names (first pass) => use shortcut for "time" and "time zone"
+            if (stringBuilder.Length > maxLength)
+            {
+                stringBuilder.Replace("Time Zone", "TZ");
+                stringBuilder.Replace("Standard Time", "ST");
+                stringBuilder.Replace("Daylight Time", "DT");
+            }
+
+            // To many names (second pass) => cut name length
             if (stringBuilder.Length > maxLength)
             {
                 foreach (var country in names)
