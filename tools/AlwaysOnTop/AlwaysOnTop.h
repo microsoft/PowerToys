@@ -28,13 +28,16 @@ private:
     static inline AlwaysOnTop* s_instance = nullptr;
 
     HWND hotKeyHandleWindow{ nullptr };
-    HWND currentlyOnTop{ nullptr };
+    std::vector<HWND> topmostWindows;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
     void ProcessCommand(HWND window);
-    bool SetWindowOnTop(HWND window);
-    void ResetCurrentOnTop();
+    void ResetAll();
     void CleanUp();
+
+    bool IsTopmost(HWND window) const noexcept;
+    bool SetTopmostWindow(HWND window) const noexcept;
+    bool ResetTopmostWindow(HWND window) const noexcept;
 };
 
