@@ -36,18 +36,6 @@ void AlwaysOnTop::Init()
     RegisterHotKey(hotKeyHandleWindow, 1, MOD_CONTROL | MOD_NOREPEAT, 32 /* space */);
 }
 
-void AlwaysOnTop::CleanUp()
-{
-    ResetCurrentOnTop();
-    if (hotKeyHandleWindow)
-    {
-        DestroyWindow(hotKeyHandleWindow);
-        hotKeyHandleWindow = nullptr;
-    }
-    UnregisterClass(HOTKEY_WINDOW_CLASS_NAME, reinterpret_cast<HINSTANCE>(&__ImageBase));
-}
-
-
 LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
     if (message == WM_HOTKEY) 
@@ -62,28 +50,63 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
 
 void AlwaysOnTop::ProcessCommand(HWND window)
 {
-    bool alreadyOnTop = (currentlyOnTop == window);
-    ResetCurrentOnTop();
-    if (!alreadyOnTop) 
+    bool topmost = IsTopmost(window);
+    if (topmost) 
     {
-        (void)SetWindowOnTop(window);
+        if (ResetTopmostWindow(window))
+        {
+            auto iter = std::find(topmostWindows.begin(), topmostWindows.end(), window);
+            if (iter != topmostWindows.end())
+            {
+                topmostWindows.erase(iter);
+            }
+        }
+    }
+    else
+    {
+        if (SetTopmostWindow(window))
+        {
+            topmostWindows.push_back(window);
+        }
     }
 }
 
-bool AlwaysOnTop::SetWindowOnTop(HWND window)
+void AlwaysOnTop::ResetAll()
 {
-    if (SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)) 
+    for (HWND topWindow : topmostWindows)
     {
-        currentlyOnTop = window;
-        return true;
+        if (!ResetTopmostWindow(topWindow))
+        {
+            //TODO: log error
+        }
     }
-    return false;
+
+    topmostWindows.clear();
 }
 
-void AlwaysOnTop::ResetCurrentOnTop()
+void AlwaysOnTop::CleanUp()
 {
-    if (currentlyOnTop && SetWindowPos(currentlyOnTop, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)) 
+    ResetAll();
+    if (hotKeyHandleWindow)
     {
+        DestroyWindow(hotKeyHandleWindow);
+        hotKeyHandleWindow = nullptr;
     }
-    currentlyOnTop = nullptr;
+    UnregisterClass(HOTKEY_WINDOW_CLASS_NAME, reinterpret_cast<HINSTANCE>(&__ImageBase));
+}
+
+bool AlwaysOnTop::IsTopmost(HWND window) const noexcept
+{
+    int exStyle = GetWindowLong(window, GWL_EXSTYLE);
+    return (exStyle & WS_EX_TOPMOST) == WS_EX_TOPMOST;
+}
+
+bool AlwaysOnTop::SetTopmostWindow(HWND window) const noexcept
+{
+    return SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+}
+
+bool AlwaysOnTop::ResetTopmostWindow(HWND window) const noexcept
+{
+    return SetWindowPos(window, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
