@@ -106,7 +106,7 @@ namespace monacoPreview
             webView.Width = this.ActualWidth;
         }
 
-        string customFileName = Guid.NewGuid().ToString("N") + ".html";
+        string customFileName = "powerToysPreview" + Guid.NewGuid().ToString("N") + ".html";
         string fullCustomFilePath;
         public async void InitializeAsync(string fileName)
         {
