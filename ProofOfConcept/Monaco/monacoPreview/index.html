@@ -9,16 +9,26 @@
 			// `theme` can be "light" or "dark"
 			// `lang` is the language of the file
 			// `wrap` if the editor is wraping or not
-			const urlParams = new URLSearchParams(window.location.search);
+            //var theme = ("[[PT_THEME]]" == "dark") ? "vs-dark" : "vs";
+            //var lang = "[[PT_LANG]]";
+            //var wrap = ([[PT_WRAP]] == 1) ? true : false;
 
-			// Code for the editor
-            code = (urlParams.get("code")!==null) ? [atob(urlParams.get("code"))].join('\n') : getFile(urlParams.get("file"));
-			// Theme of the editor
-			theme = urlParams.get("theme")=="dark"?"vs-dark":"vs";
-			// Code language
-			lang = urlParams.get("lang");
-			// Word wraping
-			wrap = urlParams.get("wrap")==1?true:false;
+			//var base64code = "[[PT_CODE]]";
+			//alert(base64code);
+            
+			//var code = [atob(base64code)].join('\n');
+			//alert(code);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            // Code for the editor
+            code = [atob(urlParams.get("code"))].join('\n');
+            // Theme of the editor
+            theme = urlParams.get("theme") == "dark" ? "vs-dark" : "vs";
+            // Code language
+            lang = urlParams.get("lang");
+            // Word wraping
+			wrap = urlParams.get("wrap") == 1 ? true : false;
+
 			//URL for accessibility help
 			accessibilityHelpUrl = "";
 		</script>

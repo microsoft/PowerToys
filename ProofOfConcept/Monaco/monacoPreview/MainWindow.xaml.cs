@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Web;
 using Microsoft.Web.WebView2.Core;
 using WK.Libraries.WTL;
 
@@ -63,7 +64,7 @@ namespace monacoPreview
                 // Disable contextmenu
                 //settings.AreDefaultContextMenusEnabled = false;
                 // Disable developer menu
-                //settings.AreDevToolsEnabled = false;
+                settings.AreDevToolsEnabled = false;
                 // Disable script dialogs (like alert())
                 settings.AreDefaultScriptDialogsEnabled = false;
                 // Enables JavaScript
@@ -111,13 +112,20 @@ namespace monacoPreview
             var vsCodeLangSet = fileHandler.GetLanguage(Path.GetExtension(fileName).TrimStart('.'));
             var fileContent = File.ReadAllText(fileName);
             var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
-            // Sets the url
+
+            // prepping index html to load in
+            //var html = File.ReadAllText("index.html").Replace("\t", "");
+            //html = html.Replace("[[PT_CODE]]", base64FileCode);
+            //html = html.Replace("[[PT_LANG]]", vsCodeLangSet);
+            //html = html.Replace("[[PT_WRAP]]", settings.wrap ? "1" : "0");
+            //html = html.Replace("[[PT_THEME]]", settings.GetTheme(ThemeListener.AppMode));
 
 
             // Initialize WebView
-            webView.Source = GetURLwithCode(base64FileCode, vsCodeLangSet); 
-
+            webView.Source = GetURLwithCode(base64FileCode, vsCodeLangSet);
             await webView.EnsureCoreWebView2Async(await CoreWebView2Environment.CreateAsync());
+
+            //webView.NavigateToString(html);
             webView.NavigationCompleted += WebView2Init;
             webView.NavigationStarting += NavigationStarted;
         }
@@ -127,7 +135,8 @@ namespace monacoPreview
             // This function returns a url you can use to access index.html
 
             // Converts code to base64
-            code = code.Replace("+", "%2B"); // this is needed for URL encode;
+            code = HttpUtility.UrlEncode(code); // this is needed for URL encode;
+            //code = code.Replace("+", "%2B");
 
             return new Uri(settings.baseURL + "?code=" + code + "&lang=" + lang + "&theme=" + settings.GetTheme(ThemeListener.AppMode) + "&wrap=" + (settings.wrap ? "1" : "0"));
         }
