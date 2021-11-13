@@ -76,6 +76,8 @@ namespace monacoPreview
                 // Disable status bar
                 settings.IsStatusBarEnabled = false;
             }
+
+            File.Delete(fullCustomFilePath);
         }
 
         private void NavigationStarted(Object sender, CoreWebView2NavigationStartingEventArgs e)
@@ -104,6 +106,8 @@ namespace monacoPreview
             webView.Width = this.ActualWidth;
         }
 
+        string customFileName = Guid.NewGuid().ToString("N") + ".html";
+        string fullCustomFilePath;
         public async void InitializeAsync(string fileName)
         {
             // This function initializes the webview settings
@@ -114,15 +118,17 @@ namespace monacoPreview
             var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
 
             // prepping index html to load in
-            //var html = File.ReadAllText("index.html").Replace("\t", "");
-            //html = html.Replace("[[PT_CODE]]", base64FileCode);
-            //html = html.Replace("[[PT_LANG]]", vsCodeLangSet);
-            //html = html.Replace("[[PT_WRAP]]", settings.wrap ? "1" : "0");
-            //html = html.Replace("[[PT_THEME]]", settings.GetTheme(ThemeListener.AppMode));
+            var html = File.ReadAllText("index.html").Replace("\t", "");
 
-
+            html = html.Replace("[[PT_LANG]]", vsCodeLangSet);
+            html = html.Replace("[[PT_WRAP]]", settings.wrap ? "1" : "0");
+            html = html.Replace("[[PT_THEME]]", settings.GetTheme(ThemeListener.AppMode));
+            html = html.Replace("[[PT_CODE]]", base64FileCode);
+            File.WriteAllText(customFileName, html);
+            fullCustomFilePath = Path.Combine(AppContext.BaseDirectory, customFileName);
             // Initialize WebView
-            webView.Source = GetURLwithCode(base64FileCode, vsCodeLangSet);
+            //webView.Source = GetURLwithCode(base64FileCode, vsCodeLangSet);
+            webView.Source = new Uri(fullCustomFilePath);
             await webView.EnsureCoreWebView2Async(await CoreWebView2Environment.CreateAsync());
 
             //webView.NavigateToString(html);
@@ -136,7 +142,6 @@ namespace monacoPreview
 
             // Converts code to base64
             code = HttpUtility.UrlEncode(code); // this is needed for URL encode;
-            //code = code.Replace("+", "%2B");
 
             return new Uri(settings.baseURL + "?code=" + code + "&lang=" + lang + "&theme=" + settings.GetTheme(ThemeListener.AppMode) + "&wrap=" + (settings.wrap ? "1" : "0"));
         }
