@@ -30,9 +30,13 @@ namespace monacoPreview
 
             string[] file = GetFile(args);
 
-            InitializeAsync(settings.compatibility?file[0]:file[2], fileHandler.GetLanguage(file[1]));
+            var fileName = "";
+            if(args != null && args.Length > 1)
+            {
+                fileName = args[1];
+            }
 
-            
+            InitializeAsync(fileName);
         }
 
         public string[] GetFile(string[] args)
@@ -99,33 +103,23 @@ namespace monacoPreview
             webView.Width = this.ActualWidth;
         }
 
-        public async void InitializeAsync(string code, string lang)
+        public async void InitializeAsync(string fileName)
         {
             // This function initializes the webview settings
             // Partely copied from https://weblog.west-wind.com/posts/2021/Jan/14/Taking-the-new-Chromium-WebView2-Control-for-a-Spin-in-NET-Part-1
 
+            var vsCodeLangSet = fileHandler.GetLanguage(Path.GetExtension(fileName).TrimStart('.'));
+            var fileContent = File.ReadAllText(fileName);
+            var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
             // Sets the url
-            webView.Source = settings.compatibility?GetURLwithCode(code, lang):GetURLwithFilePath(code, lang);
+
 
             // Initialize WebView
+            webView.Source = GetURLwithCode(base64FileCode, vsCodeLangSet); 
 
-            var webViewOptions = new CoreWebView2EnvironmentOptions
-            {
-                // Enable CORS for local file access.
-                AdditionalBrowserArguments = "--disable-web-security"
-            };
-
-            var env = await CoreWebView2Environment.CreateAsync(null, null, webViewOptions);
-            await webView.EnsureCoreWebView2Async(env);
+            await webView.EnsureCoreWebView2Async(await CoreWebView2Environment.CreateAsync());
             webView.NavigationCompleted += WebView2Init;
             webView.NavigationStarting += NavigationStarted;
-        }
-        
-        public Uri GetURLwithFilePath(string file, string lang)
-        {
-            // This function returns a url you can use to access index.html
-
-            return new Uri(settings.baseURL + "?file=" + file + "&lang=" + lang + "&theme=" + settings.GetTheme(ThemeListener.AppMode) + "&wrap=" + (this.settings.wrap?"1":"0"));
         }
 
         public Uri GetURLwithCode(string code, string lang)
@@ -133,9 +127,9 @@ namespace monacoPreview
             // This function returns a url you can use to access index.html
 
             // Converts code to base64
-            code = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(code)).Replace("+", "%2B");
+            code = code.Replace("+", "%2B"); // this is needed for URL encode;
 
-            return new Uri(settings.baseURL + "?code=" + code + "&lang=" + lang + "&theme=" + settings.GetTheme(ThemeListener.AppMode) + "&wrap=" + (this.settings.wrap ? "1" : "0"));
+            return new Uri(settings.baseURL + "?code=" + code + "&lang=" + lang + "&theme=" + settings.GetTheme(ThemeListener.AppMode) + "&wrap=" + (settings.wrap ? "1" : "0"));
         }
     }
 } 

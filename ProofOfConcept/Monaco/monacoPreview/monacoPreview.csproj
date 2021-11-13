@@ -29,7 +29,7 @@
 	<!-- Outputs the needed html files -->
     <ItemGroup>
         <None Update="index.html">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
     <ItemGroup>
@@ -38,9 +38,9 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="PreviewWindow.xaml">
-        <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      </Page>
+      <Compile Update="FileHandler.cs">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Compile>
     </ItemGroup>
 
 </Project>
