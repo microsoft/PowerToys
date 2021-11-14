@@ -13,20 +13,23 @@
         <SolidColorBrush x:Key="DefaultAccentBrush" Color="{ThemeResource SystemAccentColor}"/>
         <SolidColorBrush x:Key="DefaultBorderBrush" Color="{ThemeResource SystemAccentColor}"/>
     </UserControl.Resources>
-        <Grid CornerRadius="4" BorderBrush="Black" BorderThickness="6" HorizontalAlignment="Center">
+        <Grid CornerRadius="4" BorderBrush="Black" Background="Black" BorderThickness="6" HorizontalAlignment="Center">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="16"/>
+            <RowDefinition Height="8"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Image Source="ms-appx:///Assets/Modules/VideoConference.png" Opacity="0.8" Grid.ColumnSpan="2" Grid.RowSpan="2" Stretch="UniformToFill"/>
+        <Border Opacity="0.8" Grid.ColumnSpan="2" Grid.RowSpan="3" CornerRadius="2" >
+            <Image Source="ms-appx:///Assets/Modules/VideoConference.png" Stretch="UniformToFill"/>
+        </Border>
+     
         <Grid Background="{ThemeResource SystemControlAcrylicElementBrush}" Grid.Row="2"  Grid.ColumnSpan="2"/>
-        <Border x:Name="Zone1" Margin="8,8,4,8" CornerRadius="4" Grid.RowSpan="2" BorderThickness="1"/>
-        <Border x:Name="Zone2" Margin="4,8,8,4" CornerRadius="4" Grid.Column="1" BorderThickness="1"/>
-        <Border x:Name="Zone3" Margin="4,4,8,8" CornerRadius="4" Grid.Row="1" Grid.Column="1" BorderThickness="1"/>
+        <Border x:Name="Zone1" Margin="4,4,2,4" CornerRadius="2" Grid.RowSpan="2" BorderThickness="1"/>
+        <Border x:Name="Zone2" Margin="2,4,4,2" CornerRadius="2" Grid.Column="1" BorderThickness="1"/>
+        <Border x:Name="Zone3" Margin="2,2,4,4" CornerRadius="2" Grid.Row="1" Grid.Column="1" BorderThickness="1"/>
     </Grid>
 </UserControl>

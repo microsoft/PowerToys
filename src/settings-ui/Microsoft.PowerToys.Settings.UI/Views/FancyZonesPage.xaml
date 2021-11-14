@@ -93,7 +93,7 @@
                             </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
-
+                  
                     <controls:SettingExpander IsExpanded="True">
                         <controls:SettingExpander.Header>
 
@@ -108,15 +108,16 @@
                         </controls:SettingExpander.Header>
                         <controls:SettingExpander.Content>
                             <StackPanel>
-                                    <controls:FancyZonesPreviewControl HighlightOpacity="{x:Bind Mode=OneWay, Path=ViewModel.HighlightOpacity}"
+                                <controls:FancyZonesPreviewControl HighlightOpacity="{x:Bind Mode=OneWay, Path=ViewModel.HighlightOpacity}"
                                                                    IsSystemTheme="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme}"
                                                                    CustomHighlightColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=OneWay}"
                                                                    CustomBorderColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=OneWay}"
                                                                    CustomInActiveColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=OneWay}"
-                                                                   Margin="12"
-                                                                   HorizontalAlignment="Right"
-                                                                   Width="190"
-                                                                   Height="108"/>
+                                                                   Margin="{StaticResource ExpanderSettingMargin}" 
+                                                                   HorizontalAlignment="Left"
+                                                                   Width="170"
+                                                                   Grid.Column="1"
+                                                                   Height="86"/>
                                 <controls:Setting x:Uid="FancyZones_HighlightOpacity" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <Slider Minimum="0"
@@ -126,30 +127,27 @@
                                             HorizontalAlignment="Right"/>
                                     </controls:Setting.ActionContent>
                                 </controls:Setting>
-                                
-                                    <StackPanel Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}" >
-                                        
-                                        <controls:Setting x:Uid="FancyZones_ZoneHighlightColor" Style="{StaticResource ExpanderContentSettingStyle}">
-                                            <controls:Setting.ActionContent>
-                                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
-                                            </controls:Setting.ActionContent>
-                                        </controls:Setting>
 
+                                <StackPanel Visibility="{x:Bind Mode=OneWay, Path=ViewModel.SystemTheme, Converter={StaticResource FalseToVisibleConverter}}" >
+                                    <controls:Setting x:Uid="FancyZones_ZoneHighlightColor" Style="{StaticResource ExpanderContentSettingStyle}">
+                                        <controls:Setting.ActionContent>
+                                            <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}" />
+                                        </controls:Setting.ActionContent>
+                                    </controls:Setting>
 
-                                        <controls:Setting x:Uid="FancyZones_InActiveColor" Style="{StaticResource ExpanderContentSettingStyle}">
-                                            <controls:Setting.ActionContent>
-                                                <controls:ColorPickerButton x:Name="InActiveColorButton"  SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
-                                            </controls:Setting.ActionContent>
-                                        </controls:Setting>
+                                    <controls:Setting x:Uid="FancyZones_InActiveColor" Style="{StaticResource ExpanderContentSettingStyle}">
+                                        <controls:Setting.ActionContent>
+                                            <controls:ColorPickerButton x:Name="InActiveColorButton"  SelectedColor="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}" />
+                                        </controls:Setting.ActionContent>
+                                    </controls:Setting>
 
-                                        <controls:Setting x:Uid="FancyZones_BorderColor" Style="{StaticResource ExpanderContentSettingStyle}">
-                                            <controls:Setting.ActionContent>
-                                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
-                                            </controls:Setting.ActionContent>
-                                        </controls:Setting>
-                                    </StackPanel>
+                                    <controls:Setting x:Uid="FancyZones_BorderColor" Style="{StaticResource ExpanderContentSettingStyle}">
+                                        <controls:Setting.ActionContent>
+                                            <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}" />
+                                        </controls:Setting.ActionContent>
+                                    </controls:Setting>
                                 </StackPanel>
-                       
+                            </StackPanel>
                         </controls:SettingExpander.Content>
                     </controls:SettingExpander>
                 </controls:SettingsGroup>
