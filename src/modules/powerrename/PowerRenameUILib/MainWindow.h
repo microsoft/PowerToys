@@ -7,6 +7,7 @@
 #include "MainWindow.g.h"
 #include "PatternSnippet.h"
 #include "ExplorerItem.h"
+#include <map>
 
 namespace winrt::PowerRenameUILib::implementation
 {
@@ -60,12 +61,13 @@ namespace winrt::PowerRenameUILib::implementation
     private:
         bool m_allSelected;
         PowerRenameUILib::UIUpdates m_uiUpdatesItem;
-        PowerRenameUILib::ExplorerItem FindById(int32_t id);
+        inline PowerRenameUILib::ExplorerItem FindById(int32_t id);
         void ToggleAll(bool checked);
 
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_searchMRU;
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_replaceMRU;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::ExplorerItem> m_explorerItems;
+        std::map<int32_t, PowerRenameUILib::ExplorerItem> m_explorerItemsMap;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::PatternSnippet> m_searchRegExShortcuts;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::PatternSnippet> m_dateTimeShortcuts;
 

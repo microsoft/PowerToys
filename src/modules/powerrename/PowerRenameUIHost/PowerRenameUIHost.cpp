@@ -861,7 +861,6 @@ HRESULT AppWindow::OnUpdate(_In_ IPowerRenameItem* renameItem)
         }
     }
 
-    UpdateCounts();
     return S_OK;
 }
 
@@ -915,10 +914,10 @@ HRESULT AppWindow::OnRegExCompleted(_In_ DWORD threadId)
         {
             m_mainUserControl.ExplorerItems().Clear();
             PopulateExplorerItems();
-            UpdateCounts();
         }
     }
 
+    UpdateCounts();
     return S_OK;
 }
 

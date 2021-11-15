@@ -167,6 +167,7 @@ namespace winrt::PowerRenameUILib::implementation
     {
         auto newItem = winrt::make<PowerRenameUILib::implementation::ExplorerItem>(id, original, renamed, type, depth, checked);
         m_explorerItems.Append(newItem);
+        m_explorerItemsMap[id] = newItem;
     }
 
     void MainWindow::UpdateExplorerItem(int32_t id, hstring const& newName)
@@ -200,8 +201,7 @@ namespace winrt::PowerRenameUILib::implementation
 
     PowerRenameUILib::ExplorerItem MainWindow::FindById(int32_t id)
     {
-        auto it = std::find_if(m_explorerItems.begin(), m_explorerItems.end(), [id](const auto& item) { return item.Id() == id; });
-        return it != m_explorerItems.end() ? *it : NULL;
+        return m_explorerItemsMap.contains(id) ? m_explorerItemsMap[id] : NULL;
     }
 
     void MainWindow::ToggleAll(bool checked)
@@ -238,6 +238,7 @@ namespace winrt::PowerRenameUILib::implementation
         if (!m_uiUpdatesItem.ShowAll())
         {
             m_explorerItems.Clear();
+            m_explorerItemsMap.clear();
             m_uiUpdatesItem.ShowAll(true);
         }
     }
@@ -249,6 +250,7 @@ namespace winrt::PowerRenameUILib::implementation
         if (m_uiUpdatesItem.ShowAll())
         {
             m_explorerItems.Clear();
+            m_explorerItemsMap.clear();
             m_uiUpdatesItem.ShowAll(false);
         }
     }

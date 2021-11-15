@@ -11,7 +11,7 @@ namespace winrt::PowerRenameUILib::implementation
             File = 1
         };
         
-        ExplorerItem() = delete;
+        ExplorerItem() = default;
 
         ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked);
         int32_t Id();
