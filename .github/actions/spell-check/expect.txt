@@ -787,7 +787,7 @@ hmonitor
 HOLDENTER
 HOLDESC
 homljgmgpmcbpjbnjpfijnhipfkiclkd
-Homepage
+homepage
 HOOKPROC
 hostname
 hotkeycontrol
@@ -2334,7 +2334,7 @@ VTABLE
 Vtbl
 wav
 WBounds
-Wca
+wca
 wcautil
 WCE
 wcex
