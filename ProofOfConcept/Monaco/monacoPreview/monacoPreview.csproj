@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
     <PropertyGroup>
+        <OutputType>WinExe</OutputType>
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <UseWPF>true</UseWPF>
         <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-        <Company>Microsoft Corporation</Company>
-        <AssemblyVersion>0.0.0</AssemblyVersion>
-        <OutputType>WinExe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,7 +29,7 @@
 	<!-- Outputs the needed html files -->
     <ItemGroup>
         <None Update="index.html">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
     <ItemGroup>
@@ -40,11 +38,9 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-      <Page Remove="PreviewWindow.xaml" />
-    </ItemGroup>
-    <ItemGroup>
-      <Compile Remove="PreviewWindow.xaml.cs" />
-      <Compile Remove="MonacoPreviewHandlerInterfaces.cs" />
+      <Compile Update="FileHandler.cs">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Compile>
     </ItemGroup>
 
 </Project>

@@ -1,18 +1,7 @@
-﻿<!doctype html>
+﻿<!doctype HTML>
 <html>
 	<head>
 		<script>
-			
-			function getFile(path) {
-				const xhttp = new XMLHttpRequest();
-				xhttp.onload = function() {
-					code = this.responseText;
-					InitializeEditor();
-				}
-				xhttp.open("GET", "file:///"+path, true);
-				xhttp.send();
-            }
-
 			// Set variables
 
 			// Get URL parameters:
@@ -20,22 +9,26 @@
 			// `theme` can be "light" or "dark"
 			// `lang` is the language of the file
 			// `wrap` if the editor is wraping or not
-			const urlParams = new URLSearchParams(window.location.search);
+            var theme = ("[[PT_THEME]]" == "dark") ? "vs-dark" : "vs";
+            var lang = "[[PT_LANG]]";
+            var wrap = ([[PT_WRAP]] == 1) ? true : false;
 
-			// Code for the editor
-            code = (urlParams.get("code")!==null) ? [atob(urlParams.get("code"))].join('\n') : getFile(urlParams.get("file"));
-			// Theme of the editor
-			theme = urlParams.get("theme")=="dark"?"vs-dark":"vs";
-			// Code language
-			lang = urlParams.get("lang");
-			// Word wraping
-			wrap = urlParams.get("wrap")==1?true:false;
+			var base64code = "[[PT_CODE]]";
+			var code = [atob(base64code)].join('\n');
+
+
+   //         const urlParams = new URLSearchParams(window.location.search);
+   //         // Code for the editor
+   //         code = [atob(urlParams.get("code"))].join('\n');
+   //         // Theme of the editor
+   //         theme = urlParams.get("theme") == "dark" ? "vs-dark" : "vs";
+   //         // Code language
+   //         lang = urlParams.get("lang");
+   //         // Word wraping
+			//wrap = urlParams.get("wrap") == 1 ? true : false;
+
 			//URL for accessibility help
 			accessibilityHelpUrl = "";
-			
-			
-			while(code = getFile(urlParams.get("file"))){}
-			InitializeEditor();
 		</script>
 		<!-- Set browser to Edge-->
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" /> 
@@ -61,54 +54,41 @@
 		<!-- Script -->
 		<script src="monacoSRC/min/vs/loader.js"></script>
 		<script>
-			var editor;
-			function InitializeEditor() {
-				require.config({paths: {vs: 'monacoSRC/min/vs'}});
-				require(['vs/editor/editor.main'], function () {
-					// Creates the editor
-					// For all parameters: https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.istandaloneeditorconstructionoptions.html
-					editor = monaco.editor.create(document.getElementById('container'), {
-						value: code, // Sets content of the editor
-						language: lang, // Sets language fof the code
-						readOnly: true, // Sets to readonly
-						accessibilityHelpUrl: accessibilityHelpUrl, // Sets the url for accessibility help
-						contextmenu: false, // Disable context menu
-						theme: theme, // Sets editor theme
-						minimap: {enabled: false}, // Disables minimap
-						lineNumbersMinChars: "3", //Width of the line numbers
-						scrollbar: {
-							// Deactivate shadows
-							shadows: false,
+			require.config({ paths: { vs: 'monacoSRC/min/vs' } });
+			require(['vs/editor/editor.main'], function () {
+				// Creates the editor
+				// For all parameters: https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.istandaloneeditorconstructionoptions.html
+				var editor = monaco.editor.create(document.getElementById('container'), {
+					value: code, // Sets content of the editor
+					language: lang, // Sets language fof the code
+					readOnly: true, // Sets to readonly
+					accessibilityHelpUrl: accessibilityHelpUrl, // Sets the url for accessibility help
+					contextmenu: false, // Disable context menu
+					theme: theme, // Sets editor theme
+					minimap: {enabled: false}, // Disables minimap
+					lineNumbersMinChars: "3", //Width of the line numbers
+					scrollbar: {
+						// Deactivate shadows
+						shadows: false,
 
-							// Render scrollbar automatically
-							vertical: 'auto',
-							horizontal: 'auto',
+						// Render scrollbar automatically
+						vertical: 'auto',
+						horizontal: 'auto',
 
-							// Size of the scrollbar
-							verticalScrollbarSize: 17,
-							horizontalScrollbarSize: 50
-						},
-						wordWrap: (wrap ? "on" : "off") // Word wraps
-					});
-					window.onresize = function () {
-						editor.layout();
-					};
-
-					// Disable command palette
-					editor.addAction({
-						id: 'disable-F1',
-						label: '',
-						keybindings: [monaco.KeyCode.F1,],
-						precondition: null,
-						keybindingContext: null,
-						contextMenuGroupId: 'navigation',
-						contextMenuOrder: 1.5,
-						run: function (ed) {
-							return null;
-						}
-					});
+						// Size of the scrollbar
+						verticalScrollbarSize: 17,
+						horizontalScrollbarSize: 50
+					},
+					wordWrap: (wrap?"on":"off") // Word wraps
 				});
-			}
+				window.onresize = function (){
+    				editor.layout();
+				};
+				
+				// Disable command palette
+				editor.addAction({id: 'disable-F1',label: '',keybindings: [monaco.KeyCode.F1,],precondition: null,keybindingContext: null,contextMenuGroupId: 'navigation',contextMenuOrder: 1.5,run: function(ed) {return null;}});
+			});
+			
 		</script>
 	</body>
 </html>
