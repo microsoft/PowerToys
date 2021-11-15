@@ -109,9 +109,9 @@ namespace ImageResizer.Models
                     encoder.Frames.Add(
                         BitmapFrame.Create(
                             Transform(originalFrame),
-                            thumbnail: null,
+                            originalFrame.Thumbnail,
                             metadata,
-                            colorContexts: null));
+                            originalFrame.ColorContexts));
                 }
 
                 path = GetDestinationPath(encoder);
