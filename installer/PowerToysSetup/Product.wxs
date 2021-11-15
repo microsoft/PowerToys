@@ -316,27 +316,27 @@
                   <Directory Id="CalculatorImagesFolder" Name="Images" />
                   <Directory Id="CalculatorLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="FolderPluginFolder" Name="Microsoft.Plugin.Folder">
+                <Directory Id="FolderPluginFolder" Name="Folder">
                   <Directory Id="FolderPluginImagesFolder" Name="Images" />
                   <Directory Id="FolderPluginLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="ProgramPluginFolder" Name="Microsoft.Plugin.Program">
+                <Directory Id="ProgramPluginFolder" Name="Program">
                   <Directory Id="ProgramImagesFolder" Name="Images" />
                   <Directory Id="ProgramLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="ShellPluginFolder" Name="Microsoft.Plugin.Shell">
+                <Directory Id="ShellPluginFolder" Name="Shell">
                   <Directory Id="ShellImagesFolder" Name="Images" />
                   <Directory Id="ShellLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="IndexerPluginFolder" Name="Microsoft.Plugin.Indexer">
+                <Directory Id="IndexerPluginFolder" Name="Indexer">
                   <Directory Id="IndexerImagesFolder" Name="Images" />
                   <Directory Id="IndexerLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="UriPluginFolder" Name="Microsoft.Plugin.Uri">
+                <Directory Id="UriPluginFolder" Name="Uri">
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="UnitConverterPluginFolder" Name="Community.UnitConverter">
+                <Directory Id="UnitConverterPluginFolder" Name="UnitConverter">
                   <Directory Id="UnitConverterImagesFolder" Name="Images" />
                   <Directory Id="UnitConverterLanguagesFolder" Name="Languages" />
                 </Directory>
@@ -344,11 +344,11 @@
                   <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
                   <Directory Id="VSCodeWorkspaceLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="WindowWalkerPluginFolder" Name="Microsoft.Plugin.WindowWalker">
+                <Directory Id="WindowWalkerPluginFolder" Name="WindowWalker">
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
                   <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="RegistryPluginFolder" Name="Microsoft.PowerToys.Run.Plugin.Registry">
+                <Directory Id="RegistryPluginFolder" Name="Registry">
                   <Directory Id="RegistryImagesFolder" Name="Images" />
                   <Directory Id="RegistryLanguagesFolder" Name="Languages" />
                 </Directory>
@@ -361,7 +361,7 @@
                 <Directory Id="SystemPluginFolder" Name="System">
                   <Directory Id="SystemImagesFolder" Name="Images" />
                 </Directory>
-                <Directory Id="WindowsSettingsPluginFolder" Name="Microsoft.PowerToys.Run.Plugin.WindowsSettings">
+                <Directory Id="WindowsSettingsPluginFolder" Name="WindowsSettings">
                   <Directory Id="WindowsSettingsImagesFolder" Name="Images" />
                   <Directory Id="WindowsSettingsLanguagesFolder" Name="Languages" />
                 </Directory>
@@ -1059,28 +1059,28 @@
                     <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Folder_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder">
-                    <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
+                    <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Program_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ProgramPluginFolder">
-                    <File Id="Launcher_Program_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\$(var.Language)\Microsoft.Plugin.Program.resources.dll" />
+                    <File Id="Launcher_Program_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Program\$(var.Language)\Microsoft.Plugin.Program.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Shell_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ShellPluginFolder">
-                    <File Id="Launcher_Shell_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\$(var.Language)\Microsoft.Plugin.Shell.resources.dll" />
+                    <File Id="Launcher_Shell_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Shell\$(var.Language)\Microsoft.Plugin.Shell.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder">
-                    <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
+                    <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Uri_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
-                    <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
+                    <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
                 </Component>
                 <Component Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder">
                   <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
                 </Component>
                 <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
-                    <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
+                    <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Registry_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)RegistryPluginFolder">
-                    <File Id="Launcher_Registry_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Registry.resources.dll" />
+                    <File Id="Launcher_Registry_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Registry.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Service_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ServicePluginFolder">
                     <File Id="Launcher_Service_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Service.resources.dll" />
@@ -1089,7 +1089,7 @@
                     <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
                 </Component>
                 <Component Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
-                    <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
+                    <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
                 </Component>
                 <!-- Uncomment after Plugin receives the localization files.
                 <Component Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowsTerminalFolder">
@@ -1143,71 +1143,71 @@
       <!-- Folder Plugin -->
       <Component Id="FolderComponent" Directory="FolderPluginFolder" Guid="453D6C29-8F0D-46EC-B210-82E6AF547039">
         <?foreach File in plugin.json;Microsoft.Plugin.Folder.deps.json;Microsoft.Plugin.Folder.dll;ManagedTelemetry.dll?>
-        <File Id="Folder_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\$(var.File)" />
+        <File Id="Folder_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Folder\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="FolderImagesComponent" Directory="FolderPluginImagesFolder" Guid="6C5226EB-E312-4768-B4D1-B1D3ACFCCBDF">
         <?foreach File in copy.dark.png;copy.light.png;delete.dark.png;delete.light.png;file.dark.png;file.light.png;folder.dark.png;folder.light.png;user.dark.png;user.light.png;Warning.dark.png;Warning.light.png?>
-          <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\Images\$(var.File)" />
+          <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Folder\Images\$(var.File)" />
         <?endforeach?>
       </Component>
 
       <!-- Program Plugin -->
       <Component Id="ProgramComponent" Directory="ProgramPluginFolder" Guid="3C5CA6E6-3D36-4F4E-B40E-38AA5E5CB799">
         <?foreach File in plugin.json;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll;ManagedTelemetry.dll?>
-          <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\$(var.File)" />
+          <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Program\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="ProgramImagesComponent" Directory="ProgramImagesFolder" Guid="30D357F5-406F-47D1-BEFE-6022746469B4">
         <?foreach File in app.dark.png;app.light.png;disable.light.png;disable.dark.png;folder.light.png;folder.dark.png;shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
-          <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\Images\$(var.File)" />
+          <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Program\Images\$(var.File)" />
         <?endforeach?>
       </Component>
 
       <!-- Shell Plugin -->
       <Component Id="ShellComponent" Directory="ShellPluginFolder" Guid="6D3D7294-1804-47C9-83E5-47A8867F3801">
         <?foreach File in plugin.json;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll;ManagedTelemetry.dll?>
-          <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\$(var.File)" />
+          <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Shell\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="ShellImagesComponent" Directory="ShellImagesFolder" Guid="15B5DBAE-E7C1-4BF7-A29E-6CE76242F8F4">
        <?foreach File in shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
-          <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\Images\$(var.File)" />
+          <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Shell\Images\$(var.File)" />
         <?endforeach?>
       </Component>
 
       <!-- Indexer Plugin -->
       <Component Id="IndexerComponent" Directory="IndexerPluginFolder" Guid="FEA9816A-B4F7-42CC-99AF-B05F3E7F7EBF">
         <?foreach File in Microsoft.Plugin.Indexer.deps.json;Microsoft.Plugin.Indexer.dll;plugin.json;ManagedTelemetry.dll?>
-          <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\$(var.File)" />
+          <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Indexer\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="IndexerImagesComponent" Directory="IndexerImagesFolder" Guid="DB2E8D49-D104-425B-9616-952AC8CAB676">
         <?foreach File in indexer.dark.png;indexer.light.png;Warning.light.png;Warning.dark.png?>
-          <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
+          <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Indexer\Images\$(var.File)" />
         <?endforeach?>
       </Component>
 
       <!-- UnitConverter Plugin -->
       <Component Id="UnitConverterComponent" Directory="UnitConverterPluginFolder" Guid="D4F429E3-C619-49D6-9416-88A757D18E02">
         <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.UnitConverter.deps.json;Community.PowerToys.Run.Plugin.UnitConverter.dll?>
-        <File Id="UnitConverter_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\$(var.File)" />
+        <File Id="UnitConverter_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="UnitConverterImagesComponent" Directory="UnitConverterImagesFolder" Guid="16ABD217-0898-47B2-89D9-AF1ABF00F543">
-        <File Id="UnitConverterLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\unitconverter.light.png" />
-        <File Id="UnitConverterDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Community.UnitConverter\Images\unitconverter.dark.png" />
+        <File Id="UnitConverterLight" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.light.png" />
+        <File Id="UnitConverterDark" Source="$(var.BinX64Dir)modules\launcher\Plugins\UnitConverter\Images\unitconverter.dark.png" />
       </Component>
 
       <!-- Uri Plugin -->
       <Component Id="UriComponent" Directory="UriPluginFolder" Guid="C7DC8F88-554C-4375-9510-9435399B5D3D">
         <?foreach File in plugin.json;Microsoft.Plugin.Uri.deps.json;Microsoft.Plugin.Uri.dll;ManagedTelemetry.dll?>
-          <File Id="Uri_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\$(var.File)" />
+          <File Id="Uri_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="UriImagesComponent" Directory="UriImagesFolder" Guid="8C9C1634-28C8-45C4-A8EA-8D4C9B4810D0">
-        <File Id="UriDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Images\Uri.dark.png" />
-        <File Id="UriLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Images\Uri.light.png" />
+        <File Id="UriDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\Images\Uri.dark.png" />
+        <File Id="UriLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Uri\Images\Uri.light.png" />
       </Component>
 
       <!-- VSCodeWorkspaces Plugin -->
@@ -1227,23 +1227,23 @@
       <!-- WindowWalker Plugin -->  
       <Component Id="WindowWalkerComponent" Directory="WindowWalkerPluginFolder" Guid="EB1391C9-B701-421F-80FC-ABB2FEDFAD19">
         <?foreach File in plugin.json;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll;ManagedTelemetry.dll?>
-          <File Id="WindowWalker_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\$(var.File)" />
+          <File Id="WindowWalker_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="WindowWalkerImagesComponent" Directory="WindowWalkerImagesFolder" Guid="3944A7F5-77F4-4979-9911-EDE709B2F509">
-          <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.dark.png" />
-          <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.light.png" />
+          <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\windowwalker.dark.png" />
+          <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowWalker\Images\windowwalker.light.png" />
       </Component>
 
       <!-- Registry Plugin -->
       <Component Id="RegistryComponent" Directory="RegistryPluginFolder" Guid="186FDFDC-12F1-4221-BEF6-DE6763F54B18">
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;ManagedTelemetry.dll?>
-          <File Id="Registry_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\$(var.File)" />
+          <File Id="Registry_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="RegistryImagesComponent" Directory="RegistryImagesFolder" Guid="2E2C91A2-9F53-40C6-BBE9-E6FD6D6E94EB">
-          <File Id="RegistryDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Images\reg.dark.png" />
-          <File Id="RegistryLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Images\reg.light.png" />
+          <File Id="RegistryDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\Images\reg.dark.png" />
+          <File Id="RegistryLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Registry\Images\reg.light.png" />
       </Component>
 
       <!-- Service Plugin -->
@@ -1281,12 +1281,12 @@
       <!-- WindowsSettings Plugin -->
       <Component Id="WindowsSettingsComponent" Directory="WindowsSettingsPluginFolder" Guid="ACEC2B6D-8E95-43BF-A1E4-137E95F07C96">
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;ManagedTelemetry.dll?>
-          <File Id="WindowsSettings_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\$(var.File)" />
+          <File Id="WindowsSettings_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="WindowsSettingsImagesComponent" Directory="WindowsSettingsImagesFolder" Guid="E1CE33A7-6318-4FA6-A46B-9302A00BD6AA">
-          <File Id="WindowsSettingsDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Images\WindowsSettings.dark.png" />
-          <File Id="WindowsSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Images\WindowsSettings.light.png" />
+          <File Id="WindowsSettingsDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\Images\WindowsSettings.dark.png" />
+          <File Id="WindowsSettingsLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\WindowsSettings\Images\WindowsSettings.light.png" />
       </Component>
 
       <!-- WindowsTerminal Plugin -->
