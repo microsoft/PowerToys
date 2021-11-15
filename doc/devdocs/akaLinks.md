@@ -4,7 +4,7 @@
 |----------|----------|
 | getpowertoys | ms-windows-store://pdp/?productid=XP89DCGQ3K6VLD |
 | installpowertoys | https://github.com/microsoft/PowerToys/releases/latest |
-| powertoys-license | https://github.com/microsoft/PowerToys/blob/master/LICENSE |
+| powertoys-license | https://github.com/microsoft/PowerToys/blob/main/LICENSE |
 | powertoys | https://github.com/microsoft/PowerToys |
 | PowerToysAppCompat | https://github.com/microsoft/PowerToys/wiki/Application-Compatibility |
 | powerToysCannotRemapKeys | https://docs.microsoft.com/windows/powertoys/keyboard-manager#keys-that-cannot-be-remapped |
