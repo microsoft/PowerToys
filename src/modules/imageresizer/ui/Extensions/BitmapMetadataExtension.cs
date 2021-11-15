@@ -43,7 +43,14 @@ namespace ImageResizer.Extensions
 
             try
             {
-                return metadata.GetQuery(query);
+                if (metadata.ContainsQuery(query))
+                {
+                    return metadata.GetQuery(query);
+                }
+                else
+                {
+                    return null;
+                }
             }
             catch (NotSupportedException)
             {
