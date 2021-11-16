@@ -83,11 +83,11 @@ namespace ImageResizer.Models
                         try
                         {
                             // Detect whether metadata can copied successfully
-                            var newMetadata = metadata.Clone();
+                            var modifiableMetadata = metadata.Clone();
 
-                            newMetadata.RemoveQuery("/app1/ifd/exif:{uint=330}"); // this fixes the issue #9885, image 2 and 3
+                            modifiableMetadata.RemoveMetadataIfInvalid("/app1/ifd/exif:{uint=330}"); // this fixes the issue #9885, image 2 and 3
 
-                            metadata = newMetadata;
+                            metadata = modifiableMetadata;
                         }
                         catch (ArgumentException)
                         {

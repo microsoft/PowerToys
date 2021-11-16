@@ -58,5 +58,27 @@ namespace ImageResizer.Extensions
                 return null;
             }
         }
+
+        public static BitmapMetadata RemoveMetadataIfInvalid(this BitmapMetadata metadata, string query)
+        {
+            if (metadata == null || string.IsNullOrWhiteSpace(query))
+            {
+                return metadata;
+            }
+
+            try
+            {
+                _ = metadata.GetQuerySafe(query);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                // Reading invalid metadata causes an exception. We remove the given metadata in this case.
+                metadata.RemoveQuery(query);
+            }
+
+            return metadata;
+        }
     }
 }
