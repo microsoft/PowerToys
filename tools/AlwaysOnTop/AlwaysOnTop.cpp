@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "AlwaysOnTop.h"
+#include <mmsystem.h>
 
 const static wchar_t* HOTKEY_WINDOW_CLASS_NAME = L"HotkeyHandleWindowClass";
 
@@ -68,6 +69,12 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         {
             topmostWindows.push_back(window);
         }
+    }
+
+    auto soundPlayed = PlaySound((LPCTSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID);
+    if (!soundPlayed)
+    {
+        MessageBoxW(NULL, L"Sound playing error", L"AlwaysOnTop error", MB_OK | MB_ICONERROR);
     }
 }
 
