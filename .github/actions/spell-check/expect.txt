@@ -892,6 +892,7 @@ Iface
 IFACEMETHOD
 IFACEMETHODIMP
 IFancy
+ifd
 ifdef
 IFeatures
 IFile
