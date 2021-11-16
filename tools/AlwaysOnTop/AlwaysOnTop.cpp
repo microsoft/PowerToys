@@ -11,6 +11,7 @@ AlwaysOnTop::AlwaysOnTop()
 {
     s_instance = this;
     Init();
+    StartTrackingTopmostWindows();
 }
 
 AlwaysOnTop::~AlwaysOnTop()
@@ -75,6 +76,38 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     if (!soundPlayed)
     {
         MessageBoxW(NULL, L"Sound playing error", L"AlwaysOnTop error", MB_OK | MB_ICONERROR);
+    }
+}
+
+void AlwaysOnTop::StartTrackingTopmostWindows()
+{
+    using result_t = std::vector<HWND>;
+    result_t result;
+
+    auto enumWindows = [](HWND hwnd, LPARAM param) -> BOOL {
+        if (!IsWindowVisible(hwnd))
+        {
+            return TRUE;
+        }
+
+        auto windowName = GetWindowTextLength(hwnd);
+        if (windowName > 0)
+        {
+            result_t& result = *reinterpret_cast<result_t*>(param);
+            result.push_back(hwnd);
+        }
+
+        return TRUE;
+    };
+
+    EnumWindows(enumWindows, reinterpret_cast<LPARAM>(&result));
+
+    for (HWND window : result)
+    {
+        if (IsTopmost(window)) 
+        {
+            topmostWindows.push_back(window);
+        }
     }
 }
 

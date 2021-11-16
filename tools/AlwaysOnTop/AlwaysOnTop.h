@@ -33,6 +33,7 @@ private:
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
     void ProcessCommand(HWND window);
+    void StartTrackingTopmostWindows();
     void ResetAll();
     void CleanUp();
 
