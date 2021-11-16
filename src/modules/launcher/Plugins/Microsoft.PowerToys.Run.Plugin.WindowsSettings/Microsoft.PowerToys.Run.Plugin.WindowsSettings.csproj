@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\</OutputPath>
+    <OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\WindowsSettings\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>
@@ -31,7 +31,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\..\..\x64\Release\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\</OutputPath>
+    <OutputPath>..\..\..\..\..\x64\Release\modules\launcher\Plugins\WindowsSettings\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
