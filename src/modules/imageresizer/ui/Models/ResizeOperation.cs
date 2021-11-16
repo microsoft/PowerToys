@@ -87,6 +87,9 @@ namespace ImageResizer.Models
                             // Detect whether metadata can copied successfully
                             var modifiableMetadata = metadata.Clone();
 
+#if DEBUG
+                            modifiableMetadata.PrintsAllMetadataToDebugOutput();
+#endif
                             var metadataList = modifiableMetadata.GetListOfInvalidMetadata();
                             foreach (var (metadataPath, value) in metadataList)
                             {

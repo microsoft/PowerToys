@@ -140,6 +140,68 @@ namespace ImageResizer.Extensions
             }
         }
 
+        /// <summary>
+        /// Prints all metadata to debug console
+        /// </summary>
+        /// <remarks>
+        /// Intented for debug!!!
+        /// </remarks>
+        public static void PrintsAllMetadataToDebugOutput(this BitmapMetadata metadata)
+        {
+            if (metadata == null)
+            {
+                Debug.WriteLine($"Metadata was null.");
+            }
+
+            var listOfMetadata = metadata.GetListOfMetadata();
+            foreach (var metadataItem in listOfMetadata)
+            {
+                Debug.WriteLine($"{metadataItem.metadataPath} | {metadataItem.value}");
+            }
+        }
+
+        /// <summary>
+        /// Gets all metadata
+        /// Iterates recursively through all metadata
+        /// </summary>
+        /// <remarks>
+        /// Intented for debug!!!
+        /// </remarks>
+        public static List<(string metadataPath, object value)> GetListOfMetadata(this BitmapMetadata metadata)
+        {
+            var listOfAllMetadata = new List<(string metadataPath, object value)>();
+
+            GetMetadataRecursively(metadata, string.Empty);
+
+            return listOfAllMetadata;
+
+            void GetMetadataRecursively(BitmapMetadata metadata, string query)
+            {
+                foreach (string relativeQuery in metadata)
+                {
+                    string absolutePath = query + relativeQuery;
+
+                    object metadataQueryReader = null;
+
+                    try
+                    {
+                        metadataQueryReader = metadata.GetQuerySafe(relativeQuery);
+                        listOfAllMetadata.Add((absolutePath, metadataQueryReader));
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        listOfAllMetadata.Add((absolutePath, $"######## INVALID METADATA: {ex.Message}"));
+                        Debug.WriteLine(ex);
+                    }
+
+                    if (metadataQueryReader is BitmapMetadata innerMetadata)
+                    {
+                        GetMetadataRecursively(innerMetadata, absolutePath);
+                    }
+                }
+            }
         }
     }
 }
