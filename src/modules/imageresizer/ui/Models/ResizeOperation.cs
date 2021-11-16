@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -90,14 +89,24 @@ namespace ImageResizer.Models
 #if DEBUG
                             modifiableMetadata.PrintsAllMetadataToDebugOutput();
 #endif
-                            var metadataList = modifiableMetadata.GetListOfInvalidMetadata();
-                            foreach (var (metadataPath, value) in metadataList)
+
+                            // transfer all readable metadata into a new metadata object. Discards invalid/unreadable tags.
+                            var newMetadata = new BitmapMetadata(metadata.Format);
+                            var listOfMetadata = modifiableMetadata.GetListOfMetadata();
+                            foreach (var (metadataPath, value) in listOfMetadata)
                             {
-                                Debug.WriteLine($"Trying to remove invalid metadata found at {metadataPath}.");
-                                modifiableMetadata.RemoveQuerySafe(metadataPath);
+                                if (value is BitmapMetadata bitmapMetadata)
+                                {
+                                    var newBitmapMetadata = new BitmapMetadata(bitmapMetadata.Format);
+                                    newMetadata.SetQuerySafe(metadataPath, newBitmapMetadata);
+                                }
+                                else
+                                {
+                                    newMetadata.SetQuerySafe(metadataPath, value);
+                                }
                             }
 
-                            metadata = modifiableMetadata;
+                            metadata = newMetadata;
                         }
                         catch (ArgumentException ex)
                         {

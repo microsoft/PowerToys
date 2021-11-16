@@ -75,21 +75,40 @@ namespace ImageResizer.Extensions
                     metadata.RemoveQuery(query);
                 }
             }
-            catch (InvalidOperationException ex)
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Debug.WriteLine($"Exception while trying to remove {query} from metadata.");
                 Debug.WriteLine(ex);
             }
         }
 
+        public static void SetQuerySafe(this BitmapMetadata metadata, string query, object value)
+        {
+            if (metadata == null || string.IsNullOrWhiteSpace(query) || value == null)
+            {
+                return;
+            }
+
+            try
+            {
+                metadata.SetQuery(query, value);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Debug.WriteLine($"Exception while trying to set value {value} to query {query}");
+                Debug.WriteLine(ex);
+            }
+        }
+
         /// <summary>
-        /// Gets metadata path for metadata which cause an exception on read.
+        /// Gets all metadata
         /// Iterates recursively through all metadata
         /// </summary>
-        /// <remarks>
-        /// fixes the issue #9885, image 2 and 3
-        /// </remarks>
-        public static List<(string metadataPath, object value)> GetListOfInvalidMetadata(this BitmapMetadata metadata)
+        public static List<(string metadataPath, object value)> GetListOfMetadata(this BitmapMetadata metadata)
         {
             var listOfAllMetadata = new List<(string metadataPath, object value)>();
 
@@ -102,6 +121,7 @@ namespace ImageResizer.Extensions
                 foreach (string relativeQuery in metadata)
                 {
                     string absolutePath = query + relativeQuery;
+
                     object metadataQueryReader = null;
 
                     try
@@ -109,8 +129,14 @@ namespace ImageResizer.Extensions
                         metadataQueryReader = GetQueryWithPreCheck(metadata, relativeQuery);
                     }
 #pragma warning disable CA1031 // Do not catch general exception types
-                    catch (Exception)
+                    catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        Debug.WriteLine((absolutePath, $"Invalid metadata found at query path {absolutePath}. Skipping metadata entry | {ex.Message}"));
+                        Debug.WriteLine(ex);
+                    }
+
+                    if (metadataQueryReader != null)
                     {
                         listOfAllMetadata.Add((absolutePath, metadataQueryReader));
                     }
@@ -144,7 +170,7 @@ namespace ImageResizer.Extensions
         /// Prints all metadata to debug console
         /// </summary>
         /// <remarks>
-        /// Intented for debug!!!
+        /// Intented for debug only!!!
         /// </remarks>
         public static void PrintsAllMetadataToDebugOutput(this BitmapMetadata metadata)
         {
@@ -153,9 +179,10 @@ namespace ImageResizer.Extensions
                 Debug.WriteLine($"Metadata was null.");
             }
 
-            var listOfMetadata = metadata.GetListOfMetadata();
+            var listOfMetadata = metadata.GetListOfMetadataForDebug();
             foreach (var metadataItem in listOfMetadata)
             {
+                // Debug.WriteLine($"modifiableMetadata.RemoveQuerySafe(\"{metadataItem.metadataPath}\");");
                 Debug.WriteLine($"{metadataItem.metadataPath} | {metadataItem.value}");
             }
         }
@@ -165,9 +192,9 @@ namespace ImageResizer.Extensions
         /// Iterates recursively through all metadata
         /// </summary>
         /// <remarks>
-        /// Intented for debug!!!
+        /// Intented for debug only!!!
         /// </remarks>
-        public static List<(string metadataPath, object value)> GetListOfMetadata(this BitmapMetadata metadata)
+        public static List<(string metadataPath, object value)> GetListOfMetadataForDebug(this BitmapMetadata metadata)
         {
             var listOfAllMetadata = new List<(string metadataPath, object value)>();
 
