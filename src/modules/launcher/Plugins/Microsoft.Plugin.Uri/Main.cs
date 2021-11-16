@@ -63,17 +63,15 @@ namespace Microsoft.Plugin.Uri
             {
                 results.Add(new Result
                 {
-                    Title = Properties.Resources.Microsoft_plugin_uri_default_browser,
+                    Title = Properties.Resources.Microsoft_plugin_uri_open,
                     SubTitle = BrowserPath,
-                    IcoPath = _uriSettings.ShowBrowserIcon
-                          ? BrowserIconPath
-                          : DefaultIconPath,
+                    IcoPath = DefaultIconPath,
                     Action = action =>
                     {
                         if (!Helper.OpenInShell(BrowserPath))
                         {
                             var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
-                            var message = $"{Properties.Resources.Microsoft_plugin_default_browser_open_failed}: ";
+                            var message = $"{Properties.Resources.Microsoft_plugin_uri_open_failed}: ";
                             Context.API.ShowMsg(title, message);
                             return false;
                         }
@@ -85,16 +83,19 @@ namespace Microsoft.Plugin.Uri
             }
 
             if (!string.IsNullOrEmpty(query?.Search)
-                && _uriParser.TryParse(query.Search, out var uriResult)
+                && _uriParser.TryParse(query.Search, out var uriResult, out var isWebUri)
                 && _uriResolver.IsValidHost(uriResult))
             {
                 var uriResultString = uriResult.ToString();
+                var isWebUriBool = isWebUri;
 
                 results.Add(new Result
                 {
                     Title = uriResultString,
-                    SubTitle = Properties.Resources.Microsoft_plugin_uri_website,
-                    IcoPath = _uriSettings.ShowBrowserIcon
+                    SubTitle = isWebUriBool
+                        ? Properties.Resources.Microsoft_plugin_uri_website
+                        : Properties.Resources.Microsoft_plugin_uri_open,
+                    IcoPath = isWebUriBool
                         ? BrowserIconPath
                         : DefaultIconPath,
                     Action = action =>
@@ -118,7 +119,7 @@ namespace Microsoft.Plugin.Uri
         private static bool IsActivationKeyword(Query query)
         {
             return !string.IsNullOrEmpty(query?.ActionKeyword)
-                            && query?.ActionKeyword == query?.RawQuery;
+                   && query?.ActionKeyword == query?.RawQuery;
         }
 
         private bool IsDefaultBrowserSet()
@@ -155,16 +156,23 @@ namespace Microsoft.Plugin.Uri
             UpdateBrowserIconPath(newTheme);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive but will log the exception")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Design",
+            "CA1031:Do not catch general exception types",
+            Justification = "We want to keep the process alive but will log the exception")]
         private void UpdateBrowserIconPath(Theme newTheme)
         {
             try
             {
-                var progId = _registryWrapper.GetRegistryValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice", "ProgId");
+                var progId = _registryWrapper.GetRegistryValue(
+                    "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice",
+                    "ProgId");
                 var programLocation =
 
                     // Resolve App Icon (UWP)
-                    _registryWrapper.GetRegistryValue("HKEY_CLASSES_ROOT\\" + progId + "\\Application", "ApplicationIcon")
+                    _registryWrapper.GetRegistryValue(
+                        "HKEY_CLASSES_ROOT\\" + progId + "\\Application",
+                        "ApplicationIcon")
 
                     // Resolves default  file association icon (UWP + Normal)
                     ?? _registryWrapper.GetRegistryValue("HKEY_CLASSES_ROOT\\" + progId + "\\DefaultIcon", null);
@@ -174,14 +182,21 @@ namespace Microsoft.Plugin.Uri
                 if (programLocation.StartsWith("@", StringComparison.Ordinal))
                 {
                     var directProgramLocationStringBuilder = new StringBuilder(128);
-                    if (NativeMethods.SHLoadIndirectString(programLocation, directProgramLocationStringBuilder, (uint)directProgramLocationStringBuilder.Capacity, IntPtr.Zero) ==
+                    if (NativeMethods.SHLoadIndirectString(
+                            programLocation,
+                            directProgramLocationStringBuilder,
+                            (uint)directProgramLocationStringBuilder.Capacity,
+                            IntPtr.Zero) ==
                         NativeMethods.Hresult.Ok)
                     {
                         // Check if there's a postfix with contract-white/contrast-black icon is available and use that instead
                         var directProgramLocation = directProgramLocationStringBuilder.ToString();
-                        var themeIcon = newTheme == Theme.Light || newTheme == Theme.HighContrastWhite ? "contrast-white" : "contrast-black";
+                        var themeIcon = newTheme == Theme.Light || newTheme == Theme.HighContrastWhite
+                            ? "contrast-white"
+                            : "contrast-black";
                         var extension = Path.GetExtension(directProgramLocation);
-                        var themedProgLocation = $"{directProgramLocation.Substring(0, directProgramLocation.Length - extension.Length)}_{themeIcon}{extension}";
+                        var themedProgLocation =
+                            $"{directProgramLocation.Substring(0, directProgramLocation.Length - extension.Length)}_{themeIcon}{extension}";
                         BrowserIconPath = File.Exists(themedProgLocation)
                             ? themedProgLocation
                             : directProgramLocation;

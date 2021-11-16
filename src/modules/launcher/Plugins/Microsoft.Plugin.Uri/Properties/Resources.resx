@@ -123,8 +123,11 @@
   <data name="Microsoft_plugin_uri_default_browser" xml:space="preserve">
     <value>Open default browser</value>
   </data>
+  <data name="Microsoft_plugin_uri_open" xml:space="preserve">
+    <value>Open URI</value>
+  </data>
   <data name="Microsoft_plugin_uri_open_failed" xml:space="preserve">
-    <value>Failed to open URL</value>
+    <value>Failed to open URI</value>
   </data>
   <data name="Microsoft_plugin_uri_plugin_description" xml:space="preserve">
     <value>Opens URLs and UNC network shares.</value>
