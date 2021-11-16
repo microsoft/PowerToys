@@ -18,41 +18,56 @@ namespace ABI
 }
 #endif
 
-void StartDrawing();
-void StopDrawing();
+struct Highlighter
+{
+    bool MyRegisterClass(HINSTANCE hInstance);
+    static Highlighter* instance;
 
-constexpr auto m_className = L"MouseHighlighter";
-constexpr auto m_windowTitle = L"MouseHighlighter";
-HWND m_hwndOwner;
-HWND m_hwnd;
-HINSTANCE m_hinstance;
-constexpr DWORD ID_SHORTCUT_ACTIVATE = 1;
-constexpr DWORD ID_SHORTCUT_EXIT = 2;
+private:
+    void DestroyHighlighter();
+    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept;
+    void StartDrawing();
+    void StopDrawing();
+    bool CreateHighlighter();
+    void AddDrawingPoint(winrt::Windows::UI::Color color);
+    void ClearDrawing();
+    bool pressed = false;
+    HHOOK mousehook = NULL;
+    static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
-winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
-winrt::Compositor m_compositor{ nullptr };
-winrt::Desktop::DesktopWindowTarget m_target{ nullptr };
-winrt::ContainerVisual m_root{ nullptr };
-winrt::LayerVisual m_layer{ nullptr };
-winrt::ShapeVisual m_shape{ nullptr };
+    static constexpr auto m_className = L"MouseHighlighter";
+    static constexpr auto m_windowTitle = L"MouseHighlighter";
+    HWND m_hwndOwner = NULL;
+    HWND m_hwnd = NULL;
+    HINSTANCE m_hinstance = NULL;
+    static constexpr DWORD ID_SHORTCUT_ACTIVATE = 1;
+    static constexpr DWORD ID_SHORTCUT_EXIT = 2;
 
-winrt::CompositionEllipseGeometry m_cursorGeometry{ nullptr };
-winrt::CompositionSpriteShape m_cursor{ nullptr };
+    winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
+    winrt::Compositor m_compositor{ nullptr };
+    winrt::Desktop::DesktopWindowTarget m_target{ nullptr };
+    winrt::ContainerVisual m_root{ nullptr };
+    winrt::LayerVisual m_layer{ nullptr };
+    winrt::ShapeVisual m_shape{ nullptr };
 
-bool visible = false;
+    winrt::CompositionEllipseGeometry m_cursorGeometry{ nullptr };
+    winrt::CompositionSpriteShape m_cursor{ nullptr };
 
-// Possible configurable settings
-float m_radius = 20.0f;
+    bool visible = false;
 
-int m_fadeDelay_ms = 2000;
-int m_fadeDuration_ms = 2000;
+    // Possible configurable settings
+    float m_radius = 20.0f;
 
-winrt::Windows::UI::Color m_leftClickColor = winrt::Windows::UI::ColorHelper::FromArgb(160, 255, 255, 0);
-winrt::Windows::UI::Color m_rightClickColor = winrt::Windows::UI::ColorHelper::FromArgb(160, 0, 0, 255);
+    int m_fadeDelay_ms = 2000;
+    int m_fadeDuration_ms = 2000;
 
+    winrt::Windows::UI::Color m_leftClickColor = winrt::Windows::UI::ColorHelper::FromArgb(160, 255, 255, 0);
+    winrt::Windows::UI::Color m_rightClickColor = winrt::Windows::UI::ColorHelper::FromArgb(160, 0, 0, 255);
+};
 
+Highlighter* Highlighter::instance = nullptr;
 
-bool CreateHighlighter()
+bool Highlighter::CreateHighlighter()
 {
     try
     {
@@ -91,7 +106,7 @@ bool CreateHighlighter()
 }
 
 
-void AddDrawingPoint(winrt::Windows::UI::Color color)
+void Highlighter::AddDrawingPoint(winrt::Windows::UI::Color color)
 {
     POINT pt;
         
@@ -127,33 +142,30 @@ void AddDrawingPoint(winrt::Windows::UI::Color color)
         GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
 }
 
-void ClearDrawing()
+void Highlighter::ClearDrawing()
 {
     m_shape.Shapes().Clear();
 }
 
-bool pressed = false;
-LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
 {
     if (nCode >= 0)
     {
         MSLLHOOKSTRUCT* hookData = (MSLLHOOKSTRUCT*)lParam;
         if (wParam == WM_LBUTTONDOWN)
         {
-            AddDrawingPoint(m_leftClickColor);
+            instance->AddDrawingPoint(instance->m_leftClickColor);
         }
         if (wParam == WM_RBUTTONDOWN)
         {
-            AddDrawingPoint(m_rightClickColor);
+            instance->AddDrawingPoint(instance->m_rightClickColor);
         }
     }
     return CallNextHookEx(0, nCode, wParam, lParam);
 }
 
-HHOOK mousehook = NULL;
 
-
-void StartDrawing()
+void Highlighter::StartDrawing()
 {
     visible = true;
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN),
@@ -163,7 +175,7 @@ void StartDrawing()
     mousehook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
 }
 
-void StopDrawing()
+void Highlighter::StopDrawing()
 {
     visible = false;
     ShowWindow(m_hwnd, SW_HIDE);
@@ -172,58 +184,62 @@ void StopDrawing()
     mousehook = NULL;
 }
 
-void DestroyHighlighter()
+void Highlighter::DestroyHighlighter()
 {
     PostQuitMessage(0);
 }
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept
 {
     switch (message)
     {
     case WM_NCCREATE:
-        m_hwnd = hWnd;
+        instance->m_hwnd = hWnd;
         return DefWindowProc(hWnd, message, wParam, lParam);
     case WM_CREATE:
         // Windows+Shift+H
-        RegisterHotKey(m_hwnd, ID_SHORTCUT_ACTIVATE, MOD_WIN | MOD_SHIFT | MOD_NOREPEAT, 0x48);
+        RegisterHotKey(instance->m_hwnd, ID_SHORTCUT_ACTIVATE, MOD_WIN | MOD_SHIFT | MOD_NOREPEAT, 0x48);
 
         // Ctrl+Windows+Shift+H
-        RegisterHotKey(m_hwnd, ID_SHORTCUT_EXIT, MOD_CONTROL | MOD_WIN | MOD_SHIFT | MOD_NOREPEAT, 0x48);
+        RegisterHotKey(instance->m_hwnd, ID_SHORTCUT_EXIT, MOD_CONTROL | MOD_WIN | MOD_SHIFT | MOD_NOREPEAT, 0x48);
 
-        return CreateHighlighter();
+        return instance->CreateHighlighter() ? 0 : -1;
     case WM_NCHITTEST:
         return HTTRANSPARENT;
     case WM_HOTKEY:
         switch (wParam)
         {
         case ID_SHORTCUT_ACTIVATE:
-            if (visible)
+            if (instance->visible)
             {
-                StopDrawing();
-            } else
+                instance->StopDrawing();
+            }
+            else
             {
-                StartDrawing();
+                instance->StartDrawing();
             }
             break;
         case ID_SHORTCUT_EXIT:
-            DestroyHighlighter();
+            instance->DestroyHighlighter();
             break;
         }
         break;
     case WM_DESTROY:
-        DestroyHighlighter();
+        instance->DestroyHighlighter();
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
-
     return 0;
 }
 
-bool MyRegisterClass(HINSTANCE hInstance)
+bool Highlighter::MyRegisterClass(HINSTANCE hInstance)
 {
     WNDCLASS wc{};
+
+    m_hinstance = hInstance;
+
+    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     wc.lpfnWndProc = WndProc;
     wc.hInstance = hInstance;
@@ -245,24 +261,27 @@ bool MyRegisterClass(HINSTANCE hInstance)
 }
 
 
+#pragma region MouseHighlighter_API
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPWSTR    lpCmdLine,
-    _In_ int       nCmdShow)
+int MouseHighlighterMain(HINSTANCE hInstance)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
-
-    m_hinstance = hInstance;
-
-    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    // TODO: Log instance start
+    if (Highlighter::instance != nullptr)
+    {
+        // TODO: log error here
+        return 0;
+    }
 
     // Perform application initialization:
-    if (!MyRegisterClass(hInstance))
+    Highlighter highlighter;
+    Highlighter::instance = &highlighter;
+    if (!highlighter.MyRegisterClass(hInstance))
     {
+        // TODO: log error here
+        Highlighter::instance = nullptr;
         return FALSE;
     }
+    // TODO: Log initialization here.
 
     MSG msg;
 
@@ -273,5 +292,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         DispatchMessage(&msg);
     }
 
+    // TODO: Log message loop end here.
+    Highlighter::instance = nullptr;
+
     return (int)msg.wParam;
 }
+
+#pragma endregion MouseHighlighter_API
