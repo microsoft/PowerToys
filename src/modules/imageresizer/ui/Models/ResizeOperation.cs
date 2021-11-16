@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
@@ -85,13 +87,20 @@ namespace ImageResizer.Models
                             // Detect whether metadata can copied successfully
                             var modifiableMetadata = metadata.Clone();
 
-                            modifiableMetadata.RemoveMetadataIfInvalid("/app1/ifd/exif:{uint=330}"); // this fixes the issue #9885, image 2 and 3
+                            var metadataList = modifiableMetadata.GetListOfInvalidMetadata();
+                            foreach (var (metadataPath, value) in metadataList)
+                            {
+                                Debug.WriteLine($"Trying to remove invalid metadata found at {metadataPath}.");
+                                modifiableMetadata.RemoveQuerySafe(metadataPath);
+                            }
 
                             metadata = modifiableMetadata;
                         }
-                        catch (ArgumentException)
+                        catch (ArgumentException ex)
                         {
                             metadata = null;
+
+                            Debug.WriteLine(ex);
                         }
                     }
 
