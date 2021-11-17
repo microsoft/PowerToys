@@ -4,3 +4,4 @@
 int MouseHighlighterMain(HINSTANCE hinst);
 void MouseHighlighterDisable();
 bool MouseHighlighterIsEnabled();
+void MouseHighlighterSwitch();

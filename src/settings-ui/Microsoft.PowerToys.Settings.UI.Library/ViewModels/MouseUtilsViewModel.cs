@@ -17,7 +17,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private FindMyMouseSettings FindMyMouseSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private MouseHighlighterSettings MouseHighlighterSettingsConfig { get; set; }
+
+        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -42,6 +44,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
             _findMyMouseDoNotActivateOnGameMode = FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value;
+
+            if (mouseHighlighterSettingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(mouseHighlighterSettingsRepository));
+            }
+
+            MouseHighlighterSettingsConfig = mouseHighlighterSettingsRepository.SettingsConfig;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -110,10 +119,36 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
 
-                    // TODO: Implement when this module has properties.
-                    // NotifyMouseHighlighterPropertyChanged();
+                    NotifyMouseHighlighterPropertyChanged();
                 }
             }
+        }
+
+        public HotkeySettings MouseHighlighterActivationShortcut
+        {
+            get
+            {
+                return MouseHighlighterSettingsConfig.Properties.ActivationShortcut;
+            }
+
+            set
+            {
+                if (MouseHighlighterSettingsConfig.Properties.ActivationShortcut != value)
+                {
+                    MouseHighlighterSettingsConfig.Properties.ActivationShortcut = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public void NotifyMouseHighlighterPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndMouseHighlighterSettings outsettings = new SndMouseHighlighterSettings(MouseHighlighterSettingsConfig);
+            SndModuleSettings<SndMouseHighlighterSettings> ipcMessage = new SndModuleSettings<SndMouseHighlighterSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(MouseHighlighterSettingsConfig.ToJsonString(), MouseHighlighterSettings.ModuleName);
         }
 
         private Func<string, int> SendConfigMSG { get; }

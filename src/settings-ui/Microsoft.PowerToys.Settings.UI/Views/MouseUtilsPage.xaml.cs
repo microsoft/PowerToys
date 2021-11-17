@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public MouseUtilsPage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new MouseUtilsViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<FindMyMouseSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new MouseUtilsViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<FindMyMouseSettings>.GetInstance(settingsUtils), SettingsRepository<MouseHighlighterSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
         }

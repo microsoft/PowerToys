@@ -23,6 +23,7 @@ struct Highlighter
     bool MyRegisterClass(HINSTANCE hInstance);
     static Highlighter* instance;
     void Terminate();
+    void SwitchActivationMode();
 
 private:
     void DestroyHighlighter();
@@ -41,8 +42,7 @@ private:
     HWND m_hwndOwner = NULL;
     HWND m_hwnd = NULL;
     HINSTANCE m_hinstance = NULL;
-    static constexpr DWORD ID_SHORTCUT_ACTIVATE = 1;
-    static constexpr DWORD ID_SHORTCUT_EXIT = 2;
+    static constexpr DWORD WM_SWITCHACTIVATIONMODE = WM_APP;
 
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
     winrt::Compositor m_compositor{ nullptr };
@@ -185,11 +185,14 @@ void Highlighter::StopDrawing()
     mousehook = NULL;
 }
 
+void Highlighter::SwitchActivationMode()
+{
+    PostMessage(m_hwnd, WM_SWITCHACTIVATIONMODE, 0, 0);
+}
+
 void Highlighter::DestroyHighlighter()
 {
     StopDrawing();
-    UnregisterHotKey(m_hwnd, ID_SHORTCUT_ACTIVATE);
-    UnregisterHotKey(m_hwnd, ID_SHORTCUT_EXIT);
     PostQuitMessage(0);
 }
 
@@ -201,31 +204,17 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
         instance->m_hwnd = hWnd;
         return DefWindowProc(hWnd, message, wParam, lParam);
     case WM_CREATE:
-        // Windows+Shift+H
-        RegisterHotKey(instance->m_hwnd, ID_SHORTCUT_ACTIVATE, MOD_WIN | MOD_SHIFT | MOD_NOREPEAT, 0x48);
-
-        // Ctrl+Windows+Shift+H
-        RegisterHotKey(instance->m_hwnd, ID_SHORTCUT_EXIT, MOD_CONTROL | MOD_WIN | MOD_SHIFT | MOD_NOREPEAT, 0x48);
-
         return instance->CreateHighlighter() ? 0 : -1;
     case WM_NCHITTEST:
         return HTTRANSPARENT;
-    case WM_HOTKEY:
-        switch (wParam)
+    case WM_SWITCHACTIVATIONMODE:
+        if (instance->visible)
         {
-        case ID_SHORTCUT_ACTIVATE:
-            if (instance->visible)
-            {
-                instance->StopDrawing();
-            }
-            else
-            {
-                instance->StartDrawing();
-            }
-            break;
-        case ID_SHORTCUT_EXIT:
-            instance->DestroyHighlighter();
-            break;
+            instance->StopDrawing();
+        }
+        else
+        {
+            instance->StartDrawing();
         }
         break;
     case WM_DESTROY:
@@ -279,6 +268,15 @@ void Highlighter::Terminate()
 }
 
 #pragma region MouseHighlighter_API
+
+void MouseHighlighterSwitch()
+{
+    if (Highlighter::instance != nullptr)
+    {
+        // Log instance termination
+        Highlighter::instance->SwitchActivationMode();
+    }
+}
 
 void MouseHighlighterDisable()
 {
