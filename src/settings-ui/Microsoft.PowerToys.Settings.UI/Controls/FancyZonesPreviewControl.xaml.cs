@@ -2,21 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Text;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
@@ -25,6 +18,20 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public FancyZonesPreviewControl()
         {
             this.InitializeComponent();
+
+            try
+            {
+                var wallpaperPathBuilder = new StringBuilder(260);
+                NativeMethods.SystemParametersInfo(NativeMethods.SPI_GETDESKWALLPAPER, wallpaperPathBuilder.Capacity, wallpaperPathBuilder, 0);
+                var wallpaperPath = wallpaperPathBuilder.ToString();
+                if (File.Exists(wallpaperPath))
+                {
+                    WallpaperPath = wallpaperPath;
+                }
+            }
+            catch (Win32Exception)
+            {
+            }
         }
 
         public bool IsSystemTheme
@@ -33,7 +40,15 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(IsSystemThemeProperty, value); }
         }
 
+        public string WallpaperPath
+        {
+            get { return (string)GetValue(WallpaperPathProperty); }
+            set { SetValue(WallpaperPathProperty, value); }
+        }
+
         public static readonly DependencyProperty IsSystemThemeProperty = DependencyProperty.Register("IsSystemTheme", typeof(bool), typeof(FancyZonesPreviewControl), new PropertyMetadata(default(bool), OnPropertyChanged));
+
+        public static readonly DependencyProperty WallpaperPathProperty = DependencyProperty.Register("WallpaperPath", typeof(string), typeof(FancyZonesPreviewControl), new PropertyMetadata("ms-appx:///Assets/wallpaper_placeholder.png"));
 
         public Color CustomBorderColor
         {

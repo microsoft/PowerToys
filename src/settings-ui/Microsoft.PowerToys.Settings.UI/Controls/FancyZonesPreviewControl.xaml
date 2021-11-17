@@ -32,14 +32,14 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="6"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Border Opacity="0.8" Grid.ColumnSpan="2" Grid.RowSpan="3" CornerRadius="2" >
-            <Image Source="ms-appx:///Assets/wallpaper_placeholder.png" Stretch="UniformToFill"/>
+            <Image Source="{x:Bind WallpaperPath, Mode=OneWay}" Stretch="UniformToFill"/>
         </Border>
      
         <Grid Background="{ThemeResource SystemControlAcrylicElementBrush}" Grid.Row="2"  Grid.ColumnSpan="2"/>
