@@ -764,6 +764,7 @@ HHmmss
 HHOOK
 HICON
 HIDEWINDOW
+highlighter
 HIMAGELIST
 himl
 hinst

@@ -34,8 +34,7 @@ private:
     bool CreateHighlighter();
     void AddDrawingPoint(winrt::Windows::UI::Color color);
     void ClearDrawing();
-    bool pressed = false;
-    HHOOK mousehook = NULL;
+    HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
     static constexpr auto m_className = L"MouseHighlighter";
@@ -43,7 +42,7 @@ private:
     HWND m_hwndOwner = NULL;
     HWND m_hwnd = NULL;
     HINSTANCE m_hinstance = NULL;
-    static constexpr DWORD WM_SWITCHACTIVATIONMODE = WM_APP;
+    static constexpr DWORD WM_SWITCH_ACTIVATION_MODE = WM_APP;
 
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
     winrt::Compositor m_compositor{ nullptr };
@@ -95,7 +94,7 @@ bool Highlighter::CreateHighlighter()
         m_root.RelativeSizeAdjustment({ 1.0f, 1.0f });
         m_target.Root(m_root);
 
-        // Create the shapes continer visual and add it to root.
+        // Create the shapes container visual and add it to root.
         m_shape = m_compositor.CreateShapeVisual();
         m_shape.RelativeSizeAdjustment({ 1.0f, 1.0f });
         m_root.Children().InsertAtTop(m_shape);
@@ -176,7 +175,7 @@ void Highlighter::StartDrawing()
         GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
     ClearDrawing();
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
-    mousehook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
+    m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
 }
 
 void Highlighter::StopDrawing()
@@ -184,14 +183,14 @@ void Highlighter::StopDrawing()
     Logger::info("Stopping draw mode.");
     visible = false;
     ShowWindow(m_hwnd, SW_HIDE);
-    UnhookWindowsHookEx(mousehook);
+    UnhookWindowsHookEx(m_mouseHook);
     ClearDrawing();
-    mousehook = NULL;
+    m_mouseHook = NULL;
 }
 
 void Highlighter::SwitchActivationMode()
 {
-    PostMessage(m_hwnd, WM_SWITCHACTIVATIONMODE, 0, 0);
+    PostMessage(m_hwnd, WM_SWITCH_ACTIVATION_MODE, 0, 0);
 }
 
 void Highlighter::DestroyHighlighter()
@@ -211,7 +210,7 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
         return instance->CreateHighlighter() ? 0 : -1;
     case WM_NCHITTEST:
         return HTTRANSPARENT;
-    case WM_SWITCHACTIVATIONMODE:
+    case WM_SWITCH_ACTIVATION_MODE:
         if (instance->visible)
         {
             instance->StopDrawing();

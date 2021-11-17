@@ -4,7 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <strsafe.h>
-#include <hidusage.h>
+#include <hIdUsage.h>
 #include <thread>
 
 #ifdef COMPOSITION
