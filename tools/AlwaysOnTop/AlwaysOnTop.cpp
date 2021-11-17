@@ -185,11 +185,7 @@ bool AlwaysOnTop::OrderWindows() const noexcept
     BOOL res = true;
     for (int i = static_cast<int>(m_topmostWindows.size()) - 1; i >= 0; i--)
     {
-        auto cTxtLen = GetWindowTextLength(m_topmostWindows[i]);
-        auto pszMem = (LPWSTR)VirtualAlloc((LPVOID)NULL, (DWORD)(cTxtLen + 1), MEM_COMMIT, PAGE_READWRITE);
-        GetWindowText(m_topmostWindows[i], pszMem, cTxtLen + 1);
-
-        res &= SetWindowPos(m_topmostWindows[i], nullptr, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_DRAWFRAME);
+        res &= SetWindowPos(m_topmostWindows[i], nullptr, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
 
         if (!res)
         {
