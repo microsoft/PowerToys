@@ -1,11 +1,23 @@
 #include "pch.h"
 #include "AlwaysOnTop.h"
-#include <mmsystem.h>
+#include <mmsystem.h> // sound
+#include <shellapi.h> // game mode
 
 const static wchar_t* HOTKEY_WINDOW_CLASS_NAME = L"HotkeyHandleWindowClass";
 
 // common
 extern "C" IMAGE_DOS_HEADER __ImageBase;
+
+// common
+inline bool detect_game_mode()
+{
+    QUERY_USER_NOTIFICATION_STATE notification_state;
+    if (SHQueryUserNotificationState(&notification_state) != S_OK)
+    {
+        return false;
+    }
+    return (notification_state == QUNS_RUNNING_D3D_FULL_SCREEN);
+}
 
 AlwaysOnTop::AlwaysOnTop()
 {
@@ -52,6 +64,12 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
 
 void AlwaysOnTop::ProcessCommand(HWND window)
 {
+    bool gameMode = detect_game_mode();
+    if (!m_activateInGameMode && gameMode)
+    {
+        return;
+    }
+
     bool topmost = IsTopmost(window);
     if (topmost) 
     {
