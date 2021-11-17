@@ -29,6 +29,7 @@ private:
 
     HWND hotKeyHandleWindow{ nullptr };
     std::vector<HWND> topmostWindows;
+    bool m_activateInGameMode = false;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
