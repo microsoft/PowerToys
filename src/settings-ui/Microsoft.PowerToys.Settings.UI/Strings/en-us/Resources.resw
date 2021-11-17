@@ -1635,7 +1635,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
-    <value>Activate the module to highlight left and right mouse clicks.</value>
+    <value>Activate the module to highlight left and right mouse clicks</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
@@ -1742,14 +1742,14 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Description" xml:space="preserve">
-    <value>Press a shortcut to enter/exit a mode highlighting mouse clicks.</value>
+    <value>Customize the keyboard shortcut to enter or exit the mode to highlight mouse clicks</value>
     <comment>Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_LeftButtonClickColor.Header" xml:space="preserve">
-    <value>Left Button Click Color</value>
+    <value>Left button highlight color</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_RightButtonClickColor.Header" xml:space="preserve">
-    <value>Right Button Click Color</value>
+    <value>Right button highlight color</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_HighlightOpacity.Header" xml:space="preserve">
     <value>Opacity</value>
@@ -1758,16 +1758,16 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Radius</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Header" xml:space="preserve">
-    <value>Fade Delay</value>
+    <value>Fade delay</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
-    <value>How long it takes before a highlight starts to disappear</value>
+    <value>Time it takes (in ms) before a highlight starts to disappear</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">
-    <value>Fade Duration</value>
+    <value>Fade duration</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Description" xml:space="preserve">
-    <value>How long the disappear animation takes</value>
+    <value>How long the disappear animation takes (in ms)</value>
   </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
