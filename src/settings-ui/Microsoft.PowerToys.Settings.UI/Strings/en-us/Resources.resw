@@ -1717,6 +1717,10 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="MouseUtils.ModuleDescription" xml:space="preserve">
     <value>A collection of mouse utilities.</value>
   </data>
+  <data name="MouseUtils_FindMyMouse.Header" xml:space="preserve">
+    <value>Find My Mouse</value>
+    <comment>Refers to the utility name</comment>
+  </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
     <value>Enable Find My Mouse</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
@@ -1728,6 +1732,10 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
+    <value>Mouse Highlighter</value>
+    <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Header" xml:space="preserve">
     <value>Enable Mouse Highlighter</value>
