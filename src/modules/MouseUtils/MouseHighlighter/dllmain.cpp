@@ -38,22 +38,6 @@ const static wchar_t* MODULE_NAME = L"MouseHighlighter";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"<no description>";
 
-// These are the properties shown in the Settings page.
-struct ModuleSettings
-{
-    // Add the PowerToy module properties with default values.
-    // Currently available types:
-    // - int
-    // - bool
-    // - string
-
-    //bool bool_prop = true;
-    //int int_prop = 10;
-    //std::wstring string_prop = L"The quick brown fox jumps over the lazy dog";
-    //std::wstring color_prop = L"#1212FF";
-
-} g_settings;
-
 // Implement the PowerToy Module Interface and all the required methods.
 class MouseHighlighter : public PowertoyModuleIface
 {
@@ -101,21 +85,6 @@ public:
     // This can be used to spawn more complex editors.
     virtual void call_custom_action(const wchar_t* action) override
     {
-        static UINT custom_action_num_calls = 0;
-        try
-        {
-            // Parse the action values, including name.
-            PowerToysSettings::CustomActionObject action_object =
-                PowerToysSettings::CustomActionObject::from_json_string(action);
-
-            //if (action_object.get_name() == L"custom_action_id") {
-            //  // Execute your custom action
-            //}
-        }
-        catch (std::exception&)
-        {
-            // Improper JSON.
-        }
     }
 
     // Called by the runner to pass the updated settings values as a serialized JSON.
