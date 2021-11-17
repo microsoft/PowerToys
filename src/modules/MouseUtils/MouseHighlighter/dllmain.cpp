@@ -2,11 +2,15 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
+#include "MouseHighlighter.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+HMODULE m_hModule;
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
+    m_hModule = hModule;
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -202,6 +206,7 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        std::thread([]() { MouseHighlighterMain(m_hModule); }).detach();
     }
 
     // Disable the powertoy

@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <strsafe.h>
 #include <hidusage.h>
+#include <thread>
 
 #ifdef COMPOSITION
 #include <windows.ui.composition.interop.h>
