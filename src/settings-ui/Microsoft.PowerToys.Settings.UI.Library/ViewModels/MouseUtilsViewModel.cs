@@ -51,6 +51,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
 
             MouseHighlighterSettingsConfig = mouseHighlighterSettingsRepository.SettingsConfig;
+            string leftClickColor = MouseHighlighterSettingsConfig.Properties.LeftButtonClickColor.Value;
+            _highlighterLeftButtonClickColor = !string.IsNullOrEmpty(leftClickColor) ? leftClickColor : "#FFFF00";
+
+            string rightClickColor = MouseHighlighterSettingsConfig.Properties.RightButtonClickColor.Value;
+            _highlighterRightButtonClickColor = !string.IsNullOrEmpty(rightClickColor) ? rightClickColor : "#0000FF";
+
+            _highlighterOpacity = MouseHighlighterSettingsConfig.Properties.HighlightOpacity.Value;
+            _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
+            _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
+            _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -141,6 +151,122 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public string MouseHighlighterLeftButtonClickColor
+        {
+            get
+            {
+                return _highlighterLeftButtonClickColor;
+            }
+
+            set
+            {
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                if (!value.Equals(_highlighterLeftButtonClickColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _highlighterLeftButtonClickColor = value;
+                    MouseHighlighterSettingsConfig.Properties.LeftButtonClickColor.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public string MouseHighlighterRightButtonClickColor
+        {
+            get
+            {
+                return _highlighterRightButtonClickColor;
+            }
+
+            set
+            {
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                if (!value.Equals(_highlighterRightButtonClickColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _highlighterRightButtonClickColor = value;
+                    MouseHighlighterSettingsConfig.Properties.RightButtonClickColor.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int MouseHighlighterOpacity
+        {
+            get
+            {
+                return _highlighterOpacity;
+            }
+
+            set
+            {
+                if (value != _highlighterOpacity)
+                {
+                    _highlighterOpacity = value;
+                    MouseHighlighterSettingsConfig.Properties.HighlightOpacity.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int MouseHighlighterRadius
+        {
+            get
+            {
+                return _highlighterRadius;
+            }
+
+            set
+            {
+                if (value != _highlighterRadius)
+                {
+                    _highlighterRadius = value;
+                    MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int MouseHighlighterFadeDelayMs
+        {
+            get
+            {
+                return _highlightFadeDelayMs;
+            }
+
+            set
+            {
+                if (value != _highlightFadeDelayMs)
+                {
+                    _highlightFadeDelayMs = value;
+                    MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int MouseHighlighterFadeDurationMs
+        {
+            get
+            {
+                return _highlightFadeDurationMs;
+            }
+
+            set
+            {
+                if (value != _highlightFadeDurationMs)
+                {
+                    _highlightFadeDurationMs = value;
+                    MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMouseHighlighterPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -157,5 +283,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _findMyMouseDoNotActivateOnGameMode;
 
         private bool _isMouseHighlighterEnabled;
+        private string _highlighterLeftButtonClickColor;
+        private string _highlighterRightButtonClickColor;
+        private int _highlighterOpacity;
+        private int _highlighterRadius;
+        private int _highlightFadeDelayMs;
+        private int _highlightFadeDurationMs;
     }
 }

@@ -38,12 +38,72 @@
                         </controls:Setting>
                     </controls:SettingExpander.Header>
                     <controls:SettingExpander.Content>
-                        <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}">
-                            <controls:Setting.ActionContent>
-                                <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}"
+                        <StackPanel>
+                            <controls:Setting x:Uid="Activation_Shortcut" Icon="&#xEDA7;" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}">
+                                <controls:Setting.ActionContent>
+                                    <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}"
                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"/>
-                            </controls:Setting.ActionContent>
-                        </controls:Setting>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                            <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                            <controls:Setting x:Uid="MouseUtils_MouseHighlighter_LeftButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                            <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                            <controls:Setting x:Uid="MouseUtils_MouseHighlighter_RightButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                            <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                            <controls:Setting x:Uid="MouseUtils_MouseHighlighter_HighlightOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <Slider Minimum="0"
+                                            Maximum="255"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterOpacity}"
+                                            HorizontalAlignment="Right"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                            <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                            <controls:Setting x:Uid="MouseUtils_MouseHighlighter_HighlightRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <muxc:NumberBox Minimum="5"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterRadius}"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    HorizontalAlignment="Left"
+                                                    SmallChange="1"
+                                                    LargeChange="10"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                            <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                            <controls:Setting x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <muxc:NumberBox Minimum="100"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDelayMs}"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    HorizontalAlignment="Left"
+                                                    SmallChange="10"
+                                                    LargeChange="100"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                            <Rectangle Style="{StaticResource ExpanderSeparatorStyle}" />
+                            <controls:Setting x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                <controls:Setting.ActionContent>
+                                    <muxc:NumberBox Minimum="100"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDurationMs}"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    HorizontalAlignment="Left"
+                                                    SmallChange="10"
+                                                    LargeChange="100"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+                        </StackPanel>
                     </controls:SettingExpander.Content>
                 </controls:SettingExpander>
             </StackPanel>

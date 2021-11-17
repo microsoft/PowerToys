@@ -25,6 +25,7 @@ struct Highlighter
     static Highlighter* instance;
     void Terminate();
     void SwitchActivationMode();
+    void ApplySettings(MouseHighlighterSettings settings);
 
 private:
     void DestroyHighlighter();
@@ -57,13 +58,13 @@ private:
     bool visible = false;
 
     // Possible configurable settings
-    float m_radius = 20.0f;
+    float m_radius = MOUSE_HIGHLIGHTER_DEFAULT_RADIUS;
 
-    int m_fadeDelay_ms = 2000;
-    int m_fadeDuration_ms = 2000;
+    int m_fadeDelay_ms = MOUSE_HIGHLIGHTER_DEFAULT_DELAY_MS;
+    int m_fadeDuration_ms = MOUSE_HIGHLIGHTER_DEFAULT_DURATION_MS;
 
-    winrt::Windows::UI::Color m_leftClickColor = winrt::Windows::UI::ColorHelper::FromArgb(160, 255, 255, 0);
-    winrt::Windows::UI::Color m_rightClickColor = winrt::Windows::UI::ColorHelper::FromArgb(160, 0, 0, 255);
+    winrt::Windows::UI::Color m_leftClickColor = MOUSE_HIGHLIGHTER_DEFAULT_LEFT_BUTTON_COLOR;
+    winrt::Windows::UI::Color m_rightClickColor = MOUSE_HIGHLIGHTER_DEFAULT_RIGHT_BUTTON_COLOR;
 };
 
 Highlighter* Highlighter::instance = nullptr;
@@ -193,6 +194,14 @@ void Highlighter::SwitchActivationMode()
     PostMessage(m_hwnd, WM_SWITCH_ACTIVATION_MODE, 0, 0);
 }
 
+void Highlighter::ApplySettings(MouseHighlighterSettings settings) {
+    m_radius = (float)settings.radius;
+    m_fadeDelay_ms = settings.fadeDelayMs;
+    m_fadeDuration_ms = settings.fadeDurationMs;
+    m_leftClickColor = settings.leftButtonColor;
+    m_rightClickColor = settings.rightButtonColor;
+}
+
 void Highlighter::DestroyHighlighter()
 {
     StopDrawing();
@@ -272,6 +281,15 @@ void Highlighter::Terminate()
 
 #pragma region MouseHighlighter_API
 
+void MouseHighlighterApplySettings(MouseHighlighterSettings settings)
+{
+    if (Highlighter::instance != nullptr)
+    {
+        Logger::info("Applying settings.");
+        Highlighter::instance->ApplySettings(settings);
+    }
+}
+
 void MouseHighlighterSwitch()
 {
     if (Highlighter::instance != nullptr)
@@ -295,7 +313,7 @@ bool MouseHighlighterIsEnabled()
     return (Highlighter::instance != nullptr);
 }
 
-int MouseHighlighterMain(HINSTANCE hInstance)
+int MouseHighlighterMain(HINSTANCE hInstance, MouseHighlighterSettings settings)
 {
     Logger::info("Starting a highlighter instance.");
     if (Highlighter::instance != nullptr)
@@ -307,6 +325,7 @@ int MouseHighlighterMain(HINSTANCE hInstance)
     // Perform application initialization:
     Highlighter highlighter;
     Highlighter::instance = &highlighter;
+    highlighter.ApplySettings(settings);
     if (!highlighter.MyRegisterClass(hInstance))
     {
         Logger::error("Couldn't initialize a highlighter instance.");

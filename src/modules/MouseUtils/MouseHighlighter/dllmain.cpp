@@ -9,6 +9,12 @@ namespace
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_VALUE[] = L"value";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
+    const wchar_t JSON_KEY_LEFT_BUTTON_CLICK_COLOR[] = L"left_button_click_color";
+    const wchar_t JSON_KEY_RIGHT_BUTTON_CLICK_COLOR[] = L"right_button_click_color";
+    const wchar_t JSON_KEY_HIGHLIGHT_OPACITY[] = L"highlight_opacity";
+    const wchar_t JSON_KEY_HIGHLIGHT_RADIUS[] = L"highlight_radius";
+    const wchar_t JSON_KEY_HIGHLIGHT_FADE_DELAY_MS[] = L"highlight_fade_delay_ms";
+    const wchar_t JSON_KEY_HIGHLIGHT_FADE_DURATION_MS[] = L"highlight_fade_duration_ms";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -47,7 +53,30 @@ private:
 
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
-    
+
+    // Mouse Highlighter specific settings
+    MouseHighlighterSettings m_highlightSettings;
+
+    // helper function to get the RGB from a #FFFFFF string.
+    bool checkValidRGB(std::wstring hex, uint8_t* R, uint8_t* G, uint8_t* B)
+    {
+        if (hex.length() != 7)
+            return false;
+        hex = hex.substr(1, 6); // remove #
+        for (auto& c : hex)
+        {
+            if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')))
+            {
+                return false;
+            }
+        }
+        if (swscanf_s(hex.c_str(), L"%2hhx%2hhx%2hhx", R, G, B) != 3)
+        {
+            return false;
+        }
+        return true;
+    }
+
 public:
     // Constructor
     MouseHighlighter()
@@ -98,6 +127,8 @@ public:
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             parse_settings(values);
+
+            MouseHighlighterApplySettings(m_highlightSettings);
         }
         catch (std::exception&)
         {
@@ -110,7 +141,7 @@ public:
     {
         m_enabled = true;
         Trace::EnableMouseHighlighter(true);
-        std::thread([]() { MouseHighlighterMain(m_hModule); }).detach();
+        std::thread([=]() { MouseHighlighterMain(m_hModule, m_highlightSettings); }).detach();
     }
 
     // Disable the powertoy
@@ -156,6 +187,7 @@ public:
     void parse_settings(PowerToysSettings::PowerToyValues& settings)
     {
         auto settingsObject = settings.get_raw_json();
+        MouseHighlighterSettings highlightSettings;
         if (settingsObject.GetView().Size())
         {
             try
@@ -190,6 +222,79 @@ public:
             {
                 Logger::warn("Failed to initialize Mouse Highlighter activation shortcut");
             }
+            uint8_t opacity = MOUSE_HIGHLIGHTER_DEFAULT_OPACITY;
+            try
+            {
+                // Parse Opacity
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_OPACITY);
+                opacity = (uint8_t)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Opacity from settings. Will use default value");
+            }
+            try
+            {
+                // Parse left button click color
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_LEFT_BUTTON_CLICK_COLOR);
+                auto leftColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                uint8_t r, g, b;
+                if (!checkValidRGB(leftColor,&r,&g,&b))
+                {
+                    throw 1;
+                }
+                highlightSettings.leftButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize left click color from settings. Will use default value");
+            }
+            try
+            {
+                // Parse right button click color
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_RIGHT_BUTTON_CLICK_COLOR);
+                auto leftColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                uint8_t r, g, b;
+                if (!checkValidRGB(leftColor, &r, &g, &b))
+                {
+                    throw 1;
+                }
+                highlightSettings.rightButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize right click color from settings. Will use default value");
+            }
+            try
+            {
+                // Parse Radius
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_RADIUS);
+                highlightSettings.radius = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Radius from settings. Will use default value");
+            }
+            try
+            {
+                // Parse Fade Delay
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_FADE_DELAY_MS);
+                highlightSettings.fadeDelayMs = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Fade Delay from settings. Will use default value");
+            }
+            try
+            {
+                // Parse Fade Duration
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HIGHLIGHT_FADE_DURATION_MS);
+                highlightSettings.fadeDurationMs = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Fade Duration from settings. Will use default value");
+            }
         }
         else
         {
@@ -201,6 +306,7 @@ public:
             m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
             m_hotkey.vkCode = 0x48; // H key
         }
+        m_highlightSettings = highlightSettings;
     }
 };
 
