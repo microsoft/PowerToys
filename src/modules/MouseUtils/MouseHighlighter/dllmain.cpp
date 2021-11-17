@@ -52,6 +52,7 @@ public:
     // Constructor
     MouseHighlighter()
     {
+        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mouseHighlighterLoggerName);
         init_settings();
     };
 
@@ -185,16 +186,16 @@ public:
             }
             catch (...)
             {
-                // Logger::warn("Failed to initialize Mouse Highlighter activation shortcut");
+                Logger::warn("Failed to initialize Mouse Highlighter activation shortcut");
             }
         }
         else
         {
-            // Logger::info("Mouse Highlighter settings are empty");
+            Logger::info("Mouse Highlighter settings are empty");
         }
         if (!m_hotkey.modifiersMask)
         {
-            // Logger::info("Mouse Highlighter is going to use default shortcut");
+            Logger::info("Mouse Highlighter is going to use default shortcut");
             m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
             m_hotkey.vkCode = 0x48; // H key
         }

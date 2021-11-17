@@ -168,6 +168,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
 
 void Highlighter::StartDrawing()
 {
+    Logger::info("Starting draw mode.");
     visible = true;
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN),
         GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
@@ -178,6 +179,7 @@ void Highlighter::StartDrawing()
 
 void Highlighter::StopDrawing()
 {
+    Logger::info("Stopping draw mode.");
     visible = false;
     ShowWindow(m_hwnd, SW_HIDE);
     UnhookWindowsHookEx(mousehook);
@@ -263,7 +265,7 @@ void Highlighter::Terminate()
     });
     if (!enqueueSucceeded)
     {
-        //TODO: Log error
+        Logger::error("Couldn't enqueue message to destroy the window.");
     }
 }
 
@@ -273,7 +275,7 @@ void MouseHighlighterSwitch()
 {
     if (Highlighter::instance != nullptr)
     {
-        // Log instance termination
+        Logger::info("Switching activation mode.");
         Highlighter::instance->SwitchActivationMode();
     }
 }
@@ -282,7 +284,7 @@ void MouseHighlighterDisable()
 {
     if (Highlighter::instance != nullptr)
     {
-        // Log instance termination
+        Logger::info("Terminating the highlighter instance.");
         Highlighter::instance->Terminate();
     }
 }
@@ -294,10 +296,10 @@ bool MouseHighlighterIsEnabled()
 
 int MouseHighlighterMain(HINSTANCE hInstance)
 {
-    // TODO: Log instance start
+    Logger::info("Starting a highlighter instance.");
     if (Highlighter::instance != nullptr)
     {
-        // TODO: log error here
+        Logger::error("A highlighter instance was still working when trying to start a new one.");
         return 0;
     }
 
@@ -306,11 +308,11 @@ int MouseHighlighterMain(HINSTANCE hInstance)
     Highlighter::instance = &highlighter;
     if (!highlighter.MyRegisterClass(hInstance))
     {
-        // TODO: log error here
+        Logger::error("Couldn't initialize a highlighter instance.");
         Highlighter::instance = nullptr;
         return FALSE;
     }
-    // TODO: Log initialization here.
+    Logger::info("Initialized the highlighter instance.");
 
     MSG msg;
 
@@ -321,7 +323,7 @@ int MouseHighlighterMain(HINSTANCE hInstance)
         DispatchMessage(&msg);
     }
 
-    // TODO: Log message loop end here.
+    Logger::info("Mouse highlighter message loop ended.");
     Highlighter::instance = nullptr;
 
     return (int)msg.wParam;
