@@ -1721,6 +1721,14 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Do not activate when Game Mode is on</value>
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
   </data>
+  <data name="MouseUtils_Enable_MouseHighlighter.Header" xml:space="preserve">
+    <value>Enable Mouse Highlighter</value>
+    <comment>"Find My Mouse" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_Enable_MouseHighlighter.Description" xml:space="preserve">
+    <value>Press a shortcut to enter/exit a mode highlighting mouse clicks.</value>
+    <comment>Mouse is the hardware mouse.</comment>
+  </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
   </data>
