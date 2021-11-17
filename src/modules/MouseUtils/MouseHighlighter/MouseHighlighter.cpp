@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "MouseHighlighter.h"
+#include "trace.h"
 
 #ifdef COMPOSITION
 namespace winrt
@@ -169,6 +170,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
 void Highlighter::StartDrawing()
 {
     Logger::info("Starting draw mode.");
+    Trace::StartHighlightingSession();
     visible = true;
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN),
         GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);

@@ -109,6 +109,7 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        Trace::EnableMouseHighlighter(true);
         std::thread([]() { MouseHighlighterMain(m_hModule); }).detach();
     }
 
@@ -116,6 +117,7 @@ public:
     virtual void disable()
     {
         m_enabled = false;
+        Trace::EnableMouseHighlighter(false);
         MouseHighlighterDisable();
     }
 
