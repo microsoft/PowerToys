@@ -18,6 +18,10 @@
                            Style="{ThemeResource OobeSubtitleStyle}" />
                 <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_MouseUtils_FindMyMouse_Description" />
 
+                <TextBlock x:Uid="Oobe_MouseUtils_MouseHighlighter"
+                           Style="{ThemeResource OobeSubtitleStyle}" />
+                <toolkitcontrols:MarkdownTextBlock Background="Transparent" x:Uid="Oobe_MouseUtils_MouseHighlighter_Description" />
+
                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                     <Button x:Uid="OOBE_Settings"
                             Click="SettingsLaunchButton_Click"/>

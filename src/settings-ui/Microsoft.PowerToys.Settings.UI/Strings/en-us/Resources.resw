@@ -1630,6 +1630,14 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Click twice on the Left Control key to focus on your mouse.</value>
     <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
+  <data name="Oobe_MouseUtils_MouseHighlighter.Text" xml:space="preserve">
+    <value>Mouse Highlighter</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
+    <value>Activate the module to highlight left and right mouse clicks.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Launch PowerToys Run</value>
   </data>
