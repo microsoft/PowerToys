@@ -171,6 +171,7 @@ build:
             - 'modules\launcher\Wox.Infrastructure.dll'
             - 'modules\launcher\Wox.Plugin.dll'
             - 'modules\MouseUtils\FindMyMouse.dll'
+            - 'modules\MouseUtils\MouseHighlighter.dll'
             - 'modules\PowerRename\PowerRenameExt.dll'
             - 'modules\PowerRename\PowerRenameUILib.dll'
             - 'modules\PowerRename\PowerRename.exe'
