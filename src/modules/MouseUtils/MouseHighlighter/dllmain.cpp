@@ -213,6 +213,7 @@ public:
     virtual void disable()
     {
         m_enabled = false;
+        MouseHighlighterDisable();
     }
 
     // Returns if the powertoys is enabled

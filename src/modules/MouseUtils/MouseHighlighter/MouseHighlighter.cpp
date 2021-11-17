@@ -22,6 +22,7 @@ struct Highlighter
 {
     bool MyRegisterClass(HINSTANCE hInstance);
     static Highlighter* instance;
+    void Terminate();
 
 private:
     void DestroyHighlighter();
@@ -186,6 +187,9 @@ void Highlighter::StopDrawing()
 
 void Highlighter::DestroyHighlighter()
 {
+    StopDrawing();
+    UnregisterHotKey(m_hwnd, ID_SHORTCUT_ACTIVATE);
+    UnregisterHotKey(m_hwnd, ID_SHORTCUT_EXIT);
     PostQuitMessage(0);
 }
 
@@ -240,17 +244,19 @@ bool Highlighter::MyRegisterClass(HINSTANCE hInstance)
     m_hinstance = hInstance;
 
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-
-    wc.lpfnWndProc = WndProc;
-    wc.hInstance = hInstance;
-    wc.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
-    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
-    wc.lpszClassName = m_className;
-
-    if (!RegisterClassW(&wc))
+    if (!GetClassInfoW(hInstance, m_className, &wc))
     {
-        return false;
+        wc.lpfnWndProc = WndProc;
+        wc.hInstance = hInstance;
+        wc.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
+        wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+        wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
+        wc.lpszClassName = m_className;
+
+        if (!RegisterClassW(&wc))
+        {
+            return false;
+        }
     }
 
     m_hwndOwner = CreateWindow(L"static", nullptr, WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hInstance, nullptr);
@@ -260,8 +266,33 @@ bool Highlighter::MyRegisterClass(HINSTANCE hInstance)
         CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hInstance, nullptr) != nullptr;
 }
 
+void Highlighter::Terminate()
+{
+    auto dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
+    bool enqueueSucceeded = dispatcherQueue.TryEnqueue([=]() {
+        DestroyWindow(m_hwndOwner);
+    });
+    if (!enqueueSucceeded)
+    {
+        //TODO: Log error
+    }
+}
 
 #pragma region MouseHighlighter_API
+
+void MouseHighlighterDisable()
+{
+    if (Highlighter::instance != nullptr)
+    {
+        // Log instance termination
+        Highlighter::instance->Terminate();
+    }
+}
+
+bool MouseHighlighterIsEnabled()
+{
+    return (Highlighter::instance != nullptr);
+}
 
 int MouseHighlighterMain(HINSTANCE hInstance)
 {
