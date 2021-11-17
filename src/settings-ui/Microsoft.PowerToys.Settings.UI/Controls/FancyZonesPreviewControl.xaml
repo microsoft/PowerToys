@@ -6,25 +6,40 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    RequestedTheme="Dark"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
     <UserControl.Resources>
-        <SolidColorBrush x:Key="DefaultAccentBrush" Color="{ThemeResource SystemAccentColor}"/>
-        <SolidColorBrush x:Key="DefaultBorderBrush" Color="{ThemeResource SystemAccentColor}"/>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="SolidBackgroundBrush" Color="Black" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="SolidBackgroundBrush" Color="White" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="SolidBackgroundBrush" Color="Black" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+            <SolidColorBrush x:Key="DefaultAccentBrush" Color="{ThemeResource SystemAccentColor}"/>
+            <SolidColorBrush x:Key="DefaultBorderBrush" Color="{ThemeResource SystemAccentColor}"/>
+        </ResourceDictionary>
+      
     </UserControl.Resources>
         <Grid CornerRadius="4" BorderBrush="Black" Background="Black" BorderThickness="6" HorizontalAlignment="Center">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="8"/>
+            <RowDefinition Height="6"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Border Opacity="0.8" Grid.ColumnSpan="2" Grid.RowSpan="3" CornerRadius="2" >
-            <Image Source="ms-appx:///Assets/Modules/VideoConference.png" Stretch="UniformToFill"/>
+            <Image Source="ms-appx:///Assets/wallpaper_placeholder.png" Stretch="UniformToFill"/>
         </Border>
      
         <Grid Background="{ThemeResource SystemControlAcrylicElementBrush}" Grid.Row="2"  Grid.ColumnSpan="2"/>

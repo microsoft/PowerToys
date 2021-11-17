@@ -87,7 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             else
             {
                 highlightBrush = (SolidColorBrush)this.Resources["DefaultAccentBrush"];
-                inActiveBrush = (SolidColorBrush)App.Current.Resources["CardBackgroundBrush"];
+                inActiveBrush = (SolidColorBrush)this.Resources["SolidBackgroundBrush"];
                 borderBrush = (SolidColorBrush)this.Resources["DefaultBorderBrush"];
             }
 
