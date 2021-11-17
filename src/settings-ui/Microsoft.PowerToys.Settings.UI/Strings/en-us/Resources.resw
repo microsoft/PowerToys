@@ -1767,7 +1767,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Fade Duration</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Description" xml:space="preserve">
-    <value>How long the disappar animation takes</value>
+    <value>How long the disappear animation takes</value>
   </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
