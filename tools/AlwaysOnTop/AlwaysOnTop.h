@@ -1,5 +1,16 @@
 #pragma once
 
+// common
+struct WinHookEvent
+{
+    DWORD event;
+    HWND hwnd;
+    LONG idObject;
+    LONG idChild;
+    DWORD idEventThread;
+    DWORD dwmsEventTime;
+};
+
 class AlwaysOnTop
 {
 public:
@@ -26,9 +37,11 @@ protected:
 
 private:
     static inline AlwaysOnTop* s_instance = nullptr;
+    std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
 
-    HWND hotKeyHandleWindow{ nullptr };
-    std::vector<HWND> topmostWindows;
+    HWND m_hotKeyHandleWindow{ nullptr };
+    std::vector<HWND> m_topmostWindows;
+
     bool m_activateInGameMode = false;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -37,9 +50,29 @@ private:
     void StartTrackingTopmostWindows();
     void ResetAll();
     void CleanUp();
+    bool OrderWindows() const noexcept;
 
     bool IsTopmost(HWND window) const noexcept;
     bool SetTopmostWindow(HWND window) const noexcept;
     bool ResetTopmostWindow(HWND window) const noexcept;
+
+    bool IsTracked(HWND window) const noexcept;
+    
+    void HandleWinHookEvent(WinHookEvent* data) noexcept;
+
+    static void CALLBACK WinHookProc(HWINEVENTHOOK winEventHook,
+        DWORD event,
+        HWND window,
+        LONG object,
+        LONG child,
+        DWORD eventThread,
+        DWORD eventTime)
+    {
+        WinHookEvent data{ event, window, object, child, eventThread, eventTime };
+        if (s_instance)
+        {
+            s_instance->HandleWinHookEvent(&data);
+        }
+    }
 };
 
