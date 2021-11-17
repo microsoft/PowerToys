@@ -134,6 +134,7 @@ bool AppWindow::OnCreate(HWND, LPCREATESTRUCT) noexcept
     try
     {
         PopulateExplorerItems();
+        UpdateCounts();
         SetHandlers();
         ReadSettings();
     }
@@ -246,11 +247,6 @@ void AppWindow::PopulateExplorerItems()
     m_prManager->GetVisibleItemCount(&count);
     Logger::debug(L"Number of visible items: {}", count);
 
-    UINT currDepth = 0;
-    std::stack<UINT> parents{};
-    UINT prevId = 0;
-    parents.push(0);
-
     for (UINT i = 0; i < count; ++i)
     {
         CComPtr<IPowerRenameItem> renameItem;
@@ -274,23 +270,8 @@ void AppWindow::PopulateExplorerItems()
             bool isSubFolderContent = false;
             winrt::check_hresult(renameItem->GetIsFolder(&isFolder));
 
-            if (depth > currDepth)
-            {
-                parents.push(prevId);
-                currDepth = depth;
-            }
-            else
-            {
-                while (currDepth > depth)
-                {
-                    parents.pop();
-                    currDepth--;
-                }
-                currDepth = depth;
-            }
             m_mainUserControl.AddExplorerItem(
-                id, originalName, newName == nullptr ? hstring{} : hstring{ newName }, isFolder ? 0 : 1, parents.top(), selected);
-            prevId = id;
+                id, originalName, newName == nullptr ? hstring{} : hstring{ newName }, isFolder ? 0 : 1, depth, selected);
         }
     }
 }
@@ -638,6 +619,7 @@ void AppWindow::SwitchView()
 
     m_prManager->SwitchFilter(0);
     PopulateExplorerItems();
+    UpdateCounts();
 }
 
 void AppWindow::Rename(bool closeWindow)
@@ -851,11 +833,12 @@ void AppWindow::UpdateCounts()
         m_selectedCount = selectedCount;
         m_renamingCount = renamingCount;
 
-        // Update counts UI elements if/when added
-
         // Update Rename button state
         m_mainUserControl.UIUpdatesItem().ButtonRenameEnabled(renamingCount > 0);
     }
+
+    m_mainUserControl.UIUpdatesItem().OriginalCount(std::to_wstring(m_mainUserControl.ExplorerItems().Size()));
+    m_mainUserControl.UIUpdatesItem().RenamedCount(std::to_wstring(m_renamingCount));
 }
 
 HRESULT AppWindow::OnItemAdded(_In_ IPowerRenameItem* renameItem)
@@ -878,7 +861,6 @@ HRESULT AppWindow::OnUpdate(_In_ IPowerRenameItem* renameItem)
         }
     }
 
-    UpdateCounts();
     return S_OK;
 }
 
@@ -935,6 +917,7 @@ HRESULT AppWindow::OnRegExCompleted(_In_ DWORD threadId)
         }
     }
 
+    UpdateCounts();
     return S_OK;
 }
 

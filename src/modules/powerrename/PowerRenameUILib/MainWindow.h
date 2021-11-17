@@ -7,7 +7,7 @@
 #include "MainWindow.g.h"
 #include "PatternSnippet.h"
 #include "ExplorerItem.h"
-#include "ExplorerItemTemplateSelector.h"
+#include <map>
 
 namespace winrt::PowerRenameUILib::implementation
 {
@@ -47,7 +47,7 @@ namespace winrt::PowerRenameUILib::implementation
 
         PowerRenameUILib::UIUpdates UIUpdatesItem();
 
-        void AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, int32_t parentId, bool checked);
+        void AddExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked);
         void UpdateExplorerItem(int32_t id, hstring const& newName);
         void UpdateRenamedExplorerItem(int32_t id, hstring const& newOriginalName);
         void AppendSearchMRU(hstring const& value);
@@ -61,13 +61,13 @@ namespace winrt::PowerRenameUILib::implementation
     private:
         bool m_allSelected;
         PowerRenameUILib::UIUpdates m_uiUpdatesItem;
-        PowerRenameUILib::ExplorerItem FindById(int32_t id);
-        PowerRenameUILib::ExplorerItem FindById(PowerRenameUILib::ExplorerItem& root, int32_t id);
-        void ToggleAll(PowerRenameUILib::ExplorerItem node, bool checked);
+        inline PowerRenameUILib::ExplorerItem FindById(int32_t id);
+        void ToggleAll(bool checked);
 
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_searchMRU;
         winrt::Windows::Foundation::Collections::IObservableVector<hstring> m_replaceMRU;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::ExplorerItem> m_explorerItems;
+        std::map<int32_t, PowerRenameUILib::ExplorerItem> m_explorerItemsMap;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::PatternSnippet> m_searchRegExShortcuts;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::PatternSnippet> m_dateTimeShortcuts;
 

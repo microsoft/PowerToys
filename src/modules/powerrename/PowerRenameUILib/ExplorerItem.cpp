@@ -2,15 +2,17 @@
 #include "ExplorerItem.h"
 #include "ExplorerItem.g.cpp"
 
+namespace {
+    const wchar_t fileImagePath[] = L"ms-appx:///Assets/file.png";
+    const wchar_t folderImagePath[] = L"ms-appx:///Assets/folder.png";
+}
+
 namespace winrt::PowerRenameUILib::implementation
 {
-    ExplorerItem::ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, bool checked) :
-        m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_checked{ checked }
+    ExplorerItem::ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked) :
+        m_id{ id }, m_idStr{ std::to_wstring(id) }, m_original{ original }, m_renamed{ renamed }, m_type{ type }, m_depth{ depth }, m_checked{ checked }
     {
-        if (m_type == static_cast<UINT>(ExplorerItemType::Folder))
-        {
-            m_children = winrt::single_threaded_observable_vector<PowerRenameUILib::ExplorerItem>();
-        }
+        m_imagePath = (m_type == static_cast<UINT>(ExplorerItemType::Folder)) ? folderImagePath : fileImagePath;
     }
 
     int32_t ExplorerItem::Id()
@@ -51,6 +53,15 @@ namespace winrt::PowerRenameUILib::implementation
         }
     }
 
+    double ExplorerItem::Indentation() {
+        return static_cast<double>(m_depth) * 12;
+    }
+
+    hstring ExplorerItem::ImagePath()
+    {
+        return m_imagePath;
+    }
+
     int32_t ExplorerItem::Type()
     {
         return m_type;
@@ -76,20 +87,6 @@ namespace winrt::PowerRenameUILib::implementation
         {
             m_checked = value;
             m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Checked" });
-        }
-    }
-
-    winrt::Windows::Foundation::Collections::IObservableVector<winrt::PowerRenameUILib::ExplorerItem> ExplorerItem::Children()
-    {
-        return m_children;
-    }
-
-    void ExplorerItem::Children(Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::ExplorerItem> const& value)
-    {
-        if (m_children != value)
-        {
-            m_children = value;
-            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Children" });
         }
     }
 
