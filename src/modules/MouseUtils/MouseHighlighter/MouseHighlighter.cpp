@@ -28,12 +28,20 @@ struct Highlighter
     void ApplySettings(MouseHighlighterSettings settings);
 
 private:
+    enum class MouseButton
+    {
+        Left,
+        Right
+    };
+
     void DestroyHighlighter();
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) noexcept;
     void StartDrawing();
     void StopDrawing();
     bool CreateHighlighter();
-    void AddDrawingPoint(winrt::Windows::UI::Color color);
+    void AddDrawingPoint(MouseButton button);
+    void UpdateDrawingPointPositon(MouseButton button);
+    void StartDrawingPointFading(MouseButton button);
     void ClearDrawing();
     HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
@@ -52,10 +60,12 @@ private:
     winrt::LayerVisual m_layer{ nullptr };
     winrt::ShapeVisual m_shape{ nullptr };
 
-    winrt::CompositionEllipseGeometry m_cursorGeometry{ nullptr };
-    winrt::CompositionSpriteShape m_cursor{ nullptr };
+    winrt::CompositionSpriteShape m_leftPointer{ nullptr };
+    winrt::CompositionSpriteShape m_rightPointer{ nullptr };
+    bool m_leftButtonPressed = false;
+    bool m_rightButtonPressed = false;
 
-    bool visible = false;
+    bool m_visible = false;
 
     // Possible configurable settings
     float m_radius = MOUSE_HIGHLIGHTER_DEFAULT_RADIUS;
@@ -108,7 +118,7 @@ bool Highlighter::CreateHighlighter()
 }
 
 
-void Highlighter::AddDrawingPoint(winrt::Windows::UI::Color color)
+void Highlighter::AddDrawingPoint(MouseButton button)
 {
     POINT pt;
         
@@ -122,19 +132,19 @@ void Highlighter::AddDrawingPoint(winrt::Windows::UI::Color color)
     auto circleGeometry = m_compositor.CreateEllipseGeometry();
     circleGeometry.Radius({ m_radius, m_radius });
     auto circleShape = m_compositor.CreateSpriteShape(circleGeometry);
-    circleShape.FillBrush(m_compositor.CreateColorBrush(color));
     circleShape.Offset({ (float)pt.x, (float)pt.y });
+    if (button == MouseButton::Left)
+    {
+        circleShape.FillBrush(m_compositor.CreateColorBrush(m_leftClickColor));
+        m_leftPointer = circleShape;
+    }
+    else
+    {
+        //right
+        circleShape.FillBrush(m_compositor.CreateColorBrush(m_rightClickColor));
+        m_rightPointer = circleShape;
+    }
     m_shape.Shapes().Append(circleShape);
-
-    // Animate opacity to simulate a fage away effect.
-    auto animation = m_compositor.CreateColorKeyFrameAnimation();
-    animation.InsertKeyFrame(1, winrt::Windows::UI::ColorHelper::FromArgb(0, color.R, color.G, color.B));
-    using timeSpan = std::chrono::duration<int, std::ratio<1, 1000>>;
-    std::chrono::milliseconds duration(m_fadeDuration_ms);
-    std::chrono::milliseconds delay(m_fadeDelay_ms);
-    animation.Duration(timeSpan(duration));
-    animation.DelayTime(timeSpan(delay));
-    circleShape.FillBrush().StartAnimation(L"Color", animation);
 
     // TODO: We're leaking shapes for long drawing sessions.
     // Perhaps add a task to the Dispatcher every X circles to clean up.
@@ -143,6 +153,54 @@ void Highlighter::AddDrawingPoint(winrt::Windows::UI::Color color)
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN),
         GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
 }
+
+void Highlighter::UpdateDrawingPointPositon(MouseButton button)
+{
+    POINT pt;
+
+    // Applies DPIs.
+    GetCursorPos(&pt);
+
+    // Converts to client area of the Windows.
+    ScreenToClient(m_hwnd, &pt);
+
+    if (button == MouseButton::Left)
+    {
+        m_leftPointer.Offset({ (float)pt.x, (float)pt.y });
+    }
+    else
+    {
+        //right
+        m_rightPointer.Offset({ (float)pt.x, (float)pt.y });
+    }
+}
+void Highlighter::StartDrawingPointFading(MouseButton button)
+{
+    winrt::Windows::UI::Composition::CompositionSpriteShape circleShape{ nullptr };
+    if (button == MouseButton::Left)
+    {
+        circleShape = m_leftPointer;
+    }
+    else
+    {
+        //right
+        circleShape = m_rightPointer;
+    }
+
+    auto brushColor = circleShape.FillBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color();
+
+    // Animate opacity to simulate a fade away effect.
+    auto animation = m_compositor.CreateColorKeyFrameAnimation();
+    animation.InsertKeyFrame(1, winrt::Windows::UI::ColorHelper::FromArgb(0, brushColor.R, brushColor.G, brushColor.B));
+    using timeSpan = std::chrono::duration<int, std::ratio<1, 1000>>;
+    std::chrono::milliseconds duration(m_fadeDuration_ms);
+    std::chrono::milliseconds delay(m_fadeDelay_ms);
+    animation.Duration(timeSpan(duration));
+    animation.DelayTime(timeSpan(delay));
+
+    circleShape.FillBrush().StartAnimation(L"Color", animation);
+}
+
 
 void Highlighter::ClearDrawing()
 {
@@ -154,13 +212,42 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
     if (nCode >= 0)
     {
         MSLLHOOKSTRUCT* hookData = (MSLLHOOKSTRUCT*)lParam;
-        if (wParam == WM_LBUTTONDOWN)
+        switch (wParam)
         {
-            instance->AddDrawingPoint(instance->m_leftClickColor);
-        }
-        if (wParam == WM_RBUTTONDOWN)
-        {
-            instance->AddDrawingPoint(instance->m_rightClickColor);
+        case WM_LBUTTONDOWN:
+            instance->AddDrawingPoint(MouseButton::Left);
+            instance->m_leftButtonPressed = true;
+            break;
+        case WM_RBUTTONDOWN:
+            instance->AddDrawingPoint(MouseButton::Right);
+            instance->m_rightButtonPressed = true;
+            break;
+        case WM_MOUSEMOVE:
+            if (instance->m_leftButtonPressed)
+            {
+                instance->UpdateDrawingPointPositon(MouseButton::Left);
+            }
+            if (instance->m_rightButtonPressed)
+            {
+                instance->UpdateDrawingPointPositon(MouseButton::Right);
+            }
+            break;
+        case WM_LBUTTONUP:
+            if (instance->m_leftButtonPressed)
+            {
+                instance->StartDrawingPointFading(MouseButton::Left);
+                instance->m_leftButtonPressed = false;
+            }
+            break;
+        case WM_RBUTTONUP:
+            if (instance->m_rightButtonPressed)
+            {
+                instance->StartDrawingPointFading(MouseButton::Right);
+                instance->m_rightButtonPressed = false;
+            }
+            break;
+        default:
+            break;
         }
     }
     return CallNextHookEx(0, nCode, wParam, lParam);
@@ -171,7 +258,7 @@ void Highlighter::StartDrawing()
 {
     Logger::info("Starting draw mode.");
     Trace::StartHighlightingSession();
-    visible = true;
+    m_visible = true;
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN),
         GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
     ClearDrawing();
@@ -182,7 +269,11 @@ void Highlighter::StartDrawing()
 void Highlighter::StopDrawing()
 {
     Logger::info("Stopping draw mode.");
-    visible = false;
+    m_visible = false;
+    m_leftButtonPressed = false;
+    m_rightButtonPressed = false;
+    m_leftPointer = nullptr;
+    m_rightPointer = nullptr;
     ShowWindow(m_hwnd, SW_HIDE);
     UnhookWindowsHookEx(m_mouseHook);
     ClearDrawing();
@@ -220,7 +311,7 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
     case WM_NCHITTEST:
         return HTTRANSPARENT;
     case WM_SWITCH_ACTIVATION_MODE:
-        if (instance->visible)
+        if (instance->m_visible)
         {
             instance->StopDrawing();
         }
