@@ -40,7 +40,7 @@ private:
     void StopDrawing();
     bool CreateHighlighter();
     void AddDrawingPoint(MouseButton button);
-    void UpdateDrawingPointPositon(MouseButton button);
+    void UpdateDrawingPointPosition(MouseButton button);
     void StartDrawingPointFading(MouseButton button);
     void ClearDrawing();
     HHOOK m_mouseHook = NULL;
@@ -154,7 +154,7 @@ void Highlighter::AddDrawingPoint(MouseButton button)
         GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN), 0);
 }
 
-void Highlighter::UpdateDrawingPointPositon(MouseButton button)
+void Highlighter::UpdateDrawingPointPosition(MouseButton button)
 {
     POINT pt;
 
@@ -225,11 +225,11 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
         case WM_MOUSEMOVE:
             if (instance->m_leftButtonPressed)
             {
-                instance->UpdateDrawingPointPositon(MouseButton::Left);
+                instance->UpdateDrawingPointPosition(MouseButton::Left);
             }
             if (instance->m_rightButtonPressed)
             {
-                instance->UpdateDrawingPointPositon(MouseButton::Right);
+                instance->UpdateDrawingPointPosition(MouseButton::Right);
             }
             break;
         case WM_LBUTTONUP:
