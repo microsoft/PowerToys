@@ -50,7 +50,6 @@ private:
     void StartTrackingTopmostWindows();
     void ResetAll();
     void CleanUp();
-    bool OrderWindows() const noexcept;
 
     bool IsTopmost(HWND window) const noexcept;
     bool SetTopmostWindow(HWND window) const noexcept;
