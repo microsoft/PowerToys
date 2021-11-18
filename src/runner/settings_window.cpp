@@ -457,7 +457,17 @@ void bring_settings_to_front()
             }
             if (wcsncmp(title, windowTitle.c_str(), len) == 0)
             {
-                ShowWindow(hwnd, SW_RESTORE);
+                auto lStyles = GetWindowLong(hwnd, GWL_STYLE);
+
+                if (lStyles & WS_MAXIMIZE)
+                {
+                    ShowWindow(hwnd, SW_MAXIMIZE);
+                }
+                else
+                {
+                    ShowWindow(hwnd, SW_RESTORE);
+                }
+
                 SetForegroundWindow(hwnd);
                 return FALSE;
             }
