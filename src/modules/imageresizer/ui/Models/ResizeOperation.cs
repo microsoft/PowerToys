@@ -87,18 +87,19 @@ namespace ImageResizer.Models
                             var modifiableMetadata = metadata.Clone();
 
 #if DEBUG
+                            Debug.WriteLine($"### Processing metadata of file {_file}");
                             modifiableMetadata.PrintsAllMetadataToDebugOutput();
 #endif
 
-                            // transfer all readable metadata into a new metadata object. Discards invalid/unreadable tags.
+                            // read all metadata and build up metadata object from the scratch. Discard invalid (unreadable/unwritable) metadata.
                             var newMetadata = new BitmapMetadata(metadata.Format);
                             var listOfMetadata = modifiableMetadata.GetListOfMetadata();
                             foreach (var (metadataPath, value) in listOfMetadata)
                             {
                                 if (value is BitmapMetadata bitmapMetadata)
                                 {
-                                    var newBitmapMetadata = new BitmapMetadata(bitmapMetadata.Format);
-                                    newMetadata.SetQuerySafe(metadataPath, newBitmapMetadata);
+                                    var innerMetadata = new BitmapMetadata(bitmapMetadata.Format);
+                                    newMetadata.SetQuerySafe(metadataPath, innerMetadata);
                                 }
                                 else
                                 {

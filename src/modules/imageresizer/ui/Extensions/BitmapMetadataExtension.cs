@@ -79,7 +79,7 @@ namespace ImageResizer.Extensions
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                Debug.WriteLine($"Exception while trying to remove {query} from metadata.");
+                Debug.WriteLine($"Exception while trying to remove metadata entry at position: {query}");
                 Debug.WriteLine(ex);
             }
         }
@@ -99,7 +99,7 @@ namespace ImageResizer.Extensions
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                Debug.WriteLine($"Exception while trying to set value {value} to query {query}");
+                Debug.WriteLine($"Exception while trying to set metadata {value} at position: {query}");
                 Debug.WriteLine(ex);
             }
         }
@@ -132,13 +132,17 @@ namespace ImageResizer.Extensions
                     catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        Debug.WriteLine((absolutePath, $"Invalid metadata found at query path {absolutePath}. Skipping metadata entry | {ex.Message}"));
+                        Debug.WriteLine($"Removing corrupt metadata property {absolutePath}. Skipping metadata entry | {ex.Message}");
                         Debug.WriteLine(ex);
                     }
 
                     if (metadataQueryReader != null)
                     {
                         listOfAllMetadata.Add((absolutePath, metadataQueryReader));
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"No metadata found for query {absolutePath}. Skipping empty null entry because its invalid.");
                     }
 
                     if (metadataQueryReader is BitmapMetadata innerMetadata)
