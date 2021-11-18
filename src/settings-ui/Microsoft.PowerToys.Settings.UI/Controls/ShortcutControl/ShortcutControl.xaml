@@ -14,10 +14,12 @@
     <Grid HorizontalAlignment="Right">
         <StackPanel Orientation="Horizontal">
             <Button x:Name="EditButton"
+                    Padding="0"
                     Background="Transparent"
                     BorderBrush="Transparent"
                     Click="OpenDialogButton_Click" >
                 <StackPanel Orientation="Horizontal"
+                            Margin="6,0,6,0"
                             Spacing="16">
                     <ItemsControl x:Name="PreviewKeysControl"
                                   IsEnabled="{Binding ElementName=EditButton, Path=IsEnabled}"
@@ -40,8 +42,7 @@
                     </ItemsControl>
                     <FontIcon Glyph="&#xE104;"
                               FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                              FontSize="14"
-                              Margin="0,0,4,0" />
+                              FontSize="14"/>
                 </StackPanel>
             </Button>
         </StackPanel>
