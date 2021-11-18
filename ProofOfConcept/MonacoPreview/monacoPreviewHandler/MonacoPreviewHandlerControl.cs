@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO.Abstractions;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Common;
@@ -18,6 +20,8 @@ namespace MonacoPreviewHandler
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IFile File = FileSystem.File;
+        
+        private CoreWebView2Environment webView2Environment;
         
         private Microsoft.Web.WebView2.WinForms.WebView2 webView;
         
@@ -42,19 +46,14 @@ namespace MonacoPreviewHandler
                 throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandler)} must be a string but was a '{typeof(T)}'");
             }
             
-            
-            
-            
-            InvokeOnControlThread(() =>
-            {
                 webView = new Microsoft.Web.WebView2.WinForms.WebView2();
+
 
                 string[] file = GetFile(filePath);
 
-                InitializeAsync(settings.compatibility?file[0]:file[2], fileHandler.GetLanguage(file[1]));
+                InitializeAsync(filePath);
 
-                Controls.Add(webView);
-            });
+                
             
 
             base.DoPreview(dataSource);
@@ -85,7 +84,7 @@ namespace MonacoPreviewHandler
                 // Disable contextmenu
                 //settings.AreDefaultContextMenusEnabled = false;
                 // Disable developer menu
-                //settings.AreDevToolsEnabled = false;
+                settings.AreDevToolsEnabled = false;
                 // Disable script dialogs (like alert())
                 settings.AreDefaultScriptDialogsEnabled = false;
                 // Enables JavaScript
@@ -113,52 +112,47 @@ namespace MonacoPreviewHandler
                 WasNavigated = true;
             }
         }
-
-        private void FormResize(object sender, EventArgs e)
+        
+        public static string AssemblyDirectory
         {
-            // This function gets called whan the form gets resized
-            // It's fitting the webview in the size of the window
-            // TO-DO: Javascript resize
-
+            // Source: https://stackoverflow.com/a/283917/14774889
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
         }
 
-        public async void InitializeAsync(string code, string lang)
+        const string VirtualHostName = "PowerToysLocalMonaco";
+        public async void InitializeAsync(string fileName)
         {
             // This function initializes the webview settings
             // Partely copied from https://weblog.west-wind.com/posts/2021/Jan/14/Taking-the-new-Chromium-WebView2-Control-for-a-Spin-in-NET-Part-1
 
-            // Sets the url
-            webView.NavigateToString((settings.compatibility?GetURLwithCode(code, lang):GetURLwithFilePath(code, lang)).ToString());
+            var vsCodeLangSet = fileHandler.GetLanguage(Path.GetExtension(fileName).TrimStart('.'));
+            var fileContent = File.ReadAllText(fileName);
+            var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+
+            // prepping index html to load in
+            var html = File.ReadAllText(AssemblyDirectory+"\\index.html").Replace("\t", "");
+
+            html = html.Replace("[[PT_LANG]]", vsCodeLangSet);
+            html = html.Replace("[[PT_WRAP]]", settings.wrap ? "1" : "0");
+            html = html.Replace("[[PT_THEME]]", settings.GetTheme(ThemeListener.AppMode));
+            html = html.Replace("[[PT_CODE]]", base64FileCode);
+            html = html.Replace("[[PT_URL]]", VirtualHostName);
 
             // Initialize WebView
-
-            var webViewOptions = new CoreWebView2EnvironmentOptions
-            {
-                // Enable CORS for local file access.
-                AdditionalBrowserArguments = "--disable-web-security --disable-web-security"
-            };
-
-            var env = await CoreWebView2Environment.CreateAsync(null,Path.GetTempPath(), webViewOptions);
-            await webView.EnsureCoreWebView2Async(env);
+            webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(),"MonacoPreview"));
+            
+            await webView.EnsureCoreWebView2Async(webView2Environment);
+            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
+            webView.NavigateToString(html);
             webView.NavigationCompleted += WebView2Init;
-            webView.NavigationStarting += NavigationStarted;
-        }
-        
-        public Uri GetURLwithFilePath(string file, string lang)
-        {
-            // This function returns a url you can use to access index.html
-
-            return new Uri(settings.baseURL + "?file=" + file + "&lang=" + lang + "&theme=" + settings.GetTheme(ThemeListener.AppMode) + "&wrap=" + (this.settings.wrap?"1":"0"));
-        }
-
-        public Uri GetURLwithCode(string code, string lang)
-        {
-            // This function returns a url you can use to access index.html
-
-            // Converts code to base64
-            code = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(code)).Replace("+", "%2B");
-
-            return new Uri(settings.baseURL + "?code=" + code + "&lang=" + lang + "&theme=" + settings.GetTheme(ThemeListener.AppMode) + "&wrap=" + (this.settings.wrap ? "1" : "0"));
+            
+            Controls.Add(webView);
         }
     }
 }

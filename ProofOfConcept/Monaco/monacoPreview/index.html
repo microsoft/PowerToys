@@ -52,9 +52,9 @@
 		<!-- Container for the editor -->
 		<div id="container"></div>
 		<!-- Script -->
-		<script src="monacoSRC/min/vs/loader.js"></script>
+		<script src="http://[[PT_URL]]/monacoSRC/min/vs/loader.js"></script>
 		<script>
-			require.config({ paths: { vs: 'monacoSRC/min/vs' } });
+			require.config({ paths: { vs: 'http://[[PT_URL]]/monacoSRC/min/vs' } });
 			require(['vs/editor/editor.main'], function () {
 				// Creates the editor
 				// For all parameters: https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.istandaloneeditorconstructionoptions.html

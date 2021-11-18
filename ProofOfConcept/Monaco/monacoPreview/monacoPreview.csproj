@@ -8,25 +8,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <COMReference Include="Shell32">
-        <WrapperTool>tlbimp</WrapperTool>
-        <VersionMinor>0</VersionMinor>
-        <VersionMajor>1</VersionMajor>
-        <Guid>50a7e9b0-70ef-11d1-b75a-00a0c90564fe</Guid>
-        <Lcid>0</Lcid>
-        <Isolated>false</Isolated>
-        <EmbedInteropTypes>true</EmbedInteropTypes>
-      </COMReference>
+        <COMReference Include="Shell32">
+            <WrapperTool>tlbimp</WrapperTool>
+            <VersionMinor>0</VersionMinor>
+            <VersionMajor>1</VersionMajor>
+            <Guid>50a7e9b0-70ef-11d1-b75a-00a0c90564fe</Guid>
+            <Lcid>0</Lcid>
+            <Isolated>false</Isolated>
+            <EmbedInteropTypes>true</EmbedInteropTypes>
+        </COMReference>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Toolkit.Uwp.UI" Version="6.1.1" />
+        <PackageReference Include="Microsoft.Toolkit.Uwp.UI" Version="7.1.1" />
         <PackageReference Include="Microsoft.Toolkit.Wpf.UI.Controls" Version="6.1.2" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.705.50" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.961.33" />
         <PackageReference Include="WindowsThemeListener" Version="1.0.0" />
     </ItemGroup>
 
-	<!-- Outputs the needed html files -->
+    <!-- Outputs the needed html files -->
     <ItemGroup>
         <None Update="index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -38,9 +38,12 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-      <Compile Update="FileHandler.cs">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Compile>
+        <Compile Update="FileHandler.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Compile>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Update="Microsoft.VCRTForwarders.140" Version="1.0.7" />
     </ItemGroup>
 
 </Project>

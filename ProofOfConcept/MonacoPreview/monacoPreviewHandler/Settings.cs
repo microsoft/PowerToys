@@ -4,7 +4,6 @@ using System.Text;
 using Windows.UI.ViewManagement;
 using WK.Libraries.WTL;
 
-
 namespace monacoPreview
 {
     class Settings
@@ -21,7 +20,7 @@ namespace monacoPreview
         public string baseURL = "file://" + System.AppContext.BaseDirectory + "/index.html";
 
         // Activate compatibility mode
-        public bool compatibility = true;
+        public bool compatibility = false;
         
 
         public String GetTheme(ThemeListener.ThemeModes t)
