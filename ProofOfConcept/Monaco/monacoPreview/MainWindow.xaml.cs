@@ -34,17 +34,26 @@ namespace monacoPreview
 
             InitializeComponent();
 
-            string[] file = GetFile(args);
+            long fileLength = new System.IO.FileInfo(args[1]).Length;
+
+            
 
             var fileName = "";
-            if(args != null && args.Length > 1)
+            if (args != null && args.Length > 1)
             {
                 fileName = args[1];
             }
             
             
-            
-            InitializeAsync(fileName);
+            if (fileLength < 3000)
+            {
+                string[] file = GetFile(args);
+                InitializeAsync(fileName);
+            }
+            else
+            {
+                InitializeAsync(false);
+            }
         }
 
         public string[] GetFile(string[] args)
@@ -152,6 +161,19 @@ namespace monacoPreview
             webView.NavigationCompleted += WebView2Init;
         }
 
+        public async void  InitializeAsync(bool status)
+        {
+            if (!status)
+            {
+                string html = "This file is too big to display.<br />Max file size: 3KB";
+                webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(),"MonacoPreview"));
+            
+                await webView.EnsureCoreWebView2Async(webView2Environment);
+                webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
+                webView.NavigateToString(html);
+            }
+        }
+        
         public Uri GetURLwithCode(string code, string lang)
         {
             // This function returns a url you can use to access index.html
