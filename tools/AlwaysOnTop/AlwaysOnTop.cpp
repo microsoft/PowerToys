@@ -106,7 +106,6 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         if (SetTopmostWindow(window))
         {
             m_topmostWindows.insert(m_topmostWindows.begin(), window);
-            OrderWindows();
         }
     }
 
@@ -147,8 +146,6 @@ void AlwaysOnTop::StartTrackingTopmostWindows()
             m_topmostWindows.push_back(window);
         }
     }
-
-    OrderWindows();
 }
 
 void AlwaysOnTop::ResetAll()
@@ -173,27 +170,6 @@ void AlwaysOnTop::CleanUp()
         m_hotKeyHandleWindow = nullptr;
     }
     UnregisterClass(HOTKEY_WINDOW_CLASS_NAME, reinterpret_cast<HINSTANCE>(&__ImageBase));
-}
-
-bool AlwaysOnTop::OrderWindows() const noexcept
-{
-    if (m_topmostWindows.empty())
-    {
-        return true;
-    }
-
-    BOOL res = true;
-    for (int i = static_cast<int>(m_topmostWindows.size()) - 1; i >= 0; i--)
-    {
-        res &= SetWindowPos(m_topmostWindows[i], nullptr, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
-
-        if (!res)
-        {
-            MessageBoxW(NULL, L"Failed to order windows", L"AlwaysOnTop error", MB_OK | MB_ICONERROR);
-        }
-    }
-
-    return res;
 }
 
 bool AlwaysOnTop::IsTopmost(HWND window) const noexcept
@@ -225,6 +201,7 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
     return false;
 }
 
+// TODO: remove
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
     switch (data->event)
@@ -233,10 +210,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     case EVENT_SYSTEM_SWITCHEND: // alt-tab
     case EVENT_OBJECT_FOCUS: // focused
     {
-        if (IsTracked(data->hwnd))
-        {
-            OrderWindows();
-        }
+        
     }
     break;
     default:
