@@ -369,6 +369,22 @@ namespace FancyZonesUtils
         ::SetWindowPlacement(window, &placement);
     }
 
+    void SwitchToWindow(HWND window) noexcept
+    {
+        // Check if the window is minimized
+        if (IsIconic(window))
+        {
+            // Show the window since SetForegroundWindow fails on minimized windows
+            ShowWindow(window, SW_RESTORE);
+        }
+
+        // This is a hack to bypass the restriction on setting the foreground window
+        INPUT inputs[1] = { { .type = INPUT_MOUSE } };
+        SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+
+        SetForegroundWindow(window);
+    }
+
     bool HasNoVisibleOwner(HWND window) noexcept
     {
         auto owner = GetWindow(window, GW_OWNER);
