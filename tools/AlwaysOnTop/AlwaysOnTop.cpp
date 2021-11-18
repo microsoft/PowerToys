@@ -3,7 +3,7 @@
 #include <mmsystem.h> // sound
 #include <shellapi.h> // game mode
 
-const static wchar_t* HOTKEY_WINDOW_CLASS_NAME = L"HotkeyHandleWindowClass";
+const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
 
 // common
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -39,15 +39,15 @@ void AlwaysOnTop::Init()
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.lpfnWndProc = WndProc_Helper;
     wcex.hInstance = hinstance;
-    wcex.lpszClassName = HOTKEY_WINDOW_CLASS_NAME;
+    wcex.lpszClassName = TOOL_WINDOW_CLASS_NAME;
     RegisterClassExW(&wcex);
 
-    m_hotKeyHandleWindow = CreateWindowExW(WS_EX_TOOLWINDOW, HOTKEY_WINDOW_CLASS_NAME, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinstance, this);
-    if (!m_hotKeyHandleWindow) {
+    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, TOOL_WINDOW_CLASS_NAME, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinstance, this);
+    if (!m_window) {
         return;
     }
 
-    RegisterHotKey(m_hotKeyHandleWindow, 1, MOD_CONTROL | MOD_NOREPEAT, 0x54 /* T */);
+    RegisterHotKey(m_window, 1, MOD_CONTROL | MOD_NOREPEAT, 0x54 /* T */);
 
     // subscribe to windows events
     std::array<DWORD, 3> events_to_subscribe = {
@@ -164,12 +164,13 @@ void AlwaysOnTop::ResetAll()
 void AlwaysOnTop::CleanUp()
 {
     ResetAll();
-    if (m_hotKeyHandleWindow)
+    if (m_window)
     {
-        DestroyWindow(m_hotKeyHandleWindow);
-        m_hotKeyHandleWindow = nullptr;
+        DestroyWindow(m_window);
+        m_window = nullptr;
     }
-    UnregisterClass(HOTKEY_WINDOW_CLASS_NAME, reinterpret_cast<HINSTANCE>(&__ImageBase));
+
+    UnregisterClass(TOOL_WINDOW_CLASS_NAME, reinterpret_cast<HINSTANCE>(&__ImageBase));
 }
 
 bool AlwaysOnTop::IsTopmost(HWND window) const noexcept

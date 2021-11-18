@@ -39,7 +39,7 @@ private:
     static inline AlwaysOnTop* s_instance = nullptr;
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
 
-    HWND m_hotKeyHandleWindow{ nullptr };
+    HWND m_window{ nullptr };
     std::vector<HWND> m_topmostWindows;
 
     bool m_activateInGameMode = false;
