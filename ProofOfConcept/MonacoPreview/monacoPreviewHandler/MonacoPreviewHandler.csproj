@@ -18,7 +18,6 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Microsoft.Toolkit.Wpf.UI.Controls" Version="6.1.2" />
-      <PackageReference Include="Microsoft.Toolkit.Wpf.UI.XamlHost" Version="6.1.2" />
       <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.961.33" />
       <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.354">
         <PrivateAssets>all</PrivateAssets>

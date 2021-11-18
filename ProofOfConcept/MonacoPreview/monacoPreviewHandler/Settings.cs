@@ -4,7 +4,7 @@ using System.Text;
 using Windows.UI.ViewManagement;
 using WK.Libraries.WTL;
 
-namespace monacoPreview
+namespace MonacoPreviewHandler
 {
     class Settings
     {
