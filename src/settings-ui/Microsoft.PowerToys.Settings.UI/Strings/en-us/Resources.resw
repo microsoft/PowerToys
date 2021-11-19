@@ -1742,7 +1742,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
-    <value>Mouse Highlighter mode will hightlight mouse clicks.</value>
+    <value>Mouse Highlighter mode will highlight mouse clicks.</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
 
