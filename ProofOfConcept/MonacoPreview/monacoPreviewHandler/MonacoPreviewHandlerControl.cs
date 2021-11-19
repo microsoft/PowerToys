@@ -144,15 +144,19 @@ namespace MonacoPreviewHandler
             html = html.Replace("[[PT_CODE]]", base64FileCode);
             html = html.Replace("[[PT_URL]]", VirtualHostName);
 
-            // Initialize WebView
-            webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(),"MonacoPreview"));
-            
-            await webView.EnsureCoreWebView2Async(webView2Environment);
-            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
-            webView.NavigateToString(html);
-            webView.NavigationCompleted += WebView2Init;
-            
-            Controls.Add(webView);
+            InvokeOnControlThread(async () =>
+            {
+
+                // Initialize WebView
+                webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(), "MonacoPreview"));
+
+                await webView.EnsureCoreWebView2Async(webView2Environment);
+                webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
+                webView.NavigateToString(html);
+                webView.NavigationCompleted += WebView2Init;
+
+                Controls.Add(webView);
+            });
         }
     }
 }
