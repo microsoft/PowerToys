@@ -36,8 +36,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             RightButtonClickColor = new StringProperty("#0000FF");
             HighlightOpacity = new IntProperty(160);
             HighlightRadius = new IntProperty(20);
-            HighlightFadeDelayMs = new IntProperty(1000);
-            HighlightFadeDurationMs = new IntProperty(500);
+            HighlightFadeDelayMs = new IntProperty(500);
+            HighlightFadeDurationMs = new IntProperty(250);
         }
     }
 }
