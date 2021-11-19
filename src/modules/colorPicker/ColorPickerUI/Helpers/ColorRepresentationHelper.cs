@@ -46,8 +46,6 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.RGB => ColorToRGB(color),
                 ColorRepresentationType.CIELAB => ColorToCIELAB(color),
                 ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
-                ColorRepresentationType.RGBfloat => ColorToFloat(color),
-                ColorRepresentationType.Decimal => ColorToDecimal(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),
@@ -99,29 +97,6 @@ namespace ColorPicker.Helpers
             return $"hsb({hue.ToString(CultureInfo.InvariantCulture)}"
                  + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {brightness.ToString(CultureInfo.InvariantCulture)}%)";
-        }
-
-        /// <summary>
-        /// Return a <see cref="string"/> representation float color styling(0.1f, 0.1f, 0.1f)
-        /// </summary>
-        /// <param name="color">The <see cref="Color"/> to convert</param>
-        /// <returns>a string value (0.1f, 0.1f, 0.1f)</returns>
-        private static string ColorToFloat(Color color)
-        {
-            var (red, green, blue) = ColorHelper.ConvertToDouble(color);
-            var precison = 2;
-
-            return $"({Math.Round(red, precison)}f, {Math.Round(green, precison)}f, {Math.Round(blue, precison)}f, 1)";
-        }
-
-        /// <summary>
-        /// Return a <see cref="string"/> representation decimal color value
-        /// </summary>
-        /// <param name="color">The <see cref="Color"/> to convert</param>
-        /// <returns>a string value number</returns>
-        private static string ColorToDecimal(Color color)
-        {
-            return $"{color.R + (color.G * 256) + (color.B * 65536)}";
         }
 
         /// <summary>

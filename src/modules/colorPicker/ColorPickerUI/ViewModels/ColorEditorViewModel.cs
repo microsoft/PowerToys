@@ -216,18 +216,6 @@ namespace ColorPicker.ViewModels
                     FormatName = ColorRepresentationType.CIEXYZ.ToString(),
                     Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIEXYZ); },
                 });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.RGBfloat.ToString(),
-                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.RGBfloat); },
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.Decimal.ToString(),
-                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.Decimal); },
-                });
 
             _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;
 
