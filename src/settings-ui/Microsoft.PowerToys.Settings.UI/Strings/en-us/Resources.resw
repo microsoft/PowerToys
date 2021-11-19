@@ -1742,7 +1742,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Description" xml:space="preserve">
-    <value>Highlight left and right mouse clicks</value>
+    <value>Use a keyboard shortcut to highlight left and right mouse clicks</value>
     <comment>Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_LeftButtonClickColor.Header" xml:space="preserve">
