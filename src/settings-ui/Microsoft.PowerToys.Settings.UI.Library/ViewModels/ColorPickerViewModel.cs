@@ -55,6 +55,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 { ColorRepresentationType.RGB,  "RGB - rgb(100, 50, 75)" },
                 { ColorRepresentationType.CIELAB, "CIE LAB - CIELab(76, 21, 80)" },
                 { ColorRepresentationType.CIEXYZ, "CIE XYZ - xyz(56, 50, 7)" },
+                { ColorRepresentationType.RGBfloat, "(1.0f, 0.7f, 0.00f)" },
+                { ColorRepresentationType.Decimal, "16755200" },
             };
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
@@ -198,6 +200,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             var ncolFormatName = ColorRepresentationType.NCol.ToString();
             var cielabFormatName = ColorRepresentationType.CIELAB.ToString();
             var ciexyzFormatName = ColorRepresentationType.CIEXYZ.ToString();
+            var rgbFloatFormatName = ColorRepresentationType.RGBfloat.ToString();
+            var decimalFormatName = ColorRepresentationType.Decimal.ToString();
 
             formatsUnordered.Add(new ColorFormatModel(hexFormatName, "ef68ff", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName]));
             formatsUnordered.Add(new ColorFormatModel(rgbFormatName, "rgb(239, 104, 255)", visibleFormats.ContainsKey(rgbFormatName) && visibleFormats[rgbFormatName]));
@@ -210,6 +214,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             formatsUnordered.Add(new ColorFormatModel(ncolFormatName, "R10, 50%, 75%", visibleFormats.ContainsKey(ncolFormatName) && visibleFormats[ncolFormatName]));
             formatsUnordered.Add(new ColorFormatModel(cielabFormatName, "CIELab(66, 72, -52)", visibleFormats.ContainsKey(cielabFormatName) && visibleFormats[cielabFormatName]));
             formatsUnordered.Add(new ColorFormatModel(ciexyzFormatName, "xyz(59, 35, 98)", visibleFormats.ContainsKey(ciexyzFormatName) && visibleFormats[ciexyzFormatName]));
+            formatsUnordered.Add(new ColorFormatModel(rgbFloatFormatName, "(0.94f, 0.41f, 1.00f, 1)", visibleFormats.ContainsKey(rgbFloatFormatName) && visibleFormats[rgbFloatFormatName]));
+            formatsUnordered.Add(new ColorFormatModel(decimalFormatName, "15689983", visibleFormats.ContainsKey(decimalFormatName) && visibleFormats[decimalFormatName]));
 
             foreach (var storedColorFormat in _colorPickerSettings.Properties.VisibleColorFormats)
             {
