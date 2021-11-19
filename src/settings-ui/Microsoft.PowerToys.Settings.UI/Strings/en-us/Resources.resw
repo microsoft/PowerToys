@@ -655,11 +655,11 @@
     <value>Shows a help overlay with Windows shortcuts.</value>
   </data>
   <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
-    <value>Press duration before showing (ms)</value>
+    <value>Press duration before showing</value>
     <comment>pressing a key in milliseconds</comment>
   </data>
   <data name="ShortcutGuide_PressTime.Description" xml:space="preserve">
-    <value>How long to press the Windows key to activate the module</value>
+    <value>How long to press the Windows key to activate the module (in ms)</value>
   </data>
   <data name="ShortcutGuide_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
@@ -1627,7 +1627,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
   <data name="Oobe_MouseUtils_FindMyMouse_Description.Text" xml:space="preserve">
-    <value>Click twice on the Left Control key to focus on your mouse.</value>
+    <value>Press the left Ctrl key twice to focus the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral. Key as in a keyboard key</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter.Text" xml:space="preserve">
@@ -1635,7 +1635,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
-    <value>Activate the module to highlight left and right mouse clicks</value>
+    <value>Use a keyboard shortcut highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
@@ -1726,8 +1726,8 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Description" xml:space="preserve">
-    <value>Press the Left Control key twice to focus the mouse pointer.</value>
-    <comment>"Left Control" is a keyboard key.</comment>
+    <value>Press the left Ctrl key twice to focus the mouse pointer</value>
+    <comment>"Ctrl" is a keyboard key.</comment>
   </data>
   <data name="MouseUtils_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
@@ -1742,7 +1742,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Description" xml:space="preserve">
-    <value>Customize the keyboard shortcut to enter or exit the mode to highlight mouse clicks</value>
+    <value>Highlight left and right mouse clicks</value>
     <comment>Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_LeftButtonClickColor.Header" xml:space="preserve">
@@ -1761,13 +1761,13 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Fade delay</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
-    <value>Time it takes (in ms) before a highlight starts to disappear</value>
+    <value>How long it takes before a highlight starts to disappear (in ms)</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">
     <value>Fade duration</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Description" xml:space="preserve">
-    <value>How long the disappear animation takes (in ms)</value>
+    <value>Duration of the disappear animation (in ms)</value>
   </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
