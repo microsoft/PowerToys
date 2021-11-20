@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO.Abstractions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,17 +48,26 @@ namespace MonacoPreviewHandler
                 throw new ArgumentException($"{nameof(dataSource)} for {nameof(MonacoPreviewHandler)} must be a string but was a '{typeof(T)}'");
             }
 
-            
-
             string[] file = GetFile(filePath);
-
-
-            InitializeAsync(filePath).Wait();
-
+            try
+            {
+                this.InvokeOnControlThread(async () =>
+                {
+                    this.InitializeAsync(filePath).Wait();
+                });
+            }
+            catch(Exception e)
+            {
+                Label text = new Label();
+                text.Text = "Exception occured:\n";
+                text.Text += e.Message;
+                text.Text += "\n" + e.Source;
+                text.Text += "\n" + e.StackTrace;
+                text.Width = 500;
+                text.Height = 10000;
+                Controls.Add(text);
+            }
             base.DoPreview(dataSource);
-
-            Controls.Add(webView);
-
         }
 
         public string[] GetFile(string args)
@@ -126,6 +136,7 @@ namespace MonacoPreviewHandler
         }
 
         const string VirtualHostName = "PowerToysLocalMonaco";
+
         public async Task InitializeAsync(string fileName)
         {
             // This function initializes the webview settings
@@ -144,21 +155,20 @@ namespace MonacoPreviewHandler
             html = html.Replace("[[PT_CODE]]", base64FileCode);
             html = html.Replace("[[PT_URL]]", VirtualHostName);
 
-            InvokeOnControlThread(async () =>
-            {
-                webView = new Microsoft.Web.WebView2.WinForms.WebView2();
-                // Initialize WebView
-                webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(), "MonacoPreview"));
+            webView = new Microsoft.Web.WebView2.WinForms.WebView2();
+            // Initialize WebView
+            webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(), "MonacoPreview"));
 
-                await webView.EnsureCoreWebView2Async(webView2Environment);
-                webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
-                webView.NavigateToString(html);
-                webView.NavigationCompleted += WebView2Init;
-            });
-
-
-
-
+            await webView.EnsureCoreWebView2Async(webView2Environment).ConfigureAwait(false);
+            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
+            webView.NavigateToString(html);
+            webView.NavigationCompleted += WebView2Init;
+            webView.CoreWebView2InitializationCompleted += addWebView2Control;
+        }
+        
+        public void addWebView2Control(Object sender, CoreWebView2InitializationCompletedEventArgs e)
+        {
+            Controls.Add(webView);
         }
     }
 }

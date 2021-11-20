@@ -1,187 +1,198 @@
 ﻿using System;
+using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Web;
 using Microsoft.Web.WebView2.Core;
 using WK.Libraries.WTL;
-using System.Windows.Forms;
-using Microsoft.Web.WebView2.WinForms;
 
 namespace monacoPreview
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : System.Windows.Window
+    public partial class MainWindow
     { 
-        // This variable prevents users from navigating
-        private bool WasNavigated = false;
+        // This variable prevents users from navigating to other pages in the webView.
+        // It's first set to false and as soon as the WebView loaded index.html it's set to true to prevent further navigation.
+        private bool _hasNavigated;
 
         // Settings from Settings.cs
-        private readonly Settings settings = new Settings();
+        private readonly Settings _settings = new Settings();
 
         // Filehandler class from FileHandler.cs
-        private readonly FileHandler fileHandler = new FileHandler();
+        private readonly FileHandler _fileHandler = new FileHandler();
 
-        private CoreWebView2Environment webView2Environment;
+        private CoreWebView2Environment _webView2Environment;
         
         public MainWindow()
-        {
-            System.Diagnostics.Debug.WriteLine("Start");
+        { 
+            Debug.WriteLine("Starting Monaco Preview Standalone App");
 
             // Get command line args
             string[] args = Environment.GetCommandLineArgs();
 
             InitializeComponent();
-
-            long fileLength = new System.IO.FileInfo(args[1]).Length;
-
             
-
+            // Get filename for the file to preview
             var fileName = "";
-            if (args != null && args.Length > 1)
+            if (args.Length > 1)
             {
+                // Get first command line argument as file name
                 fileName = args[1];
             }
-            
-            
-            if (fileLength < 3000)
+            else
             {
-                string[] file = GetFile(args);
+                // Exception if no command line argument is passed.
+                Console.WriteLine("Please pass a file path as the first argument.");
+                throw new Exception("No file specified for previewing.");
+            }
+
+            // Check if the file is too big.
+            long fileSize = new FileInfo(args[1]).Length;
+            
+            if (fileSize < _settings.maxFileSize)
+            {
+                // Initialize WebView2 element with page
                 InitializeAsync(fileName);
             }
             else
             {
+                Debug.WriteLine("File was too big to be previewed.");
+                Debug.WriteLine("File size: " + fileSize + "bytes / Allowed file size: " + _settings.maxFileSize);
                 InitializeAsync(false);
             }
         }
-
-        public string[] GetFile(string[] args)
-        {
-            // This function gets a file
-            string[] returnValue = new string[3];
-            // Get source code
-            returnValue[0] = File.ReadAllText(args[1]);
-            // Gets file extension (without .)
-            returnValue[1] = Path.GetExtension(args[1]).Replace(".","");
-            returnValue[2] = args[1];
-            return returnValue;
-        }
-
+        
+        // This function sets the different settings for the webview.
         private void WebView2Init(Object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
-            // This function sets the diiferent settings for the webview 
-
             // Checks if already navigated
-            if (!WasNavigated)
-            {
-                CoreWebView2Settings settings = webView.CoreWebView2.Settings;
+            if (_hasNavigated) return;
+            
+            // Initialize CoreWebView2Settings object
+            CoreWebView2Settings settings = WebView.CoreWebView2.Settings;
 
-                // Disable contextmenu
-                //settings.AreDefaultContextMenusEnabled = false;
-                // Disable developer menu
-                settings.AreDevToolsEnabled = false;
-                // Disable script dialogs (like alert())
-                settings.AreDefaultScriptDialogsEnabled = false;
-                // Enables JavaScript
-                settings.IsScriptEnabled = true;
-                // Disable zoom woth ctrl and scroll
-                settings.IsZoomControlEnabled = false;
-                // Disable developer menu
-                settings.IsBuiltInErrorPageEnabled = false;
-                // Disable status bar
-                settings.IsStatusBarEnabled = false;
-            }
+            // Disable contextmenu
+            settings.AreDefaultContextMenusEnabled = false;
+            // Disable developer menu
+            settings.AreDevToolsEnabled = false;
+            // Disable script dialogs (like alert())
+            settings.AreDefaultScriptDialogsEnabled = false;
+            // Enables JavaScript
+            settings.IsScriptEnabled = true;
+            // Disable zoom with ctrl + scroll
+            settings.IsZoomControlEnabled = false;
+            // Disable developer menu
+            settings.IsBuiltInErrorPageEnabled = false;
+            // Disable status bar
+            settings.IsStatusBarEnabled = false;
         }
 
-        private void NavigationStarted(Object sender, CoreWebView2NavigationStartingEventArgs e)
+        private void NavigationStarted(object sender, CoreWebView2NavigationStartingEventArgs e)
         {
             // Prevents navigation if already one done to index.html
-            if (WasNavigated)
+            if (_hasNavigated)
             {
                 e.Cancel = false;
             }
 
             // If it has navigated to index.html it stops further navigations
-            if(e.Uri.StartsWith(settings.baseURL))
+            if(e.Uri.StartsWith(_settings.BaseUrl))
             {
-                WasNavigated = true;
+                _hasNavigated = true;
             }
         }
 
         private void FormResize(object sender, EventArgs e)
         {
-            // This function gets called whan the form gets resized
+            // This function gets called when the form gets resized
             // It's fitting the webview in the size of the window
-            // TO-DO: Javascript resize
-            viewbox.Height = this.ActualHeight;
-            viewbox.Width = this.ActualWidth;
-            webView.Height = this.ActualHeight;
-            webView.Width = this.ActualWidth;
+            Viewbox.Height = this.ActualHeight - 50;
+            Viewbox.Width = this.ActualWidth;
+            WebView.Height = this.ActualHeight - 50;
+            WebView.Width = this.ActualWidth;
         }
 
-        public static string AssemblyDirectory
+        // Get directory of assembly
+        private static string AssemblyDirectory
         {
             // Source: https://stackoverflow.com/a/283917/14774889
             get
             {
                 string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                if (codeBase == null)
+                {
+                    throw new NoNullAllowedException("Assembly.GetExecutingAssembly().CodeBase gave back null. That's not allowed");
+                }
                 UriBuilder uri = new UriBuilder(codeBase);
                 string path = Uri.UnescapeDataString(uri.Path);
                 return Path.GetDirectoryName(path);
             }
         }
         
+        // Virtual host name for in index.html
         const string VirtualHostName = "PowerToysLocalMonaco";
-        public async void InitializeAsync(string fileName)
+        private async void InitializeAsync(string fileName)
         {
             // This function initializes the webview settings
-            // Partely copied from https://weblog.west-wind.com/posts/2021/Jan/14/Taking-the-new-Chromium-WebView2-Control-for-a-Spin-in-NET-Part-1
+            // Partly copied from https://weblog.west-wind.com/posts/2021/Jan/14/Taking-the-new-Chromium-WebView2-Control-for-a-Spin-in-NET-Part-1
 
-            var vsCodeLangSet = fileHandler.GetLanguage(Path.GetExtension(fileName).TrimStart('.'));
+            // Sets the Monaco language code set
+            var vsCodeLangSet = _fileHandler.GetLanguage(Path.GetExtension(fileName).TrimStart('.'));
+            // The content of the file
             var fileContent = File.ReadAllText(fileName);
+            // Turns file content in base64 string
             var base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
 
-            // prepping index html to load in
+            // Prepping index.html to load in
             var html = File.ReadAllText(AssemblyDirectory+"\\index.html").Replace("\t", "");
 
+            // Replace values in index.html
             html = html.Replace("[[PT_LANG]]", vsCodeLangSet);
-            html = html.Replace("[[PT_WRAP]]", settings.wrap ? "1" : "0");
-            html = html.Replace("[[PT_THEME]]", settings.GetTheme(ThemeListener.AppMode));
+            html = html.Replace("[[PT_WRAP]]", _settings.wrap ? "1" : "0");
+            html = html.Replace("[[PT_THEME]]", _settings.GetTheme(ThemeListener.AppMode));
             html = html.Replace("[[PT_CODE]]", base64FileCode);
             html = html.Replace("[[PT_URL]]", VirtualHostName);
 
-            // Initialize WebView
+            // Initialize WebView2Environment with userDataFolder set to a temp path
+            _webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(),"MonacoPreview"));
             
-            webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(),"MonacoPreview"));
+            // Ensures WebView2 is ready
+            await WebView.EnsureCoreWebView2Async(_webView2Environment);
             
-            await webView.EnsureCoreWebView2Async(webView2Environment);
-            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
-            webView.NavigateToString(html);
-            webView.NavigationCompleted += WebView2Init;
+            // Sets virtual host name
+            WebView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
+            
+            // Passes index.html file content to the WebView and navigates to it.
+            WebView.NavigateToString(html);
+            
+            // WebView events
+            WebView.NavigationCompleted += WebView2Init;
+            WebView.NavigationStarting += NavigationStarted;
         }
-
-        public async void  InitializeAsync(bool status)
+        
+        // Function if the file size is too big
+        private async void InitializeAsync(bool status)
         {
             if (!status)
             {
-                string html = "This file is too big to display.<br />Max file size: 3KB";
-                webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(),"MonacoPreview"));
+                // Initialize WebView2Environment with userDataFolder set to a temp path
+                _webView2Environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Path.GetTempPath(),"MonacoPreview"));
             
-                await webView.EnsureCoreWebView2Async(webView2Environment);
-                webView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
-                webView.NavigateToString(html);
+                // Ensures WebView2 is ready
+                await WebView.EnsureCoreWebView2Async(_webView2Environment);
+            
+                // Sets virtual host name
+                WebView.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AppDomain.CurrentDomain.BaseDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
+                
+                // Navigates WebView to the code specified in <ref>_settings.maxFileSizeErr</ref>
+                WebView.NavigateToString(_settings.maxFileSizeErr);
             }
-        }
-        
-        public Uri GetURLwithCode(string code, string lang)
-        {
-            // This function returns a url you can use to access index.html
-
-            // Converts code to base64
-            code = HttpUtility.UrlEncode(code); // this is needed for URL encode;
-
-            return new Uri(settings.baseURL + "?code=" + code + "&lang=" + lang + "&theme=" + settings.GetTheme(ThemeListener.AppMode) + "&wrap=" + (settings.wrap ? "1" : "0"));
+            else
+            {
+                throw new ArgumentException("Status can only be `false`","status");
+            }
         }
     }
 } 

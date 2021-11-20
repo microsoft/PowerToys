@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Windows.UI.ViewManagement;
 using WK.Libraries.WTL;
 
 namespace monacoPreview
@@ -14,18 +11,21 @@ namespace monacoPreview
         private readonly string theme = "system";
 
         // Word warping. Set by PT settings
-        public bool wrap = true;
+        public readonly bool wrap = false;
 
         // URL to the page
-        public string baseURL = "file://" + System.AppContext.BaseDirectory + "/index.html";
+        public readonly string BaseUrl = "file://" + AppContext.BaseDirectory + "/index.html";
 
-        // Activate compatibility mode
-        public bool compatibility = false;
+        // Max file size for displaying (in bytes)
+        public readonly long maxFileSize = 10000; 
         
-
+        // String which is displayed if the file is too big
+        public readonly string maxFileSizeErr = "This file is too big to display.<br />Max file size: 10KB";
+        
+        // Returns the theme that should be used
         public String GetTheme(ThemeListener.ThemeModes t)
         {
-            // Puts out the theme that should be used
+
             if (this.theme == "system")
             {
                 if (t == ThemeListener.ThemeModes.Light)
