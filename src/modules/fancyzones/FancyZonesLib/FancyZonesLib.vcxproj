@@ -61,7 +61,7 @@
     <ClInclude Include="ZoneColors.h" />
     <ClInclude Include="ZoneSet.h" />
     <ClInclude Include="WorkArea.h" />
-    <ClInclude Include="ZoneWindowDrawing.h" />
+    <ClInclude Include="ZonesOverlay.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FancyZones.cpp" />
@@ -84,7 +84,7 @@
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="ZoneSet.cpp" />
     <ClCompile Include="WorkArea.cpp" />
-    <ClCompile Include="ZoneWindowDrawing.cpp" />
+    <ClCompile Include="ZonesOverlay.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fancyzones.base.rc" />

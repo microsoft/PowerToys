@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "ZoneWindowDrawing.h"
+#include "ZonesOverlay.h"
 
 #include <algorithm>
 #include <map>
@@ -7,7 +7,6 @@
 #include <vector>
 
 #include <common/logger/call_tracer.h>
-#include <common/logger/logger.h>
 
 namespace
 {
@@ -20,7 +19,7 @@ namespace NonLocalizable
     const wchar_t SegoeUiFont[] = L"Segoe ui";
 }
 
-float ZoneWindowDrawing::GetAnimationAlpha()
+float ZonesOverlay::GetAnimationAlpha()
 {
     // Lock is held by the caller
 
@@ -41,7 +40,7 @@ float ZoneWindowDrawing::GetAnimationAlpha()
     return std::clamp(millis / FadeInDurationMillis, 0.001f, 1.f);
 }
 
-ID2D1Factory* ZoneWindowDrawing::GetD2DFactory()
+ID2D1Factory* ZonesOverlay::GetD2DFactory()
 {
     static auto pD2DFactory = [] {
         ID2D1Factory* res = nullptr;
@@ -51,7 +50,7 @@ ID2D1Factory* ZoneWindowDrawing::GetD2DFactory()
     return pD2DFactory;
 }
 
-IDWriteFactory* ZoneWindowDrawing::GetWriteFactory()
+IDWriteFactory* ZonesOverlay::GetWriteFactory()
 {
     static auto pDWriteFactory = [] {
         IUnknown* res = nullptr;
@@ -61,7 +60,7 @@ IDWriteFactory* ZoneWindowDrawing::GetWriteFactory()
     return pDWriteFactory;
 }
 
-D2D1_COLOR_F ZoneWindowDrawing::ConvertColor(COLORREF color)
+D2D1_COLOR_F ZonesOverlay::ConvertColor(COLORREF color)
 {
     return D2D1::ColorF(GetRValue(color) / 255.f,
                         GetGValue(color) / 255.f,
@@ -69,12 +68,12 @@ D2D1_COLOR_F ZoneWindowDrawing::ConvertColor(COLORREF color)
                         1.f);
 }
 
-D2D1_RECT_F ZoneWindowDrawing::ConvertRect(RECT rect)
+D2D1_RECT_F ZonesOverlay::ConvertRect(RECT rect)
 {
     return D2D1::RectF((float)rect.left + 0.5f, (float)rect.top + 0.5f, (float)rect.right - 0.5f, (float)rect.bottom - 0.5f);
 }
 
-ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
+ZonesOverlay::ZonesOverlay(HWND window)
 {
     HRESULT hr;
     m_window = window;
@@ -84,7 +83,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     // Obtain the size of the drawing area.
     if (!GetClientRect(window, &m_clientRect))
     {
-        Logger::error("couldn't initialize ZoneWindowDrawing: GetClientRect failed");
+        Logger::error("couldn't initialize ZonesOverlay: GetClientRect failed");
         return;
     }
 
@@ -103,14 +102,14 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
 
     if (!SUCCEEDED(hr))
     {
-        Logger::error("couldn't initialize ZoneWindowDrawing: CreateHwndRenderTarget failed with {}", hr);
+        Logger::error("couldn't initialize ZonesOverlay: CreateHwndRenderTarget failed with {}", hr);
         return;
     }
 
     m_renderThread = std::thread([this]() { RenderLoop(); });
 }
 
-ZoneWindowDrawing::RenderResult ZoneWindowDrawing::Render()
+ZonesOverlay::RenderResult ZonesOverlay::Render()
 {
     std::unique_lock lock(m_mutex);
 
@@ -193,7 +192,7 @@ ZoneWindowDrawing::RenderResult ZoneWindowDrawing::Render()
     return RenderResult::Ok;
 }
 
-void ZoneWindowDrawing::RenderLoop()
+void ZonesOverlay::RenderLoop()
 {
     while (!m_abortThread)
     {
@@ -212,7 +211,7 @@ void ZoneWindowDrawing::RenderLoop()
     }
 }
 
-void ZoneWindowDrawing::Hide()
+void ZonesOverlay::Hide()
 {
     _TRACER_;
     bool shouldHideWindow = true;
@@ -229,7 +228,7 @@ void ZoneWindowDrawing::Hide()
     }
 }
 
-void ZoneWindowDrawing::Show()
+void ZonesOverlay::Show()
 {
     _TRACER_;
     bool shouldShowWindow = true;
@@ -257,7 +256,7 @@ void ZoneWindowDrawing::Show()
     m_cv.notify_all();
 }
 
-void ZoneWindowDrawing::Flash()
+void ZonesOverlay::Flash()
 {
     _TRACER_;
     bool shouldShowWindow = true;
@@ -277,9 +276,9 @@ void ZoneWindowDrawing::Flash()
     m_cv.notify_all();
 }
 
-void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
-                                          const ZoneIndexSet& highlightZones,
-                                          const ZoneColors& colors)
+void ZonesOverlay::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
+                                     const ZoneIndexSet& highlightZones,
+                                     const ZoneColors& colors)
 {
     _TRACER_;
     std::unique_lock lock(m_mutex);
@@ -345,7 +344,7 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
     }
 }
 
-ZoneWindowDrawing::~ZoneWindowDrawing()
+ZonesOverlay::~ZonesOverlay()
 {
     {
         std::unique_lock lock(m_mutex);

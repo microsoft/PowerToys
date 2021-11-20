@@ -75,7 +75,7 @@
     <ClInclude Include="KeyState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ZoneWindowDrawing.h">
+    <ClInclude Include="ZonesOverlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MonitorUtils.h">
@@ -140,7 +140,7 @@
     <ClCompile Include="FancyZonesDataTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ZoneWindowDrawing.cpp">
+    <ClCompile Include="ZonesOverlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OnThreadExecutor.cpp">
