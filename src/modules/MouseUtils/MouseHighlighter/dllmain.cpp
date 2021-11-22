@@ -241,9 +241,12 @@ public:
                 uint8_t r, g, b;
                 if (!checkValidRGB(leftColor,&r,&g,&b))
                 {
-                    throw 1;
+                    Logger::error("Left click color RGB value is invalid. Will use default value");
                 }
-                highlightSettings.leftButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
+                else
+                {
+                    highlightSettings.leftButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
+                }
             }
             catch (...)
             {
@@ -257,9 +260,12 @@ public:
                 uint8_t r, g, b;
                 if (!checkValidRGB(leftColor, &r, &g, &b))
                 {
-                    throw 1;
+                    Logger::error("Right click color RGB value is invalid. Will use default value");
                 }
-                highlightSettings.rightButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
+                else
+                {
+                    highlightSettings.rightButtonColor = winrt::Windows::UI::ColorHelper::FromArgb(opacity, r, g, b);
+                }
             }
             catch (...)
             {
