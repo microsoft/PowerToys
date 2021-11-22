@@ -237,8 +237,11 @@
     <Content Include="Assets\FluentIcons\FluentIconsAwake.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFancyZones.png" />
     <Content Include="Assets\FluentIcons\FluentIconsFileExplorerPreview.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsFindMyMouse.png" />
     <Content Include="Assets\FluentIcons\FluentIconsImageResizer.png" />
     <Content Include="Assets\FluentIcons\FluentIconsKeyboardManager.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsMouseHighlighter.png" />
+    <Content Include="Assets\FluentIcons\FluentIconsMouseHighlighter.png" />
     <Content Include="Assets\FluentIcons\FluentIconsMouseUtils.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerRename.png" />
     <Content Include="Assets\FluentIcons\FluentIconsPowerToys.png" />

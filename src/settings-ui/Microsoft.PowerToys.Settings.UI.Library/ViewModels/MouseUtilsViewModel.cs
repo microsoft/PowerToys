@@ -17,7 +17,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private FindMyMouseSettings FindMyMouseSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private MouseHighlighterSettings MouseHighlighterSettingsConfig { get; set; }
+
+        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -31,6 +33,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             _isFindMyMouseEnabled = GeneralSettingsConfig.Enabled.FindMyMouse;
 
+            _isMouseHighlighterEnabled = GeneralSettingsConfig.Enabled.MouseHighlighter;
+
             // To obtain the find my mouse settings, if the file exists.
             // If not, to create a file with the default settings and to return the default configurations.
             if (findMyMouseSettingsRepository == null)
@@ -40,6 +44,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
             _findMyMouseDoNotActivateOnGameMode = FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value;
+
+            if (mouseHighlighterSettingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(mouseHighlighterSettingsRepository));
+            }
+
+            MouseHighlighterSettingsConfig = mouseHighlighterSettingsRepository.SettingsConfig;
+            string leftClickColor = MouseHighlighterSettingsConfig.Properties.LeftButtonClickColor.Value;
+            _highlighterLeftButtonClickColor = !string.IsNullOrEmpty(leftClickColor) ? leftClickColor : "#FFFF00";
+
+            string rightClickColor = MouseHighlighterSettingsConfig.Properties.RightButtonClickColor.Value;
+            _highlighterRightButtonClickColor = !string.IsNullOrEmpty(rightClickColor) ? rightClickColor : "#0000FF";
+
+            _highlighterOpacity = MouseHighlighterSettingsConfig.Properties.HighlightOpacity.Value;
+            _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
+            _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
+            _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -93,9 +114,180 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SettingsUtils.SaveSettings(FindMyMouseSettingsConfig.ToJsonString(), FindMyMouseSettings.ModuleName);
         }
 
+        public bool IsMouseHighlighterEnabled
+        {
+            get => _isMouseHighlighterEnabled;
+            set
+            {
+                if (_isMouseHighlighterEnabled != value)
+                {
+                    _isMouseHighlighterEnabled = value;
+
+                    GeneralSettingsConfig.Enabled.MouseHighlighter = value;
+                    OnPropertyChanged(nameof(_isMouseHighlighterEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings MouseHighlighterActivationShortcut
+        {
+            get
+            {
+                return MouseHighlighterSettingsConfig.Properties.ActivationShortcut;
+            }
+
+            set
+            {
+                if (MouseHighlighterSettingsConfig.Properties.ActivationShortcut != value)
+                {
+                    MouseHighlighterSettingsConfig.Properties.ActivationShortcut = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public string MouseHighlighterLeftButtonClickColor
+        {
+            get
+            {
+                return _highlighterLeftButtonClickColor;
+            }
+
+            set
+            {
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                if (!value.Equals(_highlighterLeftButtonClickColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _highlighterLeftButtonClickColor = value;
+                    MouseHighlighterSettingsConfig.Properties.LeftButtonClickColor.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public string MouseHighlighterRightButtonClickColor
+        {
+            get
+            {
+                return _highlighterRightButtonClickColor;
+            }
+
+            set
+            {
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                if (!value.Equals(_highlighterRightButtonClickColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _highlighterRightButtonClickColor = value;
+                    MouseHighlighterSettingsConfig.Properties.RightButtonClickColor.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int MouseHighlighterOpacity
+        {
+            get
+            {
+                return _highlighterOpacity;
+            }
+
+            set
+            {
+                if (value != _highlighterOpacity)
+                {
+                    _highlighterOpacity = value;
+                    MouseHighlighterSettingsConfig.Properties.HighlightOpacity.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int MouseHighlighterRadius
+        {
+            get
+            {
+                return _highlighterRadius;
+            }
+
+            set
+            {
+                if (value != _highlighterRadius)
+                {
+                    _highlighterRadius = value;
+                    MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int MouseHighlighterFadeDelayMs
+        {
+            get
+            {
+                return _highlightFadeDelayMs;
+            }
+
+            set
+            {
+                if (value != _highlightFadeDelayMs)
+                {
+                    _highlightFadeDelayMs = value;
+                    MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int MouseHighlighterFadeDurationMs
+        {
+            get
+            {
+                return _highlightFadeDurationMs;
+            }
+
+            set
+            {
+                if (value != _highlightFadeDurationMs)
+                {
+                    _highlightFadeDurationMs = value;
+                    MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public void NotifyMouseHighlighterPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndMouseHighlighterSettings outsettings = new SndMouseHighlighterSettings(MouseHighlighterSettingsConfig);
+            SndModuleSettings<SndMouseHighlighterSettings> ipcMessage = new SndModuleSettings<SndMouseHighlighterSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(MouseHighlighterSettingsConfig.ToJsonString(), MouseHighlighterSettings.ModuleName);
+        }
+
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isFindMyMouseEnabled;
         private bool _findMyMouseDoNotActivateOnGameMode;
+
+        private bool _isMouseHighlighterEnabled;
+        private string _highlighterLeftButtonClickColor;
+        private string _highlighterRightButtonClickColor;
+        private int _highlighterOpacity;
+        private int _highlighterRadius;
+        private int _highlightFadeDelayMs;
+        private int _highlightFadeDurationMs;
     }
 }

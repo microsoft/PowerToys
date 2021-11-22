@@ -554,7 +554,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 // The fallback value is based on ToRGBHex's behavior, which returns
                 // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
                 // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? ToRGBHex(value) : "#FFFFFF";
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
                 if (!value.Equals(_zoneHighlightColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneHighlightColor = value;
@@ -576,7 +576,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 // The fallback value is based on ToRGBHex's behavior, which returns
                 // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
                 // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? ToRGBHex(value) : "#FFFFFF";
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
                 if (!value.Equals(_zoneBorderColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneBorderColor = value;
@@ -598,7 +598,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 // The fallback value is based on ToRGBHex's behavior, which returns
                 // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
                 // This extra handling is added here to deal with FxCop warnings.
-                value = (value != null) ? ToRGBHex(value) : "#FFFFFF";
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
                 if (!value.Equals(_zoneInActiveColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneInActiveColor = value;
@@ -752,28 +752,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             OnPropertyChanged(propertyName);
             SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
-        }
-
-        private static string ToRGBHex(string color)
-        {
-            // Using InvariantCulture as these are expected to be hex codes.
-            bool success = int.TryParse(
-                color.Replace("#", string.Empty),
-                System.Globalization.NumberStyles.HexNumber,
-                CultureInfo.InvariantCulture,
-                out int argb);
-
-            if (success)
-            {
-                Color clr = Color.FromArgb(argb);
-                return "#" + clr.R.ToString("X2", CultureInfo.InvariantCulture) +
-                    clr.G.ToString("X2", CultureInfo.InvariantCulture) +
-                    clr.B.ToString("X2", CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                return "#FFFFFF";
-            }
         }
     }
 }

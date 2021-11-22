@@ -191,6 +191,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool mouseHighlighter = true;
+
+        [JsonPropertyName("MouseHighlighter")]
+        public bool MouseHighlighter
+        {
+            get => mouseHighlighter;
+            set
+            {
+                if (mouseHighlighter != value)
+                {
+                    LogTelemetryEvent(value);
+                    mouseHighlighter = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

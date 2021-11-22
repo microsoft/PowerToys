@@ -763,8 +763,10 @@ hglobal
 hhk
 HHmmss
 HHOOK
+hhx
 HICON
 HIDEWINDOW
+highlighter
 HIMAGELIST
 himl
 hinst
@@ -2084,6 +2086,7 @@ Switchbetweenvirtualdesktops
 SWP
 swprintf
 SWRESTORE
+swscanf
 SYMED
 SYMOPT
 SYNCMFT

@@ -657,6 +657,9 @@
       <Component Id="Module_FindMyMouse" Guid="60D0E4AE-188F-4403-BF06-1465AACC1BC5" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\FindMyMouse.dll" KeyPath="yes" />
       </Component>
+      <Component Id="Module_MouseHighlighter" Guid="3BAEA39F-A73D-48D2-9616-BBED5B8C86D3" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.MouseUtilsProjectName)\MouseHighlighter.dll" KeyPath="yes" />
+      </Component>
     </DirectoryRef>
 
     <!-- Shortcut guide -->
@@ -971,6 +974,7 @@
       <ComponentRef Id="Module_Awake_runtime_netcoreapp30"/>
       <ComponentRef Id="Module_Awake_runtime_netcoreapp21"/>
       <ComponentRef Id="Module_FindMyMouse"/>
+      <ComponentRef Id="Module_MouseHighlighter"/>
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2AssetsModules" />
