@@ -132,7 +132,7 @@ public:
         }
         catch (std::exception&)
         {
-            // Improper JSON.
+            Logger::error("Invalid json when trying to parse Mouse Highlighter settings json.");
         }
     }
 
