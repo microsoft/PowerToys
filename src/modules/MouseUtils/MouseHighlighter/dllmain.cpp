@@ -58,7 +58,7 @@ private:
     MouseHighlighterSettings m_highlightSettings;
 
     // helper function to get the RGB from a #FFFFFF string.
-    bool checkValidRGB(std::wstring hex, uint8_t* R, uint8_t* G, uint8_t* B)
+    bool checkValidRGB(std::wstring_view hex, uint8_t* R, uint8_t* G, uint8_t* B)
     {
         if (hex.length() != 7)
             return false;
@@ -70,7 +70,7 @@ private:
                 return false;
             }
         }
-        if (swscanf_s(hex.c_str(), L"%2hhx%2hhx%2hhx", R, G, B) != 3)
+        if (swscanf_s(hex.data(), L"%2hhx%2hhx%2hhx", R, G, B) != 3)
         {
             return false;
         }
