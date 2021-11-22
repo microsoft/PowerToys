@@ -54,6 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _findMyMouseOverlayOpacity = FindMyMouseSettingsConfig.Properties.OverlayOpacity.Value;
             _findMyMouseSpotlightRadius = FindMyMouseSettingsConfig.Properties.SpotlightRadius.Value;
             _findMyMouseAnimationDurationMs = FindMyMouseSettingsConfig.Properties.AnimationDurationMs.Value;
+            _findMyMouseSpotlightInitialZoom = FindMyMouseSettingsConfig.Properties.SpotlightInitialZoom.Value;
 
             if (mouseHighlighterSettingsRepository == null)
             {
@@ -201,6 +202,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _findMyMouseAnimationDurationMs = value;
                     FindMyMouseSettingsConfig.Properties.AnimationDurationMs.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseSpotlightInitialZoom
+        {
+            get
+            {
+                return _findMyMouseSpotlightInitialZoom;
+            }
+
+            set
+            {
+                if (value != _findMyMouseSpotlightInitialZoom)
+                {
+                    _findMyMouseSpotlightInitialZoom = value;
+                    FindMyMouseSettingsConfig.Properties.SpotlightInitialZoom.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
             }
@@ -388,6 +407,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private int _findMyMouseOverlayOpacity;
         private int _findMyMouseSpotlightRadius;
         private int _findMyMouseAnimationDurationMs;
+        private int _findMyMouseSpotlightInitialZoom;
 
         private bool _isMouseHighlighterEnabled;
         private string _highlighterLeftButtonClickColor;

@@ -1745,6 +1745,12 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="MouseUtils_FindMyMouse_SpotlightRadius.Header" xml:space="preserve">
     <value>Spotlight Radius</value>
   </data>
+  <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Header" xml:space="preserve">
+    <value>Spotlight Initial Zoom</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Description" xml:space="preserve">
+    <value>How many times bigger the spotlight is when the animation starts</value>
+  </data>
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Header" xml:space="preserve">
     <value>Animation duration</value>
   </data>

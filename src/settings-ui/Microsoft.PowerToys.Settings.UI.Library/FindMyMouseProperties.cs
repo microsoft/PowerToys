@@ -26,6 +26,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("animation_duration_ms")]
         public IntProperty AnimationDurationMs { get; set; }
 
+        [JsonPropertyName("spotlight_initial_zoom")]
+        public IntProperty SpotlightInitialZoom { get; set; }
+
         public FindMyMouseProperties()
         {
             DoNotActivateOnGameMode = new BoolProperty(true);
@@ -34,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             OverlayOpacity = new IntProperty(127);
             SpotlightRadius = new IntProperty(100);
             AnimationDurationMs = new IntProperty(500);
+            SpotlightInitialZoom = new IntProperty(9);
         }
     }
 }

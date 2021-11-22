@@ -7,6 +7,7 @@ const winrt::Windows::UI::Color FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR = winrt::W
 constexpr int FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY = 127;
 constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS = 100;
 constexpr int FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS = 500;
+constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM = 9;
 
 struct FindMyMouseSettings
 {
@@ -16,6 +17,7 @@ struct FindMyMouseSettings
     int overlayOpacity = FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY;
     int spotlightRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
     int animationDurationMs = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
+    int spotlightInitialZoom = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
 };
 
 int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings);

@@ -59,7 +59,7 @@ protected:
     bool m_destroyed = false;
     bool m_doNotActivateOnGameMode = true;
     int m_sonarRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
-    static constexpr int SonarZoomFactor = 9;
+    int m_sonarZoomFactor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
     DWORD m_fadeDuration = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
     int m_finalAlphaNumerator = FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY;
     static constexpr int FinalAlphaDenominator = 255;
@@ -540,9 +540,9 @@ private:
         m_circleGeometry = m_compositor.CreateEllipseGeometry(); // radius set via expression animation
         m_circleShape = m_compositor.CreateSpriteShape(m_circleGeometry);
         m_circleShape.FillBrush(m_compositor.CreateColorBrush(m_spotlightColor));
-        m_circleShape.Offset({ m_sonarRadiusFloat * SonarZoomFactor, m_sonarRadiusFloat * SonarZoomFactor });
+        m_circleShape.Offset({ m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
         m_spotlight = m_compositor.CreateShapeVisual();
-        m_spotlight.Size({ m_sonarRadiusFloat * 2 * SonarZoomFactor, m_sonarRadiusFloat * 2 * SonarZoomFactor });
+        m_spotlight.Size({ m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
         m_spotlight.AnchorPoint({ 0.5f, 0.5f });
         m_spotlight.Shapes().Append(m_circleShape);
 
@@ -563,7 +563,7 @@ private:
         auto radiusExpression = m_compositor.CreateExpressionAnimation();
         radiusExpression.SetReferenceParameter(L"Root", m_root);
         wchar_t expressionText[256];
-        winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * SonarZoomFactor, m_sonarRadius * SonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
+        winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
         radiusExpression.Expression(expressionText);
         m_circleGeometry.StartAnimation(L"Radius", radiusExpression);
 
@@ -593,7 +593,8 @@ public:
             m_spotlightColor = settings.spotlightColor;
             m_doNotActivateOnGameMode = settings.doNotActivateOnGameMode;
             m_fadeDuration = settings.animationDurationMs > 0 ? settings.animationDurationMs : 1;
-            m_finalAlphaNumerator = settings.overlayOpacity;        
+            m_finalAlphaNumerator = settings.overlayOpacity;
+            m_sonarZoomFactor = settings.spotlightInitialZoom;
         }
         else
         {
@@ -611,12 +612,13 @@ public:
                     m_doNotActivateOnGameMode = localSettings.doNotActivateOnGameMode;
                     m_fadeDuration = localSettings.animationDurationMs > 0 ? localSettings.animationDurationMs : 1;
                     m_finalAlphaNumerator = localSettings.overlayOpacity;
+                    m_sonarZoomFactor = localSettings.spotlightInitialZoom;
         
                     // Apply new settings to runtime composition objects.
                     m_backdrop.Brush().as<winrt::CompositionColorBrush>().Color(m_backgroundColor);
                     m_circleShape.FillBrush().as<winrt::CompositionColorBrush>().Color(m_spotlightColor);
-                    m_circleShape.Offset({ m_sonarRadiusFloat * SonarZoomFactor, m_sonarRadiusFloat * SonarZoomFactor });
-                    m_spotlight.Size({ m_sonarRadiusFloat * 2 * SonarZoomFactor, m_sonarRadiusFloat * 2 * SonarZoomFactor });
+                    m_circleShape.Offset({ m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
+                    m_spotlight.Size({ m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
                     m_animation.Duration(std::chrono::milliseconds{ m_fadeDuration });
                     m_circleGeometry.StopAnimation(L"Radius");
 
@@ -624,7 +626,7 @@ public:
                     auto radiusExpression = m_compositor.CreateExpressionAnimation();
                     radiusExpression.SetReferenceParameter(L"Root", m_root);
                     wchar_t expressionText[256];
-                    winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * SonarZoomFactor, m_sonarRadius * SonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
+                    winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
                     radiusExpression.Expression(expressionText);
                     m_circleGeometry.StartAnimation(L"Radius", radiusExpression);
                 }
@@ -726,7 +728,7 @@ protected:
     int CurrentSonarRadius()
     {
         int range = MaxAlpha - m_alpha;
-        int radius = this->m_sonarRadius + this->m_sonarRadius * range * (this->SonarZoomFactor - 1) / MaxAlpha;
+        int radius = this->m_sonarRadius + this->m_sonarRadius * range * (this->m_sonarZoomFactor - 1) / MaxAlpha;
         return radius;
     }
 

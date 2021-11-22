@@ -17,6 +17,7 @@ namespace
     const wchar_t JSON_KEY_OVERLAY_OPACITY[] = L"overlay_opacity";
     const wchar_t JSON_KEY_SPOTLIGHT_RADIUS[] = L"spotlight_radius";
     const wchar_t JSON_KEY_ANIMATION_DURATION_MS[] = L"animation_duration_ms";
+    const wchar_t JSON_KEY_SPOTLIGHT_INITIAL_ZOOM[] = L"spotlight_initial_zoom";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -249,6 +250,16 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         catch (...)
         {
             Logger::warn("Failed to initialize Animation Duration from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Spotlight Initial Zoom
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_INITIAL_ZOOM);
+            findMyMouseSettings.spotlightInitialZoom = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Spotlight Initial Zoom from settings. Will use default value");
         }
     }
     else
