@@ -100,6 +100,9 @@ TODO
 **Prototype work**
 - Always on top prototype of being actively worked on.  Right now you hit a key-combo and it enables it.  We are investigating ways to highlight the window in some form as well.
 
+**FancyZones**
+- Overcome SetForegroundWindow restriction fix - Thanks [@FLOAT4]() 
+
 **Mouse utilities**
 - Presentation mouse highlighter mode introduced! <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> to toggle.<br />![dragmouse](https://user-images.githubusercontent.com/9866362/142475413-77b00bae-bd28-42ae-a6c8-0dc4356e8525.gif)
 - Mouse modes play nicely with virtual desktops
