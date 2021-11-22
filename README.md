@@ -32,7 +32,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 #### Stable version
 
- [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.49.0-x64.exe` to download the PowerToys installer.
+ [Microsoft PowerToys GitHub releases page][github-release-link], click on `Assets` at the bottom to show the files available in the release and then click on `PowerToysSetup-0.51.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -75,9 +75,11 @@ For guidance on developing for PowerToys, please read the [developer docs](/doc/
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.49 - October 2021 Update
+### 0.51 - November 2021 Update
 
-The [v0.49 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F25) introduces exciting new updates primarily centered around modernizing PowerRename's UI, adding a brand new mouse utility, and merging Video Conference Mute into the stable releases!
+TODO WRITE INTRO
+
+```The [v0.49 release cycle](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F25) introduces exciting new updates primarily centered around modernizing PowerRename's UI, adding a brand new mouse utility, and merging Video Conference Mute into the stable releases!
 
 PowerRename's new UI brings a refreshed experience that reflects the modern UI theming of Windows 11, along with helpful regular expression guidance and file formatting tips. 
 
@@ -87,62 +89,53 @@ As Video Conference Mute becomes available in the stable releases, there are sti
 
 Color Picker's HEX format will no longer have the `#` character. This addresses issues with various color inputs that only accept six characters cutting off the last value. We apologize for any inconvenience this causes as we understand it impacts users who may prefer having `#` included. However, we believe this is the best solution while the custom string functionality ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development. 
 
-Additional work in this release include stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.
+Additional work in this release include stability updates and optimizations, installer updates, general bug fixes, and accessibility improvements.```
 
 #### Highlights from v0.49
 
-**General**
-- **Change of Behavior:** Color Picker's HEX format will no longer have the `#` character. Custom string functionality for color picker ([#8305](https://github.com/microsoft/PowerToys/issues/8305)) is in development and will allow someone to use this again.
-- Find My Mouse utility added! Utilize the functionality to quickly locate the cursor on your displays! Learn more on our [Mouse Utility docs](https://aka.ms/PowerToysOverview_MouseUtilities).
-- Accessibility and minor UI improvements to the settings page. Thanks [@niels9001](https://github.com/niels9001)!
-- Added deep links to the Settings menus for various utilities within their respective editors. Thanks [@niels9001](https://github.com/niels9001)!
-- Settings improvements to improve clarity for various options. Thanks [@niels9001](https://github.com/niels9001)!
-- Improved settings window to adjust size and position as needed when multi-monitor conditions change. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!  
+TODO 
+- UPDATE LINKS
+- ADD PROPER URLS FOR PEOPLE
 
-**PowerToys Awake**
-- Screen reader improvements for accessibility.
+**Prototype work**
+- Always on top prototype of being actively worked on.  Right now you hit a key-combo and it enables it.  We are investigating ways to highlight the window in some form as well.
 
-**Color Picker**
-- Color Picker's HEX format was changed to remove the `#` character. Thanks [@niels9001](https://github.com/niels9001)!
-- Accessibility improvements for screen reader and UI to distinguish colors from the border when matching. Thanks [@niels9001](https://github.com/niels9001)!
+**Mouse utilities**
+- Presentation mouse highlighter mode introduced! <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> to toggle.<br />![dragmouse](https://user-images.githubusercontent.com/9866362/142475413-77b00bae-bd28-42ae-a6c8-0dc4356e8525.gif)
+- Mouse modes play nicely with virtual desktops
 
-**FancyZones**
-- Fixed Color Picker and OOBE windows from being snapped by FancyZones. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed regression with layouts not being changed via shortcuts.
-- Fixed crashing issue with FancyZones editor.
-- Fixed zone layouts resetting after screen locking.
-- Accessibility improvements for screen reader in editor.
+**Settings**
+- Settings UI tweaks [#14248](https://github.com/microsoft/PowerToys/issues/14248) - Thanks [@niels9001]()
+- Resizing regression (Multiple) - Thanks [@davidegiacometti]()
+- Live visual preview for FancyZones inside Settings []() - Thanks  Thanks [@niels9001]()
 
-**Keyboard Manager**
-- Fixed crashing issue when the editor is opened at high zoom on 4k monitors.
+**Installer**
+- Investigated how to fully shift to WIX bootstrapper and remove custom
+- Investigated how to fully hsift to HKCU vs HKLM.
 
-**PowerRename**
-- New UI update! We hope you enjoy the modern experience and take advantage of new tool-tips to describe common regular expressions and text/file formatting. Thanks to [@niels9001](https://github.com/niels9001) for all the support on this redesign! 
+**Random helping out**
 
-**PowerToys Run**
-- Windows Terminal Plugin added. Open shells through Windows Terminal via `_` activation command by default. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Added environment variables to Folder plugin search. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed certain schemas that were overwritten with HTTPS. Thanks [@franky920920](https://github.com/franky920920)!
-- Fixed issue with program plugin getting caught in infinite loops as certain file paths are recursively searched.
+- Spellcheck fix - Thanks [@franky920920]()
+- Fix a URL - Thanks [@JeffersonQin]()
 
-**Video Conference Mute**
-- VCM added to stable releases of PowerToys!
+**Development relevant**
+- Our primary dev branch is now named `Main`.
+- Adjusting plugin folder structure for PT Run [#10796](10796)
 
-## Community contributions
+**Community contributions**
 
 We'd like to directly mention certain contributors (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
 
-[@Aaron-Junker](https://github.com/Aaron-Junker), [@davidegiacometti](https://github.com/davidegiacometti), [@franky920920](https://github.com/franky920920), [@htcfreek](https://github.com/htcfreek), [@Jay-o-Way](https://github.com/Jay-o-Way), [@martinchrzan](https://github.com/martinchrzan), [@niels9001](https://github.com/niels9001), [@pritudev](https://github.com/pritudev), and [@TobiasSekan](https://github.com/TobiasSekan)
+TODO FULL LIST
 
-#### What is being planned for v0.51
+#### What is being planned for v0.53
 
-For [v0.51][github-next-release-work], we are planning to work on:
+For [v0.53][github-next-release-work], due to holidays, we'll be in a maintance sprint but here are some of the larger items:
 
-- Initial development of Always on Top utility to allow users to persist desired windows in the foreground of their displays
+- Hope to add Always on top into PowerToys
 - We are working to heavily reduce / remove the UAC prompt over the next few releases on install. This is a big shift so it is spanning multiple releases so we can isolate issues if they do occur. Work is tracked in [#10126](https://github.com/microsoft/PowerToys/issues/10126)
-- UI/UX investigations to adopt WinUI and improve accessibility
+- Update the PowerToys Build Pipeline to allow .NET 6 integration
 - Stability and bug fixes
-- Update the PowerToys Build Pipeline to allow .NET 5 integration
 
 ## PowerToys Community
 
@@ -168,4 +161,4 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F26
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F27
