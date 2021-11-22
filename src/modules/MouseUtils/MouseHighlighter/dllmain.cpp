@@ -180,7 +180,7 @@ public:
         }
         catch (std::exception&)
         {
-            // Error while loading from the settings file. Let default values stay as they are.
+            Logger::error("Invalid json when trying to load the Mouse Highlighter settings json from file.");
         }
     }
 
