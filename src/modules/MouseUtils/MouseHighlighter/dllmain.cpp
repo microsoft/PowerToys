@@ -186,6 +186,7 @@ public:
 
     void parse_settings(PowerToysSettings::PowerToyValues& settings)
     {
+        // TODO: refactor to use common/utils/json.h instead
         auto settingsObject = settings.get_raw_json();
         MouseHighlighterSettings highlightSettings;
         if (settingsObject.GetView().Size())
