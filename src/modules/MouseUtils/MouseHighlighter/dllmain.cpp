@@ -256,9 +256,9 @@ public:
             {
                 // Parse right button click color
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_RIGHT_BUTTON_CLICK_COLOR);
-                auto leftColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                auto rightColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
                 uint8_t r, g, b;
-                if (!checkValidRGB(leftColor, &r, &g, &b))
+                if (!checkValidRGB(rightColor, &r, &g, &b))
                 {
                     Logger::error("Right click color RGB value is invalid. Will use default value");
                 }
