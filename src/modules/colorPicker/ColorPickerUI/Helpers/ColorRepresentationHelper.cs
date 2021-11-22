@@ -46,7 +46,7 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.RGB => ColorToRGB(color),
                 ColorRepresentationType.CIELAB => ColorToCIELAB(color),
                 ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
-                ColorRepresentationType.RGBfloat => ColorToFloat(color),
+                ColorRepresentationType.RgbFloat => ColorToFloat(color),
                 ColorRepresentationType.Decimal => ColorToDecimal(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
@@ -109,9 +109,9 @@ namespace ColorPicker.Helpers
         private static string ColorToFloat(Color color)
         {
             var (red, green, blue) = ColorHelper.ConvertToDouble(color);
-            var precison = 2;
+            var precision = 2;
 
-            return $"({Math.Round(red, precison)}f, {Math.Round(green, precison)}f, {Math.Round(blue, precison)}f, 1)";
+            return $"({Math.Round(red, precision)}f, {Math.Round(green, precision)}f, {Math.Round(blue, precision)}f, 1f)";
         }
 
         /// <summary>

@@ -69,7 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         /// <summary>
         /// Color presentation as RGB float (red[0..1], green[0..1], blue[0..1])
         /// </summary>
-        RGBfloat = 11,
+        RgbFloat = 11,
 
         /// <summary>
         /// Color presentation as integer decimal value 0-16777215

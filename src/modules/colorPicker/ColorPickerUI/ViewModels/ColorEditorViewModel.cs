@@ -219,8 +219,8 @@ namespace ColorPicker.ViewModels
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
-                    FormatName = ColorRepresentationType.RGBfloat.ToString(),
-                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.RGBfloat); },
+                    FormatName = ColorRepresentationType.RgbFloat.ToString(),
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.RgbFloat); },
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()
