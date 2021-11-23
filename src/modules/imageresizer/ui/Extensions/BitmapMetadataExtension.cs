@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Media.Imaging;
 
 namespace ImageResizer.Extensions
@@ -43,12 +45,193 @@ namespace ImageResizer.Extensions
 
             try
             {
-                return metadata.GetQuery(query);
+                if (metadata.ContainsQuery(query))
+                {
+                    return metadata.GetQuery(query);
+                }
+                else
+                {
+                    return null;
+                }
             }
             catch (NotSupportedException)
             {
                 // NotSupportedException is throw if the metadata entry is not preset on the target image (e.g. Orientation not set).
                 return null;
+            }
+        }
+
+        public static void RemoveQuerySafe(this BitmapMetadata metadata, string query)
+        {
+            if (metadata == null || string.IsNullOrWhiteSpace(query))
+            {
+                return;
+            }
+
+            try
+            {
+                if (metadata.ContainsQuery(query))
+                {
+                    metadata.RemoveQuery(query);
+                }
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Debug.WriteLine($"Exception while trying to remove metadata entry at position: {query}");
+                Debug.WriteLine(ex);
+            }
+        }
+
+        public static void SetQuerySafe(this BitmapMetadata metadata, string query, object value)
+        {
+            if (metadata == null || string.IsNullOrWhiteSpace(query) || value == null)
+            {
+                return;
+            }
+
+            try
+            {
+                metadata.SetQuery(query, value);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Debug.WriteLine($"Exception while trying to set metadata {value} at position: {query}");
+                Debug.WriteLine(ex);
+            }
+        }
+
+        /// <summary>
+        /// Gets all metadata
+        /// Iterates recursively through all metadata
+        /// </summary>
+        public static List<(string metadataPath, object value)> GetListOfMetadata(this BitmapMetadata metadata)
+        {
+            var listOfAllMetadata = new List<(string metadataPath, object value)>();
+
+            GetMetadataRecursively(metadata, string.Empty);
+
+            return listOfAllMetadata;
+
+            void GetMetadataRecursively(BitmapMetadata metadata, string query)
+            {
+                foreach (string relativeQuery in metadata)
+                {
+                    string absolutePath = query + relativeQuery;
+
+                    object metadataQueryReader = null;
+
+                    try
+                    {
+                        metadataQueryReader = GetQueryWithPreCheck(metadata, relativeQuery);
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        Debug.WriteLine($"Removing corrupt metadata property {absolutePath}. Skipping metadata entry | {ex.Message}");
+                        Debug.WriteLine(ex);
+                    }
+
+                    if (metadataQueryReader != null)
+                    {
+                        listOfAllMetadata.Add((absolutePath, metadataQueryReader));
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"No metadata found for query {absolutePath}. Skipping empty null entry because its invalid.");
+                    }
+
+                    if (metadataQueryReader is BitmapMetadata innerMetadata)
+                    {
+                        GetMetadataRecursively(innerMetadata, absolutePath);
+                    }
+                }
+            }
+
+            object GetQueryWithPreCheck(BitmapMetadata metadata, string query)
+            {
+                if (metadata == null || string.IsNullOrWhiteSpace(query))
+                {
+                    return null;
+                }
+
+                if (metadata.ContainsQuery(query))
+                {
+                    return metadata.GetQuery(query);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Prints all metadata to debug console
+        /// </summary>
+        /// <remarks>
+        /// Intented for debug only!!!
+        /// </remarks>
+        public static void PrintsAllMetadataToDebugOutput(this BitmapMetadata metadata)
+        {
+            if (metadata == null)
+            {
+                Debug.WriteLine($"Metadata was null.");
+            }
+
+            var listOfMetadata = metadata.GetListOfMetadataForDebug();
+            foreach (var metadataItem in listOfMetadata)
+            {
+                // Debug.WriteLine($"modifiableMetadata.RemoveQuerySafe(\"{metadataItem.metadataPath}\");");
+                Debug.WriteLine($"{metadataItem.metadataPath} | {metadataItem.value}");
+            }
+        }
+
+        /// <summary>
+        /// Gets all metadata
+        /// Iterates recursively through all metadata
+        /// </summary>
+        /// <remarks>
+        /// Intented for debug only!!!
+        /// </remarks>
+        public static List<(string metadataPath, object value)> GetListOfMetadataForDebug(this BitmapMetadata metadata)
+        {
+            var listOfAllMetadata = new List<(string metadataPath, object value)>();
+
+            GetMetadataRecursively(metadata, string.Empty);
+
+            return listOfAllMetadata;
+
+            void GetMetadataRecursively(BitmapMetadata metadata, string query)
+            {
+                foreach (string relativeQuery in metadata)
+                {
+                    string absolutePath = query + relativeQuery;
+
+                    object metadataQueryReader = null;
+
+                    try
+                    {
+                        metadataQueryReader = metadata.GetQuerySafe(relativeQuery);
+                        listOfAllMetadata.Add((absolutePath, metadataQueryReader));
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        listOfAllMetadata.Add((absolutePath, $"######## INVALID METADATA: {ex.Message}"));
+                        Debug.WriteLine(ex);
+                    }
+
+                    if (metadataQueryReader is BitmapMetadata innerMetadata)
+                    {
+                        GetMetadataRecursively(innerMetadata, absolutePath);
+                    }
+                }
             }
         }
     }

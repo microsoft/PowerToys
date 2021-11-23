@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
@@ -83,11 +84,36 @@ namespace ImageResizer.Models
                         try
                         {
                             // Detect whether metadata can copied successfully
-                            _ = metadata.Clone();
+                            var modifiableMetadata = metadata.Clone();
+
+#if DEBUG
+                            Debug.WriteLine($"### Processing metadata of file {_file}");
+                            modifiableMetadata.PrintsAllMetadataToDebugOutput();
+#endif
+
+                            // read all metadata and build up metadata object from the scratch. Discard invalid (unreadable/unwritable) metadata.
+                            var newMetadata = new BitmapMetadata(metadata.Format);
+                            var listOfMetadata = modifiableMetadata.GetListOfMetadata();
+                            foreach (var (metadataPath, value) in listOfMetadata)
+                            {
+                                if (value is BitmapMetadata bitmapMetadata)
+                                {
+                                    var innerMetadata = new BitmapMetadata(bitmapMetadata.Format);
+                                    newMetadata.SetQuerySafe(metadataPath, innerMetadata);
+                                }
+                                else
+                                {
+                                    newMetadata.SetQuerySafe(metadataPath, value);
+                                }
+                            }
+
+                            metadata = newMetadata;
                         }
-                        catch (ArgumentException)
+                        catch (ArgumentException ex)
                         {
                             metadata = null;
+
+                            Debug.WriteLine(ex);
                         }
                     }
 
@@ -105,9 +131,9 @@ namespace ImageResizer.Models
                     encoder.Frames.Add(
                         BitmapFrame.Create(
                             Transform(originalFrame),
-                            thumbnail: null,
+                            originalFrame.Thumbnail,
                             metadata,
-                            colorContexts: null));
+                            originalFrame.ColorContexts));
                 }
 
                 path = GetDestinationPath(encoder);
