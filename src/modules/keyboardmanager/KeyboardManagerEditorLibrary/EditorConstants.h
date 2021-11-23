@@ -49,5 +49,7 @@ namespace EditorConstants
 
     // Minimum and maximum size of a shortcut
     inline const long MinShortcutSize = 2;
+
+    // engine itself checks for only 1 non-modifier key so this will allow 3 modifiers
     inline const long MaxShortcutSize = 4;
 }
