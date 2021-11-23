@@ -49,5 +49,5 @@ namespace EditorConstants
 
     // Minimum and maximum size of a shortcut
     inline const long MinShortcutSize = 2;
-    inline const long MaxShortcutSize = 3;
+    inline const long MaxShortcutSize = 4;
 }
