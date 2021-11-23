@@ -67,9 +67,9 @@ inline int GetFilenameStart(wchar_t* path)
     int found = 0;
     if (path != NULL)
     {
-        while (path[pos] != '\0' && pos < MAX_PATH)
+        while (path[pos] != L'\0' && pos < MAX_PATH)
         {
-            if (path[pos] == '\\')
+            if (path[pos] == L'\\')
             {
                 found = pos + 1;
             }
