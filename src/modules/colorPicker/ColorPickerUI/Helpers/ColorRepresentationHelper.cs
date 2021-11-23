@@ -47,7 +47,7 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.CIELAB => ColorToCIELAB(color),
                 ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
                 ColorRepresentationType.VEC4 => ColorToFloat(color),
-                ColorRepresentationType.Decimal => ColorToDecimal(color),
+                ColorRepresentationType.DecimalValue => ColorToDecimal(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),

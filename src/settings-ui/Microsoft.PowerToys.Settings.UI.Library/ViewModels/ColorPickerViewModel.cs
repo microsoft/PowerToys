@@ -55,8 +55,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 { ColorRepresentationType.RGB,  "RGB - rgb(100, 50, 75)" },
                 { ColorRepresentationType.CIELAB, "CIE LAB - CIELab(76, 21, 80)" },
                 { ColorRepresentationType.CIEXYZ, "CIE XYZ - xyz(56, 50, 7)" },
-                { ColorRepresentationType.VEC4, "(1.0f, 0.7f, 0.00f)" },
-                { ColorRepresentationType.Decimal, "16755200" },
+                { ColorRepresentationType.VEC4, "VEC4 - (1.0f, 0.7f, 0.00f)" },
+                { ColorRepresentationType.DecimalValue, "Decimal - 16755200" },
             };
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
@@ -201,7 +201,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             var cielabFormatName = ColorRepresentationType.CIELAB.ToString();
             var ciexyzFormatName = ColorRepresentationType.CIEXYZ.ToString();
             var vec4FormatName = ColorRepresentationType.VEC4.ToString();
-            var decimalFormatName = ColorRepresentationType.Decimal.ToString();
+            var decimalFormatName = "Decimal";
 
             formatsUnordered.Add(new ColorFormatModel(hexFormatName, "ef68ff", visibleFormats.ContainsKey(hexFormatName) && visibleFormats[hexFormatName]));
             formatsUnordered.Add(new ColorFormatModel(rgbFormatName, "rgb(239, 104, 255)", visibleFormats.ContainsKey(rgbFormatName) && visibleFormats[rgbFormatName]));

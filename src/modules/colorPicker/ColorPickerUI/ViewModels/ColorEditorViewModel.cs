@@ -225,8 +225,8 @@ namespace ColorPicker.ViewModels
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
-                    FormatName = ColorRepresentationType.Decimal.ToString(),
-                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.Decimal); },
+                    FormatName = "Decimal",
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.DecimalValue); },
                 });
 
             _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;

@@ -74,8 +74,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         /// <summary>
         /// Color presentation as integer decimal value 0-16777215
         /// </summary>
-#pragma warning disable CA1720 // Identifier contains type name
-        Decimal = 12,
-#pragma warning restore CA1720 // Identifier contains type name
+        DecimalValue = 12,
     }
 }
