@@ -45,6 +45,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
             _findMyMouseDoNotActivateOnGameMode = FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value;
 
+            string backgroundColor = FindMyMouseSettingsConfig.Properties.BackgroundColor.Value;
+            _findMyMouseBackgroundColor = !string.IsNullOrEmpty(backgroundColor) ? backgroundColor : "#000000";
+
+            string spotlightColor = FindMyMouseSettingsConfig.Properties.SpotlightColor.Value;
+            _findMyMouseSpotlightColor = !string.IsNullOrEmpty(spotlightColor) ? spotlightColor : "#FFFFFF";
+
+            _findMyMouseOverlayOpacity = FindMyMouseSettingsConfig.Properties.OverlayOpacity.Value;
+            _findMyMouseSpotlightRadius = FindMyMouseSettingsConfig.Properties.SpotlightRadius.Value;
+            _findMyMouseAnimationDurationMs = FindMyMouseSettingsConfig.Properties.AnimationDurationMs.Value;
+            _findMyMouseSpotlightInitialZoom = FindMyMouseSettingsConfig.Properties.SpotlightInitialZoom.Value;
+
             if (mouseHighlighterSettingsRepository == null)
             {
                 throw new ArgumentNullException(nameof(mouseHighlighterSettingsRepository));
@@ -99,6 +110,116 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _findMyMouseDoNotActivateOnGameMode = value;
                     FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public string FindMyMouseBackgroundColor
+        {
+            get
+            {
+                return _findMyMouseBackgroundColor;
+            }
+
+            set
+            {
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#000000";
+                if (!value.Equals(_findMyMouseBackgroundColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _findMyMouseBackgroundColor = value;
+                    FindMyMouseSettingsConfig.Properties.BackgroundColor.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public string FindMyMouseSpotlightColor
+        {
+            get
+            {
+                return _findMyMouseSpotlightColor;
+            }
+
+            set
+            {
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                if (!value.Equals(_findMyMouseSpotlightColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _findMyMouseSpotlightColor = value;
+                    FindMyMouseSettingsConfig.Properties.SpotlightColor.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseOverlayOpacity
+        {
+            get
+            {
+                return _findMyMouseOverlayOpacity;
+            }
+
+            set
+            {
+                if (value != _findMyMouseOverlayOpacity)
+                {
+                    _findMyMouseOverlayOpacity = value;
+                    FindMyMouseSettingsConfig.Properties.OverlayOpacity.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseSpotlightRadius
+        {
+            get
+            {
+                return _findMyMouseSpotlightRadius;
+            }
+
+            set
+            {
+                if (value != _findMyMouseSpotlightRadius)
+                {
+                    _findMyMouseSpotlightRadius = value;
+                    FindMyMouseSettingsConfig.Properties.SpotlightRadius.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseAnimationDurationMs
+        {
+            get
+            {
+                return _findMyMouseAnimationDurationMs;
+            }
+
+            set
+            {
+                if (value != _findMyMouseAnimationDurationMs)
+                {
+                    _findMyMouseAnimationDurationMs = value;
+                    FindMyMouseSettingsConfig.Properties.AnimationDurationMs.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
+        }
+
+        public int FindMyMouseSpotlightInitialZoom
+        {
+            get
+            {
+                return _findMyMouseSpotlightInitialZoom;
+            }
+
+            set
+            {
+                if (value != _findMyMouseSpotlightInitialZoom)
+                {
+                    _findMyMouseSpotlightInitialZoom = value;
+                    FindMyMouseSettingsConfig.Properties.SpotlightInitialZoom.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
             }
@@ -281,6 +402,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private bool _isFindMyMouseEnabled;
         private bool _findMyMouseDoNotActivateOnGameMode;
+        private string _findMyMouseBackgroundColor;
+        private string _findMyMouseSpotlightColor;
+        private int _findMyMouseOverlayOpacity;
+        private int _findMyMouseSpotlightRadius;
+        private int _findMyMouseAnimationDurationMs;
+        private int _findMyMouseSpotlightInitialZoom;
 
         private bool _isMouseHighlighterEnabled;
         private string _highlighterLeftButtonClickColor;

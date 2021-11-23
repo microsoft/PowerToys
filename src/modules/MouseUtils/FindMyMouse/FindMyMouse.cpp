@@ -19,8 +19,6 @@ namespace ABI
 }
 #endif
 
-bool m_doNotActivateOnGameMode = true;
-
 #pragma region Super_Sonar_Base_Code
 
 template<typename D>
@@ -58,11 +56,13 @@ protected:
     // At actual check, time a fifth of the current double click setting might be used instead to take into account users who might have low values.
     static const int MIN_DOUBLE_CLICK_TIME = 100;
 
-    static constexpr int SonarRadius = 100;
-    static constexpr int SonarZoomFactor = 9;
-    static constexpr DWORD FadeDuration = 500;
-    static constexpr int FinalAlphaNumerator = 1;
-    static constexpr int FinalAlphaDenominator = 2;
+    bool m_destroyed = false;
+    bool m_doNotActivateOnGameMode = true;
+    int m_sonarRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
+    int m_sonarZoomFactor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
+    DWORD m_fadeDuration = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
+    int m_finalAlphaNumerator = FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY;
+    static constexpr int FinalAlphaDenominator = 100;
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
 private:
@@ -150,6 +150,7 @@ void SuperSonar<D>::Terminate()
 {
     auto dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
     bool enqueueSucceeded = dispatcherQueue.TryEnqueue([=]() {
+        m_destroyed = true;
         DestroyWindow(m_hwndOwner);
     });
     if (!enqueueSucceeded)
@@ -457,7 +458,7 @@ void SuperSonar<D>::UpdateMouseSnooping()
 struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
 {
     static constexpr UINT WM_OPACITY_ANIMATION_COMPLETED = WM_APP;
-    static constexpr float SonarRadiusFloat = static_cast<float>(SonarRadius);
+    float m_sonarRadiusFloat = static_cast<float>(m_sonarRadius);
 
     DWORD GetExtendedStyle()
     {
@@ -489,7 +490,7 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
         m_batch.Completed([hwnd = m_hwnd](auto&&, auto&&) {
             PostMessage(hwnd, WM_OPACITY_ANIMATION_COMPLETED, 0, 0);
         });
-        m_root.Opacity(visible ? static_cast<float>(FinalAlphaNumerator) / FinalAlphaDenominator : 0.0f);
+        m_root.Opacity(visible ? static_cast<float>(m_finalAlphaNumerator) / FinalAlphaDenominator : 0.0f);
         if (visible)
         {
             ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
@@ -531,38 +532,38 @@ private:
         layer.RelativeSizeAdjustment({ 1.0f, 1.0f }); // fill the parent
         m_root.Children().InsertAtTop(layer);
 
-        auto backdrop = m_compositor.CreateSpriteVisual();
-        backdrop.RelativeSizeAdjustment({ 1.0f, 1.0f }); // fill the parent
-        backdrop.Brush(m_compositor.CreateColorBrush({ 255, 0, 0, 0 }));
-        layer.Children().InsertAtTop(backdrop);
+        m_backdrop = m_compositor.CreateSpriteVisual();
+        m_backdrop.RelativeSizeAdjustment({ 1.0f, 1.0f }); // fill the parent
+        m_backdrop.Brush(m_compositor.CreateColorBrush(m_backgroundColor));
+        layer.Children().InsertAtTop(m_backdrop);
 
         m_circleGeometry = m_compositor.CreateEllipseGeometry(); // radius set via expression animation
-        auto circleShape = m_compositor.CreateSpriteShape(m_circleGeometry);
-        circleShape.FillBrush(m_compositor.CreateColorBrush({ 255, 255, 255, 255 }));
-        circleShape.Offset({ SonarRadiusFloat * SonarZoomFactor, SonarRadiusFloat * SonarZoomFactor });
+        m_circleShape = m_compositor.CreateSpriteShape(m_circleGeometry);
+        m_circleShape.FillBrush(m_compositor.CreateColorBrush(m_spotlightColor));
+        m_circleShape.Offset({ m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
         m_spotlight = m_compositor.CreateShapeVisual();
-        m_spotlight.Size({ SonarRadiusFloat * 2 * SonarZoomFactor, SonarRadiusFloat * 2 * SonarZoomFactor });
+        m_spotlight.Size({ m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
         m_spotlight.AnchorPoint({ 0.5f, 0.5f });
-        m_spotlight.Shapes().Append(circleShape);
+        m_spotlight.Shapes().Append(m_circleShape);
 
         layer.Children().InsertAtTop(m_spotlight);
 
         // Implicitly animate the alpha.
-        auto animation = m_compositor.CreateScalarKeyFrameAnimation();
-        animation.Target(L"Opacity");
-        animation.InsertExpressionKeyFrame(1.0f, L"this.FinalValue");
-        animation.Duration(std::chrono::milliseconds{ FadeDuration });
+        m_animation = m_compositor.CreateScalarKeyFrameAnimation();
+        m_animation.Target(L"Opacity");
+        m_animation.InsertExpressionKeyFrame(1.0f, L"this.FinalValue");
+        m_animation.Duration(std::chrono::milliseconds{ m_fadeDuration });
         auto collection = m_compositor.CreateImplicitAnimationCollection();
-        collection.Insert(L"Opacity", animation);
+        collection.Insert(L"Opacity", m_animation);
         m_root.ImplicitAnimations(collection);
 
         // Radius of spotlight shrinks as opacity increases.
-        // At opacity zero, it is SonarRadius * SonarZoomFactor.
-        // At maximum opacity, it is SonarRadius.
+        // At opacity zero, it is m_sonarRadius * SonarZoomFactor.
+        // At maximum opacity, it is m_sonarRadius.
         auto radiusExpression = m_compositor.CreateExpressionAnimation();
         radiusExpression.SetReferenceParameter(L"Root", m_root);
         wchar_t expressionText[256];
-        winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", SonarRadius * SonarZoomFactor, SonarRadius * SonarZoomFactor, SonarRadius, SonarRadius, FinalAlphaDenominator, FinalAlphaNumerator));
+        winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
         radiusExpression.Expression(expressionText);
         m_circleGeometry.StartAnimation(L"Radius", radiusExpression);
 
@@ -581,6 +582,62 @@ private:
         }
     }
 
+public:
+    void ApplySettings(const FindMyMouseSettings& settings, bool applyToRuntimeObjects) {
+        if (!applyToRuntimeObjects)
+        {
+            // Runtime objects not created yet. Just update fields.
+            m_sonarRadius = settings.spotlightRadius;
+            m_sonarRadiusFloat = static_cast<float>(m_sonarRadius);
+            m_backgroundColor = settings.backgroundColor;
+            m_spotlightColor = settings.spotlightColor;
+            m_doNotActivateOnGameMode = settings.doNotActivateOnGameMode;
+            m_fadeDuration = settings.animationDurationMs > 0 ? settings.animationDurationMs : 1;
+            m_finalAlphaNumerator = settings.overlayOpacity;
+            m_sonarZoomFactor = settings.spotlightInitialZoom;
+        }
+        else
+        {
+            // Runtime objects already created. Should update in the owner thread.
+            auto dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
+            FindMyMouseSettings localSettings = settings;
+            bool enqueueSucceeded = dispatcherQueue.TryEnqueue([=]() {
+                if (!m_destroyed)
+                {
+                    // Runtime objects not created yet. Just update fields.
+                    m_sonarRadius = localSettings.spotlightRadius;
+                    m_sonarRadiusFloat = static_cast<float>(m_sonarRadius);
+                    m_backgroundColor = localSettings.backgroundColor;
+                    m_spotlightColor = localSettings.spotlightColor;
+                    m_doNotActivateOnGameMode = localSettings.doNotActivateOnGameMode;
+                    m_fadeDuration = localSettings.animationDurationMs > 0 ? localSettings.animationDurationMs : 1;
+                    m_finalAlphaNumerator = localSettings.overlayOpacity;
+                    m_sonarZoomFactor = localSettings.spotlightInitialZoom;
+        
+                    // Apply new settings to runtime composition objects.
+                    m_backdrop.Brush().as<winrt::CompositionColorBrush>().Color(m_backgroundColor);
+                    m_circleShape.FillBrush().as<winrt::CompositionColorBrush>().Color(m_spotlightColor);
+                    m_circleShape.Offset({ m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
+                    m_spotlight.Size({ m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
+                    m_animation.Duration(std::chrono::milliseconds{ m_fadeDuration });
+                    m_circleGeometry.StopAnimation(L"Radius");
+
+                    // Update animation
+                    auto radiusExpression = m_compositor.CreateExpressionAnimation();
+                    radiusExpression.SetReferenceParameter(L"Root", m_root);
+                    wchar_t expressionText[256];
+                    winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
+                    radiusExpression.Expression(expressionText);
+                    m_circleGeometry.StartAnimation(L"Radius", radiusExpression);
+                }
+            });
+            if (!enqueueSucceeded)
+            {
+                Logger::error("Couldn't enqueue message to update the sonar settings.");
+            }
+        }
+    }
+
 private:
     winrt::Compositor m_compositor{ nullptr };
     winrt::Desktop::DesktopWindowTarget m_target{ nullptr };
@@ -588,6 +645,11 @@ private:
     winrt::CompositionEllipseGeometry m_circleGeometry{ nullptr };
     winrt::ShapeVisual m_spotlight{ nullptr };
     winrt::CompositionCommitBatch m_batch{ nullptr };
+    winrt::SpriteVisual m_backdrop{ nullptr };
+    winrt::CompositionSpriteShape m_circleShape{ nullptr };
+    winrt::Windows::UI::Color m_backgroundColor = FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR;
+    winrt::Windows::UI::Color m_spotlightColor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR;
+    winrt::ScalarKeyFrameAnimation m_animation{ nullptr };
 };
 
 template<typename D>
@@ -631,7 +693,7 @@ struct GdiSonar : SuperSonar<D>
     void OnFadeTimer()
     {
         auto now = GetTickCount();
-        auto step = (int)((now - m_fadeStart) * MaxAlpha / this->FadeDuration);
+        auto step = (int)((now - m_fadeStart) * MaxAlpha / this->m_fadeDuration);
 
         this->Shim()->InvalidateSonar();
         if (m_alpha < m_alphaTarget)
@@ -666,13 +728,13 @@ protected:
     int CurrentSonarRadius()
     {
         int range = MaxAlpha - m_alpha;
-        int radius = this->SonarRadius + this->SonarRadius * range * (this->SonarZoomFactor - 1) / MaxAlpha;
+        int radius = this->m_sonarRadius + this->m_sonarRadius * range * (this->m_sonarZoomFactor - 1) / MaxAlpha;
         return radius;
     }
 
 private:
     static constexpr DWORD FadeFramePeriod = 10;
-    static constexpr int MaxAlpha = SuperSonar<D>::FinalAlphaNumerator * 255 / SuperSonar<D>::FinalAlphaDenominator;
+    int MaxAlpha = SuperSonar<D>::m_finalAlphaNumerator * 255 / SuperSonar<D>::FinalAlphaDenominator;
     static constexpr DWORD TIMER_ID_FADE = 101;
 
 private:
@@ -792,6 +854,14 @@ struct GdiCrosshairs : GdiSonar<GdiCrosshairs>
 #pragma region Super_Sonar_API
 
 CompositionSpotlight* m_sonar = nullptr;
+void FindMyMouseApplySettings(const FindMyMouseSettings& settings)
+{
+    if (m_sonar != nullptr)
+    {
+        Logger::info("Applying settings.");
+        m_sonar->ApplySettings(settings, true);
+    }
+}
 
 void FindMyMouseDisable()
 {
@@ -807,13 +877,8 @@ bool FindMyMouseIsEnabled()
     return (m_sonar != nullptr);
 }
 
-void FindMyMouseSetDoNotActivateOnGameMode(bool doNotActivate)
-{
-    m_doNotActivateOnGameMode = doNotActivate;
-}
-
 // Based on SuperSonar's original wWinMain.
-int FindMyMouseMain(HINSTANCE hinst)
+int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
 {
     Logger::info("Starting a sonar instance.");
     if (m_sonar != nullptr)
@@ -823,6 +888,7 @@ int FindMyMouseMain(HINSTANCE hinst)
     }
 
     CompositionSpotlight sonar;
+    sonar.ApplySettings(settings, false);
     if (!sonar.Initialize(hinst))
     {
         Logger::error("Couldn't initialize a sonar instance.");

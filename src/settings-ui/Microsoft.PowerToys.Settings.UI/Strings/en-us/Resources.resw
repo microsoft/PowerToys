@@ -1733,6 +1733,30 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Do not activate when Game Mode is on</value>
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
   </data>
+  <data name="MouseUtils_FindMyMouse_BackgroundColor.Header" xml:space="preserve">
+    <value>Background color</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_SpotlightColor.Header" xml:space="preserve">
+    <value>Spotlight color</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_OverlayOpacity.Header" xml:space="preserve">
+    <value>Overlay opacity</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_SpotlightRadius.Header" xml:space="preserve">
+    <value>Spotlight radius</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Header" xml:space="preserve">
+    <value>Spotlight initial zoom</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Description" xml:space="preserve">
+    <value>Spotlight zoom factor at animation start</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Header" xml:space="preserve">
+    <value>Animation duration</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Description" xml:space="preserve">
+    <value>How long it takes for the spotlight to appear/disappear (in ms)</value>
+  </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
     <value>Mouse Highlighter</value>
     <comment>Refers to the utility name</comment>
@@ -1745,7 +1769,6 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Mouse Highlighter mode will highlight mouse clicks.</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-
 	<data name="MouseUtils_MouseHighlighter_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
@@ -1753,7 +1776,6 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Customize the shortcut to turn on or off this mode</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-
 	<data name="MouseUtils_MouseHighlighter_LeftButtonClickColor.Header" xml:space="preserve">
     <value>Left button highlight color</value>
   </data>
