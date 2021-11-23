@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DoNotActivateOnGameMode = new BoolProperty(true);
             BackgroundColor = new StringProperty("#000000");
             SpotlightColor = new StringProperty("#FFFFFF");
-            OverlayOpacity = new IntProperty(127);
+            OverlayOpacity = new IntProperty(50);
             SpotlightRadius = new IntProperty(100);
             AnimationDurationMs = new IntProperty(500);
             SpotlightInitialZoom = new IntProperty(9);

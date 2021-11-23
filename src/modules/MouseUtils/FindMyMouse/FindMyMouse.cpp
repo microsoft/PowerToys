@@ -62,7 +62,7 @@ protected:
     int m_sonarZoomFactor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
     DWORD m_fadeDuration = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
     int m_finalAlphaNumerator = FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY;
-    static constexpr int FinalAlphaDenominator = 255;
+    static constexpr int FinalAlphaDenominator = 100;
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
 private:

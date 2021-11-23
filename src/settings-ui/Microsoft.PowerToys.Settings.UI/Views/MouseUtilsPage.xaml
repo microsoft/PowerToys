@@ -45,8 +45,8 @@
                                 </controls:Setting>
                                 <controls:Setting x:Uid="MouseUtils_FindMyMouse_OverlayOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
-                                        <Slider Minimum="0"
-                                            Maximum="255"
+                                        <Slider Minimum="1"
+                                            Maximum="100"
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseOverlayOpacity}"
                                             HorizontalAlignment="Right"/>
