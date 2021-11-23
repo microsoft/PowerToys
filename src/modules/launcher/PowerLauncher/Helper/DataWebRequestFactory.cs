@@ -29,6 +29,7 @@ namespace PowerLauncher.Helper
         {
             private readonly string _contentType;
             private readonly byte[] _data;
+            private readonly int _contentLength;
 
             public DataWebResponse(Uri uri)
             {
@@ -36,10 +37,14 @@ namespace PowerLauncher.Helper
 
                 // Using Ordinal since this is internal and used with a symbol
                 int commaIndex = uriString.IndexOf(',', StringComparison.Ordinal);
-                var headers = uriString.Substring(0, commaIndex).Split(';');
-                _contentType = headers[0];
-                string dataString = uriString.Substring(commaIndex + 1);
-                _data = Convert.FromBase64String(dataString);
+                int semicolonIndex = uriString.IndexOf(';', 0, commaIndex);
+                _contentType = uriString.Substring(0, semicolonIndex);
+                ReadOnlySpan<char> dataSpan = uriString.AsSpan(commaIndex + 1);
+                _data = new byte[(dataSpan.Length / 4 * 3) + 2];
+                if (!Convert.TryFromBase64Chars(dataSpan, _data, out _contentLength))
+                {
+                    throw new FormatException();
+                }
             }
 
             public override string ContentType
@@ -59,7 +64,7 @@ namespace PowerLauncher.Helper
             {
                 get
                 {
-                    return _data.Length;
+                    return _contentLength;
                 }
 
                 set
@@ -70,7 +75,7 @@ namespace PowerLauncher.Helper
 
             public override Stream GetResponseStream()
             {
-                return new MemoryStream(_data);
+                return new MemoryStream(_data, 0, _contentLength);
             }
         }
 
