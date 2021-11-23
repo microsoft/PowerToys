@@ -66,7 +66,7 @@
                                 <controls:Setting x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
                                     <controls:Setting.ActionContent>
                                         <Slider Minimum="1"
-                                            Maximum="20"
+                                            Maximum="40"
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightInitialZoom}"
                                             HorizontalAlignment="Right"/>
