@@ -1742,6 +1742,9 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
   <data name="MouseUtils_FindMyMouse_OverlayOpacity.Header" xml:space="preserve">
     <value>Overlay opacity</value>
   </data>
+  <data name="MouseUtils_FindMyMouse_OverlayOpacity.Description" xml:space="preserve">
+    <value>Opacity percentage for the overlay</value>
+  </data>
   <data name="MouseUtils_FindMyMouse_SpotlightRadius.Header" xml:space="preserve">
     <value>Spotlight radius</value>
   </data>
@@ -1749,7 +1752,7 @@ From there, simply click on a Markdown file, PDF file or SVG icon in the File Ex
     <value>Spotlight initial zoom</value>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Description" xml:space="preserve">
-    <value>How many times bigger the spotlight is when the animation starts</value>
+    <value>How many times larger the spotlight is when the animation starts</value>
   </data>
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Header" xml:space="preserve">
     <value>Animation duration</value>
