@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 { ColorRepresentationType.RGB,  "RGB - rgb(100, 50, 75)" },
                 { ColorRepresentationType.CIELAB, "CIE LAB - CIELab(76, 21, 80)" },
                 { ColorRepresentationType.CIEXYZ, "CIE XYZ - xyz(56, 50, 7)" },
-                { ColorRepresentationType.VEC4, "VEC4 - (1.0f, 0.7f, 0.00f)" },
+                { ColorRepresentationType.VEC4, "VEC4 - (1.0f, 0.7f, 0f, 1f)" },
                 { ColorRepresentationType.DecimalValue, "Decimal - 16755200" },
             };
 
