@@ -14,6 +14,7 @@
     <ClCompile Include="EventViewer.cpp" />
     <ClCompile Include="XmlDocumentEx.cpp" />
     <ClCompile Include="InstallationFolder.cpp" />
+    <ClCompile Include="ProcessesList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ZipTools">

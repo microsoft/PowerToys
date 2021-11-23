@@ -134,9 +134,9 @@ void MonitorWorkAreaHandler::UpdateZoneColors(const ZoneColors& colors)
 {
     for (const auto& workArea : workAreaMap)
     {
-        for (const auto& zoneWindow : workArea.second)
+        for (const auto& workAreaPtr : workArea.second)
         {
-            zoneWindow.second->SetZoneColors(colors);
+            workAreaPtr.second->SetZoneColors(colors);
         }
     }
 }
@@ -145,9 +145,9 @@ void MonitorWorkAreaHandler::UpdateOverlappingAlgorithm(OverlappingZonesAlgorith
 {
     for (const auto& workArea : workAreaMap)
     {
-        for (const auto& zoneWindow : workArea.second)
+        for (const auto& workAreaPtr : workArea.second)
         {
-            zoneWindow.second->SetOverlappingZonesAlgorithm(overlappingAlgorithm);
+            workAreaPtr.second->SetOverlappingZonesAlgorithm(overlappingAlgorithm);
         }
     }
 }

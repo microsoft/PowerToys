@@ -625,6 +625,7 @@
                 <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
                 <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+                <Setter Property="AcceptsReturn" Value="False" />
                 <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
                 <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
                 <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />

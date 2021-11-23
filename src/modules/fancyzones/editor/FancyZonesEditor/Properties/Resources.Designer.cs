@@ -232,6 +232,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete layout dialog..
+        /// </summary>
+        public static string Delete_Layout_Dialog_Announce {
+            get {
+                return ResourceManager.GetString("Delete_Layout_Dialog_Announce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete zone.
         /// </summary>
         public static string Delete_Zone {

@@ -54,7 +54,8 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings"></ImportGroup>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -108,7 +109,6 @@
   <ItemGroup>
     <ClInclude Include="app.base.h" />
     <ClInclude Include="ExplorerItem.h" />
-    <ClInclude Include="ExplorerItemTemplateSelector.h" />
     <ClInclude Include="MainWindow.h">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -146,7 +146,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExplorerItem.cpp" />
-    <ClCompile Include="ExplorerItemTemplateSelector.cpp" />
     <ClCompile Include="MainWindow.cpp">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -166,7 +165,6 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Midl>
     <Midl Include="ExplorerItem.idl" />
-    <Midl Include="ExplorerItemTemplateSelector.idl" />
     <Midl Include="MainWindow.idl">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

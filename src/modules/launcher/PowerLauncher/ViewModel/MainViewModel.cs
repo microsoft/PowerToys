@@ -574,11 +574,12 @@ namespace PowerLauncher.ViewModel
                                     Results.Sort();
                                     Results.SelectedItem = Results.Results.FirstOrDefault();
                                 }
+
+                                currentCancellationToken.ThrowIfCancellationRequested();
+                                UpdateResultsListViewAfterQuery(queryText);
                             }
 
-                            currentCancellationToken.ThrowIfCancellationRequested();
-
-                            UpdateResultsListViewAfterQuery(queryText);
+                            bool noInitialResults = numResults == 0;
 
                             // Run the slower query of the DelayedExecution plugins
                             currentCancellationToken.ThrowIfCancellationRequested();
@@ -611,10 +612,10 @@ namespace PowerLauncher.ViewModel
                                                     numResults = Results.Results.Count;
                                                     Results.Sort();
                                                 }
-                                            }
 
-                                            currentCancellationToken.ThrowIfCancellationRequested();
-                                            UpdateResultsListViewAfterQuery(queryText, true);
+                                                currentCancellationToken.ThrowIfCancellationRequested();
+                                                UpdateResultsListViewAfterQuery(queryText, noInitialResults, true);
+                                            }
                                         }
                                     }
                                     catch (OperationCanceledException)
@@ -655,7 +656,7 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        private void UpdateResultsListViewAfterQuery(string queryText, bool isDelayedInvoke = false)
+        private void UpdateResultsListViewAfterQuery(string queryText, bool noInitialResults = false, bool isDelayedInvoke = false)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -668,9 +669,13 @@ namespace PowerLauncher.ViewModel
                 if (Results.Results.Count > 0)
                 {
                     Results.Visibility = Visibility.Visible;
-                    if (!isDelayedInvoke)
+                    if (!isDelayedInvoke || noInitialResults)
                     {
                         Results.SelectedIndex = 0;
+                        if (noInitialResults)
+                        {
+                            Results.SelectedItem = Results.Results.FirstOrDefault();
+                        }
                     }
                 }
                 else

@@ -109,7 +109,7 @@ namespace PowerLauncher
                     string changeType = Marshal.PtrToStringUni(lparam);
                     if (changeType == EnvironmentChangeType)
                     {
-                        Log.Info("Reload environment", typeof(EnvironmentHelper));
+                        Log.Info("Reload environment: Updating environment variables for PT Run's process", typeof(EnvironmentHelper));
                         EnvironmentHelper.UpdateEnvironment();
                         handled = true;
                     }
@@ -125,6 +125,9 @@ namespace PowerLauncher
 
         private void OnSourceInitialized(object sender, EventArgs e)
         {
+            // Initialize protected environment variables before register the WindowMessage
+            EnvironmentHelper.GetProtectedEnvironmentVariables();
+
             _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
             _hwndSource.AddHook(ProcessWindowMessages);
 

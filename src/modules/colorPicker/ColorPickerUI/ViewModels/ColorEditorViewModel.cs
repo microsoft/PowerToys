@@ -148,7 +148,9 @@ namespace ColorPicker.ViewModels
                 new ColorFormatModel()
                 {
                     FormatName = ColorRepresentationType.HEX.ToString(),
-                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HEX); },
+#pragma warning disable CA1304 // Specify CultureInfo
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HEX).ToLower(); },
+#pragma warning restore CA1304 // Specify CultureInfo
                 });
 
             _allColorRepresentations.Add(
@@ -213,6 +215,18 @@ namespace ColorPicker.ViewModels
                 {
                     FormatName = ColorRepresentationType.CIEXYZ.ToString(),
                     Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIEXYZ); },
+                });
+            _allColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = ColorRepresentationType.VEC4.ToString(),
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.VEC4); },
+                });
+            _allColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = "Decimal",
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.DecimalValue); },
                 });
 
             _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;

@@ -31,12 +31,14 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="call_tracer.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="logger_settings.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="call_tracer.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="logger_settings.cpp" />
     <ClCompile Include="pch.cpp">
@@ -49,9 +51,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\logging\logging.vcxproj">
       <Project>{7e1e3f13-2bd6-3f75-a6a7-873a2b55c60f}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\SettingsAPI\SetttingsAPI.vcxproj">
-      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

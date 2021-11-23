@@ -14,6 +14,8 @@ namespace PowerRenameUILib
         void CloseUIWindow(Boolean closeUIWindow);
         Boolean ButtonRenameEnabled;
         void Rename();
+        String OriginalCount;
+        String RenamedCount;
     }
 
     [default_interface] runtimeclass MainWindow : Windows.UI.Xaml.Controls.UserControl
@@ -50,7 +52,7 @@ namespace PowerRenameUILib
         Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonTitleCase { get; };
         Windows.UI.Xaml.Controls.Primitives.ToggleButton ToggleButtonCapitalize { get; };
 
-        void AddExplorerItem(Int32 id, String original, String renamed, Int32 type, Int32 parentId, Boolean checked);
+        void AddExplorerItem(Int32 id, String original, String renamed, Int32 type, UInt32 depth, Boolean checked);
         void UpdateExplorerItem(Int32 id, String newName);
         void UpdateRenamedExplorerItem(Int32 id, String newOriginalName);
         void AppendSearchMRU(String value);

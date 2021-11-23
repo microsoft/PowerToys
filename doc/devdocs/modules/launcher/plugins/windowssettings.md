@@ -26,6 +26,7 @@ The `WindowsSettings.json` use a JSON schema file that make it easier to edit it
 | `Note`              | Yes      | String            | `Note`        |
 | `IntroducedInBuild` | Yes      | Integer           |               |
 | `DeprecatedInBuild` | Yes      | Integer           |               |
+| `ShowAsFirstResult` | Yes      | Boolean           |               |
 
 A minimum entry for the `WindowsSettings.json` looks like:
 
@@ -48,7 +49,8 @@ A full entry for the `WindowsSettings.json` looks like:
     "AltNames": [ "NiceSetting" ],
     "Note": "NoteMySettingNote",
     "IntroducedInBuild" : 1903,
-    "DeprecatedInBuild" : 2004
+    "DeprecatedInBuild" : 2004,
+    "ShowAsFirstResult" : true
   }
 ```
 
@@ -65,11 +67,12 @@ A full entry for the `WindowsSettings.json` looks like:
 
 There are three different score types with different start values.
 
-| Score type   | Start value  |
-| ------------ | ------------ |
-| High score   | 10000        |
-| Medium score |  5000        |
-| Low score    |  1000        |
+| Score type         | Start value  |
+| ------------------ | ------------ |
+| First result score | 10500        |
+| High score         | 10000        |
+| Medium score       |  5000        |
+| Low score          |  1000        |
 
 Each score will decreased by one when a condition match.
 
@@ -82,6 +85,9 @@ Each score will decreased by one when a condition match.
 | 5.       | Setting has no alternative name                                   | Low score    |
 | 6.       | One alternative name of the settings starts with the search value | Medium score |
 | x.       | no condition match                                                | Low score    |
+
+### Remarks
+* For each score condition we check if the property "ShowAsFirstResult" of the setting is true. If yes we use the firstResultScore instead of condition`s score.
 
 ## Important for developers
 

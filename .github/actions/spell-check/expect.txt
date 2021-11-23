@@ -631,6 +631,7 @@ Farbraum
 FARPROC
 fdw
 feimage
+FFAA
 ffcd
 FFDDDDDD
 fff
@@ -698,6 +699,7 @@ gdi
 gdiplus
 GDISCALED
 generatesqlfromuserquery
+GETDESKWALLPAPER
 GETDISPINFO
 GETDLGCODE
 GETDPISCALEDSIZE
@@ -732,6 +734,7 @@ Hardlines
 HARDWAREINPUT
 hashcode
 Hashset
+Hashtable
 HASHVAL
 hbitmap
 hbmp
@@ -760,8 +763,10 @@ hglobal
 hhk
 HHmmss
 HHOOK
+hhx
 HICON
 HIDEWINDOW
+highlighter
 HIMAGELIST
 himl
 hinst
@@ -785,6 +790,7 @@ hmonitor
 HOLDENTER
 HOLDESC
 homljgmgpmcbpjbnjpfijnhipfkiclkd
+homepage
 HOOKPROC
 hostname
 hotkeycontrol
@@ -1659,6 +1665,7 @@ prgms
 pri
 PRINTCLIENT
 printf
+pritudev
 prm
 proactively
 PROCESSKEY
@@ -2079,6 +2086,7 @@ Switchbetweenvirtualdesktops
 SWP
 swprintf
 SWRESTORE
+swscanf
 SYMED
 SYMOPT
 SYNCMFT
@@ -2330,7 +2338,7 @@ VTABLE
 Vtbl
 wav
 WBounds
-Wca
+wca
 wcautil
 WCE
 wcex
@@ -2435,6 +2443,7 @@ workaround
 Workflow
 workspaces
 wostream
+wostringstream
 wox
 wparam
 wpf

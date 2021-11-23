@@ -35,45 +35,11 @@ public:
     IFACEMETHODIMP_(RECT) GetZoneRect() const noexcept { return m_zoneRect; }
     IFACEMETHODIMP_(long) GetZoneArea() const noexcept { return max(m_zoneRect.bottom - m_zoneRect.top, 0) * max(m_zoneRect.right - m_zoneRect.left, 0); }
     IFACEMETHODIMP_(ZoneIndex) Id() const noexcept { return m_id; }
-    IFACEMETHODIMP_(RECT) ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept;
 
 private:
     RECT m_zoneRect{};
     const ZoneIndex m_id{};
-    std::map<HWND, RECT> m_windows{};
 };
-
-RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept
-{
-    // Take care of 1px border
-    RECT newWindowRect = m_zoneRect;
-
-    RECT windowRect{};
-    ::GetWindowRect(window, &windowRect);
-
-    RECT frameRect{};
-
-    if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
-    {
-        LONG leftMargin = frameRect.left - windowRect.left;
-        LONG rightMargin = frameRect.right - windowRect.right;
-        LONG bottomMargin = frameRect.bottom - windowRect.bottom;
-        newWindowRect.left -= leftMargin;
-        newWindowRect.right -= rightMargin;
-        newWindowRect.bottom -= bottomMargin;
-    }
-
-    // Map to screen coords
-    MapWindowRect(zoneWindow, nullptr, &newWindowRect);
-
-    if ((::GetWindowLong(window, GWL_STYLE) & WS_SIZEBOX) == 0)
-    {
-        newWindowRect.right = newWindowRect.left + (windowRect.right - windowRect.left);
-        newWindowRect.bottom = newWindowRect.top + (windowRect.bottom - windowRect.top);
-    }
-
-    return newWindowRect;
-}
 
 winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect, const ZoneIndex zoneId) noexcept
 {

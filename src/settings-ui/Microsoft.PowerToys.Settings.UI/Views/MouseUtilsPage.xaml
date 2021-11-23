@@ -13,22 +13,171 @@
                                   ModuleImageSource="ms-appx:///Assets/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
+                <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
+                    <TextBlock x:Uid="MouseUtils_FindMyMouse_Description" Margin="0,0,0,8" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <controls:Setting x:Uid="MouseUtils_Enable_FindMyMouse">
+                        <controls:Setting.Icon>
+                            <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsFindMyMouse.png" ShowAsMonochrome="False" />
+                        </controls:Setting.Icon>
+                        <controls:Setting.ActionContent>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" HorizontalAlignment="Right"/>
+                        </controls:Setting.ActionContent>
+                    </controls:Setting>
+                    <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" IsExpanded="False" >
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                        </controls:SettingExpander.Header>
+                        <controls:SettingExpander.Content>
+                            <StackPanel>
+                                <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode"
+                                          IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}"
+                                          Margin="{StaticResource ExpanderSettingMargin}"
+                                          IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" />
+                                <controls:Setting x:Uid="MouseUtils_FindMyMouse_OverlayOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <Slider Minimum="1"
+                                            Maximum="100"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseOverlayOpacity}"
+                                            HorizontalAlignment="Right"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <controls:Setting x:Uid="MouseUtils_FindMyMouse_BackgroundColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <controls:Setting x:Uid="MouseUtils_FindMyMouse_SpotlightColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <controls:Setting x:Uid="MouseUtils_FindMyMouse_SpotlightRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox Minimum="5"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightRadius}"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    HorizontalAlignment="Left"
+                                                    SmallChange="1"
+                                                    LargeChange="10"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <controls:Setting x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <Slider Minimum="1"
+                                            Maximum="40"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseSpotlightInitialZoom}"
+                                            HorizontalAlignment="Right"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                                <controls:Setting x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsFindMyMouseEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox Minimum="0"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseAnimationDurationMs}"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    HorizontalAlignment="Left"
+                                                    SmallChange="10"
+                                                    LargeChange="100"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                            </StackPanel>
+                        </controls:SettingExpander.Content>
+                    </controls:SettingExpander>
+                </controls:SettingsGroup>
 
-                <controls:SettingExpander IsExpanded="True">
-                    <controls:SettingExpander.Header>
-                        <controls:Setting x:Uid="MouseUtils_Enable_FindMyMouse" Icon="&#xF272;">
-                            <controls:Setting.ActionContent>
-                                <ToggleSwitch IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" HorizontalAlignment="Right"/>
-                            </controls:Setting.ActionContent>
-                        </controls:Setting>
-                    </controls:SettingExpander.Header>
-                    <controls:SettingExpander.Content>
-                        <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode"
-                                  IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.FindMyMouseDoNotActivateOnGameMode}"
-                                  Margin="{StaticResource ExpanderSettingMargin}"
-                                  IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}" />
-                    </controls:SettingExpander.Content>
-                </controls:SettingExpander>
+                <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
+                    <TextBlock x:Uid="MouseUtils_MouseHighlighter_Description" Margin="0,0,0,8" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <controls:Setting x:Uid="MouseUtils_Enable_MouseHighlighter">
+                        <controls:Setting.Icon>
+                            <BitmapIcon UriSource="ms-appx:///Assets/FluentIcons/FluentIconsMouseHighlighter.png" ShowAsMonochrome="False" />
+                        </controls:Setting.Icon>
+                        <controls:Setting.ActionContent>
+                                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" HorizontalAlignment="Right"/>
+                                </controls:Setting.ActionContent>
+                            </controls:Setting>
+
+
+                    <controls:Setting x:Uid="MouseUtils_MouseHighlighter_ActivationShortcut" Icon="&#xEDA7;" IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
+                                    <controls:Setting.ActionContent>
+                                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}"
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+
+                    <controls:SettingExpander IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}" IsExpanded="False" >
+                        <controls:SettingExpander.Header>
+                            <controls:Setting x:Uid="ShortcutGuide_Appearance_Behavior" Icon="&#xE790;" />
+                        </controls:SettingExpander.Header>
+                      
+
+                        <controls:SettingExpander.Content>
+
+                            <StackPanel>
+                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_LeftButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                             
+                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_RightButtonClickColor" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                              
+                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_HighlightOpacity" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <Slider Minimum="0"
+                                            Maximum="255"
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterOpacity}"
+                                            HorizontalAlignment="Right"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                               
+                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_HighlightRadius" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox Minimum="5"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterRadius}"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    HorizontalAlignment="Left"
+                                                    SmallChange="1"
+                                                    LargeChange="10"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                            
+                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox Minimum="100"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDelayMs}"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    HorizontalAlignment="Left"
+                                                    SmallChange="10"
+                                                    LargeChange="100"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                           
+                                <controls:Setting x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsMouseHighlighterEnabled}" Style="{StaticResource ExpanderContentSettingStyle}">
+                                    <controls:Setting.ActionContent>
+                                        <muxc:NumberBox Minimum="100"
+                                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.MouseHighlighterFadeDurationMs}"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    SpinButtonPlacementMode="Compact"
+                                                    HorizontalAlignment="Left"
+                                                    SmallChange="10"
+                                                    LargeChange="100"/>
+                                    </controls:Setting.ActionContent>
+                                </controls:Setting>
+                            </StackPanel>
+            </controls:SettingExpander.Content>
+            </controls:SettingExpander>
+                </controls:SettingsGroup>
+            
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>

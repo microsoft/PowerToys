@@ -448,15 +448,6 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Home page.
-        /// </summary>
-        internal static string AreaHomePage {
-            get {
-                return ResourceManager.GetString("AreaHomePage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Mixed reality.
         /// </summary>
         internal static string AreaMixedReality {
@@ -511,6 +502,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Security and Maintenance.
+        /// </summary>
+        internal static string AreaSecurityAndMaintenance {
+            get {
+                return ResourceManager.GetString("AreaSecurityAndMaintenance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SurfaceHub.
         /// </summary>
         internal static string AreaSurfaceHub {
@@ -534,6 +534,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string AreaSystemAndSecurity {
             get {
                 return ResourceManager.GetString("AreaSystemAndSecurity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System Properties.
+        /// </summary>
+        internal static string AreaSystemPropertiesAdvanced {
+            get {
+                return ResourceManager.GetString("AreaSystemPropertiesAdvanced", resourceCulture);
             }
         }
         
@@ -831,6 +840,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string CellularAndSim {
             get {
                 return ResourceManager.GetString("CellularAndSim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change User Account Control settings.
+        /// </summary>
+        internal static string ChangeUACSettings {
+            get {
+                return ResourceManager.GetString("ChangeUACSettings", resourceCulture);
             }
         }
         
@@ -1231,11 +1249,38 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Edit environment variables.
+        /// </summary>
+        internal static string EditEnvironmentVariables {
+            get {
+                return ResourceManager.GetString("EditEnvironmentVariables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edition.
         /// </summary>
         internal static string Edition {
             get {
                 return ResourceManager.GetString("Edition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit the system environment variables.
+        /// </summary>
+        internal static string EditSystemEnvironmentVariables {
+            get {
+                return ResourceManager.GetString("EditSystemEnvironmentVariables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit environment variables for your account.
+        /// </summary>
+        internal static string EditUserEnvironmentVariables {
+            get {
+                return ResourceManager.GetString("EditUserEnvironmentVariables", resourceCulture);
             }
         }
         
@@ -1272,6 +1317,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string Environment {
             get {
                 return ResourceManager.GetString("Environment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Env vars.
+        /// </summary>
+        internal static string EnvVars {
+            get {
+                return ResourceManager.GetString("EnvVars", resourceCulture);
             }
         }
         
@@ -2212,6 +2266,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Editing this setting may require administrative privileges..
+        /// </summary>
+        internal static string NoteEditingRequireAdminPrivileges {
+            get {
+                return ResourceManager.GetString("NoteEditingRequireAdminPrivileges", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Only present if user is enrolled in WIP..
         /// </summary>
         internal static string NoteEnrolledWIP {
@@ -2433,6 +2496,24 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         internal static string OnScreen {
             get {
                 return ResourceManager.GetString("OnScreen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Control Panel (Application homepage).
+        /// </summary>
+        internal static string OpenControlPanel {
+            get {
+                return ResourceManager.GetString("OpenControlPanel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings (Application homepage).
+        /// </summary>
+        internal static string OpenSettingsApp {
+            get {
+                return ResourceManager.GetString("OpenSettingsApp", resourceCulture);
             }
         }
         
@@ -3094,11 +3175,11 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings home page.
+        ///   Looks up a localized string similar to Settings app.
         /// </summary>
-        internal static string SettingsHomePage {
+        internal static string SettingsApp {
             get {
-                return ResourceManager.GetString("SettingsHomePage", resourceCulture);
+                return ResourceManager.GetString("SettingsApp", resourceCulture);
             }
         }
         
@@ -3301,11 +3382,29 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to System env vars.
+        /// </summary>
+        internal static string SystemEnvVars {
+            get {
+                return ResourceManager.GetString("SystemEnvVars", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to System properties and Add New Hardware wizard.
         /// </summary>
         internal static string SystemPropertiesAndAddNewHardwareWizard {
             get {
                 return ResourceManager.GetString("SystemPropertiesAndAddNewHardwareWizard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System variables.
+        /// </summary>
+        internal static string SystemVariables {
+            get {
+                return ResourceManager.GetString("SystemVariables", resourceCulture);
             }
         }
         
@@ -3517,6 +3616,15 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to UAC.
+        /// </summary>
+        internal static string UAC {
+            get {
+                return ResourceManager.GetString("UAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uninstall.
         /// </summary>
         internal static string Uninstall {
@@ -3535,11 +3643,47 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to UserAccountControlSettings.exe.
+        /// </summary>
+        internal static string UserAccountControlSettings_exe {
+            get {
+                return ResourceManager.GetString("UserAccountControlSettings.exe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User accounts.
         /// </summary>
         internal static string UserAccounts {
             get {
                 return ResourceManager.GetString("UserAccounts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User environment variables.
+        /// </summary>
+        internal static string UserEnvironmentVariables {
+            get {
+                return ResourceManager.GetString("UserEnvironmentVariables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User env vars.
+        /// </summary>
+        internal static string UserEnvVars {
+            get {
+                return ResourceManager.GetString("UserEnvVars", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User variables.
+        /// </summary>
+        internal static string UserVariables {
+            get {
+                return ResourceManager.GetString("UserVariables", resourceCulture);
             }
         }
         

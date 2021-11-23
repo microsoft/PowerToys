@@ -4,10 +4,12 @@
 
 using namespace std;
 
+extern std::vector<std::wstring> processes;
+
 namespace
 {
     vector<pair<HKEY, wstring>> registryKeys = {
-    { HKEY_CLASSES_ROOT, L"Software\\Classes\\CLSID\\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}" },
+    { HKEY_CLASSES_ROOT, L"CLSID\\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}" },
     { HKEY_CLASSES_ROOT, L"powertoys" },
     { HKEY_CLASSES_ROOT, L"CLSID\\{ddee2b8a-6807-48a6-bb20-2338174ff779}" },
     { HKEY_CLASSES_ROOT, L"CLSID\\{36B27788-A8BB-4698-A756-DF9F11F64F84}" },
@@ -163,20 +165,8 @@ namespace
 
 void ReportCompatibilityTab(HKEY key, wofstream& report)
 {
-    vector<std::wstring> apps
-    {
-        L"PowerToys.exe",
-        L"ColorPickerUI.exe",
-        L"FancyZonesEditor.exe",
-        L"PowerToys.FancyZones.exe",
-        L"PowerToys.KeyboardManagerEngine.exe",
-        L"PowerToys.KeyboardManagerEditor.exe",
-        L"PowerLauncher.exe",
-        L"PowerToys.ShortcutGuide.exe"
-    };
-
     map<wstring, wstring> flags;
-    for (auto app : apps)
+    for (auto app : processes)
     {
         flags[app] = L"";
     }
@@ -190,7 +180,7 @@ void ReportCompatibilityTab(HKEY key, wofstream& report)
             auto values = QueryValues(outKey);
             for (auto value : values)
             {
-                for (auto app : apps)
+                for (auto app : processes)
                 {
                     if (value.first.find(app) != wstring::npos)
                     {

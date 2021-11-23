@@ -11,15 +11,17 @@ namespace winrt::PowerRenameUILib::implementation
             File = 1
         };
         
-        ExplorerItem() = delete;
+        ExplorerItem() = default;
 
-        ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, bool checked);
+        ExplorerItem(int32_t id, hstring const& original, hstring const& renamed, int32_t type, uint32_t depth, bool checked);
         int32_t Id();
         hstring IdStr();
         hstring Original();
         void Original(hstring const& value);
         hstring Renamed();
         void Renamed(hstring const& value);
+        double Indentation();
+        hstring ImagePath();
         int32_t Type();
         void Type(int32_t value);
         bool Checked();
@@ -34,6 +36,8 @@ namespace winrt::PowerRenameUILib::implementation
         hstring m_idStr;
         winrt::hstring m_original;
         winrt::hstring m_renamed;
+        uint32_t m_depth;
+        hstring m_imagePath;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUILib::ExplorerItem> m_children;
         int32_t m_type;
         bool m_checked;

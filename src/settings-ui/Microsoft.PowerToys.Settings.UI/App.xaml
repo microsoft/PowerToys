@@ -27,7 +27,6 @@
             </Style>
 
             <Style TargetType="controls:CheckBoxWithDescriptionControl" BasedOn="{StaticResource DefaultCheckBoxStyle}" />
-
         </ResourceDictionary>
     </Application.Resources>
 </xaml:XamlApplication>

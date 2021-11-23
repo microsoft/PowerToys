@@ -297,9 +297,9 @@ namespace FancyZonesUnitTests
             {
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, 1);
                 HWND window = Mocks::Window();
-                HWND zoneWindow = Mocks::Window();
+                HWND workArea = Mocks::Window();
                 m_set->AddZone(zone);
-                m_set->MoveWindowIntoZoneByIndexSet(window, zoneWindow, { 0 });
+                m_set->MoveWindowIntoZoneByIndexSet(window, workArea, { 0 });
 
                 auto actual = m_set->GetZoneIndexSetFromWindow(Mocks::Window());
                 Assert::IsTrue(std::vector<ZoneIndex>{} == actual);
@@ -309,9 +309,9 @@ namespace FancyZonesUnitTests
             {
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, 1);
                 HWND window = Mocks::Window();
-                HWND zoneWindow = Mocks::Window();
+                HWND workArea = Mocks::Window();
                 m_set->AddZone(zone);
-                m_set->MoveWindowIntoZoneByIndexSet(window, zoneWindow, { 0 });
+                m_set->MoveWindowIntoZoneByIndexSet(window, workArea, { 0 });
 
                 auto actual = m_set->GetZoneIndexSetFromWindow(nullptr);
                 Assert::IsTrue(std::vector<ZoneIndex>{} == actual);
@@ -432,7 +432,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByPointDropAddWindow)
             {
                 const auto window = Mocks::Window();
-                const auto zoneWindow = Mocks::Window();
+                const auto workArea = Mocks::Window();
 
                 winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
                 winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
@@ -450,7 +450,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByPointDropAddWindowToSameZone)
             {
                 const auto window = Mocks::Window();
-                const auto zoneWindow = Mocks::Window();
+                const auto workArea = Mocks::Window();
 
                 winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
                 winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
@@ -468,7 +468,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByPointSeveralZonesWithSameWindow)
             {
                 const auto window = Mocks::Window();
-                const auto zoneWindow = Mocks::Window();
+                const auto workArea = Mocks::Window();
 
                 winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
                 winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);

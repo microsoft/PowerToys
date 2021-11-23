@@ -51,8 +51,9 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
      *
      * @param   window   Handle of window which should be assigned to zone.
      * @param   indexSet The set of zone indices within zone layout.
+     * @param   suppressMove Whether we should just update the records or move window to the zone.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, const ZoneIndexSet& indexSet) = 0;
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, const ZoneIndexSet& indexSet, bool suppressMove = false) = 0;
     /**
      * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow), based on zone index numbers,
      * not their on-screen position.
@@ -102,7 +103,7 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
     /**
      * @returns Active zone layout for this work area.
      */
-    IFACEMETHOD_(IZoneSet*, ActiveZoneSet)() const = 0;
+    IFACEMETHOD_(IZoneSet*, ZoneSet)() const = 0;
     /*
     * @returns Zone index of the window
     */
@@ -113,6 +114,13 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IWorkArea :
      * Update currently active zone layout for this work area.
      */
     IFACEMETHOD_(void, UpdateActiveZoneSet)() = 0;
+    /**
+     * Cycle through tabs in the zone that the window is in.
+     *
+     * @param   window Handle of window which is cycled from (the current tab).
+     * @param   reverse Whether to cycle in reverse order (to the previous tab) or to move to the next tab.
+     */
+    IFACEMETHOD_(void, CycleTabs)(HWND window, bool reverse) = 0;
     /**
      * Clear the selected zones when this WorkArea loses focus.
      */

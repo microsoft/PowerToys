@@ -142,4 +142,8 @@
     <value>Workspace</value>
     <comment>It refers to the "Visual Studio Code  workspace"</comment>
   </data>
+  <data name="TypeWorkspaceDevContainer" xml:space="preserve">
+    <value>Dev Container</value>
+    <comment>As in "Visual Studio Code Dev Container workspace "</comment>
+  </data>
 </root>

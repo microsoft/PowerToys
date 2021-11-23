@@ -30,6 +30,7 @@ namespace ImageResizer.Properties
         private int _selectedSizeIndex;
         private bool _replace;
         private bool _ignoreOrientation;
+        private bool _removeMetadata;
         private int _jpegQualityLevel;
         private PngInterlaceOption _pngInterlaceOption;
         private TiffCompressOption _tiffCompressOption;
@@ -44,6 +45,7 @@ namespace ImageResizer.Properties
             ShrinkOnly = false;
             Replace = false;
             IgnoreOrientation = true;
+            RemoveMetadata = false;
             JpegQualityLevel = 90;
             PngInterlaceOption = System.Windows.Media.Imaging.PngInterlaceOption.Default;
             TiffCompressOption = System.Windows.Media.Imaging.TiffCompressOption.Default;
@@ -280,6 +282,27 @@ namespace ImageResizer.Properties
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether resizing images removes any metadata that doesn't affect rendering.
+        /// Default is false.
+        /// </summary>
+        /// <remarks>
+        /// Preserved Metadata:
+        /// System.Photo.Orientation,
+        /// System.Image.ColorSpace
+        /// </remarks>
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_removeMetadata")]
+        public bool RemoveMetadata
+        {
+            get => _removeMetadata;
+            set
+            {
+                _removeMetadata = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         [JsonConverter(typeof(WrappedJsonValueConverter))]
         [JsonPropertyName("imageresizer_jpegQualityLevel")]
         public int JpegQualityLevel
@@ -423,6 +446,7 @@ namespace ImageResizer.Properties
                 ShrinkOnly = jsonSettings.ShrinkOnly;
                 Replace = jsonSettings.Replace;
                 IgnoreOrientation = jsonSettings.IgnoreOrientation;
+                RemoveMetadata = jsonSettings.RemoveMetadata;
                 JpegQualityLevel = jsonSettings.JpegQualityLevel;
                 PngInterlaceOption = jsonSettings.PngInterlaceOption;
                 TiffCompressOption = jsonSettings.TiffCompressOption;

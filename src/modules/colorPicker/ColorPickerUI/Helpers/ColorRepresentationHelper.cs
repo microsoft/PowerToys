@@ -46,6 +46,8 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.RGB => ColorToRGB(color),
                 ColorRepresentationType.CIELAB => ColorToCIELAB(color),
                 ColorRepresentationType.CIEXYZ => ColorToCIEXYZ(color),
+                ColorRepresentationType.VEC4 => ColorToFloat(color),
+                ColorRepresentationType.DecimalValue => ColorToDecimal(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),
@@ -77,7 +79,7 @@ namespace ColorPicker.Helpers
         /// <param name="color">The see cref="Color"/> for the hexadecimal presentation</param>
         /// <returns>A hexadecimal <see cref="string"/> representation of a RGB color</returns>
         private static string ColorToHex(Color color)
-            => $"#{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
+            => $"{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
              + $"{color.G.ToString("X2", CultureInfo.InvariantCulture)}"
              + $"{color.B.ToString("X2", CultureInfo.InvariantCulture)}";
 
@@ -97,6 +99,29 @@ namespace ColorPicker.Helpers
             return $"hsb({hue.ToString(CultureInfo.InvariantCulture)}"
                  + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {brightness.ToString(CultureInfo.InvariantCulture)}%)";
+        }
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation float color styling(0.1f, 0.1f, 0.1f)
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>a string value (0.1f, 0.1f, 0.1f)</returns>
+        private static string ColorToFloat(Color color)
+        {
+            var (red, green, blue) = ColorHelper.ConvertToDouble(color);
+            var precision = 2;
+
+            return $"({Math.Round(red, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, {Math.Round(green, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, {Math.Round(blue, precision).ToString("0.##", CultureInfo.InvariantCulture)}f, 1f)";
+        }
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation decimal color value
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>a string value number</returns>
+        private static string ColorToDecimal(Color color)
+        {
+            return $"{color.R + (color.G * 256) + (color.B * 65536)}";
         }
 
         /// <summary>

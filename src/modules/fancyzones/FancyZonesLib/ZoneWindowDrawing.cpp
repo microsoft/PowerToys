@@ -1,12 +1,12 @@
 #include "pch.h"
 #include "ZoneWindowDrawing.h"
-#include "CallTracer.h"
 
 #include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
 
+#include <common/logger/call_tracer.h>
 #include <common/logger/logger.h>
 
 namespace
@@ -131,10 +131,8 @@ ZoneWindowDrawing::RenderResult ZoneWindowDrawing::Render()
     // Draw backdrop
     m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
 
-    ID2D1SolidColorBrush* textBrush = nullptr;
     IDWriteTextFormat* textFormat = nullptr;
 
-    m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black, animationAlpha), &textBrush);
     auto writeFactory = GetWriteFactory();
 
     if (writeFactory)
@@ -144,6 +142,7 @@ ZoneWindowDrawing::RenderResult ZoneWindowDrawing::Render()
 
     for (auto drawableRect : m_sceneRects)
     {
+        ID2D1SolidColorBrush* textBrush = nullptr;
         ID2D1SolidColorBrush* borderBrush = nullptr;
         ID2D1SolidColorBrush* fillBrush = nullptr;
 
@@ -151,6 +150,7 @@ ZoneWindowDrawing::RenderResult ZoneWindowDrawing::Render()
         drawableRect.borderColor.a *= animationAlpha;
         drawableRect.fillColor.a *= animationAlpha;
 
+        m_renderTarget->CreateSolidColorBrush(drawableRect.textColor, &textBrush);
         m_renderTarget->CreateSolidColorBrush(drawableRect.borderColor, &borderBrush);
         m_renderTarget->CreateSolidColorBrush(drawableRect.fillColor, &fillBrush);
 
@@ -174,16 +174,16 @@ ZoneWindowDrawing::RenderResult ZoneWindowDrawing::Render()
             textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
             m_renderTarget->DrawTextW(idStr.c_str(), (UINT32)idStr.size(), textFormat, drawableRect.rect, textBrush);
         }
+
+        if (textBrush)
+        {
+            textBrush->Release();
+        }
     }
 
     if (textFormat)
     {
         textFormat->Release();
-    }
-
-    if (textBrush)
-    {
-        textBrush->Release();
     }
 
     // The lock must be released here, as EndDraw() will wait for vertical sync
@@ -289,6 +289,7 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
     auto borderColor = ConvertColor(colors.borderColor);
     auto inactiveColor = ConvertColor(colors.primaryColor);
     auto highlightColor = ConvertColor(colors.highlightColor);
+    auto textColor = ConvertColor(colors.textColor);
 
     inactiveColor.a = colors.highlightOpacity / 100.f;
     highlightColor.a = colors.highlightOpacity / 100.f;
@@ -313,6 +314,7 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                 .rect = ConvertRect(zone->GetZoneRect()),
                 .borderColor = borderColor,
                 .fillColor = inactiveColor,
+                .textColor = textColor,
                 .id = zone->Id()
             };
 
@@ -334,6 +336,7 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                 .rect = ConvertRect(zone->GetZoneRect()),
                 .borderColor = borderColor,
                 .fillColor = highlightColor,
+                .textColor = textColor,
                 .id = zone->Id()
             };
 

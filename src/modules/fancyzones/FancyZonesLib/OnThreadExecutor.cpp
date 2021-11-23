@@ -1,7 +1,8 @@
 #include "pch.h"
 
+#include <common/logger/call_tracer.h>
+
 #include "on_thread_executor.h"
-#include "CallTracer.h"
 
 OnThreadExecutor::OnThreadExecutor() :
     _shutdown_request{ false }, _worker_thread{ [this] { worker_thread(); } }

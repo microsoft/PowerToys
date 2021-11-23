@@ -28,6 +28,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="TestMetadataIssue1928.jpg" />
+    <None Remove="TestMetadataIssue1928_NoMetadata.jpg" />
+  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\ui\ImageResizerUI.csproj" />
@@ -51,6 +55,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Test.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestMetadataIssue1928.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestMetadataIssue1928_NoMetadata.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestMetadataIssue2447.jpg">

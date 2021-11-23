@@ -14,7 +14,7 @@ namespace Microsoft.ColorPicker.UnitTests
     {
         [TestMethod]
         [DataRow(ColorRepresentationType.CMYK, "cmyk(0%, 0%, 0%, 100%)")]
-        [DataRow(ColorRepresentationType.HEX, "#000000")]
+        [DataRow(ColorRepresentationType.HEX, "000000")]
         [DataRow(ColorRepresentationType.NCol, "R0, 0%, 100%")]
         [DataRow(ColorRepresentationType.HSB, "hsb(0, 0%, 0%)")]
         [DataRow(ColorRepresentationType.HSI, "hsi(0, 0%, 0%)")]
@@ -24,6 +24,8 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow(ColorRepresentationType.RGB, "rgb(0, 0, 0)")]
         [DataRow(ColorRepresentationType.CIELAB, "CIELab(0, 0, 0)")]
         [DataRow(ColorRepresentationType.CIEXYZ, "xyz(0, 0, 0)")]
+        [DataRow(ColorRepresentationType.VEC4, "(0f, 0f, 0f, 1f)")]
+        [DataRow(ColorRepresentationType.DecimalValue, "0")]
 
         public void GetStringRepresentationTest(ColorRepresentationType type, string expected)
         {

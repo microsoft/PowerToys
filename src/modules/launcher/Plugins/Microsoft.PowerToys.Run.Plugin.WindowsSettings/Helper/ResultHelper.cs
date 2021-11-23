@@ -146,6 +146,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
             var lowScore = 1_000;
             var mediumScore = 5_000;
             var highScore = 10_000;
+            var firstResultScore = 10_500;
 
             foreach (var result in resultList)
             {
@@ -158,43 +159,44 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 {
                     if (windowsSetting.Name.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
                     {
-                        result.Score = highScore--;
+                        result.Score = !windowsSetting.ShowAsFirstResult ? highScore-- : firstResultScore--;
                         continue;
                     }
 
                     // If query starts with second or next word of name, set score.
                     if (windowsSetting.Name.Contains($" {query}", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        result.Score = mediumScore--;
+                        result.Score = !windowsSetting.ShowAsFirstResult ? mediumScore-- : firstResultScore--;
                         continue;
                     }
 
                     if (windowsSetting.Areas is null)
                     {
-                        result.Score = lowScore--;
+                        result.Score = !windowsSetting.ShowAsFirstResult ? lowScore-- : firstResultScore--;
                         continue;
                     }
 
                     if (windowsSetting.Areas.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
                     {
-                        result.Score = lowScore--;
+                        result.Score = !windowsSetting.ShowAsFirstResult ? lowScore-- : firstResultScore--;
                         continue;
                     }
 
                     if (windowsSetting.AltNames is null)
                     {
-                        result.Score = lowScore--;
+                        result.Score = !windowsSetting.ShowAsFirstResult ? lowScore-- : firstResultScore--;
                         continue;
                     }
 
                     if (windowsSetting.AltNames.Any(x => x.StartsWith(query, StringComparison.CurrentCultureIgnoreCase)))
                     {
-                        result.Score = mediumScore--;
+                        result.Score = !windowsSetting.ShowAsFirstResult ? mediumScore-- : firstResultScore--;
                         continue;
                     }
                 }
 
-                result.Score = lowScore--;
+                // On empty queries
+                result.Score = !windowsSetting.ShowAsFirstResult ? lowScore-- : firstResultScore--;
             }
         }
 

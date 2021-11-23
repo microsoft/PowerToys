@@ -64,6 +64,34 @@ namespace winrt::PowerRenameUILib::implementation
         m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"Rename" });
     }
 
+    hstring UIUpdates::OriginalCount()
+    {
+        return m_originalCount;
+    }
+
+    void UIUpdates::OriginalCount(hstring value)
+    {
+        if (m_originalCount != value)
+        {
+            m_originalCount = value;
+            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"OriginalCount" });
+        }
+    }
+
+    hstring UIUpdates::RenamedCount()
+    {
+        return m_renamedCount;
+    }
+
+    void UIUpdates::RenamedCount(hstring value)
+    {
+        if (m_renamedCount != value)
+        {
+            m_renamedCount = value;
+            m_propertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"RenamedCount" });
+        }
+    }
+
     bool UIUpdates::CloseUIWindow()
     {
         return m_closeUIWindow;

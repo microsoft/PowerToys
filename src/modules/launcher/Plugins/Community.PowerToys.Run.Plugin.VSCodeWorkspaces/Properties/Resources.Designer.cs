@@ -106,6 +106,15 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dev Container.
+        /// </summary>
+        internal static string TypeWorkspaceDevContainer {
+            get {
+                return ResourceManager.GetString("TypeWorkspaceDevContainer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Local.
         /// </summary>
         internal static string TypeWorkspaceLocal {

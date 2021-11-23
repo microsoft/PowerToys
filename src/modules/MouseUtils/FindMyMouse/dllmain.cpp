@@ -5,13 +5,19 @@
 #include "FindMyMouse.h"
 #include <thread>
 #include <common/utils/logger_helper.h>
-
+#include <common/utils/color.h>
 
 namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_VALUE[] = L"value";
     const wchar_t JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE[] = L"do_not_activate_on_game_mode";
+    const wchar_t JSON_KEY_BACKGROUND_COLOR[] = L"background_color";
+    const wchar_t JSON_KEY_SPOTLIGHT_COLOR[] = L"spotlight_color";
+    const wchar_t JSON_KEY_OVERLAY_OPACITY[] = L"overlay_opacity";
+    const wchar_t JSON_KEY_SPOTLIGHT_RADIUS[] = L"spotlight_radius";
+    const wchar_t JSON_KEY_ANIMATION_DURATION_MS[] = L"animation_duration_ms";
+    const wchar_t JSON_KEY_SPOTLIGHT_INITIAL_ZOOM[] = L"spotlight_initial_zoom";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -47,6 +53,9 @@ class FindMyMouse : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
+
+    // Find My Mouse specific settings
+    FindMyMouseSettings m_findMyMouseSettings;
 
     // Load initial settings from the persisted values.
     void init_settings();
@@ -109,7 +118,7 @@ public:
 
             parse_settings(values);
 
-            values.save_to_settings_file();
+            FindMyMouseApplySettings(m_findMyMouseSettings);
         }
         catch (std::exception&)
         {
@@ -122,7 +131,7 @@ public:
     {
         m_enabled = true;
         Trace::EnableFindMyMouse(true);
-        std::thread([]() { FindMyMouseMain(m_hModule); }).detach();
+        std::thread([=]() { FindMyMouseMain(m_hModule, m_findMyMouseSettings); }).detach();
     }
 
     // Disable the powertoy
@@ -158,25 +167,103 @@ void FindMyMouse::init_settings()
 
 void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
 {
-    FindMyMouseSetDoNotActivateOnGameMode(true);
-
     auto settingsObject = settings.get_raw_json();
+    FindMyMouseSettings findMyMouseSettings;
     if (settingsObject.GetView().Size())
     {
         try
         {
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE);
-            FindMyMouseSetDoNotActivateOnGameMode((bool)jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE));
+            findMyMouseSettings.doNotActivateOnGameMode = (bool)jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
         }
         catch (...)
         {
             Logger::warn("Failed to get 'do not activate on game mode' setting");
+        }
+        try
+        {
+            // Parse background color
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_BACKGROUND_COLOR);
+            auto backgroundColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+            uint8_t r, g, b;
+            if (!checkValidRGB(backgroundColor, &r, &g, &b))
+            {
+                Logger::error("Background color RGB value is invalid. Will use default value");
+            }
+            else
+            {
+                findMyMouseSettings.backgroundColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+            }
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize background color from settings. Will use default value");
+        }
+        try
+        {
+            // Parse spotlight color
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_COLOR);
+            auto spotlightColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+            uint8_t r, g, b;
+            if (!checkValidRGB(spotlightColor, &r, &g, &b))
+            {
+                Logger::error("Spotlight color RGB value is invalid. Will use default value");
+            }
+            else
+            {
+                findMyMouseSettings.spotlightColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+            }
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize spotlight color from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Overlay Opacity
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OVERLAY_OPACITY);
+            findMyMouseSettings.overlayOpacity = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Overlay Opacity from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Spotlight Radius
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_RADIUS);
+            findMyMouseSettings.spotlightRadius = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Spotlight Radius from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Animation Duration
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ANIMATION_DURATION_MS);
+            findMyMouseSettings.animationDurationMs = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Animation Duration from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Spotlight Initial Zoom
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_INITIAL_ZOOM);
+            findMyMouseSettings.spotlightInitialZoom = (UINT)jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE);
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Spotlight Initial Zoom from settings. Will use default value");
         }
     }
     else
     {
         Logger::info("Find My Mouse settings are empty");
     }
+    m_findMyMouseSettings = findMyMouseSettings;
 }
 
 

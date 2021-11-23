@@ -275,9 +275,6 @@
   <data name="AreaHardwareAndSound" xml:space="preserve">
     <value>Hardware and Sound</value>
   </data>
-  <data name="AreaHomePage" xml:space="preserve">
-    <value>Home page</value>
-  </data>
   <data name="AreaMixedReality" xml:space="preserve">
     <value>Mixed reality</value>
   </data>
@@ -296,6 +293,10 @@
   <data name="AreaPrograms" xml:space="preserve">
     <value>Programs</value>
   </data>
+  <data name="AreaSecurityAndMaintenance" xml:space="preserve">
+    <value>Security and Maintenance</value>
+    <comment>Area Security and Maintenance in legacy Control Panel app.</comment>
+  </data>
   <data name="AreaSurfaceHub" xml:space="preserve">
     <value>SurfaceHub</value>
   </data>
@@ -304,6 +305,10 @@
   </data>
   <data name="AreaSystemAndSecurity" xml:space="preserve">
     <value>System and Security</value>
+  </data>
+  <data name="AreaSystemPropertiesAdvanced" xml:space="preserve">
+    <value>System Properties</value>
+    <comment>System Properties dialog sysdm.cpl</comment>
   </data>
   <data name="AreaTimeAndLanguage" xml:space="preserve">
     <value>Time and language</value>
@@ -427,6 +432,9 @@
   <data name="CellularAndSim" xml:space="preserve">
     <value>Cellular and SIM</value>
     <comment>Area NetworkAndInternet</comment>
+  </data>
+  <data name="ChangeUACSettings" xml:space="preserve">
+    <value>Change User Account Control settings</value>
   </data>
   <data name="ChooseWhichFoldersAppearOnStart" xml:space="preserve">
     <value>Choose which folders appear on Start</value>
@@ -599,9 +607,19 @@
     <value>Ease of access center</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
+  <data name="EditEnvironmentVariables" xml:space="preserve">
+    <value>Edit environment variables</value>
+    <comment>Used as AltName on EditSystemEnvironmentVars settings to make both entries available via 'Edit environment variables'.</comment>
+  </data>
   <data name="Edition" xml:space="preserve">
     <value>Edition</value>
     <comment>Means the "Windows Edition"</comment>
+  </data>
+  <data name="EditSystemEnvironmentVariables" xml:space="preserve">
+    <value>Edit the system environment variables</value>
+  </data>
+  <data name="EditUserEnvironmentVariables" xml:space="preserve">
+    <value>Edit environment variables for your account</value>
   </data>
   <data name="Email" xml:space="preserve">
     <value>Email</value>
@@ -618,6 +636,10 @@
   <data name="Environment" xml:space="preserve">
     <value>Environment</value>
     <comment>Area MixedReality, only available if the Mixed Reality Portal app is installed.</comment>
+  </data>
+  <data name="EnvVars" xml:space="preserve">
+    <value>Env vars</value>
+    <comment>Short english form. Don't translate!</comment>
   </data>
   <data name="Ethernet" xml:space="preserve">
     <value>Ethernet</value>
@@ -1009,6 +1031,9 @@
   <data name="NoteDisplayGraphics" xml:space="preserve">
     <value>Only available on devices that support advanced display options.</value>
   </data>
+  <data name="NoteEditingRequireAdminPrivileges" xml:space="preserve">
+    <value>Editing this setting may require administrative privileges.</value>
+  </data>
   <data name="NoteEnrolledWIP" xml:space="preserve">
     <value>Only present if user is enrolled in WIP.</value>
   </data>
@@ -1093,6 +1118,14 @@
   </data>
   <data name="OnScreen" xml:space="preserve">
     <value>On-Screen</value>
+  </data>
+  <data name="OpenControlPanel" xml:space="preserve">
+    <value>Control Panel (Application homepage)</value>
+    <comment>'Control Panel' is here the name of the legacy settings app.</comment>
+  </data>
+  <data name="OpenSettingsApp" xml:space="preserve">
+    <value>Settings (Application homepage)</value>
+    <comment>'Settings' is here the name of the modern settings app.</comment>
   </data>
   <data name="Os" xml:space="preserve">
     <value>OS</value>
@@ -1373,9 +1406,8 @@
     <value>Session cleanup</value>
     <comment>Area SurfaceHub</comment>
   </data>
-  <data name="SettingsHomePage" xml:space="preserve">
-    <value>Settings home page</value>
-    <comment>Area Home, Overview-page for all areas of settings </comment>
+  <data name="SettingsApp" xml:space="preserve">
+    <value>Settings app</value>
   </data>
   <data name="SetUpKiosk" xml:space="preserve">
     <value>Set up a kiosk</value>
@@ -1462,9 +1494,16 @@
     <value>System</value>
     <comment>Area Control Panel (legacy settings)</comment>
   </data>
+  <data name="SystemEnvVars" xml:space="preserve">
+    <value>System env vars</value>
+    <comment>Short english form. Don't translate!</comment>
+  </data>
   <data name="SystemPropertiesAndAddNewHardwareWizard" xml:space="preserve">
     <value>System properties and Add New Hardware wizard</value>
     <comment>Area Control Panel (legacy settings)</comment>
+  </data>
+  <data name="SystemVariables" xml:space="preserve">
+    <value>System variables</value>
   </data>
   <data name="Tab" xml:space="preserve">
     <value>Tab</value>
@@ -1552,6 +1591,10 @@
     <value>Typing</value>
     <comment>Area Device</comment>
   </data>
+  <data name="UAC" xml:space="preserve">
+    <value>UAC</value>
+    <comment>Short version of 'User account control'</comment>
+  </data>
   <data name="Uninstall" xml:space="preserve">
     <value>Uninstall</value>
     <comment>Area MixedReality, only available if the Mixed Reality Portal app is installed.</comment>
@@ -1560,9 +1603,23 @@
     <value>USB</value>
     <comment>Area Device</comment>
   </data>
+  <data name="UserAccountControlSettings.exe" xml:space="preserve">
+    <value>UserAccountControlSettings.exe</value>
+    <comment>Name of the executable</comment>
+  </data>
   <data name="UserAccounts" xml:space="preserve">
     <value>User accounts</value>
     <comment>Area Control Panel (legacy settings)</comment>
+  </data>
+  <data name="UserEnvironmentVariables" xml:space="preserve">
+    <value>User environment variables</value>
+  </data>
+  <data name="UserEnvVars" xml:space="preserve">
+    <value>User env vars</value>
+    <comment>Short english form. Don't translate!</comment>
+  </data>
+  <data name="UserVariables" xml:space="preserve">
+    <value>User variables</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Version</value>
