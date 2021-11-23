@@ -121,17 +121,33 @@
             </ListView>
         </Grid>
 
-        <Grid Grid.Column="0" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid Grid.Column="0" Grid.Row="1" MaxWidth="360" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="48" />
             </Grid.RowDefinitions>
-            <ScrollViewer>
+          
                 <StackPanel Orientation="Vertical" Padding="0,0,0,16" Margin="0,0,12,0">
                     <Grid>
-                        <AutoSuggestBox x:Name="textBox_search" x:Uid="SearchBox" Height="40" VerticalContentAlignment="Center" ItemsSource="{x:Bind SearchMRU}" />
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <AutoSuggestBox x:Name="textBox_search" x:Uid="SearchBox" Height="40" VerticalContentAlignment="Center" ItemsSource="{x:Bind SearchMRU}" />
 
-                        <Button FontFamily="{ThemeResource SymbolThemeFontFamily}" VerticalAlignment="Center" Visibility="{Binding ElementName=checkBox_regex, Path=IsChecked}" MinHeight="32" Margin="4" x:Uid="RegExButton" Background="Transparent" BorderBrush="Transparent" Content="&#xE946;" HorizontalAlignment="Right">
+                        <Button Grid.Column="1"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                VerticalAlignment="Center"
+                                Visibility="{Binding ElementName=checkBox_regex, Path=IsChecked}"
+                                Height="40"
+                                Width="28" 
+                                Padding="0"
+                                Margin="0,0,-4,0"
+                                BorderBrush="Transparent"
+                                Background="Transparent"
+                                x:Uid="RegExButton"
+                                Content="&#xE946;"
+                                HorizontalAlignment="Right">
                             <Button.Flyout>
                                 <Flyout x:Name="RegExFlyout">
                                     <Grid>
@@ -174,9 +190,23 @@
 
                     <Rectangle Height="1" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" Margin="0,16,0,20" />
                     <Grid>
-                        <AutoSuggestBox x:Name="textBox_replace" Margin="0,0,0,0" x:Uid="ReplaceBox" Height="40" VerticalContentAlignment="Center" Padding="12,12,0,0" ItemsSource="{x:Bind ReplaceMRU}" />
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <AutoSuggestBox x:Name="textBox_replace" Margin="0,0,0,0" x:Uid="ReplaceBox" Height="40" VerticalContentAlignment="Center" Padding="12,12,0,0" ItemsSource="{x:Bind ReplaceMRU}" />
 
-                        <Button FontFamily="{ThemeResource SymbolThemeFontFamily}" VerticalAlignment="Center" MinHeight="32" Margin="4" x:Uid="FileCreationButton" Background="Transparent" BorderBrush="Transparent" Content="&#xE946;" HorizontalAlignment="Right">
+                        <Button FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                VerticalAlignment="Center"
+                                x:Uid="FileCreationButton"
+                                Grid.Column="1"
+                                Width="28" 
+                                Padding="0"
+                                Margin="0,0,-4,0"
+                                BorderBrush="Transparent"
+                                Background="Transparent"
+                                Content="&#xE946;"
+                                HorizontalAlignment="Right">
                             <Button.Flyout>
                                 <Flyout x:Name="DateTimeFlyout" ShouldConstrainToRootBounds="False">
                                     <Grid>
@@ -237,7 +267,7 @@
                         <ToggleButton x:Name="toggleButton_enumItems" Content="&#xEA40;" FontFamily="{ThemeResource SymbolThemeFontFamily}" MinHeight="32" x:Uid="ToggleButton_EnumItems" Style="{StaticResource CustomToggleButtonStyle}" />
                     </StackPanel>
                 </StackPanel>
-            </ScrollViewer>
+        
 
             <Rectangle Height="1" Fill="{ThemeResource CardStrokeColorDefaultBrush}" HorizontalAlignment="Stretch" Margin="0,0,12,0" VerticalAlignment="Top" Grid.Row="1" />
 
